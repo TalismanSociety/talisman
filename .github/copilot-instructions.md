@@ -77,6 +77,7 @@
 2. Validate new hooks/components with real APIs (RxJS streams, Dexie, background APIs) and cover race/error paths.
 3. Ensure new commands/config entries work with `pnpm build` and `pnpm build:extension*` matrix.
 4. Any change that touches the keyring or secret storage must ship with dedicated unit tests.
+5. Before considering a task complete, ensure `pnpm check` passes (Biome check for the repo).
 
 ## Commenting & Documentation
 

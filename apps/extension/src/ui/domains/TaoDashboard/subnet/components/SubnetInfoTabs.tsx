@@ -85,6 +85,7 @@ const SentimentTab: FC<{ netuid: number }> = ({ netuid }) => {
     return (
       <div className="flex flex-col gap-2">
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <div key={i} className="h-60 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -116,10 +117,10 @@ const SentimentTab: FC<{ netuid: number }> = ({ netuid }) => {
     <div className="flex flex-col gap-8">
       {/* Sentiment Score */}
       <div className="rounded-lg bg-grey-800 p-8">
-        <div className="mb-4 text-xs text-body-secondary">30-Day Sentiment Score</div>
+        <div className="mb-4 text-body-secondary text-xs">30-Day Sentiment Score</div>
         <div
           className={cn(
-            "text-2xl font-bold",
+            "font-bold text-2xl",
             sentimentScore >= 0.3
               ? "text-green"
               : sentimentScore <= -0.3
@@ -130,12 +131,12 @@ const SentimentTab: FC<{ netuid: number }> = ({ netuid }) => {
           {sentimentScore >= 0 ? "+" : ""}
           {sentimentScore.toFixed(2)}
         </div>
-        <div className="text-xs text-body-secondary">{sentimentSummary?.total ?? 0} analyses</div>
+        <div className="text-body-secondary text-xs">{sentimentSummary?.total ?? 0} analyses</div>
       </div>
 
       {/* Recent Tweets */}
       <div>
-        <div className="mb-4 text-xs font-medium text-body-secondary">Recent X Posts</div>
+        <div className="mb-4 font-medium text-body-secondary text-xs">Recent X Posts</div>
         <div className="flex max-h-[300px] flex-col gap-4 overflow-y-auto">
           {tweets?.slice(0, 10).map((tweet) => (
             <a
@@ -154,7 +155,7 @@ const SentimentTab: FC<{ netuid: number }> = ({ netuid }) => {
                       className="size-20 rounded-full"
                     />
                   ) : (
-                    <div className="flex size-20 items-center justify-center rounded-full bg-grey-700 text-xs font-bold">
+                    <div className="flex size-20 items-center justify-center rounded-full bg-grey-700 font-bold text-xs">
                       {tweet.author.screenName?.[0]?.toUpperCase() ?? "?"}
                     </div>
                   )}
@@ -162,14 +163,14 @@ const SentimentTab: FC<{ netuid: number }> = ({ netuid }) => {
                 </div>
                 <span
                   className={cn(
-                    "rounded-full px-6 py-2 text-[10px] font-medium",
+                    "rounded-full px-6 py-2 font-medium text-[10px]",
                     getSentimentColor(tweet.sentiment)
                   )}
                 >
                   {getSentimentLabel(tweet.sentiment)}
                 </span>
               </div>
-              <p className="line-clamp-2 text-xs text-body-secondary">{tweet.text}</p>
+              <p className="line-clamp-2 text-body-secondary text-xs">{tweet.text}</p>
               <div className="flex items-center justify-between text-[10px] text-grey-600">
                 <span>{formatTimeAgo(tweet.createdAt)}</span>
                 <span className="opacity-0 transition-opacity group-hover:opacity-100">View →</span>
@@ -177,7 +178,7 @@ const SentimentTab: FC<{ netuid: number }> = ({ netuid }) => {
             </a>
           ))}
           {(!tweets || tweets.length === 0) && (
-            <div className="text-center text-sm text-body-secondary">
+            <div className="text-center text-body-secondary text-sm">
               No posts found for this subnet
             </div>
           )}
@@ -194,6 +195,7 @@ const TokenomicsTab: FC<{ netuid: number }> = ({ netuid }) => {
     return (
       <div className="flex flex-col gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <div key={i} className="h-40 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -216,7 +218,7 @@ const TokenomicsTab: FC<{ netuid: number }> = ({ netuid }) => {
     <div className="flex flex-col gap-4">
       {stats.map((stat) => (
         <div key={stat.label} className="flex justify-between rounded-lg bg-grey-800 px-8 py-6">
-          <span className="text-sm text-body-secondary">{stat.label}</span>
+          <span className="text-body-secondary text-sm">{stat.label}</span>
           <span className="font-bold">{stat.value}</span>
         </div>
       ))}
@@ -231,6 +233,7 @@ const HoldersTab: FC<{ netuid: number }> = ({ netuid }) => {
     return (
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <div key={i} className="h-32 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -247,7 +250,7 @@ const HoldersTab: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-xs font-medium text-body-secondary">Top 10 Holders</div>
+      <div className="font-medium text-body-secondary text-xs">Top 10 Holders</div>
       <div className="flex max-h-[250px] flex-col gap-2 overflow-y-auto">
         {topHolders.map((holder, i) => {
           const balance = parseFloat(holder.alphaBalance)
@@ -258,11 +261,11 @@ const HoldersTab: FC<{ netuid: number }> = ({ netuid }) => {
               className="flex items-center justify-between rounded-lg bg-grey-800 px-8 py-6"
             >
               <div className="flex items-center gap-4">
-                <span className="text-xs text-body-secondary">#{i + 1}</span>
-                <span className="text-xs font-mono">{shortenAddress(holder.coldkey)}</span>
+                <span className="text-body-secondary text-xs">#{i + 1}</span>
+                <span className="font-mono text-xs">{shortenAddress(holder.coldkey)}</span>
               </div>
               <div className="text-right">
-                <div className="text-xs font-bold">{formatNumber(balance / 1e9, 0)}α</div>
+                <div className="font-bold text-xs">{formatNumber(balance / 1e9, 0)}α</div>
                 <div className="text-[10px] text-body-secondary">{percentage.toFixed(1)}%</div>
               </div>
             </div>
@@ -283,6 +286,7 @@ const WhalesTab: FC<{ netuid: number }> = ({ netuid }) => {
     return (
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <div key={i} className="h-40 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -317,7 +321,7 @@ const WhalesTab: FC<{ netuid: number }> = ({ netuid }) => {
                 >
                   {isAdding ? "↑" : "↓"}
                 </div>
-                <span className="text-xs font-mono">{whale.coldkeyShort}</span>
+                <span className="font-mono text-xs">{whale.coldkeyShort}</span>
               </div>
               <span className={cn("font-bold", isAdding ? "text-green" : "text-red-500")}>
                 {isAdding ? "+" : "-"}
@@ -345,16 +349,16 @@ export const SubnetInfoTabs: FC<SubnetInfoTabsProps> = ({ netuid, className }) =
   return (
     <div className={cn("flex h-full flex-col overflow-hidden rounded-lg bg-grey-850", className)}>
       {/* Tab buttons */}
-      <div className="flex shrink-0 border-b border-grey-750">
+      <div className="flex shrink-0 border-grey-750 border-b">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "flex-1 px-8 py-8 text-xs font-medium transition-colors",
+              "flex-1 px-8 py-8 font-medium text-xs transition-colors",
               activeTab === tab.id
-                ? "border-b-2 border-primary text-primary"
+                ? "border-primary border-b-2 text-primary"
                 : "text-body-secondary hover:text-body"
             )}
           >

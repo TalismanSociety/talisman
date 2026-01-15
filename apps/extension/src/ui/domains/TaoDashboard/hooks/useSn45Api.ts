@@ -1,5 +1,5 @@
-import { Sn45Api } from "extension-core"
 import { useQuery } from "@tanstack/react-query"
+import { Sn45Api } from "extension-core"
 import { useMemo } from "react"
 
 // Use local dev URL in development, otherwise use production

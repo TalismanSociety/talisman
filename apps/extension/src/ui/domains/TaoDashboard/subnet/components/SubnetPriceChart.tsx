@@ -1,18 +1,18 @@
 import { cn } from "@talismn/util"
 import {
-  createChart,
   CandlestickSeries,
+  createChart,
   createSeriesMarkers,
   type UTCTimestamp,
 } from "lightweight-charts"
-import { type FC, useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import {
   useSubnetPrice,
   useSubnetStakeEvents,
+  useSubnetTokenomics,
   useSubnetTweets,
   useTaoPrice,
-  useSubnetTokenomics,
 } from "../../hooks/useSn45Api"
 
 interface SubnetPriceChartProps {
@@ -38,7 +38,7 @@ function processStakeEventsToOHLC(
     taoAmount: string
     timestamp: string
   }>,
-  priceData: Array<{
+  _priceData: Array<{
     movingPrice: string
     timestamp: string
   }>
@@ -110,10 +110,6 @@ const TIME_RANGES = [
 
 export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<ReturnType<typeof createChart> | null>(null)
-  const candlestickSeriesRef = useRef<ReturnType<
-    ReturnType<typeof createChart>["addCandlestickSeries"]
-  > | null>(null)
 
   const { data: priceData, isLoading: priceLoading } = useSubnetPrice(netuid)
   const { data: stakeEvents, isLoading: stakeLoading } = useSubnetStakeEvents(netuid)
@@ -122,7 +118,6 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
   const { data: tokenomics } = useSubnetTokenomics(netuid)
 
   const [timeRange, setTimeRange] = useState(30) // days
-  const [hoveredTweetId, setHoveredTweetId] = useState<string | null>(null)
 
   const isLoading = priceLoading || stakeLoading
 
@@ -155,7 +150,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
     tokenPrice && taoPrice?.price ? tokenPrice * parseFloat(taoPrice.price) : null
 
   // Sentiment color helpers
-  const getSentimentColor = useCallback((sentiment: string) => {
+  const _getSentimentColor = useCallback((sentiment: string) => {
     switch (sentiment) {
       case "very_bullish":
         return "#16a34a"
@@ -322,8 +317,8 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
       <div className={cn("flex flex-col gap-4", className)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="text-lg font-medium text-body">Subnet Token Price</div>
-            <div className="text-xs text-body-secondary">Hourly OHLC with X sentiment markers</div>
+            <div className="font-medium text-body text-lg">Subnet Token Price</div>
+            <div className="text-body-secondary text-xs">Hourly OHLC with X sentiment markers</div>
           </div>
         </div>
         <div className="flex h-[450px] items-center justify-center rounded-lg bg-grey-900 text-body-secondary">
@@ -339,14 +334,14 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-baseline gap-4">
           <div>
-            <div className="text-lg font-medium text-body">Subnet Token Price</div>
-            <div className="text-xs text-body-secondary">Hourly OHLC with X sentiment markers</div>
+            <div className="font-medium text-body text-lg">Subnet Token Price</div>
+            <div className="text-body-secondary text-xs">Hourly OHLC with X sentiment markers</div>
           </div>
           {/* Token Price Badge */}
           {tokenPriceUsd !== null && (
             <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
-              <span className="text-xs text-body-secondary">Token Price</span>
-              <span className="text-lg font-bold text-primary">${tokenPriceUsd.toFixed(2)}</span>
+              <span className="text-body-secondary text-xs">Token Price</span>
+              <span className="font-bold text-lg text-primary">${tokenPriceUsd.toFixed(2)}</span>
               <span className="text-[10px] text-body-secondary">({tokenPrice?.toFixed(4)} τ)</span>
             </div>
           )}
@@ -360,7 +355,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
               type="button"
               onClick={() => setTimeRange(option.value)}
               className={cn(
-                "rounded px-3 py-1 text-xs font-medium transition-colors",
+                "rounded px-3 py-1 font-medium text-xs transition-colors",
                 timeRange === option.value
                   ? "bg-primary text-white"
                   : "text-body-secondary hover:bg-grey-750 hover:text-body"
@@ -375,7 +370,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
       {/* Chart Container */}
       <div className="relative overflow-hidden rounded-lg bg-grey-900">
         {/* Stats overlay */}
-        <div className="absolute left-4 top-4 z-10 text-sm">
+        <div className="absolute top-4 left-4 z-10 text-sm">
           <span className="text-[#26a69a]">τ In: {totals.taoIn.toFixed(1)}</span>
           <span className="mx-2 text-body-secondary">|</span>
           <span className="text-[#ef5350]">Out: {totals.taoOut.toFixed(1)}</span>
@@ -387,7 +382,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
         </div>
 
         {/* Legend */}
-        <div className="absolute right-4 top-4 z-10 flex items-center gap-3 rounded-lg bg-grey-800/90 px-3 py-1.5 text-[10px] text-body-secondary">
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-3 rounded-lg bg-grey-800/90 px-3 py-1.5 text-[10px] text-body-secondary">
           <span className="text-grey-600">Posts:</span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-2 w-2 rounded-full bg-[#22c55e]" />
