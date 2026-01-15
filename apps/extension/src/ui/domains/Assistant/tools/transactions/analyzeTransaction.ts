@@ -1,7 +1,7 @@
 import { getNetworks$ } from "@ui/state/chaindata"
 import { getTransaction$ } from "@ui/state/transactions"
-import { firstValueFrom } from "rxjs"
 import type { WalletTransaction } from "extension-core"
+import { firstValueFrom } from "rxjs"
 import type { ToolHandler, ToolHandlerResult } from "../../types"
 
 interface AnalyzeTransactionInput {
