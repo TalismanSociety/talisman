@@ -1,6 +1,8 @@
 import { BalanceFormatter } from "@talismn/balances"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { cn, tokensToPlanck } from "@talismn/util"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBalance, useIsBalanceInitializing, useToken } from "@ui/state"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -28,7 +30,7 @@ export const SwapBuyInput: FC<{
 
   return (
     <div className="flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6">
-      <div className="flex w-full justify-between gap-6">
+      <div className="flex h-20 w-full justify-between gap-6">
         <SelectSenderAccountPill address={address} tokenId={tokenId} onSelect={onAccountChange} />
         {address && (
           <div className="flex items-center gap-2">
@@ -37,8 +39,22 @@ export const SwapBuyInput: FC<{
           </div>
         )}
       </div>
-      <div className="flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6">
+      <div className="flex w-full gap-6 overflow-hidden">
         <TokenInput token={token} value={value} onValueChanged={onValueChange} />
+        <TokenDisplay tokenId={tokenId} />
+      </div>
+    </div>
+  )
+}
+
+const TokenDisplay: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
+  const { t } = useTranslation()
+  return (
+    <div className="flex items-center gap-4">
+      <TokenLogo className="text-xl" tokenId={tokenId} />
+      <div>
+        <TokenDisplaySymbol tokenId={tokenId} />
+        <div className="text-body-secondary text-xs">{t("Native")}</div>
       </div>
     </div>
   )
