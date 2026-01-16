@@ -15,7 +15,6 @@ export const SwapBuyInput: FC<{
   value: bigint | null
   maxValue?: bigint
   onAccountChange: (address: string) => void
-  onTokenChange: (tokenId: TokenId) => void
   onValueChange: (value: bigint | null) => void
 }> = ({ address, tokenId, value, maxValue, onValueChange, onAccountChange }) => {
   const token = useToken(tokenId)

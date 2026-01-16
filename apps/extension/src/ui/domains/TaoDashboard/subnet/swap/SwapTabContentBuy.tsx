@@ -1,9 +1,14 @@
-import type { FC, PropsWithChildren, ReactNode } from "react"
+import { EditIcon } from "@talismn/icons"
+import { cn } from "@talismn/util"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { type FC, type PropsWithChildren, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Toggle } from "talisman-ui"
+import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
+import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
 export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
   <SwapBuyProvider netuid={netuid}>
@@ -12,7 +17,7 @@ export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
 )
 
 const SwapTabContentBuyInner: FC = () => {
-  const { address, value, maxValue, fromTokenId, toTokenId, onAccountChange, onValueChange } =
+  const { address, valueIn, maxValueIn, fromTokenId, priceImpact, onAccountChange, onValueChange } =
     useSwapBuy()
   const { t } = useTranslation()
 
@@ -25,24 +30,27 @@ const SwapTabContentBuyInner: FC = () => {
           <SwapBuyInput
             address={address}
             tokenId={fromTokenId}
-            value={value}
-            maxValue={maxValue}
+            value={valueIn}
+            maxValue={maxValueIn}
             onAccountChange={onAccountChange}
             onValueChange={onValueChange}
-            onTokenChange={() => {}}
           />
         </InputsContainer>
         <InputsContainer label={t("Receive")}>
-          <SwapBuyOutput tokenId={toTokenId} value={null} />
+          <SwapBuyOutput />
         </InputsContainer>
       </div>
       <div className="flex w-full flex-col gap-5 overflow-hidden border-black-tertiary border-t bg-[#202020] p-10 pt-5">
         <div className="flex w-full flex-col overflow-hidden">
-          <DetailsRow label={t("Estimated Fee")}>TODO</DetailsRow>
-          <DetailsRow label={t("Price Impact")}>TODO</DetailsRow>
-          <DetailsRow label={t("Max Slippage")}>TODO</DetailsRow>
+          <DetailsRow label={t("Estimated Fee")}>
+            <FeeEstimate />
+          </DetailsRow>
+          <DetailsRow label={t("Price Impact")}>{priceImpact}</DetailsRow>
+          <DetailsRow label={t("Max Slippage")}>
+            <SlippageEdit />
+          </DetailsRow>
           <div className="flex h-14 items-center justify-end text-body-secondary text-sm">
-            <Toggle variant="sm">Use MEV Shield</Toggle>
+            <Toggle variant="sm">{t("Use MEV Shield")}</Toggle>
           </div>
         </div>
         <button
@@ -52,7 +60,58 @@ const SwapTabContentBuyInner: FC = () => {
           {t("Buy")}
         </button>
       </div>
+      <BittensorSlippageModal />
     </div>
+  )
+}
+
+const FeeEstimate = () => {
+  const { t } = useTranslation()
+  const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, fromTokenId } = useSwapBuy()
+
+  if (!fromTokenId) return null
+
+  if (!feeEstimate && isLoadingFeeEstimate) {
+    return (
+      <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">0.0022 TAO</div>
+    )
+  }
+
+  if (errorFeeEstimate) {
+    return <div className="text-alert-warn">{t("Failed to estimate fee")}</div>
+  }
+
+  if (feeEstimate === null) {
+    return <div>{t("N/A")}</div>
+  }
+
+  return (
+    <TokensAndFiat
+      tokenId={fromTokenId}
+      planck={feeEstimate}
+      className={cn("text-body-secondary", isLoadingFeeEstimate && "animate-pulse")}
+      tokensClassName="text-body"
+    />
+  )
+}
+
+const SlippageEdit = () => {
+  const { slippage, netuid } = useSwapBuy()
+  const { open } = useBittensorSlippageModal()
+
+  const handleClick = useCallback(() => {
+    open({ netuid })
+  }, [open, netuid])
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={"flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-xs"}
+    >
+      <EditIcon />
+      <div>{slippage.toFixed(2)}%</div>
+    </button>
   )
 }
 
