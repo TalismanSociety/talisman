@@ -10,7 +10,7 @@ export const TaoDashboardSwap: FC<{ netuid: number; className?: string }> = ({
   const [mode, setMode] = useState<TaoDashboardSwapTabs>("buy")
 
   return (
-    <div className={cn("flex w-full flex-col overflow-hidden", className)}>
+    <div className={cn("flex size-full flex-col overflow-hidden", className)}>
       {/* Tab Header - Buy/Sell */}
       <SwapTabs selected={mode} onSelect={setMode} />
       {/* Tab Contents - Buy/Sell */}
