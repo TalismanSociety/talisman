@@ -17,8 +17,7 @@ export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
 )
 
 const SwapTabContentBuyInner: FC = () => {
-  const { address, valueIn, maxValueIn, fromTokenId, priceImpact, onAccountChange, onValueChange } =
-    useSwapBuy()
+  const { address, valueIn, maxValueIn, fromTokenId, onAccountChange, onValueChange } = useSwapBuy()
   const { t } = useTranslation()
 
   if (!fromTokenId) return null
@@ -45,7 +44,9 @@ const SwapTabContentBuyInner: FC = () => {
           <DetailsRow label={t("Estimated Fee")}>
             <FeeEstimate />
           </DetailsRow>
-          <DetailsRow label={t("Price Impact")}>{priceImpact}</DetailsRow>
+          <DetailsRow label={t("Price Impact")}>
+            <PriceImpact />
+          </DetailsRow>
           <DetailsRow label={t("Max Slippage")}>
             <SlippageEdit />
           </DetailsRow>
@@ -65,15 +66,53 @@ const SwapTabContentBuyInner: FC = () => {
   )
 }
 
+const PriceImpact = () => {
+  const { t } = useTranslation()
+  const { priceImpact, isLoading } = useSwapBuy()
+
+  if (typeof priceImpact === "number") {
+    return (
+      <div
+        className={cn(
+          isLoading && "animate-pulse",
+          priceImpact > 0.5 && "text-alert-warn",
+          priceImpact > 2 && "text-alert-error"
+        )}
+      >
+        ~{priceImpact.toFixed(2)}%
+      </div>
+    )
+  }
+
+  if (isLoading)
+    return <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">0.00%</div>
+
+  return t("N/A")
+}
+
 const FeeEstimate = () => {
   const { t } = useTranslation()
   const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, fromTokenId } = useSwapBuy()
 
   if (!fromTokenId) return null
 
-  if (!feeEstimate && isLoadingFeeEstimate) {
+  if (typeof feeEstimate === "bigint")
     return (
-      <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">0.0022 TAO</div>
+      <TokensAndFiat
+        tokenId={fromTokenId}
+        planck={feeEstimate}
+        className={cn("text-body-secondary", isLoadingFeeEstimate && "animate-pulse")}
+        tokensClassName="text-body"
+      />
+    )
+
+  if (isLoadingFeeEstimate) {
+    return (
+      <TokensAndFiat
+        tokenId={fromTokenId}
+        planck={1_234_567n}
+        className="animate-pulse rounded-xs bg-body-disabled text-body-disabled"
+      />
     )
   }
 
@@ -81,18 +120,7 @@ const FeeEstimate = () => {
     return <div className="text-alert-warn">{t("Failed to estimate fee")}</div>
   }
 
-  if (feeEstimate === null) {
-    return <div>{t("N/A")}</div>
-  }
-
-  return (
-    <TokensAndFiat
-      tokenId={fromTokenId}
-      planck={feeEstimate}
-      className={cn("text-body-secondary", isLoadingFeeEstimate && "animate-pulse")}
-      tokensClassName="text-body"
-    />
-  )
+  return <div>{t("N/A")}</div>
 }
 
 const SlippageEdit = () => {
@@ -107,7 +135,7 @@ const SlippageEdit = () => {
     <button
       type="button"
       onClick={handleClick}
-      className={"flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-xs"}
+      className={"flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light"}
     >
       <EditIcon />
       <div>{slippage.toFixed(2)}%</div>

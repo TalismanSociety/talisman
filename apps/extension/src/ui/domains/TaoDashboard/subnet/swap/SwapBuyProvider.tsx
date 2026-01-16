@@ -147,7 +147,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     isError,
 
     feeEstimate,
-    isLoadingFeeEstimate,
+    isLoadingFeeEstimate: isLoading || isLoadingFeeEstimate,
     errorFeeEstimate,
     // reset,
     onAccountChange,
