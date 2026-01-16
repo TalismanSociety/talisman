@@ -1,11 +1,10 @@
-import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
+import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { Toggle } from "talisman-ui"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
+
 export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
   <SwapBuyProvider netuid={netuid}>
     <SwapTabContentBuyInner />
@@ -13,16 +12,11 @@ export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
 )
 
 const SwapTabContentBuyInner: FC = () => {
-  const { netuid, address, value, maxValue, toTokenId, onAccountChange, onValueChange } =
+  const { address, value, maxValue, fromTokenId, toTokenId, onAccountChange, onValueChange } =
     useSwapBuy()
   const { t } = useTranslation()
-  const fromTokenId = useMemo(() => {
-    return subNativeTokenId(BITTENSOR_NETWORK_ID)
-  }, [])
 
-  const _toTokenId = useMemo(() => {
-    return subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)
-  }, [netuid])
+  if (!fromTokenId) return null
 
   return (
     <div className="flex size-full flex-col overflow-hidden">
@@ -38,12 +32,11 @@ const SwapTabContentBuyInner: FC = () => {
             onTokenChange={() => {}}
           />
         </InputsContainer>
-
         <InputsContainer label={t("Receive")}>
           <SwapBuyOutput tokenId={toTokenId} value={null} />
         </InputsContainer>
       </div>
-      <div className="flex w-full flex-col gap-5 overflow-hidden bg-black-tertiary p-10 pt-5">
+      <div className="flex w-full flex-col gap-5 overflow-hidden border-black-tertiary border-t bg-[#202020] p-10 pt-5">
         <div className="flex w-full flex-col overflow-hidden">
           <DetailsRow label={t("Estimated Fee")}>TODO</DetailsRow>
           <DetailsRow label={t("Price Impact")}>TODO</DetailsRow>
