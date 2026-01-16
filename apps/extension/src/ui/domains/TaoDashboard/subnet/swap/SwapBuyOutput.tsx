@@ -55,7 +55,7 @@ const TokenDisplay: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
       <div className="flex items-center gap-4">
         <TokenLogo className="text-xl" tokenId={tokenId} />
         <div className="flex flex-col items-start gap-1">
-          <div className="text-body">SN{token.netuid}</div>
+          <div className="text-base text-body">SN{token.netuid}</div>
           <div className="text-body-secondary text-xs">
             {token.subnetName ?? t("Subnet {{netuid}}", { netuid: token.netuid })}
           </div>

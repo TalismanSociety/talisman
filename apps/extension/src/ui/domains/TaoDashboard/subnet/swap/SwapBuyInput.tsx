@@ -30,7 +30,7 @@ export const SwapBuyInput: FC<{
 
   return (
     <div className="flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6">
-      <div className="flex h-20 w-full justify-between gap-6">
+      <div className="flex w-full items-center justify-between gap-6">
         <SelectSenderAccountPill address={address} tokenId={tokenId} onSelect={onAccountChange} />
         {address && (
           <div className="flex items-center gap-2">
@@ -39,7 +39,7 @@ export const SwapBuyInput: FC<{
           </div>
         )}
       </div>
-      <div className="flex w-full gap-6 overflow-hidden">
+      <div className="flex h-20 w-full gap-6 overflow-hidden">
         <TokenInput token={token} value={value} onValueChanged={onValueChange} />
         <TokenDisplay tokenId={tokenId} />
       </div>
