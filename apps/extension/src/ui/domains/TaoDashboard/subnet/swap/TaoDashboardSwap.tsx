@@ -1,5 +1,6 @@
 import { cn } from "@talismn/util"
 import { type FC, useState } from "react"
+import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
 import { SwapTabContentBuy } from "./SwapTabContentBuy"
 import { SwapTabs, type TaoDashboardSwapTabs } from "./SwapTabs"
 
@@ -10,7 +11,10 @@ export const TaoDashboardSwap: FC<{ netuid: number; className?: string }> = ({
   const [mode, setMode] = useState<TaoDashboardSwapTabs>("buy")
 
   return (
-    <div className={cn("flex size-full flex-col overflow-hidden", className)}>
+    <div
+      id={BITTENSOR_SWAP_CONTAINER_ID} // used by hardware wallet drawers
+      className={cn("relative flex size-full flex-col overflow-hidden", className)}
+    >
       {/* Tab Header - Buy/Sell */}
       <SwapTabs selected={mode} onSelect={setMode} />
       {/* Tab Contents - Buy/Sell */}

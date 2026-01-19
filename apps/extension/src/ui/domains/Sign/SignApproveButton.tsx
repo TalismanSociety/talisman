@@ -15,9 +15,9 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
       case "Warning":
         return "orange"
       default:
-        return "primary"
+        return props.color ?? "primary"
     }
-  }, [riskAnalysis?.validationResult])
+  }, [riskAnalysis?.validationResult, props?.color])
 
   const [disabled, tooltip] = useMemo(() => {
     try {

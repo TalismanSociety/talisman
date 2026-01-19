@@ -1,7 +1,6 @@
-import { cn } from "@talismn/util"
+import { cn, planckToTokens } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 import { useTaoDashboardSubnetPickerModal } from "../TaoDashboardSubnetPickerModal"
@@ -12,7 +11,9 @@ export const SwapBuyOutput = () => (
   <div className="flex w-full flex-col gap-5 overflow-hidden">
     <div className="flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6">
       <div className="flex h-20 w-full items-center justify-between gap-6 overflow-hidden text-[2rem]">
-        <ValueOutEstimate />
+        <div className="grow truncate">
+          <ValueOutEstimate />
+        </div>
         <TokenOutPickerButton />
       </div>
     </div>
@@ -29,32 +30,30 @@ const TokenOutValidatorPill = () => {
 }
 
 const ValueOutEstimate = () => {
-  const { toTokenId, valueOut, isLoading, valueIn } = useSwapBuy()
+  const { tokenOutGeneric, valueOut, isLoading, valueIn } = useSwapBuy()
 
-  if (isLoading)
-    return (
-      <TokensAndFiat
-        noFiat
-        noCountUp
-        tokenId={toTokenId}
-        planck={50_123_456_789n}
-        className="animate-pulse rounded-xs bg-body-disabled text-body-disabled"
-      />
-    )
+  // TODO fix existing bug where valueOut is 0n while recomputing, in useBittensorStakingPayload.ts
+  const displayValue = useMemo(() => {
+    if (!valueIn) return "0"
+    return tokenOutGeneric && typeof valueOut === "bigint"
+      ? planckToTokens(String(valueOut), tokenOutGeneric.decimals)
+      : "123.123456789"
+  }, [tokenOutGeneric, valueOut, valueIn])
 
   return (
-    <TokensAndFiat
-      noFiat
-      noCountUp
-      tokenId={toTokenId}
-      planck={valueOut}
-      className={cn(valueIn === null && "text-body-disabled")}
-    />
+    <span
+      className={cn(
+        "text-body-disabled",
+        !!valueIn && isLoading && "animate-pulse rounded-xs bg-body-disabled"
+      )}
+    >
+      {displayValue} {tokenOutGeneric?.symbol}
+    </span>
   )
 }
 
 const TokenOutPickerButton = () => {
-  const { toToken: token } = useSwapBuy()
+  const { tokenOutGeneric: token } = useSwapBuy()
   const { t } = useTranslation()
   const { open } = useTaoDashboardSubnetPickerModal()
 

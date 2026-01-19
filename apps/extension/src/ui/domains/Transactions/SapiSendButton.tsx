@@ -8,7 +8,7 @@ import type { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } f
 import { log } from "extension-shared"
 import { type FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, type ButtonProps } from "talisman-ui"
 import type { Hex } from "viem"
 
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
@@ -23,6 +23,7 @@ type SapiSendButtonProps = {
   loading?: boolean
   disabled?: boolean
   className?: string
+  color?: ButtonProps["color"]
   onSubmitted: (hash: Hex) => void
   mode?: "default" | "bittensor-mev-shield"
 }
@@ -35,6 +36,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   onSubmitted,
   mode,
+  color,
 }) => {
   const [error, setError] = useState<string>()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -64,7 +66,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full shrink-0 flex-col gap-6 overflow-hidden">
       <SubmitErrorDisplay error={error} />
       <SignHardwareSubstrate
         className={className}
@@ -73,6 +75,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         shortMetadata={shortMetadata}
         registry={registry}
         onSigned={handleSigned}
+        color={color}
       />
     </div>
   )
@@ -135,6 +138,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   onSubmitted,
   mode,
+  color,
 }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -168,6 +172,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         disabled={disabled}
         onClick={handleSubmitClick}
         processing={isSubmitting}
+        color={color}
       >
         {label ?? t("Confirm")}
       </Button>

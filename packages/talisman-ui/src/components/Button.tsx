@@ -2,7 +2,7 @@ import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { type FC, type SVGProps, useMemo } from "react"
 
-type ButtonColor = "default" | "primary" | "red" | "orange"
+type ButtonColor = "default" | "primary" | "red" | "orange" | "buy" | "sell"
 
 export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -51,6 +51,12 @@ export const Button: FC<ButtonProps> = ({
 
       case "red":
         return "bg-brand-orange text-black border-2 border-transparent focus:outline-none enabled:hover:bg-brand-orange/90 focus:border-white  enabled:hover:active:bg-brand-orange"
+
+      case "buy":
+        return "bg-buy text-black border-2 border-transparent focus:outline-none enabled:hover:bg-buy/90 focus:border-white  enabled:hover:active:bg-buy disabled:bg-buy/50"
+
+      case "sell":
+        return "bg-sell text-black border-2 border-transparent focus:outline-none enabled:hover:bg-sell/90 focus:border-white  enabled:hover:active:bg-sell disabled:bg-sell/50"
     }
   }, [color, disabled, primary])
 

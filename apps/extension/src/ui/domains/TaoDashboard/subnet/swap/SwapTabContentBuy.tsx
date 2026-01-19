@@ -1,10 +1,12 @@
 import { EditIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { type FC, type PropsWithChildren, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Toggle } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
+import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
@@ -17,23 +19,13 @@ export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
 )
 
 const SwapTabContentBuyInner: FC = () => {
-  const { address, valueIn, maxValueIn, fromTokenId, onAccountChange, onValueChange } = useSwapBuy()
   const { t } = useTranslation()
-
-  if (!fromTokenId) return null
 
   return (
     <div className="flex size-full flex-col overflow-hidden">
       <div className="flex w-full grow flex-col gap-10 overflow-hidden p-8">
         <InputsContainer label={t("Spend")}>
-          <SwapBuyInput
-            address={address}
-            tokenId={fromTokenId}
-            value={valueIn}
-            maxValue={maxValueIn}
-            onAccountChange={onAccountChange}
-            onValueChange={onValueChange}
-          />
+          <SwapBuyInput />
         </InputsContainer>
         <InputsContainer label={t("Receive")}>
           <SwapBuyOutput />
@@ -54,15 +46,45 @@ const SwapTabContentBuyInner: FC = () => {
             <Toggle variant="sm">{t("Use MEV Shield")}</Toggle>
           </div>
         </div>
-        <button
-          type="button"
-          className="h-24 w-full rounded border-none bg-buy font-bold text-black uppercase"
-        >
-          {t("Buy")}
-        </button>
+        <SubmitButton />
       </div>
       <BittensorSlippageModal />
     </div>
+  )
+}
+
+const SubmitButton = () => {
+  const { t } = useTranslation()
+  const { payload, txMetadata, txInfo, canSubmit, onSubmit } = useSwapBuy()
+
+  // if there is no payload, sapi button for ledger will display an error and incorrect styling
+  // TODO check that displaying the error is intended
+  // use a placeholder until then
+  if (!payload) {
+    return (
+      <button
+        type="button"
+        disabled
+        className="h-24 w-full rounded border-none bg-buy/50 font-bold text-black uppercase"
+      >
+        {t("Buy")}
+      </button>
+    )
+  }
+
+  return (
+    <SapiSendButton
+      containerId={BITTENSOR_SWAP_CONTAINER_ID}
+      className="h-24 w-full rounded border-none font-bold text-black uppercase"
+      payload={payload}
+      txMetadata={txMetadata}
+      txInfo={txInfo}
+      color="buy"
+      label={t("Buy")}
+      // TODO mode=""
+      disabled={!canSubmit}
+      onSubmitted={onSubmit}
+    />
   )
 }
 
@@ -92,14 +114,14 @@ const PriceImpact = () => {
 
 const FeeEstimate = () => {
   const { t } = useTranslation()
-  const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, fromTokenId } = useSwapBuy()
+  const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, tokenIdIn } = useSwapBuy()
 
-  if (!fromTokenId) return null
+  if (!tokenIdIn) return null
 
   if (typeof feeEstimate === "bigint")
     return (
       <TokensAndFiat
-        tokenId={fromTokenId}
+        tokenId={tokenIdIn}
         planck={feeEstimate}
         className={cn("text-body-secondary", isLoadingFeeEstimate && "animate-pulse")}
         tokensClassName="text-body"
@@ -109,7 +131,7 @@ const FeeEstimate = () => {
   if (isLoadingFeeEstimate) {
     return (
       <TokensAndFiat
-        tokenId={fromTokenId}
+        tokenId={tokenIdIn}
         planck={1_234_567n}
         className="animate-pulse rounded-xs bg-body-disabled text-body-disabled"
       />
@@ -146,7 +168,7 @@ const SlippageEdit = () => {
 const InputsContainer: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }) => (
   <div className="flex w-full flex-col gap-5 overflow-hidden">
     <div className="pl-2 text-buy text-sm">{label}</div>
-    <div>{children}</div>
+    <div className="w-full overflow-hidden">{children}</div>
   </div>
 )
 

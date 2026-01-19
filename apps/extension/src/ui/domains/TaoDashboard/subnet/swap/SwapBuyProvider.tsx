@@ -1,19 +1,20 @@
 import { provideContext } from "@talisman/util/provideContext"
+import { getBalanceId } from "@talismn/balances"
 import { subDTaoTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakeInputError"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
+import { useAccountByAddress, useAccounts, useBalances, useNetworkById, useToken } from "@ui/state"
 import {
-  useAccountByAddress,
-  useAccounts,
-  useBalance,
-  useBalances,
-  useNetworkById,
-  useToken,
-} from "@ui/state"
-import { isAccountCompatibleWithNetwork } from "extension-core"
+  isAccountCompatibleWithNetwork,
+  isAccountExternal,
+  type WalletTransactionInfo,
+} from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
@@ -39,10 +40,14 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const [state, setState] = useState<SwapBuyInputs>(DEFAULT_INPUTS)
 
   const { tokenIdIn, valueIn, hotkey, address } = state
-  const fromToken = useToken(state.tokenIdIn, "substrate-native")
+  const tokenIn = useToken(state.tokenIdIn, "substrate-native")
   // target token doesnt have the validator address, because it will not exist unless user already has some
-  const toTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
-  const toToken = useToken(toTokenId, "substrate-dtao")
+  const tokenIdOutGeneric = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
+  const tokenIdOutDynamic = useMemo(
+    () => (hotkey ? subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid, hotkey) : null),
+    [netuid, hotkey]
+  )
+  const tokenOutGeneric = useToken(tokenIdOutGeneric, "substrate-dtao")
   const account = useAccountByAddress(address)
 
   const currentHotkey = useBittensorCurrentHotkey({
@@ -51,15 +56,44 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     netuid,
   })
 
-  const balance = useBalance(address, tokenIdIn)
+  const balancesProps = useMemo(
+    (): BalanceByParamsProps =>
+      address && tokenIdIn && tokenIdOutDynamic
+        ? {
+            addressesAndTokens: {
+              addresses: [address],
+              tokenIds: [tokenIdIn, tokenIdOutDynamic],
+            },
+          }
+        : {
+            addressesAndTokens: undefined,
+          },
+    [address, tokenIdIn, tokenIdOutDynamic]
+  )
+  const { status: balancesStatus, balances } = useBalancesByParams(balancesProps)
+  const isBalancesLoading = balancesStatus === "initialising"
+
+  const balanceTokenIn = useMemo(() => {
+    if (!address || !tokenIdIn) return null
+    return balances.get(getBalanceId({ address, tokenId: tokenIdIn })) ?? null
+  }, [balances, address, tokenIdIn])
+
+  const balanceTokenOut = useMemo(() => {
+    if (!address || !tokenIdOutDynamic) return null
+    return balances.get(getBalanceId({ address, tokenId: tokenIdOutDynamic })) ?? null
+  }, [balances, address, tokenIdOutDynamic])
 
   const existentialDeposit = useExistentialDeposit(tokenIdIn)
 
   const maxValueIn = useMemo(() => {
-    if (!balance || !existentialDeposit || balance.transferable.planck <= existentialDeposit.planck)
+    if (
+      !balanceTokenIn ||
+      !existentialDeposit ||
+      balanceTokenIn.transferable.planck <= existentialDeposit.planck
+    )
       return 0n
-    return balance.transferable.planck - existentialDeposit.planck
-  }, [balance, existentialDeposit])
+    return balanceTokenIn.transferable.planck - existentialDeposit.planck
+  }, [balanceTokenIn, existentialDeposit])
 
   const onValueChange = useCallback((value: bigint | null) => {
     setState((s) => ({ ...s, valueIn: value }))
@@ -73,9 +107,10 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((s) => ({ ...s, hotkey }))
   }, [])
 
-  //   const reset = useCallback(() => {
-  //     setState((prev) => ({ ...prev, valueIn: null }))
-  //   }, [])
+  const onSubmit = useCallback((hash: `0x${string}`) => {
+    log.debug("Transaction submitted", { hash })
+    // TODO toast ?
+  }, [])
 
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
@@ -90,19 +125,21 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     if (currentHotkey) setState((s) => ({ ...s, hotkey: currentHotkey }))
   }, [currentHotkey])
 
-  const canSubmit = false
+  const canUseMEVShield = useMemo(() => {
+    return !isAccountExternal(account)
+  }, [account])
 
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
   const {
     // alphaPrice,
-    // payload,
+    payload,
     feeEstimatePayload,
-    // txMetadata,
+    txMetadata,
     // minTaoBond,
-    // minTaoBondForInput,
+    minTaoBondForInput,
     // minAlphaBond,
     // minTaoStake,
-    // minTaoStakeForInput,
+    minTaoStakeForInput,
     // minAlphaUnstake,
     amountOut: valueOut,
     // talismanFee,
@@ -121,18 +158,44 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     networkId: BITTENSOR_NETWORK_ID,
   })
 
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint") return undefined
+    return {
+      type: "bittensor-staking",
+      fromTokenId: tokenIdIn,
+      toTokenId: tokenIdOutGeneric,
+      fromAmount: valueIn.toString(),
+      toAmount: valueOut.toString(),
+    }
+  }, [tokenIdIn, valueIn, valueOut, tokenIdOutGeneric])
+
   const {
     data: feeEstimate,
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
 
+  const { isValid, inputErrorMessage } = useBittensorStakeInputError({
+    networkId: BITTENSOR_NETWORK_ID,
+    taoAmountIn: valueIn,
+    taoBalance: isBalancesLoading ? null : (balanceTokenIn?.transferable.planck ?? 0n),
+    dtaoBalance: isBalancesLoading ? null : (balanceTokenOut?.transferable.planck ?? 0n),
+    feeEstimate,
+    minTaoBondForInput,
+    minTaoStakeForInput,
+  })
+
+  const canSubmit = !!payload && isValid && !inputErrorMessage
+
   return {
     netuid,
-    fromTokenId: tokenIdIn,
-    fromToken,
-    toTokenId,
-    toToken,
+    tokenIdIn,
+    tokenIn,
+    tokenIdOutGeneric,
+    tokenOutGeneric,
+    isBalancesLoading,
+    balanceTokenIn,
+    balanceTokenOut,
     valueIn,
     maxValueIn,
     valueOut,
@@ -142,6 +205,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     canSubmit,
     priceImpact,
     slippage,
+    canUseMEVShield,
 
     isLoading,
     isError,
@@ -149,6 +213,13 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     feeEstimate,
     isLoadingFeeEstimate: isLoading || isLoadingFeeEstimate,
     errorFeeEstimate,
+
+    inputErrorMessage,
+    payload,
+    txMetadata,
+    txInfo,
+    onSubmit,
+
     // reset,
     onAccountChange,
     onHotkeyChange,
