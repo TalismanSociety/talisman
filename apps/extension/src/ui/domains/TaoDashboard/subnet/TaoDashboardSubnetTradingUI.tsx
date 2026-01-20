@@ -1,7 +1,7 @@
 import type { FC } from "react"
 
 import { PoweredBySn45 } from "../subnets/TaoDashboardHeader"
-import { SubnetPriceChart } from "./components/SubnetPriceChart"
+import { SubnetChartTabs } from "./components/SubnetChartTabs"
 import { SubnetRightSidebar } from "./components/SubnetRightSidebar"
 import { SubnetTransactions } from "./components/SubnetTransactions"
 import { TaoDashboardSwap } from "./swap/TaoDashboardSwap"
@@ -21,8 +21,8 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
       <div className="flex w-full flex-col gap-6 xl:h-[calc(100vh-100px)] xl:max-h-[1100px] xl:flex-row">
         {/* Left Column - Charts and Trading */}
         <div className="flex min-w-0 flex-1 flex-col gap-6 xl:h-full">
-          {/* Price Chart with Sentiment Markers */}
-          <SubnetPriceChart netuid={netuid} className="w-full shrink-0" />
+          {/* Price/Flow Chart with Tab Selector */}
+          <SubnetChartTabs netuid={netuid} className="w-full shrink-0" />
 
           {/* Swap and Transactions row - stretch to fill remaining space */}
           <div className="flex min-h-[400px] w-full flex-1 flex-col gap-6 lg:flex-row">
