@@ -1,12 +1,13 @@
-import { EditIcon } from "@talismn/icons"
+import { EditIcon, InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { type FC, type PropsWithChildren, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Toggle } from "talisman-ui"
+import { Toggle, useOpenClose } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
+import { MevShieldInfoModal } from "./MevShieldInfoModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
@@ -42,9 +43,7 @@ const SwapTabContentBuyInner: FC = () => {
           <DetailsRow label={t("Max Slippage")}>
             <SlippageEdit />
           </DetailsRow>
-          <div className="flex h-14 items-center justify-end text-body-secondary text-sm">
-            <Toggle variant="sm">{t("Use MEV Shield")}</Toggle>
-          </div>
+          <MevShieldRow />
         </div>
         <SubmitButton />
       </div>
@@ -53,9 +52,32 @@ const SwapTabContentBuyInner: FC = () => {
   )
 }
 
+const MevShieldRow = () => {
+  const { t } = useTranslation()
+  const { isMevShieldDisabled, withMevShield, setIsMevProtectionEnabled } = useSwapBuy()
+  const { isOpen, open, close } = useOpenClose()
+
+  return (
+    <div className="flex h-14 items-center justify-end gap-2 text-body-secondary text-sm">
+      <Toggle
+        variant="sm"
+        checked={withMevShield}
+        disabled={isMevShieldDisabled}
+        onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
+      >
+        {t("Use MEV Shield")}
+      </Toggle>
+      <button type="button" className="whitespace-nowrap hover:text-body" onClick={open}>
+        <InfoIcon className="inline" />
+      </button>
+      <MevShieldInfoModal isOpen={isOpen} onClose={close} />
+    </div>
+  )
+}
+
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { payload, txMetadata, txInfo, canSubmit, onSubmit } = useSwapBuy()
+  const { payload, txMetadata, txInfo, canSubmit, txMode, onSubmit } = useSwapBuy()
 
   // if there is no payload, sapi button for ledger will display an error and incorrect styling
   // TODO check that displaying the error is intended
@@ -79,9 +101,9 @@ const SubmitButton = () => {
       payload={payload}
       txMetadata={txMetadata}
       txInfo={txInfo}
+      mode={txMode}
       color="buy"
       label={t("Buy")}
-      // TODO mode=""
       disabled={!canSubmit}
       onSubmitted={onSubmit}
     />

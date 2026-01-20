@@ -47,7 +47,7 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
             <Button {...props} disabled={disabled} color={color} fullWidth />
           </div>
         </TooltipTrigger>
-        <TooltipContent>{tooltip}</TooltipContent>
+        {!!tooltip && <TooltipContent>{tooltip}</TooltipContent>}
       </Tooltip>
     )
   }

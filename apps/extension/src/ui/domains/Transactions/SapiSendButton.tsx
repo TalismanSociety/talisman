@@ -1,5 +1,6 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
 import { classNames } from "@talismn/util"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -10,7 +11,6 @@ import { type FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, type ButtonProps } from "talisman-ui"
 import type { Hex } from "viem"
-
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 
@@ -25,7 +25,7 @@ type SapiSendButtonProps = {
   className?: string
   color?: ButtonProps["color"]
   onSubmitted: (hash: Hex) => void
-  mode?: "default" | "bittensor-mev-shield"
+  mode?: ScaleApiSubmitMode
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({

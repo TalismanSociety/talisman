@@ -29,3 +29,5 @@ export type SapiConnectorProps = {
     txInfo?: any
   ) => Promise<{ hash: `0x${string}` }>
 }
+
+export type ScaleApiSubmitMode = "default" | "bittensor-mev-shield"

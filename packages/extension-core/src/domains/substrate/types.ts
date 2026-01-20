@@ -31,6 +31,11 @@ type SubstrateResponseSubmit = {
   hash: HexString
 }
 
+type SubstrateResponseSubmitBittensorMevShield = {
+  hash: HexString
+  innerHash: HexString
+}
+
 type SubstrateRequestSubmitBittensorMevShield = {
   payload: SignerPayloadJSON
   // doesnt support hardware wallet, enforce it by not having signature here
@@ -42,7 +47,7 @@ export type SubstrateMessages = {
   "pri(substrate.rpc.submit)": [SubstrateRequestSubmit, SubstrateResponseSubmit]
   "pri(substrate.rpc.submit.withBittensorMevShield)": [
     SubstrateRequestSubmitBittensorMevShield,
-    SubstrateResponseSubmit,
+    SubstrateResponseSubmitBittensorMevShield,
   ]
   "pri(substrate.metadata.get)": [SubstrateRequestChainMetadata, TalismanMetadataDef | undefined]
 }

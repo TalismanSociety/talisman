@@ -1,6 +1,7 @@
 import { provideContext } from "@talisman/util/provideContext"
 import { getBalanceId } from "@talismn/balances"
 import { subDTaoTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakeInputError"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
@@ -11,7 +12,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountByAddress, useAccounts, useBalances, useNetworkById, useToken } from "@ui/state"
 import {
   isAccountCompatibleWithNetwork,
-  isAccountExternal,
+  isAccountOfType,
   type WalletTransactionInfo,
 } from "extension-core"
 import { log } from "extension-shared"
@@ -23,7 +24,6 @@ type SwapBuyInputs = {
   tokenIdIn: TokenId | null
   hotkey: string | null
   valueIn: bigint | null
-  mevShield: boolean
 }
 
 const DEFAULT_INPUTS: SwapBuyInputs = {
@@ -31,13 +31,13 @@ const DEFAULT_INPUTS: SwapBuyInputs = {
   tokenIdIn: subNativeTokenId(BITTENSOR_NETWORK_ID),
   hotkey: null,
   valueIn: null,
-  mevShield: false,
 }
 
 const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const defaultAddress = useBestAccountAddress()
 
   const [state, setState] = useState<SwapBuyInputs>(DEFAULT_INPUTS)
+  const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
@@ -48,6 +48,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     [netuid, hotkey]
   )
   const tokenOutGeneric = useToken(tokenIdOutGeneric, "substrate-dtao")
+  const tokenOutDynamic = useToken(tokenIdOutDynamic, "substrate-dtao")
   const account = useAccountByAddress(address)
 
   const currentHotkey = useBittensorCurrentHotkey({
@@ -58,17 +59,17 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
 
   const balancesProps = useMemo(
     (): BalanceByParamsProps =>
-      address && tokenIdIn && tokenIdOutDynamic
+      address && tokenIdIn
         ? {
             addressesAndTokens: {
               addresses: [address],
-              tokenIds: [tokenIdIn, tokenIdOutDynamic],
+              tokenIds: [tokenIdIn, tokenOutDynamic?.id ?? ""].filter(Boolean),
             },
           }
         : {
             addressesAndTokens: undefined,
           },
-    [address, tokenIdIn, tokenIdOutDynamic]
+    [address, tokenIdIn, tokenOutDynamic]
   )
   const { status: balancesStatus, balances } = useBalancesByParams(balancesProps)
   const isBalancesLoading = balancesStatus === "initialising"
@@ -125,11 +126,19 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     if (currentHotkey) setState((s) => ({ ...s, hotkey: currentHotkey }))
   }, [currentHotkey])
 
-  const canUseMEVShield = useMemo(() => {
-    return !isAccountExternal(account)
-  }, [account])
-
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
+
+  const isMevShieldDisabled = useMemo(() => {
+    // no need for root staking
+    // supported only for hot wallets
+    return !netuid || !isAccountOfType(account, "keypair")
+  }, [netuid, account])
+
+  const withMevShield = useMemo(
+    () => !isMevShieldDisabled && isMevProtectionEnabled,
+    [isMevShieldDisabled, isMevProtectionEnabled]
+  )
+
   const {
     // alphaPrice,
     payload,
@@ -169,6 +178,11 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     }
   }, [tokenIdIn, valueIn, valueOut, tokenIdOutGeneric])
 
+  const txMode = useMemo(
+    (): ScaleApiSubmitMode => (withMevShield ? "bittensor-mev-shield" : "default"),
+    [withMevShield]
+  )
+
   const {
     data: feeEstimate,
     isLoading: isLoadingFeeEstimate,
@@ -205,7 +219,10 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     canSubmit,
     priceImpact,
     slippage,
-    canUseMEVShield,
+
+    withMevShield,
+    isMevShieldDisabled,
+    setIsMevProtectionEnabled,
 
     isLoading,
     isError,
@@ -218,6 +235,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     payload,
     txMetadata,
     txInfo,
+    txMode,
     onSubmit,
 
     // reset,
