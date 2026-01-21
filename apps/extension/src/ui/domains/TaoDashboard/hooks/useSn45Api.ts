@@ -3,8 +3,9 @@ import { Sn45Api } from "extension-core"
 import { useMemo } from "react"
 
 // Use local dev URL in development, otherwise use production
-const SN45_API_BASE_URL = "https://sn45api.talisman.xyz"
-// const SN45_API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:8787" : "https://sn45api.talisman.xyz"
+// const SN45_API_BASE_URL = "https://sn45api.talisman.xyz"
+const SN45_API_BASE_URL =
+  process.env.NODE_ENV === "development" ? "http://localhost:8787" : "https://sn45api.talisman.xyz"
 
 // Create a singleton API instance
 const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
@@ -137,6 +138,27 @@ export const useSubnetPositions = (netuid: number | null | undefined) => {
   })
 }
 
+// Hook to get subnet holder history (for holder distribution charts)
+export const useSubnetHolderHistory = (netuid: number | null | undefined, days = 30) => {
+  return useQuery({
+    queryKey: ["sn45", "subnetHolderHistory", netuid, days],
+    queryFn: async () => {
+      if (!netuid) return []
+      try {
+        const response = await sn45Api.v1.getSubnetHolderHistory(String(netuid), {
+          days: String(days),
+        })
+        return response.data ?? []
+      } catch {
+        return []
+      }
+    },
+    enabled: !!netuid,
+    refetchInterval: 300_000, // 5 minutes
+    staleTime: 300_000,
+  })
+}
+
 // Hook to get subnet events (for chart markers)
 export const useSubnetEvents = (netuid: number | null | undefined, limit = 250) => {
   return useQuery({
@@ -179,6 +201,28 @@ export const useSubnetTweets = (netuid: number | null | undefined, limit = 50) =
     enabled: !!netuid,
     refetchInterval: 60_000,
     staleTime: 30_000,
+  })
+}
+
+// Hook to get subnet stake snapshots (for whale activity tracking)
+export const useSubnetStakeSnapshots = (
+  netuid: number | null | undefined,
+  days = 7,
+  minAmount = 1000
+) => {
+  return useQuery({
+    queryKey: ["sn45", "subnetStakeSnapshots", netuid, days, minAmount],
+    queryFn: async () => {
+      if (!netuid) return null
+      const response = await sn45Api.v1.getSubnetStakeSnapshots(String(netuid), {
+        days: String(days),
+        minAmount: String(minAmount),
+      })
+      return response.data
+    },
+    enabled: !!netuid,
+    refetchInterval: 60_000,
+    staleTime: 60_000,
   })
 }
 

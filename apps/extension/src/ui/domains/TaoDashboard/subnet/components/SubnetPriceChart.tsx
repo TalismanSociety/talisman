@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react"
 import { cn } from "@talismn/util"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import {
   CandlestickSeries,
   createChart,
@@ -8,8 +9,6 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 
 import {
   useSubnetPrice,
@@ -481,9 +480,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
             </div>
             <div className="flex flex-col items-end">
               <span className="text-body-disabled text-xs">FDV</span>
-              <span className="font-medium text-white">
-                {fdv ? formatCompactNumber(fdv) : "—"}
-              </span>
+              <span className="font-medium text-white">{fdv ? formatCompactNumber(fdv) : "—"}</span>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-body-disabled text-xs">Em</span>

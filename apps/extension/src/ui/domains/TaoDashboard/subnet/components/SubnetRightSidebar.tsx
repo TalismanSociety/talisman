@@ -4,11 +4,14 @@ import { AreaSeries, createChart, type UTCTimestamp } from "lightweight-charts"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import {
   useSubnetDailyTrend,
+  useSubnetEconomicsWithSentiment,
+  useSubnetHolderHistory,
   useSubnetPositions,
   useSubnetStakeEvents,
+  useSubnetStakeSnapshots,
   useSubnetTokenomics,
   useSubnetTweets,
-  useSubnetEconomicsWithSentiment,
+  useTaoPrice,
 } from "../../hooks/useSn45Api"
 
 interface SubnetRightSidebarProps {
@@ -85,6 +88,23 @@ const getSentimentLabel = (score: number) => {
   }
 }
 
+const getSentimentLabelFromString = (sentiment: string) => {
+  switch (sentiment) {
+    case "very_bullish":
+      return "Very Bullish"
+    case "bullish":
+      return "Bullish"
+    case "neutral":
+      return "Neutral"
+    case "bearish":
+      return "Bearish"
+    case "very_bearish":
+      return "Very Bearish"
+    default:
+      return "Unknown"
+  }
+}
+
 // ============================================================================
 // Tab Selector Component
 // ============================================================================
@@ -157,17 +177,17 @@ const SentimentGauge: FC<{
   label: string
 }> = ({ score, label }) => {
   // Calculate needle rotation: -90deg (left/red) to 90deg (right/green)
-  const needleRotation = ((score / 100) * 180) - 90;
+  const needleRotation = (score / 100) * 180 - 90
 
-  // Designed for compact in-panel display: fits in card, not full page  
+  // Designed for compact in-panel display: fits in card, not full page
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
         width: 120,
-        padding: '0 4px'
+        padding: "0 4px",
       }}
     >
       {/* Title */}
@@ -185,13 +205,13 @@ const SentimentGauge: FC<{
       </div> */}
 
       {/* Gauge SVG Container */}
-      <div style={{ width: 160, height: 150, position: 'relative' }}>
+      <div style={{ width: 160, height: 150, position: "relative" }}>
         <svg
           viewBox="0 0 100 68"
           style={{
-            width: '100%',
-            height: '100%',
-            display: 'block',
+            width: "100%",
+            height: "100%",
+            display: "block",
           }}
         >
           <defs>
@@ -207,7 +227,13 @@ const SentimentGauge: FC<{
               <stop offset="100%" stopColor="#222" />
             </radialGradient>
             <filter id="dialShadowMini" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.45"/>
+              <feDropShadow
+                dx="0"
+                dy="2"
+                stdDeviation="2"
+                floodColor="#000000"
+                floodOpacity="0.45"
+              />
             </filter>
           </defs>
           {/* Half-arc (gauge) */}
@@ -220,25 +246,11 @@ const SentimentGauge: FC<{
           />
           {/* Needle - wide pointer */}
           <g transform={`rotate(${needleRotation}, 50, 53)`}>
-            <polygon
-              points="50,20 44,53 56,53"
-              fill="#2d2d2d"
-            />
+            <polygon points="50,20 44,53 56,53" fill="#2d2d2d" />
           </g>
           {/* Center dial ball with drop shadow */}
-          <circle
-            cx="50"
-            cy="53"
-            r="20"
-            fill="#2d2d2d"
-            filter="url(#dialShadowMini)"
-          />
-          <circle
-            cx="50"
-            cy="53"
-            r="20"
-            fill="url(#ballGradientMini)"
-          />
+          <circle cx="50" cy="53" r="20" fill="#2d2d2d" filter="url(#dialShadowMini)" />
+          <circle cx="50" cy="53" r="20" fill="url(#ballGradientMini)" />
           {/* Score number */}
           <text
             x="50"
@@ -248,7 +260,7 @@ const SentimentGauge: FC<{
             fontSize="17"
             fontWeight="700"
             fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
-            style={{ letterSpacing: '-1px' }}
+            style={{ letterSpacing: "-1px" }}
           >
             {Math.round(score)}
           </text>
@@ -257,30 +269,30 @@ const SentimentGauge: FC<{
       {/* Sentiment Label */}
       <div
         style={{
-          color: '#fff',
+          color: "#fff",
           fontSize: 15,
           fontWeight: 400,
-          lineHeight: '21px',
+          lineHeight: "21px",
           marginTop: 0,
-          textAlign: 'center',
-          width: '100%',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          textAlign: "center",
+          width: "100%",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
         title={label}
       >
         {label}
       </div>
     </div>
-  );
+  )
 }
 
 // ============================================================================
 // Progress Bar Component
 // ============================================================================
 
-const ProgressBar: FC<{
+const _ProgressBar: FC<{
   value: number
   max: number
   color: "red" | "green"
@@ -306,14 +318,11 @@ const ProgressBar: FC<{
 // ============================================================================
 
 const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
-  const [period, setPeriod] = useState<TimePeriod>("1W")
+  const [_period, _setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
-  const { data: dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
   const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
   const economicsData = economics?.[netuid]
-  console.log(tokenomics)
-  const isLoading = tokenomicsLoading || trendLoading || economicsLoading
-
+  const isLoading = tokenomicsLoading || economicsLoading
 
   const alphaFlow = useMemo(() => {
     if (!tokenomics) return 0
@@ -324,7 +333,7 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
 
   const EMA = useMemo(() => {
     if (!tokenomics?.emaTaoFlow) return 0
-    return parseFloat(tokenomics.emaTaoFlow) / Math.pow(2, 64) / 1e9
+    return parseFloat(tokenomics.emaTaoFlow) / 2 ** 64 / 1e9
   }, [tokenomics])
 
   if (isLoading) {
@@ -353,9 +362,11 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
                   ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
                   : 0
               }
-              label={getSentimentLabel(economicsData?.sentimentScore !== undefined
+              label={getSentimentLabel(
+                economicsData?.sentimentScore !== undefined
                   ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
-                  : 0)}
+                  : 0
+              )}
             />
           </div>
 
@@ -384,12 +395,7 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
 
             <div>
               <span className="text-body-secondary text-xs">EMA</span>
-              <div
-                className={cn(
-                  "font-bold text-lg",
-                  EMA >= 0 ? "text-green" : "text-red-500"
-                )}
-              >
+              <div className={cn("font-bold text-lg", EMA >= 0 ? "text-green" : "text-red-500")}>
                 {EMA >= 0 ? "+" : ""}
                 {EMA.toFixed(2)}
               </div>
@@ -433,14 +439,8 @@ const ComparisonBar: FC<{
 
   return (
     <div className={cn("flex h-1.5 w-full overflow-hidden rounded-full", className)}>
-      <div
-        className="h-full bg-red-500 transition-all"
-        style={{ width: `${leftPercent}%` }}
-      />
-      <div
-        className="h-full bg-green transition-all"
-        style={{ width: `${rightPercent}%` }}
-      />
+      <div className="h-full bg-red-500 transition-all" style={{ width: `${leftPercent}%` }} />
+      <div className="h-full bg-green transition-all" style={{ width: `${rightPercent}%` }} />
     </div>
   )
 }
@@ -551,18 +551,18 @@ const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-body-secondary text-xs">Buy Vol</span>
-                  <div className="font-bold text-lg">
-                    τ{formatNumber(metrics.buyVol, 0)}
-                  </div>
+                  <div className="font-bold text-lg">τ{formatNumber(metrics.buyVol, 0)}</div>
                 </div>
                 <div className="text-right">
                   <span className="text-body-secondary text-xs">Sells Vol</span>
-                  <div className="font-bold text-lg">
-                    τ{formatNumber(metrics.sellVol, 0)}
-                  </div>
+                  <div className="font-bold text-lg">τ{formatNumber(metrics.sellVol, 0)}</div>
                 </div>
               </div>
-              <ComparisonBar leftValue={metrics.buyVol} rightValue={metrics.sellVol} className="mt-2" />
+              <ComparisonBar
+                leftValue={metrics.buyVol}
+                rightValue={metrics.sellVol}
+                className="mt-2"
+              />
             </div>
 
             {/* Buyers / Sellers Row */}
@@ -577,7 +577,11 @@ const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
                   <div className="font-bold text-lg text-white">{metrics.sellers}</div>
                 </div>
               </div>
-              <ComparisonBar leftValue={metrics.buyers} rightValue={metrics.sellers} className="mt-2" />
+              <ComparisonBar
+                leftValue={metrics.buyers}
+                rightValue={metrics.sellers}
+                className="mt-2"
+              />
             </div>
           </div>
 
@@ -624,8 +628,13 @@ const HOLDER_COLORS = {
 const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const chartContainerRef = useRef<HTMLDivElement>(null)
-  const { data: positions, isLoading } = useSubnetPositions(netuid)
+  const { data: positions, isLoading: positionsLoading } = useSubnetPositions(netuid)
   const { data: stakeEvents } = useSubnetStakeEvents(netuid)
+
+  // Calculate the number of days based on period
+  const days = period === "1D" ? 1 : period === "1W" ? 7 : 30
+  const { data: holderHistory, isLoading: historyLoading } = useSubnetHolderHistory(netuid, days)
+  const isLoading = positionsLoading || historyLoading
 
   const metrics = useMemo(() => {
     if (!positions) {
@@ -659,66 +668,71 @@ const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
     )
     const avgTrade = stakeEvents && stakeEvents.length > 0 ? totalVolume / stakeEvents.length : 0
 
+    // Calculate holder change from historical data
+    let holderChange = 0
+    if (holderHistory && holderHistory.length >= 2) {
+      const oldest = holderHistory[0]
+      const newest = holderHistory[holderHistory.length - 1]
+      holderChange = newest.totalHolders - oldest.totalHolders
+    }
+
     return {
       totalHolders,
-      holderChange: 128, // Mock data - would need historical data
+      holderChange,
       top10Concentration,
       concentrationLabel,
       avgTrade,
     }
-  }, [positions, stakeEvents])
+  }, [positions, stakeEvents, holderHistory])
 
-  // Generate mock chart data for holder distribution over time
+  // Convert historical data to chart format
   const chartData = useMemo(() => {
-    if (!positions) return []
+    if (!holderHistory || holderHistory.length === 0) {
+      // Fallback to current positions data if no historical data available
+      if (!positions) return []
 
-    const validPositions = positions.filter((p) => parseFloat(p.alphaBalance) > 0)
-    const totalAlpha = validPositions.reduce((sum, p) => sum + parseFloat(p.alphaBalance), 0)
+      const validPositions = positions.filter((p) => parseFloat(p.alphaBalance) > 0)
+      const totalAlpha = validPositions.reduce((sum, p) => sum + parseFloat(p.alphaBalance), 0)
 
-    // Categorize holders
-    let whaleAlpha = 0
-    let dolphinAlpha = 0
-    let fishAlpha = 0
-    let shrimpAlpha = 0
+      // Categorize holders
+      let whaleAlpha = 0
+      let dolphinAlpha = 0
+      let fishAlpha = 0
+      let shrimpAlpha = 0
 
-    for (const pos of validPositions) {
-      const balance = parseFloat(pos.alphaBalance) / 1e9
-      if (balance >= 10000) whaleAlpha += parseFloat(pos.alphaBalance)
-      else if (balance >= 1000) dolphinAlpha += parseFloat(pos.alphaBalance)
-      else if (balance >= 100) fishAlpha += parseFloat(pos.alphaBalance)
-      else shrimpAlpha += parseFloat(pos.alphaBalance)
+      for (const pos of validPositions) {
+        const balance = parseFloat(pos.alphaBalance) / 1e9
+        if (balance >= 10000) whaleAlpha += parseFloat(pos.alphaBalance)
+        else if (balance >= 1000) dolphinAlpha += parseFloat(pos.alphaBalance)
+        else if (balance >= 100) fishAlpha += parseFloat(pos.alphaBalance)
+        else shrimpAlpha += parseFloat(pos.alphaBalance)
+      }
+
+      // Return a single data point for current state
+      const now = new Date()
+      return [
+        {
+          time: Math.floor(now.getTime() / 1000) as UTCTimestamp,
+          whale: totalAlpha > 0 ? (whaleAlpha / totalAlpha) * 100 : 0,
+          dolphin: totalAlpha > 0 ? (dolphinAlpha / totalAlpha) * 100 : 0,
+          fish: totalAlpha > 0 ? (fishAlpha / totalAlpha) * 100 : 0,
+          shrimp: totalAlpha > 0 ? (shrimpAlpha / totalAlpha) * 100 : 0,
+        },
+      ]
     }
 
-    // Generate time series data (mock, would need historical data)
-    const days = period === "1D" ? 24 : period === "1W" ? 7 : 30
-    const now = new Date()
-    const data: Array<{
-      time: UTCTimestamp
-      whale: number
-      dolphin: number
-      fish: number
-      shrimp: number
-    }> = []
-
-    for (let i = days; i >= 0; i--) {
-      const date = new Date(now)
-      date.setDate(date.getDate() - i)
-      date.setHours(12, 0, 0, 0)
-
-      // Add slight variation to make the chart more interesting
-      const variance = 1 + (Math.random() - 0.5) * 0.1
-
-      data.push({
+    // Use real historical data from API
+    return holderHistory.map((day) => {
+      const date = new Date(day.date)
+      return {
         time: Math.floor(date.getTime() / 1000) as UTCTimestamp,
-        whale: totalAlpha > 0 ? (whaleAlpha / totalAlpha) * 100 * variance : 0,
-        dolphin: totalAlpha > 0 ? (dolphinAlpha / totalAlpha) * 100 * variance : 0,
-        fish: totalAlpha > 0 ? (fishAlpha / totalAlpha) * 100 * variance : 0,
-        shrimp: totalAlpha > 0 ? (shrimpAlpha / totalAlpha) * 100 * variance : 0,
-      })
-    }
-
-    return data
-  }, [positions, period])
+        whale: day.whalePercent,
+        dolphin: day.dolphinPercent,
+        fish: day.fishPercent,
+        shrimp: day.shrimpPercent,
+      }
+    })
+  }, [holderHistory, positions])
 
   // Create stacked area chart
   useEffect(() => {
@@ -805,7 +819,7 @@ const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
       chart.remove()
     }
   }, [chartData])
-
+  console.log(holderHistory)
   if (isLoading) {
     return (
       <div className="rounded-xl bg-grey-900 p-5">
@@ -817,7 +831,7 @@ const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-lg text-white">Holders Overviews</h3>
+        <h3 className="font-medium text-lg text-white">Holders Overview</h3>
         <TimePeriodSelector value={period} onChange={setPeriod} />
       </div>
 
@@ -829,31 +843,36 @@ const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
             <div className="font-bold text-2xl text-white">
               {formatCompactNumber(metrics.totalHolders)}
             </div>
-            {metrics.holderChange > 0 && (
-              <span className="text-green text-xs">+{metrics.holderChange}</span>
+            {metrics.holderChange !== 0 && (
+              <span
+                className={cn("text-xs", metrics.holderChange > 0 ? "text-green" : "text-red-500")}
+              >
+                {metrics.holderChange > 0 ? "+" : ""}
+                {metrics.holderChange}
+              </span>
             )}
           </div>
 
           <div>
             <span className="text-body-secondary text-xs">Top 10 Concentration</span>
             <div className="font-bold text-2xl text-white">
-              {metrics.top10Concentration.toFixed(0)}
+              {metrics.top10Concentration.toFixed(0)}%
             </div>
             <span className="text-body-secondary text-xs">{metrics.concentrationLabel}</span>
           </div>
 
           <div>
             <span className="text-body-secondary text-xs">Avg Trade</span>
-            <div className="font-bold text-2xl text-white">{metrics.avgTrade.toFixed(1)}%</div>
+            <div className="font-bold text-2xl text-white">{metrics.avgTrade.toFixed(1)}τ</div>
           </div>
         </div>
 
         {/* Legend */}
         <div className="mb-4 flex items-center gap-4">
           {[
-            { label: "Whale", color: HOLDER_COLORS.whale },
-            { label: "Dolphin", color: HOLDER_COLORS.dolphin },
-            { label: "Fish", color: HOLDER_COLORS.fish },
+            { label: "Whale (10K+)", color: HOLDER_COLORS.whale },
+            { label: "Dolphin (1K+)", color: HOLDER_COLORS.dolphin },
+            { label: "Fish (100+)", color: HOLDER_COLORS.fish },
             { label: "Shrimp", color: HOLDER_COLORS.shrimp },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
@@ -865,6 +884,13 @@ const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
 
         {/* Chart */}
         <div ref={chartContainerRef} className="h-[150px] w-full" />
+
+        {/* No data fallback message */}
+        {(!holderHistory || holderHistory.length === 0) && (
+          <div className="mt-2 text-center text-body-secondary text-xs">
+            Historical data will appear once daily snapshots are available
+          </div>
+        )}
       </div>
     </div>
   )
@@ -966,7 +992,7 @@ const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
                   getSentimentColor(tweet.sentiment)
                 )}
               >
-                {getSentimentLabel(tweet.sentiment)}
+                {getSentimentLabelFromString(tweet.sentiment)}
               </span>
             </div>
             <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>
@@ -988,26 +1014,130 @@ const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
 // Whale Activity Section
 // ============================================================================
 
+const formatUsd = (value: number): string => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+const truncateAddress = (address: string): string => {
+  if (!address || address.length < 12) return address
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
 const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
-  const { data: stakeEvents, isLoading } = useSubnetStakeEvents(netuid)
+  const { data: snapshots, isLoading } = useSubnetStakeSnapshots(netuid, 7, 50)
+  const { data: taoPrice } = useTaoPrice()
+  const { data: tokenomics } = useSubnetTokenomics(netuid)
 
-  const filteredMovements = useMemo(() => {
-    if (!stakeEvents) return []
+  const taoUsdPrice = taoPrice?.price ? parseFloat(taoPrice.price) : 0
+  const alphaPrice = tokenomics?.movingPrice ? parseFloat(tokenomics.movingPrice) / 1e18 : 0
 
-    // Get large transactions from stake events for this subnet
-    return stakeEvents
-      .filter((e) => parseFloat(e.taoAmount) / 1e9 >= 50)
+  const { whaleActivity, totalBuys, totalSells } = useMemo(() => {
+    if (!snapshots || snapshots.length === 0)
+      return { whaleActivity: [], totalBuys: 0, totalSells: 0 }
+
+    // Group snapshots by coldkey and sort by date
+    const snapshotsByWallet = new Map<
+      string,
+      { coldkey: string; hotkey: string; snapshots: typeof snapshots }
+    >()
+
+    for (const snapshot of snapshots) {
+      const key = `${snapshot.coldkey}-${snapshot.hotkey}`
+      if (!snapshotsByWallet.has(key)) {
+        snapshotsByWallet.set(key, {
+          coldkey: snapshot.coldkey,
+          hotkey: snapshot.hotkey,
+          snapshots: [],
+        })
+      }
+      snapshotsByWallet.get(key)?.snapshots.push(snapshot)
+    }
+
+    // Calculate stake changes for each wallet
+    const activity: {
+      id: string
+      coldkey: string
+      hotkey: string
+      netuid: number
+      change: number
+      currentAmount: number
+      timestamp: string
+      isBuy: boolean
+    }[] = []
+
+    for (const [key, wallet] of snapshotsByWallet) {
+      // Sort snapshots by date (oldest first)
+      const sorted = wallet.snapshots.sort(
+        (a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+      )
+
+      if (sorted.length >= 2) {
+        // Compare most recent snapshot with previous
+        const latest = sorted[sorted.length - 1]
+        const previous = sorted[sorted.length - 2]
+        const latestAmount = parseFloat(latest.amount) / 1e9
+        const previousAmount = parseFloat(previous.amount) / 1e9
+        const change = latestAmount - previousAmount
+
+        // Only include significant changes (> 50 TAO equivalent)
+        if (Math.abs(change) * alphaPrice >= 50) {
+          activity.push({
+            id: key,
+            coldkey: wallet.coldkey,
+            hotkey: wallet.hotkey,
+            netuid: latest.netuid,
+            change,
+            currentAmount: latestAmount,
+            timestamp: latest.timestamp,
+            isBuy: change > 0,
+          })
+        }
+      } else if (sorted.length === 1) {
+        // New position - treat as a buy
+        const snapshot = sorted[0]
+        const amount = parseFloat(snapshot.amount) / 1e9
+        if (amount * alphaPrice >= 50) {
+          activity.push({
+            id: key,
+            coldkey: wallet.coldkey,
+            hotkey: wallet.hotkey,
+            netuid: snapshot.netuid,
+            change: amount,
+            currentAmount: amount,
+            timestamp: snapshot.timestamp,
+            isBuy: true,
+          })
+        }
+      }
+    }
+
+    // Sort by timestamp (most recent first) and limit
+    const sortedActivity = activity
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 15)
-      .map((e) => ({
-        ...e,
-        taoValue: parseFloat(e.taoAmount) / 1e9,
-        alphaValue: parseFloat(e.alphaAmount) / 1e9,
-      }))
-  }, [stakeEvents])
+
+    // Calculate totals for flow bar
+    const buys = sortedActivity.filter((a) => a.isBuy)
+    const sells = sortedActivity.filter((a) => !a.isBuy)
+    const totalBuysVol = buys.reduce((sum, a) => sum + Math.abs(a.change) * alphaPrice, 0)
+    const totalSellsVol = sells.reduce((sum, a) => sum + Math.abs(a.change) * alphaPrice, 0)
+
+    return {
+      whaleActivity: sortedActivity,
+      totalBuys: totalBuysVol,
+      totalSells: totalSellsVol,
+    }
+  }, [snapshots, alphaPrice])
 
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3">
+        <div className="h-20 animate-pulse rounded-lg bg-grey-800" />
         {Array.from({ length: 5 }).map((_, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <div key={i} className="h-16 animate-pulse rounded-lg bg-grey-800" />
@@ -1016,7 +1146,7 @@ const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
     )
   }
 
-  if (filteredMovements.length === 0) {
+  if (whaleActivity.length === 0) {
     return (
       <div className="py-8 text-center text-body-secondary text-sm">
         No whale activity found for this subnet
@@ -1024,52 +1154,68 @@ const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
     )
   }
 
+  const totalFlow = totalBuys + totalSells
+  const buyPercent = totalFlow > 0 ? (totalBuys / totalFlow) * 100 : 50
+  const sellPercent = totalFlow > 0 ? (totalSells / totalFlow) * 100 : 50
+
   return (
     <div className="flex flex-col gap-3">
-      {filteredMovements.map((movement, index) => (
-        <div
-          // biome-ignore lint/suspicious/noArrayIndexKey: list is static
-          key={index}
-          className="flex items-center justify-between rounded-lg border border-grey-750 bg-grey-800/30 p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "flex size-8 items-center justify-center rounded-full",
-                movement.method === "Adding" ? "bg-green/20" : "bg-red-500/20"
-              )}
-            >
-              <Icon
-                icon={movement.method === "Adding" ? "mdi:arrow-up" : "mdi:arrow-down"}
-                className={cn(
-                  "size-4",
-                  movement.method === "Adding" ? "text-green" : "text-red-500"
-                )}
-              />
-            </div>
-            <div>
-              <div className="font-medium text-sm text-white">
-                {movement.coldkey?.slice(0, 8)}...{movement.coldkey?.slice(-6)}
-              </div>
-              <div className="text-body-secondary text-xs">{formatTimeAgo(movement.timestamp)}</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div
-              className={cn(
-                "font-bold text-sm",
-                movement.method === "Adding" ? "text-green" : "text-red-500"
-              )}
-            >
-              {movement.method === "Adding" ? "+" : "-"}
-              {formatNumber(movement.taoValue, 1)}τ
-            </div>
-            <div className="text-body-secondary text-xs">
-              {formatNumber(movement.alphaValue, 0)}α
-            </div>
-          </div>
+      {/* Total Flow Header */}
+      <div className="rounded-lg bg-grey-900 p-4">
+        <div className="mb-3 font-medium text-white">Total Flow</div>
+        <div className="mb-2 flex h-2 w-full overflow-hidden rounded-full">
+          <div className="h-full bg-red-500 transition-all" style={{ width: `${buyPercent}%` }} />
+          <div className="h-full bg-green transition-all" style={{ width: `${sellPercent}%` }} />
         </div>
-      ))}
+        <div className="flex justify-between text-body-secondary text-xs">
+          <span>Buys</span>
+          <span>Sells</span>
+        </div>
+      </div>
+
+      {/* Activity List */}
+      {whaleActivity.map((item) => {
+        const taoValue = Math.abs(item.change) * alphaPrice
+        const usdValue = taoValue * taoUsdPrice
+
+        return (
+          <div
+            key={item.id}
+            className="flex items-center justify-between rounded-xl bg-grey-900 px-4 py-3"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "flex size-10 items-center justify-center rounded-full",
+                  item.isBuy ? "bg-green" : "bg-red-500"
+                )}
+              >
+                <Icon
+                  icon={item.isBuy ? "mdi:arrow-down" : "mdi:arrow-up"}
+                  className="size-5 text-white"
+                />
+              </div>
+              <div>
+                <div className="font-medium text-sm text-white">
+                  {truncateAddress(item.coldkey)}
+                </div>
+                <div className="text-body-secondary text-xs">
+                  SN{item.netuid} &nbsp; {formatTimeAgo(item.timestamp)}
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div
+                className={cn("font-medium text-sm", item.isBuy ? "text-green" : "text-red-500")}
+              >
+                {item.isBuy ? "+ " : "- "}
+                {formatNumber(taoValue, 0)} τ
+              </div>
+              <div className="text-body-secondary text-xs">{formatUsd(usdValue)}</div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -1091,7 +1237,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         <div className="flex flex-col gap-6 overflow-y-auto">
           <TrendingSentimentSection netuid={netuid} />
           <TradeFlowSection netuid={netuid} />
-          {/* <HoldersOverviewSection netuid={netuid} /> */}
+          <HoldersOverviewSection netuid={netuid} />
         </div>
       )}
 
