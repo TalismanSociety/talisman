@@ -2,7 +2,6 @@ import { Nav, NavItem } from "@talisman/components/Nav"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
-  ExternalLinkIcon,
   GlobeIcon,
   KeyIcon,
   LockIcon,
@@ -15,14 +14,15 @@ import {
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
+import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -80,10 +80,7 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  // TODO: Make this button open in-wallet swaps when we have feature parity with Portal
-  // const canSwap = useFeatureFlag("SWAPS")
-  // import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-  // const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
   const handleSwapClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -91,14 +88,10 @@ export const NavigationDrawer: FC = () => {
       action: "Swap button",
     })
 
-    /*if (!canSwap) */ // biome-ignore lint/complexity/noCommaOperator: legacy
-    return window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"), window.close()
-
-    // await openSwapTokensModal()
-    // import { sleep } from "@talismn/util"
-    // await sleep(150)
-    // close()
-  }, [])
+    await openSwapTokensModal()
+    await sleep(150)
+    close()
+  }, [openSwapTokensModal, close])
 
   const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {
@@ -173,10 +166,7 @@ export const NavigationDrawer: FC = () => {
               </NavItem>
             )}
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
-              <span className="flex items-center gap-2">
-                {t("Swap")}
-                {/*!canSwap && */ <ExternalLinkIcon />}
-              </span>
+              {t("Swap")}
             </NavItem>
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
               {t("Address Book")}
