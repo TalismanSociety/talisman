@@ -1,16 +1,20 @@
-import { EditIcon, InfoIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { type FC, type PropsWithChildren, type ReactNode, useCallback } from "react"
+import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Toggle, useOpenClose } from "talisman-ui"
+import { Button } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
-import { MevShieldInfoModal } from "./MevShieldInfoModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
+import {
+  SwapDetailsRow,
+  SwapFeeEstimate,
+  SwapInputsContainer,
+  SwapMevShieldRow,
+  SwapPriceImpact,
+  SwapSlippageRow,
+} from "./SwapTabShared"
 import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
 export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
@@ -25,24 +29,24 @@ const SwapTabContentBuyInner: FC = () => {
   return (
     <div className="flex size-full flex-col overflow-hidden">
       <div className="flex w-full grow flex-col gap-10 overflow-hidden p-8">
-        <InputsContainer label={t("Spend")}>
+        <SwapInputsContainer variant="buy" label={t("Spend")}>
           <SwapBuyInput />
-        </InputsContainer>
-        <InputsContainer label={t("Receive")}>
+        </SwapInputsContainer>
+        <SwapInputsContainer variant="buy" label={t("Receive")}>
           <SwapBuyOutput />
-        </InputsContainer>
+        </SwapInputsContainer>
       </div>
       <div className="flex w-full flex-col gap-5 overflow-hidden border-black-tertiary border-t bg-[#202020] p-10 pt-5">
         <div className="flex w-full flex-col overflow-hidden">
-          <DetailsRow label={t("Estimated Fee")}>
+          <SwapDetailsRow label={t("Estimated Fee")}>
             <FeeEstimate />
-          </DetailsRow>
-          <DetailsRow label={t("Price Impact")}>
+          </SwapDetailsRow>
+          <SwapDetailsRow label={t("Price Impact")}>
             <PriceImpact />
-          </DetailsRow>
-          <DetailsRow label={t("Max Slippage")}>
+          </SwapDetailsRow>
+          <SwapDetailsRow label={t("Max Slippage")}>
             <SlippageEdit />
-          </DetailsRow>
+          </SwapDetailsRow>
           <MevShieldRow />
         </div>
         <SubmitButton />
@@ -53,25 +57,14 @@ const SwapTabContentBuyInner: FC = () => {
 }
 
 const MevShieldRow = () => {
-  const { t } = useTranslation()
   const { isMevShieldDisabled, withMevShield, setIsMevProtectionEnabled } = useSwapBuy()
-  const { isOpen, open, close } = useOpenClose()
 
   return (
-    <div className="flex h-14 items-center justify-end gap-2 text-body-secondary text-sm">
-      <Toggle
-        variant="sm"
-        checked={withMevShield}
-        disabled={isMevShieldDisabled}
-        onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
-      >
-        {t("Use MEV Shield")}
-      </Toggle>
-      <button type="button" className="whitespace-nowrap hover:text-body" onClick={open}>
-        <InfoIcon className="inline" />
-      </button>
-      <MevShieldInfoModal isOpen={isOpen} onClose={close} />
-    </div>
+    <SwapMevShieldRow
+      withMevShield={withMevShield}
+      isMevShieldDisabled={isMevShieldDisabled}
+      setIsMevProtectionEnabled={setIsMevProtectionEnabled}
+    />
   )
 }
 
@@ -112,60 +105,22 @@ const SubmitButton = () => {
 }
 
 const PriceImpact = () => {
-  const { t } = useTranslation()
   const { priceImpact, isLoading } = useSwapBuy()
 
-  if (typeof priceImpact === "number") {
-    return (
-      <div
-        className={cn(
-          isLoading && "animate-pulse",
-          priceImpact > 0.5 && "text-alert-warn",
-          priceImpact > 2 && "text-alert-error"
-        )}
-      >
-        ~{priceImpact.toFixed(2)}%
-      </div>
-    )
-  }
-
-  if (isLoading)
-    return <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">0.00%</div>
-
-  return t("N/A")
+  return <SwapPriceImpact priceImpact={priceImpact} isLoading={isLoading} />
 }
 
 const FeeEstimate = () => {
-  const { t } = useTranslation()
   const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, tokenIdIn } = useSwapBuy()
 
-  if (!tokenIdIn) return null
-
-  if (typeof feeEstimate === "bigint")
-    return (
-      <TokensAndFiat
-        tokenId={tokenIdIn}
-        planck={feeEstimate}
-        className={cn("text-body-secondary", isLoadingFeeEstimate && "animate-pulse")}
-        tokensClassName="text-body"
-      />
-    )
-
-  if (isLoadingFeeEstimate) {
-    return (
-      <TokensAndFiat
-        tokenId={tokenIdIn}
-        planck={1_234_567n}
-        className="animate-pulse rounded-xs bg-body-disabled text-body-disabled"
-      />
-    )
-  }
-
-  if (errorFeeEstimate) {
-    return <div className="text-alert-warn">{t("Failed to estimate fee")}</div>
-  }
-
-  return <div>{t("N/A")}</div>
+  return (
+    <SwapFeeEstimate
+      tokenId={tokenIdIn}
+      feeEstimate={feeEstimate}
+      isLoading={isLoadingFeeEstimate}
+      error={errorFeeEstimate}
+    />
+  )
 }
 
 const SlippageEdit = () => {
@@ -176,28 +131,5 @@ const SlippageEdit = () => {
     open({ netuid })
   }, [open, netuid])
 
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={"flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light"}
-    >
-      <EditIcon />
-      <div>{slippage.toFixed(2)}%</div>
-    </button>
-  )
+  return <SwapSlippageRow slippage={slippage} onEdit={handleClick} />
 }
-
-const InputsContainer: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }) => (
-  <div className="flex w-full flex-col gap-5 overflow-hidden">
-    <div className="pl-2 text-buy text-sm">{label}</div>
-    <div className="w-full overflow-hidden">{children}</div>
-  </div>
-)
-
-const DetailsRow: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }) => (
-  <div className="flex h-14 w-full items-center justify-between text-sm">
-    <div className="text-body-secondary">{label}</div>
-    <div className="font-medium">{children}</div>
-  </div>
-)
