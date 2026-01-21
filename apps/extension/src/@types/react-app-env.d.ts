@@ -67,6 +67,11 @@ declare module "*.svg?url" {
   export default src
 }
 
+declare module "*.wasm?url" {
+  const src: string
+  export default src
+}
+
 declare module "*.module.css" {
   const classes: { readonly [key: string]: string }
   export default classes
