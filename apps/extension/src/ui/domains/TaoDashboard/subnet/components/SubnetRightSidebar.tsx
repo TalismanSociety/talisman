@@ -4,11 +4,11 @@ import { AreaSeries, createChart, type UTCTimestamp } from "lightweight-charts"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import {
   useSubnetDailyTrend,
+  useSubnetEconomicsWithSentiment,
   useSubnetPositions,
   useSubnetStakeEvents,
   useSubnetTokenomics,
   useSubnetTweets,
-  useSubnetEconomicsWithSentiment,
 } from "../../hooks/useSn45Api"
 
 interface SubnetRightSidebarProps {
@@ -157,17 +157,17 @@ const SentimentGauge: FC<{
   label: string
 }> = ({ score, label }) => {
   // Calculate needle rotation: -90deg (left/red) to 90deg (right/green)
-  const needleRotation = ((score / 100) * 180) - 90;
+  const needleRotation = (score / 100) * 180 - 90
 
-  // Designed for compact in-panel display: fits in card, not full page  
+  // Designed for compact in-panel display: fits in card, not full page
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
         width: 120,
-        padding: '0 4px'
+        padding: "0 4px",
       }}
     >
       {/* Title */}
@@ -185,13 +185,13 @@ const SentimentGauge: FC<{
       </div> */}
 
       {/* Gauge SVG Container */}
-      <div style={{ width: 160, height: 150, position: 'relative' }}>
+      <div style={{ width: 160, height: 150, position: "relative" }}>
         <svg
           viewBox="0 0 100 68"
           style={{
-            width: '100%',
-            height: '100%',
-            display: 'block',
+            width: "100%",
+            height: "100%",
+            display: "block",
           }}
         >
           <defs>
@@ -207,7 +207,13 @@ const SentimentGauge: FC<{
               <stop offset="100%" stopColor="#222" />
             </radialGradient>
             <filter id="dialShadowMini" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.45"/>
+              <feDropShadow
+                dx="0"
+                dy="2"
+                stdDeviation="2"
+                floodColor="#000000"
+                floodOpacity="0.45"
+              />
             </filter>
           </defs>
           {/* Half-arc (gauge) */}
@@ -220,25 +226,11 @@ const SentimentGauge: FC<{
           />
           {/* Needle - wide pointer */}
           <g transform={`rotate(${needleRotation}, 50, 53)`}>
-            <polygon
-              points="50,20 44,53 56,53"
-              fill="#2d2d2d"
-            />
+            <polygon points="50,20 44,53 56,53" fill="#2d2d2d" />
           </g>
           {/* Center dial ball with drop shadow */}
-          <circle
-            cx="50"
-            cy="53"
-            r="20"
-            fill="#2d2d2d"
-            filter="url(#dialShadowMini)"
-          />
-          <circle
-            cx="50"
-            cy="53"
-            r="20"
-            fill="url(#ballGradientMini)"
-          />
+          <circle cx="50" cy="53" r="20" fill="#2d2d2d" filter="url(#dialShadowMini)" />
+          <circle cx="50" cy="53" r="20" fill="url(#ballGradientMini)" />
           {/* Score number */}
           <text
             x="50"
@@ -248,7 +240,7 @@ const SentimentGauge: FC<{
             fontSize="17"
             fontWeight="700"
             fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
-            style={{ letterSpacing: '-1px' }}
+            style={{ letterSpacing: "-1px" }}
           >
             {Math.round(score)}
           </text>
@@ -257,30 +249,30 @@ const SentimentGauge: FC<{
       {/* Sentiment Label */}
       <div
         style={{
-          color: '#fff',
+          color: "#fff",
           fontSize: 15,
           fontWeight: 400,
-          lineHeight: '21px',
+          lineHeight: "21px",
           marginTop: 0,
-          textAlign: 'center',
-          width: '100%',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          textAlign: "center",
+          width: "100%",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
         title={label}
       >
         {label}
       </div>
     </div>
-  );
+  )
 }
 
 // ============================================================================
 // Progress Bar Component
 // ============================================================================
 
-const ProgressBar: FC<{
+const _ProgressBar: FC<{
   value: number
   max: number
   color: "red" | "green"
@@ -306,14 +298,12 @@ const ProgressBar: FC<{
 // ============================================================================
 
 const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
-  const [period, setPeriod] = useState<TimePeriod>("1W")
+  const [_period, _setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
-  const { data: dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
+  const { data: _dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
   const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
   const economicsData = economics?.[netuid]
-  console.log(tokenomics)
   const isLoading = tokenomicsLoading || trendLoading || economicsLoading
-
 
   const alphaFlow = useMemo(() => {
     if (!tokenomics) return 0
@@ -324,7 +314,7 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
 
   const EMA = useMemo(() => {
     if (!tokenomics?.emaTaoFlow) return 0
-    return parseFloat(tokenomics.emaTaoFlow) / Math.pow(2, 64) / 1e9
+    return parseFloat(tokenomics.emaTaoFlow) / 2 ** 64 / 1e9
   }, [tokenomics])
 
   if (isLoading) {
@@ -353,9 +343,11 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
                   ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
                   : 0
               }
-              label={getSentimentLabel(economicsData?.sentimentScore !== undefined
+              label={getSentimentLabel(
+                economicsData?.sentimentScore !== undefined
                   ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
-                  : 0)}
+                  : 0
+              )}
             />
           </div>
 
@@ -384,12 +376,7 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
 
             <div>
               <span className="text-body-secondary text-xs">EMA</span>
-              <div
-                className={cn(
-                  "font-bold text-lg",
-                  EMA >= 0 ? "text-green" : "text-red-500"
-                )}
-              >
+              <div className={cn("font-bold text-lg", EMA >= 0 ? "text-green" : "text-red-500")}>
                 {EMA >= 0 ? "+" : ""}
                 {EMA.toFixed(2)}
               </div>
@@ -433,14 +420,8 @@ const ComparisonBar: FC<{
 
   return (
     <div className={cn("flex h-1.5 w-full overflow-hidden rounded-full", className)}>
-      <div
-        className="h-full bg-red-500 transition-all"
-        style={{ width: `${leftPercent}%` }}
-      />
-      <div
-        className="h-full bg-green transition-all"
-        style={{ width: `${rightPercent}%` }}
-      />
+      <div className="h-full bg-red-500 transition-all" style={{ width: `${leftPercent}%` }} />
+      <div className="h-full bg-green transition-all" style={{ width: `${rightPercent}%` }} />
     </div>
   )
 }
@@ -551,18 +532,18 @@ const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-body-secondary text-xs">Buy Vol</span>
-                  <div className="font-bold text-lg">
-                    τ{formatNumber(metrics.buyVol, 0)}
-                  </div>
+                  <div className="font-bold text-lg">τ{formatNumber(metrics.buyVol, 0)}</div>
                 </div>
                 <div className="text-right">
                   <span className="text-body-secondary text-xs">Sells Vol</span>
-                  <div className="font-bold text-lg">
-                    τ{formatNumber(metrics.sellVol, 0)}
-                  </div>
+                  <div className="font-bold text-lg">τ{formatNumber(metrics.sellVol, 0)}</div>
                 </div>
               </div>
-              <ComparisonBar leftValue={metrics.buyVol} rightValue={metrics.sellVol} className="mt-2" />
+              <ComparisonBar
+                leftValue={metrics.buyVol}
+                rightValue={metrics.sellVol}
+                className="mt-2"
+              />
             </div>
 
             {/* Buyers / Sellers Row */}
@@ -577,7 +558,11 @@ const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
                   <div className="font-bold text-lg text-white">{metrics.sellers}</div>
                 </div>
               </div>
-              <ComparisonBar leftValue={metrics.buyers} rightValue={metrics.sellers} className="mt-2" />
+              <ComparisonBar
+                leftValue={metrics.buyers}
+                rightValue={metrics.sellers}
+                className="mt-2"
+              />
             </div>
           </div>
 
@@ -621,7 +606,7 @@ const HOLDER_COLORS = {
   shrimp: "#581c87", // dark purple
 }
 
-const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
+const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const { data: positions, isLoading } = useSubnetPositions(netuid)
@@ -966,7 +951,8 @@ const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
                   getSentimentColor(tweet.sentiment)
                 )}
               >
-                {getSentimentLabel(tweet.sentiment)}
+                TODO
+                {/* TODO {getSentimentLabel(tweet.sentiment)} */}
               </span>
             </div>
             <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>

@@ -1,14 +1,10 @@
 import { Icon } from "@iconify/react"
 import { cn } from "@talismn/util"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { AreaSeries, createChart, LineSeries, type UTCTimestamp } from "lightweight-charts"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-
-import {
-  useSubnetStakeEvents,
-  useSubnetTokenomics,
-} from "../../hooks/useSn45Api"
+import { useSubnetStakeEvents, useSubnetTokenomics } from "../../hooks/useSn45Api"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
 interface SubnetTaoFlowChartProps {
@@ -166,9 +162,9 @@ export const SubnetTaoFlowChart: FC<SubnetTaoFlowChartProps> = ({ netuid, classN
   }, [tokenomics])
 
   // EMA TAO flow
-  const emaTaoFlow = useMemo(() => {
+  const _emaTaoFlow = useMemo(() => {
     if (!tokenomics?.emaTaoFlow) return 0
-    return parseFloat(tokenomics.emaTaoFlow) / Math.pow(2, 64) / 1e9
+    return parseFloat(tokenomics.emaTaoFlow) / 2 ** 64 / 1e9
   }, [tokenomics])
 
   // Emissions data
@@ -220,7 +216,10 @@ export const SubnetTaoFlowChart: FC<SubnetTaoFlowChartProps> = ({ netuid, classN
       topColor: "rgba(34, 197, 94, 0.4)",
       bottomColor: "rgba(34, 197, 94, 0.0)",
       lineWidth: 2,
-      priceFormat: { type: "custom", formatter: (price: number) => `${formatCompactNumber(price)}τ` },
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => `${formatCompactNumber(price)}τ`,
+      },
     })
 
     // Create TAO Out area series (red)
@@ -229,7 +228,10 @@ export const SubnetTaoFlowChart: FC<SubnetTaoFlowChartProps> = ({ netuid, classN
       topColor: "rgba(239, 68, 68, 0.3)",
       bottomColor: "rgba(239, 68, 68, 0.0)",
       lineWidth: 2,
-      priceFormat: { type: "custom", formatter: (price: number) => `${formatCompactNumber(price)}τ` },
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => `${formatCompactNumber(price)}τ`,
+      },
     })
 
     // Create Net line series (blue dashed)
@@ -237,7 +239,10 @@ export const SubnetTaoFlowChart: FC<SubnetTaoFlowChartProps> = ({ netuid, classN
       color: "#3b82f6",
       lineWidth: 2,
       lineStyle: 2, // Dashed
-      priceFormat: { type: "custom", formatter: (price: number) => `${formatCompactNumber(price)}τ` },
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => `${formatCompactNumber(price)}τ`,
+      },
     })
 
     // Transform and set data
@@ -419,7 +424,7 @@ export const SubnetTaoFlowChart: FC<SubnetTaoFlowChartProps> = ({ netuid, classN
               <span className="text-body-secondary">Tao out</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-0.5 w-4 border-t-2 border-dashed border-blue-500" />
+              <span className="h-0.5 w-4 border-blue-500 border-t-2 border-dashed" />
               <span className="text-body-secondary">Net</span>
             </span>
           </div>
