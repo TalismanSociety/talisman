@@ -2,6 +2,7 @@ import { cn } from "@talismn/util"
 import { type FC, useState } from "react"
 import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
 import { SwapTabContentBuy } from "./SwapTabContentBuy"
+import { SwapTabContentSell } from "./SwapTabContentSell"
 import { SwapTabs, type TaoDashboardSwapTabs } from "./SwapTabs"
 
 export const TaoDashboardSwap: FC<{ netuid: number; className?: string }> = ({
@@ -20,6 +21,7 @@ export const TaoDashboardSwap: FC<{ netuid: number; className?: string }> = ({
       {/* Tab Contents - Buy/Sell */}
       <div className="w-full grow overflow-hidden bg-grey-850">
         {mode === "buy" && <SwapTabContentBuy netuid={netuid} />}
+        {mode === "sell" && <SwapTabContentSell netuid={netuid} />}
       </div>
     </div>
   )

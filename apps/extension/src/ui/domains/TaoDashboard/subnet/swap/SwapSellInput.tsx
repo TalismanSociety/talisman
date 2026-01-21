@@ -1,0 +1,240 @@
+import { BalanceFormatter } from "@talismn/balances"
+import { cn, tokensToPlanck } from "@talismn/util"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { useIsBalanceInitializing } from "@ui/state"
+import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton, useOpenClose } from "talisman-ui"
+import { SwapSellPositionPickerModal } from "./SwapSellPositionPickerModal"
+import { useSwapSell } from "./SwapSellProvider"
+
+export const SwapSellInput: FC = () => {
+  const {
+    positions,
+    selectedPosition,
+    onPositionChange,
+    tokenIn,
+    valueIn,
+    maxValueIn,
+    onValueChange,
+    inputErrorMessage,
+  } = useSwapSell()
+
+  const { t } = useTranslation()
+  const { isOpen, open, close } = useOpenClose()
+
+  const isPickerDisabled = positions.length === 0
+
+  const handleSelectPosition = useCallback(
+    (positionId: string) => {
+      onPositionChange(positionId)
+    },
+    [onPositionChange]
+  )
+
+  const handleMaxClick = useCallback(() => {
+    onValueChange(maxValueIn)
+  }, [maxValueIn, onValueChange])
+
+  return (
+    <div
+      className={cn(
+        "flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6",
+        "border border-transparent",
+        inputErrorMessage && "!border-alert-error/50"
+      )}
+    >
+      <div className="flex w-full items-center justify-between gap-6">
+        <AccountPickerButton
+          position={selectedPosition}
+          disabled={isPickerDisabled}
+          onClick={open}
+        />
+        <div className="flex items-center gap-2">
+          <BalanceDisplay />
+          <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
+        </div>
+      </div>
+      <div className="max-w-full overflow-hidden">
+        <div className="flex h-20 w-full gap-6 overflow-hidden">
+          <TokenInput
+            tokenDecimals={tokenIn?.decimals}
+            value={valueIn}
+            onValueChanged={onValueChange}
+            disabled={!tokenIn}
+          />
+          <TokenPickerButton
+            position={selectedPosition}
+            disabled={isPickerDisabled}
+            onClick={open}
+          />
+        </div>
+        <div
+          className={cn(
+            "invisible w-full truncate text-alert-error text-sm",
+            inputErrorMessage && "visible"
+          )}
+        >
+          {inputErrorMessage || t("Error")}
+        </div>
+      </div>
+
+      <SwapSellPositionPickerModal
+        isOpen={isOpen}
+        onClose={close}
+        positions={positions}
+        selectedId={selectedPosition?.id}
+        onSelect={(position) => handleSelectPosition(position.id)}
+      />
+    </div>
+  )
+}
+
+const AccountPickerButton: FC<{
+  position: ReturnType<typeof useSwapSell>["selectedPosition"]
+  disabled?: boolean
+  onClick: () => void
+}> = ({ position, disabled, onClick }) => {
+  const { t } = useTranslation()
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      className={cn(
+        "flex h-14 items-center gap-2 overflow-hidden rounded bg-grey-800 px-4 font-medium text-sm text-white enabled:hover:bg-grey-700 disabled:text-body-disabled",
+        position && "pl-2"
+      )}
+      onClick={onClick}
+    >
+      {position ? <AccountDisplay address={position.balance.address} /> : t("Select Position")}
+    </button>
+  )
+}
+
+const TokenPickerButton: FC<{
+  position: ReturnType<typeof useSwapSell>["selectedPosition"]
+  disabled?: boolean
+  onClick: () => void
+}> = ({ position, disabled, onClick }) => {
+  const { t } = useTranslation()
+
+  return (
+    <PillButton onClick={onClick} disabled={disabled} className="max-w-[40%] bg-transparent">
+      {position ? (
+        <div className="flex items-center gap-4">
+          <TokenLogo className="text-xl" tokenId={position.token.id} />
+          <div className="flex flex-col items-start gap-1">
+            <div className="text-base text-body">SN{position.token.netuid}</div>
+            <div className="text-body-secondary text-xs">
+              <BittensorValidatorName hotkey={position.token.hotkey} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-body-secondary text-sm">{t("Select Position")}</div>
+      )}
+    </PillButton>
+  )
+}
+
+const BalanceDisplay: FC = () => {
+  const { t } = useTranslation()
+  const { balanceTokenIn, tokenIdIn } = useSwapSell()
+
+  const isInitializing = useIsBalanceInitializing()
+  const isLoading = useMemo(
+    () => isInitializing || balanceTokenIn?.status !== "live",
+    [balanceTokenIn, isInitializing]
+  )
+
+  if (!tokenIdIn) return null
+
+  return (
+    <div className={cn("text-body-secondary text-sm", isLoading && "animate-pulse")}>
+      {t("Bal:")}{" "}
+      <TokensAndFiat
+        planck={balanceTokenIn?.transferable.planck ?? 0n}
+        tokenId={tokenIdIn}
+        noCountUp
+        noFiat
+      />
+    </div>
+  )
+}
+
+const MaxButton: FC<{
+  maxAmount?: bigint
+  onClick: () => void
+}> = ({ maxAmount, onClick }) => {
+  const { t } = useTranslation()
+  if (maxAmount === undefined) return null
+
+  return (
+    <button
+      type="button"
+      disabled={!maxAmount}
+      className="rounded-full bg-grey-800 px-3 py-1.5 text-body-secondary text-sm enabled:hover:bg-grey-700 disabled:text-body-disabled"
+      onClick={onClick}
+    >
+      {t("Max")}
+    </button>
+  )
+}
+
+const TokenInput: FC<{
+  tokenDecimals?: number
+  value: bigint | null
+  onValueChanged: (value: bigint | null) => void
+  disabled?: boolean
+}> = ({ tokenDecimals, value, onValueChanged, disabled }) => {
+  const { t } = useTranslation()
+
+  const formatter = useMemo(() => {
+    if (value === null || typeof tokenDecimals !== "number") return null
+    return new BalanceFormatter(value, tokenDecimals)
+  }, [tokenDecimals, value])
+
+  const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
+
+  const [inputValue, setInputValue] = useState(formattedValue)
+
+  useEffect(() => {
+    setInputValue(formattedValue)
+  }, [formattedValue])
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      const nextValue = e.target.value
+      setInputValue(nextValue)
+
+      if (!nextValue.trim() || typeof tokenDecimals !== "number") return onValueChanged(null)
+
+      try {
+        const plancks = tokensToPlanck(nextValue, tokenDecimals)
+        onValueChanged(BigInt(plancks))
+      } catch {
+        onValueChanged(null)
+      }
+    },
+    [onValueChanged, tokenDecimals]
+  )
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      placeholder={t("Enter Amount")}
+      step="any"
+      value={inputValue}
+      disabled={disabled}
+      className={
+        "peer inline-block grow text-ellipsis bg-transparent text-[2rem] text-body placeholder:text-body-disabled"
+      }
+      onChange={handleChange}
+    />
+  )
+}

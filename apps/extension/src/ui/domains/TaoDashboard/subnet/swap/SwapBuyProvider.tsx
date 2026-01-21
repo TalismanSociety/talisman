@@ -132,7 +132,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
           hash,
         })
       }
-      // TODO toast ?
+      setState((prev) => ({ ...prev, valueIn: null }))
     },
     [addTransaction, netuid, t]
   )
@@ -164,24 +164,25 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   )
 
   const {
-    // alphaPrice,
     payload,
     feeEstimatePayload,
     txMetadata,
-    // minTaoBond,
     minTaoBondForInput,
-    // minAlphaBond,
-    // minTaoStake,
     minTaoStakeForInput,
-    // minAlphaUnstake,
     amountOut: valueOut,
-    // talismanFee,
-    // errorPayload: errorTx,
-    // swapPrice,
     priceImpact,
     isLoading,
     isError,
     slippage,
+
+    // minTaoBond,
+    // minAlphaBond,
+    // minTaoStake,
+    // minAlphaUnstake,
+    // alphaPrice,
+    // talismanFee,
+    // errorPayload: errorTx,
+    // swapPrice,
   } = useBittensorStakingPayload({
     netuid,
     amountIn: valueIn,

@@ -44,7 +44,8 @@ const ValueOutEstimate = () => {
     <span
       className={cn(
         "text-body-disabled",
-        !!valueIn && isLoading && "animate-pulse rounded-xs bg-body-disabled"
+        !!valueIn && isLoading && "animate-pulse rounded-xs bg-body-disabled",
+        !!valueIn && !isLoading && "text-white"
       )}
     >
       {displayValue} {tokenOutGeneric?.symbol}

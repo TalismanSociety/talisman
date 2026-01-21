@@ -115,7 +115,7 @@ const MaxButton: FC<{
     <button
       type="button"
       disabled={!maxAmount}
-      className="rounded-full bg-grey-800 px-3 py-1.5 text-body-secondary text-sm hover:bg-grey-700"
+      className="rounded-full bg-grey-800 px-3 py-1.5 text-body-secondary text-sm enabled:hover:bg-grey-700 disabled:text-body-disabled"
       onClick={onClick}
     >
       {t("Max")}
