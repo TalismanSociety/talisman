@@ -1,4 +1,4 @@
-import { notify } from "@talisman/components/Notifications"
+import { notifyUpdate } from "@talisman/components/Notifications"
 import type { NotificationProps } from "@talisman/components/Notifications/Notification"
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { useNetworkById, useTransaction } from "@ui/state"
@@ -28,7 +28,8 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
 
     const type = getNotificationType(transaction)
 
-    notify(
+    void notifyUpdate(
+      hash,
       {
         type,
         title: capitalize(transaction.status),
@@ -43,6 +44,7 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
           if (explorerUrl) window.open(explorerUrl, "_blank")
         },
         autoClose: transaction.confirmed ? 5000 : false,
+        closeButton: transaction.confirmed,
       }
     )
   }, [transaction, hash, label, network])
