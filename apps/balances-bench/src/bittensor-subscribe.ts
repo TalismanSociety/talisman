@@ -22,18 +22,19 @@ setupModule(NETWORK_CONFIG, "substrate-dtao")
   .then(async (setup) => {
     log.log()
     log.log("=".repeat(80))
-    log.log("Running subscribeBalances performance test...")
+    log.log("Running subscribeBalances thread blocking test...")
     log.log("=".repeat(80))
     log.log()
 
-    // Run the performance test
+    // Run the thread blocking test
     await testSubscribeBalances(NETWORK_CONFIG, setup.miniMetadata, setup.tokens, {
       module: "substrate-dtao",
-      iterations: 3, // Measure 3 poll iterations
-      iterationTimeout: 30000, // 30 second timeout per iteration
+      testDuration: 30000, // 30 seconds
+      monitoringInterval: 5, // Check every 5ms
+      setupTimeout: 30000, // 30 second timeout for setup
     })
 
-    log.log("Performance test completed successfully")
+    log.log("Thread blocking test completed successfully")
     process.exit(0)
   })
   .catch((error) => {

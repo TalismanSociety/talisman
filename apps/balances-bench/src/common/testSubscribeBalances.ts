@@ -1,8 +1,7 @@
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorDotStub } from "@talismn/chain-connectors"
-import { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
+import type { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import { firstValueFrom } from "rxjs"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
 const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"
@@ -16,33 +15,38 @@ export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
 type SubscribeBalancesTestOptions = {
   module?: TokenType
   /**
-   * Number of subscription iterations to measure
-   * Each iteration waits for one emission from the observable
+   * Duration of the test in milliseconds
    */
-  iterations?: number
+  testDuration?: number
   /**
-   * Timeout in ms for each iteration
+   * Interval for the monitoring loop in milliseconds (should be small, e.g., 5ms)
    */
-  iterationTimeout?: number
+  monitoringInterval?: number
+  /**
+   * Timeout for initial subscription setup
+   */
+  setupTimeout?: number
 }
 
 /**
- * Tests subscribeBalances performance by measuring:
- * - Time to first emission
- * - Time between emissions (poll intervals)
- * - Total blocking time
- * - Number of successful emissions
+ * Tests whether subscribeBalances blocks the thread by measuring delays
+ * in an async loop that runs concurrently with the subscription.
+ *
+ * The test runs a monitoring loop that attempts to execute every 5ms (default).
+ * If the subscription is blocking the thread with synchronous I/O, we expect
+ * to see massive delays in the monitoring loop execution.
  */
 export const testSubscribeBalances = async (
   network: DotNetworkConfig,
   miniMetadata: unknown,
   tokens: Token[],
-  options?: SubscribeBalancesTestOptions,
+  options?: SubscribeBalancesTestOptions
 ) => {
   const opts: Required<SubscribeBalancesTestOptions> = {
     module: options?.module || "substrate-dtao",
-    iterations: options?.iterations ?? 3,
-    iterationTimeout: options?.iterationTimeout ?? 30000,
+    testDuration: options?.testDuration ?? 30000, // 30 seconds
+    monitoringInterval: options?.monitoringInterval ?? 5, // 5ms
+    setupTimeout: options?.setupTimeout ?? 30000,
   }
 
   const connector = new ChainConnectorDotStub(network as unknown as DotNetwork)
@@ -54,7 +58,7 @@ export const testSubscribeBalances = async (
 
   log.log()
   log.log("=".repeat(80))
-  log.log(`Performance Test: subscribeBalances for ${opts.module}`)
+  log.log(`Thread Blocking Test: subscribeBalances for ${opts.module}`)
   log.log("=".repeat(80))
   log.log()
 
@@ -63,149 +67,229 @@ export const testSubscribeBalances = async (
     [TEST_ADDRESS_SUB, TEST_ADDRESS_SUB2],
   ])
 
-  // Start performance measurement
-  const testStartTime = performance.now()
-  const metrics = {
+  log.log(`Test Configuration:`)
+  log.log(`  - Module: ${opts.module}`)
+  log.log(`  - Test Duration: ${opts.testDuration}ms`)
+  log.log(`  - Monitoring Interval: ${opts.monitoringInterval}ms`)
+  log.log(`  - Tokens: ${tokens.length}, Addresses: 2`)
+  log.log()
+
+  // Metrics for monitoring loop
+  const monitoringMetrics = {
+    expectedTicks: Math.floor(opts.testDuration / opts.monitoringInterval),
+    actualTicks: 0,
+    delays: [] as number[], // Actual delay for each tick
+    maxDelay: 0,
+    minDelay: Infinity,
+    totalDelay: 0,
+    ticksWithSignificantDelay: 0, // Ticks with delay > 2x expected interval
+  }
+
+  // Metrics for subscription
+  const subscriptionMetrics = {
+    emissions: 0,
     firstEmissionTime: 0,
-    emissionTimes: [] as number[],
-    totalBlockingTime: 0,
-    successfulEmissions: 0,
-    failedEmissions: 0,
     errors: [] as Error[],
   }
 
-  log.log(`Starting subscription with ${opts.iterations} iterations...`)
-  log.log(`Tokens: ${tokens.length}, Addresses: 2`)
-  log.log()
+  const testStartTime = performance.now()
 
-  try {
-    const observable = mod.subscribeBalances({
-      networkId: network.id,
-      tokensWithAddresses,
-      connector: connector as never,
-      miniMetadata: miniMetadata as never,
-    })
+  // Start the monitoring loop
+  log.log("Starting monitoring loop...")
+  const monitoringPromise = (async () => {
+    let nextScheduledTime = testStartTime + opts.monitoringInterval
 
-    let isFirstEmission = true
-    let previousEmissionTime = testStartTime
+    while (true) {
+      const currentTime = performance.now()
+      const elapsed = currentTime - testStartTime
 
-    for (let i = 0; i < opts.iterations; i++) {
-      const iterationStartTime = performance.now()
+      // Stop if we've exceeded the test duration
+      if (elapsed >= opts.testDuration) {
+        break
+      }
 
-      log.log(`[Iteration ${i + 1}/${opts.iterations}] Waiting for emission...`)
+      // Record when this iteration is scheduled to execute
+      const scheduledTime = nextScheduledTime
 
-      try {
-        // Measure time until emission
-        const emissionStartTime = performance.now()
+      // Wait until the scheduled time (with a small buffer for scheduling accuracy)
+      const sleepDuration = scheduledTime - currentTime
+      if (sleepDuration > 0) {
+        await new Promise((resolve) => setTimeout(resolve, sleepDuration))
+      }
 
-        const result = await Promise.race([
-          firstValueFrom(observable),
-          new Promise<never>((_, reject) =>
-            setTimeout(
-              () => reject(new Error(`Timeout after ${opts.iterationTimeout}ms`)),
-              opts.iterationTimeout,
-            ),
-          ),
-        ])
+      // Measure how much delay occurred before execution
+      const actualExecutionTime = performance.now()
+      const delay = actualExecutionTime - scheduledTime
 
-        const emissionEndTime = performance.now()
-        const emissionTime = emissionEndTime - emissionStartTime
+      // Only record metrics if we're still within test duration
+      if (actualExecutionTime - testStartTime < opts.testDuration) {
+        monitoringMetrics.actualTicks++
+        monitoringMetrics.delays.push(delay)
+        monitoringMetrics.totalDelay += delay
 
-        // Calculate blocking time (time between previous emission and this one)
-        const timeSinceLastEmission = emissionEndTime - previousEmissionTime
-        previousEmissionTime = emissionEndTime
+        if (delay > monitoringMetrics.maxDelay) {
+          monitoringMetrics.maxDelay = delay
+        }
+        if (delay < monitoringMetrics.minDelay) {
+          monitoringMetrics.minDelay = delay
+        }
 
-        if (isFirstEmission) {
-          metrics.firstEmissionTime = emissionTime
-          isFirstEmission = false
-          log.log(`  ✓ First emission received in ${emissionTime.toFixed(2)}ms`)
-        } else {
-          metrics.emissionTimes.push(timeSinceLastEmission)
+        // Consider significant delay if it's more than 2x the expected interval
+        if (delay > opts.monitoringInterval * 2) {
+          monitoringMetrics.ticksWithSignificantDelay++
+        }
+
+        // Log significant delays in real-time
+        if (delay > opts.monitoringInterval * 10) {
           log.log(
-            `  ✓ Emission ${i + 1} received in ${emissionTime.toFixed(2)}ms (${timeSinceLastEmission.toFixed(2)}ms since last)`,
+            `⚠️  Significant delay detected: ${delay.toFixed(2)}ms (expected ~${opts.monitoringInterval}ms)`
           )
         }
 
-        metrics.successfulEmissions++
-        metrics.totalBlockingTime += emissionTime
-
-        // Log balance results
-        const balances = result
-        log.log(`    - Success: ${balances.success?.length || 0} balances`)
-        log.log(`    - Errors: ${balances.errors?.length || 0} errors`)
-        log.log()
-      } catch (error) {
-        const errorTime = performance.now() - iterationStartTime
-        metrics.failedEmissions++
-        metrics.errors.push(error as Error)
-        metrics.totalBlockingTime += errorTime
-
-        log.log(`  ✗ Emission ${i + 1} failed after ${errorTime.toFixed(2)}ms:`)
-        log.error(error)
-        log.log()
-
-        // If first emission fails, break
-        if (i === 0) {
-          throw error
-        }
-      }
-
-      // Small delay to separate iterations (only if not last)
-      if (i < opts.iterations - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        // Schedule the next tick
+        nextScheduledTime = scheduledTime + opts.monitoringInterval
+      } else {
+        // We've exceeded test duration, don't schedule another tick
+        break
       }
     }
-  } catch (error) {
-    log.error("Test failed:", error)
-    throw error
-  }
+  })()
+
+  // Start the subscription
+  log.log("Starting balance subscription...")
+  const subscriptionPromise = (async () => {
+    try {
+      const observable = mod.subscribeBalances({
+        networkId: network.id,
+        tokensWithAddresses,
+        connector: connector as never,
+        miniMetadata: miniMetadata as never,
+      })
+
+      log.log("✓ Subscription started")
+
+      const subscription = observable.subscribe({
+        next: (balances) => {
+          const emissionTime = performance.now()
+          subscriptionMetrics.emissions++
+
+          if (subscriptionMetrics.emissions === 1) {
+            subscriptionMetrics.firstEmissionTime = emissionTime - testStartTime
+            log.log(
+              `✓ First emission received at ${subscriptionMetrics.firstEmissionTime.toFixed(2)}ms`
+            )
+          } else {
+            log.log(`✓ Emission ${subscriptionMetrics.emissions} received`)
+          }
+
+          log.log(`    - Success: ${balances.success?.length || 0} balances`)
+          log.log(`    - Errors: ${balances.errors?.length || 0} errors`)
+        },
+        error: (error) => {
+          subscriptionMetrics.errors.push(error as Error)
+          log.error("Subscription error:", error)
+        },
+      })
+
+      // Wait for test duration
+      await new Promise((resolve) => setTimeout(resolve, opts.testDuration))
+
+      subscription.unsubscribe()
+    } catch (error) {
+      log.error("Failed to start subscription:", error)
+      throw error
+    }
+  })()
+
+  // Wait for both to complete
+  log.log()
+  log.log(`Running test for ${opts.testDuration}ms...`)
+  log.log(`Monitoring loop running every ${opts.monitoringInterval}ms...`)
+  log.log()
+
+  await Promise.all([monitoringPromise, subscriptionPromise])
 
   const testEndTime = performance.now()
   const totalTestTime = testEndTime - testStartTime
 
   // Calculate statistics
-  const avgEmissionInterval =
-    metrics.emissionTimes.length > 0
-      ? metrics.emissionTimes.reduce((a, b) => a + b, 0) / metrics.emissionTimes.length
+  const avgDelay =
+    monitoringMetrics.actualTicks > 0
+      ? monitoringMetrics.totalDelay / monitoringMetrics.actualTicks
       : 0
-  const avgBlockingTime =
-    metrics.totalBlockingTime / (metrics.successfulEmissions + metrics.failedEmissions || 1)
+  const significantDelayPercentage =
+    monitoringMetrics.actualTicks > 0
+      ? (monitoringMetrics.ticksWithSignificantDelay / monitoringMetrics.actualTicks) * 100
+      : 0
 
   // Print results
   log.log()
   log.log("=".repeat(80))
-  log.log("Performance Results")
+  log.log("Thread Blocking Test Results")
   log.log("=".repeat(80))
   log.log()
-  log.log(`Total test time: ${totalTestTime.toFixed(2)}ms`)
-  log.log(`First emission time: ${metrics.firstEmissionTime.toFixed(2)}ms`)
-  log.log(`Successful emissions: ${metrics.successfulEmissions}/${opts.iterations}`)
-  log.log(`Failed emissions: ${metrics.failedEmissions}`)
-  log.log()
-  log.log(`Average time between emissions: ${avgEmissionInterval.toFixed(2)}ms`)
-  log.log(`Average blocking time per emission: ${avgBlockingTime.toFixed(2)}ms`)
-  log.log(`Total blocking time: ${metrics.totalBlockingTime.toFixed(2)}ms`)
+
+  log.log("Monitoring Loop Metrics:")
+  log.log(`  Expected ticks: ${monitoringMetrics.expectedTicks}`)
+  log.log(`  Actual ticks: ${monitoringMetrics.actualTicks}`)
   log.log(
-    `Blocking time percentage: ${((metrics.totalBlockingTime / totalTestTime) * 100).toFixed(2)}%`,
+    `  Tick accuracy: ${((monitoringMetrics.actualTicks / monitoringMetrics.expectedTicks) * 100).toFixed(2)}%`
   )
   log.log()
+  log.log(`  Minimum delay: ${monitoringMetrics.minDelay.toFixed(2)}ms`)
+  log.log(`  Maximum delay: ${monitoringMetrics.maxDelay.toFixed(2)}ms`)
+  log.log(`  Average delay: ${avgDelay.toFixed(2)}ms`)
+  log.log(`  Total delay: ${monitoringMetrics.totalDelay.toFixed(2)}ms`)
+  log.log()
+  log.log(
+    `  Ticks with significant delay (>${opts.monitoringInterval * 2}ms): ${monitoringMetrics.ticksWithSignificantDelay}`
+  )
+  log.log(`  Significant delay percentage: ${significantDelayPercentage.toFixed(2)}%`)
+  log.log()
 
-  if (metrics.errors.length > 0) {
-    log.log("Errors encountered:")
-    metrics.errors.forEach((error, i) => {
-      log.log(`  ${i + 1}. ${error.message}`)
+  log.log("Subscription Metrics:")
+  log.log(`  Total emissions: ${subscriptionMetrics.emissions}`)
+  log.log(`  First emission time: ${subscriptionMetrics.firstEmissionTime.toFixed(2)}ms`)
+  if (subscriptionMetrics.errors.length > 0) {
+    log.log(`  Errors: ${subscriptionMetrics.errors.length}`)
+    subscriptionMetrics.errors.forEach((error, i) => {
+      log.log(`    ${i + 1}. ${error.message}`)
     })
-    log.log()
   }
+  log.log()
+
+  log.log("Thread Blocking Analysis:")
+  if (monitoringMetrics.maxDelay > opts.monitoringInterval * 10) {
+    log.log(`  ⚠️  THREAD BLOCKING DETECTED`)
+    log.log(
+      `  Maximum delay (${monitoringMetrics.maxDelay.toFixed(2)}ms) is ${(monitoringMetrics.maxDelay / opts.monitoringInterval).toFixed(1)}x the expected interval`
+    )
+    log.log(`  This indicates the subscription is blocking the event loop`)
+  } else if (monitoringMetrics.maxDelay > opts.monitoringInterval * 2) {
+    log.log(`  ⚠️  Minor thread blocking detected`)
+    log.log(`  Maximum delay: ${monitoringMetrics.maxDelay.toFixed(2)}ms`)
+  } else {
+    log.log(`  ✓ No significant thread blocking detected`)
+    log.log(`  Maximum delay: ${monitoringMetrics.maxDelay.toFixed(2)}ms (within acceptable range)`)
+  }
+  log.log()
 
   return {
     totalTestTime,
-    firstEmissionTime: metrics.firstEmissionTime,
-    successfulEmissions: metrics.successfulEmissions,
-    failedEmissions: metrics.failedEmissions,
-    avgEmissionInterval,
-    avgBlockingTime,
-    totalBlockingTime: metrics.totalBlockingTime,
-    blockingPercentage: (metrics.totalBlockingTime / totalTestTime) * 100,
+    monitoringMetrics: {
+      expectedTicks: monitoringMetrics.expectedTicks,
+      actualTicks: monitoringMetrics.actualTicks,
+      minDelay: monitoringMetrics.minDelay,
+      maxDelay: monitoringMetrics.maxDelay,
+      avgDelay,
+      ticksWithSignificantDelay: monitoringMetrics.ticksWithSignificantDelay,
+      significantDelayPercentage,
+    },
+    subscriptionMetrics: {
+      emissions: subscriptionMetrics.emissions,
+      firstEmissionTime: subscriptionMetrics.firstEmissionTime,
+      errors: subscriptionMetrics.errors,
+    },
+    threadBlockingDetected: monitoringMetrics.maxDelay > opts.monitoringInterval * 10,
   }
 }
