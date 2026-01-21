@@ -2,6 +2,7 @@ import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorDotStub } from "@talismn/chain-connectors"
 import type { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
+import { monitorEventLoopDelay } from "perf_hooks"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
 const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"
@@ -26,6 +27,11 @@ type SubscribeBalancesTestOptions = {
    * Timeout for initial subscription setup
    */
   setupTimeout?: number
+  /**
+   * When true, only runs the monitoring loop (no balance subscription).
+   * Use this as a baseline to compare against subscription runs.
+   */
+  monitoringOnly?: boolean
 }
 
 /**
@@ -47,6 +53,7 @@ export const testSubscribeBalances = async (
     testDuration: options?.testDuration ?? 30000, // 30 seconds
     monitoringInterval: options?.monitoringInterval ?? 5, // 5ms
     setupTimeout: options?.setupTimeout ?? 30000,
+    monitoringOnly: options?.monitoringOnly ?? false,
   }
 
   const connector = new ChainConnectorDotStub(network as unknown as DotNetwork)
@@ -71,6 +78,7 @@ export const testSubscribeBalances = async (
   log.log(`  - Module: ${opts.module}`)
   log.log(`  - Test Duration: ${opts.testDuration}ms`)
   log.log(`  - Monitoring Interval: ${opts.monitoringInterval}ms`)
+  log.log(`  - Monitoring only: ${opts.monitoringOnly}`)
   log.log(`  - Tokens: ${tokens.length}, Addresses: 2`)
   log.log()
 
@@ -93,6 +101,11 @@ export const testSubscribeBalances = async (
   }
 
   const testStartTime = performance.now()
+
+  // Node-level event loop delay histogram (direct measure of event-loop stalls)
+  // Resolution is in nanoseconds; we report values in milliseconds.
+  const elDelay = monitorEventLoopDelay({ resolution: 10 })
+  elDelay.enable()
 
   // Start the monitoring loop
   log.log("Starting monitoring loop...")
@@ -155,9 +168,15 @@ export const testSubscribeBalances = async (
     }
   })()
 
-  // Start the subscription
-  log.log("Starting balance subscription...")
+  // Start the subscription (or a no-op baseline)
   const subscriptionPromise = (async () => {
+    if (opts.monitoringOnly) {
+      // Baseline run: do nothing but keep the process alive for the duration.
+      await new Promise((resolve) => setTimeout(resolve, opts.testDuration))
+      return
+    }
+
+    log.log("Starting balance subscription...")
     try {
       const observable = mod.subscribeBalances({
         networkId: network.id,
@@ -212,6 +231,8 @@ export const testSubscribeBalances = async (
   const testEndTime = performance.now()
   const totalTestTime = testEndTime - testStartTime
 
+  elDelay.disable()
+
   // Calculate statistics
   const avgDelay =
     monitoringMetrics.actualTicks > 0
@@ -258,12 +279,36 @@ export const testSubscribeBalances = async (
   }
   log.log()
 
+  // Event loop delay histogram summary (ms)
+  const elMinMs = elDelay.min / 1e6
+  const elMaxMs = elDelay.max / 1e6
+  const elMeanMs = elDelay.mean / 1e6
+  // `percentile()` expects 0..100
+  const elP50Ms = elDelay.percentile(50) / 1e6
+  const elP95Ms = elDelay.percentile(95) / 1e6
+  const elP99Ms = elDelay.percentile(99) / 1e6
+
+  log.log("Event Loop Delay (Node histogram):")
+  log.log(`  Min: ${elMinMs.toFixed(3)}ms`)
+  log.log(`  P50: ${elP50Ms.toFixed(3)}ms`)
+  log.log(`  P95: ${elP95Ms.toFixed(3)}ms`)
+  log.log(`  P99: ${elP99Ms.toFixed(3)}ms`)
+  log.log(`  Mean: ${elMeanMs.toFixed(3)}ms`)
+  log.log(`  Max: ${elMaxMs.toFixed(3)}ms`)
+  log.log()
+
   log.log("Thread Blocking Analysis:")
-  if (monitoringMetrics.maxDelay > opts.monitoringInterval * 10) {
+  // Two independent signals:
+  // - monitoringMetrics.maxDelay (scheduled-loop lateness)
+  // - elDelay.max (actual event-loop stall)
+  const threadBlockingDetected =
+    monitoringMetrics.maxDelay > opts.monitoringInterval * 10 ||
+    elMaxMs > opts.monitoringInterval * 10
+
+  if (threadBlockingDetected) {
     log.log(`  ⚠️  THREAD BLOCKING DETECTED`)
-    log.log(
-      `  Maximum delay (${monitoringMetrics.maxDelay.toFixed(2)}ms) is ${(monitoringMetrics.maxDelay / opts.monitoringInterval).toFixed(1)}x the expected interval`
-    )
+    log.log(`  Monitoring max lateness: ${monitoringMetrics.maxDelay.toFixed(2)}ms`)
+    log.log(`  Event loop max stall: ${elMaxMs.toFixed(3)}ms`)
     log.log(`  This indicates the subscription is blocking the event loop`)
   } else if (monitoringMetrics.maxDelay > opts.monitoringInterval * 2) {
     log.log(`  ⚠️  Minor thread blocking detected`)
@@ -290,6 +335,14 @@ export const testSubscribeBalances = async (
       firstEmissionTime: subscriptionMetrics.firstEmissionTime,
       errors: subscriptionMetrics.errors,
     },
-    threadBlockingDetected: monitoringMetrics.maxDelay > opts.monitoringInterval * 10,
+    eventLoopDelayMetrics: {
+      minMs: elMinMs,
+      p50Ms: elP50Ms,
+      p95Ms: elP95Ms,
+      p99Ms: elP99Ms,
+      meanMs: elMeanMs,
+      maxMs: elMaxMs,
+    },
+    threadBlockingDetected,
   }
 }

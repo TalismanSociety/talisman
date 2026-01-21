@@ -26,7 +26,16 @@ setupModule(NETWORK_CONFIG, "substrate-dtao")
     log.log("=".repeat(80))
     log.log()
 
-    // Run the thread blocking test
+    // Baseline (monitoring-only): tells you what “normal” event loop delay looks like
+    await testSubscribeBalances(NETWORK_CONFIG, setup.miniMetadata, setup.tokens, {
+      module: "substrate-dtao",
+      testDuration: 30000, // 30 seconds
+      monitoringInterval: 5, // Check every 5ms
+      setupTimeout: 30000,
+      monitoringOnly: true,
+    })
+
+    // With active subscription: compare against baseline
     await testSubscribeBalances(NETWORK_CONFIG, setup.miniMetadata, setup.tokens, {
       module: "substrate-dtao",
       testDuration: 30000, // 30 seconds
