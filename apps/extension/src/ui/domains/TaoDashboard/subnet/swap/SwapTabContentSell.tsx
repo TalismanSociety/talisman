@@ -1,7 +1,5 @@
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
 import { SwapSellInput } from "./SwapSellInput"
 import { SwapSellOutput } from "./SwapSellOutput"
@@ -13,6 +11,7 @@ import {
   SwapMevShieldRow,
   SwapPriceImpact,
   SwapSlippageRow,
+  SwapSubmitButton,
 } from "./SwapTabShared"
 
 export const SwapTabContentSell: FC<{ netuid: number }> = ({ netuid }) => (
@@ -57,30 +56,16 @@ const SubmitButton = () => {
   const { t } = useTranslation()
   const { payload, txMetadata, txInfo, canSubmit, txMode, onSubmit } = useSwapSell()
 
-  if (!payload) {
-    return (
-      <Button
-        type="button"
-        disabled
-        className="h-24 w-full rounded border-none font-bold text-black uppercase"
-        color="sell"
-      >
-        {t("Sell")}
-      </Button>
-    )
-  }
-
   return (
-    <SapiSendButton
+    <SwapSubmitButton
       containerId={BITTENSOR_SWAP_CONTAINER_ID}
-      className="h-24 w-full rounded border-none font-bold text-black uppercase"
+      label={t("Sell")}
+      color="sell"
       payload={payload}
       txMetadata={txMetadata}
       txInfo={txInfo}
-      mode={txMode}
-      color="sell"
-      label={t("Sell")}
-      disabled={!canSubmit}
+      txMode={txMode}
+      canSubmit={canSubmit}
       onSubmitted={onSubmit}
     />
   )

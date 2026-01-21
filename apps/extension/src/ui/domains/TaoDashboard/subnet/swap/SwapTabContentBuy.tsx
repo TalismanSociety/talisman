@@ -1,7 +1,5 @@
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
 import { SwapBuyInput } from "./SwapBuyInput"
@@ -14,6 +12,7 @@ import {
   SwapMevShieldRow,
   SwapPriceImpact,
   SwapSlippageRow,
+  SwapSubmitButton,
 } from "./SwapTabShared"
 import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
@@ -72,33 +71,16 @@ const SubmitButton = () => {
   const { t } = useTranslation()
   const { payload, txMetadata, txInfo, canSubmit, txMode, onSubmit } = useSwapBuy()
 
-  // if there is no payload, sapi button for ledger will display an error and incorrect styling
-  // TODO check that displaying the error is intended
-  // use a placeholder until then
-  if (!payload) {
-    return (
-      <Button
-        type="button"
-        disabled
-        className="h-24 w-full rounded border-none font-bold text-black uppercase"
-        color="buy"
-      >
-        {t("Buy")}
-      </Button>
-    )
-  }
-
   return (
-    <SapiSendButton
+    <SwapSubmitButton
       containerId={BITTENSOR_SWAP_CONTAINER_ID}
-      className="h-24 w-full rounded border-none font-bold text-black uppercase"
+      label={t("Buy")}
+      color="buy"
       payload={payload}
       txMetadata={txMetadata}
       txInfo={txInfo}
-      mode={txMode}
-      color="buy"
-      label={t("Buy")}
-      disabled={!canSubmit}
+      txMode={txMode}
+      canSubmit={canSubmit}
       onSubmitted={onSubmit}
     />
   )
