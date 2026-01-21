@@ -624,7 +624,7 @@ const HOLDER_COLORS = {
   shrimp: "#581c87", // dark purple
 }
 
-const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
+const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const { data: positions, isLoading: positionsLoading } = useSubnetPositions(netuid)
@@ -1026,7 +1026,7 @@ const truncateAddress = (address: string): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
+const _WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
   const { data: snapshots, isLoading } = useSubnetStakeSnapshots(netuid, 7, 50)
   const { data: taoPrice } = useTaoPrice()
   const { data: tokenomics } = useSubnetTokenomics(netuid)

@@ -1,6 +1,20 @@
+import { hexToU8a, isHex } from "@polkadot/util"
+import { encodeAddressSs58 } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { Sn45Api } from "extension-core"
 import { useMemo } from "react"
+
+// Convert hex public key to SS58 address with prefix 42 (Polkadot generic)
+const hexToSs58 = (hex: string | null | undefined): string | null | undefined => {
+  if (!hex) return hex
+  if (!isHex(hex)) return hex // Already SS58 or other format
+  try {
+    const publicKey = hexToU8a(hex)
+    return encodeAddressSs58(publicKey, 42)
+  } catch {
+    return hex // Return original if conversion fails
+  }
+}
 
 // Use local dev URL in development, otherwise use production
 // const SN45_API_BASE_URL = "https://sn45api.talisman.xyz"
@@ -71,7 +85,10 @@ export const useWhaleMovements = (minTao = 50, limit = 20) => {
         minTao: String(minTao),
         limit: String(limit),
       })
-      return response.data
+      return response.data.map((item) => ({
+        ...item,
+        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
+      }))
     },
     refetchInterval: 60_000,
     staleTime: 30_000,
@@ -115,7 +132,10 @@ export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
     queryFn: async () => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetStakeEvents(String(netuid))
-      return response.data
+      return response.data.map((item) => ({
+        ...item,
+        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
+      }))
     },
     enabled: !!netuid,
     refetchInterval: 60_000,
@@ -130,7 +150,10 @@ export const useSubnetPositions = (netuid: number | null | undefined) => {
     queryFn: async () => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetPositions(String(netuid))
-      return response.data
+      return response.data.map((item) => ({
+        ...item,
+        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
+      }))
     },
     enabled: !!netuid,
     refetchInterval: 120_000,
@@ -166,7 +189,64 @@ export const useSubnetEvents = (netuid: number | null | undefined, limit = 250) 
     queryFn: async () => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetEvents(String(netuid), { limit: String(limit) })
-      return response.data
+      const data = response.data
+
+      // Convert all coldkey/hotkey fields from hex to SS58
+      return {
+        liquidityEvents: data.liquidityEvents.map((e) => ({
+          ...e,
+          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
+        })),
+        stakeSwapsIn: data.stakeSwapsIn.map((e) => ({
+          ...e,
+          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+        stakeSwapsOut: data.stakeSwapsOut.map((e) => ({
+          ...e,
+          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+        stakeTransfersIn: data.stakeTransfersIn.map((e) => ({
+          ...e,
+          originColdkey: hexToSs58(e.originColdkey) ?? e.originColdkey,
+          destinationColdkey: hexToSs58(e.destinationColdkey) ?? e.destinationColdkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+        stakeTransfersOut: data.stakeTransfersOut.map((e) => ({
+          ...e,
+          originColdkey: hexToSs58(e.originColdkey) ?? e.originColdkey,
+          destinationColdkey: hexToSs58(e.destinationColdkey) ?? e.destinationColdkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+        stakeMovesIn: data.stakeMovesIn.map((e) => ({
+          ...e,
+          sourceHotkey: hexToSs58(e.sourceHotkey) ?? e.sourceHotkey,
+          destHotkey: hexToSs58(e.destHotkey) ?? e.destHotkey,
+          destColdkey: hexToSs58(e.destColdkey) ?? e.destColdkey,
+        })),
+        stakeMovesOut: data.stakeMovesOut.map((e) => ({
+          ...e,
+          sourceHotkey: hexToSs58(e.sourceHotkey) ?? e.sourceHotkey,
+          destHotkey: hexToSs58(e.destHotkey) ?? e.destHotkey,
+          destColdkey: hexToSs58(e.destColdkey) ?? e.destColdkey,
+        })),
+        alphaBurns: data.alphaBurns.map((e) => ({
+          ...e,
+          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+        alphaRecycles: data.alphaRecycles.map((e) => ({
+          ...e,
+          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+        autoStakeAdds: data.autoStakeAdds.map((e) => ({
+          ...e,
+          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
+          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
+        })),
+      }
     },
     enabled: !!netuid,
     refetchInterval: 60_000,
@@ -218,7 +298,11 @@ export const useSubnetStakeSnapshots = (
         days: String(days),
         minAmount: String(minAmount),
       })
-      return response.data
+      return response.data.map((item) => ({
+        ...item,
+        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
+        hotkey: hexToSs58(item.hotkey) ?? item.hotkey,
+      }))
     },
     enabled: !!netuid,
     refetchInterval: 60_000,
