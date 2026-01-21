@@ -264,3 +264,18 @@ export const useSubnetEconomicsWithSentiment = () => {
     isLoading: economicsLoading || sentimentLoading,
   }
 }
+
+// Hook to get sentiment for a single subnet (avoids fetching all subnet economics)
+export const useSingleSubnetSentiment = (netuid: number | null | undefined) => {
+  const { data: sentimentList, isLoading } = useSubnetSentimentList()
+
+  const sentiment = useMemo(() => {
+    if (!sentimentList || !netuid) return null
+    return sentimentList.find((s) => s.subnetId === netuid) ?? null
+  }, [sentimentList, netuid])
+
+  return {
+    data: sentiment,
+    isLoading,
+  }
+}

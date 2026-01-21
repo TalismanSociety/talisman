@@ -3,8 +3,8 @@ import { cn } from "@talismn/util"
 import { AreaSeries, createChart, type UTCTimestamp } from "lightweight-charts"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import {
+  useSingleSubnetSentiment,
   useSubnetDailyTrend,
-  useSubnetEconomicsWithSentiment,
   useSubnetHolderHistory,
   useSubnetPositions,
   useSubnetStakeEvents,
@@ -116,7 +116,7 @@ const TabSelector: FC<{
   const tabs: { id: TabType; label: string }[] = [
     { id: "signals", label: "Signals" },
     { id: "social", label: "Social Feeds" },
-    { id: "whale", label: "Whale Activity" },
+    // { id: "whale", label: "Whale Activity" },
   ]
 
   return (
@@ -320,9 +320,8 @@ const _ProgressBar: FC<{
 const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [_period, _setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
-  const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
-  const economicsData = economics?.[netuid]
-  const isLoading = tokenomicsLoading || economicsLoading
+  const { data: sentiment, isLoading: sentimentLoading } = useSingleSubnetSentiment(netuid)
+  const isLoading = tokenomicsLoading || sentimentLoading
 
   const alphaFlow = useMemo(() => {
     if (!tokenomics) return 0
@@ -358,13 +357,13 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
             <span className="mb-1 text-body-secondary text-xs">Sentiment Score</span>
             <SentimentGauge
               score={
-                economicsData?.sentimentScore !== undefined
-                  ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
+                sentiment?.sentimentScore !== undefined
+                  ? Math.round(((sentiment.sentimentScore + 2) / 4) * 100)
                   : 0
               }
               label={getSentimentLabel(
-                economicsData?.sentimentScore !== undefined
-                  ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
+                sentiment?.sentimentScore !== undefined
+                  ? Math.round(((sentiment.sentimentScore + 2) / 4) * 100)
                   : 0
               )}
             />
@@ -819,7 +818,6 @@ const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
       chart.remove()
     }
   }, [chartData])
-  console.log(holderHistory)
   if (isLoading) {
     return (
       <div className="rounded-xl bg-grey-900 p-5">
@@ -1237,7 +1235,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         <div className="flex flex-col gap-6 overflow-y-auto">
           <TrendingSentimentSection netuid={netuid} />
           <TradeFlowSection netuid={netuid} />
-          <HoldersOverviewSection netuid={netuid} />
+          {/* <HoldersOverviewSection netuid={netuid} /> */}
         </div>
       )}
 
@@ -1247,11 +1245,11 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         </div>
       )}
 
-      {activeTab === "whale" && (
+      {/* {activeTab === "whale" && (
         <div className="flex-1 overflow-y-auto">
           <WhaleActivitySection netuid={netuid} />
         </div>
-      )}
+      )} */}
     </div>
   )
 }
