@@ -4,7 +4,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { type FC, type PropsWithChildren, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Toggle, useOpenClose } from "talisman-ui"
+import { Button, Toggle, useOpenClose } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
 import { MevShieldInfoModal } from "./MevShieldInfoModal"
@@ -84,13 +84,14 @@ const SubmitButton = () => {
   // use a placeholder until then
   if (!payload) {
     return (
-      <button
+      <Button
         type="button"
         disabled
-        className="h-24 w-full rounded border-none bg-buy/50 font-bold text-black uppercase"
+        className="h-24 w-full rounded border-none font-bold text-black uppercase"
+        color="buy"
       >
         {t("Buy")}
-      </button>
+      </Button>
     )
   }
 

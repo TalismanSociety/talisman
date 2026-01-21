@@ -17,7 +17,9 @@ import {
 } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useSwapTxWatcher } from "./SwapTxWatcher"
 
 type SwapBuyInputs = {
   address: string | null
@@ -35,6 +37,7 @@ const DEFAULT_INPUTS: SwapBuyInputs = {
 
 const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const defaultAddress = useBestAccountAddress()
+  const { addTransaction } = useSwapTxWatcher()
 
   const [state, setState] = useState<SwapBuyInputs>(DEFAULT_INPUTS)
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
@@ -49,6 +52,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   )
   const tokenOutGeneric = useToken(tokenIdOutGeneric, "substrate-dtao")
   const tokenOutDynamic = useToken(tokenIdOutDynamic, "substrate-dtao")
+
   const account = useAccountByAddress(address)
 
   const currentHotkey = useBittensorCurrentHotkey({
@@ -108,10 +112,30 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((s) => ({ ...s, hotkey }))
   }, [])
 
-  const onSubmit = useCallback((hash: `0x${string}`) => {
-    log.debug("Transaction submitted", { hash })
-    // TODO toast ?
-  }, [])
+  const { t } = useTranslation()
+  const onSubmit = useCallback(
+    (hash: `0x${string}`, innerHash?: `0x${string}`) => {
+      log.debug("Transaction submitted", { hash })
+
+      if (innerHash) {
+        addTransaction({
+          label: t("MEV Shield"),
+          hash,
+        })
+        addTransaction({
+          label: t("Buy SN{{netuid}}", { netuid }),
+          hash: innerHash,
+        })
+      } else {
+        addTransaction({
+          label: t("Buy SN{{netuid}}", { netuid }),
+          hash,
+        })
+      }
+      // TODO toast ?
+    },
+    [addTransaction, netuid, t]
+  )
 
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
