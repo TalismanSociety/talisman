@@ -27,7 +27,7 @@ export type SapiConnectorProps = {
     payload: SignerPayloadJSON,
     // biome-ignore lint/suspicious/noExplicitAny: type unknown at this package level
     txInfo?: any
-  ) => Promise<{ hash: `0x${string}` }>
+  ) => Promise<{ hash: `0x${string}`; innerHash?: `0x${string}` }>
 }
 
 export type ScaleApiSubmitMode = "default" | "bittensor-mev-shield"

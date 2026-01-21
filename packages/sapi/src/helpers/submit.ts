@@ -8,7 +8,7 @@ export const submit = async (
   signature?: `0x${string}`,
   txInfo?: unknown,
   mode?: ScaleApiSubmitMode
-) => {
+): Promise<{ hash: `0x${string}`; innerHash?: `0x${string}` }> => {
   switch (mode) {
     case "bittensor-mev-shield":
       if (signature)

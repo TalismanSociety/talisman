@@ -24,7 +24,7 @@ type SapiSendButtonProps = {
   disabled?: boolean
   className?: string
   color?: ButtonProps["color"]
-  onSubmitted: (hash: Hex) => void
+  onSubmitted: (hash: Hex, innerHash?: Hex) => void
   mode?: ScaleApiSubmitMode
 }
 
@@ -101,8 +101,8 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo, mode)
-        onSubmitted(hash)
+        const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, mode)
+        onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
         // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -204,12 +204,22 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}
       {signMethod === "loading" && (
-        <Button className={classNames("w-full", props.className)} primary disabled>
+        <Button
+          className={classNames("w-full", props.className)}
+          primary
+          disabled
+          color={props.color}
+        >
           <LoaderIcon className="animate-spin-slow text-lg" />
         </Button>
       )}
       {signMethod === "unsupported" && (
-        <Button className={classNames("w-full", props.className)} primary disabled>
+        <Button
+          className={classNames("w-full", props.className)}
+          primary
+          disabled
+          color={props.color}
+        >
           {t("Unsupported account type: {{type}}", { type: account?.type })}
         </Button>
       )}
