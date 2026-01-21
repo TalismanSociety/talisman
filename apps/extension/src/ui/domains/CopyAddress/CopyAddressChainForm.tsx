@@ -2,18 +2,11 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
-import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
+import { CopyIcon, QrIcon } from "@talismn/icons"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import {
-  useAccountByAddress,
-  useBalancesByAddress,
-  useFeatureFlag,
-  useNetworks,
-  useRemoteConfig,
-} from "@ui/state"
+import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
 import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "extension-core"
-import { log } from "extension-shared"
-import { type FC, useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -213,49 +206,9 @@ export const CopyAddressChainForm = () => {
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
-          <UnifiedAddressMigrationBanner formats={filteredFormats} />
           <ChainFormatsList formats={filteredFormats} />
         </ScrollContainer>
       </div>
     </CopyAddressLayout>
-  )
-}
-
-export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ formats }) => {
-  const { t } = useTranslation()
-  const allowBanner = useFeatureFlag("UNIFIED_ADDRESS_BANNER")
-  const remoteConfig = useRemoteConfig()
-
-  const showBanner = useMemo(
-    () => allowBanner && formats.some(isMigratedFormat),
-    [allowBanner, formats]
-  )
-
-  const handleClick = useCallback(() => {
-    try {
-      window.open(
-        remoteConfig.documentation.unifiedAddressDocsUrl,
-        "_blank",
-        "nooppener noreferrer"
-      )
-    } catch (err) {
-      log.error("Unable to open unified address docs", { cause: err })
-    }
-  }, [remoteConfig.documentation.unifiedAddressDocsUrl])
-
-  if (!showBanner) return null
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="flex w-full items-center gap-4 bg-gradient-to-r from-[#9F7998] to-[#EB5D93] px-12 py-4 text-left text-body text-sm"
-    >
-      <div className="grow">
-        <PolkadotIcon className="mr-2 inline-block shrink-0 align-text-top" />
-        {t("Polkadot introduces new address formatting")}
-      </div>
-      <ArrowUpRightIcon className="shrink-0 text-[2rem] text-body" />
-    </button>
   )
 }

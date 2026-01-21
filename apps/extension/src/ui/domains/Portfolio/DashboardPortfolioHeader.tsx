@@ -30,7 +30,6 @@ import {
   isAccountOwned,
   type TreeFolder,
 } from "extension-core"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
@@ -237,7 +236,6 @@ const TopActions: FC = () => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { open: openSwapTokensModal } = useSwapTokensModal()
   const { open: openRampsModal } = useRampsModal()
-  const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
 
@@ -289,9 +287,7 @@ const TopActions: FC = () => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: canSwap
-            ? () => openSwapTokensModal()
-            : () => window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"),
+          onClick: () => openSwapTokensModal(),
           disabled: disableActions,
           disabledReason,
         },
@@ -313,7 +309,6 @@ const TopActions: FC = () => {
       disabledReason,
       selectedAccount,
       selectedAccounts.length,
-      canSwap,
       canBuy,
       selectedAddress,
       symbol,
