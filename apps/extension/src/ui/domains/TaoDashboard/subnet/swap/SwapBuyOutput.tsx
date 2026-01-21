@@ -37,7 +37,7 @@ const ValueOutEstimate = () => {
     if (!valueIn) return "0"
     return tokenOutGeneric && typeof valueOut === "bigint"
       ? planckToTokens(String(valueOut), tokenOutGeneric.decimals)
-      : "123.123456789"
+      : "123.123456789" // placeholder while loading, not visible (see below)
   }, [tokenOutGeneric, valueOut, valueIn])
 
   return (
