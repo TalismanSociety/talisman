@@ -22,6 +22,7 @@ export const SwapTxNotifications = () => {
 const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) => {
   const transaction = useTransaction(hash)
   const network = useNetworkById(transaction?.networkId)
+  const { removeTransaction } = useSwapTxWatcher()
 
   useEffect(() => {
     if (!transaction) return
@@ -45,9 +46,12 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
         },
         autoClose: transaction.confirmed ? 5000 : false,
         closeButton: transaction.confirmed,
+        onClose: () => {
+          removeTransaction(hash)
+        },
       }
     )
-  }, [transaction, hash, label, network])
+  }, [transaction, hash, label, network, removeTransaction])
 
   return null
 }

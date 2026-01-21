@@ -10,7 +10,9 @@ const useSwapTxWatcherProvider = () => {
   const [transactions, setTransactions] = useState<SwapTxInfo[]>([])
 
   const addTransaction = useCallback((tx: SwapTxInfo) => {
-    setTransactions((prev) => [...prev, tx])
+    setTransactions((prev) =>
+      prev.some((existing) => existing.hash === tx.hash) ? prev : [...prev, tx]
+    )
   }, [])
 
   const removeTransaction = useCallback((hash: string) => {
