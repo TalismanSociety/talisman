@@ -1,7 +1,7 @@
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, cn } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
@@ -14,7 +14,15 @@ import {
 import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { type ReactElement, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import {
+  Button,
+  type ButtonProps,
+  Checkbox,
+  Drawer,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
@@ -49,6 +57,7 @@ type ScanState =
 interface Props {
   account: AccountPolkadotVault
   className?: string
+  buttonClassName?: string
   genesisHash?: HexString | null
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
@@ -57,17 +66,20 @@ interface Props {
   containerId: string
   skipInit?: boolean
   narrowMargin?: boolean
+  color?: ButtonProps["color"]
 }
 
 export const QrSubstrate = ({
   account,
   className = "",
+  buttonClassName = "",
   genesisHash,
   onSignature,
   onReject,
   payload,
   shortMetadata,
   containerId,
+  color,
   // in the sign tx popup it makes sense to show an INIT state
   // in the send funds popup it does not
   skipInit = false,
@@ -94,7 +106,12 @@ export const QrSubstrate = ({
               {t("Cancel")}
             </Button>
           )}
-          <Button className="w-full" primary onClick={() => setScanState({ page: "SEND" })}>
+          <Button
+            color={color}
+            className={cn("w-full", buttonClassName)}
+            primary
+            onClick={() => setScanState({ page: "SEND" })}
+          >
             {t("Sign with QR")}
           </Button>
         </div>

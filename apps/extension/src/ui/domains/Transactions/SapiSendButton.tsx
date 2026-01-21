@@ -89,6 +89,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   onSubmitted,
   mode,
+  color,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
@@ -119,12 +120,13 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       <SubmitErrorDisplay error={error} />
       <QrSubstrate
         containerId={containerId ?? "main"}
-        className={className}
+        buttonClassName={className}
         genesisHash={payload?.genesisHash}
         payload={payload}
         shortMetadata={shortMetadata}
         account={account as AccountPolkadotVault}
         onSignature={handleSigned}
+        color={color}
       />
     </div>
   )

@@ -94,7 +94,7 @@ export const SwapFeeEstimate: FC<SwapFeeEstimateProps> = ({
     return (
       <TokensAndFiat
         tokenId={tokenId}
-        planck={1_234_567n}
+        planck={1_234_567n} // dummy placeholder value
         className="animate-pulse rounded-xs bg-body-disabled text-body-disabled"
       />
     )
