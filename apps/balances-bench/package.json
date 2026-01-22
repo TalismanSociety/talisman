@@ -8,6 +8,7 @@
     "dev:hydration": "tsx watch src/hydration.ts",
     "dev:pah": "tsx watch src/pah.ts",
     "dev:pah-subscribe": "tsx watch src/pah-subscribe.ts",
+    "dev:pah-foreignassets-subscribe": "tsx watch src/pah-foreignassets-subscribe.ts",
     "dev:astar": "tsx watch src/astar.ts",
     "dev:azero": "tsx watch src/aleph-zero.ts",
     "dev:bittensor": "tsx watch src/bittensor.ts",
