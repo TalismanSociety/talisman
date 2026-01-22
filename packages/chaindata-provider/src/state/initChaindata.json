@@ -511,7 +511,7 @@
       "rpcs": [
         "wss://sys.ibp.network/statemint",
         "wss://sys.dotters.network/statemint",
-        "wss://sys.ibp.network/asset-hub-polkadot",
+        "wss://sys.dotters.network/statemint",
         "wss://statemint-rpc-tn.dwellir.com",
         "wss://asset-hub-polkadot.dotters.network",
         "wss://rpc-asset-hub-polkadot.luckyfriday.io",

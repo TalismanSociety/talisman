@@ -11,7 +11,7 @@ if (typeof globalThis.crypto === "undefined") {
 
 const NETWORK_CONFIG = {
   id: "polkadot-asset-hub",
-  rpcs: ["wss://sys.ibp.network/asset-hub-polkadot"],
+  rpcs: ["wss://sys.dotters.network/statemint"],
   nativeCurrency: { coingeckoId: "polkadot" },
   tokens: {
     "substrate-assets": [

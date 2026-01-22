@@ -2385,7 +2385,7 @@ const networks: Network[] = [
     rpcs: [
       "wss://sys.ibp.network/statemint",
       "wss://sys.dotters.network/statemint",
-      "wss://sys.ibp.network/asset-hub-polkadot",
+      "wss://sys.dotters.network/statemint",
       "wss://statemint-rpc-tn.dwellir.com",
       "wss://polkadot-assethub-rpc.blockops.network/ws",
       "wss://asset-hub-polkadot.dotters.network",
@@ -2394,7 +2394,7 @@ const networks: Network[] = [
       "wss://dot-rpc.stakeworld.io/assethub",
       "wss://sys.ibp.network/statemint",
       "wss://sys.dotters.network/statemint",
-      "wss://sys.ibp.network/asset-hub-polkadot",
+      "wss://sys.dotters.network/statemint",
       "wss://asset-hub-polkadot-rpc.dwellir.com",
       "wss://statemint-rpc-tn.dwellir.com",
       "wss://polkadot-assethub-rpc.blockops.network/ws",
