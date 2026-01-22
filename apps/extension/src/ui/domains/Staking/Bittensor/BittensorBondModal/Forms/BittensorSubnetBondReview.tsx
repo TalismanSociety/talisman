@@ -7,17 +7,9 @@ import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDi
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState, useFeatureFlag } from "@ui/state"
 import type { WalletTransactionInfo } from "extension-core"
-import { type FC, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  Drawer,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
+import { Button, Toggle, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -35,6 +27,7 @@ import {
   TALISMAN_FEE_BITTENSOR,
   VERY_HIGH_PRICE_IMPACT,
 } from "../../utils/constants"
+import { MevShieldInfoDrawer } from "../Drawers/BittensorMevShieldInfoDrawer"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
 
@@ -133,7 +126,6 @@ export const BittensorSubnetBondReview = () => {
 
   const { isLoading } = useCombinedSubnetData(networkId)
 
-  const { open } = slippageDrawer
   const { open: openWarningDrawer } = warningDrawer
 
   useEffect(() => {
@@ -260,7 +252,7 @@ export const BittensorSubnetBondReview = () => {
             <div className="flex items-center gap-2 text-body">
               <button
                 type="button"
-                onClick={open}
+                onClick={slippageDrawer.open}
                 className={
                   "flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-xs"
                 }
@@ -363,7 +355,12 @@ export const BittensorSubnetBondReview = () => {
             mode={withMevShield ? "bittensor-mev-shield" : "default"}
           />
         ))}
-      <BittensorSlippageDrawer />
+      <BittensorSlippageDrawer
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
+        netuid={netuid}
+        isOpen={slippageDrawer.isOpen}
+        onClose={slippageDrawer.close}
+      />
       <BittensorWarningDrawer setHasAckWarning={setHasAckWarning} />
       <SeekGetFeeDiscountsDrawer
         isOpen={seekDiscountDrawer.isOpen}
@@ -371,7 +368,11 @@ export const BittensorSubnetBondReview = () => {
         onCloseModal={close}
         containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
-      <MevShieldInfoDrawer isOpen={ocMevShieldInfo.isOpen} onDismiss={ocMevShieldInfo.close} />
+      <MevShieldInfoDrawer
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
+        isOpen={ocMevShieldInfo.isOpen}
+        onDismiss={ocMevShieldInfo.close}
+      />
     </BittensorModalLayout>
   )
 }
@@ -390,57 +391,57 @@ const FeeEstimate = () => {
   )
 }
 
-const MevShieldInfoDrawer: FC<{ isOpen: boolean; onDismiss: () => void }> = ({
-  isOpen,
-  onDismiss,
-}) => {
-  const { t } = useTranslation()
-  return (
-    <Drawer
-      anchor="bottom"
-      isOpen={isOpen}
-      onDismiss={onDismiss}
-      containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
-    >
-      <div className="flex w-full flex-col gap-8 overflow-hidden rounded-t bg-black-tertiary p-8 pt-12">
-        <div className="text-center font-bold text-md">{t("MEV Shield")}</div>
-        <p className="text-sm">
-          {t(
-            'MEV Shield protects your subnet staking transaction from frontrunning by wrapping it in an encrypted "shield" transaction.'
-          )}
-        </p>
-        <ul className="list-outside list-disc space-y-2 pl-8 text-body-secondary text-sm">
-          <li>
-            {t(
-              "You submit one encrypted wrapper transaction. If it succeeds, your staking transaction is automatically included in the next block."
-            )}
-          </li>
-          <li>
-            {t(
-              "You still pay network fees for both the encrypted wrapper and the staking transaction."
-            )}
-          </li>
-          <li>
-            {t(
-              "Even if the wrapper executes successfully, the staking transaction is not guaranteed to succeed (it can still fail on-chain)."
-            )}
-          </li>
-          <li>
-            {t(
-              "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one."
-            )}
-          </li>
-          <li>
-            {t(
-              "Rootnet staking is not subject to MEV attacks in the same way, so MEV Shield is disabled for Rootnet staking."
-            )}
-          </li>
-        </ul>
+// const MevShieldInfoDrawer: FC<{ isOpen: boolean; onDismiss: () => void }> = ({
+//   isOpen,
+//   onDismiss,
+// }) => {
+//   const { t } = useTranslation()
+//   return (
+//     <Drawer
+//       anchor="bottom"
+//       isOpen={isOpen}
+//       onDismiss={onDismiss}
+//       containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
+//     >
+//       <div className="flex w-full flex-col gap-8 overflow-hidden rounded-t bg-black-tertiary p-8 pt-12">
+//         <div className="text-center font-bold text-md">{t("MEV Shield")}</div>
+//         <p className="text-sm">
+//           {t(
+//             'MEV Shield protects your subnet staking transaction from frontrunning by wrapping it in an encrypted "shield" transaction.'
+//           )}
+//         </p>
+//         <ul className="list-outside list-disc space-y-2 pl-8 text-body-secondary text-sm">
+//           <li>
+//             {t(
+//               "You submit one encrypted wrapper transaction. If it succeeds, your staking transaction is automatically included in the next block."
+//             )}
+//           </li>
+//           <li>
+//             {t(
+//               "You still pay network fees for both the encrypted wrapper and the staking transaction."
+//             )}
+//           </li>
+//           <li>
+//             {t(
+//               "Even if the wrapper executes successfully, the staking transaction is not guaranteed to succeed (it can still fail on-chain)."
+//             )}
+//           </li>
+//           <li>
+//             {t(
+//               "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one."
+//             )}
+//           </li>
+//           <li>
+//             {t(
+//               "Rootnet staking is not subject to MEV attacks in the same way, so MEV Shield is disabled for Rootnet staking."
+//             )}
+//           </li>
+//         </ul>
 
-        <Button fullWidth onClick={onDismiss}>
-          {t("Close")}
-        </Button>
-      </div>
-    </Drawer>
-  )
-}
+//         <Button fullWidth onClick={onDismiss}>
+//           {t("Close")}
+//         </Button>
+//       </div>
+//     </Drawer>
+//   )
+// }

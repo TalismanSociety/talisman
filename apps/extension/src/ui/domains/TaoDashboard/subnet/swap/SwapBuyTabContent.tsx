@@ -1,7 +1,8 @@
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { Button, useOpenClose } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
-import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
+import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
@@ -12,26 +13,25 @@ import {
   SwapMevShieldRow,
   SwapPriceImpact,
   SwapSlippageRow,
-  SwapSubmitButton,
 } from "./SwapTabShared"
 import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
-export const SwapTabContentBuy: FC<{ netuid: number }> = ({ netuid }) => (
+export const SwapBuyTabContent: FC<{ netuid: number }> = ({ netuid }) => (
   <SwapBuyProvider netuid={netuid}>
-    <SwapTabContentBuyInner />
+    <TabContent />
   </SwapBuyProvider>
 )
 
-const SwapTabContentBuyInner: FC = () => {
+const TabContent: FC = () => {
   const { t } = useTranslation()
 
   return (
     <div className="flex size-full flex-col overflow-hidden">
       <div className="flex w-full grow flex-col gap-10 overflow-hidden p-8">
-        <SwapInputsContainer variant="buy" label={t("Spend")}>
+        <SwapInputsContainer label={t("Spend")} variant="buy">
           <SwapBuyInput />
         </SwapInputsContainer>
-        <SwapInputsContainer variant="buy" label={t("Receive")}>
+        <SwapInputsContainer label={t("Receive")} variant="buy">
           <SwapBuyOutput />
         </SwapInputsContainer>
       </div>
@@ -69,20 +69,22 @@ const MevShieldRow = () => {
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { payload, txMetadata, txInfo, canSubmit, txMode, onSubmit } = useSwapBuy()
+  const { canSubmit } = useSwapBuy()
+  const { isOpen, open, close } = useOpenClose()
 
   return (
-    <SwapSubmitButton
-      containerId={BITTENSOR_SWAP_CONTAINER_ID}
-      label={t("Buy")}
-      color="buy"
-      payload={payload}
-      txMetadata={txMetadata}
-      txInfo={txInfo}
-      txMode={txMode}
-      canSubmit={canSubmit}
-      onSubmitted={onSubmit}
-    />
+    <>
+      <Button
+        fullWidth
+        color="buy"
+        onClick={open}
+        disabled={!canSubmit}
+        className="h-24 w-full rounded border-none font-bold text-black uppercase"
+      >
+        {t("Buy")}
+      </Button>
+      <SwapBuyConfirmModal isOpen={isOpen} onClose={close} />
+    </>
   )
 }
 

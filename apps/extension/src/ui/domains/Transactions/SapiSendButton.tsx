@@ -200,6 +200,18 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     }
   }, [account, props.loading])
 
+  if (!props.payload)
+    return (
+      <Button
+        className={classNames("w-full", props.className)}
+        primary
+        disabled
+        color={props.color}
+      >
+        {props.label ?? <LoaderIcon className="animate-spin-slow text-lg" />}
+      </Button>
+    )
+
   return (
     <Suspense fallback={<SuspenseTracker name="SapiSendButton" />}>
       {signMethod === "local" && <LocalAccountSendButton {...props} />}

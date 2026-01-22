@@ -26,11 +26,10 @@ export const StakingFeeEstimate: FC<{
         <TokensAndFiat
           tokenId={tokenId}
           planck={plancks}
+          className={classNames("text-body-secondary", isLoading && "animate-pulse", className)}
           tokensClassName={classNames("text-body", tokensClassName)}
-          fiatClassName="text-body-secondary"
           noCountUp={noCountUp}
           noFiat={noFiat}
-          className={classNames(isLoading && "animate-pulse", className)}
         />
       ) : isLoading ? (
         <div

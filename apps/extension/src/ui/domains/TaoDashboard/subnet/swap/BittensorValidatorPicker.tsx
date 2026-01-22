@@ -82,14 +82,6 @@ export const BittensorValidatorPicker: FC<{
 
   const taoTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
 
-  // const handleSubmit = useCallback(
-  //   (hotkey: string) => {
-  //     setStep("form")
-  //     setHotkey(hotkey)
-  //   },
-  //   [setHotkey, setStep]
-  // )
-
   const [, startTransition] = useTransition()
 
   useEffect(() => {

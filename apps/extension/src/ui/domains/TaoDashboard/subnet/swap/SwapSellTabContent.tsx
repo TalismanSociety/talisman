@@ -14,13 +14,13 @@ import {
   SwapSubmitButton,
 } from "./SwapTabShared"
 
-export const SwapTabContentSell: FC<{ netuid: number }> = ({ netuid }) => (
+export const SwapSellTabContent: FC<{ netuid: number }> = ({ netuid }) => (
   <SwapSellProvider netuid={netuid}>
-    <SwapTabContentSellInner />
+    <TabContent />
   </SwapSellProvider>
 )
 
-const SwapTabContentSellInner: FC = () => {
+const TabContent: FC = () => {
   const { t } = useTranslation()
 
   return (

@@ -180,9 +180,9 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     // minTaoStake,
     // minAlphaUnstake,
     // alphaPrice,
-    // talismanFee,
+    talismanFee,
     // errorPayload: errorTx,
-    // swapPrice,
+    swapPrice,
   } = useBittensorStakingPayload({
     netuid,
     amountIn: valueIn,
@@ -242,8 +242,10 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     address,
     account,
     canSubmit,
+    swapPrice,
     priceImpact,
     slippage,
+    talismanFee,
 
     withMevShield,
     isMevShieldDisabled,
