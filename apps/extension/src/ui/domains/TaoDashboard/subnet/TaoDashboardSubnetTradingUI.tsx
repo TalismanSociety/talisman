@@ -21,14 +21,14 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
         </div>
 
         {/* Main Content Grid - Fixed height layout */}
-        <div className="flex w-full flex-col gap-6 xl:h-[calc(100vh-100px)] xl:max-h-[1100px] xl:flex-row">
+        <div className="flex w-full flex-row gap-6">
           {/* Left Column - Charts and Trading */}
-          <div className="flex min-w-0 flex-1 flex-col gap-6 xl:h-full">
+          <div className="flex min-w-0 flex-1 flex-col gap-6">
             {/* Price Chart with Sentiment Markers */}
             <SubnetChartTabs netuid={netuid} className="w-full shrink-0" />
 
             {/* Swap and Transactions row - stretch to fill remaining space */}
-            <div className="flex min-h-[600px] w-full flex-1 flex-col gap-6 lg:flex-row">
+            <div className="flex min-h-[600px] w-full flex-1 flex-row gap-6">
               {/* Swap component */}
               <div className="flex w-full flex-1 flex-col overflow-hidden rounded-lg bg-grey-850">
                 <TaoDashboardSwap netuid={netuid} />
@@ -36,9 +36,6 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
 
               {/* Recent Transactions */}
               <div className="flex w-full flex-1 flex-col overflow-hidden rounded-lg bg-grey-850">
-                <div className="shrink-0 border-grey-750 border-b px-5 py-3 font-medium text-sm">
-                  Recent Transactions
-                </div>
                 <SubnetTransactions
                   netuid={netuid}
                   className="min-h-0 flex-1 overflow-y-auto p-4"
@@ -48,7 +45,7 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
           </div>
 
           {/* Right Column - Analytics Sidebar */}
-          <div className="w-full xl:h-full xl:w-[380px] xl:shrink-0">
+          <div className="h-full w-[380px] shrink-0">
             <SubnetRightSidebar netuid={netuid} className="h-full" />
           </div>
         </div>
