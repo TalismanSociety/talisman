@@ -107,7 +107,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "statescan.io":
           return `/extrinsics/${query.id}`
         case "taostats.io":
-          return `/hash/${query.id}`
+          return `/transaction/${query.id}`
         default:
           return `/tx/${query.id}`
       }
