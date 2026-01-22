@@ -3,8 +3,9 @@ import { Sn45Api } from "extension-core"
 import { useMemo } from "react"
 
 // Use local dev URL in development, otherwise use production
-const SN45_API_BASE_URL = "https://sn45api.talisman.xyz"
-// const SN45_API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:8787" : "https://sn45api.talisman.xyz"
+// const SN45_API_BASE_URL = "https://sn45api.talisman.xyz"
+const SN45_API_BASE_URL =
+  process.env.NODE_ENV === "development" ? "http://localhost:8787" : "https://sn45api.talisman.xyz"
 
 // Create a singleton API instance
 const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
@@ -28,6 +29,19 @@ export const useSubnetEconomics = () => {
     queryKey: ["sn45", "subnetEconomics"],
     queryFn: async () => {
       const response = await sn45Api.v1.getSubnetEconomicsList()
+      return response.data
+    },
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  })
+}
+
+// Hook to get subnet leaderboard data
+export const useSubnetLeaderboard = (period: "1d" | "1w" | "1m" = "1d") => {
+  return useQuery({
+    queryKey: ["sn45", "subnetLeaderboard", period],
+    queryFn: async () => {
+      const response = await sn45Api.v1.getSubnetLeaderboard({ period })
       return response.data
     },
     refetchInterval: 60_000,

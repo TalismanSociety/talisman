@@ -354,6 +354,59 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
      * No description
      *
      * @tags Subnets
+     * @name GetSubnetLeaderboard
+     * @summary Subnet leaderboard with aggregated metrics
+     * @request GET:/v1/bittensor/subnets/leaderboard
+     */
+    getSubnetLeaderboard: (
+      query?: {
+        period?: "1d" | "1w" | "1m"
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        {
+          period: "1d" | "1w" | "1m"
+          updatedAt: string
+          subnets: {
+            netuid: number
+            currentPrice: number | null
+            priceChange: number | null
+            stakedTao: string | null
+            stakedAlpha: string | null
+            volume: string
+            txCount: number
+            buyCount: number
+            sellCount: number
+            mcap: string | null
+            alphaOutEmission: string | null
+            alphaInEmission: string | null
+            taoInEmission: string | null
+            totalHolders: number
+            emaTaoFlow: string | null
+            emissionPct: number | null
+            priceHistory7d: number[] | null
+            score: number | null
+          }[]
+        },
+        {
+          error: {
+            code: string
+            message: string
+          }
+        }
+      >({
+        path: `/v1/bittensor/subnets/leaderboard`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
      * @name GetSubnetStakeEvents
      * @summary Stake events for a specific subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/stake-events
