@@ -3,15 +3,16 @@ import { cn } from "@talismn/util"
 import { AreaSeries, createChart, type UTCTimestamp } from "lightweight-charts"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import {
+  useHolderDistribution,
   useSingleSubnetSentiment,
   useSubnetDailyTrend,
-  useSubnetHolderHistory,
   useSubnetPositions,
   useSubnetStakeEvents,
-  useSubnetStakeSnapshots,
   useSubnetTokenomics,
   useSubnetTweets,
   useTaoPrice,
+  useWhaleTransactions,
+  type WhaleTransactionType,
 } from "../../hooks/useSn45Api"
 
 interface SubnetRightSidebarProps {
@@ -116,7 +117,7 @@ const TabSelector: FC<{
   const tabs: { id: TabType; label: string }[] = [
     { id: "signals", label: "Signals" },
     { id: "social", label: "Social Feeds" },
-    // { id: "whale", label: "Whale Activity" },
+    { id: "whale", label: "Whale Activity" },
   ]
 
   return (
@@ -617,38 +618,44 @@ const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
 // Holders Overview Section
 // ============================================================================
 
+// 6-tier holder distribution colors
 const HOLDER_COLORS = {
-  whale: "#22d3ee", // cyan
-  dolphin: "#a855f7", // purple
-  fish: "#3b82f6", // blue
-  shrimp: "#581c87", // dark purple
+  megaWhale: "#f59e0b", // amber - 1M+ alpha
+  whale: "#22d3ee", // cyan - 100K-1M alpha
+  smallWhale: "#10b981", // emerald - 10K-100K alpha
+  dolphin: "#a855f7", // purple - 1K-10K alpha
+  fish: "#3b82f6", // blue - 100-1K alpha
+  shrimp: "#6b7280", // gray - < 100 alpha
 }
 
-const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
+const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const { data: positions, isLoading: positionsLoading } = useSubnetPositions(netuid)
   const { data: stakeEvents } = useSubnetStakeEvents(netuid)
 
-  // Calculate the number of days based on period
-  const days = period === "1D" ? 1 : period === "1W" ? 7 : 30
-  const { data: holderHistory, isLoading: historyLoading } = useSubnetHolderHistory(netuid, days)
-  const isLoading = positionsLoading || historyLoading
+  // Always fetch 30 days for chart data, period only affects metrics display
+  const { data: holderDistribution, isLoading: distributionLoading } = useHolderDistribution(
+    netuid,
+    30
+  )
+  const isLoading = positionsLoading || distributionLoading
 
-  const metrics = useMemo(() => {
+  // Filter distribution data based on selected period for metrics
+  const filteredDistribution = useMemo(() => {
+    if (!holderDistribution || holderDistribution.length === 0) return []
+    const days = period === "1D" ? 1 : period === "1W" ? 7 : 30
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
+    return holderDistribution.filter((d) => new Date(d.snapshotDate).getTime() >= cutoff)
+  }, [holderDistribution, period])
+
+  // Calculate top 10 concentration from positions data (alpha-based, not count-based)
+  const top10Metrics = useMemo(() => {
     if (!positions) {
-      return {
-        totalHolders: 0,
-        holderChange: 0,
-        top10Concentration: 0,
-        concentrationLabel: "Unknown",
-        avgTrade: 0,
-      }
+      return { top10Concentration: 0, concentrationLabel: "Unknown" }
     }
 
     const validPositions = positions.filter((p) => parseFloat(p.alphaBalance) > 0)
-    const totalHolders = validPositions.length
-
     const totalAlpha = validPositions.reduce((sum, p) => sum + parseFloat(p.alphaBalance), 0)
     const top10Alpha = validPositions
       .slice(0, 10)
@@ -660,6 +667,10 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
     else if (top10Concentration >= 60) concentrationLabel = "Whale heavy"
     else if (top10Concentration >= 40) concentrationLabel = "Mixed"
 
+    return { top10Concentration, concentrationLabel }
+  }, [positions])
+
+  const metrics = useMemo(() => {
     // Calculate avg trade from stake events
     const totalVolume = (stakeEvents ?? []).reduce(
       (sum, e) => sum + parseFloat(e.taoAmount) / 1e9,
@@ -667,73 +678,95 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
     )
     const avgTrade = stakeEvents && stakeEvents.length > 0 ? totalVolume / stakeEvents.length : 0
 
-    // Calculate holder change from historical data
+    if (!filteredDistribution || filteredDistribution.length === 0) {
+      // Fallback to positions data if no distribution data available
+      const validPositions = (positions ?? []).filter((p) => parseFloat(p.alphaBalance) > 0)
+      return {
+        totalHolders: validPositions.length,
+        holderChange: 0,
+        avgTrade,
+      }
+    }
+
+    // Use the latest distribution data for metrics
+    const latest = filteredDistribution[filteredDistribution.length - 1]
+    const totalHolders = latest.totalHolders
+
+    // Calculate holder change from filtered historical data
     let holderChange = 0
-    if (holderHistory && holderHistory.length >= 2) {
-      const oldest = holderHistory[0]
-      const newest = holderHistory[holderHistory.length - 1]
-      holderChange = newest.totalHolders - oldest.totalHolders
+    if (filteredDistribution.length >= 2) {
+      const oldest = filteredDistribution[0]
+      holderChange = latest.totalHolders - oldest.totalHolders
     }
 
     return {
       totalHolders,
       holderChange,
-      top10Concentration,
-      concentrationLabel,
       avgTrade,
     }
-  }, [positions, stakeEvents, holderHistory])
+  }, [filteredDistribution, positions, stakeEvents])
 
-  // Convert historical data to chart format
+  // Convert historical data to chart format with 6 tiers
+  // Always use full 30-day data for chart to ensure proper rendering
   const chartData = useMemo(() => {
-    if (!holderHistory || holderHistory.length === 0) {
-      // Fallback to current positions data if no historical data available
+    if (!holderDistribution || holderDistribution.length === 0) {
+      // Fallback to current positions data if no distribution data available
       if (!positions) return []
 
       const validPositions = positions.filter((p) => parseFloat(p.alphaBalance) > 0)
-      const totalAlpha = validPositions.reduce((sum, p) => sum + parseFloat(p.alphaBalance), 0)
+      const totalHolders = validPositions.length
 
-      // Categorize holders
-      let whaleAlpha = 0
-      let dolphinAlpha = 0
-      let fishAlpha = 0
-      let shrimpAlpha = 0
+      if (totalHolders === 0) return []
+
+      // Categorize holders into 6 tiers
+      let megaWhaleCount = 0
+      let whaleCount = 0
+      let smallWhaleCount = 0
+      let dolphinCount = 0
+      let fishCount = 0
+      let shrimpCount = 0
 
       for (const pos of validPositions) {
         const balance = parseFloat(pos.alphaBalance) / 1e9
-        if (balance >= 10000) whaleAlpha += parseFloat(pos.alphaBalance)
-        else if (balance >= 1000) dolphinAlpha += parseFloat(pos.alphaBalance)
-        else if (balance >= 100) fishAlpha += parseFloat(pos.alphaBalance)
-        else shrimpAlpha += parseFloat(pos.alphaBalance)
+        if (balance >= 1000000) megaWhaleCount++
+        else if (balance >= 100000) whaleCount++
+        else if (balance >= 10000) smallWhaleCount++
+        else if (balance >= 1000) dolphinCount++
+        else if (balance >= 100) fishCount++
+        else shrimpCount++
       }
 
-      // Return a single data point for current state
-      const now = new Date()
-      return [
-        {
-          time: Math.floor(now.getTime() / 1000) as UTCTimestamp,
-          whale: totalAlpha > 0 ? (whaleAlpha / totalAlpha) * 100 : 0,
-          dolphin: totalAlpha > 0 ? (dolphinAlpha / totalAlpha) * 100 : 0,
-          fish: totalAlpha > 0 ? (fishAlpha / totalAlpha) * 100 : 0,
-          shrimp: totalAlpha > 0 ? (shrimpAlpha / totalAlpha) * 100 : 0,
-        },
-      ]
+      // Create multiple data points to make chart render properly
+      const now = Date.now()
+      const dayMs = 24 * 60 * 60 * 1000
+      return Array.from({ length: 7 }, (_, i) => ({
+        time: Math.floor((now - (6 - i) * dayMs) / 1000) as UTCTimestamp,
+        megaWhale: (megaWhaleCount / totalHolders) * 100,
+        whale: (whaleCount / totalHolders) * 100,
+        smallWhale: (smallWhaleCount / totalHolders) * 100,
+        dolphin: (dolphinCount / totalHolders) * 100,
+        fish: (fishCount / totalHolders) * 100,
+        shrimp: (shrimpCount / totalHolders) * 100,
+      }))
     }
 
-    // Use real historical data from API
-    return holderHistory.map((day) => {
-      const date = new Date(day.date)
+    // Use real historical data from the new GraphQL-backed endpoint
+    return holderDistribution.map((day) => {
+      const date = new Date(day.snapshotDate)
+      const total = day.totalHolders || 1 // Avoid division by zero
       return {
         time: Math.floor(date.getTime() / 1000) as UTCTimestamp,
-        whale: day.whalePercent,
-        dolphin: day.dolphinPercent,
-        fish: day.fishPercent,
-        shrimp: day.shrimpPercent,
+        megaWhale: ((day.holders1mPlus ?? 0) / total) * 100,
+        whale: ((day.holders100kTo1m ?? 0) / total) * 100,
+        smallWhale: ((day.holders10kTo100k ?? 0) / total) * 100,
+        dolphin: ((day.holders1kTo10k ?? 0) / total) * 100,
+        fish: ((day.holders100To1k ?? 0) / total) * 100,
+        shrimp: ((day.holdersUnder100 ?? 0) / total) * 100,
       }
     })
-  }, [holderHistory, positions])
+  }, [holderDistribution, positions])
 
-  // Create stacked area chart
+  // Create stacked area chart with 6 tiers
   useEffect(() => {
     if (!chartContainerRef.current || chartData.length === 0) return
 
@@ -759,19 +792,35 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
       handleScale: false,
     })
 
-    // Create stacked area data - each series stacks on top
+    // Create stacked area data - each series stacks on top (bottom to top order)
     const shrimpData = chartData.map((d) => ({ time: d.time, value: d.shrimp }))
     const fishData = chartData.map((d) => ({ time: d.time, value: d.shrimp + d.fish }))
     const dolphinData = chartData.map((d) => ({
       time: d.time,
       value: d.shrimp + d.fish + d.dolphin,
     }))
+    const smallWhaleData = chartData.map((d) => ({
+      time: d.time,
+      value: d.shrimp + d.fish + d.dolphin + d.smallWhale,
+    }))
     const whaleData = chartData.map((d) => ({
       time: d.time,
-      value: d.shrimp + d.fish + d.dolphin + d.whale,
+      value: d.shrimp + d.fish + d.dolphin + d.smallWhale + d.whale,
+    }))
+    const megaWhaleData = chartData.map((d) => ({
+      time: d.time,
+      value: d.shrimp + d.fish + d.dolphin + d.smallWhale + d.whale + d.megaWhale,
     }))
 
-    // Add series in reverse order (bottom to top)
+    // Add series in reverse order (top to bottom for proper stacking)
+    const megaWhaleSeries = chart.addSeries(AreaSeries, {
+      lineColor: HOLDER_COLORS.megaWhale,
+      topColor: `${HOLDER_COLORS.megaWhale}80`,
+      bottomColor: `${HOLDER_COLORS.megaWhale}20`,
+      lineWidth: 1,
+    })
+    megaWhaleSeries.setData(megaWhaleData)
+
     const whaleSeries = chart.addSeries(AreaSeries, {
       lineColor: HOLDER_COLORS.whale,
       topColor: `${HOLDER_COLORS.whale}80`,
@@ -779,6 +828,14 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
       lineWidth: 1,
     })
     whaleSeries.setData(whaleData)
+
+    const smallWhaleSeries = chart.addSeries(AreaSeries, {
+      lineColor: HOLDER_COLORS.smallWhale,
+      topColor: `${HOLDER_COLORS.smallWhale}80`,
+      bottomColor: `${HOLDER_COLORS.smallWhale}20`,
+      lineWidth: 1,
+    })
+    smallWhaleSeries.setData(smallWhaleData)
 
     const dolphinSeries = chart.addSeries(AreaSeries, {
       lineColor: HOLDER_COLORS.dolphin,
@@ -818,6 +875,7 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
       chart.remove()
     }
   }, [chartData])
+
   if (isLoading) {
     return (
       <div className="rounded-xl bg-grey-900 p-5">
@@ -852,11 +910,11 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
           </div>
 
           <div>
-            <span className="text-body-secondary text-xs">Top 10 Concentration</span>
+            <span className="text-body-secondary text-xs">Top 10 %</span>
             <div className="font-bold text-2xl text-white">
-              {metrics.top10Concentration.toFixed(0)}%
+              {top10Metrics.top10Concentration.toFixed(0)}%
             </div>
-            <span className="text-body-secondary text-xs">{metrics.concentrationLabel}</span>
+            <span className="text-body-secondary text-xs">{top10Metrics.concentrationLabel}</span>
           </div>
 
           <div>
@@ -865,13 +923,15 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="mb-4 flex items-center gap-4">
+        {/* Legend - 6 tiers in two rows */}
+        <div className="mb-4 grid grid-cols-3 gap-2">
           {[
-            { label: "Whale (10K+)", color: HOLDER_COLORS.whale },
-            { label: "Dolphin (1K+)", color: HOLDER_COLORS.dolphin },
-            { label: "Fish (100+)", color: HOLDER_COLORS.fish },
-            { label: "Shrimp", color: HOLDER_COLORS.shrimp },
+            { label: "1M+ α", color: HOLDER_COLORS.megaWhale },
+            { label: "100K-1M α", color: HOLDER_COLORS.whale },
+            { label: "10K-100K α", color: HOLDER_COLORS.smallWhale },
+            { label: "1K-10K α", color: HOLDER_COLORS.dolphin },
+            { label: "100-1K α", color: HOLDER_COLORS.fish },
+            { label: "< 100 α", color: HOLDER_COLORS.shrimp },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
               <div className="size-2.5 rounded-sm" style={{ backgroundColor: item.color }} />
@@ -884,7 +944,7 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
         <div ref={chartContainerRef} className="h-[150px] w-full" />
 
         {/* No data fallback message */}
-        {(!holderHistory || holderHistory.length === 0) && (
+        {(!holderDistribution || holderDistribution.length === 0) && (
           <div className="mt-2 text-center text-body-secondary text-xs">
             Historical data will appear once daily snapshots are available
           </div>
@@ -1026,111 +1086,114 @@ const truncateAddress = (address: string): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-const _WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
-  const { data: snapshots, isLoading } = useSubnetStakeSnapshots(netuid, 7, 50)
+// Get display label for transaction type
+const _getTransactionTypeLabel = (type: WhaleTransactionType): string => {
+  switch (type) {
+    case "StakeAdded":
+      return "Stake Added"
+    case "StakeRemoved":
+      return "Stake Removed"
+    case "StakeMove":
+      return "Stake Move"
+    case "StakeTransfer":
+      return "Stake Transfer"
+    case "StakeSwapped":
+      return "Stake Swapped"
+    default:
+      return type
+  }
+}
+
+// Get icon for transaction type
+const getTransactionIcon = (type: WhaleTransactionType): string => {
+  switch (type) {
+    case "StakeAdded":
+      return "mdi:arrow-down"
+    case "StakeRemoved":
+      return "mdi:arrow-up"
+    case "StakeMove":
+      return "mdi:swap-horizontal"
+    case "StakeTransfer":
+      return "mdi:send"
+    case "StakeSwapped":
+      return "mdi:swap-vertical"
+    default:
+      return "mdi:circle"
+  }
+}
+
+// Get color for transaction type
+const getTransactionColor = (type: WhaleTransactionType): string => {
+  switch (type) {
+    case "StakeAdded":
+      return "bg-green"
+    case "StakeRemoved":
+      return "bg-red-500"
+    case "StakeMove":
+      return "bg-blue-500"
+    case "StakeTransfer":
+      return "bg-purple-500"
+    case "StakeSwapped":
+      return "bg-amber-500"
+    default:
+      return "bg-grey-600"
+  }
+}
+
+// Get text color for transaction type
+const getTransactionTextColor = (type: WhaleTransactionType): string => {
+  switch (type) {
+    case "StakeAdded":
+      return "text-green"
+    case "StakeRemoved":
+      return "text-red-500"
+    case "StakeMove":
+      return "text-blue-500"
+    case "StakeTransfer":
+      return "text-purple-500"
+    case "StakeSwapped":
+      return "text-amber-500"
+    default:
+      return "text-body"
+  }
+}
+
+// Is this an inflow transaction?
+const isInflowTransaction = (type: WhaleTransactionType): boolean => {
+  return type === "StakeAdded"
+}
+
+const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
+  const { data: rawTransactions, isLoading } = useWhaleTransactions(netuid, { limit: 50 })
   const { data: taoPrice } = useTaoPrice()
-  const { data: tokenomics } = useSubnetTokenomics(netuid)
+  const transactions = useMemo(
+    () =>
+      (rawTransactions ?? []).filter(
+        (tx) => tx.transactionType === "StakeAdded" || tx.transactionType === "StakeRemoved"
+      ),
+    [rawTransactions]
+  )
 
   const taoUsdPrice = taoPrice?.price ? parseFloat(taoPrice.price) : 0
-  const alphaPrice = tokenomics?.movingPrice ? parseFloat(tokenomics.movingPrice) / 1e18 : 0
 
-  const { whaleActivity, totalBuys, totalSells } = useMemo(() => {
-    if (!snapshots || snapshots.length === 0)
-      return { whaleActivity: [], totalBuys: 0, totalSells: 0 }
+  // Calculate flow totals
+  const { inflow, outflow } = useMemo(() => {
+    if (!transactions || transactions.length === 0) return { inflow: 0, outflow: 0 }
 
-    // Group snapshots by coldkey and sort by date
-    const snapshotsByWallet = new Map<
-      string,
-      { coldkey: string; hotkey: string; snapshots: typeof snapshots }
-    >()
+    let inflowTotal = 0
+    let outflowTotal = 0
 
-    for (const snapshot of snapshots) {
-      const key = `${snapshot.coldkey}-${snapshot.hotkey}`
-      if (!snapshotsByWallet.has(key)) {
-        snapshotsByWallet.set(key, {
-          coldkey: snapshot.coldkey,
-          hotkey: snapshot.hotkey,
-          snapshots: [],
-        })
-      }
-      snapshotsByWallet.get(key)?.snapshots.push(snapshot)
-    }
-
-    // Calculate stake changes for each wallet
-    const activity: {
-      id: string
-      coldkey: string
-      hotkey: string
-      netuid: number
-      change: number
-      currentAmount: number
-      timestamp: string
-      isBuy: boolean
-    }[] = []
-
-    for (const [key, wallet] of snapshotsByWallet) {
-      // Sort snapshots by date (oldest first)
-      const sorted = wallet.snapshots.sort(
-        (a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
-      )
-
-      if (sorted.length >= 2) {
-        // Compare most recent snapshot with previous
-        const latest = sorted[sorted.length - 1]
-        const previous = sorted[sorted.length - 2]
-        const latestAmount = parseFloat(latest.amount) / 1e9
-        const previousAmount = parseFloat(previous.amount) / 1e9
-        const change = latestAmount - previousAmount
-
-        // Only include significant changes (> 50 TAO equivalent)
-        if (Math.abs(change) * alphaPrice >= 50) {
-          activity.push({
-            id: key,
-            coldkey: wallet.coldkey,
-            hotkey: wallet.hotkey,
-            netuid: latest.netuid,
-            change,
-            currentAmount: latestAmount,
-            timestamp: latest.timestamp,
-            isBuy: change > 0,
-          })
-        }
-      } else if (sorted.length === 1) {
-        // New position - treat as a buy
-        const snapshot = sorted[0]
-        const amount = parseFloat(snapshot.amount) / 1e9
-        if (amount * alphaPrice >= 50) {
-          activity.push({
-            id: key,
-            coldkey: wallet.coldkey,
-            hotkey: wallet.hotkey,
-            netuid: snapshot.netuid,
-            change: amount,
-            currentAmount: amount,
-            timestamp: snapshot.timestamp,
-            isBuy: true,
-          })
-        }
+    for (const tx of transactions) {
+      const taoAmount = Number(tx.taoAmount) / 1e9
+      if (tx.transactionType === "StakeAdded") {
+        inflowTotal += taoAmount
+      } else if (tx.transactionType === "StakeRemoved") {
+        outflowTotal += taoAmount
       }
     }
 
-    // Sort by timestamp (most recent first) and limit
-    const sortedActivity = activity
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 15)
-
-    // Calculate totals for flow bar
-    const buys = sortedActivity.filter((a) => a.isBuy)
-    const sells = sortedActivity.filter((a) => !a.isBuy)
-    const totalBuysVol = buys.reduce((sum, a) => sum + Math.abs(a.change) * alphaPrice, 0)
-    const totalSellsVol = sells.reduce((sum, a) => sum + Math.abs(a.change) * alphaPrice, 0)
-
-    return {
-      whaleActivity: sortedActivity,
-      totalBuys: totalBuysVol,
-      totalSells: totalSellsVol,
-    }
-  }, [snapshots, alphaPrice])
+    return { inflow: inflowTotal, outflow: outflowTotal }
+  }, [transactions])
 
   if (isLoading) {
     return (
@@ -1144,7 +1207,7 @@ const _WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
     )
   }
 
-  if (whaleActivity.length === 0) {
+  if (!transactions || transactions.length === 0) {
     return (
       <div className="py-8 text-center text-body-secondary text-sm">
         No whale activity found for this subnet
@@ -1152,65 +1215,108 @@ const _WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
     )
   }
 
-  const totalFlow = totalBuys + totalSells
-  const buyPercent = totalFlow > 0 ? (totalBuys / totalFlow) * 100 : 50
-  const sellPercent = totalFlow > 0 ? (totalSells / totalFlow) * 100 : 50
+  const totalFlow = inflow + outflow
+  const inflowPercent = totalFlow > 0 ? (inflow / totalFlow) * 100 : 50
+  const outflowPercent = totalFlow > 0 ? (outflow / totalFlow) * 100 : 50
 
   return (
     <div className="flex flex-col gap-3">
       {/* Total Flow Header */}
       <div className="rounded-lg bg-grey-900 p-4">
-        <div className="mb-3 font-medium text-white">Total Flow</div>
+        <div className="mb-3 font-medium text-white">Whale Flow</div>
         <div className="mb-2 flex h-2 w-full overflow-hidden rounded-full">
-          <div className="h-full bg-red-500 transition-all" style={{ width: `${buyPercent}%` }} />
-          <div className="h-full bg-green transition-all" style={{ width: `${sellPercent}%` }} />
+          <div className="h-full bg-green transition-all" style={{ width: `${inflowPercent}%` }} />
+          <div
+            className="h-full bg-red-500 transition-all"
+            style={{ width: `${outflowPercent}%` }}
+          />
         </div>
         <div className="flex justify-between text-body-secondary text-xs">
-          <span>Buys</span>
-          <span>Sells</span>
+          <span className="text-green">{formatNumber(inflow, 0)} τ In</span>
+          <span className="text-red-500">{formatNumber(outflow, 0)} τ Out</span>
         </div>
       </div>
 
       {/* Activity List */}
-      {whaleActivity.map((item) => {
-        const taoValue = Math.abs(item.change) * alphaPrice
-        const usdValue = taoValue * taoUsdPrice
+      {transactions.slice(0, 20).map((tx) => {
+        const taoAmount = Number(tx.taoAmount) / 1e9
+        const usdValue = taoAmount * taoUsdPrice
+        const alphaAmount = tx.alphaAmount ? Number(tx.alphaAmount) / 1e9 : null
+        const isInflow = isInflowTransaction(tx.transactionType)
 
         return (
-          <div
-            key={item.id}
-            className="flex items-center justify-between rounded-xl bg-grey-900 px-4 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <div
+          <div key={tx.id} className="rounded-xl bg-grey-900 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded-full",
+                    getTransactionColor(tx.transactionType)
+                  )}
+                >
+                  <Icon
+                    icon={getTransactionIcon(tx.transactionType)}
+                    className="size-5 text-white"
+                  />
+                </div>
+                <div>
+                  <div className="font-medium text-sm text-white">
+                    {truncateAddress(tx.coldkey)}
+                  </div>
+                  <div className="text-body-secondary text-xs">{formatTimeAgo(tx.timestamp)}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div
+                  className={cn("font-medium text-sm", getTransactionTextColor(tx.transactionType))}
+                >
+                  {isInflow ? "+ " : "- "}
+                  {formatNumber(taoAmount, 0)} τ
+                </div>
+                <div className="text-body-secondary text-xs">{formatUsd(usdValue)}</div>
+              </div>
+            </div>
+
+            {/* Additional details for moves/transfers/swaps */}
+            {(tx.originNetuid !== null || tx.destinationColdkey) && (
+              <div className="mt-2 flex flex-wrap gap-2 border-grey-700 border-t pt-2 text-xs">
+                {tx.originNetuid !== null && (
+                  <span className="text-body-secondary">
+                    From SN{tx.originNetuid} → SN{tx.netuid}
+                  </span>
+                )}
+                {tx.destinationColdkey && (
+                  <span className="text-body-secondary">
+                    To: {truncateAddress(tx.destinationColdkey)}
+                  </span>
+                )}
+                {alphaAmount !== null && (
+                  <span className="text-body-secondary">{formatNumber(alphaAmount, 0)} α</span>
+                )}
+              </div>
+            )}
+
+            {/* Tier badge */}
+            {/* <div className="mt-2">
+              <span
                 className={cn(
-                  "flex size-10 items-center justify-center rounded-full",
-                  item.isBuy ? "bg-green" : "bg-red-500"
+                  "inline-block rounded-full px-2 py-0.5 text-xs",
+                  tx.tier === "Whale"
+                    ? "bg-cyan-500/20 text-cyan-400"
+                    : tx.tier === "Shark"
+                      ? "bg-blue-500/20 text-blue-400"
+                      : tx.tier === "Dolphin"
+                        ? "bg-purple-500/20 text-purple-400"
+                        : tx.tier === "Fish"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : tx.tier === "Crab"
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-grey-600/20 text-grey-400"
                 )}
               >
-                <Icon
-                  icon={item.isBuy ? "mdi:arrow-down" : "mdi:arrow-up"}
-                  className="size-5 text-white"
-                />
-              </div>
-              <div>
-                <div className="font-medium text-sm text-white">
-                  {truncateAddress(item.coldkey)}
-                </div>
-                <div className="text-body-secondary text-xs">
-                  SN{item.netuid} &nbsp; {formatTimeAgo(item.timestamp)}
-                </div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div
-                className={cn("font-medium text-sm", item.isBuy ? "text-green" : "text-red-500")}
-              >
-                {item.isBuy ? "+ " : "- "}
-                {formatNumber(taoValue, 0)} τ
-              </div>
-              <div className="text-body-secondary text-xs">{formatUsd(usdValue)}</div>
-            </div>
+                {tx.tier}
+              </span>
+            </div> */}
           </div>
         )
       })}
@@ -1235,7 +1341,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         <div className="flex flex-col gap-6 overflow-y-auto">
           <TrendingSentimentSection netuid={netuid} />
           <TradeFlowSection netuid={netuid} />
-          {/* <HoldersOverviewSection netuid={netuid} /> */}
+          <HoldersOverviewSection netuid={netuid} />
         </div>
       )}
 
@@ -1245,11 +1351,11 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         </div>
       )}
 
-      {/* {activeTab === "whale" && (
+      {activeTab === "whale" && (
         <div className="flex-1 overflow-y-auto">
           <WhaleActivitySection netuid={netuid} />
         </div>
-      )} */}
+      )}
     </div>
   )
 }
