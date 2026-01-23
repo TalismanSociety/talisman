@@ -22,6 +22,7 @@
     "dev:substrate-psp22-subscribe": "tsx watch src/substrate-psp22-subscribe.ts",
     "dev:substrate-tokens-subscribe": "tsx watch src/substrate-tokens-subscribe.ts",
     "dev:evm-erc20-subscribe": "tsx watch src/evm-erc20-subscribe.ts",
+    "dev:evm-native-subscribe": "tsx watch src/evm-native-subscribe.ts",
     "dev:bifrost": "tsx watch src/bifrost.ts",
     "dev:ewx": "tsx watch src/ewx.ts",
     "dev:interlay": "tsx watch src/interlay.ts",
