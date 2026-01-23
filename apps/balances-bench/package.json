@@ -12,6 +12,7 @@
     "dev:pah-foreignassets-subscribe": "tsx watch src/pah-foreignassets-subscribe.ts",
     "dev:astar": "tsx watch src/astar.ts",
     "dev:azero": "tsx watch src/aleph-zero.ts",
+    "dev:azero-subscribe": "tsx watch src/aleph-zero-subscribe.ts",
     "dev:bittensor": "tsx watch src/bittensor.ts",
     "dev:bittensor-subscribe": "tsx watch src/bittensor-subscribe.ts",
     "dev:polkadot": "tsx watch src/polkadot.ts",
