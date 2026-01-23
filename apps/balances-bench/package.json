@@ -6,6 +6,7 @@
   "scripts": {
     "dev:ethereum": "tsx watch src/ethereum.ts",
     "dev:hydration": "tsx watch src/hydration.ts",
+    "dev:hydration-subscribe": "tsx watch src/hydration-subscribe.ts",
     "dev:pah": "tsx watch src/pah.ts",
     "dev:pah-subscribe": "tsx watch src/pah-subscribe.ts",
     "dev:pah-foreignassets-subscribe": "tsx watch src/pah-foreignassets-subscribe.ts",
