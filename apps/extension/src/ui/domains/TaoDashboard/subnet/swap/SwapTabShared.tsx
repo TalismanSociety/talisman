@@ -1,11 +1,9 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { EditIcon, InfoIcon } from "@talismn/icons"
+import { EditIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { Toggle, useOpenClose } from "talisman-ui"
-import { MevShieldInfoModal } from "./MevShieldInfoModal"
 
 type SwapInputsContainerProps = PropsWithChildren<{
   label: ReactNode
@@ -103,38 +101,6 @@ export const SwapFeeEstimate: FC<SwapFeeEstimateProps> = ({
   return <div>{t("N/A")}</div>
 }
 
-type SwapMevShieldRowProps = {
-  withMevShield: boolean
-  isMevShieldDisabled: boolean
-  setIsMevProtectionEnabled: (enabled: boolean) => void
-}
-
-export const SwapMevShieldRow: FC<SwapMevShieldRowProps> = ({
-  withMevShield,
-  isMevShieldDisabled,
-  setIsMevProtectionEnabled,
-}) => {
-  const { t } = useTranslation()
-  const { isOpen, open, close } = useOpenClose()
-
-  return (
-    <div className="flex h-14 items-center justify-end gap-2 text-body-secondary text-sm">
-      <Toggle
-        variant="sm"
-        checked={withMevShield}
-        disabled={isMevShieldDisabled}
-        onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
-      >
-        {t("Use MEV Shield")}
-      </Toggle>
-      <button type="button" className="whitespace-nowrap hover:text-body" onClick={open}>
-        <InfoIcon className="inline" />
-      </button>
-      <MevShieldInfoModal isOpen={isOpen} onClose={close} />
-    </div>
-  )
-}
-
 type SwapSlippageRowProps = {
   slippage: number
   onEdit?: () => void
@@ -156,59 +122,3 @@ export const SwapSlippageRow: FC<SwapSlippageRowProps> = ({ slippage, onEdit }) 
 
   return <div>{slippage.toFixed(2)}%</div>
 }
-
-// type SwapSubmitButtonProps = {
-//   label: string
-//   color?: ButtonProps["color"]
-//   payload?: SignerPayloadJSON
-//   txMetadata?: Uint8Array | `0x${string}`
-//   txInfo?: WalletTransactionInfo
-//   canSubmit: boolean
-//   txMode?: ScaleApiSubmitMode
-//   onSubmitted: (hash: Hex, innerHash?: Hex) => void
-//   className?: string
-//   containerId?: string
-// }
-
-// export const SwapSubmitButton: FC<SwapSubmitButtonProps> = ({
-//   label,
-//   color,
-//   payload,
-//   txMetadata,
-//   txInfo,
-//   canSubmit,
-//   txMode,
-//   onSubmitted,
-//   className,
-//   containerId,
-// }) => {
-//   // if there is no payload, sapi button for ledger will display an error and incorrect styling
-//   // TODO check that displaying the error is intended, display a placeholder until then
-//   if (!payload) {
-//     return (
-//       <Button
-//         type="button"
-//         disabled
-//         className={cn("h-24 w-full rounded border-none font-bold text-black uppercase", className)}
-//         color={color}
-//       >
-//         {label}
-//       </Button>
-//     )
-//   }
-
-//   return (
-//     <SapiSendButton
-//       containerId={containerId}
-//       className={cn("h-24 w-full rounded border-none font-bold text-black uppercase", className)}
-//       payload={payload}
-//       txMetadata={txMetadata}
-//       txInfo={txInfo}
-//       mode={txMode}
-//       color={color}
-//       label={label}
-//       disabled={!canSubmit}
-//       onSubmitted={onSubmitted}
-//     />
-//   )
-// }

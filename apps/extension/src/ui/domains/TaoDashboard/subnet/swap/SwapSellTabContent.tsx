@@ -9,7 +9,6 @@ import {
   SwapDetailsRow,
   SwapFeeEstimate,
   SwapInputsContainer,
-  SwapMevShieldRow,
   SwapPriceImpact,
   SwapSlippageRow,
 } from "./SwapTabShared"
@@ -44,7 +43,6 @@ const TabContent: FC = () => {
           <SwapDetailsRow label={t("Max Slippage")}>
             <SlippageDisplay />
           </SwapDetailsRow>
-          <MevShieldRow />
         </div>
         <SubmitButton />
       </div>
@@ -70,18 +68,6 @@ const SubmitButton = () => {
       </Button>
       <SwapSellConfirmModal isOpen={isOpen} onClose={close} />
     </>
-  )
-}
-
-const MevShieldRow = () => {
-  const { isMevShieldDisabled, withMevShield, setIsMevProtectionEnabled } = useSwapSell()
-
-  return (
-    <SwapMevShieldRow
-      withMevShield={withMevShield}
-      isMevShieldDisabled={isMevShieldDisabled}
-      setIsMevProtectionEnabled={setIsMevProtectionEnabled}
-    />
   )
 }
 
