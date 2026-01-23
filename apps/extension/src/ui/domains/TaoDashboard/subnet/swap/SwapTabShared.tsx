@@ -7,12 +7,11 @@ import { useTranslation } from "react-i18next"
 
 type SwapInputsContainerProps = PropsWithChildren<{
   label: ReactNode
-  variant: "buy" | "sell"
 }>
 
-export const SwapInputsContainer: FC<SwapInputsContainerProps> = ({ label, variant, children }) => (
+export const SwapInputsContainer: FC<SwapInputsContainerProps> = ({ label, children }) => (
   <div className="flex w-full flex-col gap-5 overflow-hidden">
-    <div className={cn("pl-2 text-sm", variant === "buy" ? "text-buy" : "text-sell")}>{label}</div>
+    <div className="pl-2 text-body-secondary text-sm">{label}</div>
     <div className="w-full overflow-hidden">{children}</div>
   </div>
 )
