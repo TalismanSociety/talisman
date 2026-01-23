@@ -1,6 +1,7 @@
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { BITTENSOR_SWAP_CONTAINER_ID } from "./common"
+import { Button, useOpenClose } from "talisman-ui"
+import { SwapSellConfirmModal } from "./SwapSellConfirmModal"
 import { SwapSellInput } from "./SwapSellInput"
 import { SwapSellOutput } from "./SwapSellOutput"
 import { SwapSellProvider, useSwapSell } from "./SwapSellProvider"
@@ -11,7 +12,6 @@ import {
   SwapMevShieldRow,
   SwapPriceImpact,
   SwapSlippageRow,
-  SwapSubmitButton,
 } from "./SwapTabShared"
 
 export const SwapSellTabContent: FC<{ netuid: number }> = ({ netuid }) => (
@@ -54,20 +54,22 @@ const TabContent: FC = () => {
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { payload, txMetadata, txInfo, canSubmit, txMode, onSubmit } = useSwapSell()
+  const { canSubmit } = useSwapSell()
+  const { isOpen, open, close } = useOpenClose()
 
   return (
-    <SwapSubmitButton
-      containerId={BITTENSOR_SWAP_CONTAINER_ID}
-      label={t("Sell")}
-      color="sell"
-      payload={payload}
-      txMetadata={txMetadata}
-      txInfo={txInfo}
-      txMode={txMode}
-      canSubmit={canSubmit}
-      onSubmitted={onSubmit}
-    />
+    <>
+      <Button
+        fullWidth
+        color="sell"
+        onClick={open}
+        disabled={!canSubmit}
+        className="h-24 w-full rounded border-none font-bold text-black uppercase"
+      >
+        {t("Sell")}
+      </Button>
+      <SwapSellConfirmModal isOpen={isOpen} onClose={close} />
+    </>
   )
 }
 

@@ -115,6 +115,8 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isError,
     slippage,
     minAlphaUnstake,
+    swapPrice,
+    talismanFee,
   } = useBittensorStakingPayload({
     netuid,
     amountIn: state.valueIn,
@@ -221,7 +223,11 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     valueIn: state.valueIn,
     maxValueIn,
     valueOut,
+    taoToken: tokenOut,
+    dtaoToken: tokenIn,
 
+    talismanFee,
+    swapPrice,
     priceImpact,
     slippage,
     isLoading,

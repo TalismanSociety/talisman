@@ -1,14 +1,10 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { EditIcon, InfoIcon } from "@talismn/icons"
-import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import type { SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, type ButtonProps, Toggle, useOpenClose } from "talisman-ui"
-import type { Hex } from "viem"
+import { Toggle, useOpenClose } from "talisman-ui"
 import { MevShieldInfoModal } from "./MevShieldInfoModal"
 
 type SwapInputsContainerProps = PropsWithChildren<{
@@ -161,58 +157,58 @@ export const SwapSlippageRow: FC<SwapSlippageRowProps> = ({ slippage, onEdit }) 
   return <div>{slippage.toFixed(2)}%</div>
 }
 
-type SwapSubmitButtonProps = {
-  label: string
-  color?: ButtonProps["color"]
-  payload?: SignerPayloadJSON
-  txMetadata?: Uint8Array | `0x${string}`
-  txInfo?: WalletTransactionInfo
-  canSubmit: boolean
-  txMode?: ScaleApiSubmitMode
-  onSubmitted: (hash: Hex, innerHash?: Hex) => void
-  className?: string
-  containerId?: string
-}
+// type SwapSubmitButtonProps = {
+//   label: string
+//   color?: ButtonProps["color"]
+//   payload?: SignerPayloadJSON
+//   txMetadata?: Uint8Array | `0x${string}`
+//   txInfo?: WalletTransactionInfo
+//   canSubmit: boolean
+//   txMode?: ScaleApiSubmitMode
+//   onSubmitted: (hash: Hex, innerHash?: Hex) => void
+//   className?: string
+//   containerId?: string
+// }
 
-export const SwapSubmitButton: FC<SwapSubmitButtonProps> = ({
-  label,
-  color,
-  payload,
-  txMetadata,
-  txInfo,
-  canSubmit,
-  txMode,
-  onSubmitted,
-  className,
-  containerId,
-}) => {
-  // if there is no payload, sapi button for ledger will display an error and incorrect styling
-  // TODO check that displaying the error is intended, display a placeholder until then
-  if (!payload) {
-    return (
-      <Button
-        type="button"
-        disabled
-        className={cn("h-24 w-full rounded border-none font-bold text-black uppercase", className)}
-        color={color}
-      >
-        {label}
-      </Button>
-    )
-  }
+// export const SwapSubmitButton: FC<SwapSubmitButtonProps> = ({
+//   label,
+//   color,
+//   payload,
+//   txMetadata,
+//   txInfo,
+//   canSubmit,
+//   txMode,
+//   onSubmitted,
+//   className,
+//   containerId,
+// }) => {
+//   // if there is no payload, sapi button for ledger will display an error and incorrect styling
+//   // TODO check that displaying the error is intended, display a placeholder until then
+//   if (!payload) {
+//     return (
+//       <Button
+//         type="button"
+//         disabled
+//         className={cn("h-24 w-full rounded border-none font-bold text-black uppercase", className)}
+//         color={color}
+//       >
+//         {label}
+//       </Button>
+//     )
+//   }
 
-  return (
-    <SapiSendButton
-      containerId={containerId}
-      className={cn("h-24 w-full rounded border-none font-bold text-black uppercase", className)}
-      payload={payload}
-      txMetadata={txMetadata}
-      txInfo={txInfo}
-      mode={txMode}
-      color={color}
-      label={label}
-      disabled={!canSubmit}
-      onSubmitted={onSubmitted}
-    />
-  )
-}
+//   return (
+//     <SapiSendButton
+//       containerId={containerId}
+//       className={cn("h-24 w-full rounded border-none font-bold text-black uppercase", className)}
+//       payload={payload}
+//       txMetadata={txMetadata}
+//       txInfo={txInfo}
+//       mode={txMode}
+//       color={color}
+//       label={label}
+//       disabled={!canSubmit}
+//       onSubmitted={onSubmitted}
+//     />
+//   )
+// }

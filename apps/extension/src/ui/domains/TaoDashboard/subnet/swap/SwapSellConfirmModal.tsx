@@ -29,11 +29,11 @@ import {
   useOpenClose,
   WizardModalDialog,
 } from "talisman-ui"
-import { useSwapBuy } from "./SwapBuyProvider"
+import { useSwapSell } from "./SwapSellProvider"
 
 const CONTAINER_ID = "tao-swap-confirm-modal"
 
-export const SwapBuyConfirmModal: FC<{ isOpen: boolean; onClose: () => void }> = ({
+export const SwapSellConfirmModal: FC<{ isOpen: boolean; onClose: () => void }> = ({
   isOpen,
   onClose,
 }) => (
@@ -47,7 +47,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <PopupSizeModalContainer id={CONTAINER_ID}>
       <WizardModalDialog
-        title={t("Confirm Buy")}
+        title={t("Confirm Sell")}
         className="size-full border-none"
         onCloseClick={onClose}
       >
@@ -145,7 +145,7 @@ const FieldSeparator: FC<{ className?: string }> = ({ className }) => {
 }
 
 const AmountInValue = () => {
-  const { tokenIdIn, valueIn } = useSwapBuy()
+  const { tokenIdIn, valueIn } = useSwapSell()
 
   if (!tokenIdIn || !valueIn) return null
 
@@ -163,24 +163,30 @@ const AmountInValue = () => {
 }
 
 const SpenderValue = () => {
-  const { address } = useSwapBuy()
+  const { selectedPosition } = useSwapSell()
 
-  if (!address) return null
+  if (!selectedPosition) return null
 
-  return <AccountDisplay ss58Format={42} address={address} iconClassName="text-[2rem]" />
+  return (
+    <AccountDisplay
+      ss58Format={42}
+      address={selectedPosition.account.address}
+      iconClassName="text-[2rem]"
+    />
+  )
 }
 
 const SubnetValue = () => {
   const { t } = useTranslation()
-  const { netuid, tokenOutGeneric } = useSwapBuy()
+  const { netuid, tokenIn } = useSwapSell()
 
-  return tokenOutGeneric?.subnetName || t("Subnet {{netuid}}", { netuid })
+  return tokenIn?.subnetName || t("Subnet {{netuid}}", { netuid })
 }
 
 const ValidatorValue = () => {
-  const { hotkey } = useSwapBuy()
+  const { tokenIn } = useSwapSell()
 
-  return <BittensorValidatorName hotkey={hotkey} />
+  return <BittensorValidatorName hotkey={tokenIn?.hotkey} />
 }
 
 const ValidatorApyLabel = () => {
@@ -199,13 +205,15 @@ const ValidatorApyLabel = () => {
 }
 const ValidatorApyValue = () => {
   const { t } = useTranslation()
-  const { hotkey, netuid } = useSwapBuy()
+  const { tokenIn, netuid } = useSwapSell()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
   const apy = useMemo(() => {
-    const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)
+    const validator = combinedValidatorsData.find(
+      (validator) => validator.hotkey === tokenIn?.hotkey
+    )
     return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
-  }, [combinedValidatorsData, hotkey])
+  }, [combinedValidatorsData, tokenIn?.hotkey])
 
   const display = useMemo(() => (apy ? `${(apy * 100).toFixed(2)}%` : "N/A"), [apy])
 
@@ -221,20 +229,15 @@ const ValidatorApyValue = () => {
 }
 
 const EstimatedOutputValue: FC = () => {
-  const { valueOut, tokenOutGeneric } = useSwapBuy()
+  const { valueOut, tokenOut } = useSwapSell()
 
   return (
-    <TokensAndFiat
-      planck={valueOut}
-      tokenId={tokenOutGeneric?.id}
-      noCountUp
-      tokensClassName="text-body"
-    />
+    <TokensAndFiat planck={valueOut} tokenId={tokenOut?.id} noCountUp tokensClassName="text-body" />
   )
 }
 
 const AlphaPriceValue = () => {
-  const { swapPrice, taoToken } = useSwapBuy()
+  const { swapPrice, taoToken } = useSwapSell()
 
   if (!taoToken) return null
 
@@ -250,7 +253,7 @@ const AlphaPriceValue = () => {
 }
 
 const PriceImpactValue = () => {
-  const { priceImpact } = useSwapBuy()
+  const { priceImpact } = useSwapSell()
 
   return (
     <span
@@ -266,7 +269,7 @@ const PriceImpactValue = () => {
 }
 
 const SlippageToleranceValue = () => {
-  const { slippage, netuid } = useSwapBuy()
+  const { slippage, netuid } = useSwapSell()
   const { isOpen, open, close } = useOpenClose()
 
   return (
@@ -306,7 +309,7 @@ const MevShieldLabel = () => {
 }
 
 const MevShieldValue = () => {
-  const { withMevShield, isMevShieldDisabled, setIsMevProtectionEnabled } = useSwapBuy()
+  const { withMevShield, isMevShieldDisabled, setIsMevProtectionEnabled } = useSwapSell()
 
   return (
     <Toggle
@@ -319,7 +322,7 @@ const MevShieldValue = () => {
 }
 
 const FeeEstimateValue = () => {
-  const { feeEstimate, taoToken, isLoadingFeeEstimate, errorFeeEstimate } = useSwapBuy()
+  const { feeEstimate, taoToken, isLoadingFeeEstimate, errorFeeEstimate } = useSwapSell()
 
   return (
     <StakingFeeEstimate
@@ -337,7 +340,7 @@ const MAX_TOTAL_FEE_DISCOUNT = 1
 const TalismanFeeLabel = () => {
   const { t } = useTranslation()
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
-  const { netuid } = useSwapBuy()
+  const { netuid } = useSwapSell()
   const { tier } = useGetSeekDiscount()
   const subnetFee = useGetSubnetFee({
     netuid: netuid ?? 0,
@@ -425,7 +428,7 @@ const TalismanFeeLabel = () => {
 
 const TalismanFeeValue = () => {
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
-  const { talismanFee, taoToken, isLoading, errorFeeEstimate } = useSwapBuy()
+  const { talismanFee, taoToken, isLoading, errorFeeEstimate } = useSwapSell()
 
   const { tier } = useGetSeekDiscount()
 
@@ -444,7 +447,7 @@ const TalismanFeeValue = () => {
 
 const SendButton: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
-  const { payload, txMetadata, txInfo, canSubmit, withMevShield, onSubmit } = useSwapBuy()
+  const { payload, txMetadata, txInfo, canSubmit, withMevShield, onSubmit } = useSwapSell()
 
   const handleSubmit = useCallback(
     (hash: `0x${string}`, innerHash?: `0x${string}` | undefined) => {
@@ -457,7 +460,7 @@ const SendButton: FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <SapiSendButton
       containerId={CONTAINER_ID}
-      label={t("Buy")}
+      label={t("Sell")}
       payload={payload}
       onSubmitted={handleSubmit}
       txMetadata={txMetadata}

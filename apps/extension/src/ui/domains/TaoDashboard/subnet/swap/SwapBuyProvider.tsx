@@ -241,6 +241,9 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     hotkey,
     address,
     account,
+    taoToken: tokenIn,
+    dtaoToken: tokenOutGeneric, // the dynamic one might not exist yet
+
     canSubmit,
     swapPrice,
     priceImpact,
