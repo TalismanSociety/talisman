@@ -12,7 +12,7 @@ import {
   type SignerPayloadRaw,
 } from "extension-core"
 import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
-import { type ReactElement, useMemo, useState } from "react"
+import { type ReactElement, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import {
   Button,
@@ -59,6 +59,7 @@ interface Props {
   className?: string
   buttonClassName?: string
   genesisHash?: HexString | null
+  onQrDisplayed?: (displayed: boolean) => void // parent should not allow payload to change while qr is being displayed
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
   payload?: SignerPayloadJSON | SignerPayloadRaw
@@ -76,6 +77,7 @@ export const QrSubstrate = ({
   genesisHash,
   onSignature,
   onReject,
+  onQrDisplayed,
   payload,
   shortMetadata,
   containerId,
@@ -96,6 +98,14 @@ export const QrSubstrate = ({
   const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
   const { qrCodeSource } = qrCodeSourceSelectorState
+
+  const [isQrDisplayed, setIsQrDisplayed] = useState(false)
+  useEffect(() => {
+    setIsQrDisplayed(scanState.page !== "INIT")
+  }, [scanState.page])
+  useEffect(() => {
+    onQrDisplayed?.(isQrDisplayed)
+  }, [isQrDisplayed, onQrDisplayed])
 
   if (scanState.page === "INIT")
     return (

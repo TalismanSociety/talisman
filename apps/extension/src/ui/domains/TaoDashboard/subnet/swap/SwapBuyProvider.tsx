@@ -174,14 +174,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
     slippage,
-
-    // minTaoBond,
-    // minAlphaBond,
-    // minTaoStake,
-    // minAlphaUnstake,
-    // alphaPrice,
     talismanFee,
-    // errorPayload: errorTx,
     swapPrice,
   } = useBittensorStakingPayload({
     netuid,

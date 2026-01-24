@@ -7,12 +7,40 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state"
 import type { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
-import { type FC, Suspense, useCallback, useMemo, useState } from "react"
+import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, type ButtonProps } from "talisman-ui"
 import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
+
+type LockedInputs = {
+  payload: SignerPayloadJSON | undefined
+  shortMetadata?: `0x${string}` | undefined
+  txInfo?: WalletTransactionInfo | undefined
+  txMode?: ScaleApiSubmitMode | undefined
+}
+
+const useLockedInputs = ({ payload, shortMetadata, txInfo, txMode }: LockedInputs) => {
+  const memoizedInputs = useMemo(
+    () => ({
+      payload,
+      shortMetadata,
+      txInfo,
+      txMode,
+    }),
+    [payload, shortMetadata, txInfo, txMode]
+  )
+
+  const [isLocked, setIsLocked] = useState(false)
+  const [lockedInputs, setLockedInputs] = useState<LockedInputs>(() => memoizedInputs)
+
+  useEffect(() => {
+    if (!isLocked) setLockedInputs(memoizedInputs)
+  }, [isLocked, memoizedInputs])
+
+  return { setIsLocked, lockedInputs }
+}
 
 type SapiSendButtonProps = {
   containerId?: string
@@ -39,22 +67,31 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   color,
 }) => {
   const [error, setError] = useState<string>()
-  const { data: sapi } = useScaleApi(payload?.genesisHash)
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
+
+  const { lockedInputs, setIsLocked } = useLockedInputs({
+    payload,
+    shortMetadata,
+    txInfo,
+    txMode: mode,
+  })
+
+  const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
   const registry = useMemo(() => {
     if (!sapi) return undefined
-    if (!payload) return undefined
-    return sapi.getTypeRegistry(payload)
-  }, [payload, sapi])
+    if (!lockedInputs.payload) return undefined
+    return sapi.getTypeRegistry(lockedInputs.payload)
+  }, [lockedInputs.payload, sapi])
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
+      const { payload, txInfo, txMode } = lockedInputs
       if (!payload || !signature || !sapi) return
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo, mode)
+        const { hash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
@@ -62,7 +99,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo]
+    [onSubmitted, sapi, lockedInputs]
   )
 
   return (
@@ -71,11 +108,11 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
       <SignHardwareSubstrate
         className={className}
         containerId={containerId}
-        payload={payload}
-        shortMetadata={shortMetadata}
-        registry={registry}
         onSigned={handleSigned}
+        onSentToDevice={setIsLocked}
         color={color}
+        registry={registry}
+        {...lockedInputs}
       />
     </div>
   )
@@ -91,18 +128,27 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   mode,
   color,
 }) => {
-  const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
-  const { data: sapi } = useScaleApi(payload?.genesisHash)
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
+
+  const { lockedInputs, setIsLocked } = useLockedInputs({
+    payload,
+    shortMetadata,
+    txInfo,
+    txMode: mode,
+  })
+
+  const account = useAccountByAddress(lockedInputs.payload?.address)
+  const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
+      const { payload, txMode, txInfo } = lockedInputs
       if (!payload || !signature || !sapi) return
 
       setError(undefined)
       try {
-        const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, mode)
+        const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
@@ -110,7 +156,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo]
+    [lockedInputs, onSubmitted, sapi]
   )
 
   if (!account) return null
@@ -121,12 +167,12 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       <QrSubstrate
         containerId={containerId ?? "main"}
         buttonClassName={className}
-        genesisHash={payload?.genesisHash}
-        payload={payload}
-        shortMetadata={shortMetadata}
+        genesisHash={lockedInputs.payload?.genesisHash}
         account={account as AccountPolkadotVault}
         onSignature={handleSigned}
         color={color}
+        onQrDisplayed={setIsLocked}
+        {...lockedInputs}
       />
     </div>
   )
@@ -200,6 +246,8 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     }
   }, [account, props.loading])
 
+  // TODO if payload becomes undefined (while sapi.getPayload is loading), the component unmounts which causes UX issues.
+  // make it so we dont need a fallback disabled button here
   if (!props.payload)
     return (
       <Button

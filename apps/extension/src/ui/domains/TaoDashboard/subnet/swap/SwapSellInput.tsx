@@ -47,7 +47,7 @@ export const SwapSellInput: FC = () => {
         inputErrorMessage && "!border-alert-error/50"
       )}
     >
-      <div className="flex w-full items-center justify-between gap-6">
+      <div className="flex w-full items-center justify-between gap-6 overflow-hidden">
         <AccountPickerButton
           position={selectedPosition}
           disabled={isPickerDisabled}
@@ -58,19 +58,23 @@ export const SwapSellInput: FC = () => {
           <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
         </div>
       </div>
-      <div className="max-w-full overflow-hidden">
+      <div className="w-full overflow-hidden">
         <div className="flex h-20 w-full gap-6 overflow-hidden">
-          <TokenInput
-            tokenDecimals={tokenIn?.decimals}
-            value={valueIn}
-            onValueChanged={onValueChange}
-            disabled={!tokenIn}
-          />
-          <TokenPickerButton
-            position={selectedPosition}
-            disabled={isPickerDisabled}
-            onClick={open}
-          />
+          <div className="grow">
+            <TokenInput
+              tokenDecimals={tokenIn?.decimals}
+              value={valueIn}
+              onValueChanged={onValueChange}
+              disabled={!tokenIn}
+            />
+          </div>
+          <div className="max-w-[40%]">
+            <TokenPickerButton
+              position={selectedPosition}
+              disabled={isPickerDisabled}
+              onClick={open}
+            />
+          </div>
         </div>
         <div
           className={cn(
@@ -123,13 +127,17 @@ const TokenPickerButton: FC<{
   const { t } = useTranslation()
 
   return (
-    <PillButton onClick={onClick} disabled={disabled} className="max-w-[40%] bg-transparent">
+    <PillButton
+      onClick={onClick}
+      disabled={disabled}
+      className="h-20 w-full overflow-hidden bg-transparent px-2"
+    >
       {position ? (
-        <div className="flex items-center gap-4">
+        <div className="flex w-full items-center gap-4 overflow-hidden">
           <TokenLogo className="text-xl" tokenId={position.token.id} />
-          <div className="flex flex-col items-start gap-1">
+          <div className="flex flex-col items-start gap-1 overflow-hidden">
             <div className="text-base text-body">SN{position.token.netuid}</div>
-            <div className="text-body-secondary text-xs">
+            <div className="max-w-full truncate text-body-secondary text-xs">
               <BittensorValidatorName hotkey={position.token.hotkey} />
             </div>
           </div>
@@ -232,7 +240,7 @@ const TokenInput: FC<{
       value={inputValue}
       disabled={disabled}
       className={
-        "peer inline-block grow text-ellipsis bg-transparent text-[2rem] text-body placeholder:text-body-disabled"
+        "peer inline-block h-20 w-full text-ellipsis bg-transparent text-[2rem] text-body placeholder:text-body-disabled"
       }
       onChange={handleChange}
     />

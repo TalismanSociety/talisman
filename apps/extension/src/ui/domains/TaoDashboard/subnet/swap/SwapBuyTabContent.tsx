@@ -65,7 +65,7 @@ const SubmitButton = () => {
         color="buy"
         onClick={open}
         disabled={!canSubmit}
-        className="h-24 w-full rounded border-none font-bold text-black uppercase"
+        className="h-24 w-full rounded border-none text-black"
       >
         {t("Buy")}
       </Button>

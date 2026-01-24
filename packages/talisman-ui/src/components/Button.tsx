@@ -43,7 +43,7 @@ export const Button: FC<ButtonProps> = ({
       case "primary":
         return cn(
           "border-2 border-transparent bg-primary-500 text-black focus:border-white focus:outline-none enabled:hover:bg-primary-700 enabled:hover:active:bg-primary",
-          "disabled:bg-black-tertiary"
+          "disabled:bg-primary/50"
         )
 
       case "orange":
