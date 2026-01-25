@@ -10,6 +10,7 @@ const PKCS8_HEADER = new Uint8Array([48, 83, 2, 1, 1, 48, 5, 6, 3, 43, 101, 112,
 const SEC_LENGTH = 64
 const SEED_LENGTH = 32
 const SEED_OFFSET = PKCS8_HEADER.length
+const PUB_LENGTH = 32
 
 // Function implementation inspired by these files:
 // - https://github.com/polkadot-js/common/blob/8b0f5bf46e3edf2f52001c499ccdd555d5bdf5c2/packages/keyring/src/pair/decode.ts#L13-L56
@@ -50,5 +51,9 @@ export const getSecretKeyFromPjsJson = (json: EncryptedJson, password: string) =
     if (!u8aEq(divider, PKCS8_DIVIDER)) throw new Error("Invalid Pkcs8 divider found in body")
   }
 
-  return privateKey
+  // Extract public key from encrypted data (like Polkadot.js decodePair)
+  const pubOffset = divOffset + PKCS8_DIVIDER.length
+  const publicKey = decrypted.subarray(pubOffset, pubOffset + PUB_LENGTH)
+
+  return { secretKey: privateKey, publicKey }
 }

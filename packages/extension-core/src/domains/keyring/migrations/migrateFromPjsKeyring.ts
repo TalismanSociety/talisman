@@ -136,7 +136,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
               await keyringStore.addAccountKeypair({
                 name,
                 curve,
-                secretKey: getSecretKeyFromPjsJson(oldPair.toJson(password), password),
+                secretKey: getSecretKeyFromPjsJson(oldPair.toJson(password), password).secretKey,
               })
             }
 
