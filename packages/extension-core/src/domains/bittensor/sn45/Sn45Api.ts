@@ -262,6 +262,13 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
         {
           price: string | null
           timestamp: string | null
+          marketCap: number | null
+          volume24h: number | null
+          priceChange24h: number | null
+          priceChange7d: number | null
+          priceChange30d: number | null
+          marketCapChange24h: number | null
+          source: string | null
         },
         {
           error: {
