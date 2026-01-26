@@ -139,8 +139,8 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
   }, [])
 
   const buttonsCount = useMemo(
-    () => (swapInfo ? 1 : 0) + (explorerLinks.length ? 1 : 0),
-    [explorerLinks.length, swapInfo]
+    () => (swapHref ? 1 : 0) + (explorerLinks.length ? 1 : 0),
+    [explorerLinks.length, swapHref]
   )
 
   if (!buttonsCount) return null
