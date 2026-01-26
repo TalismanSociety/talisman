@@ -1,3 +1,4 @@
+import { bind } from "@react-rxjs/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { getBalanceId } from "@talismn/balances"
 import { subDTaoTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
@@ -16,10 +17,16 @@ import {
   type WalletTransactionInfo,
 } from "extension-core"
 import { log } from "extension-shared"
+import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { useSwapTxWatcher } from "./SwapTxWatcher"
+
+// keep track of the last selected account globally, as the provider will be reset each time its unmounted
+const subjectLastSelectedAddress = new BehaviorSubject<string | null>(null)
+const [useLastSelectedAddress] = bind(subjectLastSelectedAddress)
 
 type SwapBuyInputs = {
   address: string | null
@@ -36,10 +43,14 @@ const DEFAULT_INPUTS: SwapBuyInputs = {
 }
 
 const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
+  const lastSelectedAddress = useLastSelectedAddress()
   const defaultAddress = useBestAccountAddress()
   const { addTransaction } = useSwapTxWatcher()
 
-  const [state, setState] = useState<SwapBuyInputs>(DEFAULT_INPUTS)
+  const [state, setState] = useState<SwapBuyInputs>(() =>
+    // preselect account straight up to prevent flickering
+    merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
+  )
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   const { tokenIdIn, valueIn, hotkey, address } = state
@@ -140,11 +151,20 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
     if (refIsAccountInitialized.current) return
-    if (!state.address && defaultAddress) {
-      setState((s) => ({ ...s, address: defaultAddress }))
+    // prefill the address with the best account if none is selected yet
+    const bestAddress = lastSelectedAddress || defaultAddress || null
+    if (!state.address && bestAddress) {
+      setState((s) => ({ ...s, address: bestAddress }))
       refIsAccountInitialized.current = true
     }
-  }, [state.address, defaultAddress])
+  }, [state.address, defaultAddress, lastSelectedAddress])
+
+  useEffect(() => {
+    // keep track of the last selected address globally
+    if (address) {
+      subjectLastSelectedAddress.next(address)
+    }
+  }, [address])
 
   useEffect(() => {
     if (currentHotkey) setState((s) => ({ ...s, hotkey: currentHotkey }))

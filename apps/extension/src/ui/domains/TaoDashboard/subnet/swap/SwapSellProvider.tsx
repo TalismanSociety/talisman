@@ -10,6 +10,7 @@ import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBal
 import { useToken } from "@ui/state"
 import { isAccountOfType, type WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
+import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
@@ -29,14 +30,17 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const { t } = useTranslation()
   const { addTransaction } = useSwapTxWatcher()
 
-  const [state, setState] = useState<SwapSellInputs>(DEFAULT_INPUTS)
-  const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
-
   const positions = useBittensorStakingPositions(BITTENSOR_NETWORK_ID)
   const subnetPositions = useMemo(
     () => positions.filter((position) => position.token.netuid === netuid),
     [positions, netuid]
   )
+
+  const [state, setState] = useState<SwapSellInputs>(
+    // preselect position straight up to prevent flickering
+    merge({}, DEFAULT_INPUTS, { positionId: subnetPositions[0]?.id ?? null })
+  )
+  const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   useEffect(() => {
     if (!subnetPositions.length) {
