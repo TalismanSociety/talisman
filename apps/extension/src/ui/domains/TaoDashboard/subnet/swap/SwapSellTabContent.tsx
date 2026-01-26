@@ -1,6 +1,7 @@
-import type { FC } from "react"
+import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, useOpenClose } from "talisman-ui"
+import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { SwapSellConfirmModal } from "./SwapSellConfirmModal"
 import { SwapSellInput } from "./SwapSellInput"
 import { SwapSellOutput } from "./SwapSellOutput"
@@ -12,6 +13,7 @@ import {
   SwapPriceImpact,
   SwapSlippageRow,
 } from "./SwapTabShared"
+import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
 export const SwapSellTabContent: FC<{ netuid: number }> = ({ netuid }) => (
   <SwapSellProvider netuid={netuid}>
@@ -41,11 +43,12 @@ const TabContent: FC = () => {
             <PriceImpact />
           </SwapDetailsRow>
           <SwapDetailsRow label={t("Max Slippage")}>
-            <SlippageDisplay />
+            <SlippageEdit />
           </SwapDetailsRow>
         </div>
         <SubmitButton />
       </div>
+      <BittensorSlippageModal />
     </div>
   )
 }
@@ -90,8 +93,13 @@ const FeeEstimate = () => {
   )
 }
 
-const SlippageDisplay = () => {
-  const { slippage } = useSwapSell()
+const SlippageEdit = () => {
+  const { slippage, netuid } = useSwapSell()
+  const { open } = useBittensorSlippageModal()
 
-  return <SwapSlippageRow slippage={slippage} />
+  const handleClick = useCallback(() => {
+    open({ netuid })
+  }, [open, netuid])
+
+  return <SwapSlippageRow slippage={slippage} onEdit={handleClick} />
 }

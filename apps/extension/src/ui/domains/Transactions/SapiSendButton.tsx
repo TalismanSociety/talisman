@@ -91,8 +91,8 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo, txMode)
-        onSubmitted(hash)
+        const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
+        onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
         // biome-ignore lint/suspicious/noExplicitAny: legacy
