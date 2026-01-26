@@ -6,13 +6,11 @@ import {
   useHolderDistribution,
   useSingleSubnetSentiment,
   useSubnetDailyTrend,
+  useSubnetEconomicsWithSentiment,
   useSubnetPositions,
   useSubnetStakeEvents,
   useSubnetTokenomics,
   useSubnetTweets,
-  useTaoPrice,
-  useWhaleTransactions,
-  type WhaleTransactionType,
 } from "../../hooks/useSn45Api"
 
 interface SubnetRightSidebarProps {
@@ -321,8 +319,10 @@ const _ProgressBar: FC<{
 const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [_period, _setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
-  const { data: sentiment, isLoading: sentimentLoading } = useSingleSubnetSentiment(netuid)
-  const isLoading = tokenomicsLoading || sentimentLoading
+  const { data: _dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
+  const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
+  const economicsData = economics?.[netuid]
+  const isLoading = tokenomicsLoading || trendLoading || economicsLoading
 
   const alphaFlow = useMemo(() => {
     if (!tokenomics) return 0
@@ -363,8 +363,8 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
                   : 0
               }
               label={getSentimentLabel(
-                sentiment?.sentimentScore !== undefined
-                  ? Math.round(((sentiment.sentimentScore + 2) / 4) * 100)
+                economicsData?.sentimentScore !== undefined
+                  ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
                   : 0
               )}
             />
@@ -628,7 +628,7 @@ const HOLDER_COLORS = {
   shrimp: "#6b7280", // gray - < 100 alpha
 }
 
-const HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
+const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const { data: positions, isLoading: positionsLoading } = useSubnetPositions(netuid)
@@ -1050,7 +1050,8 @@ const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
                   getSentimentColor(tweet.sentiment)
                 )}
               >
-                {getSentimentLabelFromString(tweet.sentiment)}
+                TODO
+                {/* TODO {getSentimentLabel(tweet.sentiment)} */}
               </span>
             </div>
             <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>

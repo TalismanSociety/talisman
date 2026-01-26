@@ -8,7 +8,6 @@ import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -185,14 +184,10 @@ const useGetStarted = () => {
     onCopyAddressModal()
   }, [onCopyAddressModal])
 
-  const canSwap = useFeatureFlag("SWAPS")
   const onSwapClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
-
-    if (canSwap) return void openSwapTokensModal()
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-    closeIfEmbeddedPopup()
-  }, [canSwap, openSwapTokensModal])
+    openSwapTokensModal()
+  }, [openSwapTokensModal])
 
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "open ramps" })
