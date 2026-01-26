@@ -4,7 +4,6 @@ import { AreaSeries, createChart, type UTCTimestamp } from "lightweight-charts"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import {
   useHolderDistribution,
-  useSingleSubnetSentiment,
   useSubnetDailyTrend,
   useSubnetEconomicsWithSentiment,
   useSubnetPositions,
@@ -84,23 +83,6 @@ const getSentimentLabel = (score: number) => {
     return "Bearish"
   } else {
     return "Very Bearish"
-  }
-}
-
-const getSentimentLabelFromString = (sentiment: string) => {
-  switch (sentiment) {
-    case "very_bullish":
-      return "Very Bullish"
-    case "bullish":
-      return "Bullish"
-    case "neutral":
-      return "Neutral"
-    case "bearish":
-      return "Bearish"
-    case "very_bearish":
-      return "Very Bearish"
-    default:
-      return "Unknown"
   }
 }
 
