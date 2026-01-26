@@ -10,6 +10,10 @@ import {
   useSubnetStakeEvents,
   useSubnetTokenomics,
   useSubnetTweets,
+  useTaoPrice,
+  useWhaleTransactions,
+  type WhaleTransaction,
+  type WhaleTransactionType,
 } from "../../hooks/useSn45Api"
 
 interface SubnetRightSidebarProps {
@@ -340,8 +344,8 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
             <span className="mb-1 text-body-secondary text-xs">Sentiment Score</span>
             <SentimentGauge
               score={
-                sentiment?.sentimentScore !== undefined
-                  ? Math.round(((sentiment.sentimentScore + 2) / 4) * 100)
+                economicsData?.sentimentScore !== undefined
+                  ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
                   : 0
               }
               label={getSentimentLabel(
@@ -1152,7 +1156,8 @@ const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
   const transactions = useMemo(
     () =>
       (rawTransactions ?? []).filter(
-        (tx) => tx.transactionType === "StakeAdded" || tx.transactionType === "StakeRemoved"
+        (tx: WhaleTransaction) =>
+          tx.transactionType === "StakeAdded" || tx.transactionType === "StakeRemoved"
       ),
     [rawTransactions]
   )
@@ -1324,7 +1329,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         <div className="flex flex-col gap-6 overflow-y-auto">
           <TrendingSentimentSection netuid={netuid} />
           <TradeFlowSection netuid={netuid} />
-          <HoldersOverviewSection netuid={netuid} />
+          <_HoldersOverviewSection netuid={netuid} />
         </div>
       )}
 

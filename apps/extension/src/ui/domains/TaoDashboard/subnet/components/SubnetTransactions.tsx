@@ -94,10 +94,8 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
       return sorted
         .filter(
           (event) =>
-            (event.coldkey &&
-              ownedAccounts.some((account) => isAddressEqual(account.address, event.coldkey!))) ||
-            (event.hotkey &&
-              ownedAccounts.some((account) => isAddressEqual(account.address, event.hotkey!)))
+            event.coldkey &&
+            ownedAccounts.some((account) => isAddressEqual(account.address, event.coldkey!))
         )
         .slice(0, 20)
     }
