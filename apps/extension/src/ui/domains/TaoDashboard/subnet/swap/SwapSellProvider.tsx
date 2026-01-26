@@ -38,7 +38,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
   const [state, setState] = useState<SwapSellInputs>(
     // preselect position straight up to prevent flickering
-    merge({}, DEFAULT_INPUTS, { positionId: subnetPositions[0]?.id ?? null })
+    () => merge({}, DEFAULT_INPUTS, { positionId: subnetPositions[0]?.id ?? null })
   )
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 

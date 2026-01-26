@@ -47,9 +47,9 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const defaultAddress = useBestAccountAddress()
   const { addTransaction } = useSwapTxWatcher()
 
-  const [state, setState] = useState<SwapBuyInputs>(() =>
+  const [state, setState] = useState<SwapBuyInputs>(
     // preselect account straight up to prevent flickering
-    merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
+    () => merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
   )
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
