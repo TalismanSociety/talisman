@@ -24,6 +24,7 @@
     "dev:evm-erc20-subscribe": "tsx watch src/evm-erc20-subscribe.ts",
     "dev:evm-native-subscribe": "tsx watch src/evm-native-subscribe.ts",
     "dev:evm-uniswapv2-subscribe": "tsx watch src/evm-uniswapv2-subscribe.ts",
+    "dev:sol-native-subscribe": "tsx watch src/sol-native-subscribe.ts",
     "dev:bifrost": "tsx watch src/bifrost.ts",
     "dev:ewx": "tsx watch src/ewx.ts",
     "dev:interlay": "tsx watch src/interlay.ts",
