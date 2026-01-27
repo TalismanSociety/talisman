@@ -6,6 +6,7 @@ import {
   createChart,
   createSeriesMarkers,
   HistogramSeries,
+  LineSeries,
   type UTCTimestamp,
 } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -114,6 +115,128 @@ const TIME_RANGES = [
   { label: "1M", value: 30 },
 ]
 
+// Technical indicator calculation functions
+function calculateSMA(data: number[], period: number): (number | null)[] {
+  const result: (number | null)[] = []
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      result.push(null)
+    } else {
+      const sum = data.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0)
+      result.push(sum / period)
+    }
+  }
+  return result
+}
+
+function calculateEMA(data: number[], period: number): (number | null)[] {
+  const result: (number | null)[] = []
+  const multiplier = 2 / (period + 1)
+
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      result.push(null)
+    } else if (i === period - 1) {
+      const sma = data.slice(0, period).reduce((a, b) => a + b, 0) / period
+      result.push(sma)
+    } else {
+      const prevEma = result[i - 1]
+      if (prevEma !== null) {
+        result.push((data[i] - prevEma) * multiplier + prevEma)
+      } else {
+        result.push(null)
+      }
+    }
+  }
+  return result
+}
+
+function calculateBollingerBands(
+  data: number[],
+  period: number,
+  stdDevMultiplier: number
+): { upper: (number | null)[]; middle: (number | null)[]; lower: (number | null)[] } {
+  const middle = calculateSMA(data, period)
+  const upper: (number | null)[] = []
+  const lower: (number | null)[] = []
+
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1 || middle[i] === null) {
+      upper.push(null)
+      lower.push(null)
+    } else {
+      const slice = data.slice(i - period + 1, i + 1)
+      const mean = middle[i]!
+      const variance = slice.reduce((sum, val) => sum + (val - mean) ** 2, 0) / period
+      const stdDev = Math.sqrt(variance)
+      upper.push(mean + stdDevMultiplier * stdDev)
+      lower.push(mean - stdDevMultiplier * stdDev)
+    }
+  }
+
+  return { upper, middle, lower }
+}
+
+function calculateRSI(data: number[], period: number): (number | null)[] {
+  const result: (number | null)[] = []
+  const gains: number[] = []
+  const losses: number[] = []
+
+  for (let i = 0; i < data.length; i++) {
+    if (i === 0) {
+      result.push(null)
+      continue
+    }
+
+    const change = data[i] - data[i - 1]
+    gains.push(change > 0 ? change : 0)
+    losses.push(change < 0 ? Math.abs(change) : 0)
+
+    if (i < period) {
+      result.push(null)
+    } else if (i === period) {
+      const avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period
+      const avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period
+      if (avgLoss === 0) {
+        result.push(100)
+      } else {
+        const rs = avgGain / avgLoss
+        result.push(100 - 100 / (1 + rs))
+      }
+    } else {
+      const prevRsi = result[i - 1]
+      if (prevRsi === null) {
+        result.push(null)
+        continue
+      }
+      const prevAvgGain = gains.slice(0, i - 1).reduce((a, b) => a + b, 0) / (i - 1)
+      const prevAvgLoss = losses.slice(0, i - 1).reduce((a, b) => a + b, 0) / (i - 1)
+      const currentGain = gains[gains.length - 1]
+      const currentLoss = losses[losses.length - 1]
+      const avgGain = (prevAvgGain * (period - 1) + currentGain) / period
+      const avgLoss = (prevAvgLoss * (period - 1) + currentLoss) / period
+      if (avgLoss === 0) {
+        result.push(100)
+      } else {
+        const rs = avgGain / avgLoss
+        result.push(100 - 100 / (1 + rs))
+      }
+    }
+  }
+
+  return result
+}
+
+// Indicator toggle configuration
+interface IndicatorConfig {
+  sma7: boolean
+  sma25: boolean
+  ema12: boolean
+  ema26: boolean
+  bollingerBands: boolean
+  rsi: boolean
+}
+
 // Format numbers with K, M, B suffixes
 const formatCompactNumber = (num: number): string => {
   if (num >= 1000000000) return `$${(num / 1000000000).toFixed(2)}B`
@@ -133,6 +256,18 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
   const { subnetData } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   const [timeRange, setTimeRange] = useState(7) // days - default to 1W
+  const [indicators, setIndicators] = useState<IndicatorConfig>({
+    sma7: false,
+    sma25: false,
+    ema12: true,
+    ema26: true,
+    bollingerBands: false,
+    rsi: false,
+  })
+
+  const toggleIndicator = useCallback((key: keyof IndicatorConfig) => {
+    setIndicators((prev) => ({ ...prev, [key]: !prev[key] }))
+  }, [])
 
   const isLoading = priceLoading || stakeLoading
 
@@ -297,6 +432,156 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
     candlestickSeries.setData(candleData)
     volumeSeries.setData(volumeData)
 
+    // Extract close prices for technical indicators
+    const closePrices = candleData.map((d) => d.close)
+    const times = candleData.map((d) => d.time)
+
+    // Add SMA 7 indicator
+    if (indicators.sma7 && closePrices.length >= 7) {
+      const sma7Data = calculateSMA(closePrices, 7)
+      const sma7Series = chart.addSeries(LineSeries, {
+        color: "#f59e0b",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const sma7LineData = times
+        .map((time, i) => ({ time, value: sma7Data[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      sma7Series.setData(sma7LineData)
+    }
+
+    // Add SMA 25 indicator
+    if (indicators.sma25 && closePrices.length >= 25) {
+      const sma25Data = calculateSMA(closePrices, 25)
+      const sma25Series = chart.addSeries(LineSeries, {
+        color: "#8b5cf6",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const sma25LineData = times
+        .map((time, i) => ({ time, value: sma25Data[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      sma25Series.setData(sma25LineData)
+    }
+
+    // Add EMA 12 indicator
+    if (indicators.ema12 && closePrices.length >= 12) {
+      const ema12Data = calculateEMA(closePrices, 12)
+      const ema12Series = chart.addSeries(LineSeries, {
+        color: "#3b82f6",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const ema12LineData = times
+        .map((time, i) => ({ time, value: ema12Data[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      ema12Series.setData(ema12LineData)
+    }
+
+    // Add EMA 26 indicator
+    if (indicators.ema26 && closePrices.length >= 26) {
+      const ema26Data = calculateEMA(closePrices, 26)
+      const ema26Series = chart.addSeries(LineSeries, {
+        color: "#ec4899",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const ema26LineData = times
+        .map((time, i) => ({ time, value: ema26Data[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      ema26Series.setData(ema26LineData)
+    }
+
+    // Add Bollinger Bands indicator
+    if (indicators.bollingerBands && closePrices.length >= 20) {
+      const bb = calculateBollingerBands(closePrices, 20, 2)
+
+      // Upper band
+      const bbUpperSeries = chart.addSeries(LineSeries, {
+        color: "#6b728080",
+        lineWidth: 1,
+        lineStyle: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const bbUpperData = times
+        .map((time, i) => ({ time, value: bb.upper[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      bbUpperSeries.setData(bbUpperData)
+
+      // Middle band (SMA 20)
+      const bbMiddleSeries = chart.addSeries(LineSeries, {
+        color: "#6b7280",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const bbMiddleData = times
+        .map((time, i) => ({ time, value: bb.middle[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      bbMiddleSeries.setData(bbMiddleData)
+
+      // Lower band
+      const bbLowerSeries = chart.addSeries(LineSeries, {
+        color: "#6b728080",
+        lineWidth: 1,
+        lineStyle: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const bbLowerData = times
+        .map((time, i) => ({ time, value: bb.lower[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      bbLowerSeries.setData(bbLowerData)
+    }
+
+    // Add RSI indicator (separate pane)
+    if (indicators.rsi && closePrices.length >= 14) {
+      const rsiData = calculateRSI(closePrices, 14)
+      const rsiSeries = chart.addSeries(LineSeries, {
+        color: "#a855f7",
+        lineWidth: 1,
+        priceScaleId: "rsi",
+        priceLineVisible: false,
+        lastValueVisible: true,
+        priceFormat: { type: "price", precision: 1, minMove: 0.1 },
+      })
+
+      chart.priceScale("rsi").applyOptions({
+        scaleMargins: { top: 0.8, bottom: 0.02 },
+        borderVisible: false,
+      })
+
+      const rsiLineData = times
+        .map((time, i) => ({ time, value: rsiData[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      rsiSeries.setData(rsiLineData)
+
+      // Add RSI overbought/oversold lines
+      if (rsiLineData.length > 0) {
+        rsiSeries.createPriceLine({
+          price: 70,
+          color: "#ef444480",
+          lineWidth: 1,
+          lineStyle: 2,
+          axisLabelVisible: false,
+          title: "",
+        })
+        rsiSeries.createPriceLine({
+          price: 30,
+          color: "#22c55e80",
+          lineWidth: 1,
+          lineStyle: 2,
+          axisLabelVisible: false,
+          title: "",
+        })
+      }
+    }
+
     // Add current price line
     if (tokenPrice && candleData.length > 0) {
       const lastCandle = candleData[candleData.length - 1]
@@ -370,7 +655,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
       window.removeEventListener("resize", handleResize)
       chart.remove()
     }
-  }, [hourlyData, priceData, tweets, tokenPrice])
+  }, [hourlyData, priceData, tweets, tokenPrice, indicators])
 
   const _netTao = totals.taoIn - totals.taoOut
 
@@ -485,40 +770,156 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
             <div className="flex flex-col items-end">
               <span className="text-body-disabled text-xs">Em</span>
               <span className="font-medium text-white">
-                {dailyEmissions ? `τ${dailyEmissions.toFixed(0)}/d` : "—"}
+                {dailyEmissions ? `τ${dailyEmissions.toFixed(3)}/d` : "—"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Time range selector row */}
-        <div className="flex items-center justify-end gap-3 px-6 pb-2">
-          {/* Live indicator */}
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex size-2 rounded-full bg-green-500" />
-            </span>
-            <span className="font-medium text-green-500 text-xs">Live</span>
+        {/* Time range and indicators row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 pb-2">
+          {/* Left side - Indicator toggles */}
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-body-disabled text-xs">Indicators:</span>
+            <button
+              type="button"
+              onClick={() => toggleIndicator("sma7")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+                indicators.sma7
+                  ? "bg-[#f59e0b]/20 text-[#f59e0b]"
+                  : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  indicators.sma7 ? "bg-[#f59e0b]" : "bg-grey-600"
+                )}
+              />
+              SMA 7
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleIndicator("sma25")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+                indicators.sma25
+                  ? "bg-[#8b5cf6]/20 text-[#8b5cf6]"
+                  : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  indicators.sma25 ? "bg-[#8b5cf6]" : "bg-grey-600"
+                )}
+              />
+              SMA 25
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleIndicator("ema12")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+                indicators.ema12
+                  ? "bg-[#3b82f6]/20 text-[#3b82f6]"
+                  : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  indicators.ema12 ? "bg-[#3b82f6]" : "bg-grey-600"
+                )}
+              />
+              EMA 12
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleIndicator("ema26")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+                indicators.ema26
+                  ? "bg-[#ec4899]/20 text-[#ec4899]"
+                  : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  indicators.ema26 ? "bg-[#ec4899]" : "bg-grey-600"
+                )}
+              />
+              EMA 26
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleIndicator("bollingerBands")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+                indicators.bollingerBands
+                  ? "bg-[#6b7280]/20 text-[#9ca3af]"
+                  : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  indicators.bollingerBands ? "bg-[#6b7280]" : "bg-grey-600"
+                )}
+              />
+              BB
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleIndicator("rsi")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+                indicators.rsi
+                  ? "bg-[#a855f7]/20 text-[#a855f7]"
+                  : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  indicators.rsi ? "bg-[#a855f7]" : "bg-grey-600"
+                )}
+              />
+              RSI
+            </button>
           </div>
 
-          {/* Time range buttons */}
-          <div className="flex items-center gap-1">
-            {TIME_RANGES.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setTimeRange(option.value)}
-                className={cn(
-                  "rounded px-2.5 py-1 font-medium text-xs transition-colors",
-                  timeRange === option.value
-                    ? "bg-grey-700 text-white"
-                    : "text-body-secondary hover:bg-grey-800 hover:text-body"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+          {/* Right side - Live indicator and time range */}
+          <div className="flex items-center gap-3">
+            {/* Live indicator */}
+            <div className="flex items-center gap-1.5">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-green-500" />
+              </span>
+              <span className="font-medium text-green-500 text-xs">Live</span>
+            </div>
+
+            {/* Time range buttons */}
+            <div className="flex items-center gap-1">
+              {TIME_RANGES.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setTimeRange(option.value)}
+                  className={cn(
+                    "rounded px-2.5 py-1 font-medium text-xs transition-colors",
+                    timeRange === option.value
+                      ? "bg-grey-700 text-white"
+                      : "text-body-secondary hover:bg-grey-800 hover:text-body"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
