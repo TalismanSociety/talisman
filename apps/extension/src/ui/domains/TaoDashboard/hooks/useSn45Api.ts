@@ -248,14 +248,10 @@ export const useHolderDistribution = (netuid: number | null | undefined, days = 
     queryFn: async (): Promise<DailyHolderDistribution[]> => {
       if (!netuid) return []
       try {
-        const response = await fetch(
-          `${SN45_API_BASE_URL}/v1/bittensor/subnets/${netuid}/holder-distribution?days=${days}`
-        )
-        if (!response.ok) {
-          return []
-        }
-        const data = await response.json()
-        return data ?? []
+        const response = await sn45Api.v1.getSubnetHolderDistribution(String(netuid), {
+          days: String(days),
+        })
+        return response.data ?? []
       } catch {
         return []
       }
@@ -368,32 +364,6 @@ export const useSubnetTweets = (netuid: number | null | undefined, limit = 50) =
   })
 }
 
-// Hook to get subnet stake snapshots (for whale activity tracking)
-export const useSubnetStakeSnapshots = (
-  netuid: number | null | undefined,
-  days = 7,
-  minAmount = 1000
-) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetStakeSnapshots", netuid, days, minAmount],
-    queryFn: async () => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetStakeSnapshots(String(netuid), {
-        days: String(days),
-        minAmount: String(minAmount),
-      })
-      return response.data.map((item) => ({
-        ...item,
-        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
-        hotkey: hexToSs58(item.hotkey) ?? item.hotkey,
-      }))
-    },
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-  })
-}
-
 // Hook to get whale transactions for a subnet
 export const useWhaleTransactions = (
   netuid: number | null | undefined,
@@ -414,21 +384,14 @@ export const useWhaleTransactions = (
     queryFn: async (): Promise<WhaleTransaction[]> => {
       if (!netuid) return []
       try {
-        const params = new URLSearchParams()
-        params.set("limit", String(limit))
-        if (tier) params.set("tier", tier)
-        if (transactionType) params.set("transactionType", transactionType)
-        if (minTaoAmount !== undefined) params.set("minTaoAmount", String(minTaoAmount))
-
-        const response = await fetch(
-          `${SN45_API_BASE_URL}/v1/bittensor/subnets/${netuid}/whale-transactions?${params.toString()}`
-        )
-        if (!response.ok) {
-          return []
-        }
-        const data: WhaleTransaction[] = await response.json()
+        const response = await sn45Api.v1.getSubnetWhaleTransactions(String(netuid), {
+          limit: String(limit),
+          tier,
+          transactionType,
+          minTaoAmount: minTaoAmount !== undefined ? String(minTaoAmount) : undefined,
+        })
         // Convert hex addresses to SS58
-        return data.map((item) => ({
+        return response.data.map((item) => ({
           ...item,
           coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
           hotkey: hexToSs58(item.hotkey) ?? item.hotkey,
@@ -464,22 +427,15 @@ export const useAllWhaleTransactions = (options?: {
     queryKey: ["sn45", "allWhaleTransactions", limit, tier, transactionType, minTaoAmount, netuid],
     queryFn: async (): Promise<WhaleTransaction[]> => {
       try {
-        const params = new URLSearchParams()
-        params.set("limit", String(limit))
-        if (tier) params.set("tier", tier)
-        if (transactionType) params.set("transactionType", transactionType)
-        if (minTaoAmount !== undefined) params.set("minTaoAmount", String(minTaoAmount))
-        if (netuid !== undefined) params.set("netuid", String(netuid))
-
-        const response = await fetch(
-          `${SN45_API_BASE_URL}/v1/bittensor/whale-transactions?${params.toString()}`
-        )
-        if (!response.ok) {
-          return []
-        }
-        const data: WhaleTransaction[] = await response.json()
+        const response = await sn45Api.v1.getWhaleTransactions({
+          limit: String(limit),
+          tier,
+          transactionType,
+          minTaoAmount: minTaoAmount !== undefined ? String(minTaoAmount) : undefined,
+          netuid: netuid !== undefined ? String(netuid) : undefined,
+        })
         // Convert hex addresses to SS58
-        return data.map((item) => ({
+        return response.data.map((item) => ({
           ...item,
           coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
           hotkey: hexToSs58(item.hotkey) ?? item.hotkey,

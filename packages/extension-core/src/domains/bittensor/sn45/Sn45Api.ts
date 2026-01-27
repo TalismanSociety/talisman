@@ -10,45 +10,49 @@
  * ---------------------------------------------------------------
  */
 
-export type QueryParamsType = Record<string | number, any>
-export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">
+export type QueryParamsType = Record<string | number, any>;
+export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
 export interface FullRequestParams extends Omit<RequestInit, "body"> {
   /** set parameter to `true` for call `securityWorker` for this request */
-  secure?: boolean
+  secure?: boolean;
   /** request path */
-  path: string
+  path: string;
   /** content type of request body */
-  type?: ContentType
+  type?: ContentType;
   /** query params */
-  query?: QueryParamsType
+  query?: QueryParamsType;
   /** format of response (i.e. response.json() -> format: "json") */
-  format?: ResponseFormat
+  format?: ResponseFormat;
   /** request body */
-  body?: unknown
+  body?: unknown;
   /** base url */
-  baseUrl?: string
+  baseUrl?: string;
   /** request cancellation token */
-  cancelToken?: CancelToken
+  cancelToken?: CancelToken;
 }
 
-export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">
+export type RequestParams = Omit<
+  FullRequestParams,
+  "body" | "method" | "query" | "path"
+>;
 
 export interface ApiConfig<SecurityDataType = unknown> {
-  baseUrl?: string
-  baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">
+  baseUrl?: string;
+  baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
   securityWorker?: (
-    securityData: SecurityDataType | null
-  ) => Promise<RequestParams | void> | RequestParams | void
-  customFetch?: typeof fetch
+    securityData: SecurityDataType | null,
+  ) => Promise<RequestParams | void> | RequestParams | void;
+  customFetch?: typeof fetch;
 }
 
-export interface HttpResponse<D, E = unknown> extends Response {
-  data: D
-  error: E
+export interface HttpResponse<D extends unknown, E extends unknown = unknown>
+  extends Response {
+  data: D;
+  error: E;
 }
 
-type CancelToken = symbol | string | number
+type CancelToken = Symbol | string | number;
 
 export enum ContentType {
   Json = "application/json",
@@ -59,56 +63,59 @@ export enum ContentType {
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public baseUrl: string = ""
-  private securityData: SecurityDataType | null = null
-  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"]
-  private abortControllers = new Map<CancelToken, AbortController>()
-  private customFetch = (...fetchParams: Parameters<typeof fetch>) => fetch(...fetchParams)
+  public baseUrl: string = "";
+  private securityData: SecurityDataType | null = null;
+  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
+  private abortControllers = new Map<CancelToken, AbortController>();
+  private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
+    fetch(...fetchParams);
 
   private baseApiParams: RequestParams = {
     credentials: "same-origin",
     headers: {},
     redirect: "follow",
     referrerPolicy: "no-referrer",
-  }
+  };
 
   constructor(apiConfig: ApiConfig<SecurityDataType> = {}) {
-    Object.assign(this, apiConfig)
+    Object.assign(this, apiConfig);
   }
 
   public setSecurityData = (data: SecurityDataType | null) => {
-    this.securityData = data
-  }
+    this.securityData = data;
+  };
 
   protected encodeQueryParam(key: string, value: any) {
-    const encodedKey = encodeURIComponent(key)
-    return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`
+    const encodedKey = encodeURIComponent(key);
+    return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`;
   }
 
   protected addQueryParam(query: QueryParamsType, key: string) {
-    return this.encodeQueryParam(key, query[key])
+    return this.encodeQueryParam(key, query[key]);
   }
 
   protected addArrayQueryParam(query: QueryParamsType, key: string) {
-    const value = query[key]
-    return value.map((v: any) => this.encodeQueryParam(key, v)).join("&")
+    const value = query[key];
+    return value.map((v: any) => this.encodeQueryParam(key, v)).join("&");
   }
 
   protected toQueryString(rawQuery?: QueryParamsType): string {
-    const query = rawQuery || {}
-    const keys = Object.keys(query).filter((key) => "undefined" !== typeof query[key])
+    const query = rawQuery || {};
+    const keys = Object.keys(query).filter(
+      (key) => "undefined" !== typeof query[key],
+    );
     return keys
       .map((key) =>
         Array.isArray(query[key])
           ? this.addArrayQueryParam(query, key)
-          : this.addQueryParam(query, key)
+          : this.addQueryParam(query, key),
       )
-      .join("&")
+      .join("&");
   }
 
   protected addQueryParams(rawQuery?: QueryParamsType): string {
-    const queryString = this.toQueryString(rawQuery)
-    return queryString ? `?${queryString}` : ""
+    const queryString = this.toQueryString(rawQuery);
+    return queryString ? `?${queryString}` : "";
   }
 
   private contentFormatters: Record<ContentType, (input: any) => any> = {
@@ -121,29 +128,34 @@ export class HttpClient<SecurityDataType = unknown> {
         ? JSON.stringify(input)
         : input,
     [ContentType.Text]: (input: any) =>
-      input !== null && typeof input !== "string" ? JSON.stringify(input) : input,
+      input !== null && typeof input !== "string"
+        ? JSON.stringify(input)
+        : input,
     [ContentType.FormData]: (input: any) => {
       if (input instanceof FormData) {
-        return input
+        return input;
       }
 
       return Object.keys(input || {}).reduce((formData, key) => {
-        const property = input[key]
+        const property = input[key];
         formData.append(
           key,
           property instanceof Blob
             ? property
             : typeof property === "object" && property !== null
               ? JSON.stringify(property)
-              : `${property}`
-        )
-        return formData
-      }, new FormData())
+              : `${property}`,
+        );
+        return formData;
+      }, new FormData());
     },
     [ContentType.UrlEncoded]: (input: any) => this.toQueryString(input),
-  }
+  };
 
-  protected mergeRequestParams(params1: RequestParams, params2?: RequestParams): RequestParams {
+  protected mergeRequestParams(
+    params1: RequestParams,
+    params2?: RequestParams,
+  ): RequestParams {
     return {
       ...this.baseApiParams,
       ...params1,
@@ -153,31 +165,33 @@ export class HttpClient<SecurityDataType = unknown> {
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
-    }
+    };
   }
 
-  protected createAbortSignal = (cancelToken: CancelToken): AbortSignal | undefined => {
+  protected createAbortSignal = (
+    cancelToken: CancelToken,
+  ): AbortSignal | undefined => {
     if (this.abortControllers.has(cancelToken)) {
-      const abortController = this.abortControllers.get(cancelToken)
+      const abortController = this.abortControllers.get(cancelToken);
       if (abortController) {
-        return abortController.signal
+        return abortController.signal;
       }
-      return void 0
+      return void 0;
     }
 
-    const abortController = new AbortController()
-    this.abortControllers.set(cancelToken, abortController)
-    return abortController.signal
-  }
+    const abortController = new AbortController();
+    this.abortControllers.set(cancelToken, abortController);
+    return abortController.signal;
+  };
 
   public abortRequest = (cancelToken: CancelToken) => {
-    const abortController = this.abortControllers.get(cancelToken)
+    const abortController = this.abortControllers.get(cancelToken);
 
     if (abortController) {
-      abortController.abort()
-      this.abortControllers.delete(cancelToken)
+      abortController.abort();
+      this.abortControllers.delete(cancelToken);
     }
-  }
+  };
 
   public request = async <T = any, E = any>({
     body,
@@ -194,11 +208,11 @@ export class HttpClient<SecurityDataType = unknown> {
       ((typeof secure === "boolean" ? secure : this.baseApiParams.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
-      {}
-    const requestParams = this.mergeRequestParams(params, secureParams)
-    const queryString = query && this.toQueryString(query)
-    const payloadFormatter = this.contentFormatters[type || ContentType.Json]
-    const responseFormat = format || requestParams.format
+      {};
+    const requestParams = this.mergeRequestParams(params, secureParams);
+    const queryString = query && this.toQueryString(query);
+    const payloadFormatter = this.contentFormatters[type || ContentType.Json];
+    const responseFormat = format || requestParams.format;
 
     return this.customFetch(
       `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
@@ -206,48 +220,58 @@ export class HttpClient<SecurityDataType = unknown> {
         ...requestParams,
         headers: {
           ...(requestParams.headers || {}),
-          ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+          ...(type && type !== ContentType.FormData
+            ? { "Content-Type": type }
+            : {}),
         },
-        signal: (cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal) || null,
-        body: typeof body === "undefined" || body === null ? null : payloadFormatter(body),
-      }
+        signal:
+          (cancelToken
+            ? this.createAbortSignal(cancelToken)
+            : requestParams.signal) || null,
+        body:
+          typeof body === "undefined" || body === null
+            ? null
+            : payloadFormatter(body),
+      },
     ).then(async (response) => {
-      const r = response as HttpResponse<T, E>
-      r.data = null as unknown as T
-      r.error = null as unknown as E
+      const r = response as HttpResponse<T, E>;
+      r.data = null as unknown as T;
+      r.error = null as unknown as E;
 
-      const responseToParse = responseFormat ? response.clone() : response
+      const responseToParse = responseFormat ? response.clone() : response;
       const data = !responseFormat
         ? r
         : await responseToParse[responseFormat]()
             .then((data) => {
               if (r.ok) {
-                r.data = data
+                r.data = data;
               } else {
-                r.error = data
+                r.error = data;
               }
-              return r
+              return r;
             })
             .catch((e) => {
-              r.error = e
-              return r
-            })
+              r.error = e;
+              return r;
+            });
 
       if (cancelToken) {
-        this.abortControllers.delete(cancelToken)
+        this.abortControllers.delete(cancelToken);
       }
 
-      if (!response.ok) throw data
-      return data
-    })
-  }
+      if (!response.ok) throw data;
+      return data;
+    });
+  };
 }
 
 /**
  * @title OpenAPI
  * @version 1.0.0
  */
-export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
+export class Sn45Api<
+  SecurityDataType extends unknown,
+> extends HttpClient<SecurityDataType> {
   v1 = {
     /**
      * No description
@@ -260,21 +284,21 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getTaoPrice: (params: RequestParams = {}) =>
       this.request<
         {
-          price: string | null
-          timestamp: string | null
-          marketCap: number | null
-          volume24h: number | null
-          priceChange24h: number | null
-          priceChange7d: number | null
-          priceChange30d: number | null
-          marketCapChange24h: number | null
-          source: string | null
+          price: string | null;
+          timestamp: string | null;
+          marketCap: number | null;
+          volume24h: number | null;
+          priceChange24h: number | null;
+          priceChange7d: number | null;
+          priceChange30d: number | null;
+          marketCapChange24h: number | null;
+          source: string | null;
         },
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/tao-price`,
@@ -293,29 +317,86 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
      */
     getWhaleMovements: (
       query?: {
-        minTao?: string
-        limit?: string
+        minTao?: string;
+        limit?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
-          method: "Adding" | "Removing"
-          coldkey: string
-          coldkeyShort: string
-          netuid: number
-          taoAmount: number
-          alphaAmount: number
-          timestamp: string
+          method: "Adding" | "Removing";
+          coldkey: string;
+          coldkeyShort: string;
+          netuid: number;
+          taoAmount: number;
+          alphaAmount: number;
+          timestamp: string;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/whales`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Bittensor
+     * @name GetWhaleTransactions
+     * @summary Get all whale stake transactions across all subnets
+     * @request GET:/v1/bittensor/whale-transactions
+     */
+    getWhaleTransactions: (
+      query?: {
+        limit?: string;
+        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale) */
+        tier?: string;
+        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped) */
+        transactionType?: string;
+        /** Minimum TAO amount (in TAO, not rao) */
+        minTaoAmount?: string;
+        /** Filter by subnet ID */
+        netuid?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          id: string;
+          blockHeight: number;
+          extrinsicIndex: number | null;
+          transactionType:
+            | "StakeAdded"
+            | "StakeRemoved"
+            | "StakeMove"
+            | "StakeTransfer"
+            | "StakeSwapped";
+          tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          coldkey: string;
+          hotkey: string;
+          netuid: number;
+          originNetuid: number | null;
+          taoAmount: string;
+          alphaAmount: string | null;
+          destinationColdkey: string | null;
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/whale-transactions`,
         method: "GET",
         query: query,
         format: "json",
@@ -333,22 +414,22 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetEconomicsList: (params: RequestParams = {}) =>
       this.request<
         {
-          netuid: number
-          price: number
-          volume: number
-          alphaIn: number
-          alphaOut: number
-          netAlpha: number
-          emaTaoFlow: number
-          economicScore: number
-          flowDirection: "inflow" | "outflow" | "neutral"
-          timestamp: string
+          netuid: number;
+          price: number;
+          volume: number;
+          alphaIn: number;
+          alphaOut: number;
+          netAlpha: number;
+          emaTaoFlow: number;
+          economicScore: number;
+          flowDirection: "inflow" | "outflow" | "neutral";
+          timestamp: string;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/economics`,
@@ -367,40 +448,41 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
      */
     getSubnetLeaderboard: (
       query?: {
-        period?: "1d" | "1w" | "1m"
+        /** @default "1d" */
+        period?: "1d" | "1w" | "1m";
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
-          period: "1d" | "1w" | "1m"
-          updatedAt: string
+          period: "1d" | "1w" | "1m";
+          updatedAt: string;
           subnets: {
-            netuid: number
-            currentPrice: number | null
-            priceChange: number | null
-            stakedTao: string | null
-            stakedAlpha: string | null
-            volume: string
-            txCount: number
-            buyCount: number
-            sellCount: number
-            mcap: string | null
-            alphaOutEmission: string | null
-            alphaInEmission: string | null
-            taoInEmission: string | null
-            totalHolders: number
-            emaTaoFlow: string | null
-            emissionPct: number | null
-            priceHistory7d: number[] | null
-            score: number | null
-          }[]
+            netuid: number;
+            currentPrice: number | null;
+            priceChange: number | null;
+            stakedTao: string | null;
+            stakedAlpha: string | null;
+            volume: string;
+            txCount: number;
+            buyCount: number;
+            sellCount: number;
+            mcap: string | null;
+            alphaOutEmission: string | null;
+            alphaInEmission: string | null;
+            taoInEmission: string | null;
+            totalHolders: number;
+            emaTaoFlow: string | null;
+            emissionPct: number | null;
+            priceHistory7d: any[] | null;
+            score: number | null;
+          }[];
         },
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/leaderboard`,
@@ -421,17 +503,17 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetStakeEvents: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
-          method: "Adding" | "Removing"
-          alphaAmount: string
-          taoAmount: string
-          timestamp: string
-          coldkey?: string
+          method: "Adding" | "Removing";
+          alphaAmount: string;
+          taoAmount: string;
+          timestamp: string;
+          coldkey?: string;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/stake-events`,
@@ -451,14 +533,14 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetPrice: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
-          movingPrice: string
-          timestamp: string
+          movingPrice: string;
+          timestamp: string;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/price`,
@@ -478,18 +560,18 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetTokenomics: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
-          movingPrice: string
-          volume: string
-          alphaIn: string
-          alphaOut: string
-          emaTaoFlow: string
-          timestamp: string
+          movingPrice: string;
+          volume: string;
+          alphaIn: string;
+          alphaOut: string;
+          emaTaoFlow: string;
+          timestamp: string;
         },
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/tokenomics`,
@@ -509,23 +591,16 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetPositions: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
-          id: string
-          coldkey: string
-          netuid: number
-          alphaBalance: string
-          costBasisTao: string
-          cumulativeRealizedProfit: string
-          twrFactor: number
-          lastSnapshotBlock: number
-          lastSnapshotValue: string
-          lastUpdatedBlock: number
-          lastUpdatedTimestamp: string
+          coldkey: string;
+          alphaBalance: string;
+          costBasisTao: string;
+          cumulativeRealizedProfit: string;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/positions`,
@@ -545,109 +620,109 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetEvents: (
       netuid: string,
       query?: {
-        limit?: string
+        limit?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
           liquidityEvents: {
-            id: string
-            method: string
-            coldkey: string
-            netuid: number
-            taoAmount: number | null
-            alphaAmount: number | null
-            timestamp: string
-          }[]
+            id: string;
+            method: string;
+            coldkey: string;
+            netuid: number;
+            taoAmount: number | null;
+            alphaAmount: number | null;
+            timestamp: string;
+          }[];
           stakeSwapsIn: {
-            id: string
-            coldkey: string
-            hotkey: string
-            originNetuid: number
-            destinationNetuid: number
-            taoAmount: number
-            timestamp: string
-          }[]
+            id: string;
+            coldkey: string;
+            hotkey: string;
+            originNetuid: number;
+            destinationNetuid: number;
+            taoAmount: number;
+            timestamp: string;
+          }[];
           stakeSwapsOut: {
-            id: string
-            coldkey: string
-            hotkey: string
-            originNetuid: number
-            destinationNetuid: number
-            taoAmount: number
-            timestamp: string
-          }[]
+            id: string;
+            coldkey: string;
+            hotkey: string;
+            originNetuid: number;
+            destinationNetuid: number;
+            taoAmount: number;
+            timestamp: string;
+          }[];
           stakeTransfersIn: {
-            id: string
-            originColdkey: string
-            destinationColdkey: string
-            hotkey: string
-            originNetuid: number
-            destinationNetuid: number
-            taoAmount: number
-            timestamp: string
-          }[]
+            id: string;
+            originColdkey: string;
+            destinationColdkey: string;
+            hotkey: string;
+            originNetuid: number;
+            destinationNetuid: number;
+            taoAmount: number;
+            timestamp: string;
+          }[];
           stakeTransfersOut: {
-            id: string
-            originColdkey: string
-            destinationColdkey: string
-            hotkey: string
-            originNetuid: number
-            destinationNetuid: number
-            taoAmount: number
-            timestamp: string
-          }[]
+            id: string;
+            originColdkey: string;
+            destinationColdkey: string;
+            hotkey: string;
+            originNetuid: number;
+            destinationNetuid: number;
+            taoAmount: number;
+            timestamp: string;
+          }[];
           stakeMovesIn: {
-            id: string
-            sourceHotkey: string
-            sourceNetuid: number
-            destHotkey: string
-            destColdkey: string
-            destNetuid: number
-            taoAmount: number
-            timestamp: string
-          }[]
+            id: string;
+            sourceHotkey: string;
+            sourceNetuid: number;
+            destHotkey: string;
+            destColdkey: string;
+            destNetuid: number;
+            taoAmount: number;
+            timestamp: string;
+          }[];
           stakeMovesOut: {
-            id: string
-            sourceHotkey: string
-            sourceNetuid: number
-            destHotkey: string
-            destColdkey: string
-            destNetuid: number
-            taoAmount: number
-            timestamp: string
-          }[]
+            id: string;
+            sourceHotkey: string;
+            sourceNetuid: number;
+            destHotkey: string;
+            destColdkey: string;
+            destNetuid: number;
+            taoAmount: number;
+            timestamp: string;
+          }[];
           alphaBurns: {
-            id: string
-            coldkey: string
-            hotkey: string
-            netuid: number
-            alphaCurrency: number
-            timestamp: string
-          }[]
+            id: string;
+            coldkey: string;
+            hotkey: string;
+            netuid: number;
+            alphaCurrency: number;
+            timestamp: string;
+          }[];
           alphaRecycles: {
-            id: string
-            coldkey: string
-            hotkey: string
-            netuid: number
-            alphaCurrency: number
-            timestamp: string
-          }[]
+            id: string;
+            coldkey: string;
+            hotkey: string;
+            netuid: number;
+            alphaCurrency: number;
+            timestamp: string;
+          }[];
           autoStakeAdds: {
-            id: string
-            coldkey: string
-            hotkey: string
-            netuid: number
-            amount: number
-            timestamp: string
-          }[]
+            id: string;
+            coldkey: string;
+            hotkey: string;
+            netuid: number;
+            amount: number;
+            timestamp: string;
+          }[];
         },
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/events`,
@@ -662,42 +737,143 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
      *
      * @tags Subnets
      * @name GetSubnetHolderHistory
-     * @summary Historical holder distribution for a specific subnet
+     * @summary Historical holder distribution for a specific subnet (top 500 wallets tracked)
      * @request GET:/v1/bittensor/subnets/{netuid}/holder-history
      */
     getSubnetHolderHistory: (
       netuid: string,
       query?: {
-        days?: string
+        days?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
-          date: string
-          totalHolders: number
-          whaleCount: number
-          dolphinCount: number
-          fishCount: number
-          shrimpCount: number
-          whaleAlpha: number
-          dolphinAlpha: number
-          fishAlpha: number
-          shrimpAlpha: number
-          totalAlpha: number
-          whalePercent: number
-          dolphinPercent: number
-          fishPercent: number
-          shrimpPercent: number
+          date: string;
+          totalHolders: number;
+          whaleCount: number;
+          dolphinCount: number;
+          fishCount: number;
+          shrimpCount: number;
+          whaleAlpha: number;
+          dolphinAlpha: number;
+          fishAlpha: number;
+          shrimpAlpha: number;
+          totalAlpha: number;
+          whalePercent: number;
+          dolphinPercent: number;
+          fishPercent: number;
+          shrimpPercent: number;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/holder-history`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
+     * @name GetSubnetHolderDistribution
+     * @summary Daily holder distribution by alpha balance tiers for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/holder-distribution
+     */
+    getSubnetHolderDistribution: (
+      netuid: string,
+      query?: {
+        days?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          id: string;
+          netuid: number;
+          snapshotDate: string;
+          holdersUnder100: number;
+          holders100To1k: number;
+          holders1kTo10k: number;
+          holders10kTo100k: number;
+          holders100kTo1m: number;
+          holders1mPlus: number;
+          totalHolders: number;
+          totalAlpha: string;
+          blockHeight: number;
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/holder-distribution`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Bittensor
+     * @name GetSubnetWhaleTransactions
+     * @summary Get whale stake transactions for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/whale-transactions
+     */
+    getSubnetWhaleTransactions: (
+      netuid: string,
+      query?: {
+        limit?: string;
+        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale) */
+        tier?: string;
+        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped) */
+        transactionType?: string;
+        /** Minimum TAO amount (in TAO, not rao) */
+        minTaoAmount?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          id: string;
+          blockHeight: number;
+          extrinsicIndex: number | null;
+          transactionType:
+            | "StakeAdded"
+            | "StakeRemoved"
+            | "StakeMove"
+            | "StakeTransfer"
+            | "StakeSwapped";
+          tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          coldkey: string;
+          hotkey: string;
+          netuid: number;
+          originNetuid: number | null;
+          taoAmount: string;
+          alphaAmount: string | null;
+          destinationColdkey: string | null;
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/whale-transactions`,
         method: "GET",
         query: query,
         format: "json",
@@ -715,20 +891,20 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSentimentSummary: (params: RequestParams = {}) =>
       this.request<
         {
-          total: number
-          veryBullish: number
-          bullish: number
-          neutral: number
-          bearish: number
-          veryBearish: number
-          subnetCount: number
-          sentimentScore: number
+          total: number;
+          veryBullish: number;
+          bullish: number;
+          neutral: number;
+          bearish: number;
+          veryBearish: number;
+          subnetCount: number;
+          sentimentScore: number;
         },
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/sentiment/summary`,
@@ -748,20 +924,20 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetSentimentList: (params: RequestParams = {}) =>
       this.request<
         {
-          subnetId: number
-          total: number
-          veryBullish: number
-          bullish: number
-          neutral: number
-          bearish: number
-          veryBearish: number
-          sentimentScore: number
+          subnetId: number;
+          total: number;
+          veryBullish: number;
+          bullish: number;
+          neutral: number;
+          bearish: number;
+          veryBearish: number;
+          sentimentScore: number;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/sentiment`,
@@ -781,20 +957,20 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetDailyTrend: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
-          date: string
-          total: number
-          veryBullish: number
-          bullish: number
-          neutral: number
-          bearish: number
-          veryBearish: number
-          sentimentScore: number
+          date: string;
+          total: number;
+          veryBullish: number;
+          bullish: number;
+          neutral: number;
+          bearish: number;
+          veryBearish: number;
+          sentimentScore: number;
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/sentiment/trend`,
@@ -814,54 +990,54 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetTweets: (
       netuid: string,
       query?: {
-        limit?: string
+        limit?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
-          id: string
-          text: string
-          url: string
-          createdAt: string
-          likeCount: number
-          retweetCount: number
-          replyCount: number
-          viewCount: number
-          sentiment: string
-          contentType: string
-          technicalQuality: string
-          marketAnalysis: string
-          impactPotential: string
-          relevanceConfidence: string
-          analyzedAt: string
-          isRetweet: boolean
-          isQuote: boolean
-          isReply: boolean
-          isPartOfThread: boolean
-          hasReplies: boolean
-          retweetedBy: string | null
+          id: string;
+          text: string;
+          url: string;
+          createdAt: string;
+          likeCount: number;
+          retweetCount: number;
+          replyCount: number;
+          viewCount: number;
+          sentiment: string;
+          contentType: string;
+          technicalQuality: string;
+          marketAnalysis: string;
+          impactPotential: string;
+          relevanceConfidence: string;
+          analyzedAt: string;
+          isRetweet: boolean;
+          isQuote: boolean;
+          isReply: boolean;
+          isPartOfThread: boolean;
+          hasReplies: boolean;
+          retweetedBy: string | null;
           replyTo: {
-            username: string
-            text?: string
-          }
+            username: string;
+            text?: string;
+          };
           quotedPost: {
-            text: string
-            authorScreenName: string
-          }
+            text: string;
+            authorScreenName: string;
+          };
           author: {
-            name: string
-            screenName: string
-            profileImage: string
-            verified: boolean
-            blueVerified: boolean
-          }
+            name: string;
+            screenName: string;
+            profileImage: string;
+            verified: boolean;
+            blueVerified: boolean;
+          };
         }[],
         {
           error: {
-            code: string
-            message: string
-          }
+            code: string;
+            message: string;
+          };
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/sentiment/tweets`,
@@ -870,46 +1046,5 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
         format: "json",
         ...params,
       }),
-
-    /**
-     * No description
-     *
-     * @tags Subnets
-     * @name GetSubnetStakeSnapshots
-     * @summary Daily stake snapshots for a specific subnet (whale activity tracking)
-     * @request GET:/v1/bittensor/subnets/{netuid}/stake-snapshots
-     */
-    getSubnetStakeSnapshots: (
-      netuid: string,
-      query?: {
-        days?: string
-        minAmount?: string
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<
-        {
-          id: string
-          coldkey: string
-          hotkey: string
-          netuid: number
-          amount: string
-          snapshotDate: string
-          blockHeight: number
-          timestamp: string
-        }[],
-        {
-          error: {
-            code: string
-            message: string
-          }
-        }
-      >({
-        path: `/v1/bittensor/subnets/${netuid}/stake-snapshots`,
-        method: "GET",
-        query: query,
-        format: "json",
-        ...params,
-      }),
-  }
+  };
 }
