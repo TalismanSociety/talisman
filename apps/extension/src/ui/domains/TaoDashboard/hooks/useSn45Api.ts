@@ -2,6 +2,7 @@ import { hexToU8a, isHex } from "@polkadot/util"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { Sn45Api } from "extension-core"
+import { SN45_API_BASE_URL } from "extension-shared"
 import { useMemo } from "react"
 
 // Convert hex public key to SS58 address with prefix 42 (Polkadot generic)
@@ -15,14 +16,6 @@ const hexToSs58 = (hex: string | null | undefined): string | null | undefined =>
     return hex // Return original if conversion fails
   }
 }
-
-// @dev: turn this flag on temporarily when debugging the api locally
-const LOCAL_DEV = false
-
-const SN45_API_BASE_URL =
-  process.env.NODE_ENV === "development" && LOCAL_DEV
-    ? "http://localhost:8787"
-    : "https://sn45api.talisman.xyz"
 
 // Create a singleton API instance
 const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
