@@ -509,10 +509,17 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
     getSubnetPositions: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
+          id: string
           coldkey: string
+          netuid: number
           alphaBalance: string
           costBasisTao: string
           cumulativeRealizedProfit: string
+          twrFactor: number
+          lastSnapshotBlock: number
+          lastSnapshotValue: string
+          lastUpdatedBlock: number
+          lastUpdatedTimestamp: string
         }[],
         {
           error: {
@@ -644,6 +651,53 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/events`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
+     * @name GetSubnetHolderHistory
+     * @summary Historical holder distribution for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/holder-history
+     */
+    getSubnetHolderHistory: (
+      netuid: string,
+      query?: {
+        days?: string
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        {
+          date: string
+          totalHolders: number
+          whaleCount: number
+          dolphinCount: number
+          fishCount: number
+          shrimpCount: number
+          whaleAlpha: number
+          dolphinAlpha: number
+          fishAlpha: number
+          shrimpAlpha: number
+          totalAlpha: number
+          whalePercent: number
+          dolphinPercent: number
+          fishPercent: number
+          shrimpPercent: number
+        }[],
+        {
+          error: {
+            code: string
+            message: string
+          }
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/holder-history`,
         method: "GET",
         query: query,
         format: "json",
@@ -811,6 +865,47 @@ export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/sentiment/tweets`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
+     * @name GetSubnetStakeSnapshots
+     * @summary Daily stake snapshots for a specific subnet (whale activity tracking)
+     * @request GET:/v1/bittensor/subnets/{netuid}/stake-snapshots
+     */
+    getSubnetStakeSnapshots: (
+      netuid: string,
+      query?: {
+        days?: string
+        minAmount?: string
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        {
+          id: string
+          coldkey: string
+          hotkey: string
+          netuid: number
+          amount: string
+          snapshotDate: string
+          blockHeight: number
+          timestamp: string
+        }[],
+        {
+          error: {
+            code: string
+            message: string
+          }
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/stake-snapshots`,
         method: "GET",
         query: query,
         format: "json",
