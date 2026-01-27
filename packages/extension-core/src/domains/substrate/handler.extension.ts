@@ -165,7 +165,7 @@ export class SubHandler extends ExtensionHandler {
       const signedOuterHash = outerTx.hash.toHex()
 
       // watch execution of both transactions (both should appear in tx history)
-      await watchSubstrateTransaction(chain, registry, outerPayload, signatureOuter, { txInfo })
+      await watchSubstrateTransaction(chain, registry, outerPayload, signatureOuter)
       await watchSubstrateTransaction(chain, registry, innerPayload, signatureInner, { txInfo })
 
       try {
@@ -177,7 +177,7 @@ export class SubHandler extends ExtensionHandler {
         throw err
       }
 
-      return { hash: signedOuterHash }
+      return { hash: signedOuterHash, innerHash: signedInnerHash }
     }
 
   private send: MessageHandler<"pri(substrate.rpc.send)"> = ({

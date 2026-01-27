@@ -1,8 +1,8 @@
 import { LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, cn } from "@talismn/util"
 import { type FC, type SVGProps, useMemo } from "react"
 
-type ButtonColor = "default" | "primary" | "red" | "orange"
+type ButtonColor = "default" | "primary" | "red" | "orange" | "buy" | "sell"
 
 export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -33,26 +33,44 @@ export const Button: FC<ButtonProps> = ({
     // color prop takes precedence over primary flag
     const effectiveColor: ButtonColor = color ?? (primary ? "primary" : "default")
 
-    if (disabled)
-      return classNames(
-        "bg-black-tertiary text-body-disabled",
-        effectiveColor === "default" ? "border" : ""
-      )
-
     switch (effectiveColor) {
       case "default":
-        return "bg-transparent text-white border focus:border-2 border-white enabled:hover:bg-white enabled:hover:text-black focus:outline-none focus:border-white enabled:hover:active:bg-black enabled:hover:active:text-white"
+        return cn(
+          "border border-white bg-transparent text-white focus:border-2 focus:border-white focus:outline-none enabled:hover:bg-white enabled:hover:text-black enabled:hover:active:bg-black enabled:hover:active:text-white",
+          "disabled:bg-black-tertiary disabled:text-body-disabled"
+        )
 
       case "primary":
-        return "bg-primary-500 text-black border-2 border-transparent focus:outline-none enabled:hover:bg-primary-700 focus:border-white enabled:hover:active:bg-primary"
+        return cn(
+          "border-2 border-transparent bg-primary-500 text-black focus:border-white focus:outline-none enabled:hover:bg-primary-700 enabled:hover:active:bg-primary",
+          "disabled:bg-primary/50"
+        )
 
       case "orange":
-        return "bg-orange-500 text-black border-2 border-transparent focus:outline-none enabled:hover:bg-orange/90 focus:border-white enabled:hover:active:bg-orange"
+        return cn(
+          "border-2 border-transparent bg-orange-500 text-black focus:border-white focus:outline-none enabled:hover:bg-orange/90 enabled:hover:active:bg-orange",
+          "disabled:bg-orange-500/50"
+        )
 
       case "red":
-        return "bg-brand-orange text-black border-2 border-transparent focus:outline-none enabled:hover:bg-brand-orange/90 focus:border-white  enabled:hover:active:bg-brand-orange"
+        return cn(
+          "border-2 border-transparent bg-brand-orange text-black focus:border-white focus:outline-none enabled:hover:bg-brand-orange/90 enabled:hover:active:bg-brand-orange",
+          "disabled:bg-brand-orange/50"
+        )
+
+      case "buy":
+        return cn(
+          "border-2 border-transparent bg-buy text-black focus:border-white focus:outline-none enabled:hover:bg-buy/90 enabled:hover:active:bg-buy",
+          "disabled:bg-buy/50"
+        )
+
+      case "sell":
+        return cn(
+          "border-2 border-transparent bg-sell text-black focus:border-white focus:outline-none enabled:hover:bg-sell/90 enabled:hover:active:bg-sell",
+          "disabled:bg-sell/50"
+        )
     }
-  }, [color, disabled, primary])
+  }, [color, primary])
 
   return (
     <button

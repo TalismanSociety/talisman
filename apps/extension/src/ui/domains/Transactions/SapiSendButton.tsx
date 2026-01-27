@@ -1,18 +1,46 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
 import { classNames } from "@talismn/util"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state"
 import type { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
-import { type FC, Suspense, useCallback, useMemo, useState } from "react"
+import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, type ButtonProps } from "talisman-ui"
 import type { Hex } from "viem"
-
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
+
+type LockedInputs = {
+  payload: SignerPayloadJSON | undefined
+  shortMetadata?: `0x${string}` | undefined
+  txInfo?: WalletTransactionInfo | undefined
+  txMode?: ScaleApiSubmitMode | undefined
+}
+
+const useLockedInputs = ({ payload, shortMetadata, txInfo, txMode }: LockedInputs) => {
+  const memoizedInputs = useMemo(
+    () => ({
+      payload,
+      shortMetadata,
+      txInfo,
+      txMode,
+    }),
+    [payload, shortMetadata, txInfo, txMode]
+  )
+
+  const [isLocked, setIsLocked] = useState(false)
+  const [lockedInputs, setLockedInputs] = useState<LockedInputs>(() => memoizedInputs)
+
+  useEffect(() => {
+    if (!isLocked) setLockedInputs(memoizedInputs)
+  }, [isLocked, memoizedInputs])
+
+  return { setIsLocked, lockedInputs }
+}
 
 type SapiSendButtonProps = {
   containerId?: string
@@ -23,8 +51,9 @@ type SapiSendButtonProps = {
   loading?: boolean
   disabled?: boolean
   className?: string
-  onSubmitted: (hash: Hex) => void
-  mode?: "default" | "bittensor-mev-shield"
+  color?: ButtonProps["color"]
+  onSubmitted: (hash: Hex, innerHash?: Hex) => void
+  mode?: ScaleApiSubmitMode
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
@@ -35,44 +64,55 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   onSubmitted,
   mode,
+  color,
 }) => {
   const [error, setError] = useState<string>()
-  const { data: sapi } = useScaleApi(payload?.genesisHash)
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
+
+  const { lockedInputs, setIsLocked } = useLockedInputs({
+    payload,
+    shortMetadata,
+    txInfo,
+    txMode: mode,
+  })
+
+  const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
   const registry = useMemo(() => {
     if (!sapi) return undefined
-    if (!payload) return undefined
-    return sapi.getTypeRegistry(payload)
-  }, [payload, sapi])
+    if (!lockedInputs.payload) return undefined
+    return sapi.getTypeRegistry(lockedInputs.payload)
+  }, [lockedInputs.payload, sapi])
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
+      const { payload, txInfo, txMode } = lockedInputs
       if (!payload || !signature || !sapi) return
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo, mode)
-        onSubmitted(hash)
+        const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
+        onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
         // biome-ignore lint/suspicious/noExplicitAny: legacy
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo]
+    [onSubmitted, sapi, lockedInputs]
   )
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full shrink-0 flex-col gap-6 overflow-hidden">
       <SubmitErrorDisplay error={error} />
       <SignHardwareSubstrate
         className={className}
         containerId={containerId}
-        payload={payload}
-        shortMetadata={shortMetadata}
-        registry={registry}
         onSigned={handleSigned}
+        onSentToDevice={setIsLocked}
+        color={color}
+        registry={registry}
+        {...lockedInputs}
       />
     </div>
   )
@@ -86,27 +126,37 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   onSubmitted,
   mode,
+  color,
 }) => {
-  const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
-  const { data: sapi } = useScaleApi(payload?.genesisHash)
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
+
+  const { lockedInputs, setIsLocked } = useLockedInputs({
+    payload,
+    shortMetadata,
+    txInfo,
+    txMode: mode,
+  })
+
+  const account = useAccountByAddress(lockedInputs.payload?.address)
+  const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
+      const { payload, txMode, txInfo } = lockedInputs
       if (!payload || !signature || !sapi) return
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo, mode)
-        onSubmitted(hash)
+        const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
+        onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
         // biome-ignore lint/suspicious/noExplicitAny: legacy
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo]
+    [lockedInputs, onSubmitted, sapi]
   )
 
   if (!account) return null
@@ -116,12 +166,13 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       <SubmitErrorDisplay error={error} />
       <QrSubstrate
         containerId={containerId ?? "main"}
-        className={className}
-        genesisHash={payload?.genesisHash}
-        payload={payload}
-        shortMetadata={shortMetadata}
+        buttonClassName={className}
+        genesisHash={lockedInputs.payload?.genesisHash}
         account={account as AccountPolkadotVault}
         onSignature={handleSigned}
+        color={color}
+        onQrDisplayed={setIsLocked}
+        {...lockedInputs}
       />
     </div>
   )
@@ -135,6 +186,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   onSubmitted,
   mode,
+  color,
 }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -168,6 +220,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         disabled={disabled}
         onClick={handleSubmitClick}
         processing={isSubmitting}
+        color={color}
       >
         {label ?? t("Confirm")}
       </Button>
@@ -193,18 +246,42 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     }
   }, [account, props.loading])
 
+  // TODO if payload becomes undefined (while sapi.getPayload is loading), the component unmounts which causes UX issues.
+  // make it so we dont need a fallback disabled button here
+  if (!props.payload)
+    return (
+      <Button
+        className={classNames("w-full", props.className)}
+        primary
+        disabled
+        color={props.color}
+      >
+        {props.label ?? <LoaderIcon className="animate-spin-slow text-lg" />}
+      </Button>
+    )
+
   return (
     <Suspense fallback={<SuspenseTracker name="SapiSendButton" />}>
       {signMethod === "local" && <LocalAccountSendButton {...props} />}
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}
       {signMethod === "loading" && (
-        <Button className={classNames("w-full", props.className)} primary disabled>
+        <Button
+          className={classNames("w-full", props.className)}
+          primary
+          disabled
+          color={props.color}
+        >
           <LoaderIcon className="animate-spin-slow text-lg" />
         </Button>
       )}
       {signMethod === "unsupported" && (
-        <Button className={classNames("w-full", props.className)} primary disabled>
+        <Button
+          className={classNames("w-full", props.className)}
+          primary
+          disabled
+          color={props.color}
+        >
           {t("Unsupported account type: {{type}}", { type: account?.type })}
         </Button>
       )}

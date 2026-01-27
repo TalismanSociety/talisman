@@ -14,9 +14,14 @@ import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
 import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { isApiAvailable } from "./helpers/isApiAvailable"
-import { type ScaleApiSubmitMode, submit } from "./helpers/submit"
+import { submit } from "./helpers/submit"
 import type { Chain } from "./helpers/types"
-import type { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
+import type {
+  DecodedCall,
+  PayloadSignerConfig,
+  SapiConnectorProps,
+  ScaleApiSubmitMode,
+} from "./types"
 
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 

@@ -1,45 +1,41 @@
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { log } from "extension-shared"
-import { type FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import {
-  Button,
-  Drawer,
-  FormFieldInputText,
-  PillButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
-
+import { cn } from "@talismn/util"
 import {
   SUBNET_SLIPPAGE_SCHEMA,
   useBittensorSubnetSlippage,
-} from "../../hooks/useBittensorSubnetSlippage"
+} from "@ui/domains/Staking/Bittensor/hooks/useBittensorSubnetSlippage"
 import {
   DEFAULT_USER_MAX_SLIPPAGE,
   HIGH_PRICE_IMPACT,
   VERY_HIGH_PRICE_IMPACT,
-} from "../../utils/constants"
+} from "@ui/domains/Staking/Bittensor/utils/constants"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import {
+  Button,
+  FormFieldInputText,
+  Modal,
+  ModalDialog,
+  PillButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenCloseStatus,
+} from "talisman-ui"
+import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
-export const BittensorSlippageDrawer: FC<{
-  isOpen: boolean
-  onClose: () => void
-  containerId: string
-  netuid: number | null
-}> = ({ containerId, isOpen, netuid, onClose }) => {
+export const BittensorSlippageModal: FC = () => {
+  const { isOpen, close, args } = useBittensorSlippageModal()
+
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={onClose} containerId={containerId}>
-      <Content netuid={netuid} onClose={onClose} />
-    </Drawer>
+    <Modal isOpen={isOpen} onDismiss={close}>
+      {args && <Content netuid={args.netuid} onClose={close} />}
+    </Modal>
   )
 }
 
-export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
-  netuid,
-  onClose,
-}) => {
+const Content: FC<{ netuid: number; onClose: () => void }> = ({ netuid, onClose }) => {
   const [slippage, setSlippage] = useBittensorSubnetSlippage(netuid)
   const [slippageEdit, setSlippageEdit] = useState<string>(String(slippage))
   const { t } = useTranslation()
@@ -51,7 +47,7 @@ export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
     } catch (err) {
       log.error("Invalid slippage input:", err)
     }
-  }, [onClose, setSlippage, slippageEdit])
+  }, [setSlippage, slippageEdit, onClose])
 
   const handleReset = useCallback(() => {
     setSlippage(DEFAULT_USER_MAX_SLIPPAGE)
@@ -64,9 +60,16 @@ export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
     return parsed.success
   }, [slippageEdit])
 
+  const refInput = useRef<HTMLInputElement>(null)
+  const status = useOpenCloseStatus()
+  useEffect(() => {
+    if (status === "open") {
+      refInput.current?.focus()
+    }
+  }, [status])
+
   return (
-    <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-black-secondary p-12">
-      <div className="pb-8 font-bold text-body">{t("Slippage Tolerance")}</div>
+    <ModalDialog title={t("Slippage Tolerance")} onClose={onClose}>
       <p className="text-body-secondary text-sm">
         {t(
           "You can customize the slippage percentage to balance transaction success and price accuracy."
@@ -76,7 +79,7 @@ export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
         {t("This setting will apply to all your subnet staking transactions.")}
       </p>
       <div className="mt-4 flex items-center gap-2 self-start text-body-secondary text-sm">
-        <div className="">{t("Max Slippage")}</div>
+        <div className="mb-2">{t("Max Slippage")}</div>
         <Tooltip>
           <TooltipTrigger>
             <InfoIcon />
@@ -91,8 +94,9 @@ export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
         </Tooltip>
       </div>
       <FormFieldInputText
+        ref={refInput}
         small
-        containerProps={{ className: "px-6 text-right bg-black" }}
+        containerProps={{ className: "px-6 text-right" }}
         after={
           <div className="flex items-center gap-4">
             <div>%</div>
@@ -106,7 +110,7 @@ export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
         value={slippageEdit}
       />
       <div
-        className={classNames(
+        className={cn(
           "mb-4 flex w-full items-center justify-end gap-2 text-orange-500 text-xs",
           Number(slippageEdit) < HIGH_PRICE_IMPACT && "invisible",
           Number(slippageEdit) >= VERY_HIGH_PRICE_IMPACT && "text-red-500"
@@ -130,6 +134,6 @@ export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
           {t("Save")}
         </Button>
       </div>
-    </div>
+    </ModalDialog>
   )
 }
