@@ -1,3 +1,4 @@
+import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
@@ -20,15 +21,16 @@ const DEFAULT_SORT_SETTING: SortSetting = { key: "netuid", order: "asc" }
 
 // Format number with appropriate precision
 const formatNumber = (num: number, decimals = 2) => {
-  if (num === 0) return "—"
+  if (num === 0) return "0"
+  if (Math.abs(num) >= 1000000000) return `${(num / 1000000000).toFixed(1)}B`
   if (Math.abs(num) >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-  if (Math.abs(num) >= 1000) return `${(num / 1000).toFixed(1)}K`
+  if (Math.abs(num) >= 1000) return `${(num / 1000).toFixed(2)}k`
   return num.toFixed(decimals)
 }
 
 // Format price in TAO
 const formatTaoPrice = (price: number) => {
-  if (price === 0) return "—"
+  if (price === 0) return "0"
   if (price < 0.0001) return price.toFixed(6)
   if (price < 0.01) return price.toFixed(4)
   return price.toFixed(2)
@@ -36,9 +38,92 @@ const formatTaoPrice = (price: number) => {
 
 // Format USD price
 const formatUsdPrice = (price: number) => {
-  if (price === 0) return "—"
+  if (price === 0) return "$0"
+  if (price >= 1000000000) return `$ ${(price / 1000000000).toFixed(1)}B`
+  if (price >= 1000000) return `$ ${(price / 1000000).toFixed(1)}M`
   if (price < 0.01) return `$${price.toFixed(4)}`
   return `$${price.toFixed(2)}`
+}
+
+// Format large TAO amounts
+const formatTaoAmount = (num: number) => {
+  if (num === 0) return "0 τ"
+  if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B τ`
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M τ`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K τ`
+  return `${num.toFixed(0)} τ`
+}
+
+// Format balance with commas
+const formatBalance = (num: number) => {
+  if (num === 0) return "0"
+  return num.toLocaleString("en-US", { maximumFractionDigits: 0 })
+}
+
+// Mini sparkline chart component
+const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isPositive }) => {
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  const range = max - min || 1
+
+  const points = data
+    .map((value, index) => {
+      const x = (index / (data.length - 1)) * 60
+      const y = 18 - ((value - min) / range) * 14
+      return `${x},${y}`
+    })
+    .join(" ")
+
+  return (
+    <svg width="60" height="20" className="overflow-visible">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={isPositive ? "#22c55e" : "#ef4444"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+// Sentiment badge component
+const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ sentiment }) => {
+  if (!sentiment) return null
+
+  return (
+    <span
+      className={cn(
+        "ml-4 rounded px-4 py-1 text-[10px]",
+        sentiment === "bullish" && "bg-green/20 text-green",
+        sentiment === "bearish" && "bg-red-500/20 text-red-500"
+      )}
+    >
+      {sentiment === "bullish" ? "Bullish" : "Bearish"}
+    </span>
+  )
+}
+
+// Price change indicator
+const PriceChange: FC<{ change: number }> = ({ change }) => {
+  const isPositive = change > 0
+  const isNegative = change < 0
+
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1 whitespace-nowrap",
+        isPositive && "text-green",
+        isNegative && "text-red-500",
+        !isPositive && !isNegative && "text-body-secondary"
+      )}
+    >
+      {change > 0 ? "+" : ""}
+      {change.toFixed(1)}%{isPositive && <span>↗</span>}
+      {isNegative && <span>↘</span>}
+    </span>
+  )
 }
 
 export const TaoDashboardSubnetsTable = () => {
@@ -71,7 +156,7 @@ export const TaoDashboardSubnetsTable = () => {
         <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
           {Array.from({ length: 8 }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static list
-            <div key={i} className="h-36 animate-pulse bg-grey-850" />
+            <div key={i} className="h-44 animate-pulse bg-grey-850" />
           ))}
         </div>
       </div>
@@ -94,6 +179,7 @@ const SortIndicator: FC<{ order?: SortOrder }> = ({ order }) => {
   return (
     <SortIcon
       className={cn(
+        "size-12 shrink-0",
         order === "asc" && "rotate-180 text-primary",
         order === "desc" && "text-primary"
       )}
@@ -102,18 +188,25 @@ const SortIndicator: FC<{ order?: SortOrder }> = ({ order }) => {
 }
 
 const HeaderCell: FC<
-  PropsWithChildren<{ sortOrder?: SortOrder; onSortOrderToggle?: () => void }>
-> = ({ children, sortOrder, onSortOrderToggle }) => {
+  PropsWithChildren<{
+    sortOrder?: SortOrder
+    onSortOrderToggle?: () => void
+    className?: string
+    showInfoIcon?: boolean
+  }>
+> = ({ children, sortOrder, onSortOrderToggle, className, showInfoIcon }) => {
   return (
     <button
       type="button"
       className={cn(
-        "flex max-h-24 gap-1 overflow-hidden uppercase",
-        onSortOrderToggle ? "cursor-pointer" : "cursor-default"
+        "flex items-center justify-start gap-1 text-left text-body-secondary text-xs uppercase",
+        onSortOrderToggle ? "cursor-pointer" : "cursor-default",
+        className
       )}
       onClick={onSortOrderToggle}
     >
-      <span className="truncate">{children}</span>
+      <span className="whitespace-nowrap">{children}</span>
+      {showInfoIcon && <InfoIcon className="size-12 shrink-0 text-body-disabled" />}
       {!!onSortOrderToggle && <SortIndicator order={sortOrder} />}
     </button>
   )
@@ -145,20 +238,36 @@ const HeaderRow: FC<{
   )
 
   return (
-    <div className="grid h-24 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-[#202020] px-10 text-body-inactive">
-      <HeaderCell>#</HeaderCell>
-      <HeaderCell>Subnet</HeaderCell>
+    <div className="grid h-36 w-full grid-cols-[minmax(120px,1.4fr),minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive">
+      <HeaderCell
+        sortOrder={getSortOrder("netuid")}
+        onSortOrderToggle={handleSortToggle("netuid", "asc")}
+      >
+        Subnet
+      </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("price")}
         onSortOrderToggle={handleSortToggle("price", "desc")}
       >
-        Price (τ)
+        Price
       </HeaderCell>
       <HeaderCell
-        sortOrder={getSortOrder("priceUsd")}
-        onSortOrderToggle={handleSortToggle("priceUsd", "desc")}
+        sortOrder={getSortOrder("balance")}
+        onSortOrderToggle={handleSortToggle("balance", "desc")}
       >
-        Price (USD)
+        My Balance
+      </HeaderCell>
+      <HeaderCell
+        sortOrder={getSortOrder("score")}
+        onSortOrderToggle={handleSortToggle("score", "desc")}
+      >
+        Score
+      </HeaderCell>
+      <HeaderCell
+        sortOrder={getSortOrder("stakedTao")}
+        onSortOrderToggle={handleSortToggle("stakedTao", "desc")}
+      >
+        Staked
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("volume")}
@@ -167,71 +276,117 @@ const HeaderRow: FC<{
         Volume
       </HeaderCell>
       <HeaderCell
-        sortOrder={getSortOrder("netAlpha")}
-        onSortOrderToggle={handleSortToggle("netAlpha", "desc")}
+        sortOrder={getSortOrder("mcap")}
+        onSortOrderToggle={handleSortToggle("mcap", "desc")}
       >
-        24h Flow
+        MCap
       </HeaderCell>
       <HeaderCell
-        sortOrder={getSortOrder("score")}
-        onSortOrderToggle={handleSortToggle("score", "desc")}
+        sortOrder={getSortOrder("emission")}
+        onSortOrderToggle={handleSortToggle("emission", "desc")}
       >
-        Score
+        Emissions
       </HeaderCell>
+      <HeaderCell>Chart</HeaderCell>
     </div>
   )
 }
 
 const DataCell: FC<PropsWithChildren<{ className?: string }>> = ({ children, className }) => {
-  return <div className={cn("max-h-36 truncate", className)}>{children}</div>
-}
-
-// Flow direction badge component
-const FlowBadge: FC<{ netAlpha: number; flowDirection: string }> = ({
-  netAlpha,
-  flowDirection,
-}) => {
-  const isInflow = flowDirection === "inflow"
-  const isOutflow = flowDirection === "outflow"
-
   return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-4 rounded-full px-8 py-2 font-medium text-xs",
-        isInflow && "bg-green/20 text-green",
-        isOutflow && "bg-red-500/20 text-red-500",
-        !isInflow && !isOutflow && "bg-grey-700 text-body-secondary"
-      )}
-    >
-      {isInflow && "↑"}
-      {isOutflow && "↓"}
-      {!isInflow && !isOutflow && "→"}
-      <span>
-        {netAlpha >= 0 ? "+" : ""}
-        {formatNumber(netAlpha, 1)}α
-      </span>
+    <div className={cn("flex flex-col items-start justify-center text-left", className)}>
+      {children}
     </div>
   )
 }
 
 const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
+  // Compare last price to first price in 7d data to determine chart color
+  const firstPrice = subnet.chartData[0] ?? 0
+  const lastPrice = subnet.chartData[subnet.chartData.length - 1] ?? 0
+  const isChartPositive = lastPrice >= firstPrice
+  const sentiment =
+    subnet.sentiment === "bullish" || subnet.sentiment === "bearish" ? subnet.sentiment : null
+
   return (
     <Link
       to={`/bittensor/subnets/${subnet.netuid}`}
-      className="grid h-36 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-grey-850 px-10 text-left text-body hover:bg-grey-800"
+      className="grid h-44 w-full grid-cols-[minmax(120px,1.4fr),minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-850"
     >
-      <DataCell>SN{subnet.netuid}</DataCell>
-      <DataCell className="flex items-center gap-6">
-        <TokenLogo tokenId={subnet.tokenId} className="size-20" />
-        <span className="font-bold">{subnet.name}</span>
+      {/* Subnet */}
+      <DataCell className="flex-row items-center gap-6">
+        <TokenLogo tokenId={subnet.tokenId} className="size-24 shrink-0" />
+        <div className="flex flex-col gap-0">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-white">{subnet.name}</span>
+            <span className="text-primary">{subnet.greekSymbol}</span>
+          </div>
+          <span className="text-body-secondary text-xs">SN{subnet.netuid}</span>
+        </div>
       </DataCell>
-      <DataCell>{formatTaoPrice(subnet.price)}τ</DataCell>
-      <DataCell>{formatUsdPrice(subnet.priceUsd)}</DataCell>
-      <DataCell>{formatNumber(subnet.volume, 0)}</DataCell>
+
+      {/* Price */}
       <DataCell>
-        <FlowBadge netAlpha={subnet.netAlpha} flowDirection={subnet.flowDirection} />
+        <div className="font-medium text-white">
+          {formatTaoPrice(subnet.price)} <span className="text-primary">τ</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-body-secondary">{formatUsdPrice(subnet.priceUsd)}</span>
+          <PriceChange change={subnet.priceChange} />
+        </div>
       </DataCell>
-      <DataCell>{formatNumber(subnet.score, 1)}</DataCell>
+
+      {/* My Balance */}
+      <DataCell>
+        {subnet.balance > 0 ? (
+          <>
+            <div className="text-green">
+              {formatBalance(subnet.balance)} {subnet.greekSymbol}
+            </div>
+            <div className="text-body-secondary text-xs">${formatBalance(subnet.balanceUsd)}</div>
+          </>
+        ) : (
+          <span className="text-body-secondary">0 {subnet.greekSymbol}</span>
+        )}
+      </DataCell>
+
+      {/* Score */}
+      <DataCell>
+        <div className="flex flex-wrap items-center">
+          <span className="font-medium text-white">{Math.round(subnet.score)}</span>
+          <SentimentBadge sentiment={sentiment} />
+        </div>
+      </DataCell>
+
+      {/* Staked */}
+      <DataCell>
+        <div className="text-white">
+          {formatNumber(subnet.stakedTao)} <span className="text-primary">τ</span>
+        </div>
+        <div className="text-body-secondary text-xs">
+          {formatNumber(subnet.stakedAlpha)} {subnet.greekSymbol}
+        </div>
+      </DataCell>
+
+      {/* Volume */}
+      <DataCell>
+        <span className="text-white">{formatTaoAmount(subnet.volume)}</span>
+      </DataCell>
+
+      {/* MCap */}
+      <DataCell>
+        <span className="text-white">{formatTaoAmount(subnet.mcap)}</span>
+      </DataCell>
+
+      {/* Emissions */}
+      <DataCell>
+        <span className="text-white">{subnet.emission.toFixed(2)}%</span>
+      </DataCell>
+
+      {/* Chart */}
+      <DataCell>
+        <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+      </DataCell>
     </Link>
   )
 }
