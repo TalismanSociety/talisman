@@ -23,7 +23,10 @@ export const tokenRatesAtom = atom(async (get) => {
 })
 
 // TODO: Persist to storage
+const DEFAULT_TOKEN_RATES: TokenRatesStorage = { tokenRates: {} }
 const tokenRates$ = new ReplaySubject<TokenRatesStorage>(1)
+// Initialize with default empty value so atomWithObservable can resolve immediately
+tokenRates$.next(DEFAULT_TOKEN_RATES)
 
 const tokenRatesDbAtom = atomWithObservable(() => {
   tryToDeleteOldTokenRatesDb()
