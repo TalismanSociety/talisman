@@ -1,10 +1,10 @@
+import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useAccounts, useToken } from "@ui/state"
 import { type FC, useMemo, useState } from "react"
-
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
@@ -14,28 +14,6 @@ interface SubnetTransactionsProps {
 }
 
 type Tab = "my" | "all"
-
-const formatTimeAgo = (timestamp: string) => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffSecs = Math.floor(diffMs / 1000)
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffSecs < 60) return `${diffSecs}secs ago`
-  if (diffMins < 60) return `${diffMins}mins ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-
-  // For older transactions, show date with day prefix
-  const dateStr = date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
-  return `${diffDays}d ${dateStr},`
-}
 
 const formatAlpha = (amount: string) => {
   const num = parseFloat(amount) / 1e9
@@ -177,7 +155,7 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
                         {isBuy ? "BUY" : "SELL"}
                       </span>
                       <span className="text-grey-500 text-xs">
-                        {formatTimeAgo(event.timestamp)}{" "}
+                        <DistanceToNow timestamp={event.timestamp} />{" "}
                         {event.coldkey ? shortenAddress(event.coldkey) : "Unknown"}
                       </span>
                     </div>

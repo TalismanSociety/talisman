@@ -1,3 +1,4 @@
+import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
 import type { NetworkId } from "@talismn/chaindata-provider"
@@ -41,9 +42,7 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import type { ReplacementCallbackArgs } from "../TxProgress"
-import { DistanceToNow } from "./DistanceToNow"
 import { useTxHistory } from "./TxHistoryContext"
 import { TxHistoryModal } from "./TxHistoryModal"
 
