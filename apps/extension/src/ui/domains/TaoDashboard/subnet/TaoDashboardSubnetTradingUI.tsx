@@ -35,11 +35,8 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
               </div>
 
               {/* Recent Transactions */}
-              <div className="flex h-full max-h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-grey-850">
-                <SubnetTransactions
-                  netuid={netuid}
-                  className="min-h-0 flex-1 overflow-y-auto p-4"
-                />
+              <div className="flex h-full max-h-full w-full flex-1 flex-col overflow-hidden rounded-lg">
+                <SubnetTransactions netuid={netuid} />
               </div>
             </div>
           </div>

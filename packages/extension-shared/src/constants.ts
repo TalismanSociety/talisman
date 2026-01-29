@@ -21,6 +21,7 @@ export const RAMPS_RAMP_API_URL = "https://ramp-api.talisman.xyz"
 export const ASSET_DISCOVERY_API_URL = "https://ada.talisman.xyz"
 export const YIELD_API_BASE_URL = "https://yap.talisman.xyz"
 export const SN45_API_BASE_URL = "https://sn45api.talisman.xyz"
+// export const SN45_API_BASE_URL = "http://localhost:8787"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"

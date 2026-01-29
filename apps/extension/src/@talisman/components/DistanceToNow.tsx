@@ -26,7 +26,9 @@ export const DistanceToNow: FC<{ timestamp: number | string }> = ({ timestamp })
 
   return (
     <Tooltip>
-      <TooltipTrigger>{text}</TooltipTrigger>
+      <TooltipTrigger asChild>
+        <span>{text}</span>
+      </TooltipTrigger>
       <TooltipContent>{exactTime}</TooltipContent>
     </Tooltip>
   )

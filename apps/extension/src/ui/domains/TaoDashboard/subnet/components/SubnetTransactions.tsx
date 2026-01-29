@@ -1,11 +1,23 @@
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
-import { subDTaoTokenId } from "@talismn/chaindata-provider"
+import { BalanceFormatter } from "@talismn/balances"
+import {
+  type SubDTaoToken,
+  type SubNativeToken,
+  subDTaoTokenId,
+  subNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
-import { useAccounts, useToken } from "@ui/state"
+import { cn, formatDecimals } from "@talismn/util"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useAccountByAddress, useAccounts, useToken } from "@ui/state"
 import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
+import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
 interface SubnetTransactionsProps {
@@ -15,51 +27,33 @@ interface SubnetTransactionsProps {
 
 type Tab = "my" | "all"
 
-const formatAlpha = (amount: string) => {
-  const num = parseFloat(amount) / 1e9
-  return num.toFixed(3)
+interface StakeEvent {
+  method: "Adding" | "Removing"
+  alphaAmount: string
+  taoAmount: string
+  timestamp: string
+  coldkey?: string
 }
-
-const formatTau = (amount: string) => {
-  const num = parseFloat(amount) / 1e9
-  return num.toFixed(6)
-}
-
-const shortenAddress = (address: string) => {
-  if (!address) return "Unknown"
-  return `${address.slice(0, 4)}...${address.slice(-3)}`
-}
-
-const TransactionAvatar: FC<{ isBuy: boolean; className?: string }> = ({ isBuy, className }) => (
-  <div className={cn("relative shrink-0", className)}>
-    <div
-      className={cn(
-        "flex size-20 items-center justify-center rounded-full",
-        "bg-gradient-to-br from-orange-500 via-yellow-400 to-green-500"
-      )}
-    />
-    <div
-      className={cn(
-        "absolute -right-2 -bottom-2 flex size-12 items-center justify-center rounded-full",
-        "bg-black"
-      )}
-    >
-      {isBuy ? (
-        <ArrowDownIcon className="size-10 text-green" />
-      ) : (
-        <ArrowUpIcon className="size-10 text-red-500" />
-      )}
-    </div>
-  </div>
-)
 
 export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, className }) => {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>("my")
   const { data: events, isLoading } = useSubnetStakeEvents(netuid)
   const ownedAccounts = useAccounts("owned")
 
-  const tokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
-  const token = useToken(tokenId, "substrate-dtao")
+  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
+  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
+
+  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
+  const taoToken = useToken(taoTokenId, "substrate-native")
+
+  const tabs = useMemo<TabConfig<Tab>[]>(
+    () => [
+      { value: "my", label: t("My Transactions") },
+      { value: "all", label: t("All Transactions") },
+    ],
+    [t]
+  )
 
   const filteredEvents = useMemo(() => {
     if (!events) return []
@@ -81,56 +75,28 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
     return sorted.slice(0, 20)
   }, [events, activeTab, ownedAccounts])
 
-  return (
-    <div className={cn("flex flex-col", className)}>
-      {/* Tabs */}
-      <div className="flex shrink-0 border-grey-750 border-b">
-        <button
-          type="button"
-          onClick={() => setActiveTab("my")}
-          className={cn(
-            "flex-1 px-4 py-3 text-center font-medium text-sm transition-colors",
-            activeTab === "my"
-              ? "border-white border-b-2 text-white"
-              : "text-body-secondary hover:text-white"
-          )}
-        >
-          My Transactions
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("all")}
-          className={cn(
-            "flex-1 px-4 py-3 text-center font-medium text-sm transition-colors",
-            activeTab === "all"
-              ? "border-white border-b-2 text-white"
-              : "text-body-secondary hover:text-white"
-          )}
-        >
-          All Transactions
-        </button>
-      </div>
+  if (!alphaToken || !taoToken) return null
 
+  return (
+    <div className={cn("flex size-full flex-col overflow-hidden bg-grey-850", className)}>
+      {/* Tabs */}
+      <TaoDashboardTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       {/* Subnet Header */}
-      <div className="flex shrink-0 items-center gap-8 px-12 py-8">
-        <span className="text-body-secondary text-sm">Transactions on SN{netuid}</span>
-        {token?.subnetName && (
-          <span className="rounded bg-primary/20 px-6 py-2 font-medium text-primary text-xs">
-            {token.subnetName}
-          </span>
-        )}
-        {/* {token?.logo && (
-          <img src={token.logo} alt="" className="size-24 rounded-full object-cover" />
-        )} */}
-      </div>
 
       {/* Transaction List */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-12">
+      <div className="mr-4 grow overflow-y-auto px-12 pr-8 pb-8">
+        <div className="flex shrink-0 items-center gap-8 py-8 text-sm">
+          <span className="text-body-secondary">Transactions on SN{netuid}</span>
+          {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}
+          {/* {token?.logo && (
+            <img src={token.logo} alt="" className="size-24 rounded-full object-cover" />
+          )} */}
+        </div>
         {isLoading ? (
           <div className="flex flex-col gap-8">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 10 }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static list
-              <div key={i} className="h-48 animate-pulse rounded-lg bg-grey-800" />
+              <TransactionRowSkeleton key={i} />
             ))}
           </div>
         ) : !filteredEvents.length ? (
@@ -139,40 +105,138 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
           </div>
         ) : (
           <div className="flex flex-col gap-8">
-            {filteredEvents.map((event, i) => {
-              const isBuy = event.method === "Adding"
-              return (
-                <div key={`${event.timestamp}-${i}`} className="flex items-center justify-between">
-                  <div className="flex items-center gap-8">
-                    <TransactionAvatar isBuy={isBuy} />
-                    <div className="flex flex-col">
-                      <span
-                        className={cn(
-                          "font-semibold text-xs",
-                          isBuy ? "text-green" : "text-red-500"
-                        )}
-                      >
-                        {isBuy ? "BUY" : "SELL"}
-                      </span>
-                      <span className="text-grey-500 text-xs">
-                        <DistanceToNow timestamp={event.timestamp} />{" "}
-                        {event.coldkey ? shortenAddress(event.coldkey) : "Unknown"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className={cn("font-semibold", isBuy ? "text-green" : "text-red-500")}>
-                      {isBuy ? "+" : "- "}
-                      {formatAlpha(event.alphaAmount)} α
-                    </span>
-                    <span className="text-grey-500 text-xs">τ {formatTau(event.taoAmount)}</span>
-                  </div>
-                </div>
-              )
-            })}
+            {filteredEvents.map((event, i) => (
+              <TransactionRow
+                key={`${event.timestamp}-${i}`}
+                alphaToken={alphaToken}
+                taoToken={taoToken}
+                event={event}
+              />
+            ))}
           </div>
         )}
       </div>
     </div>
   )
 }
+
+const TransactionRow: FC<{
+  taoToken: SubNativeToken
+  alphaToken: SubDTaoToken
+  event: StakeEvent
+}> = ({ taoToken, alphaToken, event }) => {
+  const taoDisplay = useMemo(() => {
+    const formatter = new BalanceFormatter(event.taoAmount, taoToken.decimals)
+    return `τ ${formatDecimals(formatter.tokens, 6)}`
+  }, [event.taoAmount, taoToken.decimals])
+
+  const isBuy = event.method === "Adding"
+
+  return (
+    <div className="flex h-20 items-center justify-between text-sm">
+      <div className="flex items-center gap-8">
+        <TransactionAvatar isBuy={isBuy} address={event.coldkey ?? ""} />
+        <div className="flex flex-col gap-2">
+          <div>
+            <AccountDisplay address={event.coldkey ?? ""} />
+          </div>
+          <div className="text-grey-500 text-xs">
+            <DistanceToNow timestamp={event.timestamp} />{" "}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-2">
+        <div className={cn(isBuy && "text-primary")}>
+          {isBuy ? "+" : "- "}
+          <TokensAndFiat
+            noFiat
+            noCountUp
+            tokenId={alphaToken.id}
+            planck={BigInt(event.alphaAmount)}
+          />
+        </div>
+        <div className="text-grey-500 text-xs">{taoDisplay}</div>
+      </div>
+    </div>
+  )
+}
+
+const TransactionRowSkeleton: FC = () => {
+  return (
+    <div className="flex h-20 animate-pulse items-center justify-between text-sm">
+      <div className="flex items-center gap-8">
+        <div className="size-[3.6rem] rounded-full bg-grey-800"></div>
+        <div className="flex flex-col gap-3">
+          <div>
+            <div className="h-7 w-48 rounded-xs bg-grey-800"></div>
+          </div>
+          <div className="text-grey-500 text-xs">
+            <div className="h-6 w-32 rounded-xs bg-grey-800"></div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-3">
+        <div>
+          <div className="h-7 w-32 rounded-xs bg-grey-800"></div>
+        </div>
+        <div className="text-grey-500 text-xs">
+          <div className="h-6 w-48 rounded-xs bg-grey-800"></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const AccountDisplay: FC<{ address: string }> = ({ address }) => {
+  const account = useAccountByAddress(address)
+
+  if (account) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>{account.name}</span>
+        </TooltipTrigger>
+        <TooltipContent>{account.address}</TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return (
+    <Address
+      className="text-body-secondary"
+      startCharCount={6}
+      endCharCount={6}
+      address={address}
+      noOnChainId
+    />
+  )
+}
+
+const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: string }> = ({
+  isBuy,
+  address,
+  className,
+}) => (
+  <div className={cn("relative shrink-0", className)}>
+    <AccountIcon address={address} className="size-[3.6rem] text-[3.6rem]" />
+    <div
+      className={cn(
+        "absolute -right-2 -bottom-2 flex size-10 items-center justify-center rounded-full",
+        "bg-grey-850 p-px"
+      )}
+    >
+      <div
+        className={cn(
+          "flex size-full flex-col items-center justify-center rounded-full",
+          isBuy ? "bg-buy/15" : "bg-sell/15"
+        )}
+      >
+        {isBuy ? (
+          <ArrowDownIcon className="size-7 rounded-full text-green" />
+        ) : (
+          <ArrowUpIcon className="size-7 rounded-full text-sell" />
+        )}
+      </div>
+    </div>
+  </div>
+)

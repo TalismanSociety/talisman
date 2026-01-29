@@ -16,7 +16,9 @@
     "test:watch": "vitest",
     "clean": "rm -rf .turbo node_modules dist coverage",
     "typecheck": "tsc --noEmit",
-    "chore:generate-clients": "pnpm dlx swagger-typescript-api generate -p https://sn45api.talisman.xyz/openapi.json -o ./src/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api"
+    "chore:generate-clients:sn45": "pnpm dlx swagger-typescript-api generate -p https://sn45api.talisman.xyz/openapi.json -o ./src/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api",
+    "chore:generate-clients:sn45:local": "pnpm dlx swagger-typescript-api generate -p http://localhost:8787/openapi.json -o ./src/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api",
+    "chore:generate-clients": "pnpm chore:generate-clients:sn45"
   },
   "dependencies": {
     "@metamask/browser-passworder": "5.0.1",

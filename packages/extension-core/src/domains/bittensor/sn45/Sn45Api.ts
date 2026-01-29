@@ -508,6 +508,7 @@ export class Sn45Api<
           taoAmount: string;
           timestamp: string;
           coldkey?: string;
+          hash: string;
         }[],
         {
           error: {
