@@ -73,7 +73,7 @@ export type IndexedTransactionEntry = Prettify<
   }
 >
 
-type TransactionEntry = LocalTransactionEntry | IndexedTransactionEntry
+export type TransactionEntry = LocalTransactionEntry | IndexedTransactionEntry
 
 const MAX_ITEMS_PER_TAB = 20
 
@@ -255,7 +255,6 @@ const TransactionRow: FC<{
 
   const isBuy = transaction.direction === "buy"
   const isFailed = transaction.status === "failed"
-  const isClickable = transaction.status === "indexed"
 
   const taoDisplay = useMemo(() => {
     const taoValue = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
@@ -266,7 +265,7 @@ const TransactionRow: FC<{
   const alphaValue = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
 
   const handleClick = useCallback(() => {
-    if (transaction.status === "indexed") open(transaction)
+    open(transaction)
   }, [transaction, open])
 
   const statusLabel = useMemo(() => {
@@ -287,10 +286,9 @@ const TransactionRow: FC<{
     <button
       type="button"
       onClick={handleClick}
-      disabled={!isClickable}
       className={cn(
-        "flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm",
-        transaction.status === "pending" ? "animate-pulse" : "hover:bg-grey-800"
+        "flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm hover:bg-grey-800",
+        transaction.status === "pending" && "animate-pulse"
       )}
     >
       <div className="flex items-center gap-8">
@@ -305,11 +303,29 @@ const TransactionRow: FC<{
         </div>
       </div>
       <div className={cn("flex flex-col items-end gap-2", isFailed && "opacity-50")}>
-        <div className={cn(isBuy && !isFailed && "text-primary")}>
+        <div
+          className={cn(
+            isBuy && !isFailed && "text-primary",
+            transaction.status !== "failed" &&
+              transaction.status !== "indexed" &&
+              transaction.direction === "buy" &&
+              "animate-pulse"
+          )}
+        >
           {isBuy ? "+ " : "- "}
           <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
         </div>
-        <div className="text-grey-500 text-xs">{taoDisplay}</div>
+        <div
+          className={cn(
+            "text-grey-500 text-xs",
+            transaction.status !== "failed" &&
+              transaction.status !== "indexed" &&
+              transaction.direction === "sell" &&
+              "animate-pulse"
+          )}
+        >
+          {taoDisplay}
+        </div>
       </div>
     </button>
   )
@@ -405,13 +421,20 @@ const TransactionModal: FC<{ netuid: number }> = ({ netuid }) => {
 
 const TransactionModalContent: FC<{
   netuid: number
-  transaction: IndexedTransactionEntry
+  transaction: TransactionEntry
   onClose: () => void
 }> = ({ netuid, transaction, onClose }) => {
   const { t } = useTranslation()
   const { alphaToken } = useSubnetTokens(netuid)
 
+  const { data: transactions } = useSubnetTransactions(netuid, false, 1000)
+  const tx = useMemo(() => {
+    return transactions.find((tx) => tx.hash === transaction.hash) ?? transaction
+  }, [transactions, transaction])
+
   if (!transaction || !alphaToken) return null
+
+  const isFailed = transaction.status === "failed"
 
   return (
     <WizardModalDialog
@@ -421,45 +444,70 @@ const TransactionModalContent: FC<{
       contentClassName="flex flex-col size-full overflow-hidden"
     >
       <div className="scrollable scrollable-800 grow overflow-auto">
-        <SwapSummary transaction={transaction} netuid={netuid} />
+        <SwapSummary transaction={tx} netuid={netuid} />
         <div className="h-10 shrink-0"></div>
 
+        <Field label={t("Status")}>
+          <FieldValueStatus status={tx.status} />
+        </Field>
         <Field label={t("Event")}>
-          <FieldValueEventType direction={transaction.direction} />
+          <FieldValueEventType direction={tx.direction} />
         </Field>
         <Field label={t("Account")}>
-          <FieldValueAccount address={transaction.account} />
+          <FieldValueAccount address={tx.account} />
         </Field>
         <Field label={t("Subnet")}>
           {netuid} - {alphaToken?.subnetName}
         </Field>
         <Field label={t("Validator")}>
-          <FieldValueValidator hotkey={transaction.hotkey} />
+          {tx.hotkey ? (
+            <FieldValueValidator hotkey={tx.hotkey} />
+          ) : isFailed ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )}
         </Field>
         <Field label={t("Effective price")}>
-          <FieldValueEffectivePrice transaction={transaction} alphaToken={alphaToken} />
+          {tx.status === "indexed" ? (
+            <FieldValueEffectivePrice transaction={tx} alphaToken={alphaToken} />
+          ) : isFailed ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )}
         </Field>
         <div className="flex h-14 w-full flex-col justify-center">
           <div className="h-px w-full bg-grey-700"></div>
         </div>
         <Field label={t("Block number")} className="text-body-secondary">
-          #{transaction.blockHeight.toLocaleString()}
+          {tx.blockHeight !== undefined ? (
+            `#${tx.blockHeight.toLocaleString()}`
+          ) : isFailed ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )}
         </Field>
         <Field label={t("Timestamp")} className="text-body-secondary">
-          {new Date(transaction.timestamp).toLocaleString()}
+          {tx.status === "indexed" ? (
+            new Date(tx.timestamp).toLocaleString()
+          ) : tx.timestamp ? (
+            new Date(tx.timestamp).toLocaleString()
+          ) : isFailed ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )}
         </Field>
         <Field label={t("Tx Hash")} className="text-body-secondary">
-          <FieldValueTxHash hash={transaction.hash} />
+          <FieldValueTxHash hash={tx.hash} />
         </Field>
       </div>
       <Button
         icon={ExternalLinkIcon}
         onClick={() => {
-          window.open(
-            `https://taostats.io/transaction/${transaction.hash}`,
-            "_blank",
-            "noreferrer noopener"
-          )
+          window.open(`https://taostats.io/transaction/${tx.hash}`, "_blank", "noreferrer noopener")
         }}
       >
         {t("View on Taostats")}
@@ -468,42 +516,22 @@ const TransactionModalContent: FC<{
   )
 }
 
-const FieldValueEffectivePrice: FC<{
-  transaction: IndexedTransactionEntry
-  alphaToken: SubDTaoToken
-}> = ({ transaction, alphaToken }) => {
-  const { t } = useTranslation()
-  const isBuy = transaction.direction === "buy"
-  // Effective alpha price = TAO / Alpha
-  // Buy: TAO in, Alpha out → tokenValueIn / tokenValueOut
-  // Sell: Alpha in, TAO out → tokenValueOut / tokenValueIn
-  const taoAmount = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
-  const alphaAmount = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
-  const price = Number(taoAmount) / Number(alphaAmount || BigInt(1))
-
-  return (
-    <div className="text-body">
-      {t("{{price}} τ / {{alphaSymbol}}", {
-        price: formatDecimals(price, 6),
-        alphaSymbol: alphaToken.symbol,
-      })}
-    </div>
-  )
-}
-
-const SwapSummary: FC<{ transaction: IndexedTransactionEntry; netuid: number }> = ({
+const SwapSummary: FC<{ transaction: TransactionEntry; netuid: number }> = ({
   transaction,
   netuid,
 }) => {
   const { t } = useTranslation()
   const isBuy = transaction.direction === "buy"
+  const isUnknown = transaction.status !== "indexed" && transaction.status !== "failed"
   const sign = isBuy ? "+" : "-"
   const alphaValue = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
 
   return (
     <div className="flex flex-col items-center rounded bg-grey-850">
       <div className="items flex w-full flex-col items-center justify-center gap-2 p-6">
-        <div className={cn("text-lg", isBuy ? "text-buy" : "text-sell")}>
+        <div
+          className={cn("text-lg", isBuy ? "text-buy" : "text-sell", isUnknown && "animate-pulse")}
+        >
           {sign}{" "}
           <TokensAndFiat
             noFiat
@@ -531,7 +559,7 @@ const SwapSummary: FC<{ transaction: IndexedTransactionEntry; netuid: number }> 
         </div>
         <div className="flex flex-col items-center gap-3 text-body-inactive">
           <div className="text-xs">{t("To")}</div>
-          <div className="text-body text-sm">
+          <div className={cn("text-body text-sm", isUnknown && "animate-pulse")}>
             <TokensAndFiat
               noFiat
               noCountUp
@@ -562,6 +590,49 @@ const FieldValueEventType: FC<{ direction: "buy" | "sell" }> = ({ direction }) =
   const { t } = useTranslation()
   const label = direction === "buy" ? t("Add Stake") : t("Remove Stake")
   return <div className="text-body">{label}</div>
+}
+
+const FieldSkeleton: FC = () => <div className="h-7 w-32 animate-pulse rounded-xs bg-grey-800" />
+
+const FieldNA: FC = () => {
+  const { t } = useTranslation()
+  return <div className="text-body-secondary">{t("N/A")}</div>
+}
+
+const FieldValueStatus: FC<{ status: TransactionEntry["status"] }> = ({ status }) => {
+  const { t } = useTranslation()
+  const statusConfig = {
+    pending: { label: t("Pending"), className: "text-body-secondary" },
+    finalizing: { label: t("Finalizing"), className: "text-body-secondary" },
+    confirmed: { label: t("Indexing"), className: "text-body" },
+    indexed: { label: t("Confirmed"), className: "text-body" },
+    failed: { label: t("Failed"), className: "text-alert-error" },
+  }
+  const config = statusConfig[status]
+  return <div className={config.className}>{config.label}</div>
+}
+
+const FieldValueEffectivePrice: FC<{
+  transaction: IndexedTransactionEntry
+  alphaToken: SubDTaoToken
+}> = ({ transaction, alphaToken }) => {
+  const { t } = useTranslation()
+  const isBuy = transaction.direction === "buy"
+  // Effective alpha price = TAO / Alpha
+  // Buy: TAO in, Alpha out → tokenValueIn / tokenValueOut
+  // Sell: Alpha in, TAO out → tokenValueOut / tokenValueIn
+  const taoAmount = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
+  const alphaAmount = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
+  const price = Number(taoAmount) / Number(alphaAmount || BigInt(1))
+
+  return (
+    <div className="text-body">
+      {t("{{price}} τ / {{alphaSymbol}}", {
+        price: formatDecimals(price, 6),
+        alphaSymbol: alphaToken.symbol,
+      })}
+    </div>
+  )
 }
 
 const FieldValueAccount: FC<{ address: string }> = ({ address }) => {
