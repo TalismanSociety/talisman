@@ -436,6 +436,9 @@ const TransactionModalContent: FC<{
         <Field label={t("Validator")}>
           <FieldValueValidator hotkey={transaction.hotkey} />
         </Field>
+        <Field label={t("Effective price")}>
+          <FieldValueEffectivePrice transaction={transaction} alphaToken={alphaToken} />
+        </Field>
         <div className="flex h-14 w-full flex-col justify-center">
           <div className="h-px w-full bg-grey-700"></div>
         </div>
@@ -462,6 +465,29 @@ const TransactionModalContent: FC<{
         {t("View on Taostats")}
       </Button>
     </WizardModalDialog>
+  )
+}
+
+const FieldValueEffectivePrice: FC<{
+  transaction: IndexedTransactionEntry
+  alphaToken: SubDTaoToken
+}> = ({ transaction, alphaToken }) => {
+  const { t } = useTranslation()
+  const isBuy = transaction.direction === "buy"
+  // Effective alpha price = TAO / Alpha
+  // Buy: TAO in, Alpha out → tokenValueIn / tokenValueOut
+  // Sell: Alpha in, TAO out → tokenValueOut / tokenValueIn
+  const taoAmount = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
+  const alphaAmount = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
+  const price = Number(taoAmount) / Number(alphaAmount || BigInt(1))
+
+  return (
+    <div className="text-body">
+      {t("{{price}} τ / {{alphaSymbol}}", {
+        price: formatDecimals(price, 6),
+        alphaSymbol: alphaToken.symbol,
+      })}
+    </div>
   )
 }
 
