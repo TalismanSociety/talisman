@@ -7,128 +7,6 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
-/** Staking methods we recognize (with and without limit price) */
-const STAKING_METHODS = {
-  // No limit price
-  add_stake: { direction: "taoToAlpha", hasLimit: false },
-  remove_stake: { direction: "alphaToTao", hasLimit: false },
-  // With limit price
-  add_stake_limit: { direction: "taoToAlpha", hasLimit: true },
-  remove_stake_limit: { direction: "alphaToTao", hasLimit: true },
-} as const
-
-type StakingMethod = keyof typeof STAKING_METHODS
-
-type StakingCallInfo = {
-  method: StakingMethod
-  direction: "taoToAlpha" | "alphaToTao"
-  netuid: number
-  hotkey: string
-  amount: bigint
-  limitPrice: bigint | null
-}
-
-type DecodedCall = {
-  pallet: string
-  method: string
-  // biome-ignore lint/suspicious/noExplicitAny: decoded args structure varies
-  args: any
-}
-
-type StakingCallFilter = {
-  netuid: number
-  hotkey: string
-  valueIn: bigint
-}
-
-/**
- * Recursively scans a decoded call (including proxied/batched calls) to find a staking operation.
- * When filter is provided, matches against netuid, hotkey, and amount to identify the correct call in a batch.
- * Returns all matching staking calls found.
- */
-const findStakingCalls = (
-  decodedCall: DecodedCall,
-  results: StakingCallInfo[] = []
-): StakingCallInfo[] => {
-  const { pallet, method, args } = decodedCall
-
-  // Check if this is a SubtensorModule staking call
-  if (pallet === "SubtensorModule" && method in STAKING_METHODS) {
-    const config = STAKING_METHODS[method as StakingMethod]
-    results.push({
-      method: method as StakingMethod,
-      direction: config.direction,
-      netuid: args.netuid as number,
-      hotkey: args.hotkey as string,
-      amount:
-        config.direction === "taoToAlpha"
-          ? BigInt(args.amount_staked ?? 0)
-          : BigInt(args.amount_unstaked ?? 0),
-      limitPrice: config.hasLimit ? BigInt(args.limit_price ?? 0) : null,
-    })
-    return results
-  }
-
-  // Check for proxy call wrappers (Proxy.proxy, Proxy.proxy_announced)
-  if (pallet === "Proxy" && ["proxy", "proxy_announced"].includes(method) && args.call) {
-    return findStakingCalls(args.call, results)
-  }
-
-  // Check for multisig call wrappers (Multisig.as_multi, Multisig.as_multi_threshold_1)
-  if (pallet === "Multisig" && ["as_multi", "as_multi_threshold_1"].includes(method) && args.call) {
-    return findStakingCalls(args.call, results)
-  }
-
-  // Check for utility wrappers with single call (dispatch_as, as_derivative, with_weight)
-  if (
-    pallet === "Utility" &&
-    ["dispatch_as", "as_derivative", "with_weight"].includes(method) &&
-    args.call
-  ) {
-    return findStakingCalls(args.call, results)
-  }
-
-  // Check for batch calls (Utility.batch, Utility.batch_all, Utility.force_batch)
-  if (pallet === "Utility" && ["batch", "batch_all", "force_batch"].includes(method)) {
-    const calls = args.calls as DecodedCall[] | undefined
-    if (calls) {
-      for (const innerCall of calls) {
-        findStakingCalls(innerCall, results)
-      }
-    }
-  }
-
-  // Check for sudo wrappers (Sudo.sudo, Sudo.sudo_as, Sudo.sudo_unchecked_weight)
-  if (
-    pallet === "Sudo" &&
-    ["sudo", "sudo_as", "sudo_unchecked_weight"].includes(method) &&
-    args.call
-  ) {
-    return findStakingCalls(args.call, results)
-  }
-
-  return results
-}
-
-/**
- * Finds the staking call that matches the given filter criteria.
- * Matches by netuid, hotkey, and amount.
- */
-const findMatchingStakingCall = (
-  calls: StakingCallInfo[],
-  filter: StakingCallFilter
-): StakingCallInfo | null => {
-  // Find a call that matches netuid, hotkey, and amount
-  return (
-    calls.find(
-      (call) =>
-        call.netuid === filter.netuid &&
-        call.hotkey === filter.hotkey &&
-        call.amount === filter.valueIn
-    ) ?? null
-  )
-}
-
 type SlippageResult = {
   /** The expected price (from limit or from alpha price at previous block), in TAO per Alpha (scaled by 10^decimals) */
   expectedPrice: bigint
@@ -240,15 +118,13 @@ type UseSlippageParams = {
 }
 
 /**
- * Hook to compute slippage for an indexed transaction.
+ * Hook to compute slippage for an included transaction.
  *
- * For a transaction to have slippage computed:
- * 1. It must be an indexed transaction (has blockHeight)
- * 2. The decoded call must contain a staking/unstaking operation
- * 3. We need either a limit_price from the call, or we fetch the alpha price from the previous block
- * 4. We compare the expected price with the effective price (based on actual in/out values)
+ * Slippage is computed by comparing:
+ * 1. Expected price: Simulated swap at the previous block (what user expected)
+ * 2. Effective price: Derived from StakeAdded/StakeRemoved event in the transaction block (what actually happened)
  *
- * @param params - Transaction details including netuid, hotkey, and valueIn to identify the correct staking call in a batch
+ * @param params - Transaction details including netuid, hotkey, and valueIn to identify the correct staking call
  */
 export const useBittensorStakingSlippage = (params: UseSlippageParams | null) => {
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
@@ -286,88 +162,34 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
 
       // Step 2: Get block events to find the StakeAdded/StakeRemoved event with actual amounts
       const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
+      if (!stakeEvent) return null
 
-      // Step 3: Get the block data to find and decode the extrinsic (for limit price)
-      const blockData = await api.subSend<{
-        block: {
-          extrinsics: `0x${string}`[]
-        }
-      }>(BITTENSOR_NETWORK_ID, "chain_getBlock", [blockHash])
+      // Step 3: Determine expected price by simulating the swap at the previous block
+      // This gives us what the user would have expected based on the pool state before the transaction
+      const simulation = await simulateSwapAtBlock(
+        sapi,
+        netuid,
+        direction === "buy" ? "taoToAlpha" : "alphaToTao",
+        valueIn,
+        previousBlockHash
+      )
+      if (!simulation || simulation.alpha_amount === 0n) return null
 
-      if (!blockData?.block?.extrinsics) return null
+      // Expected price = TAO / Alpha from simulation, scaled by 10^9
+      const unit = 10n ** BigInt(TAO_DECIMALS)
+      const expectedPrice = (simulation.tao_amount * unit) / simulation.alpha_amount
 
-      // Find the extrinsic with matching hash and decode it to find the correct staking call
-      let stakingInfo: StakingCallInfo | null = null
-      const filter: StakingCallFilter = { netuid, hotkey, valueIn }
-
-      for (const extrinsicHex of blockData.block.extrinsics) {
-        // Decode the extrinsic using sapi's builder
-        try {
-          const decoded = sapi.getDecodedCallFromPayload({ method: extrinsicHex })
-          const allCalls = findStakingCalls(decoded)
-
-          if (allCalls.length > 0) {
-            // If there's only one call, use it
-            // Otherwise, find the one that matches our filter criteria
-            stakingInfo =
-              allCalls.length === 1 ? allCalls[0] : findMatchingStakingCall(allCalls, filter)
-
-            if (stakingInfo) break
-          }
-        } catch {
-          // Not all extrinsics can be decoded the same way, continue
-        }
-      }
-
-      // If we couldn't find the staking call from decoded extrinsics, create a fallback
-      if (!stakingInfo) {
-        stakingInfo = {
-          method: direction === "buy" ? "add_stake_limit" : "remove_stake_limit",
-          direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
-          netuid,
-          hotkey,
-          amount: valueIn,
-          limitPrice: null,
-        }
-      }
-
-      // Step 4: Determine expected price
-      let expectedPrice: bigint
-
-      if (stakingInfo.limitPrice !== null && stakingInfo.limitPrice > 0n) {
-        // Use the limit price from the call
-        expectedPrice = stakingInfo.limitPrice
-      } else {
-        // Fetch alpha price at the previous block
-        const alphaPriceAtPrevBlock = await queryAlphaPriceAtBlock(sapi, netuid, previousBlockHash)
-        if (!alphaPriceAtPrevBlock) return null
-
-        expectedPrice = alphaPriceAtPrevBlock
-      }
-
-      // Step 5: Calculate effective price from event data (ground truth from chain)
-      // If we found the event, use those amounts; otherwise fall back to computing from filter data
-      let taoAmount: bigint
-      let alphaAmount: bigint
-
-      if (stakeEvent) {
-        taoAmount = stakeEvent.taoAmount
-        alphaAmount = stakeEvent.alphaAmount
-      } else {
-        // Fallback: we can't compute effective price without event data
-        return null
-      }
-
+      // Step 4: Calculate effective price from event data (ground truth from chain)
+      const { taoAmount, alphaAmount } = stakeEvent
       if (alphaAmount === 0n) return null
 
       // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9 to match runtime API format
       // The runtime API returns price as U96F32 * 1_000_000_000, which is "RAO per Alpha"
       // Since both taoAmount and alphaAmount are in RAO (10^9 per token), we need to scale:
       // effectivePrice = (taoAmount * 10^9) / alphaAmount = RAO per Alpha (same units as runtime API)
-      const unit = 10n ** BigInt(TAO_DECIMALS)
       const effectivePrice = (taoAmount * unit) / alphaAmount
 
-      // Step 6: Calculate slippage percentage
+      // Step 5: Calculate slippage percentage
       // Slippage = (effectivePrice - expectedPrice) / expectedPrice * 100
       // For buys: positive slippage = paid more TAO per Alpha than expected (bad)
       // For sells: positive slippage = received less TAO per Alpha than expected (bad)
@@ -396,33 +218,45 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
   })
 }
 
+type SwapSimulation = {
+  tao_amount: bigint
+  alpha_amount: bigint
+  tao_fee: bigint
+  alpha_fee: bigint
+}
+
 /**
- * Query the alpha price at a specific block using runtime API
+ * Simulate a swap at a specific block using runtime API.
+ * This gives us the expected output for a given input amount based on the pool state at that block.
  */
-const queryAlphaPriceAtBlock = async (
+const simulateSwapAtBlock = async (
   sapi: ScaleApi,
   netuid: number,
+  direction: "taoToAlpha" | "alphaToTao",
+  amount: bigint,
   blockHash: `0x${string}` | null
-): Promise<bigint | null> => {
+): Promise<SwapSimulation | null> => {
   if (!blockHash) return null
+
+  const method = direction === "taoToAlpha" ? "sim_swap_tao_for_alpha" : "sim_swap_alpha_for_tao"
 
   // Use the chain's send method directly to query at a specific block
   const chain = sapi.chain
-  const call = chain.builder.buildRuntimeCall("SwapRuntimeApi", "current_alpha_price")
+  const call = chain.builder.buildRuntimeCall("SwapRuntimeApi", method)
 
   // Encode the args and convert to hex string for the RPC call
-  const argsHex = toHex(call.args.enc([netuid]))
+  const argsHex = toHex(call.args.enc([netuid, amount]))
 
   try {
     const hex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_call", [
-      `SwapRuntimeApi_current_alpha_price`,
+      `SwapRuntimeApi_${method}`,
       argsHex,
       blockHash,
     ])
 
     if (!hex) return null
 
-    return call.value.dec(hex) as bigint
+    return call.value.dec(hex) as SwapSimulation
   } catch (error) {
     // Check if this is an error due to pruned/unavailable state (non-archive node)
     // Error code 4003 is returned when the block state has been discarded
