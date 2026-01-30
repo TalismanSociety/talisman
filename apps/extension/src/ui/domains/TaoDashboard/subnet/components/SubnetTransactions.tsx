@@ -624,7 +624,6 @@ const SlippageFields: FC<{
       netuid,
       hotkey: transaction.hotkey,
       valueIn: transaction.tokenValueIn,
-      valueOut: transaction.tokenValueOut,
       direction: transaction.direction,
     }
   }, [transaction, netuid])
@@ -633,16 +632,6 @@ const SlippageFields: FC<{
 
   // Check if the error is due to historical data being unavailable (non-archive node)
   const isHistoricalDataUnavailable = isError && error?.name === "HistoricalDataUnavailableError"
-
-  // Calculate effective price directly from transaction (we always have this)
-  const effectivePrice = useMemo(() => {
-    if (transaction.status !== "indexed") return null
-    const isBuy = transaction.direction === "buy"
-    const taoAmount = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
-    const alphaAmount = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
-    if (alphaAmount === 0n) return null
-    return Number(taoAmount) / Number(alphaAmount)
-  }, [transaction])
 
   const formatPrice = (price: bigint | number | null | undefined): string => {
     if (price === null || price === undefined) return ""
@@ -679,12 +668,20 @@ const SlippageFields: FC<{
         )}
       </Field>
       <Field label={t("Effective price")}>
-        {transaction.status === "indexed" && effectivePrice !== null ? (
-          <div className="text-body">{formatPrice(effectivePrice)}</div>
-        ) : isFailed ? (
-          <FieldNA />
+        {isHistoricalDataUnavailable ? (
+          <FieldHistoricalUnavailable />
+        ) : isError ? (
+          <FieldError />
+        ) : isLoading || !slippage?.effectivePrice ? (
+          isFailed ? (
+            <FieldNA />
+          ) : transaction.status !== "indexed" ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )
         ) : (
-          <FieldSkeleton />
+          <div className="text-body">{formatPrice(Number(slippage.effectivePrice) / 1e9)}</div>
         )}
       </Field>
       <Field label={t("Slippage")}>

@@ -147,6 +147,83 @@ class HistoricalDataUnavailableError extends Error {
   }
 }
 
+type StakeEventInfo = {
+  taoAmount: bigint
+  alphaAmount: bigint
+  fee: bigint
+}
+
+/**
+ * Find a StakeAdded or StakeRemoved event in the block that matches our criteria.
+ * Events contain the ground truth TAO and Alpha amounts from the actual swap.
+ *
+ * Event structure from bittensor:
+ * - StakeAdded(coldkey, hotkey, TaoCurrency, AlphaCurrency, NetUid, fee)
+ * - StakeRemoved(coldkey, hotkey, TaoCurrency, AlphaCurrency, NetUid, fee)
+ */
+const findStakeEventInBlock = async (
+  sapi: ScaleApi,
+  blockHash: `0x${string}`,
+  netuid: number,
+  hotkey: string,
+  direction: "buy" | "sell"
+): Promise<StakeEventInfo | null> => {
+  try {
+    // Query events at the specific block
+    const eventsHex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_getStorage", [
+      // System.Events storage key
+      "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7",
+      blockHash,
+    ])
+
+    if (!eventsHex) return null
+
+    // Decode the events using sapi
+    const chain = sapi.chain
+    const eventsCodec = chain.builder.buildStorage("System", "Events")
+    const events = eventsCodec.value.dec(eventsHex) as Array<{
+      phase: unknown
+      event: { type: string; value: { type: string; value: unknown } }
+      topics: unknown[]
+    }>
+
+    // Look for the matching StakeAdded or StakeRemoved event
+    const eventName = direction === "buy" ? "StakeAdded" : "StakeRemoved"
+
+    for (const { event } of events) {
+      // PAPI/sapi decoded structure uses type/value pattern
+      if (event.type === "SubtensorModule" && event.value?.type === eventName) {
+        // Event value is a tuple: [coldkey, hotkey, tao, alpha, netuid, fee]
+        const value = event.value.value as [string, string, bigint, bigint, number, bigint]
+        const [_coldkey, eventHotkey, taoAmount, alphaAmount, eventNetuid, fee] = value
+
+        // Match by netuid and hotkey
+        if (eventNetuid === netuid && eventHotkey === hotkey) {
+          return { taoAmount, alphaAmount, fee }
+        }
+      }
+    }
+
+    return null
+  } catch (error) {
+    // Check if this is an error due to pruned/unavailable state
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorCode = (error as { code?: number })?.code
+    if (
+      errorCode === 4003 ||
+      errorMessage.includes("State already discarded") ||
+      errorMessage.includes("pruned") ||
+      errorMessage.includes("missing trie node") ||
+      errorMessage.includes("block not found") ||
+      errorMessage.includes("UnknownBlock")
+    ) {
+      throw new HistoricalDataUnavailableError()
+    }
+    // For other errors, return null and let the caller handle it
+    return null
+  }
+}
+
 type UseSlippageParams = {
   /** Transaction hash */
   hash: string
@@ -156,10 +233,8 @@ type UseSlippageParams = {
   netuid: number
   /** Hotkey being staked to/from */
   hotkey: string
-  /** Value input (TAO for buy, Alpha for sell) */
+  /** Value input (TAO for buy, Alpha for sell) - used to identify the correct call in a batch */
   valueIn: bigint
-  /** Value output (Alpha for buy, TAO for sell) */
-  valueOut: bigint
   /** Direction of the trade */
   direction: "buy" | "sell"
 }
@@ -192,7 +267,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       if (!sapi || !params) return null
 
       // We need the block height to query historical data
-      const { hash, blockHeight, netuid, hotkey, valueIn, valueOut, direction } = params
+      const { hash, blockHeight, netuid, hotkey, valueIn, direction } = params
       if (!blockHeight || !hash) return null
 
       // Step 1: Get the block hash for this block and the previous block
@@ -209,7 +284,10 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         [blockHeight - 1]
       )
 
-      // Step 2: Get the block data to find and decode the extrinsic
+      // Step 2: Get block events to find the StakeAdded/StakeRemoved event with actual amounts
+      const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
+
+      // Step 3: Get the block data to find and decode the extrinsic (for limit price)
       const blockData = await api.subSend<{
         block: {
           extrinsics: `0x${string}`[]
@@ -241,10 +319,8 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         }
       }
 
-      // If we couldn't find the staking call from decoded extrinsics, try to infer from transaction data
+      // If we couldn't find the staking call from decoded extrinsics, create a fallback
       if (!stakingInfo) {
-        // We can still compute slippage based on the transaction's in/out values
-        // but we won't have access to the limit price
         stakingInfo = {
           method: direction === "buy" ? "add_stake_limit" : "remove_stake_limit",
           direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
@@ -255,7 +331,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         }
       }
 
-      // Step 3: Determine expected price
+      // Step 4: Determine expected price
       let expectedPrice: bigint
 
       if (stakingInfo.limitPrice !== null && stakingInfo.limitPrice > 0n) {
@@ -263,28 +339,35 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         expectedPrice = stakingInfo.limitPrice
       } else {
         // Fetch alpha price at the previous block
-        // Query the alpha price at the previous block
         const alphaPriceAtPrevBlock = await queryAlphaPriceAtBlock(sapi, netuid, previousBlockHash)
         if (!alphaPriceAtPrevBlock) return null
 
         expectedPrice = alphaPriceAtPrevBlock
       }
 
-      // Step 4: Calculate effective price based on actual in/out values
+      // Step 5: Calculate effective price from event data (ground truth from chain)
+      // If we found the event, use those amounts; otherwise fall back to computing from filter data
+      let taoAmount: bigint
+      let alphaAmount: bigint
+
+      if (stakeEvent) {
+        taoAmount = stakeEvent.taoAmount
+        alphaAmount = stakeEvent.alphaAmount
+      } else {
+        // Fallback: we can't compute effective price without event data
+        return null
+      }
+
+      if (alphaAmount === 0n) return null
+
       // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9 to match runtime API format
       // The runtime API returns price as U96F32 * 1_000_000_000, which is "RAO per Alpha"
       // Since both taoAmount and alphaAmount are in RAO (10^9 per token), we need to scale:
       // effectivePrice = (taoAmount * 10^9) / alphaAmount = RAO per Alpha (same units as runtime API)
       const unit = 10n ** BigInt(TAO_DECIMALS)
-
-      const taoAmount = direction === "buy" ? valueIn : valueOut
-      const alphaAmount = direction === "buy" ? valueOut : valueIn
-
-      if (alphaAmount === 0n) return null
-
       const effectivePrice = (taoAmount * unit) / alphaAmount
 
-      // Step 5: Calculate slippage percentage
+      // Step 6: Calculate slippage percentage
       // Slippage = (effectivePrice - expectedPrice) / expectedPrice * 100
       // For buys: positive slippage = paid more TAO per Alpha than expected (bad)
       // For sells: positive slippage = received less TAO per Alpha than expected (bad)
