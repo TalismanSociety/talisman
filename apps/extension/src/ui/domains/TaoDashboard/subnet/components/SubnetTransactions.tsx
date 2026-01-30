@@ -42,11 +42,6 @@ import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { useTransactionModal } from "./useTransactionModal"
 
-interface SubnetTransactionsProps {
-  netuid: number
-  className?: string
-}
-
 type Tab = "my" | "all"
 
 type TransactionEntryBase = {
@@ -82,7 +77,10 @@ type TransactionEntry = LocalTransactionEntry | IndexedTransactionEntry
 
 const MAX_ITEMS_PER_TAB = 20
 
-export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, className }) => {
+export const SubnetTransactions: FC<{
+  netuid: number
+  className?: string
+}> = ({ netuid, className }) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>("my")
 
@@ -171,76 +169,31 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
         const tokenIn = parseTokenId(txInfo.fromTokenId)
         const tokenOut = parseTokenId(txInfo.toTokenId)
         const isBuy = tokenIn.type === "substrate-native"
-        const hotkey =
-          tokenIn.type === "substrate-dtao"
-            ? tokenIn.hotkey
-            : tokenOut.type === "substrate-dtao"
-              ? tokenOut.hotkey
-              : undefined
-
-        // Map WalletTransaction status to our local status
-        const status =
-          tx.status === "error" || tx.status === "replaced"
-            ? "failed"
-            : tx.confirmed
-              ? "confirmed"
-              : tx.blockNumber
-                ? "finalizing"
-                : "pending"
 
         return {
           hash: tx.hash,
           account: tx.account,
           direction: isBuy ? "buy" : "sell",
-          hotkey,
+          hotkey: extractHotkey(tokenIn, tokenOut),
           tokenIdIn: txInfo.fromTokenId,
           tokenIdOut: txInfo.toTokenId,
           tokenValueIn: BigInt(txInfo.fromAmount),
-          status,
-          tokenValueOut: BigInt(txInfo.toAmount), // this is only an estimate
+          tokenValueOut: BigInt(txInfo.toAmount), // estimate for local txs
+          status: mapLocalTxStatus(tx),
           timestamp: tx.timestamp,
           blockHeight: tx.blockNumber ? Number(tx.blockNumber) : undefined,
         }
       })
-  }, [netuid, localTransactions])
+      .slice(0, limit)
+  }, [netuid, localTransactions, limit])
 
-  // consolidated list of 20 most recent transactions from on-chain and local
+  // Consolidated list of most recent transactions (local + indexed, deduplicated)
   const data = useMemo<TransactionEntry[]>(() => {
-    // Create a map of indexed transactions by hash for deduplication
     const indexedByHash = new Map(indexedTransactions.map((tx) => [tx.hash, tx]))
+    // Exclude local txs that are already indexed (indexed has authoritative data)
+    const localNotYetIndexed = localStakingTransactions.filter((tx) => !indexedByHash.has(tx.hash))
 
-    // Filter local transactions to only include those not yet indexed
-    const pendingOnly = localStakingTransactions.filter((tx) => !indexedByHash.has(tx.hash))
-
-    // Combine and sort
-    const combined = [...pendingOnly, ...indexedTransactions]
-
-    // Sort: pending first, then by block number (desc), then by timestamp (desc)
-    combined.sort((a, b) => {
-      // Pending transactions always come first
-      const aIsPending = a.status === "pending"
-      const bIsPending = b.status === "pending"
-      if (aIsPending && !bIsPending) return -1
-      if (!aIsPending && bIsPending) return 1
-
-      // Sort by block number (highest first), undefined blocks go after defined ones
-      const aBlock = a.blockHeight
-      const bBlock = b.blockHeight
-      if (aBlock !== undefined && bBlock !== undefined) {
-        if (bBlock !== aBlock) return bBlock - aBlock
-      } else if (aBlock !== undefined) {
-        return -1 // a has block, b doesn't -> a first
-      } else if (bBlock !== undefined) {
-        return 1 // b has block, a doesn't -> b first
-      }
-
-      // Refine by timestamp (newest first)
-      const aTime = a.status === "indexed" ? new Date(a.timestamp).getTime() : a.timestamp
-      const bTime = b.status === "indexed" ? new Date(b.timestamp).getTime() : b.timestamp
-      return bTime - aTime
-    })
-
-    return combined.slice(0, limit)
+    return [...localNotYetIndexed, ...indexedTransactions].sort(compareTransactions).slice(0, limit)
   }, [indexedTransactions, localStakingTransactions, limit])
 
   return { data, isLoading, error }
@@ -298,26 +251,22 @@ const TransactionRow: FC<{
   transaction: TransactionEntry
 }> = ({ taoToken, alphaToken, transaction }) => {
   const { t } = useTranslation()
-  const taoDisplay = useMemo(() => {
-    const taoValue =
-      transaction.direction === "buy" ? transaction.tokenValueIn : transaction.tokenValueOut
-    const formatter = new BalanceFormatter(taoValue, taoToken.decimals)
-    return `τ ${formatDecimals(formatter.tokens, 6)}`
-  }, [transaction, taoToken.decimals])
-
-  const alphaValue =
-    transaction.direction === "buy" ? transaction.tokenValueOut : transaction.tokenValueIn
+  const { open } = useTransactionModal()
 
   const isBuy = transaction.direction === "buy"
-  const isLocal = transaction.status !== "indexed"
   const isFailed = transaction.status === "failed"
+  const isClickable = transaction.status === "indexed"
 
-  const { open } = useTransactionModal()
-  const onClick = useCallback(() => {
-    // Only open modal for indexed transactions (local ones don't have full data)
-    if (transaction.status === "indexed") {
-      open(transaction)
-    }
+  const taoDisplay = useMemo(() => {
+    const taoValue = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
+    const formatter = new BalanceFormatter(taoValue, taoToken.decimals)
+    return `τ ${formatDecimals(formatter.tokens, 6)}`
+  }, [isBuy, transaction.tokenValueIn, transaction.tokenValueOut, taoToken.decimals])
+
+  const alphaValue = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
+
+  const handleClick = useCallback(() => {
+    if (transaction.status === "indexed") open(transaction)
   }, [transaction, open])
 
   const statusLabel = useMemo(() => {
@@ -326,10 +275,9 @@ const TransactionRow: FC<{
         return t("Pending...")
       case "finalizing":
         return t("Finalizing...")
-      case "confirmed":
-        return <DistanceToNow timestamp={transaction.timestamp} />
       case "failed":
         return t("Failed")
+      case "confirmed":
       case "indexed":
         return <DistanceToNow timestamp={transaction.timestamp} />
     }
@@ -338,8 +286,8 @@ const TransactionRow: FC<{
   return (
     <button
       type="button"
-      onClick={onClick}
-      disabled={isLocal}
+      onClick={handleClick}
+      disabled={!isClickable}
       className={cn(
         "flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm",
         transaction.status === "pending" ? "animate-pulse" : "hover:bg-grey-800"
@@ -641,3 +589,44 @@ const FieldValueTxHash: FC<{ hash: string }> = ({ hash }) => {
     </div>
   )
 }
+
+/** Maps a local WalletTransactionDot status to our UI-friendly status */
+const mapLocalTxStatus = (tx: WalletTransactionDot): LocalTransactionEntry["status"] => {
+  if (tx.status === "error" || tx.status === "replaced") return "failed"
+  if (tx.confirmed) return "confirmed"
+  if (tx.blockNumber) return "finalizing"
+  return "pending"
+}
+
+/** Sorts transactions: pending first, then by block height (desc), then by timestamp (desc) */
+const compareTransactions = (a: TransactionEntry, b: TransactionEntry): number => {
+  // Pending transactions always come first
+  const aIsPending = a.status === "pending"
+  const bIsPending = b.status === "pending"
+  if (aIsPending !== bIsPending) return aIsPending ? -1 : 1
+
+  // Sort by block height (highest first), undefined blocks come after defined ones
+  if (a.blockHeight !== undefined && b.blockHeight !== undefined) {
+    if (b.blockHeight !== a.blockHeight) return b.blockHeight - a.blockHeight
+  } else if (a.blockHeight !== undefined) {
+    return -1
+  } else if (b.blockHeight !== undefined) {
+    return 1
+  }
+
+  // Refine by timestamp (newest first)
+  const aTime = a.status === "indexed" ? new Date(a.timestamp).getTime() : a.timestamp
+  const bTime = b.status === "indexed" ? new Date(b.timestamp).getTime() : b.timestamp
+  return bTime - aTime
+}
+
+/** Extracts hotkey from parsed token IDs (dtao tokens include hotkey) */
+const extractHotkey = (
+  tokenIn: ReturnType<typeof parseTokenId>,
+  tokenOut: ReturnType<typeof parseTokenId>
+): string | undefined =>
+  tokenIn.type === "substrate-dtao"
+    ? tokenIn.hotkey
+    : tokenOut.type === "substrate-dtao"
+      ? tokenOut.hotkey
+      : undefined
