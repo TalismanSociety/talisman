@@ -163,10 +163,9 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
     })
   }, [relevantEvents, netuid])
 
-  const transactions = useTransactions()
-  const localTransactions = useMemo(() => {
-    return transactions
-      .filter((tx) => tx.platform === "polkadot" && tx.networkId === BITTENSOR_NETWORK_ID)
+  const localTransactions = useTransactions()
+  const localStakingTransactions = useMemo(() => {
+    return localTransactions
       .filter((tx): tx is WalletTransactionDot => {
         if (tx.platform !== "polkadot" || tx.networkId !== BITTENSOR_NETWORK_ID) return false
         if (!tx.txInfo || tx.txInfo.type !== "bittensor-staking") return false
@@ -198,7 +197,7 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
           tokenValueOut: BigInt(txInfo.toAmount), // this is only an estimate
         }
       })
-  }, [netuid, transactions])
+  }, [netuid, localTransactions])
 
   // consolidated list of 20 most recent transactions from on-chain and local
   const data = useMemo<TransactionEntry[]>(() => {
@@ -206,7 +205,7 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
     const indexedByHash = new Map(indexedTransactions.map((tx) => [tx.hash, tx]))
 
     // Filter local transactions to only include those not yet indexed
-    const pendingOnly = localTransactions.filter((tx) => !indexedByHash.has(tx.hash))
+    const pendingOnly = localStakingTransactions.filter((tx) => !indexedByHash.has(tx.hash))
 
     // Combine and sort by status (pending first) then by timestamp/recency
     const combined = [...pendingOnly, ...indexedTransactions]
@@ -226,7 +225,7 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
     })
 
     return combined.slice(0, limit)
-  }, [indexedTransactions, localTransactions, limit])
+  }, [indexedTransactions, localStakingTransactions, limit])
 
   return { data, isLoading, error }
 }
@@ -426,9 +425,9 @@ const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: strin
 const TransactionModal: FC<{ netuid: number }> = ({ netuid }) => {
   const { isOpen, args, close } = useTransactionModal()
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal isOpen={isOpen && !!args} onDismiss={close}>
       <PopupSizeModalContainer id="tao-dashboard-transaction-modal">
-        <TransactionModalContent netuid={netuid} data={args!} onClose={close} />
+        {args && <TransactionModalContent netuid={netuid} data={args} onClose={close} />}
       </PopupSizeModalContainer>
     </Modal>
   )
@@ -497,6 +496,7 @@ const TransactionModalContent: FC<{ netuid: number; data: StakeEvent; onClose: (
 }
 
 const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid }) => {
+  const { t } = useTranslation()
   const sign = data.method === "Adding" ? "+" : "-"
 
   return (
@@ -515,7 +515,7 @@ const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid })
       <div className="h-px w-full shrink-0 bg-body-disabled/50"></div>
       <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 p-6">
         <div className="flex flex-col items-center gap-3 text-body-inactive">
-          <div className="text-xs">From</div>
+          <div className="text-xs">{t("From")}</div>
           <div className="text-body text-sm">
             {data.method === "Adding" ? (
               <TokensAndFiat
@@ -538,7 +538,7 @@ const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid })
           <ArrowRightIcon className="size-10" />
         </div>
         <div className="flex flex-col items-center gap-3 text-body-inactive">
-          <div className="text-xs">To</div>
+          <div className="text-xs">{t("To")}</div>
           <div className="text-body text-sm">
             {data.method === "Adding" ? (
               <TokensAndFiat
