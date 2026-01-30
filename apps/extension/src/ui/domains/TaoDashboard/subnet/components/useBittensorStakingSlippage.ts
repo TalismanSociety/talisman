@@ -69,8 +69,22 @@ const findStakingCalls = (
     return results
   }
 
-  // Check for proxy call wrapper
-  if (pallet === "Proxy" && method === "proxy" && args.call) {
+  // Check for proxy call wrappers (Proxy.proxy, Proxy.proxy_announced)
+  if (pallet === "Proxy" && ["proxy", "proxy_announced"].includes(method) && args.call) {
+    return findStakingCalls(args.call, results)
+  }
+
+  // Check for multisig call wrappers (Multisig.as_multi, Multisig.as_multi_threshold_1)
+  if (pallet === "Multisig" && ["as_multi", "as_multi_threshold_1"].includes(method) && args.call) {
+    return findStakingCalls(args.call, results)
+  }
+
+  // Check for utility wrappers with single call (dispatch_as, as_derivative, with_weight)
+  if (
+    pallet === "Utility" &&
+    ["dispatch_as", "as_derivative", "with_weight"].includes(method) &&
+    args.call
+  ) {
     return findStakingCalls(args.call, results)
   }
 
@@ -84,12 +98,21 @@ const findStakingCalls = (
     }
   }
 
+  // Check for sudo wrappers (Sudo.sudo, Sudo.sudo_as, Sudo.sudo_unchecked_weight)
+  if (
+    pallet === "Sudo" &&
+    ["sudo", "sudo_as", "sudo_unchecked_weight"].includes(method) &&
+    args.call
+  ) {
+    return findStakingCalls(args.call, results)
+  }
+
   return results
 }
 
 /**
  * Finds the staking call that matches the given filter criteria.
- * Matches by netuid, hotkey, and amount (using valueIn for buy, valueOut for sell).
+ * Matches by netuid, hotkey, and amount.
  */
 const findMatchingStakingCall = (
   calls: StakingCallInfo[],
