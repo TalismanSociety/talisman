@@ -28,12 +28,15 @@ interface SubnetTransactionsProps {
 type Tab = "my" | "all"
 
 interface StakeEvent {
+  hash: string
   method: "Adding" | "Removing"
   alphaAmount: string
   taoAmount: string
   timestamp: string
   coldkey?: string
 }
+
+const MAX_ITEMS_PER_TAB = 20
 
 export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, className }) => {
   const { t } = useTranslation()
@@ -63,16 +66,26 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
     )
 
     if (activeTab === "my") {
-      return sorted
-        .filter(
-          (event) =>
-            event.coldkey &&
-            ownedAccounts.some((account) => isAddressEqual(account.address, event.coldkey!))
+      const matches: StakeEvent[] = []
+
+      // Iterate once over the sorted events and stop when we've collected 20 matches (there are usually 5000 entries)
+      for (const event of sorted) {
+        if (!event.coldkey) continue
+
+        const isOwned = ownedAccounts.some((account) =>
+          isAddressEqual(account.address, event.coldkey!)
         )
-        .slice(0, 20)
+
+        if (isOwned) {
+          matches.push(event)
+          if (matches.length >= MAX_ITEMS_PER_TAB) break
+        }
+      }
+
+      return matches
     }
 
-    return sorted.slice(0, 20)
+    return sorted.slice(0, MAX_ITEMS_PER_TAB)
   }, [events, activeTab, ownedAccounts])
 
   if (!alphaToken || !taoToken) return null
@@ -86,11 +99,10 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
       {/* Transaction List */}
       <div className="mr-4 grow overflow-y-auto px-12 pr-8 pb-8">
         <div className="flex shrink-0 items-center gap-8 py-8 text-sm">
-          <span className="text-body-secondary">Transactions on SN{netuid}</span>
+          <span className="text-body-secondary">
+            {t("Transactions on SN{{netuid}}", { netuid })}
+          </span>
           {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}
-          {/* {token?.logo && (
-            <img src={token.logo} alt="" className="size-24 rounded-full object-cover" />
-          )} */}
         </div>
         {isLoading ? (
           <div className="flex flex-col gap-8">
@@ -101,7 +113,9 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
           </div>
         ) : !filteredEvents.length ? (
           <div className="flex h-full items-center justify-center text-body-secondary">
-            {activeTab === "my" ? "No transactions from your accounts" : "No recent transactions"}
+            {activeTab === "my"
+              ? t("No transactions from your accounts")
+              : t("No recent transactions")}
           </div>
         ) : (
           <div className="flex flex-col gap-8">
@@ -147,7 +161,7 @@ const TransactionRow: FC<{
       </div>
       <div className="flex flex-col items-end gap-2">
         <div className={cn(isBuy && "text-primary")}>
-          {isBuy ? "+" : "- "}
+          {isBuy ? "+" : "-"}
           <TokensAndFiat
             noFiat
             noCountUp
@@ -219,12 +233,7 @@ const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: strin
 }) => (
   <div className={cn("relative shrink-0", className)}>
     <AccountIcon address={address} className="size-[3.6rem] text-[3.6rem]" />
-    <div
-      className={cn(
-        "absolute -right-2 -bottom-2 flex size-10 items-center justify-center rounded-full",
-        "bg-grey-850 p-px"
-      )}
-    >
+    <div className="absolute -right-2 -bottom-2 flex size-10 items-center justify-center rounded-full bg-grey-850 p-px">
       <div
         className={cn(
           "flex size-full flex-col items-center justify-center rounded-full",
