@@ -3,10 +3,12 @@ import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalCont
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import {
+  parseTokenId,
   type SubDTaoToken,
   type SubNativeToken,
   subDTaoTokenId,
   subNativeTokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import {
@@ -16,14 +18,15 @@ import {
   CopyIcon,
   ExternalLinkIcon,
 } from "@talismn/icons"
-import { cn, formatDecimals } from "@talismn/util"
+import { cn, formatDecimals, type Prettify } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useAccountByAddress, useAccounts, useToken } from "@ui/state"
+import { useAccountByAddress, useAccounts, useToken, useTransactions } from "@ui/state"
+import type { WalletTransactionDot, WalletTransactionInfo } from "extension-core"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -56,6 +59,33 @@ export interface StakeEvent {
   hotkey: string
   blockHeight: number
 }
+
+type TransactionEntryBase = {
+  hash: string
+  account: string
+  direction: "buy" | "sell"
+
+  tokenIdIn: TokenId
+  tokenIdOut: TokenId
+  tokenValueIn: bigint
+  tokenValueOut: bigint
+}
+
+type TransactionEntry = Prettify<
+  TransactionEntryBase &
+    (
+      | {
+          status: "pending"
+          hotkey: string | undefined
+        }
+      | {
+          status: "indexed"
+          hotkey: string
+          timestamp: string
+          blockHeight: number
+        }
+    )
+>
 
 const MAX_ITEMS_PER_TAB = 20
 
@@ -90,42 +120,125 @@ const useSubnetTokens = (netuid: number) => {
   return { alphaToken, taoToken }
 }
 
-const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
-  const { t } = useTranslation()
-  const { data: events, isLoading } = useSubnetStakeEvents(netuid)
-  const ownedAccounts = useAccounts("owned")
+const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) => {
+  const accounts = useAccounts("owned")
+  const { data: events, isLoading, error } = useSubnetStakeEvents(netuid)
 
-  const { alphaToken, taoToken } = useSubnetTokens(netuid)
+  const relevantEvents = useMemo(() => {
+    if (!ownedOnly) return events?.slice(0, limit) ?? []
 
-  const filteredEvents = useMemo(() => {
-    if (!events) return []
-
-    const sorted = [...events].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    return (
+      events
+        ?.filter((event) => {
+          const ownedAddresses = accounts.map((acc) => acc.address)
+          return ownedAddresses.some((addr) => isAddressEqual(addr, event.coldkey))
+        })
+        .slice(0, limit) ?? []
     )
+  }, [events, ownedOnly, accounts, limit])
 
-    if (activeTab === "my") {
-      const matches: StakeEvent[] = []
+  const indexedTransactions = useMemo<TransactionEntry[]>(() => {
+    if (!relevantEvents) return []
 
-      // Iterate once over the sorted events and stop when we've collected 20 matches (there are usually 5000 entries)
-      for (const event of sorted) {
-        if (!event.coldkey) continue
+    return relevantEvents.map((event) => {
+      const isBuy = event.method === "Adding"
 
-        const isOwned = ownedAccounts.some((account) =>
-          isAddressEqual(account.address, event.coldkey!)
-        )
+      return {
+        hash: event.hash,
+        account: event.coldkey,
+        direction: isBuy ? "buy" : "sell",
+        hotkey: event.hotkey,
+        tokenIdIn: isBuy
+          ? subNativeTokenId(BITTENSOR_NETWORK_ID)
+          : subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid),
+        tokenIdOut: isBuy
+          ? subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)
+          : subNativeTokenId(BITTENSOR_NETWORK_ID),
+        tokenValueIn: BigInt(isBuy ? event.taoAmount : event.alphaAmount),
+        tokenValueOut: BigInt(isBuy ? event.alphaAmount : event.taoAmount),
+        status: "indexed" as const,
+        timestamp: event.timestamp,
+        blockHeight: event.blockHeight,
+      }
+    })
+  }, [relevantEvents, netuid])
 
-        if (isOwned) {
-          matches.push(event)
-          if (matches.length >= MAX_ITEMS_PER_TAB) break
+  const transactions = useTransactions()
+  const localTransactions = useMemo(() => {
+    return transactions
+      .filter((tx) => tx.platform === "polkadot" && tx.networkId === BITTENSOR_NETWORK_ID)
+      .filter((tx): tx is WalletTransactionDot => {
+        if (tx.platform !== "polkadot" || tx.networkId !== BITTENSOR_NETWORK_ID) return false
+        if (!tx.txInfo || tx.txInfo.type !== "bittensor-staking") return false
+        return [tx.txInfo.fromTokenId, tx.txInfo.toTokenId]
+          .map(parseTokenId)
+          .some((parsed) => parsed.type === "substrate-dtao" && parsed.netuid === netuid)
+      })
+      .map((tx): TransactionEntry => {
+        const txInfo = tx.txInfo as Extract<WalletTransactionInfo, { type: "bittensor-staking" }>
+        const tokenIn = parseTokenId(txInfo.fromTokenId)
+        const tokenOut = parseTokenId(txInfo.toTokenId)
+        const isBuy = tokenIn.type === "substrate-native"
+        const hotkey =
+          tokenIn.type === "substrate-dtao"
+            ? tokenIn.hotkey
+            : tokenOut.type === "substrate-dtao"
+              ? tokenOut.hotkey
+              : undefined
+
+        return {
+          hash: tx.hash,
+          account: tx.account,
+          direction: isBuy ? "buy" : "sell",
+          hotkey,
+          tokenIdIn: txInfo.fromTokenId,
+          tokenIdOut: txInfo.toTokenId,
+          tokenValueIn: BigInt(txInfo.fromAmount),
+          status: "pending", // assume local tx are overriden by indexed ones quite fast
+          tokenValueOut: BigInt(txInfo.toAmount), // this is only an estimate
         }
+      })
+  }, [netuid, transactions])
+
+  // consolidated list of 20 most recent transactions from on-chain and local
+  const data = useMemo<TransactionEntry[]>(() => {
+    // Create a map of indexed transactions by hash for deduplication
+    const indexedByHash = new Map(indexedTransactions.map((tx) => [tx.hash, tx]))
+
+    // Filter local transactions to only include those not yet indexed
+    const pendingOnly = localTransactions.filter((tx) => !indexedByHash.has(tx.hash))
+
+    // Combine and sort by status (pending first) then by timestamp/recency
+    const combined = [...pendingOnly, ...indexedTransactions]
+
+    // Sort: pending transactions first, then by timestamp (newest first)
+    combined.sort((a, b) => {
+      // Pending transactions always come first
+      if (a.status === "pending" && b.status !== "pending") return -1
+      if (a.status !== "pending" && b.status === "pending") return 1
+
+      // For indexed transactions, sort by timestamp (newest first)
+      if (a.status === "indexed" && b.status === "indexed") {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       }
 
-      return matches
-    }
+      return 0
+    })
 
-    return sorted.slice(0, MAX_ITEMS_PER_TAB)
-  }, [events, activeTab, ownedAccounts])
+    return combined.slice(0, limit)
+  }, [indexedTransactions, localTransactions, limit])
+
+  return { data, isLoading, error }
+}
+
+const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
+  const { t } = useTranslation()
+  const { data: transactions, isLoading } = useSubnetTransactions(
+    netuid,
+    activeTab === "my",
+    MAX_ITEMS_PER_TAB
+  )
+  const { alphaToken, taoToken } = useSubnetTokens(netuid)
 
   if (!alphaToken || !taoToken) return null
 
@@ -142,7 +255,7 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
             <TransactionRowSkeleton key={i} />
           ))}
         </div>
-      ) : !filteredEvents.length ? (
+      ) : !transactions.length ? (
         <div className="flex h-full items-center justify-center text-body-secondary">
           {activeTab === "my"
             ? t("No transactions from your accounts")
@@ -150,12 +263,12 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
         </div>
       ) : (
         <div className="flex flex-col">
-          {filteredEvents.map((event, i) => (
+          {transactions.map((tx, i) => (
             <TransactionRow
-              key={`${event.timestamp}-${i}`}
+              key={`${tx.hash}-${i}`}
               alphaToken={alphaToken}
               taoToken={taoToken}
-              event={event}
+              transaction={tx}
             />
           ))}
         </div>
@@ -167,46 +280,67 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
 const TransactionRow: FC<{
   taoToken: SubNativeToken
   alphaToken: SubDTaoToken
-  event: StakeEvent
-}> = ({ taoToken, alphaToken, event }) => {
+  transaction: TransactionEntry
+}> = ({ taoToken, alphaToken, transaction }) => {
+  const { t } = useTranslation()
   const taoDisplay = useMemo(() => {
-    const formatter = new BalanceFormatter(event.taoAmount, taoToken.decimals)
+    const taoValue =
+      transaction.direction === "buy" ? transaction.tokenValueIn : transaction.tokenValueOut
+    const formatter = new BalanceFormatter(taoValue, taoToken.decimals)
     return `τ ${formatDecimals(formatter.tokens, 6)}`
-  }, [event.taoAmount, taoToken.decimals])
+  }, [transaction, taoToken.decimals])
 
-  const isBuy = event.method === "Adding"
+  const alphaValue =
+    transaction.direction === "buy" ? transaction.tokenValueOut : transaction.tokenValueIn
+
+  const isBuy = transaction.direction === "buy"
+  const isPending = transaction.status === "pending"
 
   const { open } = useTransactionModal()
   const onClick = useCallback(() => {
-    open(event)
-  }, [event, open])
+    // Only open modal for indexed transactions (pending ones don't have full data)
+    if (transaction.status === "indexed") {
+      open({
+        hash: transaction.hash,
+        method: transaction.direction === "buy" ? "Adding" : "Removing",
+        alphaAmount: alphaValue.toString(),
+        taoAmount: (transaction.direction === "buy"
+          ? transaction.tokenValueIn
+          : transaction.tokenValueOut
+        ).toString(),
+        timestamp: transaction.timestamp,
+        coldkey: transaction.account,
+        hotkey: transaction.hotkey,
+        blockHeight: transaction.blockHeight,
+      })
+    }
+  }, [transaction, alphaValue, open])
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm hover:bg-grey-800"
+      disabled={isPending}
+      className={cn(
+        "flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm",
+        isPending ? "animate-pulse" : "hover:bg-grey-800"
+      )}
     >
       <div className="flex items-center gap-8">
-        <TransactionAvatar isBuy={isBuy} address={event.coldkey ?? ""} />
+        <TransactionAvatar isBuy={isBuy} address={transaction.account} />
         <div className="flex flex-col gap-2">
           <div>
-            <AccountNameOrAddress address={event.coldkey ?? ""} />
+            <AccountNameOrAddress address={transaction.account} />
           </div>
-          <div className="text-grey-500 text-xs">
-            <DistanceToNow timestamp={event.timestamp} />{" "}
+          <div className={cn("text-grey-500 text-xs")}>
+            {isPending ? t("Submitted") : <DistanceToNow timestamp={transaction.timestamp} />}
           </div>
         </div>
       </div>
-      <div className="flex flex-col items-end gap-2">
+      <div className={cn("flex flex-col items-end gap-2")}>
         <div className={cn(isBuy && "text-primary")}>
           {isBuy ? "+ " : "- "}
-          <TokensAndFiat
-            noFiat
-            noCountUp
-            tokenId={alphaToken.id}
-            planck={BigInt(event.alphaAmount)}
-          />
+          <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
         </div>
         <div className="text-grey-500 text-xs">{taoDisplay}</div>
       </div>
