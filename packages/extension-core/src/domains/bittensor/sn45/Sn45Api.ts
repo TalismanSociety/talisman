@@ -507,8 +507,10 @@ export class Sn45Api<
           alphaAmount: string;
           taoAmount: string;
           timestamp: string;
-          coldkey?: string;
+          coldkey: string;
+          hotkey: string;
           hash: string;
+          blockHeight: number;
         }[],
         {
           error: {

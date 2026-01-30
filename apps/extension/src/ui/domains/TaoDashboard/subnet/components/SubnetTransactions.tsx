@@ -1,4 +1,6 @@
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
+import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import {
   type SubDTaoToken,
@@ -7,18 +9,35 @@ import {
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
+import {
+  ArrowDownIcon,
+  ArrowRightIcon,
+  ArrowUpIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+} from "@talismn/icons"
 import { cn, formatDecimals } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useAccountByAddress, useAccounts, useToken } from "@ui/state"
-import { type FC, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import {
+  Button,
+  Modal,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  WizardModalDialog,
+} from "talisman-ui"
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useTransactionModal } from "./useTransactionModal"
 
 interface SubnetTransactionsProps {
   netuid: number
@@ -27,13 +46,15 @@ interface SubnetTransactionsProps {
 
 type Tab = "my" | "all"
 
-interface StakeEvent {
+export interface StakeEvent {
   hash: string
   method: "Adding" | "Removing"
   alphaAmount: string
   taoAmount: string
   timestamp: string
-  coldkey?: string
+  coldkey: string
+  hotkey: string
+  blockHeight: number
 }
 
 const MAX_ITEMS_PER_TAB = 20
@@ -41,14 +62,6 @@ const MAX_ITEMS_PER_TAB = 20
 export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, className }) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>("my")
-  const { data: events, isLoading } = useSubnetStakeEvents(netuid)
-  const ownedAccounts = useAccounts("owned")
-
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
-  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
-
-  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
-  const taoToken = useToken(taoTokenId, "substrate-native")
 
   const tabs = useMemo<TabConfig<Tab>[]>(
     () => [
@@ -57,6 +70,32 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
     ],
     [t]
   )
+
+  return (
+    <div className={cn("flex size-full flex-col overflow-hidden bg-grey-850", className)}>
+      <TaoDashboardTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
+      <TransactionsList netuid={netuid} activeTab={activeTab} />
+      <TransactionModal netuid={netuid} />
+    </div>
+  )
+}
+
+const useSubnetTokens = (netuid: number) => {
+  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
+  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
+
+  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
+  const taoToken = useToken(taoTokenId, "substrate-native")
+
+  return { alphaToken, taoToken }
+}
+
+const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
+  const { t } = useTranslation()
+  const { data: events, isLoading } = useSubnetStakeEvents(netuid)
+  const ownedAccounts = useAccounts("owned")
+
+  const { alphaToken, taoToken } = useSubnetTokens(netuid)
 
   const filteredEvents = useMemo(() => {
     if (!events) return []
@@ -91,45 +130,36 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
   if (!alphaToken || !taoToken) return null
 
   return (
-    <div className={cn("flex size-full flex-col overflow-hidden bg-grey-850", className)}>
-      {/* Tabs */}
-      <TaoDashboardTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
-      {/* Subnet Header */}
-
-      {/* Transaction List */}
-      <div className="mr-4 grow overflow-y-auto px-12 pr-8 pb-8">
-        <div className="flex shrink-0 items-center gap-8 py-8 text-sm">
-          <span className="text-body-secondary">
-            {t("Transactions on SN{{netuid}}", { netuid })}
-          </span>
-          {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}
-        </div>
-        {isLoading ? (
-          <div className="flex flex-col gap-8">
-            {Array.from({ length: 10 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static list
-              <TransactionRowSkeleton key={i} />
-            ))}
-          </div>
-        ) : !filteredEvents.length ? (
-          <div className="flex h-full items-center justify-center text-body-secondary">
-            {activeTab === "my"
-              ? t("No transactions from your accounts")
-              : t("No recent transactions")}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-8">
-            {filteredEvents.map((event, i) => (
-              <TransactionRow
-                key={`${event.timestamp}-${i}`}
-                alphaToken={alphaToken}
-                taoToken={taoToken}
-                event={event}
-              />
-            ))}
-          </div>
-        )}
+    <div className="mr-4 grow overflow-y-auto pb-8">
+      <div className="flex shrink-0 items-center gap-8 px-12 pt-8 pb-4 text-sm">
+        <span className="text-body-secondary">{t("Transactions on SN{{netuid}}", { netuid })}</span>
+        {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}
       </div>
+      {isLoading ? (
+        <div className="flex flex-col">
+          {Array.from({ length: 10 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static list
+            <TransactionRowSkeleton key={i} />
+          ))}
+        </div>
+      ) : !filteredEvents.length ? (
+        <div className="flex h-full items-center justify-center text-body-secondary">
+          {activeTab === "my"
+            ? t("No transactions from your accounts")
+            : t("No recent transactions")}
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          {filteredEvents.map((event, i) => (
+            <TransactionRow
+              key={`${event.timestamp}-${i}`}
+              alphaToken={alphaToken}
+              taoToken={taoToken}
+              event={event}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -146,13 +176,22 @@ const TransactionRow: FC<{
 
   const isBuy = event.method === "Adding"
 
+  const { open } = useTransactionModal()
+  const onClick = useCallback(() => {
+    open(event)
+  }, [event, open])
+
   return (
-    <div className="flex h-20 items-center justify-between text-sm">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm hover:bg-grey-800"
+    >
       <div className="flex items-center gap-8">
         <TransactionAvatar isBuy={isBuy} address={event.coldkey ?? ""} />
         <div className="flex flex-col gap-2">
           <div>
-            <AccountDisplay address={event.coldkey ?? ""} />
+            <AccountNameOrAddress address={event.coldkey ?? ""} />
           </div>
           <div className="text-grey-500 text-xs">
             <DistanceToNow timestamp={event.timestamp} />{" "}
@@ -161,7 +200,7 @@ const TransactionRow: FC<{
       </div>
       <div className="flex flex-col items-end gap-2">
         <div className={cn(isBuy && "text-primary")}>
-          {isBuy ? "+" : "-"}
+          {isBuy ? "+ " : "- "}
           <TokensAndFiat
             noFiat
             noCountUp
@@ -171,13 +210,13 @@ const TransactionRow: FC<{
         </div>
         <div className="text-grey-500 text-xs">{taoDisplay}</div>
       </div>
-    </div>
+    </button>
   )
 }
 
 const TransactionRowSkeleton: FC = () => {
   return (
-    <div className="flex h-20 animate-pulse items-center justify-between text-sm">
+    <div className="flex h-28 animate-pulse items-center justify-between pr-8 pl-12 text-sm">
       <div className="flex items-center gap-8">
         <div className="size-[3.6rem] rounded-full bg-grey-800"></div>
         <div className="flex flex-col gap-3">
@@ -201,7 +240,7 @@ const TransactionRowSkeleton: FC = () => {
   )
 }
 
-const AccountDisplay: FC<{ address: string }> = ({ address }) => {
+const AccountNameOrAddress: FC<{ address: string }> = ({ address }) => {
   const account = useAccountByAddress(address)
 
   if (account) {
@@ -249,3 +288,224 @@ const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: strin
     </div>
   </div>
 )
+
+const TransactionModal: FC<{ netuid: number }> = ({ netuid }) => {
+  const { isOpen, args, close } = useTransactionModal()
+  return (
+    <Modal isOpen={isOpen} onDismiss={close}>
+      <PopupSizeModalContainer id="tao-dashboard-transaction-modal">
+        <TransactionModalContent netuid={netuid} data={args!} onClose={close} />
+      </PopupSizeModalContainer>
+    </Modal>
+  )
+}
+
+const TransactionModalContent: FC<{ netuid: number; data: StakeEvent; onClose: () => void }> = ({
+  netuid,
+  data,
+  onClose,
+}) => {
+  const { t } = useTranslation()
+  const { alphaToken } = useSubnetTokens(netuid)
+
+  if (!data || !alphaToken) return null
+
+  return (
+    <WizardModalDialog
+      title={t("Swap Details")}
+      onCloseClick={onClose}
+      className="size-full"
+      contentClassName="flex flex-col size-full overflow-hidden"
+    >
+      <div className="scrollable scrollable-800 grow overflow-auto">
+        <SwapSummary data={data} netuid={netuid} />
+        <div className="h-10 shrink-0"></div>
+
+        <Field label={t("Event")}>
+          <FieldValueEventType method={data.method} />
+        </Field>
+        <Field label={t("Account")}>
+          <FieldValueAccount address={data.coldkey} />
+        </Field>
+        <Field label={t("Subnet")}>
+          {netuid} - {alphaToken?.subnetName}
+        </Field>
+        <Field label={t("Validator")}>
+          <FieldValueValidator hotkey={data.hotkey} />
+        </Field>
+        <div className="flex h-14 w-full flex-col justify-center">
+          <div className="h-px w-full bg-grey-700"></div>
+        </div>
+        <Field label={t("Block number")} className="text-body-secondary">
+          #{data.blockHeight.toLocaleString()}
+        </Field>
+        <Field label={t("Timestamp")} className="text-body-secondary">
+          {new Date(data.timestamp).toLocaleString()}
+        </Field>
+        <Field label={t("Tx Hash")} className="text-body-secondary">
+          <FieldValueTxHash hash={data.hash} />
+        </Field>
+      </div>
+      <Button
+        icon={ExternalLinkIcon}
+        onClick={() => {
+          window.open(
+            `https://taostats.io/transaction/${data.hash}`,
+            "_blank",
+            "noreferrer noopener"
+          )
+        }}
+      >
+        {t("View on Taostats")}
+      </Button>
+    </WizardModalDialog>
+  )
+}
+
+const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid }) => {
+  const sign = data.method === "Adding" ? "+" : "-"
+
+  return (
+    <div className="flex flex-col items-center rounded bg-grey-850">
+      <div className="items flex w-full flex-col items-center justify-center gap-2 p-6">
+        <div className={cn("text-lg", data.method === "Adding" ? "text-buy" : "text-sell")}>
+          {sign}{" "}
+          <TokensAndFiat
+            noFiat
+            noCountUp
+            tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
+            planck={BigInt(data.alphaAmount)}
+          />
+        </div>
+      </div>
+      <div className="h-px w-full shrink-0 bg-body-disabled/50"></div>
+      <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 p-6">
+        <div className="flex flex-col items-center gap-3 text-body-inactive">
+          <div className="text-xs">From</div>
+          <div className="text-body text-sm">
+            {data.method === "Adding" ? (
+              <TokensAndFiat
+                noFiat
+                noCountUp
+                tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
+                planck={BigInt(data.taoAmount)}
+              />
+            ) : (
+              <TokensAndFiat
+                noFiat
+                noCountUp
+                tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
+                planck={BigInt(data.alphaAmount)}
+              />
+            )}
+          </div>
+        </div>
+        <div className="text-body-inactive">
+          <ArrowRightIcon className="size-10" />
+        </div>
+        <div className="flex flex-col items-center gap-3 text-body-inactive">
+          <div className="text-xs">To</div>
+          <div className="text-body text-sm">
+            {data.method === "Adding" ? (
+              <TokensAndFiat
+                noFiat
+                noCountUp
+                tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
+                planck={BigInt(data.alphaAmount)}
+              />
+            ) : (
+              <TokensAndFiat
+                noFiat
+                noCountUp
+                tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
+                planck={BigInt(data.taoAmount)}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Field: FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label,
+  children,
+  className,
+}) => {
+  return (
+    <div className="flex h-14 w-full items-center justify-between gap-8 overflow-hidden">
+      <div className="text-nowrap text-body-secondary">{label}</div>
+      <div className={className}>{children}</div>
+    </div>
+  )
+}
+
+const FieldValueEventType: FC<{ method: string }> = ({ method }) => {
+  const { t } = useTranslation()
+
+  const label = useMemo(() => {
+    switch (method) {
+      case "Adding":
+        return t("Add Stake")
+      case "Removing":
+        return t("Remove Stake")
+      default:
+        return method
+    }
+  }, [method, t])
+
+  return <div className="text-body">{label}</div>
+}
+
+const FieldValueAccount: FC<{ address: string }> = ({ address }) => {
+  const copyToClipboard = useCopyToClipboard()
+
+  return (
+    <div className="flex items-center gap-4">
+      <AccountDisplay address={address} />
+      <button
+        type="button"
+        className="text-body-secondary hover:text-body"
+        onClick={() => copyToClipboard(address)}
+      >
+        <CopyIcon className="size-8" />
+      </button>
+    </div>
+  )
+}
+
+const FieldValueValidator: FC<{ hotkey: string }> = ({ hotkey }) => {
+  const copyToClipboard = useCopyToClipboard()
+
+  return (
+    <div className="flex items-center gap-4">
+      <AccountIcon address={hotkey} className="text-lg" />
+      <BittensorValidatorName hotkey={hotkey} className="text-body" />
+      <button
+        type="button"
+        className="text-body-secondary hover:text-body"
+        onClick={() => copyToClipboard(hotkey)}
+      >
+        <CopyIcon className="size-8" />
+      </button>
+    </div>
+  )
+}
+
+const FieldValueTxHash: FC<{ hash: string }> = ({ hash }) => {
+  const copyToClipboard = useCopyToClipboard()
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="text-body-secondary">{shortenAddress(hash, 8, 8)}</div>
+      <button
+        type="button"
+        className="text-body-secondary hover:text-body"
+        onClick={() => copyToClipboard(hash)}
+      >
+        <CopyIcon className="size-8" />
+      </button>
+    </div>
+  )
+}

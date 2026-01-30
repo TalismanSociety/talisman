@@ -22,6 +22,9 @@ type DisplayValueProps = {
   noCountUp?: boolean
 }
 
+// Left-to-Right Mark (LRM) prevents RTL symbols (e.g. Hebrew "פ") from causing bidi text reordering
+const LRM = "\u200E"
+
 // Memoize to smooth up the count up animation
 const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCountUp }) => {
   const num = useMemo(
@@ -33,7 +36,10 @@ const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCoun
 
   if (Number.isNaN(num)) return null
 
-  if (noCountUp || formated.startsWith("<")) return <>{`${formated} ${symbol ?? ""}`.trim()}</>
+  // Append LRM after symbol to anchor RTL characters in LTR context
+  const symbolWithLrm = symbol ? `${symbol}${LRM}` : ""
+
+  if (noCountUp || formated.startsWith("<")) return <>{`${formated} ${symbolWithLrm}`.trim()}</>
 
   return (
     <>
@@ -47,7 +53,7 @@ const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCoun
         useEasing
         preserveValue
       />{" "}
-      {symbol ?? ""}
+      {symbolWithLrm}
     </>
   )
 })
@@ -66,12 +72,13 @@ export const Tokens: FC<TokensProps> = ({
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
 
+  // Append LRM after symbol to anchor RTL characters in LTR context
+  const symbolWithLrm = symbol ? `${symbol}${LRM}` : ""
+
   const tooltipAmount = useMemo(
     () =>
-      `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
-        symbol ?? ""
-      }`.trim(),
-    [amount, decimals, symbol]
+      `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${symbolWithLrm}`.trim(),
+    [amount, decimals, symbolWithLrm]
   )
   const tooltip = useMemo(() => (noTooltip ? null : tooltipAmount), [noTooltip, tooltipAmount])
 

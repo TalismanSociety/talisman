@@ -1,4 +1,5 @@
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { cn } from "@talismn/util"
 import { useBittensorValidator } from "@ui/state/bittensor"
 import type { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -12,12 +13,11 @@ export const BittensorValidatorName: FC<{
   const { status, data: validator } = useBittensorValidator(hotkey)
 
   if (!hotkey) return null
-  if (!validator && status === "loading") return null
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={className}>
+        <span className={cn(status === "loading" && "animate-pulse", className)}>
           {prefix ?? ""}
           {validator?.name ?? shortenAddress(hotkey, 8, 8)}
         </span>

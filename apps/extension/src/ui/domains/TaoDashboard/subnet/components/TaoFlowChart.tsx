@@ -140,7 +140,6 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
   // Process stake events into hourly data
   const { hourlyData, totals } = useMemo(() => {
     if (!stakeEvents) return { hourlyData: [], totals: { taoIn: 0, taoOut: 0 } }
-    // @ts-expect-error TODO fix this
     return processStakeEventsToHourly(stakeEvents)
   }, [stakeEvents])
 

@@ -1,5 +1,6 @@
-import { hexToU8a, isHex } from "@polkadot/util"
 import { encodeAddressSs58 } from "@talismn/crypto"
+import { fromHex } from "@talismn/scale"
+import { isHexString } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Sn45Api } from "extension-core"
 import { SN45_API_BASE_URL } from "extension-shared"
@@ -8,9 +9,9 @@ import { useMemo } from "react"
 // Convert hex public key to SS58 address with prefix 42 (Polkadot generic)
 const hexToSs58 = (hex: string | null | undefined): string | null | undefined => {
   if (!hex) return hex
-  if (!isHex(hex)) return hex // Already SS58 or other format
+  if (!isHexString(hex)) return hex // Already SS58 or other format
   try {
-    const publicKey = hexToU8a(hex)
+    const publicKey = fromHex(hex)
     return encodeAddressSs58(publicKey, 42)
   } catch {
     return hex // Return original if conversion fails
@@ -96,7 +97,7 @@ export const useWhaleMovements = (minTao = 50, limit = 20) => {
       })
       return response.data.map((item) => ({
         ...item,
-        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
+        coldkey: hexToSs58(item.coldkey),
       }))
     },
     refetchInterval: 60_000,
@@ -143,7 +144,8 @@ export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
       const response = await sn45Api.v1.getSubnetStakeEvents(String(netuid))
       return response.data.map((item) => ({
         ...item,
-        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
+        coldkey: hexToSs58(item.coldkey)!,
+        hotkey: hexToSs58(item.hotkey)!,
       }))
     },
     enabled: !!netuid,
