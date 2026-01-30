@@ -27,7 +27,7 @@ import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/Dashb
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useAccountByAddress, useAccounts, useToken, useTransactions } from "@ui/state"
 import type { WalletTransactionDot, WalletTransactionInfo } from "extension-core"
-import { type FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Button,
@@ -201,6 +201,7 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
 
 const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
   const { t } = useTranslation()
+  const refScrollContainer = useRef<HTMLDivElement>(null)
   const { data: transactions, isLoading } = useSubnetTransactions(
     netuid,
     activeTab === "my",
@@ -208,10 +209,15 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
   )
   const { alphaToken, taoToken } = useSubnetTokens(netuid)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to top if tab changes
+  useEffect(() => {
+    if (refScrollContainer.current) refScrollContainer.current.scrollTo({ top: 0 })
+  }, [activeTab])
+
   if (!alphaToken || !taoToken) return null
 
   return (
-    <div className="mr-4 grow overflow-y-auto pb-8">
+    <div ref={refScrollContainer} className="mr-4 grow overflow-y-auto">
       <div className="flex shrink-0 items-center gap-8 px-12 pt-8 pb-4 text-sm">
         <span className="text-body-secondary">{t("Transactions on SN{{netuid}}", { netuid })}</span>
         {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}
