@@ -60,10 +60,12 @@ type TransactionEntryBase = {
   tokenValueOut: bigint
 }
 
-type PendingTransactionEntry = Prettify<
+type LocalTransactionEntry = Prettify<
   TransactionEntryBase & {
-    status: "pending"
+    status: "pending" | "finalizing" | "confirmed" | "failed"
     hotkey: string | undefined
+    timestamp: number // unix timestamp in ms
+    blockHeight: number | undefined
   }
 >
 
@@ -76,7 +78,7 @@ export type IndexedTransactionEntry = Prettify<
   }
 >
 
-type TransactionEntry = PendingTransactionEntry | IndexedTransactionEntry
+type TransactionEntry = LocalTransactionEntry | IndexedTransactionEntry
 
 const MAX_ITEMS_PER_TAB = 20
 
@@ -164,7 +166,7 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
           .map(parseTokenId)
           .some((parsed) => parsed.type === "substrate-dtao" && parsed.netuid === netuid)
       })
-      .map((tx): TransactionEntry => {
+      .map((tx): LocalTransactionEntry => {
         const txInfo = tx.txInfo as Extract<WalletTransactionInfo, { type: "bittensor-staking" }>
         const tokenIn = parseTokenId(txInfo.fromTokenId)
         const tokenOut = parseTokenId(txInfo.toTokenId)
@@ -176,6 +178,16 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
               ? tokenOut.hotkey
               : undefined
 
+        // Map WalletTransaction status to our local status
+        const status =
+          tx.status === "error" || tx.status === "replaced"
+            ? "failed"
+            : tx.confirmed
+              ? "confirmed"
+              : tx.blockNumber
+                ? "finalizing"
+                : "pending"
+
         return {
           hash: tx.hash,
           account: tx.account,
@@ -184,8 +196,10 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
           tokenIdIn: txInfo.fromTokenId,
           tokenIdOut: txInfo.toTokenId,
           tokenValueIn: BigInt(txInfo.fromAmount),
-          status: "pending", // assume local tx are overriden by indexed ones quite fast
+          status,
           tokenValueOut: BigInt(txInfo.toAmount), // this is only an estimate
+          timestamp: tx.timestamp,
+          blockHeight: tx.blockNumber ? Number(tx.blockNumber) : undefined,
         }
       })
   }, [netuid, localTransactions])
@@ -198,21 +212,32 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
     // Filter local transactions to only include those not yet indexed
     const pendingOnly = localStakingTransactions.filter((tx) => !indexedByHash.has(tx.hash))
 
-    // Combine and sort by status (pending first) then by timestamp/recency
+    // Combine and sort
     const combined = [...pendingOnly, ...indexedTransactions]
 
-    // Sort: pending transactions first, then by timestamp (newest first)
+    // Sort: pending first, then by block number (desc), then by timestamp (desc)
     combined.sort((a, b) => {
       // Pending transactions always come first
-      if (a.status === "pending" && b.status !== "pending") return -1
-      if (a.status !== "pending" && b.status === "pending") return 1
+      const aIsPending = a.status === "pending"
+      const bIsPending = b.status === "pending"
+      if (aIsPending && !bIsPending) return -1
+      if (!aIsPending && bIsPending) return 1
 
-      // For indexed transactions, sort by timestamp (newest first)
-      if (a.status === "indexed" && b.status === "indexed") {
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      // Sort by block number (highest first), undefined blocks go after defined ones
+      const aBlock = a.blockHeight
+      const bBlock = b.blockHeight
+      if (aBlock !== undefined && bBlock !== undefined) {
+        if (bBlock !== aBlock) return bBlock - aBlock
+      } else if (aBlock !== undefined) {
+        return -1 // a has block, b doesn't -> a first
+      } else if (bBlock !== undefined) {
+        return 1 // b has block, a doesn't -> b first
       }
 
-      return 0
+      // Refine by timestamp (newest first)
+      const aTime = a.status === "indexed" ? new Date(a.timestamp).getTime() : a.timestamp
+      const bTime = b.status === "indexed" ? new Date(b.timestamp).getTime() : b.timestamp
+      return bTime - aTime
     })
 
     return combined.slice(0, limit)
@@ -284,24 +309,40 @@ const TransactionRow: FC<{
     transaction.direction === "buy" ? transaction.tokenValueOut : transaction.tokenValueIn
 
   const isBuy = transaction.direction === "buy"
-  const isPending = transaction.status === "pending"
+  const isLocal = transaction.status !== "indexed"
+  const isFailed = transaction.status === "failed"
 
   const { open } = useTransactionModal()
   const onClick = useCallback(() => {
-    // Only open modal for indexed transactions (pending ones don't have full data)
+    // Only open modal for indexed transactions (local ones don't have full data)
     if (transaction.status === "indexed") {
       open(transaction)
     }
   }, [transaction, open])
 
+  const statusLabel = useMemo(() => {
+    switch (transaction.status) {
+      case "pending":
+        return t("Pending...")
+      case "finalizing":
+        return t("Finalizing...")
+      case "confirmed":
+        return <DistanceToNow timestamp={transaction.timestamp} />
+      case "failed":
+        return t("Failed")
+      case "indexed":
+        return <DistanceToNow timestamp={transaction.timestamp} />
+    }
+  }, [transaction, t])
+
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={isPending}
+      disabled={isLocal}
       className={cn(
         "flex h-28 items-center justify-between pr-8 pl-12 text-left text-sm",
-        isPending ? "animate-pulse" : "hover:bg-grey-800"
+        transaction.status === "pending" ? "animate-pulse" : "hover:bg-grey-800"
       )}
     >
       <div className="flex items-center gap-8">
@@ -310,13 +351,13 @@ const TransactionRow: FC<{
           <div>
             <AccountNameOrAddress address={transaction.account} />
           </div>
-          <div className={cn("text-grey-500 text-xs")}>
-            {isPending ? t("Submitted") : <DistanceToNow timestamp={transaction.timestamp} />}
+          <div className={cn("text-xs", isFailed ? "text-alert-error" : "text-grey-500")}>
+            {statusLabel}
           </div>
         </div>
       </div>
-      <div className={cn("flex flex-col items-end gap-2")}>
-        <div className={cn(isBuy && "text-primary")}>
+      <div className={cn("flex flex-col items-end gap-2", isFailed && "opacity-50")}>
+        <div className={cn(isBuy && !isFailed && "text-primary")}>
           {isBuy ? "+ " : "- "}
           <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
         </div>
