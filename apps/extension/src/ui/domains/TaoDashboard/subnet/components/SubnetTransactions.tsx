@@ -40,6 +40,7 @@ import {
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useBittensorStakingSlippage } from "./useBittensorStakingSlippage"
 import { useTransactionModal } from "./useTransactionModal"
 
 type Tab = "my" | "all"
@@ -474,15 +475,7 @@ const TransactionModalContent: FC<{
             <FieldSkeleton />
           )}
         </Field>
-        <Field label={t("Effective price")}>
-          {tx.status === "indexed" ? (
-            <FieldValueEffectivePrice transaction={tx} alphaToken={alphaToken} />
-          ) : isFailed ? (
-            <FieldNA />
-          ) : (
-            <FieldSkeleton />
-          )}
-        </Field>
+        <SlippageFields transaction={tx} netuid={netuid} alphaToken={alphaToken} />
         <div className="flex h-14 w-full flex-col justify-center">
           <div className="h-px w-full bg-grey-700"></div>
         </div>
@@ -585,7 +578,7 @@ const Field: FC<{ label: string; children: React.ReactNode; className?: string }
   className,
 }) => {
   return (
-    <div className="flex h-14 w-full items-center justify-between gap-8 overflow-hidden">
+    <div className="flex h-12 w-full items-center justify-between gap-8 overflow-hidden text-sm">
       <div className="text-nowrap text-body-secondary">{label}</div>
       <div className={className}>{children}</div>
     </div>
@@ -599,6 +592,129 @@ const FieldValueEventType: FC<{ direction: "buy" | "sell" }> = ({ direction }) =
 }
 
 const FieldSkeleton: FC = () => <div className="h-7 w-32 animate-pulse rounded-xs bg-grey-800" />
+
+const FieldError: FC = () => <div className="text-alert-error">Error</div>
+
+const FieldHistoricalUnavailable: FC = () => {
+  const { t } = useTranslation()
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="cursor-help text-body-secondary">{t("Unavailable")}</div>
+      </TooltipTrigger>
+      <TooltipContent>{t("Historical data not available for this transaction")}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const SlippageFields: FC<{
+  transaction: TransactionEntry
+  netuid: number
+  alphaToken: SubDTaoToken
+}> = ({ transaction, netuid, alphaToken }) => {
+  const { t } = useTranslation()
+  const isFailed = transaction.status === "failed"
+
+  // Build params for useSlippage - only for indexed transactions
+  const slippageParams = useMemo(() => {
+    if (transaction.status !== "indexed" || !transaction.hotkey) return null
+    return {
+      hash: transaction.hash,
+      blockHeight: transaction.blockHeight,
+      netuid,
+      hotkey: transaction.hotkey,
+      valueIn: transaction.tokenValueIn,
+      valueOut: transaction.tokenValueOut,
+      direction: transaction.direction,
+    }
+  }, [transaction, netuid])
+
+  const { data: slippage, isLoading, isError, error } = useBittensorStakingSlippage(slippageParams)
+
+  // Check if the error is due to historical data being unavailable (non-archive node)
+  const isHistoricalDataUnavailable = isError && error?.name === "HistoricalDataUnavailableError"
+
+  // Calculate effective price directly from transaction (we always have this)
+  const effectivePrice = useMemo(() => {
+    if (transaction.status !== "indexed") return null
+    const isBuy = transaction.direction === "buy"
+    const taoAmount = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
+    const alphaAmount = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
+    if (alphaAmount === 0n) return null
+    return Number(taoAmount) / Number(alphaAmount)
+  }, [transaction])
+
+  const formatPrice = (price: bigint | number | null | undefined): string => {
+    if (price === null || price === undefined) return ""
+    const numPrice = typeof price === "bigint" ? Number(price) / 1e9 : price
+    return t("{{price}} τ / {{alphaSymbol}}", {
+      price: formatDecimals(numPrice, 6),
+      alphaSymbol: alphaToken.symbol,
+    })
+  }
+
+  const formatSlippage = (percent: number | null | undefined): string => {
+    if (percent === null || percent === undefined) return ""
+    const sign = percent > 0 ? "+" : ""
+    return `${sign}${percent.toFixed(2)}%`
+  }
+
+  return (
+    <>
+      <Field label={t("Expected price")}>
+        {isHistoricalDataUnavailable ? (
+          <FieldHistoricalUnavailable />
+        ) : isError ? (
+          <FieldError />
+        ) : isLoading || !slippage?.expectedPrice ? (
+          isFailed ? (
+            <FieldNA />
+          ) : transaction.status !== "indexed" ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )
+        ) : (
+          <div className="text-body">{formatPrice(Number(slippage.expectedPrice) / 1e9)}</div>
+        )}
+      </Field>
+      <Field label={t("Effective price")}>
+        {transaction.status === "indexed" && effectivePrice !== null ? (
+          <div className="text-body">{formatPrice(effectivePrice)}</div>
+        ) : isFailed ? (
+          <FieldNA />
+        ) : (
+          <FieldSkeleton />
+        )}
+      </Field>
+      <Field label={t("Slippage")}>
+        {isHistoricalDataUnavailable ? (
+          <FieldHistoricalUnavailable />
+        ) : isError ? (
+          <FieldError />
+        ) : isLoading || slippage?.slippagePercent === undefined ? (
+          isFailed ? (
+            <FieldNA />
+          ) : transaction.status !== "indexed" ? (
+            <FieldNA />
+          ) : (
+            <FieldSkeleton />
+          )
+        ) : (
+          <div
+            className={cn(
+              "text-body",
+              slippage.slippagePercent > 0 && "text-alert-error",
+              slippage.slippagePercent < 0 && "text-green"
+            )}
+          >
+            {formatSlippage(slippage.slippagePercent)}
+          </div>
+        )}
+      </Field>
+    </>
+  )
+}
 
 const FieldNA: FC = () => {
   const { t } = useTranslation()
@@ -616,29 +732,6 @@ const FieldValueStatus: FC<{ status: TransactionEntry["status"] }> = ({ status }
   }
   const config = statusConfig[status]
   return <div className={config.className}>{config.label}</div>
-}
-
-const FieldValueEffectivePrice: FC<{
-  transaction: IndexedTransactionEntry
-  alphaToken: SubDTaoToken
-}> = ({ transaction, alphaToken }) => {
-  const { t } = useTranslation()
-  const isBuy = transaction.direction === "buy"
-  // Effective alpha price = TAO / Alpha
-  // Buy: TAO in, Alpha out → tokenValueIn / tokenValueOut
-  // Sell: Alpha in, TAO out → tokenValueOut / tokenValueIn
-  const taoAmount = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
-  const alphaAmount = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
-  const price = Number(taoAmount) / Number(alphaAmount || BigInt(1))
-
-  return (
-    <div className="text-body">
-      {t("{{price}} τ / {{alphaSymbol}}", {
-        price: formatDecimals(price, 6),
-        alphaSymbol: alphaToken.symbol,
-      })}
-    </div>
-  )
 }
 
 const FieldValueAccount: FC<{ address: string }> = ({ address }) => {
