@@ -271,7 +271,10 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       }
 
       // Step 4: Calculate effective price based on actual in/out values
-      // Price = TAO / Alpha (how much TAO per 1 Alpha)
+      // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9 to match runtime API format
+      // The runtime API returns price as U96F32 * 1_000_000_000, which is "RAO per Alpha"
+      // Since both taoAmount and alphaAmount are in RAO (10^9 per token), we need to scale:
+      // effectivePrice = (taoAmount * 10^9) / alphaAmount = RAO per Alpha (same units as runtime API)
       const unit = 10n ** BigInt(TAO_DECIMALS)
 
       const taoAmount = direction === "buy" ? valueIn : valueOut
