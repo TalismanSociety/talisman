@@ -64,6 +64,7 @@ export type WalletTransactionInfo =
       toTokenId: TokenId
       fromAmount: string
       toAmount: string
+      hotkey: string
     }
 
 /** @deprecated */

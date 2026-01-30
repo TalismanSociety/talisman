@@ -131,7 +131,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!tokenIdIn || typeof state.valueIn !== "bigint" || typeof valueOut !== "bigint")
+    if (!tokenIdIn || typeof state.valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
       return undefined
 
     return {
@@ -140,8 +140,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
       toTokenId: tokenIdOut,
       fromAmount: state.valueIn.toString(),
       toAmount: valueOut.toString(),
+      hotkey,
     }
-  }, [tokenIdIn, tokenIdOut, state.valueIn, valueOut])
+  }, [tokenIdIn, tokenIdOut, state.valueIn, valueOut, hotkey])
 
   const isMevShieldDisabled = useMemo(() => {
     // supported only for hot wallets

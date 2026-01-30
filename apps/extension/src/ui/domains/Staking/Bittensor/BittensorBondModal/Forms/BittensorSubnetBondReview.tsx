@@ -111,7 +111,7 @@ export const BittensorSubnetBondReview = () => {
   )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (amountIn === null || !nativeToken?.id || !dtaoToken?.id) return undefined
+    if (amountIn === null || !nativeToken?.id || !dtaoToken?.id || !hotkey) return undefined
     // For staking: TAO -> ALPHA (input TAO, receive ALPHA)
     // For unstaking: ALPHA -> TAO (input ALPHA, receive TAO)
     const isStaking = stakeDirection === "bond"
@@ -121,8 +121,9 @@ export const BittensorSubnetBondReview = () => {
       toTokenId: isStaking ? dtaoToken.id : nativeToken.id,
       fromAmount: amountIn.toString(),
       toAmount: amountOut.toString(),
+      hotkey,
     }
-  }, [nativeToken?.id, dtaoToken?.id, amountIn, amountOut, stakeDirection])
+  }, [nativeToken?.id, dtaoToken?.id, amountIn, amountOut, stakeDirection, hotkey])
 
   const { isLoading } = useCombinedSubnetData(networkId)
 

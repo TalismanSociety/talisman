@@ -59,7 +59,7 @@ type TransactionEntryBase = {
 type LocalTransactionEntry = Prettify<
   TransactionEntryBase & {
     status: "pending" | "finalizing" | "confirmed" | "failed"
-    hotkey: string | undefined
+    hotkey: string
     timestamp: number // unix timestamp in ms
     blockHeight: number | undefined
   }
@@ -168,14 +168,13 @@ const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) =
       .map((tx): LocalTransactionEntry => {
         const txInfo = tx.txInfo as Extract<WalletTransactionInfo, { type: "bittensor-staking" }>
         const tokenIn = parseTokenId(txInfo.fromTokenId)
-        const tokenOut = parseTokenId(txInfo.toTokenId)
         const isBuy = tokenIn.type === "substrate-native"
 
         return {
           hash: tx.hash,
           account: tx.account,
           direction: isBuy ? "buy" : "sell",
-          hotkey: extractHotkey(tokenIn, tokenOut),
+          hotkey: txInfo.hotkey,
           tokenIdIn: txInfo.fromTokenId,
           tokenIdOut: txInfo.toTokenId,
           tokenValueIn: BigInt(txInfo.fromAmount),
@@ -615,9 +614,12 @@ const SlippageFields: FC<{
   const { t } = useTranslation()
   const isFailed = transaction.status === "failed"
 
-  // Build params for useSlippage - only for indexed transactions
+  // Build params for useSlippage - works for any transaction with blockHeight and hotkey
   const slippageParams = useMemo(() => {
-    if (transaction.status !== "indexed" || !transaction.hotkey) return null
+    // Need blockHeight and hotkey to compute slippage
+    if (!transaction.blockHeight || !transaction.hotkey) return null
+    // Don't compute for failed transactions
+    if (transaction.status === "failed") return null
     return {
       hash: transaction.hash,
       blockHeight: transaction.blockHeight,
@@ -648,6 +650,9 @@ const SlippageFields: FC<{
     return `${sign}${percent.toFixed(4)}%`
   }
 
+  // Can we compute slippage for this transaction?
+  const canComputeSlippage = !!transaction.blockHeight && !!transaction.hotkey
+
   return (
     <>
       <Field label={t("Expected price")}>
@@ -658,7 +663,7 @@ const SlippageFields: FC<{
         ) : isLoading || !slippage?.expectedPrice ? (
           isFailed ? (
             <FieldNA />
-          ) : transaction.status !== "indexed" ? (
+          ) : !canComputeSlippage ? (
             <FieldNA />
           ) : (
             <FieldSkeleton />
@@ -675,7 +680,7 @@ const SlippageFields: FC<{
         ) : isLoading || !slippage?.effectivePrice ? (
           isFailed ? (
             <FieldNA />
-          ) : transaction.status !== "indexed" ? (
+          ) : !canComputeSlippage ? (
             <FieldNA />
           ) : (
             <FieldSkeleton />
@@ -692,7 +697,7 @@ const SlippageFields: FC<{
         ) : isLoading || slippage?.slippagePercent === undefined ? (
           isFailed ? (
             <FieldNA />
-          ) : transaction.status !== "indexed" ? (
+          ) : !canComputeSlippage ? (
             <FieldNA />
           ) : (
             <FieldSkeleton />
@@ -812,14 +817,3 @@ const compareTransactions = (a: TransactionEntry, b: TransactionEntry): number =
   const bTime = b.status === "indexed" ? new Date(b.timestamp).getTime() : b.timestamp
   return bTime - aTime
 }
-
-/** Extracts hotkey from parsed token IDs (dtao tokens include hotkey) */
-const extractHotkey = (
-  tokenIn: ReturnType<typeof parseTokenId>,
-  tokenOut: ReturnType<typeof parseTokenId>
-): string | undefined =>
-  tokenIn.type === "substrate-dtao"
-    ? tokenIn.hotkey
-    : tokenOut.type === "substrate-dtao"
-      ? tokenOut.hotkey
-      : undefined

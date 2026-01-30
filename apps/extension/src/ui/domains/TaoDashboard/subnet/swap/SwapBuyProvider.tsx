@@ -206,15 +206,17 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint") return undefined
+    if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
+      return undefined
     return {
       type: "bittensor-staking",
       fromTokenId: tokenIdIn,
       toTokenId: tokenIdOutGeneric,
       fromAmount: valueIn.toString(),
       toAmount: valueOut.toString(),
+      hotkey,
     }
-  }, [tokenIdIn, valueIn, valueOut, tokenIdOutGeneric])
+  }, [tokenIdIn, valueIn, valueOut, tokenIdOutGeneric, hotkey])
 
   const txMode = useMemo(
     (): ScaleApiSubmitMode => (withMevShield ? "bittensor-mev-shield" : "default"),

@@ -41,7 +41,7 @@ export const BittensorRootBondReview = () => {
   )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!nativeToken?.id || !rootAlphaTokenId || amountIn === null) return undefined
+    if (!nativeToken?.id || !rootAlphaTokenId || amountIn === null || !hotkey) return undefined
     // Root staking: TAO -> ALPHA (netuid 0) for stake, ALPHA -> TAO for unstake
     const isStaking = stakeDirection === "bond"
     return {
@@ -50,8 +50,9 @@ export const BittensorRootBondReview = () => {
       toTokenId: isStaking ? rootAlphaTokenId : nativeToken.id,
       fromAmount: amountIn.toString(),
       toAmount: amountIn.toString(), // same amount for root staking (1:1 ratio)
+      hotkey,
     }
-  }, [nativeToken?.id, rootAlphaTokenId, amountIn, stakeDirection])
+  }, [nativeToken?.id, rootAlphaTokenId, amountIn, stakeDirection, hotkey])
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
