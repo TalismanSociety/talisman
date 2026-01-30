@@ -49,17 +49,6 @@ interface SubnetTransactionsProps {
 
 type Tab = "my" | "all"
 
-export interface StakeEvent {
-  hash: string
-  method: "Adding" | "Removing"
-  alphaAmount: string
-  taoAmount: string
-  timestamp: string
-  coldkey: string
-  hotkey: string
-  blockHeight: number
-}
-
 type TransactionEntryBase = {
   hash: string
   account: string
@@ -71,21 +60,23 @@ type TransactionEntryBase = {
   tokenValueOut: bigint
 }
 
-type TransactionEntry = Prettify<
-  TransactionEntryBase &
-    (
-      | {
-          status: "pending"
-          hotkey: string | undefined
-        }
-      | {
-          status: "indexed"
-          hotkey: string
-          timestamp: string
-          blockHeight: number
-        }
-    )
+type PendingTransactionEntry = Prettify<
+  TransactionEntryBase & {
+    status: "pending"
+    hotkey: string | undefined
+  }
 >
+
+export type IndexedTransactionEntry = Prettify<
+  TransactionEntryBase & {
+    status: "indexed"
+    hotkey: string
+    timestamp: string
+    blockHeight: number
+  }
+>
+
+type TransactionEntry = PendingTransactionEntry | IndexedTransactionEntry
 
 const MAX_ITEMS_PER_TAB = 20
 
@@ -299,21 +290,9 @@ const TransactionRow: FC<{
   const onClick = useCallback(() => {
     // Only open modal for indexed transactions (pending ones don't have full data)
     if (transaction.status === "indexed") {
-      open({
-        hash: transaction.hash,
-        method: transaction.direction === "buy" ? "Adding" : "Removing",
-        alphaAmount: alphaValue.toString(),
-        taoAmount: (transaction.direction === "buy"
-          ? transaction.tokenValueIn
-          : transaction.tokenValueOut
-        ).toString(),
-        timestamp: transaction.timestamp,
-        coldkey: transaction.account,
-        hotkey: transaction.hotkey,
-        blockHeight: transaction.blockHeight,
-      })
+      open(transaction)
     }
-  }, [transaction, alphaValue, open])
+  }, [transaction, open])
 
   return (
     <button
@@ -423,25 +402,27 @@ const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: strin
 )
 
 const TransactionModal: FC<{ netuid: number }> = ({ netuid }) => {
-  const { isOpen, args, close } = useTransactionModal()
+  const { isOpen, args: transaction, close } = useTransactionModal()
   return (
-    <Modal isOpen={isOpen && !!args} onDismiss={close}>
+    <Modal isOpen={isOpen && !!transaction} onDismiss={close}>
       <PopupSizeModalContainer id="tao-dashboard-transaction-modal">
-        {args && <TransactionModalContent netuid={netuid} data={args} onClose={close} />}
+        {transaction && (
+          <TransactionModalContent netuid={netuid} transaction={transaction} onClose={close} />
+        )}
       </PopupSizeModalContainer>
     </Modal>
   )
 }
 
-const TransactionModalContent: FC<{ netuid: number; data: StakeEvent; onClose: () => void }> = ({
-  netuid,
-  data,
-  onClose,
-}) => {
+const TransactionModalContent: FC<{
+  netuid: number
+  transaction: IndexedTransactionEntry
+  onClose: () => void
+}> = ({ netuid, transaction, onClose }) => {
   const { t } = useTranslation()
   const { alphaToken } = useSubnetTokens(netuid)
 
-  if (!data || !alphaToken) return null
+  if (!transaction || !alphaToken) return null
 
   return (
     <WizardModalDialog
@@ -451,39 +432,39 @@ const TransactionModalContent: FC<{ netuid: number; data: StakeEvent; onClose: (
       contentClassName="flex flex-col size-full overflow-hidden"
     >
       <div className="scrollable scrollable-800 grow overflow-auto">
-        <SwapSummary data={data} netuid={netuid} />
+        <SwapSummary transaction={transaction} netuid={netuid} />
         <div className="h-10 shrink-0"></div>
 
         <Field label={t("Event")}>
-          <FieldValueEventType method={data.method} />
+          <FieldValueEventType direction={transaction.direction} />
         </Field>
         <Field label={t("Account")}>
-          <FieldValueAccount address={data.coldkey} />
+          <FieldValueAccount address={transaction.account} />
         </Field>
         <Field label={t("Subnet")}>
           {netuid} - {alphaToken?.subnetName}
         </Field>
         <Field label={t("Validator")}>
-          <FieldValueValidator hotkey={data.hotkey} />
+          <FieldValueValidator hotkey={transaction.hotkey} />
         </Field>
         <div className="flex h-14 w-full flex-col justify-center">
           <div className="h-px w-full bg-grey-700"></div>
         </div>
         <Field label={t("Block number")} className="text-body-secondary">
-          #{data.blockHeight.toLocaleString()}
+          #{transaction.blockHeight.toLocaleString()}
         </Field>
         <Field label={t("Timestamp")} className="text-body-secondary">
-          {new Date(data.timestamp).toLocaleString()}
+          {new Date(transaction.timestamp).toLocaleString()}
         </Field>
         <Field label={t("Tx Hash")} className="text-body-secondary">
-          <FieldValueTxHash hash={data.hash} />
+          <FieldValueTxHash hash={transaction.hash} />
         </Field>
       </div>
       <Button
         icon={ExternalLinkIcon}
         onClick={() => {
           window.open(
-            `https://taostats.io/transaction/${data.hash}`,
+            `https://taostats.io/transaction/${transaction.hash}`,
             "_blank",
             "noreferrer noopener"
           )
@@ -495,20 +476,25 @@ const TransactionModalContent: FC<{ netuid: number; data: StakeEvent; onClose: (
   )
 }
 
-const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid }) => {
+const SwapSummary: FC<{ transaction: IndexedTransactionEntry; netuid: number }> = ({
+  transaction,
+  netuid,
+}) => {
   const { t } = useTranslation()
-  const sign = data.method === "Adding" ? "+" : "-"
+  const isBuy = transaction.direction === "buy"
+  const sign = isBuy ? "+" : "-"
+  const alphaValue = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
 
   return (
     <div className="flex flex-col items-center rounded bg-grey-850">
       <div className="items flex w-full flex-col items-center justify-center gap-2 p-6">
-        <div className={cn("text-lg", data.method === "Adding" ? "text-buy" : "text-sell")}>
+        <div className={cn("text-lg", isBuy ? "text-buy" : "text-sell")}>
           {sign}{" "}
           <TokensAndFiat
             noFiat
             noCountUp
             tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
-            planck={BigInt(data.alphaAmount)}
+            planck={alphaValue}
           />
         </div>
       </div>
@@ -517,21 +503,12 @@ const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid })
         <div className="flex flex-col items-center gap-3 text-body-inactive">
           <div className="text-xs">{t("From")}</div>
           <div className="text-body text-sm">
-            {data.method === "Adding" ? (
-              <TokensAndFiat
-                noFiat
-                noCountUp
-                tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
-                planck={BigInt(data.taoAmount)}
-              />
-            ) : (
-              <TokensAndFiat
-                noFiat
-                noCountUp
-                tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
-                planck={BigInt(data.alphaAmount)}
-              />
-            )}
+            <TokensAndFiat
+              noFiat
+              noCountUp
+              tokenId={transaction.tokenIdIn}
+              planck={transaction.tokenValueIn}
+            />
           </div>
         </div>
         <div className="text-body-inactive">
@@ -540,21 +517,12 @@ const SwapSummary: FC<{ data: StakeEvent; netuid: number }> = ({ data, netuid })
         <div className="flex flex-col items-center gap-3 text-body-inactive">
           <div className="text-xs">{t("To")}</div>
           <div className="text-body text-sm">
-            {data.method === "Adding" ? (
-              <TokensAndFiat
-                noFiat
-                noCountUp
-                tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
-                planck={BigInt(data.alphaAmount)}
-              />
-            ) : (
-              <TokensAndFiat
-                noFiat
-                noCountUp
-                tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
-                planck={BigInt(data.taoAmount)}
-              />
-            )}
+            <TokensAndFiat
+              noFiat
+              noCountUp
+              tokenId={transaction.tokenIdOut}
+              planck={transaction.tokenValueOut}
+            />
           </div>
         </div>
       </div>
@@ -575,20 +543,9 @@ const Field: FC<{ label: string; children: React.ReactNode; className?: string }
   )
 }
 
-const FieldValueEventType: FC<{ method: string }> = ({ method }) => {
+const FieldValueEventType: FC<{ direction: "buy" | "sell" }> = ({ direction }) => {
   const { t } = useTranslation()
-
-  const label = useMemo(() => {
-    switch (method) {
-      case "Adding":
-        return t("Add Stake")
-      case "Removing":
-        return t("Remove Stake")
-      default:
-        return method
-    }
-  }, [method, t])
-
+  const label = direction === "buy" ? t("Add Stake") : t("Remove Stake")
   return <div className="text-body">{label}</div>
 }
 
