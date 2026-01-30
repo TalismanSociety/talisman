@@ -8,11 +8,11 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
 type SlippageResult = {
-  /** The expected price (from limit or from alpha price at previous block), in TAO per Alpha (scaled by 10^decimals) */
+  /** The expected price (TAO per Alpha) based on simulation at previous block, scaled by 10^9 */
   expectedPrice: bigint
-  /** The effective price based on actual swap output, in TAO per Alpha (scaled by 10^decimals) */
+  /** The effective price (TAO per Alpha) based on actual swap, scaled by 10^9 */
   effectivePrice: bigint
-  /** Slippage as a percentage (positive = worse than expected, negative = better than expected) */
+  /** Slippage as a percentage (positive = got less than expected, negative = got more than expected) */
   slippagePercent: number
   /** Direction of the swap */
   direction: "taoToAlpha" | "alphaToTao"
@@ -111,8 +111,6 @@ type UseSlippageParams = {
   netuid: number
   /** Hotkey being staked to/from */
   hotkey: string
-  /** Value input (TAO for buy, Alpha for sell) - used to identify the correct call in a batch */
-  valueIn: bigint
   /** Direction of the trade */
   direction: "buy" | "sell"
 }
@@ -137,13 +135,13 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       params?.blockHeight,
       params?.netuid,
       params?.hotkey,
-      params?.valueIn?.toString(),
+      params?.direction,
     ],
     queryFn: async (): Promise<SlippageResult | null> => {
       if (!sapi || !params) return null
 
       // We need the block height to query historical data
-      const { hash, blockHeight, netuid, hotkey, valueIn, direction } = params
+      const { hash, blockHeight, netuid, hotkey, direction } = params
       if (!blockHeight || !hash) return null
 
       // Step 1: Get the block hash for this block and the previous block
@@ -164,46 +162,75 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
       if (!stakeEvent) return null
 
-      // Step 3: Determine expected price by simulating the swap at the previous block
-      // This gives us what the user would have expected based on the pool state before the transaction
+      // Step 3: Simulate the swap at the previous block to get the expected output
+      // Use the actual input from the event, not the passed valueIn (which may differ)
+      const actualInput = direction === "buy" ? stakeEvent.taoAmount : stakeEvent.alphaAmount
       const simulation = await simulateSwapAtBlock(
         sapi,
         netuid,
         direction === "buy" ? "taoToAlpha" : "alphaToTao",
-        valueIn,
+        actualInput,
         previousBlockHash
       )
-      if (!simulation || simulation.alpha_amount === 0n) return null
+      if (!simulation) return null
 
-      // Expected price = TAO / Alpha from simulation, scaled by 10^9
+      // Step 4: Calculate prices
+      // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9
       const unit = 10n ** BigInt(TAO_DECIMALS)
-      const expectedPrice = (simulation.tao_amount * unit) / simulation.alpha_amount
 
-      // Step 4: Calculate effective price from event data (ground truth from chain)
-      const { taoAmount, alphaAmount } = stakeEvent
-      if (alphaAmount === 0n) return null
+      // Expected price from simulation
+      // For buy: TAO input / Alpha output
+      // For sell: TAO output / Alpha input
+      const expectedPrice =
+        direction === "buy"
+          ? simulation.alpha_amount === 0n
+            ? null
+            : (actualInput * unit) / simulation.alpha_amount
+          : actualInput === 0n
+            ? null
+            : (simulation.tao_amount * unit) / actualInput
 
-      // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9 to match runtime API format
-      // The runtime API returns price as U96F32 * 1_000_000_000, which is "RAO per Alpha"
-      // Since both taoAmount and alphaAmount are in RAO (10^9 per token), we need to scale:
-      // effectivePrice = (taoAmount * 10^9) / alphaAmount = RAO per Alpha (same units as runtime API)
-      const effectivePrice = (taoAmount * unit) / alphaAmount
+      if (expectedPrice === null) return null
 
-      // Step 5: Calculate slippage percentage
-      // Slippage = (effectivePrice - expectedPrice) / expectedPrice * 100
-      // For buys: positive slippage = paid more TAO per Alpha than expected (bad)
-      // For sells: positive slippage = received less TAO per Alpha than expected (bad)
-      const slippagePercent = (Number(effectivePrice - expectedPrice) / Number(expectedPrice)) * 100
+      // Effective price from actual swap
+      if (stakeEvent.alphaAmount === 0n) return null
+      const effectivePrice = (stakeEvent.taoAmount * unit) / stakeEvent.alphaAmount
 
-      // Adjust sign based on direction
-      // For buys: higher effective price = worse (positive slippage)
-      // For sells: lower effective price = worse (positive slippage)
-      const adjustedSlippage = direction === "buy" ? slippagePercent : -slippagePercent
+      // Step 5: Calculate slippage based on output amounts
+      // For buy (taoToAlpha): compare alpha output
+      // For sell (alphaToTao): compare tao output
+      const expectedOutput = direction === "buy" ? simulation.alpha_amount : simulation.tao_amount
+      const actualOutput = direction === "buy" ? stakeEvent.alphaAmount : stakeEvent.taoAmount
+
+      if (expectedOutput === 0n) return null
+
+      // Slippage = (expected - actual) / expected * 100
+      // Positive = got less than expected (bad), Negative = got more than expected (good)
+      const slippagePercent = (Number(expectedOutput - actualOutput) / Number(expectedOutput)) * 100
+
+      // Debug logging
+      // eslint-disable-next-line no-console
+      // console.log("[Slippage Debug]", {
+      //   direction,
+      //   blockHeight,
+      //   actualInput: actualInput.toString(),
+      //   simulation: {
+      //     tao_amount: simulation.tao_amount.toString(),
+      //     alpha_amount: simulation.alpha_amount.toString(),
+      //   },
+      //   event: {
+      //     taoAmount: stakeEvent.taoAmount.toString(),
+      //     alphaAmount: stakeEvent.alphaAmount.toString(),
+      //   },
+      //   expectedOutput: expectedOutput.toString(),
+      //   actualOutput: actualOutput.toString(),
+      //   slippagePercent,
+      // })
 
       return {
         expectedPrice,
         effectivePrice,
-        slippagePercent: adjustedSlippage,
+        slippagePercent,
         direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
       }
     },

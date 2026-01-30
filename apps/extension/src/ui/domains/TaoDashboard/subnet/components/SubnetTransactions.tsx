@@ -623,7 +623,6 @@ const SlippageFields: FC<{
       blockHeight: transaction.blockHeight,
       netuid,
       hotkey: transaction.hotkey,
-      valueIn: transaction.tokenValueIn,
       direction: transaction.direction,
     }
   }, [transaction, netuid])
@@ -633,6 +632,7 @@ const SlippageFields: FC<{
   // Check if the error is due to historical data being unavailable (non-archive node)
   const isHistoricalDataUnavailable = isError && error?.name === "HistoricalDataUnavailableError"
 
+  // Format price (TAO per Alpha)
   const formatPrice = (price: bigint | number | null | undefined): string => {
     if (price === null || price === undefined) return ""
     const numPrice = typeof price === "bigint" ? Number(price) / 1e9 : price
@@ -645,7 +645,7 @@ const SlippageFields: FC<{
   const formatSlippage = (percent: number | null | undefined): string => {
     if (percent === null || percent === undefined) return ""
     const sign = percent > 0 ? "+" : ""
-    return `${sign}${percent.toFixed(2)}%`
+    return `${sign}${percent.toFixed(4)}%`
   }
 
   return (
@@ -664,7 +664,7 @@ const SlippageFields: FC<{
             <FieldSkeleton />
           )
         ) : (
-          <div className="text-body">{formatPrice(Number(slippage.expectedPrice) / 1e9)}</div>
+          <div className="text-body">{formatPrice(slippage.expectedPrice)}</div>
         )}
       </Field>
       <Field label={t("Effective price")}>
@@ -681,7 +681,7 @@ const SlippageFields: FC<{
             <FieldSkeleton />
           )
         ) : (
-          <div className="text-body">{formatPrice(Number(slippage.effectivePrice) / 1e9)}</div>
+          <div className="text-body">{formatPrice(slippage.effectivePrice)}</div>
         )}
       </Field>
       <Field label={t("Slippage")}>
