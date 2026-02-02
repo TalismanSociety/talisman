@@ -9,7 +9,7 @@ export const TaoDashboardRoutes = () => {
   // TODO check: we might not need the portfolio container as we dont use an accounts sidebar
   return (
     <PortfolioContainer>
-      <DashboardLayout sidebar="none">
+      <DashboardLayout sidebar="none" className="min-w-[130rem]">
         <Routes>
           <Route path="subnets" element={<TaoDashboardSubnetsPage />} />
           <Route path="subnets/:netuid" element={<TaoDashboardSubnetPage />} />

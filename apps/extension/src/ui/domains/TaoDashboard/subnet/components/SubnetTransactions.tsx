@@ -217,26 +217,26 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
   if (!alphaToken || !taoToken) return null
 
   return (
-    <div ref={refScrollContainer} className="mr-4 grow overflow-y-auto">
+    <div ref={refScrollContainer} className="mr-4 flex grow flex-col overflow-y-auto">
       <div className="flex shrink-0 items-center gap-8 px-12 pt-8 pb-4 text-sm">
         <span className="text-body-secondary">{t("Transactions on SN{{netuid}}", { netuid })}</span>
         {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}
       </div>
       {isLoading ? (
-        <div className="flex flex-col">
+        <div className="flex grow flex-col">
           {Array.from({ length: 10 }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static list
             <TransactionRowSkeleton key={i} />
           ))}
         </div>
       ) : !transactions.length ? (
-        <div className="flex h-full items-center justify-center text-body-secondary">
+        <div className="flex grow items-center justify-center text-body-secondary">
           {activeTab === "my"
             ? t("No transactions from your accounts")
             : t("No recent transactions")}
         </div>
       ) : (
-        <div className="flex flex-col">
+        <div className="flex grow flex-col">
           {transactions.map((tx, i) => (
             <TransactionRow
               key={`${tx.hash}-${i}`}
