@@ -758,7 +758,7 @@ const FieldValueValidator: FC<{ hotkey: string }> = ({ hotkey }) => {
 
   return (
     <div className="flex items-center gap-4">
-      <AccountIcon address={hotkey} className="text-lg" />
+      <AccountIcon address={hotkey} className="text-[1.5em]" />
       <BittensorValidatorName hotkey={hotkey} className="text-body" />
       <button
         type="button"
