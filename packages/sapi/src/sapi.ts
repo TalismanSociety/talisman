@@ -6,6 +6,7 @@ import { getCallDocs } from "./helpers/getCallDocs"
 import { getChainInfo } from "./helpers/getChainInfo"
 import { getConstantValue } from "./helpers/getConstantValue"
 import { getDecodedCall, getDecodedCallFromPayload } from "./helpers/getDecodedCall"
+import { getDecodedCallFromExtrinsic } from "./helpers/getDecodedCallFromExtrinsic"
 import { getDryRunCall } from "./helpers/getDryRunCall"
 import { getFeeEstimate } from "./helpers/getFeeEstimate"
 import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
@@ -76,6 +77,9 @@ export const getScaleApi = (
     getDecodedCallFromPayload: <Res extends DecodedCall>(payload: {
       method: SignerPayloadJSON["method"]
     }) => getDecodedCallFromPayload<Res>(chain, payload),
+
+    getDecodedCallFromExtrinsic: <Res extends DecodedCall>(extrinsicHex: `0x${string}`) =>
+      getDecodedCallFromExtrinsic<Res>(chain, extrinsicHex),
 
     getExtrinsicPayload: (
       pallet: string,

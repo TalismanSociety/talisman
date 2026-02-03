@@ -1,8 +1,9 @@
+import { CodeBlock } from "@talisman/components/CodeBlock"
 import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { type SubDTaoToken, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { cn, formatDecimals } from "@talismn/util"
+import { classNames, cn, formatDecimals } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -10,14 +11,15 @@ import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/Dashb
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useToken } from "@ui/state"
 import { log } from "extension-shared"
-import { type FC, useEffect, useMemo } from "react"
+import { dump as convertToYaml } from "js-yaml"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import type { TransactionEntry } from "./types"
 import {
+  type MatchedCall,
   type StakingOperationType,
-  type SubtensorStakeCallType,
   useBittensorStakingSlippage,
 } from "./useBittensorStakingSlippage"
 import { useSubnetTransactions } from "./useSubnetTransactions"
@@ -90,7 +92,7 @@ const ModalContent: FC<{
             <FieldSkeleton />
           )}
         </Field>
-        <SlippageFields transaction={tx} netuid={netuid} alphaToken={alphaToken} />
+
         <div className="flex h-14 w-full flex-col justify-center">
           <div className="h-px w-full bg-grey-700"></div>
         </div>
@@ -117,15 +119,11 @@ const ModalContent: FC<{
         <Field label={t("Tx Hash")} className="text-body-secondary">
           <FieldValueTxHash hash={tx.hash} />
         </Field>
+        <div className="flex h-14 w-full flex-col justify-center">
+          <div className="h-px w-full bg-grey-700"></div>
+        </div>
+        <SlippageFields transaction={tx} netuid={netuid} alphaToken={alphaToken} />
       </div>
-      {/* <Button
-        icon={ExternalLinkIcon}
-        onClick={() => {
-          window.open(`https://taostats.io/transaction/${tx.hash}`, "_blank", "noreferrer noopener")
-        }}
-      >
-        {t("View on Taostats")}
-      </Button> */}
     </WizardModalDialog>
   )
 }
@@ -259,7 +257,7 @@ const SlippageFields: FC<{
     if (price === null || price === undefined) return ""
     const numPrice = typeof price === "bigint" ? Number(price) / 1e9 : price
     return t("{{price}} τ / {{alphaSymbol}}", {
-      price: formatDecimals(numPrice, 6),
+      price: formatDecimals(numPrice, 9),
       alphaSymbol: alphaToken.symbol,
     })
   }
@@ -268,12 +266,6 @@ const SlippageFields: FC<{
     if (percent === null || percent === undefined) return ""
     const sign = percent > 0 ? "+" : ""
     return `${sign}${percent.toFixed(4)}%`
-  }
-
-  const formatCallType = (callType: SubtensorStakeCallType | undefined): string => {
-    if (!callType) return ""
-    // Convert snake_case to Title Case
-    return callType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
   }
 
   const formatOperationType = (opType: StakingOperationType): string => {
@@ -296,25 +288,6 @@ const SlippageFields: FC<{
 
   return (
     <>
-      <Field label={t("Call type")}>
-        {isHistoricalDataUnavailable ? (
-          <FieldHistoricalUnavailable />
-        ) : isError ? (
-          <FieldError />
-        ) : isFailed ? (
-          <FieldNA />
-        ) : !canComputeSlippage ? (
-          <FieldNA />
-        ) : slippage ? (
-          slippage.callType ? (
-            <div className="text-body">{formatCallType(slippage.callType)}</div>
-          ) : (
-            <FieldNA />
-          )
-        ) : (
-          <FieldSkeleton />
-        )}
-      </Field>
       <Field label={t("Operation type")}>
         {isHistoricalDataUnavailable ? (
           <FieldHistoricalUnavailable />
@@ -391,6 +364,7 @@ const SlippageFields: FC<{
           <FieldSkeleton />
         )}
       </Field>
+      {slippage?.matchedCall && <MatchedCallDisplay call={slippage.matchedCall} />}
     </>
   )
 }
@@ -398,6 +372,93 @@ const SlippageFields: FC<{
 const FieldNA: FC = () => {
   const { t } = useTranslation()
   return <div className="text-body-secondary">{t("N/A")}</div>
+}
+
+/**
+ * Serializes a value for display, handling special types like BigInt and PAPI Binary.
+ * Recursively processes objects and arrays.
+ */
+const serializeForDisplay = (value: unknown): unknown => {
+  // Handle null/undefined
+  if (value === null || value === undefined) return value
+
+  // Handle BigInt - convert to string with 'n' suffix for clarity
+  if (typeof value === "bigint") return `${value.toString()}n`
+
+  // Handle PAPI Binary (has asHex and asBytes methods)
+  if (
+    value &&
+    typeof value === "object" &&
+    "asHex" in value &&
+    typeof (value as { asHex: unknown }).asHex === "function"
+  ) {
+    return (value as { asHex: () => string }).asHex()
+  }
+
+  // Handle Uint8Array / ArrayBuffer - convert to hex
+  if (value instanceof Uint8Array) {
+    return `0x${Array.from(value)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")}`
+  }
+
+  // Handle arrays
+  if (Array.isArray(value)) {
+    return value.map(serializeForDisplay)
+  }
+
+  // Handle plain objects
+  if (typeof value === "object") {
+    const result: Record<string, unknown> = {}
+    for (const [key, val] of Object.entries(value)) {
+      result[key] = serializeForDisplay(val)
+    }
+    return result
+  }
+
+  // Primitives pass through
+  return value
+}
+
+const MatchedCallDisplay: FC<{ call: MatchedCall }> = ({ call }) => {
+  const { t } = useTranslation()
+  const [displayAsJson, setDisplayAsJson] = useState(false)
+
+  const code = useMemo(() => {
+    const serialized = serializeForDisplay(call)
+    if (displayAsJson) return JSON.stringify(serialized, null, 2)
+    return convertToYaml(serialized)
+  }, [call, displayAsJson])
+
+  return (
+    <div className="mt-4">
+      <div className="mb-2 flex w-full items-center text-body-secondary text-sm">
+        <div className="grow">{t("Individual call")}</div>
+        <button
+          type="button"
+          onClick={() => setDisplayAsJson(false)}
+          className={classNames(
+            "cursor-pointer",
+            !displayAsJson ? "text-body" : "underline hover:text-grey-300"
+          )}
+        >
+          YAML
+        </button>{" "}
+        /{" "}
+        <button
+          type="button"
+          onClick={() => setDisplayAsJson(true)}
+          className={classNames(
+            "cursor-pointer",
+            displayAsJson ? "text-body" : "underline hover:text-grey-300"
+          )}
+        >
+          JSON
+        </button>
+      </div>
+      <CodeBlock className="max-h-80 overflow-auto" code={code} />
+    </div>
+  )
 }
 
 const FieldValueStatus: FC<{ status: TransactionEntry["status"] }> = ({ status }) => {
@@ -434,9 +495,9 @@ const FieldValueValidator: FC<{ hotkey: string }> = ({ hotkey }) => {
   const copyToClipboard = useCopyToClipboard()
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex max-w-full items-center gap-4 overflow-hidden">
       <AccountIcon address={hotkey} className="text-[1.5em]" />
-      <BittensorValidatorName hotkey={hotkey} className="text-body" />
+      <BittensorValidatorName hotkey={hotkey} className="truncate text-body" />
       <button
         type="button"
         className="text-body-secondary hover:text-body"

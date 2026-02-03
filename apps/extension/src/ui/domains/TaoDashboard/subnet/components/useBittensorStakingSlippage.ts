@@ -39,6 +39,13 @@ export type SubtensorStakeCallType =
   | "swap_stake"
   | "swap_stake_limit"
 
+/** The matched SubtensorModule call with normalized structure */
+export type MatchedCall = {
+  pallet: string
+  method: SubtensorStakeCallType
+  args: Record<string, unknown>
+}
+
 export type SlippageResult = {
   /** The type of staking operation that was performed */
   operationType: StakingOperationType
@@ -52,6 +59,8 @@ export type SlippageResult = {
   effectivePrice?: bigint
   /** Slippage as a percentage (positive = got less than expected, negative = got more than expected). Only available for stake/unstake operations. */
   slippagePercent?: number
+  /** The matched SubtensorModule call from the extrinsic, for display purposes */
+  matchedCall?: MatchedCall
 }
 
 class HistoricalDataUnavailableError extends Error {
@@ -81,7 +90,7 @@ const findStakeEventInBlock = async (
   netuid: number,
   hotkey: string,
   direction: "buy" | "sell"
-): Promise<StakeEventInfo | null> => {
+): Promise<(StakeEventInfo & { coldkey: string }) | null> => {
   try {
     // Query events at the specific block
     const eventsHex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_getStorage", [
@@ -109,11 +118,11 @@ const findStakeEventInBlock = async (
       if (event.type === "SubtensorModule" && event.value?.type === eventName) {
         // Event value is a tuple: [coldkey, hotkey, tao, alpha, netuid, fee]
         const value = event.value.value as [string, string, bigint, bigint, number, bigint]
-        const [_coldkey, eventHotkey, taoAmount, alphaAmount, eventNetuid, fee] = value
+        const [coldkey, eventHotkey, taoAmount, alphaAmount, eventNetuid, fee] = value
 
         // Match by netuid and hotkey
         if (eventNetuid === netuid && eventHotkey === hotkey) {
-          return { taoAmount, alphaAmount, fee }
+          return { coldkey, taoAmount, alphaAmount, fee }
         }
       }
     }
@@ -194,11 +203,19 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         [blockHeight - 1]
       )
 
-      // Track the operation type and call type from the decoded call
+      // Track the operation type, call type, and matched call from the decoded call
       let operationType: StakingOperationType = "unknown"
       let callType: SubtensorStakeCallType | undefined
+      let matchedCall: MatchedCall | undefined
 
-      // Debug: Fetch and decode the extrinsic
+      // Step 1: Get block events to find the StakeAdded/StakeRemoved event with actual amounts
+      // This also gives us the coldkey, which we need to match the right call in batch transactions
+      const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
+      if (!stakeEvent) return null
+
+      const { coldkey } = stakeEvent
+
+      // Step 2: Fetch and decode the extrinsic to find the specific call
       const block = await api.subSend<{ block: { extrinsics: string[] } }>(
         BITTENSOR_NETWORK_ID,
         "chain_getBlock",
@@ -210,17 +227,29 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
           const extBytes = fromHex(extHex as `0x${string}`)
           const extHash = toHex(blake2b256(extBytes))
           if (extHash === hash) {
-            // Decode and log the call
-            const decodedCall = decodeCallFromExtrinsic(sapi, extHex as `0x${string}`)
+            // Decode the call using sapi's robust extrinsic decoder
+            const decodedCall = sapi.getDecodedCallFromExtrinsic(extHex as `0x${string}`)
             log.log("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
 
             // Find the actual SubtensorModule staking call (handles wrapped calls)
+            // Pass coldkey to correctly identify the call in batches with many proxy calls
             if (decodedCall) {
-              const stakeCall = findSubtensorStakeCall(decodedCall, netuid, hotkey, direction)
+              const stakeCall = findSubtensorStakeCall(
+                decodedCall,
+                netuid,
+                hotkey,
+                coldkey,
+                direction
+              )
               if (stakeCall) {
                 const args = stakeCall.args as Record<string, unknown>
                 operationType = getOperationType(stakeCall)
                 callType = stakeCall.method
+                matchedCall = {
+                  pallet: stakeCall.pallet,
+                  method: stakeCall.method,
+                  args,
+                }
                 log.log("[Slippage Debug] Found SubtensorModule staking call:", {
                   pallet: stakeCall.pallet,
                   method: stakeCall.method,
@@ -229,7 +258,8 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
                 })
               } else {
                 log.log(
-                  "[Slippage Debug] No matching SubtensorModule staking call found in extrinsic"
+                  "[Slippage Debug] No matching SubtensorModule staking call found in extrinsic",
+                  { params, decodedCall, coldkey }
                 )
               }
             }
@@ -237,10 +267,6 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
           }
         }
       }
-
-      // Step 2: Get block events to find the StakeAdded/StakeRemoved event with actual amounts
-      const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
-      if (!stakeEvent) return null
 
       // Calculate effective price from actual swap (available for all operations with events)
       // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9
@@ -267,6 +293,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
           callType,
           direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
           effectivePrice,
+          matchedCall,
         }
       }
 
@@ -334,6 +361,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         expectedPrice,
         effectivePrice,
         slippagePercent,
+        matchedCall,
       }
     },
     enabled: !!sapi && !!params,
@@ -409,6 +437,50 @@ type DecodedCall = {
   pallet: string
   method: string
   args: unknown
+}
+
+/**
+ * PAPI's native call structure (used in nested calls like batch args)
+ */
+type PapiCall = {
+  type: string // pallet name
+  value: {
+    type: string // method name
+    value: unknown // args
+  }
+}
+
+/**
+ * Normalize a call to DecodedCall format.
+ * Handles both PAPI's native format { type, value: { type, value } }
+ * and our DecodedCall format { pallet, method, args }.
+ */
+const normalizeCall = (call: DecodedCall | PapiCall | unknown): DecodedCall | null => {
+  if (!call || typeof call !== "object") return null
+
+  // Check if it's already in DecodedCall format
+  if ("pallet" in call && "method" in call && "args" in call) {
+    return call as DecodedCall
+  }
+
+  // Check if it's in PAPI format { type, value: { type, value } }
+  if ("type" in call && "value" in call) {
+    const papiCall = call as PapiCall
+    if (
+      typeof papiCall.type === "string" &&
+      papiCall.value &&
+      typeof papiCall.value === "object" &&
+      "type" in papiCall.value
+    ) {
+      return {
+        pallet: papiCall.type,
+        method: papiCall.value.type,
+        args: papiCall.value.value,
+      }
+    }
+  }
+
+  return null
 }
 
 /**
@@ -490,30 +562,58 @@ const matchesSubtensorStakeCall = (
 }
 
 /**
+ * Extracts the coldkey address from a Proxy.proxy or Proxy.proxy_announced "real" field.
+ * The "real" field can be a raw string (SS58 address) or an object with a "value" property.
+ */
+const extractProxyColdkey = (real: unknown): string | null => {
+  if (typeof real === "string") return real
+  if (
+    real &&
+    typeof real === "object" &&
+    "value" in real &&
+    typeof (real as { value: unknown }).value === "string"
+  ) {
+    return (real as { value: string }).value
+  }
+  return null
+}
+
+/**
  * Recursively search through a decoded call tree to find SubtensorModule staking calls.
  * Handles common wrapper patterns like proxy, batch, multisig, etc.
  *
  * @param call - The decoded call to search
  * @param targetNetuid - The netuid to match
  * @param targetHotkey - The hotkey to match
+ * @param targetColdkey - The coldkey to match (from the event, ensures correct call in batch with many proxy calls)
  * @param direction - "buy" for add_stake variants, "sell" for remove_stake variants
+ * @param effectiveColdkey - The coldkey context from enclosing proxy calls (internal use)
  * @returns The matching SubtensorModule call, or null if not found
  */
 const findSubtensorStakeCall = (
-  call: DecodedCall | null,
+  call: DecodedCall | PapiCall | null,
   targetNetuid: number,
   targetHotkey: string,
-  direction: "buy" | "sell"
+  targetColdkey: string,
+  direction: "buy" | "sell",
+  effectiveColdkey?: string
 ): (DecodedCall & { method: SubtensorStakeCallType }) | null => {
-  if (!call) return null
+  // Normalize the call to DecodedCall format (handles both PAPI and DecodedCall formats)
+  const normalizedCall = normalizeCall(call)
+  if (!normalizedCall) return null
 
-  const { pallet, method, args } = call
+  const { pallet, method, args } = normalizedCall
 
   // Direct match - check if this is a SubtensorModule staking call
   if (pallet === "SubtensorModule") {
     const argsObj = args as Record<string, unknown>
-    if (matchesSubtensorStakeCall(method, argsObj, targetNetuid, targetHotkey, direction)) {
-      return call as DecodedCall & { method: SubtensorStakeCallType }
+    // Verify coldkey matches if we have context from an enclosing proxy
+    const coldkeyMatches = !effectiveColdkey || effectiveColdkey === targetColdkey
+    if (
+      coldkeyMatches &&
+      matchesSubtensorStakeCall(method, argsObj, targetNetuid, targetHotkey, direction)
+    ) {
+      return normalizedCall as DecodedCall & { method: SubtensorStakeCallType }
     }
   }
 
@@ -521,10 +621,20 @@ const findSubtensorStakeCall = (
   const argsObj = args as Record<string, unknown>
 
   // Proxy.proxy, Proxy.proxyAnnounced - has a "call" field
+  // The "real" field indicates the actual coldkey being acted on behalf of
   if (pallet === "Proxy" && (method === "proxy" || method === "proxy_announced")) {
-    const nestedCall = argsObj.call as DecodedCall | undefined
+    const proxyColdkey = extractProxyColdkey(argsObj.real)
+    const nestedCall = argsObj.call
     if (nestedCall) {
-      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      // Pass the proxy's "real" as the effective coldkey for nested calls
+      const found = findSubtensorStakeCall(
+        nestedCall as DecodedCall | PapiCall,
+        targetNetuid,
+        targetHotkey,
+        targetColdkey,
+        direction,
+        proxyColdkey ?? effectiveColdkey
+      )
       if (found) return found
     }
   }
@@ -534,10 +644,17 @@ const findSubtensorStakeCall = (
     pallet === "Utility" &&
     (method === "batch" || method === "batch_all" || method === "force_batch")
   ) {
-    const calls = argsObj.calls as DecodedCall[] | undefined
+    const calls = argsObj.calls as Array<DecodedCall | PapiCall> | undefined
     if (calls) {
       for (const nestedCall of calls) {
-        const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+        const found = findSubtensorStakeCall(
+          nestedCall,
+          targetNetuid,
+          targetHotkey,
+          targetColdkey,
+          direction,
+          effectiveColdkey
+        )
         if (found) return found
       }
     }
@@ -548,18 +665,32 @@ const findSubtensorStakeCall = (
     pallet === "Utility" &&
     (method === "as_derivative" || method === "dispatch_as" || method === "with_weight")
   ) {
-    const nestedCall = argsObj.call as DecodedCall | undefined
+    const nestedCall = argsObj.call
     if (nestedCall) {
-      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      const found = findSubtensorStakeCall(
+        nestedCall as DecodedCall | PapiCall,
+        targetNetuid,
+        targetHotkey,
+        targetColdkey,
+        direction,
+        effectiveColdkey
+      )
       if (found) return found
     }
   }
 
   // Multisig.asMulti, Multisig.asMultiThreshold1 - has a "call" field
   if (pallet === "Multisig" && (method === "as_multi" || method === "as_multi_threshold_1")) {
-    const nestedCall = argsObj.call as DecodedCall | undefined
+    const nestedCall = argsObj.call
     if (nestedCall) {
-      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      const found = findSubtensorStakeCall(
+        nestedCall as DecodedCall | PapiCall,
+        targetNetuid,
+        targetHotkey,
+        targetColdkey,
+        direction,
+        effectiveColdkey
+      )
       if (found) return found
     }
   }
@@ -572,9 +703,16 @@ const findSubtensorStakeCall = (
       method === "schedule_named" ||
       method === "schedule_named_after")
   ) {
-    const nestedCall = argsObj.call as DecodedCall | undefined
+    const nestedCall = argsObj.call
     if (nestedCall) {
-      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      const found = findSubtensorStakeCall(
+        nestedCall as DecodedCall | PapiCall,
+        targetNetuid,
+        targetHotkey,
+        targetColdkey,
+        direction,
+        effectiveColdkey
+      )
       if (found) return found
     }
   }
@@ -584,9 +722,16 @@ const findSubtensorStakeCall = (
     pallet === "Sudo" &&
     (method === "sudo" || method === "sudo_as" || method === "sudo_unchecked_weight")
   ) {
-    const nestedCall = argsObj.call as DecodedCall | undefined
+    const nestedCall = argsObj.call
     if (nestedCall) {
-      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      const found = findSubtensorStakeCall(
+        nestedCall as DecodedCall | PapiCall,
+        targetNetuid,
+        targetHotkey,
+        targetColdkey,
+        direction,
+        effectiveColdkey
+      )
       if (found) return found
     }
   }
@@ -657,160 +802,5 @@ const getOperationType = (
 
     default:
       return "unknown"
-  }
-}
-
-/**
- * Decode the call data from a signed extrinsic.
- * Extrinsic v4 structure (after compact length):
- * - 1 byte: version (0x84 for signed v4)
- * - address: MultiAddress (1 byte variant + 32 bytes for AccountId32)
- * - signature: MultiSignature (1 byte variant + 64 bytes for Sr25519/Ed25519)
- * - extra: signed extensions (variable length, decoded based on metadata)
- * - call: remaining bytes
- */
-const decodeCallFromExtrinsic = (
-  sapi: ScaleApi,
-  extrinsicHex: `0x${string}`
-): { pallet: string; method: string; args: unknown } | null => {
-  try {
-    const bytes = fromHex(extrinsicHex)
-
-    // Decode compact length prefix - skip past it to get to the extrinsic body
-    let offset = 0
-    const firstByte = bytes[offset]
-    if ((firstByte & 0b11) === 0b00) {
-      // Single byte mode
-      offset += 1
-    } else if ((firstByte & 0b11) === 0b01) {
-      // Two byte mode
-      offset += 2
-    } else if ((firstByte & 0b11) === 0b10) {
-      // Four byte mode
-      offset += 4
-    } else {
-      // Big integer mode - length is in the upper 6 bits + following bytes
-      const numBytes = (firstByte >> 2) + 4
-      offset += 1 + numBytes
-    }
-
-    // Check version byte - 0x84 means signed v4 (0x80 signed flag + 0x04 version)
-    const versionByte = bytes[offset]
-    offset += 1
-
-    const isSigned = (versionByte & 0x80) !== 0
-    const version = versionByte & 0x7f
-
-    if (version !== 4) {
-      return null
-    }
-
-    if (!isSigned) {
-      // Unsigned extrinsic - call data starts immediately after version
-      const callData = bytes.slice(offset)
-      const callDef = sapi.chain.builder.buildDefinition(sapi.chain.lookup.call!)
-      const decoded = callDef.dec(callData)
-      return {
-        pallet: decoded.type,
-        method: decoded.value.type,
-        args: decoded.value.value,
-      }
-    }
-
-    // Signed extrinsic - need to skip address, signature, and extra
-
-    // Address: MultiAddress enum (variant 0 = Id with 32 byte AccountId)
-    const addressVariant = bytes[offset]
-    offset += 1
-    if (addressVariant === 0) {
-      // AccountId32 - 32 bytes
-      offset += 32
-    } else if (addressVariant === 1) {
-      // Index - compact encoded
-      const idxFirstByte = bytes[offset]
-      if ((idxFirstByte & 0b11) === 0b00) offset += 1
-      else if ((idxFirstByte & 0b11) === 0b01) offset += 2
-      else if ((idxFirstByte & 0b11) === 0b10) offset += 4
-      else offset += 1 + (idxFirstByte >> 2) // big integer
-    } else {
-      // Other address types not commonly used
-      // eslint-disable-next-line no-console
-      log.warn("[Slippage Debug] Unsupported address variant:", addressVariant)
-      return null
-    }
-
-    // Signature: MultiSignature enum
-    const sigVariant = bytes[offset]
-    offset += 1
-    if (sigVariant === 0 || sigVariant === 1) {
-      // Ed25519 or Sr25519 - 64 bytes
-      offset += 64
-    } else if (sigVariant === 2) {
-      // Ecdsa - 65 bytes
-      offset += 65
-    } else {
-      // eslint-disable-next-line no-console
-      log.warn("[Slippage Debug] Unsupported signature variant:", sigVariant)
-      return null
-    }
-
-    // Extra (signed extensions) - we need to skip these based on metadata
-    // For Bittensor, the signed extensions are typically:
-    // - CheckMortality (Era): 1 or 2 bytes
-    // - CheckNonce: compact
-    // - ChargeTransactionPayment (tip): compact
-    // - CheckMetadataHash: 1 byte (mode) + optionally 32 bytes (hash)
-
-    // Era (mortality)
-    const eraFirstByte = bytes[offset]
-    if (eraFirstByte === 0) {
-      // Immortal
-      offset += 1
-    } else {
-      // Mortal - 2 bytes
-      offset += 2
-    }
-
-    // Nonce (compact)
-    const nonceFirstByte = bytes[offset]
-    if ((nonceFirstByte & 0b11) === 0b00) offset += 1
-    else if ((nonceFirstByte & 0b11) === 0b01) offset += 2
-    else if ((nonceFirstByte & 0b11) === 0b10) offset += 4
-    else offset += 1 + (nonceFirstByte >> 2)
-
-    // Tip (compact)
-    const tipFirstByte = bytes[offset]
-    if ((tipFirstByte & 0b11) === 0b00) offset += 1
-    else if ((tipFirstByte & 0b11) === 0b01) offset += 2
-    else if ((tipFirstByte & 0b11) === 0b10) offset += 4
-    else offset += 1 + (tipFirstByte >> 2)
-
-    // CheckMetadataHash: 1 byte mode (0 = disabled, 1 = enabled with hash)
-    // Only present if the chain supports it - check if we're still within bounds
-    if (offset < bytes.length) {
-      const metadataMode = bytes[offset]
-      offset += 1
-      if (metadataMode === 1) {
-        // Skip the 32-byte metadata hash
-        offset += 32
-      }
-    }
-
-    // Remaining bytes are the call data
-    const callData = bytes.slice(offset)
-
-    // Decode the call
-    const callDef = sapi.chain.builder.buildDefinition(sapi.chain.lookup.call!)
-    const decoded = callDef.dec(callData)
-
-    return {
-      pallet: decoded.type,
-      method: decoded.value.type,
-      args: decoded.value.value,
-    }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    log.error("[Slippage Debug] Failed to decode extrinsic:", err)
-    return null
   }
 }
