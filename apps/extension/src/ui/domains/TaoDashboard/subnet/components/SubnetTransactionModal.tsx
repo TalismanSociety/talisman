@@ -9,13 +9,17 @@ import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useToken } from "@ui/state"
-import { type FC, useMemo } from "react"
+import { log } from "extension-shared"
+import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
-
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import type { TransactionEntry } from "./types"
-import { useBittensorStakingSlippage } from "./useBittensorStakingSlippage"
+import {
+  type StakingOperationType,
+  type SubtensorStakeCallType,
+  useBittensorStakingSlippage,
+} from "./useBittensorStakingSlippage"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
 
@@ -243,6 +247,10 @@ const SlippageFields: FC<{
 
   const { data: slippage, isLoading, isError, error } = useBittensorStakingSlippage(slippageParams)
 
+  useEffect(() => {
+    log.log("Slippage data:", { slippage, isLoading, error })
+  }, [slippage, isLoading, error])
+
   // Check if the error is due to historical data being unavailable (non-archive node)
   const isHistoricalDataUnavailable = isError && error?.name === "HistoricalDataUnavailableError"
 
@@ -262,26 +270,83 @@ const SlippageFields: FC<{
     return `${sign}${percent.toFixed(4)}%`
   }
 
+  const formatCallType = (callType: SubtensorStakeCallType | undefined): string => {
+    if (!callType) return ""
+    // Convert snake_case to Title Case
+    return callType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  }
+
+  const formatOperationType = (opType: StakingOperationType): string => {
+    const labels: Record<StakingOperationType, string> = {
+      unknown: t("Unknown"),
+      stake: t("Stake"),
+      stake_limit: t("Stake (with limit)"),
+      unstake: t("Unstake"),
+      unstake_limit: t("Unstake (with limit)"),
+      unstake_all: t("Unstake All"),
+      change_validator: t("Change Validator"),
+      change_subnet: t("Change Subnet"),
+      transfer: t("Transfer"),
+    }
+    return labels[opType] || opType
+  }
+
   // Can we compute slippage for this transaction?
   const canComputeSlippage = !!transaction.blockHeight && !!transaction.hotkey
 
   return (
     <>
+      <Field label={t("Call type")}>
+        {isHistoricalDataUnavailable ? (
+          <FieldHistoricalUnavailable />
+        ) : isError ? (
+          <FieldError />
+        ) : isFailed ? (
+          <FieldNA />
+        ) : !canComputeSlippage ? (
+          <FieldNA />
+        ) : slippage ? (
+          slippage.callType ? (
+            <div className="text-body">{formatCallType(slippage.callType)}</div>
+          ) : (
+            <FieldNA />
+          )
+        ) : (
+          <FieldSkeleton />
+        )}
+      </Field>
+      <Field label={t("Operation type")}>
+        {isHistoricalDataUnavailable ? (
+          <FieldHistoricalUnavailable />
+        ) : isError ? (
+          <FieldError />
+        ) : isFailed ? (
+          <FieldNA />
+        ) : !canComputeSlippage ? (
+          <FieldNA />
+        ) : slippage ? (
+          <div className="text-body">{formatOperationType(slippage.operationType)}</div>
+        ) : (
+          <FieldSkeleton />
+        )}
+      </Field>
       <Field label={t("Expected price")}>
         {isHistoricalDataUnavailable ? (
           <FieldHistoricalUnavailable />
         ) : isError ? (
           <FieldError />
-        ) : isLoading || !slippage?.expectedPrice ? (
-          isFailed ? (
-            <FieldNA />
-          ) : !canComputeSlippage ? (
-            <FieldNA />
+        ) : isFailed ? (
+          <FieldNA />
+        ) : !canComputeSlippage ? (
+          <FieldNA />
+        ) : slippage ? (
+          slippage.expectedPrice ? (
+            <div className="text-body">{formatPrice(slippage.expectedPrice)}</div>
           ) : (
-            <FieldSkeleton />
+            <FieldNA />
           )
         ) : (
-          <div className="text-body">{formatPrice(slippage.expectedPrice)}</div>
+          <FieldSkeleton />
         )}
       </Field>
       <Field label={t("Effective price")}>
@@ -289,16 +354,14 @@ const SlippageFields: FC<{
           <FieldHistoricalUnavailable />
         ) : isError ? (
           <FieldError />
-        ) : isLoading || !slippage?.effectivePrice ? (
-          isFailed ? (
-            <FieldNA />
-          ) : !canComputeSlippage ? (
-            <FieldNA />
-          ) : (
-            <FieldSkeleton />
-          )
-        ) : (
+        ) : isFailed ? (
+          <FieldNA />
+        ) : !canComputeSlippage ? (
+          <FieldNA />
+        ) : slippage?.effectivePrice ? (
           <div className="text-body">{formatPrice(slippage.effectivePrice)}</div>
+        ) : (
+          <FieldSkeleton />
         )}
       </Field>
       <Field label={t("Slippage")}>
@@ -306,24 +369,26 @@ const SlippageFields: FC<{
           <FieldHistoricalUnavailable />
         ) : isError ? (
           <FieldError />
-        ) : isLoading || slippage?.slippagePercent === undefined ? (
-          isFailed ? (
-            <FieldNA />
-          ) : !canComputeSlippage ? (
-            <FieldNA />
+        ) : isFailed ? (
+          <FieldNA />
+        ) : !canComputeSlippage ? (
+          <FieldNA />
+        ) : slippage ? (
+          slippage.slippagePercent !== undefined ? (
+            <div
+              className={cn(
+                "text-body",
+                slippage.slippagePercent > 0 && "text-alert-error",
+                slippage.slippagePercent < 0 && "text-green"
+              )}
+            >
+              {formatSlippage(slippage.slippagePercent)}
+            </div>
           ) : (
-            <FieldSkeleton />
+            <FieldNA />
           )
         ) : (
-          <div
-            className={cn(
-              "text-body",
-              slippage.slippagePercent > 0 && "text-alert-error",
-              slippage.slippagePercent < 0 && "text-green"
-            )}
-          >
-            {formatSlippage(slippage.slippagePercent)}
-          </div>
+          <FieldSkeleton />
         )}
       </Field>
     </>

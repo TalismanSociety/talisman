@@ -8,15 +8,50 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { log } from "extension-shared"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
-type SlippageResult = {
-  /** The expected price (TAO per Alpha) based on simulation at previous block, scaled by 10^9 */
-  expectedPrice: bigint
-  /** The effective price (TAO per Alpha) based on actual swap, scaled by 10^9 */
-  effectivePrice: bigint
-  /** Slippage as a percentage (positive = got less than expected, negative = got more than expected) */
-  slippagePercent: number
+/**
+ * Operation types for staking transactions.
+ * These describe the semantic meaning of the transaction.
+ */
+export type StakingOperationType =
+  | "unknown"
+  | "stake"
+  | "stake_limit"
+  | "unstake"
+  | "unstake_limit"
+  | "unstake_all"
+  | "change_validator"
+  | "change_subnet"
+  | "transfer"
+
+/**
+ * All SubtensorModule staking-related call method names.
+ */
+export type SubtensorStakeCallType =
+  | "add_stake"
+  | "remove_stake"
+  | "add_stake_limit"
+  | "remove_stake_limit"
+  | "remove_stake_full_limit"
+  | "unstake_all"
+  | "unstake_all_alpha"
+  | "move_stake"
+  | "transfer_stake"
+  | "swap_stake"
+  | "swap_stake_limit"
+
+export type SlippageResult = {
+  /** The type of staking operation that was performed */
+  operationType: StakingOperationType
+  /** The SubtensorModule call method name */
+  callType?: SubtensorStakeCallType
   /** Direction of the swap */
   direction: "taoToAlpha" | "alphaToTao"
+  /** The expected price (TAO per Alpha) based on simulation at previous block, scaled by 10^9. Only available for stake/unstake operations. */
+  expectedPrice?: bigint
+  /** The effective price (TAO per Alpha) based on actual swap, scaled by 10^9. Only available for stake/unstake operations. */
+  effectivePrice?: bigint
+  /** Slippage as a percentage (positive = got less than expected, negative = got more than expected). Only available for stake/unstake operations. */
+  slippagePercent?: number
 }
 
 class HistoricalDataUnavailableError extends Error {
@@ -159,6 +194,10 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         [blockHeight - 1]
       )
 
+      // Track the operation type and call type from the decoded call
+      let operationType: StakingOperationType = "unknown"
+      let callType: SubtensorStakeCallType | undefined
+
       // Debug: Fetch and decode the extrinsic
       const block = await api.subSend<{ block: { extrinsics: string[] } }>(
         BITTENSOR_NETWORK_ID,
@@ -173,8 +212,27 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
           if (extHash === hash) {
             // Decode and log the call
             const decodedCall = decodeCallFromExtrinsic(sapi, extHex as `0x${string}`)
-            // eslint-disable-next-line no-console
             log.log("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
+
+            // Find the actual SubtensorModule staking call (handles wrapped calls)
+            if (decodedCall) {
+              const stakeCall = findSubtensorStakeCall(decodedCall, netuid, hotkey, direction)
+              if (stakeCall) {
+                const args = stakeCall.args as Record<string, unknown>
+                operationType = getOperationType(stakeCall)
+                callType = stakeCall.method
+                log.log("[Slippage Debug] Found SubtensorModule staking call:", {
+                  pallet: stakeCall.pallet,
+                  method: stakeCall.method,
+                  operationType,
+                  args,
+                })
+              } else {
+                log.log(
+                  "[Slippage Debug] No matching SubtensorModule staking call found in extrinsic"
+                )
+              }
+            }
             break
           }
         }
@@ -183,6 +241,34 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       // Step 2: Get block events to find the StakeAdded/StakeRemoved event with actual amounts
       const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
       if (!stakeEvent) return null
+
+      // Calculate effective price from actual swap (available for all operations with events)
+      // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9
+      const unit = 10n ** BigInt(TAO_DECIMALS)
+      if (stakeEvent.alphaAmount === 0n) return null
+      const effectivePrice = (stakeEvent.taoAmount * unit) / stakeEvent.alphaAmount
+
+      // For operations where we cannot meaningfully simulate the expected output,
+      // return with just effectivePrice (no expectedPrice or slippage).
+      // - change_validator: stake moves between hotkeys on same subnet, no swap occurs
+      // - change_subnet: involves two swaps (exit origin, enter destination), simulation not meaningful
+      // - transfer: ownership transfer, no swap occurs
+      // - unstake_all: we don't have the exact alpha amount to simulate
+      // - unknown: we couldn't identify the call, can't simulate
+      const simulatableOperations: StakingOperationType[] = [
+        "stake",
+        "stake_limit",
+        "unstake",
+        "unstake_limit",
+      ]
+      if (!simulatableOperations.includes(operationType)) {
+        return {
+          operationType,
+          callType,
+          direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
+          effectivePrice,
+        }
+      }
 
       // Step 3: Simulate the swap at the previous block to get the expected output
       // Use the actual input from the event, not the passed valueIn (which may differ)
@@ -196,11 +282,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       )
       if (!simulation) return null
 
-      // Step 4: Calculate prices
-      // Price = TAO / Alpha (how much TAO per 1 Alpha), scaled by 10^9
-      const unit = 10n ** BigInt(TAO_DECIMALS)
-
-      // Expected price from simulation
+      // Step 4: Calculate expected price from simulation
       // For buy: TAO input / Alpha output
       // For sell: TAO output / Alpha input
       const expectedPrice =
@@ -213,10 +295,6 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
             : (simulation.tao_amount * unit) / actualInput
 
       if (expectedPrice === null) return null
-
-      // Effective price from actual swap
-      if (stakeEvent.alphaAmount === 0n) return null
-      const effectivePrice = (stakeEvent.taoAmount * unit) / stakeEvent.alphaAmount
 
       // Step 5: Calculate slippage based on output amounts
       // For buy (taoToAlpha): compare alpha output
@@ -250,10 +328,12 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       // })
 
       return {
+        operationType,
+        callType,
+        direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
         expectedPrice,
         effectivePrice,
         slippagePercent,
-        direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
       }
     },
     enabled: !!sapi && !!params,
@@ -322,6 +402,261 @@ const simulateSwapAtBlock = async (
       throw new HistoricalDataUnavailableError()
     }
     throw error
+  }
+}
+
+type DecodedCall = {
+  pallet: string
+  method: string
+  args: unknown
+}
+
+/**
+ * Matches a decoded SubtensorModule call against our target parameters.
+ * Different calls have different argument structures, so we need to check each one.
+ *
+ * @returns true if this call matches our target netuid/hotkey/direction
+ */
+const matchesSubtensorStakeCall = (
+  method: string,
+  args: Record<string, unknown>,
+  targetNetuid: number,
+  targetHotkey: string,
+  direction: "buy" | "sell"
+): boolean => {
+  // For "buy" direction, we're looking for calls that add stake (StakeAdded event)
+  // For "sell" direction, we're looking for calls that remove stake (StakeRemoved event)
+
+  switch (method) {
+    // === Simple add/remove stake ===
+    case "add_stake":
+    case "add_stake_limit":
+      // Only matches "buy" direction
+      // Args: { hotkey, netuid, amount_staked, [limit_price, allow_partial] }
+      if (direction !== "buy") return false
+      return args.netuid === targetNetuid && args.hotkey === targetHotkey
+
+    case "remove_stake":
+    case "remove_stake_limit":
+    case "remove_stake_full_limit":
+      // Only matches "sell" direction
+      // Args: { hotkey, netuid, amount_unstaked, [limit_price, allow_partial] }
+      if (direction !== "sell") return false
+      return args.netuid === targetNetuid && args.hotkey === targetHotkey
+
+    // === Unstake all (no netuid) ===
+    case "unstake_all":
+    case "unstake_all_alpha":
+      // Only matches "sell" direction, but we can't match by netuid
+      // Args: { hotkey }
+      // These unstake from ALL subnets, so we just check the hotkey
+      if (direction !== "sell") return false
+      return args.hotkey === targetHotkey
+
+    // === Move stake (changes hotkey and/or netuid) ===
+    case "move_stake":
+      // Args: { origin_hotkey, destination_hotkey, origin_netuid, destination_netuid, alpha_amount }
+      // Emits StakeRemoved for origin, StakeAdded for destination
+      if (direction === "sell") {
+        return args.origin_netuid === targetNetuid && args.origin_hotkey === targetHotkey
+      } else {
+        return args.destination_netuid === targetNetuid && args.destination_hotkey === targetHotkey
+      }
+
+    // === Transfer stake (changes coldkey, keeps hotkey) ===
+    case "transfer_stake":
+      // Args: { destination_coldkey, hotkey, origin_netuid, destination_netuid, alpha_amount }
+      // Emits StakeRemoved for origin, StakeAdded for destination (same hotkey)
+      if (direction === "sell") {
+        return args.origin_netuid === targetNetuid && args.hotkey === targetHotkey
+      } else {
+        return args.destination_netuid === targetNetuid && args.hotkey === targetHotkey
+      }
+
+    // === Swap stake (changes netuid, keeps coldkey/hotkey) ===
+    case "swap_stake":
+    case "swap_stake_limit":
+      // Args: { hotkey, origin_netuid, destination_netuid, alpha_amount, [limit_price, allow_partial] }
+      // Emits StakeRemoved for origin, StakeAdded for destination
+      if (direction === "sell") {
+        return args.origin_netuid === targetNetuid && args.hotkey === targetHotkey
+      } else {
+        return args.destination_netuid === targetNetuid && args.hotkey === targetHotkey
+      }
+
+    default:
+      return false
+  }
+}
+
+/**
+ * Recursively search through a decoded call tree to find SubtensorModule staking calls.
+ * Handles common wrapper patterns like proxy, batch, multisig, etc.
+ *
+ * @param call - The decoded call to search
+ * @param targetNetuid - The netuid to match
+ * @param targetHotkey - The hotkey to match
+ * @param direction - "buy" for add_stake variants, "sell" for remove_stake variants
+ * @returns The matching SubtensorModule call, or null if not found
+ */
+const findSubtensorStakeCall = (
+  call: DecodedCall | null,
+  targetNetuid: number,
+  targetHotkey: string,
+  direction: "buy" | "sell"
+): (DecodedCall & { method: SubtensorStakeCallType }) | null => {
+  if (!call) return null
+
+  const { pallet, method, args } = call
+
+  // Direct match - check if this is a SubtensorModule staking call
+  if (pallet === "SubtensorModule") {
+    const argsObj = args as Record<string, unknown>
+    if (matchesSubtensorStakeCall(method, argsObj, targetNetuid, targetHotkey, direction)) {
+      return call as DecodedCall & { method: SubtensorStakeCallType }
+    }
+  }
+
+  // Handle wrapper pallets that contain nested calls
+  const argsObj = args as Record<string, unknown>
+
+  // Proxy.proxy, Proxy.proxyAnnounced - has a "call" field
+  if (pallet === "Proxy" && (method === "proxy" || method === "proxy_announced")) {
+    const nestedCall = argsObj.call as DecodedCall | undefined
+    if (nestedCall) {
+      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      if (found) return found
+    }
+  }
+
+  // Utility.batch, Utility.batchAll, Utility.forceBatch - has a "calls" array
+  if (
+    pallet === "Utility" &&
+    (method === "batch" || method === "batch_all" || method === "force_batch")
+  ) {
+    const calls = argsObj.calls as DecodedCall[] | undefined
+    if (calls) {
+      for (const nestedCall of calls) {
+        const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+        if (found) return found
+      }
+    }
+  }
+
+  // Utility.asDerivative, Utility.dispatchAs - has a "call" field
+  if (
+    pallet === "Utility" &&
+    (method === "as_derivative" || method === "dispatch_as" || method === "with_weight")
+  ) {
+    const nestedCall = argsObj.call as DecodedCall | undefined
+    if (nestedCall) {
+      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      if (found) return found
+    }
+  }
+
+  // Multisig.asMulti, Multisig.asMultiThreshold1 - has a "call" field
+  if (pallet === "Multisig" && (method === "as_multi" || method === "as_multi_threshold_1")) {
+    const nestedCall = argsObj.call as DecodedCall | undefined
+    if (nestedCall) {
+      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      if (found) return found
+    }
+  }
+
+  // Scheduler.schedule, Scheduler.scheduleAfter - has a "call" field
+  if (
+    pallet === "Scheduler" &&
+    (method === "schedule" ||
+      method === "schedule_after" ||
+      method === "schedule_named" ||
+      method === "schedule_named_after")
+  ) {
+    const nestedCall = argsObj.call as DecodedCall | undefined
+    if (nestedCall) {
+      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      if (found) return found
+    }
+  }
+
+  // Sudo.sudo, Sudo.sudoAs - has a "call" field
+  if (
+    pallet === "Sudo" &&
+    (method === "sudo" || method === "sudo_as" || method === "sudo_unchecked_weight")
+  ) {
+    const nestedCall = argsObj.call as DecodedCall | undefined
+    if (nestedCall) {
+      const found = findSubtensorStakeCall(nestedCall, targetNetuid, targetHotkey, direction)
+      if (found) return found
+    }
+  }
+
+  return null
+}
+
+/**
+ * Determines the operation type from a SubtensorModule staking call.
+ *
+ * Priority for move_stake/transfer_stake:
+ * 1. change_subnet - if netuid changes (highest priority)
+ * 2. change_validator - if hotkey changes (for move_stake)
+ * 3. transfer - if only coldkey changes (for transfer_stake with same netuid)
+ */
+const getOperationType = (
+  call: DecodedCall & { method: SubtensorStakeCallType }
+): StakingOperationType => {
+  const args = call.args as Record<string, unknown>
+
+  switch (call.method) {
+    // Simple staking
+    case "add_stake":
+      return "stake"
+    case "add_stake_limit":
+      return "stake_limit"
+
+    // Simple unstaking
+    case "remove_stake":
+      return "unstake"
+    case "remove_stake_limit":
+    case "remove_stake_full_limit":
+      return "unstake_limit"
+
+    // Unstake all variants
+    case "unstake_all":
+    case "unstake_all_alpha":
+      return "unstake_all"
+
+    // Move stake - can change both hotkey and netuid
+    case "move_stake": {
+      const originNetuid = args.origin_netuid
+      const destNetuid = args.destination_netuid
+      const originHotkey = args.origin_hotkey
+      const destHotkey = args.destination_hotkey
+
+      // change_subnet has priority over change_validator
+      if (originNetuid !== destNetuid) return "change_subnet"
+      if (originHotkey !== destHotkey) return "change_validator"
+      // Same hotkey and netuid - shouldn't happen but fallback
+      return "unknown"
+    }
+
+    // Transfer stake - changes coldkey, can change netuid
+    case "transfer_stake": {
+      const originNetuid = args.origin_netuid
+      const destNetuid = args.destination_netuid
+
+      if (originNetuid !== destNetuid) return "change_subnet"
+      // Same netuid but different coldkey - this is a transfer of ownership
+      return "transfer"
+    }
+
+    // Swap stake - always changes netuid
+    case "swap_stake":
+    case "swap_stake_limit":
+      return "change_subnet"
+
+    default:
+      return "unknown"
   }
 }
 
