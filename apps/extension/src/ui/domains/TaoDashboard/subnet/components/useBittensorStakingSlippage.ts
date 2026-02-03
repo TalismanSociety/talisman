@@ -1,10 +1,11 @@
-import { toHex } from "@polkadot-api/utils"
+import { fromHex, toHex } from "@polkadot-api/utils"
 import { TAO_DECIMALS } from "@talismn/balances"
+import { blake2b256 } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-
+import { log } from "extension-shared"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
 type SlippageResult = {
@@ -158,6 +159,27 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
         [blockHeight - 1]
       )
 
+      // Debug: Fetch and decode the extrinsic
+      const block = await api.subSend<{ block: { extrinsics: string[] } }>(
+        BITTENSOR_NETWORK_ID,
+        "chain_getBlock",
+        [blockHash]
+      )
+      if (block?.block?.extrinsics) {
+        for (const extHex of block.block.extrinsics) {
+          // Compute extrinsic hash using blake2b256
+          const extBytes = fromHex(extHex as `0x${string}`)
+          const extHash = toHex(blake2b256(extBytes))
+          if (extHash === hash) {
+            // Decode and log the call
+            const decodedCall = decodeCallFromExtrinsic(sapi, extHex as `0x${string}`)
+            // eslint-disable-next-line no-console
+            log.debug("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
+            break
+          }
+        }
+      }
+
       // Step 2: Get block events to find the StakeAdded/StakeRemoved event with actual amounts
       const stakeEvent = await findStakeEventInBlock(sapi, blockHash, netuid, hotkey, direction)
       if (!stakeEvent) return null
@@ -300,5 +322,160 @@ const simulateSwapAtBlock = async (
       throw new HistoricalDataUnavailableError()
     }
     throw error
+  }
+}
+
+/**
+ * Decode the call data from a signed extrinsic.
+ * Extrinsic v4 structure (after compact length):
+ * - 1 byte: version (0x84 for signed v4)
+ * - address: MultiAddress (1 byte variant + 32 bytes for AccountId32)
+ * - signature: MultiSignature (1 byte variant + 64 bytes for Sr25519/Ed25519)
+ * - extra: signed extensions (variable length, decoded based on metadata)
+ * - call: remaining bytes
+ */
+const decodeCallFromExtrinsic = (
+  sapi: ScaleApi,
+  extrinsicHex: `0x${string}`
+): { pallet: string; method: string; args: unknown } | null => {
+  try {
+    const bytes = fromHex(extrinsicHex)
+
+    // Decode compact length prefix - skip past it to get to the extrinsic body
+    let offset = 0
+    const firstByte = bytes[offset]
+    if ((firstByte & 0b11) === 0b00) {
+      // Single byte mode
+      offset += 1
+    } else if ((firstByte & 0b11) === 0b01) {
+      // Two byte mode
+      offset += 2
+    } else if ((firstByte & 0b11) === 0b10) {
+      // Four byte mode
+      offset += 4
+    } else {
+      // Big integer mode - length is in the upper 6 bits + following bytes
+      const numBytes = (firstByte >> 2) + 4
+      offset += 1 + numBytes
+    }
+
+    // Check version byte - 0x84 means signed v4 (0x80 signed flag + 0x04 version)
+    const versionByte = bytes[offset]
+    offset += 1
+
+    const isSigned = (versionByte & 0x80) !== 0
+    const version = versionByte & 0x7f
+
+    if (version !== 4) {
+      return null
+    }
+
+    if (!isSigned) {
+      // Unsigned extrinsic - call data starts immediately after version
+      const callData = bytes.slice(offset)
+      const callDef = sapi.chain.builder.buildDefinition(sapi.chain.lookup.call!)
+      const decoded = callDef.dec(callData)
+      return {
+        pallet: decoded.type,
+        method: decoded.value.type,
+        args: decoded.value.value,
+      }
+    }
+
+    // Signed extrinsic - need to skip address, signature, and extra
+
+    // Address: MultiAddress enum (variant 0 = Id with 32 byte AccountId)
+    const addressVariant = bytes[offset]
+    offset += 1
+    if (addressVariant === 0) {
+      // AccountId32 - 32 bytes
+      offset += 32
+    } else if (addressVariant === 1) {
+      // Index - compact encoded
+      const idxFirstByte = bytes[offset]
+      if ((idxFirstByte & 0b11) === 0b00) offset += 1
+      else if ((idxFirstByte & 0b11) === 0b01) offset += 2
+      else if ((idxFirstByte & 0b11) === 0b10) offset += 4
+      else offset += 1 + (idxFirstByte >> 2) // big integer
+    } else {
+      // Other address types not commonly used
+      // eslint-disable-next-line no-console
+      log.debug("[Slippage Debug] Unsupported address variant:", addressVariant)
+      return null
+    }
+
+    // Signature: MultiSignature enum
+    const sigVariant = bytes[offset]
+    offset += 1
+    if (sigVariant === 0 || sigVariant === 1) {
+      // Ed25519 or Sr25519 - 64 bytes
+      offset += 64
+    } else if (sigVariant === 2) {
+      // Ecdsa - 65 bytes
+      offset += 65
+    } else {
+      // eslint-disable-next-line no-console
+      log.debug("[Slippage Debug] Unsupported signature variant:", sigVariant)
+      return null
+    }
+
+    // Extra (signed extensions) - we need to skip these based on metadata
+    // For Bittensor, the signed extensions are typically:
+    // - CheckMortality (Era): 1 or 2 bytes
+    // - CheckNonce: compact
+    // - ChargeTransactionPayment (tip): compact
+    // - CheckMetadataHash: 1 byte (mode) + optionally 32 bytes (hash)
+
+    // Era (mortality)
+    const eraFirstByte = bytes[offset]
+    if (eraFirstByte === 0) {
+      // Immortal
+      offset += 1
+    } else {
+      // Mortal - 2 bytes
+      offset += 2
+    }
+
+    // Nonce (compact)
+    const nonceFirstByte = bytes[offset]
+    if ((nonceFirstByte & 0b11) === 0b00) offset += 1
+    else if ((nonceFirstByte & 0b11) === 0b01) offset += 2
+    else if ((nonceFirstByte & 0b11) === 0b10) offset += 4
+    else offset += 1 + (nonceFirstByte >> 2)
+
+    // Tip (compact)
+    const tipFirstByte = bytes[offset]
+    if ((tipFirstByte & 0b11) === 0b00) offset += 1
+    else if ((tipFirstByte & 0b11) === 0b01) offset += 2
+    else if ((tipFirstByte & 0b11) === 0b10) offset += 4
+    else offset += 1 + (tipFirstByte >> 2)
+
+    // CheckMetadataHash: 1 byte mode (0 = disabled, 1 = enabled with hash)
+    // Only present if the chain supports it - check if we're still within bounds
+    if (offset < bytes.length) {
+      const metadataMode = bytes[offset]
+      offset += 1
+      if (metadataMode === 1) {
+        // Skip the 32-byte metadata hash
+        offset += 32
+      }
+    }
+
+    // Remaining bytes are the call data
+    const callData = bytes.slice(offset)
+
+    // Decode the call
+    const callDef = sapi.chain.builder.buildDefinition(sapi.chain.lookup.call!)
+    const decoded = callDef.dec(callData)
+
+    return {
+      pallet: decoded.type,
+      method: decoded.value.type,
+      args: decoded.value.value,
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    log.error("[Slippage Debug] Failed to decode extrinsic:", err)
+    return null
   }
 }

@@ -25,20 +25,20 @@ export const TaoDashboardTabs = <T extends string>({
   return (
     <div className={cn("flex h-20 w-full shrink-0 overflow-hidden", className)}>
       {tabs.map((tab) => (
-        <TaoDashboardTab
+        <Tab
           key={tab.value}
           isSelected={selected === tab.value}
           selectedClassName={tab.selectedClassName ?? defaultSelectedClassName}
           onClick={() => onSelect(tab.value)}
         >
           {tab.label}
-        </TaoDashboardTab>
+        </Tab>
       ))}
     </div>
   )
 }
 
-const TaoDashboardTab: FC<
+const Tab: FC<
   PropsWithChildren<{
     isSelected: boolean
     selectedClassName: string

@@ -1,6 +1,7 @@
 import { cn } from "@talismn/util"
-import { type FC, useState } from "react"
-
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { type NavTabConfig, TaoDashboardNavTabs } from "../../shared/TaoDashboardNavTabs"
 import { SubnetPriceChart } from "./SubnetPriceChart"
 import { SubnetTaoFlowChart } from "./SubnetTaoFlowChart"
 
@@ -11,47 +12,32 @@ interface SubnetChartTabsProps {
 
 type ChartTab = "price" | "flow"
 
-export const SubnetChartTabs: FC<SubnetChartTabsProps> = ({ netuid, className }) => {
+export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) => {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<ChartTab>("price")
+
+  const tabs = useMemo<NavTabConfig<ChartTab>[]>(
+    () => [
+      { value: "price", label: t("Price Trend") },
+      { value: "flow", label: t("Tao Flow") },
+    ],
+    [t]
+  )
 
   return (
     <div className={cn("flex flex-col", className)}>
-      {/* Tab Selector */}
-      <div className="mb-4 flex items-center">
-        <div className="flex items-center rounded-lg border border-grey-750 bg-grey-900 p-1">
-          <button
-            type="button"
-            onClick={() => setActiveTab("price")}
-            className={cn(
-              "rounded-md px-4 py-2 font-medium text-sm transition-colors",
-              activeTab === "price"
-                ? "bg-grey-750 text-white"
-                : "text-body-secondary hover:text-body"
-            )}
-          >
-            Price Trend
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("flow")}
-            className={cn(
-              "rounded-md px-4 py-2 font-medium text-sm transition-colors",
-              activeTab === "flow"
-                ? "bg-grey-750 text-white"
-                : "text-body-secondary hover:text-body"
-            )}
-          >
-            Tao Flow
-          </button>
-        </div>
+      <div>
+        <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
 
-      {/* Chart Content */}
-      {activeTab === "price" ? (
-        <SubnetPriceChart netuid={netuid} />
-      ) : (
-        <SubnetTaoFlowChart netuid={netuid} />
-      )}
+      <div className="h-[52rem] overflow-hidden rounded-lg bg-grey-850">
+        {/* Chart Content */}
+        {activeTab === "price" ? (
+          <SubnetPriceChart netuid={netuid} />
+        ) : (
+          <SubnetTaoFlowChart netuid={netuid} />
+        )}
+      </div>
     </div>
   )
 }

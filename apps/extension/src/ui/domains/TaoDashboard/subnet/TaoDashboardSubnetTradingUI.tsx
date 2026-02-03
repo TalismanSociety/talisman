@@ -1,9 +1,9 @@
 import type { FC } from "react"
 
 import { PoweredBySn45 } from "../subnets/TaoDashboardHeader"
-import { SubnetChartTabs } from "./components/SubnetChartTabs"
-import { SubnetRightSidebar } from "./components/SubnetRightSidebar"
+import { SubnetCharts } from "./components/SubnetChartTabs"
 import { SubnetTransactions } from "./components/SubnetTransactions"
+import { TaoDashboardSidebar } from "./components/sidebar/TaoDashboardSidebar"
 import { SwapTxNotifications } from "./swap/SwapTxNotifications"
 import { SwapTxWatcherProvider } from "./swap/SwapTxWatcher"
 import { TaoDashboardSwap } from "./swap/TaoDashboardSwap"
@@ -25,10 +25,10 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
           {/* Left Column - Charts and Trading */}
           <div className="flex min-w-0 flex-1 flex-col gap-6">
             {/* Price Chart with Sentiment Markers */}
-            <SubnetChartTabs netuid={netuid} className="w-full shrink-0" />
+            <SubnetCharts netuid={netuid} className="w-full shrink-0" />
 
             {/* Swap and Transactions row - stretch to fill remaining space */}
-            <div className="flex h-[600px] max-h-[600px] min-h-[600px] w-full flex-1 shrink-0 flex-row gap-6 overflow-hidden">
+            <div className="flex h-[60rem] max-h-[60rem] min-h-[60rem] w-full flex-1 shrink-0 flex-row gap-6 overflow-hidden">
               {/* Swap component */}
               <div className="flex h-full max-h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-grey-850">
                 <TaoDashboardSwap netuid={netuid} />
@@ -42,8 +42,9 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
           </div>
 
           {/* Right Column - Analytics Sidebar */}
-          <div className="h-full w-[380px] shrink-0">
-            <SubnetRightSidebar netuid={netuid} className="h-full" />
+          <div className="h-full w-[38rem] shrink-0">
+            <TaoDashboardSidebar netuid={netuid} />
+            {/* <SubnetRightSidebar netuid={netuid} className="h-full" /> */}
           </div>
         </div>
       </div>

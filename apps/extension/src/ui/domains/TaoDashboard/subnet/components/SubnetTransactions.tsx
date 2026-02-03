@@ -728,8 +728,8 @@ const FieldValueStatus: FC<{ status: TransactionEntry["status"] }> = ({ status }
   const statusConfig = {
     pending: { label: t("Pending"), className: "text-body-secondary" },
     finalizing: { label: t("Finalizing"), className: "text-body-secondary" },
-    confirmed: { label: t("Indexing"), className: "text-body" },
-    indexed: { label: t("Confirmed"), className: "text-body" },
+    confirmed: { label: t("Finalized"), className: "text-body" },
+    indexed: { label: t("Finalized"), className: "text-body" },
     failed: { label: t("Failed"), className: "text-alert-error" },
   }
   const config = statusConfig[status]

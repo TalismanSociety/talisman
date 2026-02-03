@@ -1,7 +1,8 @@
 import { Icon } from "@iconify/react"
 import { cn } from "@talismn/util"
 import { AreaSeries, createChart, type UTCTimestamp } from "lightweight-charts"
-import { type FC, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   useHolderDistribution,
   useSubnetDailyTrend,
@@ -15,6 +16,8 @@ import {
   type WhaleTransaction,
   type WhaleTransactionType,
 } from "../../hooks/useSn45Api"
+import { type NavTabConfig, TaoDashboardNavTabs } from "../../shared/TaoDashboardNavTabs"
+import { TaoDashboardPeriodTabs, type TimePeriod } from "../../shared/TaoDashboardPeriodTabs"
 
 interface SubnetRightSidebarProps {
   netuid: number
@@ -26,7 +29,7 @@ interface SubnetRightSidebarProps {
 // ============================================================================
 
 type TabType = "signals" | "social" | "whale"
-type TimePeriod = "1D" | "1W" | "1M"
+// type TimePeriod = "1D" | "1W" | "1M"
 
 // ============================================================================
 // Utility Functions
@@ -98,60 +101,49 @@ const TabSelector: FC<{
   activeTab: TabType
   onTabChange: (tab: TabType) => void
 }> = ({ activeTab, onTabChange }) => {
-  const tabs: { id: TabType; label: string }[] = [
-    { id: "signals", label: "Signals" },
-    { id: "social", label: "Social Feeds" },
-    { id: "whale", label: "Whale Activity" },
-  ]
+  const { t } = useTranslation()
 
-  return (
-    <div className="flex items-center rounded-full border border-grey-700 bg-grey-900 p-1">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onTabChange(tab.id)}
-          className={cn(
-            "rounded-full px-4 py-2 font-medium text-sm transition-colors",
-            activeTab === tab.id ? "bg-grey-750 text-white" : "text-body-secondary hover:text-body"
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
+  const tabs = useMemo<NavTabConfig<TabType>[]>(
+    () => [
+      { value: "signals", label: t("Signals") },
+      { value: "social", label: t("Social Feeds") },
+      { value: "whale", label: t("Whale Activity") },
+    ],
+    [t]
   )
+
+  return <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={onTabChange} />
 }
 
 // ============================================================================
 // Time Period Selector Component
 // ============================================================================
 
-const TimePeriodSelector: FC<{
-  value: TimePeriod
-  onChange: (period: TimePeriod) => void
-  className?: string
-}> = ({ value, onChange, className }) => {
-  const periods: TimePeriod[] = ["1D", "1W", "1M"]
+// const TimePeriodSelector: FC<{
+//   value: TimePeriod
+//   onChange: (period: TimePeriod) => void
+//   className?: string
+// }> = ({ value, onChange, className }) => {
+//   const periods: TimePeriod[] = ["1D", "1W", "1M"]
 
-  return (
-    <div className={cn("flex items-center rounded-lg bg-grey-800 p-0.5", className)}>
-      {periods.map((period) => (
-        <button
-          key={period}
-          type="button"
-          onClick={() => onChange(period)}
-          className={cn(
-            "rounded-md px-3 py-1 font-medium text-xs transition-colors",
-            value === period ? "bg-grey-600 text-white" : "text-body-secondary hover:text-body"
-          )}
-        >
-          {period}
-        </button>
-      ))}
-    </div>
-  )
-}
+//   return (
+//     <div className={cn("flex items-center rounded-lg bg-grey-800 p-0.5", className)}>
+//       {periods.map((period) => (
+//         <button
+//           key={period}
+//           type="button"
+//           onClick={() => onChange(period)}
+//           className={cn(
+//             "rounded-md px-3 py-1 font-medium text-xs transition-colors",
+//             value === period ? "bg-grey-600 text-white" : "text-body-secondary hover:text-body"
+//           )}
+//         >
+//           {period}
+//         </button>
+//       ))}
+//     </div>
+//   )
+// }
 
 // ============================================================================
 // Sentiment Gauge Component (SVG-based semi-circular fuel gauge)
@@ -298,11 +290,25 @@ const _ProgressBar: FC<{
   )
 }
 
+const ComponentTitleBar: FC<{
+  label: ReactNode
+  period: TimePeriod
+  onPeriodChange: (period: TimePeriod) => void
+}> = ({ label, period, onPeriodChange }) => {
+  return (
+    <div className="flex items-center justify-between">
+      <h3 className="font-medium text-md text-white">{label}</h3>
+      <TaoDashboardPeriodTabs selected={period} onSelect={onPeriodChange} />
+    </div>
+  )
+}
+
 // ============================================================================
 // Trending Sentiment Section
 // ============================================================================
 
 const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
   const [_period, _setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
   const { data: _dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
@@ -332,10 +338,11 @@ const TrendingSentimentSection: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium text-lg text-white">Trending sentiment</h3>
-        {/* <TimePeriodSelector value={period} onChange={setPeriod} /> */}
-      </div>
+      <ComponentTitleBar
+        label={t("Trending sentiment")}
+        period={_period}
+        onPeriodChange={_setPeriod}
+      />
 
       <div className="rounded-xl bg-grey-900 p-5">
         <div className="flex items-stretch gap-6">
@@ -432,6 +439,7 @@ const ComparisonBar: FC<{
 }
 
 const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const { data: stakeEvents, isLoading } = useSubnetStakeEvents(netuid)
 
@@ -508,10 +516,11 @@ const TradeFlowSection: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <ComponentTitleBar label={t("Trade Flow")} period={period} onPeriodChange={setPeriod} />
+      {/* <div className="flex items-center justify-between">
         <h3 className="font-medium text-lg text-white">Trade Flow</h3>
         <TimePeriodSelector value={period} onChange={setPeriod} />
-      </div>
+      </div> */}
 
       <div className="rounded-xl bg-grey-900 p-5">
         <div className="flex gap-6">
@@ -615,6 +624,7 @@ const HOLDER_COLORS = {
 }
 
 const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const { data: positions, isLoading: positionsLoading } = useSubnetPositions(netuid)
@@ -872,10 +882,11 @@ const _HoldersOverviewSection: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <ComponentTitleBar label={t("Holders Overview")} period={period} onPeriodChange={setPeriod} />
+      {/* <div className="flex items-center justify-between">
         <h3 className="font-medium text-lg text-white">Holders Overview</h3>
         <TimePeriodSelector value={period} onChange={setPeriod} />
-      </div>
+      </div> */}
 
       <div className="rounded-xl bg-grey-900 p-5">
         {/* Stats Row */}
@@ -1320,7 +1331,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
   const [activeTab, setActiveTab] = useState<TabType>("signals")
 
   return (
-    <div className={cn("flex flex-col gap-5 rounded-lg bg-grey-850 p-5", className)}>
+    <div className={cn("flex flex-col gap-5 rounded-lg p-5 pt-0", className)}>
       {/* Tab Selector */}
       <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
 
