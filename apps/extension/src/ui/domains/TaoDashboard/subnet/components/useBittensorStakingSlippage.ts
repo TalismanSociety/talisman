@@ -174,7 +174,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
             // Decode and log the call
             const decodedCall = decodeCallFromExtrinsic(sapi, extHex as `0x${string}`)
             // eslint-disable-next-line no-console
-            log.debug("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
+            log.log("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
             break
           }
         }
@@ -400,7 +400,7 @@ const decodeCallFromExtrinsic = (
     } else {
       // Other address types not commonly used
       // eslint-disable-next-line no-console
-      log.debug("[Slippage Debug] Unsupported address variant:", addressVariant)
+      log.warn("[Slippage Debug] Unsupported address variant:", addressVariant)
       return null
     }
 
@@ -415,7 +415,7 @@ const decodeCallFromExtrinsic = (
       offset += 65
     } else {
       // eslint-disable-next-line no-console
-      log.debug("[Slippage Debug] Unsupported signature variant:", sigVariant)
+      log.warn("[Slippage Debug] Unsupported signature variant:", sigVariant)
       return null
     }
 
