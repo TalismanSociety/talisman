@@ -1,8 +1,4 @@
-// ============================================================================
-// Trending Sentiment Section
-// ============================================================================
-
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import {
   useSubnetDailyTrend,
@@ -10,13 +6,13 @@ import {
   useSubnetTokenomics,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
-import { type FC, useMemo, useState } from "react"
+import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SectionTitleBar } from "./shared"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [_period, _setPeriod] = useState<TimePeriod>("1W")
+  const [period, setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
   const { data: _dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
   const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
@@ -35,6 +31,14 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
     return parseFloat(tokenomics.emaTaoFlow) / 2 ** 64 / 1e9
   }, [tokenomics])
 
+  const score = useMemo(() => {
+    return economicsData?.sentimentScore !== undefined
+      ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
+      : 0
+  }, [economicsData])
+
+  const sentimentLabel = useSentimentLabel(score)
+
   if (isLoading) {
     return (
       <div className="rounded-xl bg-grey-900 p-5">
@@ -44,79 +48,44 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
   }
 
   return (
-    <div className="space-y-4">
-      <SectionTitleBar
-        label={t("Trending sentiment")}
-        period={_period}
-        onPeriodChange={_setPeriod}
-      />
+    <div>
+      <SectionTitleBar label={t("Trending sentiment")} period={period} onPeriodChange={setPeriod} />
 
-      <div className="rounded-xl bg-grey-900 p-5">
-        <div className="flex items-stretch gap-6">
+      <div className="h-[20rem] rounded-lg bg-grey-900 px-12 py-8">
+        <div className="flex h-full items-stretch gap-14">
           {/* Left: Gauge */}
-          <div className="flex flex-col items-center">
-            <span className="mb-1 text-body-secondary text-xs">Sentiment Score</span>
-            <SentimentGauge
-              score={
-                economicsData?.sentimentScore !== undefined
-                  ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
-                  : 0
-              }
-              // TODO translate
-              label={getSentimentLabel(
-                economicsData?.sentimentScore !== undefined
-                  ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
-                  : 0
-              )}
-            />
+          <div className="flex h-full flex-col items-center justify-between">
+            <div className="mb-1 text-body-inactive text-xs">{t("Sentiment Score")}</div>
+            <SentimentGauge score={score} className="h-[103px] w-[118px]" />
+            <div>{sentimentLabel}</div>
           </div>
 
           {/* Vertical Divider */}
-          <div className="w-px self-stretch bg-grey-700" />
+          <div className="w-px self-stretch bg-grey-800" />
 
           {/* Right: Metrics */}
-          <div className="flex flex-1 flex-col justify-center space-y-4">
-            <div>
-              <span className="text-body-secondary text-xs">Alpha Flow</span>
-              <div className="flex items-center gap-1">
-                <span
-                  className={cn(
-                    "font-bold text-lg",
-                    alphaFlow >= 0 ? "text-green" : "text-red-500"
-                  )}
-                >
-                  {formatCompactNumber(Math.abs(alphaFlow))}α
-                </span>
-                <Icon
-                  icon={alphaFlow >= 0 ? "mdi:arrow-top-right" : "mdi:arrow-bottom-right"}
-                  className={cn("size-5", alphaFlow >= 0 ? "text-green" : "text-red-500")}
-                />
-              </div>
-            </div>
-
-            <div>
-              <span className="text-body-secondary text-xs">EMA</span>
-              <div className={cn("font-bold text-lg", EMA >= 0 ? "text-green" : "text-red-500")}>
-                {EMA >= 0 ? "+" : ""}
-                {EMA.toFixed(2)}
-              </div>
-            </div>
-
-            <div>
-              {/* <span className="text-body-secondary text-xs">Combined Score</span>
-              <div
-                className={cn(
-                  "font-bold text-2xl",
-                  combineScore === "Bullish"
-                    ? "text-green"
-                    : combineScore === "Bearish"
-                      ? "text-red-500"
-                      : "text-white"
+          <div className="flex h-full flex-col items-start justify-between">
+            <SentimentField
+              label={t("Alpha Flow")}
+              className={cn(alphaFlow >= 0 ? "text-green" : "text-red-500")}
+            >
+              <div className="flex items-center gap-6">
+                <span>{formatCompactNumber(Math.abs(alphaFlow))}α</span>
+                {alphaFlow >= 0 ? (
+                  <ArrowUpRightIcon className="size-8" />
+                ) : (
+                  <ArrowDownRightIcon className="size-8" />
                 )}
-              >
-                {combineScore}
-              </div> */}
-            </div>
+              </div>
+            </SentimentField>
+            <SentimentField
+              label={t("EMA")}
+              className={cn(EMA >= 0 ? "text-green" : "text-red-500")}
+            >
+              {EMA >= 0 ? "+" : ""}
+              {EMA.toFixed(2)}
+            </SentimentField>
+            <SentimentField label={t("Combine Score")}>TODO</SentimentField>
           </div>
         </div>
       </div>
@@ -124,123 +93,66 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
   )
 }
 
-// ============================================================================
-// Sentiment Gauge Component (SVG-based semi-circular fuel gauge)
-// ============================================================================
+const SentimentField: FC<PropsWithChildren<{ label: ReactNode; className?: string }>> = ({
+  label,
+  children,
+  className,
+}) => (
+  <div className={cn("flex flex-col gap-2")}>
+    <div className="text-body-inactive text-xs">{label}</div>
+    <div className={cn("text-md", className)}>{children}</div>
+  </div>
+)
 
-const SentimentGauge: FC<{
-  score: number // 0-100
-  label: string
-}> = ({ score, label }) => {
-  // Calculate needle rotation: -90deg (left/red) to 90deg (right/green)
+const SentimentGauge: FC<{ score: number; className?: string }> = ({ score, className }) => {
   const needleRotation = (score / 100) * 180 - 90
 
-  // Designed for compact in-panel display: fits in card, not full page
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: 120,
-        padding: "0 4px",
-      }}
+    <svg
+      width="118"
+      height="103"
+      viewBox="0 0 118 103"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
     >
-      {/* Title */}
-      {/* <div
-        style={{
-          color: '#808080',
-          fontSize: 11,
-          fontWeight: 400,
-          marginBottom: 4,
-          letterSpacing: '0.5px',
-          lineHeight: 1,
-        }}
+      {/* outer gradient shape */}
+      <path
+        d="M112.425 71.6381C114.629 72.1594 116.853 70.7968 117.22 68.5622C118.433 61.1737 118.232 53.6087 116.611 46.2731C114.695 37.6005 110.846 29.4724 105.351 22.4949C99.8553 15.5175 92.8555 9.87071 84.8734 5.9758C76.8913 2.0809 68.1329 0.038366 59.2513 0.00053521C50.3697 -0.0372955 41.5942 1.93055 33.5792 5.75732C25.5642 9.58408 18.5166 15.171 12.962 22.1014C7.40744 29.0318 3.48919 37.1269 1.49952 45.7828C-0.183427 53.1043 -0.449851 60.6673 0.700682 68.0659C1.04865 70.3036 3.26099 71.6851 5.46908 71.1825C7.67717 70.68 9.04238 68.4835 8.71953 66.2421C7.82792 60.0519 8.08544 53.738 9.49175 47.6199C11.2049 40.1671 14.5785 33.1972 19.361 27.2301C24.1436 21.263 30.2116 16.4526 37.1125 13.1577C44.0135 9.86288 51.5693 8.16855 59.2164 8.20112C66.8635 8.23369 74.4045 9.99233 81.2772 13.3459C88.1498 16.6994 94.1766 21.5613 98.9082 27.5689C103.64 33.5766 106.954 40.5749 108.603 48.0421C109.958 54.1719 110.161 60.4878 109.217 66.6702C108.875 68.9088 110.221 71.1168 112.425 71.6381Z"
+        fill="url(#paint0_linear_3288_4495)"
+      />
+      {/* central shape including needle */}
+      <g transform={`rotate(${needleRotation}, 59, 59)`}>
+        <path
+          d="M58.6179 4.30188C58.9746 3.52467 60.0796 3.52467 60.4363 4.30188L68.1443 21.0988C85.2611 25.2139 97.9812 40.6206 97.9812 59.0001C97.9811 80.5293 80.528 97.9825 58.9988 97.9825C37.4698 97.9823 20.0174 80.5291 20.0173 59.0001C20.0173 40.2021 33.323 24.5125 51.03 20.8341L58.6179 4.30188Z"
+          fill="#262626"
+        />
+      </g>
+      <text
+        x="59"
+        y="59"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="#fff"
+        fontSize="22"
+        fontWeight="700"
       >
-        Sentiment
-      </div> */}
-
-      {/* Gauge SVG Container */}
-      <div style={{ width: 160, height: 150, position: "relative" }}>
-        <svg
-          viewBox="0 0 100 68"
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "block",
-          }}
+        {Math.round(score)}
+      </text>
+      <defs>
+        <linearGradient
+          id="paint0_linear_3288_4495"
+          x1="116.42"
+          y1="60.5803"
+          x2="4.21428"
+          y2="60.5803"
+          gradientUnits="userSpaceOnUse"
         >
-          <defs>
-            <linearGradient id="gaugeGradientMini" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#e63946" />
-              <stop offset="25%" stopColor="#f4a261" />
-              <stop offset="50%" stopColor="#e9c46a" />
-              <stop offset="75%" stopColor="#a7c957" />
-              <stop offset="100%" stopColor="#2a9d3f" />
-            </linearGradient>
-            <radialGradient id="ballGradientMini" cx="50%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="#444" />
-              <stop offset="100%" stopColor="#222" />
-            </radialGradient>
-            <filter id="dialShadowMini" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow
-                dx="0"
-                dy="2"
-                stdDeviation="2"
-                floodColor="#000000"
-                floodOpacity="0.45"
-              />
-            </filter>
-          </defs>
-          {/* Half-arc (gauge) */}
-          <path
-            d="M 13 53 A 37 37 0 0 1 87 53"
-            fill="none"
-            stroke="url(#gaugeGradientMini)"
-            strokeWidth="9"
-            strokeLinecap="round"
-          />
-          {/* Needle - wide pointer */}
-          <g transform={`rotate(${needleRotation}, 50, 53)`}>
-            <polygon points="50,20 44,53 56,53" fill="#2d2d2d" />
-          </g>
-          {/* Center dial ball with drop shadow */}
-          <circle cx="50" cy="53" r="20" fill="#2d2d2d" filter="url(#dialShadowMini)" />
-          <circle cx="50" cy="53" r="20" fill="url(#ballGradientMini)" />
-          {/* Score number */}
-          <text
-            x="50"
-            y="57"
-            textAnchor="middle"
-            fill="#fff"
-            fontSize="17"
-            fontWeight="700"
-            fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
-            style={{ letterSpacing: "-1px" }}
-          >
-            {Math.round(score)}
-          </text>
-        </svg>
-      </div>
-      {/* Sentiment Label */}
-      <div
-        style={{
-          color: "#fff",
-          fontSize: 15,
-          fontWeight: 400,
-          lineHeight: "21px",
-          marginTop: 0,
-          textAlign: "center",
-          width: "100%",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-        title={label}
-      >
-        {label}
-      </div>
-    </div>
+          <stop stopColor="#6CFC69" />
+          <stop offset="1" stopColor="#FD4848" />
+        </linearGradient>
+      </defs>
+    </svg>
   )
 }
 
@@ -251,16 +163,20 @@ const formatCompactNumber = (num: number): string => {
   return num.toFixed(0)
 }
 
-const getSentimentLabel = (score: number) => {
-  if (score >= 80) {
-    return "Very Bullish"
-  } else if (score >= 60) {
-    return "Bullish"
-  } else if (score >= 40) {
-    return "Neutral"
-  } else if (score >= 20) {
-    return "Bearish"
-  } else {
-    return "Very Bearish"
-  }
+const useSentimentLabel = (score: number) => {
+  const { t } = useTranslation()
+
+  return useMemo(() => {
+    if (score >= 80) {
+      return t("Very Bullish")
+    } else if (score >= 60) {
+      return t("Bullish")
+    } else if (score >= 40) {
+      return t("Neutral")
+    } else if (score >= 20) {
+      return t("Bearish")
+    } else {
+      return t("Very Bearish")
+    }
+  }, [score, t])
 }
