@@ -1,6 +1,6 @@
 import { cn } from "@talismn/util"
 import { useSubnetDailyTrend, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import type { FC } from "react"
+import { type FC, type PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { formatTimeAgo } from "./shared"
 
@@ -8,52 +8,48 @@ export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => (
   <SocialFeedsSection netuid={netuid} />
 )
 
-// ============================================================================
-// Social Feeds Section
-// ============================================================================
-
 const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
-  const { data: tweets, isLoading: tweetsLoading } = useSubnetTweets(netuid, 20)
-  const { data: dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
+  // const isLoading = tweetsLoading || trendLoading
 
-  const isLoading = tweetsLoading || trendLoading
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex flex-col gap-3">
+  //       <div className="h-12 animate-pulse rounded-lg bg-grey-800" />
+  //       {Array.from({ length: 3 }).map((_, i) => (
+  //         // biome-ignore lint/suspicious/noArrayIndexKey: static list
+  //         <div key={i} className="h-24 animate-pulse rounded-lg bg-grey-800" />
+  //       ))}
+  //     </div>
+  //   )
+  // }
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="h-12 animate-pulse rounded-lg bg-grey-800" />
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static list
-          <div key={i} className="h-24 animate-pulse rounded-lg bg-grey-800" />
-        ))}
-      </div>
-    )
-  }
+  // const sentimentSummary = dailyTrend?.reduce(
+  //   (acc, day) => ({
+  //     total: acc.total + day.total,
+  //     veryBullish: acc.veryBullish + day.veryBullish,
+  //     bullish: acc.bullish + day.bullish,
+  //     neutral: acc.neutral + day.neutral,
+  //     bearish: acc.bearish + day.bearish,
+  //     veryBearish: acc.veryBearish + day.veryBearish,
+  //   }),
+  //   { total: 0, veryBullish: 0, bullish: 0, neutral: 0, bearish: 0, veryBearish: 0 }
+  // )
 
-  const sentimentSummary = dailyTrend?.reduce(
-    (acc, day) => ({
-      total: acc.total + day.total,
-      veryBullish: acc.veryBullish + day.veryBullish,
-      bullish: acc.bullish + day.bullish,
-      neutral: acc.neutral + day.neutral,
-      bearish: acc.bearish + day.bearish,
-      veryBearish: acc.veryBearish + day.veryBearish,
-    }),
-    { total: 0, veryBullish: 0, bullish: 0, neutral: 0, bearish: 0, veryBearish: 0 }
-  )
-
-  const sentimentScore = sentimentSummary?.total
-    ? (sentimentSummary.veryBullish * 2 +
-        sentimentSummary.bullish * 1 +
-        sentimentSummary.bearish * -1 +
-        sentimentSummary.veryBearish * -2) /
-      sentimentSummary.total
-    : 0
+  // const sentimentScore = sentimentSummary?.total
+  //   ? (sentimentSummary.veryBullish * 2 +
+  //       sentimentSummary.bullish * 1 +
+  //       sentimentSummary.bearish * -1 +
+  //       sentimentSummary.veryBearish * -2) /
+  //     sentimentSummary.total
+  //   : 0
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col rounded-lg bg-grey-900">
       {/* Sentiment Score Bar */}
-      <div className="flex items-center justify-between rounded-lg bg-grey-800/50 px-4 py-3">
+      <SentimentSummary netuid={netuid} />
+      <Separator />
+      <TweetsList netuid={netuid} />
+      {/* <div className="flex items-center justify-between rounded-lg bg-grey-800/50 px-4 py-3">
         <div className="flex items-center gap-3">
           <span className="text-body-secondary text-xs">30-Day Score</span>
           <span className="text-grey-600 text-xs">({sentimentSummary?.total ?? 0} posts)</span>
@@ -71,10 +67,10 @@ const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
           {sentimentScore >= 0 ? "+" : ""}
           {sentimentScore.toFixed(2)}
         </div>
-      </div>
+      </div> */}
 
       {/* Tweet List */}
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
+      {/* <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
         {tweets?.slice(0, 8).map((tweet) => (
           <a
             key={tweet.id}
@@ -117,8 +113,222 @@ const SocialFeedsSection: FC<{ netuid: number }> = ({ netuid }) => {
         {(!tweets || tweets.length === 0) && (
           <div className="py-4 text-center text-body-secondary text-sm">No posts found</div>
         )}
+      </div> */}
+    </div>
+  )
+}
+
+const getSentimentSummary = (dailyTrend: NonNullable<DailyTrendData>) => {
+  return dailyTrend.reduce(
+    (acc, day) => ({
+      total: acc.total + day.total,
+      veryBullish: acc.veryBullish + day.veryBullish,
+      bullish: acc.bullish + day.bullish,
+      neutral: acc.neutral + day.neutral,
+      bearish: acc.bearish + day.bearish,
+      veryBearish: acc.veryBearish + day.veryBearish,
+    }),
+    { total: 0, veryBullish: 0, bullish: 0, neutral: 0, bearish: 0, veryBearish: 0 }
+  )
+}
+
+type SentimentSummaryData = ReturnType<typeof getSentimentSummary>
+
+type DailyTrendData = ReturnType<typeof useSubnetDailyTrend>["data"]
+
+const SentimentSummary: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
+
+  const { data: dailyTrend, isLoading } = useSubnetDailyTrend(netuid)
+
+  const sentimentSummary = useMemo(() => getSentimentSummary(dailyTrend || []), [dailyTrend])
+
+  if (isLoading) return <SentimentSummarySkeleton />
+
+  return (
+    <div className="flex h-[11.6rem] flex-col justify-between gap-10 px-12 py-10">
+      <div className="flex h-[2.6rem] w-full shrink-0 items-center justify-between overflow-hidden">
+        <div className="text-md">{t("Market Sentiment")}</div>
+        <div>
+          <SummarySentimentBadge summary={sentimentSummary} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-5">
+        <SentimentSummaryBar summary={sentimentSummary} />
+        <div className="flex h-8 w-full shrink-0 items-center justify-between overflow-hidden text-body-disabled text-xs">
+          <div>{t("Bearish")}</div>
+          <div>{t("Bullish")}</div>
+        </div>
       </div>
     </div>
+  )
+}
+
+const SentimentSummarySkeleton = () => {
+  return (
+    <div className="flex h-[11.6rem] flex-col justify-between gap-10 px-12 py-10">
+      <div className="flex h-[2.6rem] w-full shrink-0 items-center justify-between overflow-hidden">
+        <div className="text-md">
+          <Skeleton className="w-[15rem]" />
+        </div>
+        <div>
+          <Skeleton className="h-12 w-[6rem] rounded-full" />
+        </div>
+      </div>
+      <div className="flex flex-col gap-5">
+        <Skeleton className="h-2 w-full rounded-full" />
+        <div className="flex h-8 w-full shrink-0 items-center justify-between overflow-hidden text-body-disabled text-xs">
+          <div>
+            <Skeleton className="w-[5rem]" />
+          </div>
+          <div>
+            <Skeleton className="w-[5rem]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Separator = () => <div className="h-px bg-grey-800"></div>
+
+const SummarySentimentBadge: FC<{ summary: SentimentSummaryData }> = ({ summary }) => {
+  const sentiment = useMemo<"bullish" | "bearish" | "neutral">(() => {
+    const bullish = summary.bullish + summary.veryBullish * 1.5
+    const bearish = summary.bearish + summary.veryBearish * 1.5
+    const neutral = summary.neutral
+
+    if (bullish > bearish + neutral) return "bullish"
+    if (bearish > bullish + neutral) return "bearish"
+    return "neutral"
+  }, [summary])
+
+  return <SentimentBadge sentiment={sentiment} />
+}
+
+type Sentiment = "very-bearish" | "bearish" | "neutral" | "bullish" | "very-bullish"
+
+const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
+  const { t } = useTranslation()
+
+  const label = useMemo(() => {
+    switch (sentiment) {
+      case "very-bearish":
+        return t("Very Bearish")
+      case "bearish":
+        return t("Bearish")
+      case "neutral":
+        return t("Neutral")
+      case "bullish":
+        return t("Bullish")
+      case "very-bullish":
+        return t("Very Bullish")
+    }
+  }, [sentiment, t])
+
+  const className = useMemo(() => {
+    switch (sentiment) {
+      case "very-bearish":
+      case "bearish":
+        return "bg-sell/10 text-sell"
+      case "neutral":
+        return "bg-grey-600 text-white"
+      case "very-bullish":
+      case "bullish":
+        return "bg-buy/10 text-buy"
+    }
+  }, [sentiment])
+
+  return (
+    <div className={cn("flex h-12 items-center rounded-full px-5 text-xs", className)}>{label}</div>
+  )
+}
+
+const SentimentSummaryBar: FC<{ summary: SentimentSummaryData }> = ({ summary }) => {
+  const [bearishPercent, neutralPercent, bullishPercent] = useMemo(() => {
+    if (summary.total === 0) return [false, 0, 100, 0]
+    const bearish = Math.round(((summary.bearish + summary.veryBearish) / summary.total) * 100)
+    const neutral = Math.round((summary.neutral / summary.total) * 100)
+    const bullish = 100 - bearish - neutral
+    return [bearish, neutral, bullish]
+  }, [summary])
+
+  return (
+    <div className="flex h-2 w-full shrink-0 overflow-hidden rounded-full">
+      {!!bearishPercent && (
+        <div className="h-full bg-sell" style={{ width: `${bearishPercent}%` }}></div>
+      )}
+      {!!neutralPercent && (
+        <div className="h-full bg-grey-400" style={{ width: `${neutralPercent}%` }}></div>
+      )}
+      {!!bullishPercent && (
+        <div className="h-full bg-buy" style={{ width: `${bullishPercent}%` }}></div>
+      )}
+    </div>
+  )
+}
+
+type TweetsData = ReturnType<typeof useSubnetTweets>["data"]
+type Tweet = NonNullable<TweetsData>[number]
+
+const TweetsList: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
+  const { data: tweets } = useSubnetTweets(netuid, 20)
+
+  return (
+    <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-10">
+      {tweets?.slice(0, 8).map((tweet) => (
+        <>
+          <TweetCard key={tweet.id} tweet={tweet} />
+          <Separator />
+        </>
+      ))}
+      {(!tweets || tweets.length === 0) && (
+        <div className="py-4 text-center text-body-secondary text-sm">{t("No posts found")}</div>
+      )}
+    </div>
+  )
+}
+
+const TweetCard = ({ tweet }: { tweet: Tweet }) => {
+  return (
+    <a
+      key={tweet.id}
+      href={tweet.url || `https://twitter.com/i/status/${tweet.id}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col gap-3 rounded-lg p-4 transition-colors hover:bg-grey-800"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          {tweet.author.profileImage ? (
+            <img
+              src={tweet.author.profileImage}
+              alt={tweet.author.name}
+              className="size-12 rounded-full"
+            />
+          ) : (
+            <div className="flex size-8 items-center justify-center rounded-full bg-grey-700 font-bold text-sm">
+              {tweet.author.screenName?.[0]?.toUpperCase() ?? "?"}
+            </div>
+          )}
+          <span className="text-body-secondary text-sm">@{tweet.author.screenName}</span>
+        </div>
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-1 font-medium text-xs",
+            getSentimentColor(tweet.sentiment)
+          )}
+        >
+          <SentimentLabel sentiment={tweet.sentiment} />
+        </span>
+      </div>
+      <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>
+      <div className="flex items-center justify-between text-grey-600 text-sm">
+        <span>{formatTimeAgo(tweet.createdAt)}</span>
+        <span className="opacity-0 transition-opacity group-hover:opacity-100">View →</span>
+      </div>
+    </a>
   )
 }
 
@@ -173,3 +383,12 @@ const SentimentLabel: FC<{ sentiment: string }> = ({ sentiment }) => {
 //     return "Very Bearish"
 //   }
 // }
+
+const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
+  <div
+    className={cn(
+      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
+      className
+    )}
+  />
+)
