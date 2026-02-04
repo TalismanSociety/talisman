@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
-import { SubnetTransactionModal } from "./SubnetTransactionModal"
+import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
 import type { TransactionEntry } from "./types"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
@@ -48,7 +48,7 @@ export const SubnetTransactions: FC<{
     <div className={cn("flex size-full flex-col overflow-hidden bg-grey-850", className)}>
       <TaoDashboardTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       <TransactionsList netuid={netuid} activeTab={activeTab} />
-      <SubnetTransactionModal netuid={netuid} />
+      <SubnetStakingOperationModal netuid={netuid} />
     </div>
   )
 }

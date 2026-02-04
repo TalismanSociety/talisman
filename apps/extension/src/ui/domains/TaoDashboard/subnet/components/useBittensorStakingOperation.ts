@@ -46,7 +46,7 @@ export type MatchedCall = {
   args: Record<string, unknown>
 }
 
-export type SlippageResult = {
+export type StakingOperationResult = {
   /** The type of staking operation that was performed */
   operationType: StakingOperationType
   /** The SubtensorModule call method name */
@@ -57,8 +57,6 @@ export type SlippageResult = {
   expectedPrice?: bigint
   /** The effective price (TAO per Alpha) based on actual swap, scaled by 10^9. Only available for stake/unstake operations. */
   effectivePrice?: bigint
-  /** Slippage as a percentage (positive = got less than expected, negative = got more than expected). Only available for stake/unstake operations. */
-  slippagePercent?: number
   /** The matched SubtensorModule call from the extrinsic, for display purposes */
   matchedCall?: MatchedCall
 }
@@ -147,7 +145,7 @@ const findStakeEventInBlock = async (
   }
 }
 
-type UseSlippageParams = {
+type UseStakingOperationParams = {
   /** Transaction hash */
   hash: string
   /** Block height where the transaction was included */
@@ -161,7 +159,7 @@ type UseSlippageParams = {
 }
 
 /**
- * Hook to compute slippage for an included transaction.
+ * Hook to compute staking operation details for an included transaction.
  *
  * Slippage is computed by comparing:
  * 1. Expected price: Simulated swap at the previous block (what user expected)
@@ -169,12 +167,12 @@ type UseSlippageParams = {
  *
  * @param params - Transaction details including netuid, hotkey, and valueIn to identify the correct staking call
  */
-export const useBittensorStakingSlippage = (params: UseSlippageParams | null) => {
+export const useBittensorStakingOperation = (params: UseStakingOperationParams | null) => {
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
 
   return useQuery({
     queryKey: [
-      "useBittensorStakingSlippage",
+      "useBittensorStakingOperation",
       sapi?.id,
       params?.hash,
       params?.blockHeight,
@@ -182,7 +180,7 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
       params?.hotkey,
       params?.direction,
     ],
-    queryFn: async (): Promise<SlippageResult | null> => {
+    queryFn: async (): Promise<StakingOperationResult | null> => {
       if (!sapi || !params) return null
 
       // We need the block height to query historical data
@@ -323,44 +321,12 @@ export const useBittensorStakingSlippage = (params: UseSlippageParams | null) =>
 
       if (expectedPrice === null) return null
 
-      // Step 5: Calculate slippage based on output amounts
-      // For buy (taoToAlpha): compare alpha output
-      // For sell (alphaToTao): compare tao output
-      const expectedOutput = direction === "buy" ? simulation.alpha_amount : simulation.tao_amount
-      const actualOutput = direction === "buy" ? stakeEvent.alphaAmount : stakeEvent.taoAmount
-
-      if (expectedOutput === 0n) return null
-
-      // Slippage = (expected - actual) / expected * 100
-      // Positive = got less than expected (bad), Negative = got more than expected (good)
-      const slippagePercent = (Number(expectedOutput - actualOutput) / Number(expectedOutput)) * 100
-
-      // Debug logging
-      // eslint-disable-next-line no-console
-      // console.log("[Slippage Debug]", {
-      //   direction,
-      //   blockHeight,
-      //   actualInput: actualInput.toString(),
-      //   simulation: {
-      //     tao_amount: simulation.tao_amount.toString(),
-      //     alpha_amount: simulation.alpha_amount.toString(),
-      //   },
-      //   event: {
-      //     taoAmount: stakeEvent.taoAmount.toString(),
-      //     alphaAmount: stakeEvent.alphaAmount.toString(),
-      //   },
-      //   expectedOutput: expectedOutput.toString(),
-      //   actualOutput: actualOutput.toString(),
-      //   slippagePercent,
-      // })
-
       return {
         operationType,
         callType,
         direction: direction === "buy" ? "taoToAlpha" : "alphaToTao",
         expectedPrice,
         effectivePrice,
-        slippagePercent,
         matchedCall,
       }
     },

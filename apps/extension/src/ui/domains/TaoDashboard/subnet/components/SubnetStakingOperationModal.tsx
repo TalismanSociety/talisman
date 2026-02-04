@@ -20,8 +20,8 @@ import type { TransactionEntry } from "./types"
 import {
   type MatchedCall,
   type StakingOperationType,
-  useBittensorStakingSlippage,
-} from "./useBittensorStakingSlippage"
+  useBittensorStakingOperation,
+} from "./useBittensorStakingOperation"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
 
@@ -30,7 +30,7 @@ import { useTransactionModal } from "./useTransactionModal"
  * @param param0
  * @returns
  */
-export const SubnetTransactionModal: FC<{
+export const SubnetStakingOperationModal: FC<{
   netuid: number
 }> = ({ netuid }) => {
   const { isOpen, args: transaction, close } = useTransactionModal()
@@ -243,7 +243,7 @@ const SlippageFields: FC<{
     }
   }, [transaction, netuid])
 
-  const { data: slippage, isLoading, isError, error } = useBittensorStakingSlippage(slippageParams)
+  const { data: slippage, isLoading, isError, error } = useBittensorStakingOperation(slippageParams)
 
   useEffect(() => {
     log.log("Slippage data:", { slippage, isLoading, error })
@@ -264,9 +264,26 @@ const SlippageFields: FC<{
 
   const formatSlippage = (percent: number | null | undefined): string => {
     if (percent === null || percent === undefined) return ""
+    if (percent === 0) return "0%"
     const sign = percent > 0 ? "+" : ""
     return `${sign}${percent.toFixed(4)}%`
   }
+
+  // Compute slippage from expected and effective prices
+  // Slippage = (expected - effective) / expected * 100
+  // Positive = got less than expected (bad), Negative = got more than expected (good)
+  const slippagePercent = useMemo(() => {
+    if (!slippage?.expectedPrice || !slippage?.effectivePrice) return undefined
+    if (slippage.expectedPrice === 0n) return undefined
+    // For price-based slippage: higher effective price means worse deal for buyer
+    // Expected price = what user expected to pay per Alpha
+    // Effective price = what user actually paid per Alpha
+    // If effectivePrice > expectedPrice, user paid more (positive slippage = bad)
+    return (
+      (Number(slippage.effectivePrice - slippage.expectedPrice) / Number(slippage.expectedPrice)) *
+      100
+    )
+  }, [slippage?.expectedPrice, slippage?.effectivePrice])
 
   const formatOperationType = (opType: StakingOperationType): string => {
     const labels: Record<StakingOperationType, string> = {
@@ -347,15 +364,15 @@ const SlippageFields: FC<{
         ) : !canComputeSlippage ? (
           <FieldNA />
         ) : slippage ? (
-          slippage.slippagePercent !== undefined ? (
+          slippagePercent !== undefined ? (
             <div
               className={cn(
                 "text-body",
-                slippage.slippagePercent > 0 && "text-alert-error",
-                slippage.slippagePercent < 0 && "text-green"
+                slippagePercent > 0 && "text-alert-error",
+                slippagePercent < 0 && "text-green"
               )}
             >
-              {formatSlippage(slippage.slippagePercent)}
+              {formatSlippage(slippagePercent)}
             </div>
           ) : (
             <FieldNA />
