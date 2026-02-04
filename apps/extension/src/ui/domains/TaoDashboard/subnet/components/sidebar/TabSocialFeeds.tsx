@@ -1,8 +1,9 @@
+import { DistanceToNow } from "@talisman/components/DistanceToNow"
+import { ArrowRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetDailyTrend, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { type FC, type PropsWithChildren, useMemo } from "react"
+import { type FC, type PropsWithChildren, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { formatTimeAgo } from "./shared"
 
 export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => (
   <div className="flex w-full flex-col overflow-hidden rounded-lg bg-grey-900">
@@ -100,14 +101,14 @@ const SummarySentimentBadge: FC<{ summary: SentimentSummaryData }> = ({ summary 
   return <SentimentBadge sentiment={sentiment} />
 }
 
-type Sentiment = "very-bearish" | "bearish" | "neutral" | "bullish" | "very-bullish"
+type Sentiment = "very_bearish" | "bearish" | "neutral" | "bullish" | "very_bullish"
 
 const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
   const { t } = useTranslation()
 
   const label = useMemo(() => {
     switch (sentiment) {
-      case "very-bearish":
+      case "very_bearish":
         return t("Very Bearish")
       case "bearish":
         return t("Bearish")
@@ -115,21 +116,26 @@ const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
         return t("Neutral")
       case "bullish":
         return t("Bullish")
-      case "very-bullish":
+      case "very_bullish":
         return t("Very Bullish")
+      default:
+        return t("Unknown")
     }
   }, [sentiment, t])
 
   const className = useMemo(() => {
     switch (sentiment) {
-      case "very-bearish":
+      case "very_bearish":
       case "bearish":
         return "bg-sell/10 text-sell"
-      case "neutral":
-        return "bg-grey-600 text-white"
-      case "very-bullish":
+
+      case "very_bullish":
       case "bullish":
         return "bg-buy/10 text-buy"
+
+      // case "neutral":
+      default:
+        return "bg-body-secondary/10 text-body-secondary"
     }
   }, [sentiment])
 
@@ -167,10 +173,18 @@ type Tweet = NonNullable<TweetsData>[number]
 
 const TweetsList: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const { data: tweets } = useSubnetTweets(netuid, 20)
+  const { data: tweets, isLoading: isLoadingTweets } = useSubnetTweets(netuid, 20)
+
+  // TODO delete
+  const [isLoadingToggle, setIsLoading] = useState(false)
+
+  const isLoading = isLoadingTweets || isLoadingToggle
 
   return (
-    <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-10">
+    <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
+      <button type="button" onClick={() => setIsLoading((prev) => !prev)}>
+        isLoading: {isLoading.toString()}
+      </button>
       {tweets?.slice(0, 8).map((tweet, i, arr) => (
         <>
           <TweetCard key={tweet.id} tweet={tweet} />
@@ -191,7 +205,7 @@ const TweetCard = ({ tweet }: { tweet: Tweet }) => {
       href={tweet.url || `https://twitter.com/i/status/${tweet.id}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col gap-3 rounded-lg p-4 transition-colors hover:bg-grey-800"
+      className="group flex flex-col gap-6 rounded p-6 transition-colors hover:bg-grey-800"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
@@ -206,77 +220,65 @@ const TweetCard = ({ tweet }: { tweet: Tweet }) => {
               {tweet.author.screenName?.[0]?.toUpperCase() ?? "?"}
             </div>
           )}
-          <span className="text-body-secondary text-sm">@{tweet.author.screenName}</span>
+          <span className="text-base text-body">@{tweet.author.screenName}</span>
         </div>
-        <span
-          className={cn(
-            "rounded-full px-2.5 py-1 font-medium text-xs",
-            getSentimentColor(tweet.sentiment)
-          )}
-        >
-          <SentimentLabel sentiment={tweet.sentiment} />
-        </span>
+        <SentimentBadge sentiment={tweet.sentiment as Sentiment} />
       </div>
       <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>
+      <div className="flex gap-8">
+        <ImpactBadge impact={tweet.impactPotential} />
+        <ConfidenceBadge confidence={tweet.relevanceConfidence} />
+      </div>
       <div className="flex items-center justify-between text-grey-600 text-sm">
-        <span>{formatTimeAgo(tweet.createdAt)}</span>
-        <span className="opacity-0 transition-opacity group-hover:opacity-100">View →</span>
+        <DistanceToNow timestamp={tweet.createdAt} />
+        <span className="text-primary opacity-0 transition-opacity group-hover:opacity-100">
+          View <ArrowRightIcon className="inline" />
+        </span>
       </div>
     </a>
   )
 }
 
-// TODO check if used
-const getSentimentColor = (sentiment: string) => {
-  switch (sentiment) {
-    case "very_bullish":
-      return "bg-green text-white"
-    case "bullish":
-      return "bg-green/70 text-white"
-    case "neutral":
-      return "bg-grey-600 text-white"
-    case "bearish":
-      return "bg-red-400 text-white"
-    case "very_bearish":
-      return "bg-red-500 text-white"
-    default:
-      return "bg-grey-600 text-white"
-  }
-}
-
-const SentimentLabel: FC<{ sentiment: string }> = ({ sentiment }) => {
+const ImpactBadge: FC<{ impact: Tweet["impactPotential"] }> = ({ impact }) => {
   const { t } = useTranslation()
+  const label = useMemo(() => {
+    switch (impact) {
+      case "high":
+        return t("High Impact")
+      case "medium":
+        return t("Medium Impact")
+      case "low":
+        return t("Low Impact")
+      default:
+        return t("Unknown Impact")
+    }
+  }, [impact, t])
 
-  switch (sentiment) {
-    case "very_bullish":
-      return t("Very Bullish")
-    case "bullish":
-      return t("Bullish")
-    case "neutral":
-      return t("Neutral")
-    case "bearish":
-      return t("Bearish")
-    case "very_bearish":
-      return t("Very Bearish")
-    default:
-      return t("Unknown")
-  }
+  return <SquareBadge>{label}</SquareBadge>
+}
+const ConfidenceBadge: FC<{ confidence: Tweet["relevanceConfidence"] }> = ({ confidence }) => {
+  const { t } = useTranslation()
+  const label = useMemo(() => {
+    switch (confidence) {
+      case "high":
+        return t("High Confidence")
+      case "medium":
+        return t("Medium Confidence")
+      case "low":
+        return t("Low Confidence")
+      default:
+        return t("Unknown Confidence")
+    }
+  }, [confidence, t])
+
+  return <SquareBadge>{label}</SquareBadge>
 }
 
-// TODO check if used
-// const getSentimentLabel = (score: number) => {
-//   if (score >= 80) {
-//     return "Very Bullish"
-//   } else if (score >= 60) {
-//     return "Bullish"
-//   } else if (score >= 40) {
-//     return "Neutral"
-//   } else if (score >= 20) {
-//     return "Bearish"
-//   } else {
-//     return "Very Bearish"
-//   }
-// }
+const SquareBadge: FC<PropsWithChildren> = ({ children }) => (
+  <div className="inline-flex h-12 items-center rounded-xs border border-body-secondary px-5 text-body-secondary text-xs">
+    {children}
+  </div>
+)
 
 const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
   <div

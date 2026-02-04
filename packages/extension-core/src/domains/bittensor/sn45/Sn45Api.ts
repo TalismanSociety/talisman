@@ -1007,12 +1007,37 @@ export class Sn45Api<
           retweetCount: number;
           replyCount: number;
           viewCount: number;
-          sentiment: string;
-          contentType: string;
-          technicalQuality: string;
-          marketAnalysis: string;
-          impactPotential: string;
-          relevanceConfidence: string;
+          sentiment:
+            | "very_bullish"
+            | "bullish"
+            | "neutral"
+            | "bearish"
+            | "very_bearish";
+          contentType:
+            | "community"
+            | "opinion"
+            | "announcement"
+            | "hype"
+            | "market_discussion"
+            | "meme"
+            | "technical_insight"
+            | "other"
+            | "milestone"
+            | "partnership"
+            | "fud"
+            | "security"
+            | "tutorial"
+            | "hiring"
+            | "governance";
+          technicalQuality: "none" | "low" | "medium" | "high";
+          marketAnalysis:
+            | "social"
+            | "other"
+            | "technical"
+            | "political"
+            | "economic";
+          impactPotential: "none" | "low" | "medium" | "high";
+          relevanceConfidence: "low" | "medium" | "high";
           analyzedAt: string;
           isRetweet: boolean;
           isQuote: boolean;
