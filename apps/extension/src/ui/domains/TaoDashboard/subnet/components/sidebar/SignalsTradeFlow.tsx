@@ -1,36 +1,43 @@
-// ============================================================================
-// Trade Flow Section
-// ============================================================================
-
 import { cn } from "@talismn/util"
 import { useSubnetStakeEvents } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
-import { type FC, useMemo, useState } from "react"
+import {
+  type CSSProperties,
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { formatNumber, SectionTitleBar } from "./shared"
-
-// Comparison bar showing two values side by side
-const ComparisonBar: FC<{
-  leftValue: number
-  rightValue: number
-  className?: string
-}> = ({ leftValue, rightValue, className }) => {
-  const total = leftValue + rightValue
-  const leftPercent = total > 0 ? (leftValue / total) * 100 : 50
-  const rightPercent = total > 0 ? (rightValue / total) * 100 : 50
-
-  return (
-    <div className={cn("flex h-1.5 w-full overflow-hidden rounded-full", className)}>
-      <div className="h-full bg-red-500 transition-all" style={{ width: `${leftPercent}%` }} />
-      <div className="h-full bg-green transition-all" style={{ width: `${rightPercent}%` }} />
-    </div>
-  )
-}
 
 export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const { data: stakeEvents, isLoading } = useSubnetStakeEvents(netuid)
+
+  return (
+    <div>
+      <SectionTitleBar label={t("Trade Flow")} period={period} onPeriodChange={setPeriod} />
+
+      <div className="rounded-lg bg-grey-900 px-12 py-8">
+        {isLoading ? (
+          <StakeEventsSkeleton />
+        ) : (
+          <StakeEvents period={period} stakeEvents={stakeEvents} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+type SubnetStakeEventsData = NonNullable<ReturnType<typeof useSubnetStakeEvents>["data"]>
+
+const StakeEvents: FC<
+  PropsWithChildren<{ period: TimePeriod; stakeEvents: SubnetStakeEventsData | null | undefined }>
+> = ({ period, stakeEvents }) => {
+  const { t } = useTranslation()
 
   const metrics = useMemo(() => {
     if (!stakeEvents) {
@@ -95,105 +102,181 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
     }
   }, [stakeEvents, period])
 
-  if (isLoading) {
+  if (!stakeEvents)
     return (
-      <div className="rounded-xl bg-grey-900 p-5">
-        <div className="h-48 animate-pulse rounded-lg bg-grey-800" />
+      <div className="flex h-[20rem] items-center justify-center text-body-secondary">
+        {t("Failed to fetch data")}
       </div>
     )
-  }
 
   return (
-    <div className="space-y-4">
-      <SectionTitleBar label={t("Trade Flow")} period={period} onPeriodChange={setPeriod} />
-      {/* <div className="flex items-center justify-between">
-        <h3 className="font-medium text-lg text-white">Trade Flow</h3>
-        <TimePeriodSelector value={period} onChange={setPeriod} />
-      </div> */}
+    <div className="flex h-[20rem] items-stretch gap-14">
+      <div className="flex h-full w-[16rem] flex-col items-center justify-between">
+        <ComparisonField
+          labelLeft={t("Buys")}
+          labelRight={t("Sells")}
+          valueLeft={metrics.buys}
+          valueRight={metrics.sells}
+          contentLeft={metrics.buys}
+          contentRight={metrics.sells}
+        />
+        <ComparisonField
+          labelLeft={t("Buy Vol")}
+          labelRight={t("Sell Vol")}
+          valueLeft={metrics.buyVol}
+          valueRight={metrics.sellVol}
+          contentLeft={`τ${formatNumber(metrics.buyVol, 0)}`}
+          contentRight={`τ${formatNumber(metrics.sellVol, 0)}`}
+        />
+        <ComparisonField
+          labelLeft={t("Buyers")}
+          labelRight={t("Sellers")}
+          valueLeft={metrics.buyers}
+          valueRight={metrics.sellers}
+          contentLeft={metrics.buyers}
+          contentRight={metrics.sellers}
+        />
+      </div>
 
-      <div className="rounded-xl bg-grey-900 p-5">
-        <div className="flex gap-6">
-          {/* Left Section - Paired Metrics */}
-          <div className="flex-1 space-y-6">
-            {/* Buys / Sells Row */}
-            <div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-body-secondary text-xs">Buys</span>
-                  <div className="font-bold text-lg text-white">{metrics.buys}</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-body-secondary text-xs">Sells</span>
-                  <div className="font-bold text-lg text-white">{metrics.sells}</div>
-                </div>
-              </div>
-              <ComparisonBar leftValue={metrics.buys} rightValue={metrics.sells} className="mt-2" />
-            </div>
+      {/* Vertical Divider */}
+      <div className="w-px self-stretch bg-grey-800" />
 
-            {/* Buy Vol / Sells Vol Row */}
-            <div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-body-secondary text-xs">Buy Vol</span>
-                  <div className="font-bold text-lg">τ{formatNumber(metrics.buyVol, 0)}</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-body-secondary text-xs">Sells Vol</span>
-                  <div className="font-bold text-lg">τ{formatNumber(metrics.sellVol, 0)}</div>
-                </div>
-              </div>
-              <ComparisonBar
-                leftValue={metrics.buyVol}
-                rightValue={metrics.sellVol}
-                className="mt-2"
-              />
-            </div>
-
-            {/* Buyers / Sellers Row */}
-            <div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-body-secondary text-xs">Buyers</span>
-                  <div className="font-bold text-lg text-white">{metrics.buyers}</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-body-secondary text-xs">Sellers</span>
-                  <div className="font-bold text-lg text-white">{metrics.sellers}</div>
-                </div>
-              </div>
-              <ComparisonBar
-                leftValue={metrics.buyers}
-                rightValue={metrics.sellers}
-                className="mt-2"
-              />
-            </div>
-          </div>
-
-          {/* Vertical Divider */}
-          <div className="w-px self-stretch bg-grey-700" />
-
-          {/* Right Section - Summary Stats */}
-          <div className="flex flex-col justify-between space-y-6">
-            <div>
-              <span className="text-body-secondary text-xs">Ratio</span>
-              <div className="font-bold text-md text-white">{metrics.ratio.toFixed(2)}</div>
-              <span className="text-body-secondary text-xs">{metrics.ratioLabel}</span>
-            </div>
-
-            <div>
-              <span className="text-body-secondary text-xs">Active Traders</span>
-              <div className="font-bold text-md text-white">{metrics.activeTraders}</div>
-              <span className="text-body-secondary text-xs">Unique Wallets</span>
-            </div>
-
-            <div>
-              <span className="text-body-secondary text-xs">Avg Trade</span>
-              <div className="font-bold text-md text-white">{metrics.avgTrade.toFixed(1)}τ</div>
-              <span className="text-body-secondary text-xs">{metrics.avgTradeLabel}</span>
-            </div>
-          </div>
-        </div>
+      <div className="flex h-full flex-col justify-between">
+        <MetricField label={t("Ratio")} extra={metrics.ratioLabel}>
+          {metrics.ratio.toFixed(2)}
+        </MetricField>
+        <MetricField label={t("Active Traders")} extra={t("Unique Wallets")}>
+          {metrics.activeTraders}
+        </MetricField>
+        <MetricField label={t("Avg Trade")} extra={metrics.avgTradeLabel}>
+          {metrics.avgTrade.toFixed(1)}τ
+        </MetricField>
       </div>
     </div>
   )
 }
+
+const MetricField: FC<
+  PropsWithChildren<{ label: ReactNode; extra?: ReactNode; className?: string }>
+> = ({ label, children, extra, className }) => (
+  <div className={cn("flex flex-col")}>
+    <div className="text-body-inactive text-xs">{label}</div>
+    <div className={cn("text-md", className)}>{children}</div>
+    {!!extra && <div className="text-body-inactive text-xs">{extra}</div>}
+  </div>
+)
+
+const ComparisonField: FC<{
+  labelLeft: ReactNode
+  labelRight: ReactNode
+  valueLeft: number
+  valueRight: number
+  contentLeft: ReactNode
+  contentRight: ReactNode
+  className?: string
+}> = ({ labelLeft, labelRight, valueLeft, valueRight, contentLeft, contentRight, className }) => {
+  return (
+    <div className="flex w-full flex-col gap-1">
+      <div className="flex w-full justify-between text-body-inactive text-xs">
+        <div>{labelLeft}</div>
+        <div>{labelRight}</div>
+      </div>
+      <div className="flex w-full justify-between text-body text-md">
+        <div>{contentLeft}</div>
+        <div>{contentRight}</div>
+      </div>
+      <ComparisonBar
+        leftValue={valueLeft}
+        rightValue={valueRight}
+        className={cn("w-full", className)}
+      />
+    </div>
+  )
+}
+
+// Comparison bar showing two values side by side
+const ComparisonBar: FC<{
+  leftValue: number
+  rightValue: number
+  className?: string
+}> = ({ leftValue, rightValue, className }) => {
+  const leftStyle = useMemo<CSSProperties>(() => {
+    const total = leftValue + rightValue
+    const leftPercent = total > 0 ? (leftValue / total) * 100 : 50
+    return { width: `${leftPercent.toFixed()}%` }
+  }, [leftValue, rightValue])
+
+  return (
+    <div className={cn("flex h-2 w-full gap-1 overflow-hidden rounded-full", className)}>
+      <div className="h-full shrink-0 bg-sell" style={leftStyle} />
+      <div className="h-full grow bg-buy" />
+    </div>
+  )
+}
+
+const StakeEventsSkeleton = () => (
+  <div className="flex h-[20rem] items-stretch gap-14">
+    <div className="flex h-full w-[16rem] flex-col items-center justify-between">
+      <ComparisonFieldSkeleton />
+      <ComparisonFieldSkeleton />
+      <ComparisonFieldSkeleton />
+    </div>
+
+    <div className="w-px self-stretch bg-grey-800" />
+
+    <div className="flex h-full flex-col justify-between">
+      <MetricFieldSkeleton />
+      <MetricFieldSkeleton />
+      <MetricFieldSkeleton />
+    </div>
+  </div>
+)
+
+const MetricFieldSkeleton = () => {
+  return (
+    <div className={cn("flex flex-col gap-1")}>
+      <div className="text-body-inactive text-xs">
+        <Skeleton className="w-[5rem]" />
+      </div>
+      <div className={cn("text-md")}>
+        <Skeleton className="w-[4rem]" />
+      </div>
+      <div className="text-body-inactive text-xs">
+        <Skeleton className="w-[7rem]" />
+      </div>
+    </div>
+  )
+}
+
+const ComparisonFieldSkeleton = () => {
+  return (
+    <div className="flex w-full flex-col gap-1">
+      <div className="flex w-full justify-between text-body-inactive text-xs">
+        <div>
+          <Skeleton className="w-[3rem]" />
+        </div>
+        <div>
+          <Skeleton className="w-[3rem]" />
+        </div>
+      </div>
+      <div className="flex w-full justify-between text-body text-md">
+        <div>
+          <Skeleton className="w-[5rem]" />
+        </div>
+        <div>
+          <Skeleton className="w-[5rem]" />{" "}
+        </div>
+      </div>
+      <Skeleton className="h-4 w-full rounded-full"></Skeleton>
+    </div>
+  )
+}
+
+const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
+  <div
+    className={cn(
+      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
+      className
+    )}
+  />
+)
