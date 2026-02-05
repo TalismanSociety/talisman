@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/solana",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/TalismanSociety/talisman.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
