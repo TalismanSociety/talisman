@@ -8,10 +8,6 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-permissions:
-  id-token: write
-  contents: read
-
 concurrency:
   # only run 1 job per branch/pr/etc at a time
   # (afaik this prevents a race condition in changesets version bumps)
@@ -161,7 +157,9 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -331,7 +329,9 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
