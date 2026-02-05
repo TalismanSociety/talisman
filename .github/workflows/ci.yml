@@ -8,10 +8,6 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-permissions:
-  id-token: write
-  contents: read
-
 concurrency:
   # only run 1 job per branch/pr/etc at a time
   # (afaik this prevents a race condition in changesets version bumps)
@@ -161,7 +157,9 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -182,10 +180,6 @@ jobs:
         run: pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
       - name: Build packages for npm publish
         run: pnpm build:packages
-      # - name: Set publish config
-      #   run: pnpm config set '//registry.npmjs.org/:_authToken' "${PNPM_TOKEN}"
-      #   env:
-      #     PNPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish snapshot packages
         run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag pr${{ github.event.pull_request.number }}
 
@@ -335,7 +329,9 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -365,11 +361,6 @@ jobs:
       - name: Build packages for npm publish
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build:packages
-      # - name: Set publish config
-      #   if: steps.changesets.outputs.hasChangesets == 'false'
-      #   run: pnpm config set '//registry.npmjs.org/:_authToken' "${PNPM_TOKEN}"
-      #   env:
-      #     PNPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish packages
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm --filter './packages/*' publish --no-git-checks --access public
