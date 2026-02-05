@@ -10,11 +10,11 @@ export const testAssets = [
   },
   {
     assetName: "PAS",
-    chain: "Paseo PassetHub",
+    chain: "PAsset Hub",
     needsEnabling: true,
-    chainType: "ethereum",
+    chainType: "polkadot",
     tokenType: "Native",
-    sendTo: "0x899F2F48D76771b1876165E5B4df1ad13021eb6d",
+    sendTo: "5DHyKJK9qY5nosXAvyGiSRTdnC76Z45RcuAMq5223T1Vrtbc",
     amount: "0.001",
   },
   {
