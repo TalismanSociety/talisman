@@ -2,7 +2,7 @@ import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { ArrowRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetDailyTrend, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { type FC, type PropsWithChildren, useMemo, useState } from "react"
+import { type FC, type PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => (
@@ -173,25 +173,20 @@ type Tweet = NonNullable<TweetsData>[number]
 
 const TweetsList: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const { data: tweets, isLoading: isLoadingTweets } = useSubnetTweets(netuid, 20)
-
-  // TODO delete
-  const [isLoadingToggle, setIsLoading] = useState(false)
-
-  const isLoading = isLoadingTweets || isLoadingToggle
+  const { data: tweets, isLoading } = useSubnetTweets(netuid, 20)
 
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
-      <button type="button" onClick={() => setIsLoading((prev) => !prev)}>
-        isLoading: {isLoading.toString()}
-      </button>
-      {tweets?.slice(0, 8).map((tweet, i, arr) => (
-        <>
-          <TweetCard key={tweet.id} tweet={tweet} />
-          {i < arr.length - 1 && <Separator />}
-        </>
-      ))}
-      {(!tweets || tweets.length === 0) && (
+      {isLoading
+        ? // biome-ignore lint/suspicious/noArrayIndexKey: static list
+          Array.from({ length: 3 }).map((_, i) => <TweetCardSkeleton key={i} />)
+        : tweets?.slice(0, 8).map((tweet, i, arr) => (
+            <>
+              <TweetCard key={tweet.id} tweet={tweet} />
+              {i < arr.length - 1 && <Separator />}
+            </>
+          ))}
+      {!isLoading && (!tweets || tweets.length === 0) && (
         <div className="py-4 text-center text-body-secondary text-sm">{t("No posts found")}</div>
       )}
     </div>
@@ -236,6 +231,34 @@ const TweetCard = ({ tweet }: { tweet: Tweet }) => {
         </span>
       </div>
     </a>
+  )
+}
+
+const TweetCardSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-6 rounded p-6">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-12 rounded-full" />
+          <div className="text-base text-body">
+            <Skeleton className="h-10 w-36" />
+          </div>
+        </div>
+        <Skeleton className="h-12 w-36 rounded-full" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-7 w-full" />
+        <Skeleton className="h-7 w-full" />
+        <Skeleton className="h-7 w-3/4" />
+      </div>
+      <div className="flex gap-8">
+        <Skeleton className="h-12 w-36 rounded-xs" />
+        <Skeleton className="h-12 w-48 rounded-xs" />
+      </div>
+      <div className="flex items-center">
+        <Skeleton className="h-7 w-24" />
+      </div>
+    </div>
   )
 }
 
