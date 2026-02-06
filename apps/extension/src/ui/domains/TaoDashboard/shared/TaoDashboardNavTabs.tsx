@@ -22,7 +22,7 @@ export const TaoDashboardNavTabs = <T extends string>({
   return (
     <div
       className={cn(
-        "inline-flex h-28 max-w-full items-center gap-4 overflow-hidden rounded-lg border border-grey-700 p-4 text-sm",
+        "inline-flex h-28 max-w-full shrink-0 items-center gap-4 overflow-hidden rounded-lg border border-grey-700 p-4 text-sm",
         className
       )}
     >

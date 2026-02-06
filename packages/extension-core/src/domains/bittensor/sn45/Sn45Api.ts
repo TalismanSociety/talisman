@@ -954,10 +954,21 @@ export class Sn45Api<
      *
      * @tags Subnets
      * @name GetSubnetDailyTrend
-     * @summary Daily sentiment trend for a specific subnet over the last 30 days
+     * @summary Daily sentiment trend for a specific subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/sentiment/trend
      */
-    getSubnetDailyTrend: (netuid: string, params: RequestParams = {}) =>
+    getSubnetDailyTrend: (
+      netuid: string,
+      query?: {
+        /**
+         * @min 1
+         * @max 30
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<
         {
           date: string;
@@ -978,6 +989,7 @@ export class Sn45Api<
       >({
         path: `/v1/bittensor/subnets/${netuid}/sentiment/trend`,
         method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
@@ -986,11 +998,11 @@ export class Sn45Api<
      * No description
      *
      * @tags Subnets
-     * @name GetSubnetTweets
+     * @name GetSubnetTweetsLegacy
      * @summary Recent analyzed tweets for a specific subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/sentiment/tweets
      */
-    getSubnetTweets: (
+    getSubnetTweetsLegacy: (
       netuid: string,
       query?: {
         limit?: string;
@@ -1069,6 +1081,154 @@ export class Sn45Api<
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/sentiment/tweets`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets, Sentiment
+     * @name GetSubnetSentiment
+     * @summary Social sentiment for a specific subnet over a given period (default 30 days)
+     * @request GET:/v1/bittensor/subnets/{netuid}/sentiment
+     */
+    getSubnetSentiment: (
+      netuid: string,
+      query?: {
+        /**
+         * @min 1
+         * @max 365
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          count: number;
+          veryBullish: number;
+          bullish: number;
+          neutral: number;
+          bearish: number;
+          veryBearish: number;
+          score: number;
+          sentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/sentiment`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
+     * @name GetSubnetTweets
+     * @summary Recent analyzed tweets for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/tweets
+     */
+    getSubnetTweets: (
+      netuid: string,
+      query?: {
+        /**
+         * @min 1
+         * @max 365
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          id: string;
+          text: string;
+          url: string;
+          createdAt: string;
+          likeCount: number;
+          retweetCount: number;
+          replyCount: number;
+          viewCount: number;
+          sentiment:
+            | "very_bullish"
+            | "bullish"
+            | "neutral"
+            | "bearish"
+            | "very_bearish";
+          contentType:
+            | "community"
+            | "opinion"
+            | "announcement"
+            | "hype"
+            | "market_discussion"
+            | "meme"
+            | "technical_insight"
+            | "other"
+            | "milestone"
+            | "partnership"
+            | "fud"
+            | "security"
+            | "tutorial"
+            | "hiring"
+            | "governance";
+          technicalQuality: "none" | "low" | "medium" | "high";
+          marketAnalysis:
+            | "social"
+            | "other"
+            | "technical"
+            | "political"
+            | "economic";
+          impactPotential: "none" | "low" | "medium" | "high";
+          relevanceConfidence: "low" | "medium" | "high";
+          analyzedAt: string;
+          isRetweet: boolean;
+          isQuote: boolean;
+          isReply: boolean;
+          isPartOfThread: boolean;
+          hasReplies: boolean;
+          retweetedBy: string | null;
+          replyTo: {
+            username: string;
+            text?: string;
+          };
+          quotedPost: {
+            text: string;
+            authorScreenName: string;
+          };
+          author: {
+            name: string;
+            screenName: string;
+            profileImage: string;
+            verified: boolean;
+            blueVerified: boolean;
+          };
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/tweets`,
         method: "GET",
         query: query,
         format: "json",

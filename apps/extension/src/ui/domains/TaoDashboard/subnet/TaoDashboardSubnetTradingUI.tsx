@@ -13,36 +13,36 @@ import { TaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) => {
   return (
     <SwapTxWatcherProvider>
-      <div className="flex w-full flex-col gap-6 overflow-hidden">
+      <div className="flex h-[120rem] w-full flex-col gap-6 overflow-hidden">
         {/* Breadcrumb / Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between">
           <TaoDashboardSubnetBreadcrumb netuid={netuid} />
           <PoweredBySn45 />
         </div>
 
         {/* Main Content Grid - Fixed height layout */}
-        <div className="flex w-full flex-row gap-6">
+        <div className="flex w-full grow flex-row gap-6 overflow-hidden">
           {/* Left Column - Charts and Trading */}
-          <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <div className="flex min-w-0 grow flex-col gap-6 overflow-hidden">
             {/* Price Chart with Sentiment Markers */}
             <SubnetCharts netuid={netuid} className="w-full shrink-0" />
 
             {/* Swap and Transactions row - stretch to fill remaining space */}
-            <div className="flex h-[60rem] max-h-[60rem] min-h-[60rem] w-full flex-1 shrink-0 flex-row gap-6 overflow-hidden">
+            <div className="flex w-full grow flex-row gap-6 overflow-hidden">
               {/* Swap component */}
-              <div className="flex h-full max-h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-grey-850">
+              <div className="flex h-full flex-1 flex-col overflow-hidden rounded-lg bg-grey-850">
                 <TaoDashboardSwap netuid={netuid} />
               </div>
 
               {/* Recent Transactions */}
-              <div className="flex h-full max-h-full w-full flex-1 flex-col overflow-hidden rounded-lg">
+              <div className="flex h-full flex-1 flex-col overflow-hidden rounded-lg">
                 <SubnetTransactions netuid={netuid} />
               </div>
             </div>
           </div>
 
           {/* Right Column - Analytics Sidebar */}
-          <div className="h-full w-[38rem] shrink-0">
+          <div className="h-full w-[38rem] shrink-0 overflow-hidden">
             <TaoDashboardSidebar netuid={netuid} />
             {/* <SubnetRightSidebar netuid={netuid} className="h-full" /> */}
           </div>

@@ -13,9 +13,7 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
-  // const { data: dailyTrend, isLoading: trendLoading } = useSubnetDailyTrend(netuid)
   const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
-  // const economicsData = economics?.[netuid]
   const isLoading = tokenomicsLoading || economicsLoading
 
   return (

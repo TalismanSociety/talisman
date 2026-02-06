@@ -81,7 +81,7 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
   if (!alphaToken || !taoToken) return null
 
   return (
-    <div ref={refScrollContainer} className="mr-4 flex grow flex-col overflow-y-auto">
+    <div ref={refScrollContainer} className="flex grow flex-col overflow-y-auto">
       <div className="flex shrink-0 items-center gap-8 px-12 pt-8 pb-4 text-sm">
         <span className="text-body-secondary">{t("Transactions on SN{{netuid}}", { netuid })}</span>
         {alphaToken?.subnetName && <span className="text-primary">{alphaToken.subnetName}</span>}

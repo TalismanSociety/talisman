@@ -329,13 +329,12 @@ export const useSubnetEvents = (netuid: number | null | undefined, limit = 250) 
   })
 }
 
-// Hook to get subnet daily sentiment trend
-export const useSubnetDailyTrend = (netuid: number | null | undefined) => {
+export const useSubnetSentiment = (netuid: number | null | undefined, days?: number) => {
   return useQuery({
-    queryKey: ["sn45", "subnetDailyTrend", netuid],
+    queryKey: ["sn45", "subnetSentiment", netuid, days],
     queryFn: async () => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetDailyTrend(String(netuid))
+      const response = await sn45Api.v1.getSubnetSentiment(String(netuid), { days })
       return response.data
     },
     enabled: !!netuid,
@@ -345,12 +344,12 @@ export const useSubnetDailyTrend = (netuid: number | null | undefined) => {
 }
 
 // Hook to get subnet tweets
-export const useSubnetTweets = (netuid: number | null | undefined, limit = 50) => {
+export const useSubnetTweets = (netuid: number | null | undefined, days: number) => {
   return useQuery({
-    queryKey: ["sn45", "subnetTweets", netuid, limit],
+    queryKey: ["sn45", "subnetTweets", netuid, days],
     queryFn: async () => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetTweets(String(netuid), { limit: String(limit) })
+      const response = await sn45Api.v1.getSubnetTweets(String(netuid), { days })
       return response.data
     },
     enabled: !!netuid,

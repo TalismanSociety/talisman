@@ -18,9 +18,11 @@ export const TaoDashboardSidebar: FC<{
   const [activeTab, setActiveTab] = useState<TabType>("signals")
 
   return (
-    <div className={cn("flex flex-col gap-12 rounded-lg p-5 pt-0", className)}>
+    <div className={cn("flex size-full flex-col gap-12 overflow-hidden rounded-lg", className)}>
       <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
-      <TabContent netuid={netuid} activeTab={activeTab} />
+      <div className="w-full grow overflow-hidden">
+        <TabContent netuid={netuid} activeTab={activeTab} />
+      </div>
     </div>
   )
 }

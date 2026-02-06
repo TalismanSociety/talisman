@@ -1,55 +1,65 @@
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { ArrowRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { useSubnetDailyTrend, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { type FC, type PropsWithChildren, useMemo } from "react"
+import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import {
+  type FC,
+  Fragment,
+  type PropsWithChildren,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
+import { SectionTitleBar, useDaysFromPeriod } from "./shared"
 
-export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => (
-  <div className="flex w-full flex-col overflow-hidden rounded-lg bg-grey-900">
-    <SentimentSummary netuid={netuid} />
-    <Separator />
-    <TweetsList netuid={netuid} />
-  </div>
-)
+export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
+  const [period, setPeriod] = useState<TimePeriod>("1W")
 
-const getSentimentSummary = (dailyTrend: NonNullable<DailyTrendData>) => {
-  return dailyTrend.reduce(
-    (acc, day) => ({
-      total: acc.total + day.total,
-      veryBullish: acc.veryBullish + day.veryBullish,
-      bullish: acc.bullish + day.bullish,
-      neutral: acc.neutral + day.neutral,
-      bearish: acc.bearish + day.bearish,
-      veryBearish: acc.veryBearish + day.veryBearish,
-    }),
-    { total: 0, veryBullish: 0, bullish: 0, neutral: 0, bearish: 0, veryBearish: 0 }
+  return (
+    <div className="flex size-full flex-col overflow-hidden">
+      <SectionTitleBar label={t("Social Feeds")} period={period} onPeriodChange={setPeriod} />
+
+      <div className="flex w-full grow flex-col overflow-hidden rounded-lg bg-grey-900">
+        <SentimentSummary netuid={netuid} period={period} />
+        <Separator />
+        <TweetsList netuid={netuid} period={period} />
+      </div>
+    </div>
   )
 }
 
-type SentimentSummaryData = ReturnType<typeof getSentimentSummary>
+type SubnetSentimentData = ReturnType<typeof useSubnetSentiment>["data"]
 
-type DailyTrendData = ReturnType<typeof useSubnetDailyTrend>["data"]
-
-const SentimentSummary: FC<{ netuid: number }> = ({ netuid }) => {
+const SentimentSummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
 
-  const { data: dailyTrend, isLoading } = useSubnetDailyTrend(netuid)
+  const days = useDaysFromPeriod(period)
 
-  const sentimentSummary = useMemo(() => getSentimentSummary(dailyTrend || []), [dailyTrend])
+  const { data: sentiment, isLoading } = useSubnetSentiment(netuid, days)
 
   if (isLoading) return <SentimentSummarySkeleton />
+
+  if (!sentiment)
+    return (
+      <div className="flex h-[11.6rem] items-center justify-center text-body-secondary text-sm">
+        {t("Failed to fetch sentiment data")}
+      </div>
+    )
 
   return (
     <div className="flex h-[11.6rem] flex-col justify-between gap-10 px-12 py-10">
       <div className="flex h-[2.6rem] w-full shrink-0 items-center justify-between overflow-hidden">
         <div className="text-md">{t("Market Sentiment")}</div>
         <div>
-          <SummarySentimentBadge summary={sentimentSummary} />
+          <SentimentBadge sentiment={sentiment.sentiment} />
         </div>
       </div>
       <div className="flex flex-col gap-5">
-        <SentimentSummaryBar summary={sentimentSummary} />
+        <SentimentSummaryBar sentiment={sentiment} />
         <div className="flex h-8 w-full shrink-0 items-center justify-between overflow-hidden text-body-disabled text-xs">
           <div>{t("Bearish")}</div>
           <div>{t("Bullish")}</div>
@@ -86,20 +96,6 @@ const SentimentSummarySkeleton = () => {
 }
 
 const Separator = () => <div className="h-px bg-grey-800"></div>
-
-const SummarySentimentBadge: FC<{ summary: SentimentSummaryData }> = ({ summary }) => {
-  const sentiment = useMemo<"bullish" | "bearish" | "neutral">(() => {
-    const bullish = summary.bullish + summary.veryBullish * 1.5
-    const bearish = summary.bearish + summary.veryBearish * 1.5
-    const neutral = summary.neutral
-
-    if (bullish > bearish + neutral) return "bullish"
-    if (bearish > bullish + neutral) return "bearish"
-    return "neutral"
-  }, [summary])
-
-  return <SentimentBadge sentiment={sentiment} />
-}
 
 type Sentiment = "very_bearish" | "bearish" | "neutral" | "bullish" | "very_bullish"
 
@@ -144,14 +140,16 @@ const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
   )
 }
 
-const SentimentSummaryBar: FC<{ summary: SentimentSummaryData }> = ({ summary }) => {
+const SentimentSummaryBar: FC<{ sentiment: SubnetSentimentData }> = ({ sentiment }) => {
   const [bearishPercent, neutralPercent, bullishPercent] = useMemo(() => {
-    if (summary.total === 0) return [false, 0, 100, 0]
-    const bearish = Math.round(((summary.bearish + summary.veryBearish) / summary.total) * 100)
-    const neutral = Math.round((summary.neutral / summary.total) * 100)
+    if (!sentiment?.count) return [false, 0, 100, 0]
+    const bearish = Math.round(
+      ((sentiment.bearish + sentiment.veryBearish) / sentiment.count) * 100
+    )
+    const neutral = Math.round((sentiment.neutral / sentiment.count) * 100)
     const bullish = 100 - bearish - neutral
     return [bearish, neutral, bullish]
-  }, [summary])
+  }, [sentiment])
 
   return (
     <div className="flex h-2 w-full shrink-0 overflow-hidden rounded-full">
@@ -171,29 +169,38 @@ const SentimentSummaryBar: FC<{ summary: SentimentSummaryData }> = ({ summary })
 type TweetsData = ReturnType<typeof useSubnetTweets>["data"]
 type Tweet = NonNullable<TweetsData>[number]
 
-const TweetsList: FC<{ netuid: number }> = ({ netuid }) => {
+const TweetsList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
-  const { data: tweets, isLoading } = useSubnetTweets(netuid, 20)
+  const days = useDaysFromPeriod(period)
+  const { data: tweets, isLoading } = useSubnetTweets(netuid, days)
+
+  const refContainer = useRef<HTMLDivElement>(null)
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to top if inputs change
+  useEffect(() => {
+    if (refContainer.current) refContainer.current.scrollTo({ top: 0 })
+  }, [netuid, period])
 
   return (
-    <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
-      {isLoading
-        ? // biome-ignore lint/suspicious/noArrayIndexKey: static list
-          Array.from({ length: 3 }).map((_, i) => <TweetCardSkeleton key={i} />)
-        : tweets?.slice(0, 8).map((tweet, i, arr) => (
-            <>
-              <TweetCard key={tweet.id} tweet={tweet} />
-              {i < arr.length - 1 && <Separator />}
-            </>
-          ))}
-      {!isLoading && (!tweets || tweets.length === 0) && (
+    <div ref={refContainer} className="flex flex-1 grow flex-col gap-4 overflow-y-auto p-6">
+      {isLoading ? (
+        <TweetCardSkeleton />
+      ) : (
+        tweets?.map((tweet, i, arr) => (
+          <Fragment key={tweet.id}>
+            <TweetCard tweet={tweet} />
+            {i < arr.length - 1 && <Separator />}
+          </Fragment>
+        ))
+      )}
+      {!isLoading && !tweets?.length && (
         <div className="py-4 text-center text-body-secondary text-sm">{t("No posts found")}</div>
       )}
     </div>
   )
 }
 
-const TweetCard = ({ tweet }: { tweet: Tweet }) => {
+const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
   return (
     <a
       key={tweet.id}

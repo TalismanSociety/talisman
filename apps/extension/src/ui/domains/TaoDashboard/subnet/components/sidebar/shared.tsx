@@ -2,7 +2,7 @@ import {
   TaoDashboardPeriodTabs,
   type TimePeriod,
 } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
-import type { FC, ReactNode } from "react"
+import { type FC, type ReactNode, useMemo } from "react"
 
 export const SectionTitleBar: FC<{
   label: ReactNode
@@ -49,4 +49,19 @@ export const formatTimeAgo = (timestamp: string) => {
   if (diffMins < 60) return `${diffMins}m ago`
   if (diffHours < 24) return `${diffHours}h ago`
   return `${diffDays}d ago`
+}
+
+const daysFromPeriod = (period: TimePeriod): number => {
+  switch (period) {
+    case "1D":
+      return 1
+    case "1W":
+      return 7
+    case "1M":
+      return 30
+  }
+}
+
+export const useDaysFromPeriod = (period: TimePeriod): number => {
+  return useMemo(() => daysFromPeriod(period), [period])
 }
