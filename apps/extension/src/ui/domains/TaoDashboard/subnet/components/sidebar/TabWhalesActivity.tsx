@@ -82,18 +82,20 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
 
   if (isLoading)
     return (
-      <div className="px-12 py-10">
-        <Skeleton className="mb-3 font-medium text-white">{t("Total Flow")}</Skeleton>
+      <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
+        <div>
+          <Skeleton className="mb-3 h-8 w-48 font-medium text-white" />
+        </div>
         <Skeleton className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full bg-grey-800"></Skeleton>
         <div className={cn("flex justify-between text-body-secondary text-xs")}>
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-16" />
         </div>
       </div>
     )
 
   return (
-    <div className="px-12 py-10">
+    <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
       <div className="mb-3 font-medium text-white">{t("Total Flow")}</div>
       {inflowPercent !== null ? (
         <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full">
@@ -161,39 +163,31 @@ const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid
   const taoToken = useToken(taoTokenId, "substrate-native")
   const alphaToken = useToken(alphaTokenId, "substrate-dtao")
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="h-20 animate-pulse rounded-lg bg-grey-800" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static list
-          <div key={i} className="h-16 animate-pulse rounded-lg bg-grey-800" />
-        ))}
-      </div>
-    )
-  }
-
-  if (!transactions || transactions.length === 0) {
-    return (
-      <div className="py-8 text-center text-body-secondary text-sm">
-        {t("No whale activity found for this subnet")}
-      </div>
-    )
-  }
+  if (!isLoading)
+    if (!transactions || transactions.length === 0) {
+      return (
+        <div className="py-8 text-center text-body-secondary text-sm">
+          {t("No whale activity found for this subnet")}
+        </div>
+      )
+    }
 
   if (!taoToken || !alphaToken) return null
 
   return (
     <div className="flex grow flex-col overflow-y-auto">
-      {transactions.map((tx) => (
-        <WhaleActivityItem
-          key={tx.id}
-          tx={tx}
-          alphaToken={alphaToken}
-          taoToken={taoToken}
-          taoUsdPrice={taoUsdPrice}
-        />
-      ))}
+      {isLoading
+        ? // biome-ignore lint/suspicious/noArrayIndexKey: static list
+          Array.from({ length: 5 }).map((_, i) => <WhaleActivityItemSkeleton key={i} />)
+        : transactions.map((tx) => (
+            <WhaleActivityItem
+              key={tx.id}
+              tx={tx}
+              alphaToken={alphaToken}
+              taoToken={taoToken}
+              taoUsdPrice={taoUsdPrice}
+            />
+          ))}
     </div>
   )
 }
@@ -259,5 +253,25 @@ const WhaleActivityItem: FC<{
         </div>
       </div>
     </button>
+  )
+}
+
+const WhaleActivityItemSkeleton = () => {
+  return (
+    <div className="flex h-28 shrink-0 items-center justify-between px-12 text-left text-sm">
+      <div className="flex items-center gap-8">
+        <div className="relative shrink-0">
+          <Skeleton className="size-[3.6rem] rounded-full" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-6 w-32" />
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-2">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-6 w-36" />
+      </div>
+    </div>
   )
 }
