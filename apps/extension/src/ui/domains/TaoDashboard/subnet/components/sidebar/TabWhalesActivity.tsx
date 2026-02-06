@@ -1,115 +1,146 @@
-import { Icon } from "@iconify/react/dist/iconify.js"
-import { cn } from "@talismn/util"
+import { DistanceToNow } from "@talisman/components/DistanceToNow"
+import { BalanceFormatter } from "@talismn/balances"
 import {
+  type SubDTaoToken,
+  type SubNativeToken,
+  subDTaoTokenId,
+  subNativeTokenId,
+} from "@talismn/chaindata-provider"
+import type { TokenRates } from "@talismn/token-rates"
+import { cn } from "@talismn/util"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import {
+  useSubnetWhalesActivity,
+  useSubnetWhalesFlow,
   useTaoPrice,
-  useWhaleTransactions,
   type WhaleTransaction,
   type WhaleTransactionType,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { type FC, useMemo } from "react"
-import { formatNumber, formatTimeAgo } from "./shared"
+import { AccountNameOrAddress } from "@ui/domains/TaoDashboard/shared/AccountNameOrAddress"
+import { TAO_SYMBOL } from "@ui/domains/TaoDashboard/shared/constants"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAvatar"
+import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
+import { useToken } from "@ui/state"
+import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { SectionTitleBar, useDaysFromPeriod } from "./shared"
 
-export const TabWhaleActivity: FC<{ netuid: number }> = ({ netuid }) => (
-  <WhaleActivitySection netuid={netuid} />
-)
+export const TabWhalesActivity: FC<{ netuid: number }> = ({ netuid }) => {
+  const { t } = useTranslation()
+  const [period, setPeriod] = useState<TimePeriod>("1W")
+
+  return (
+    <div className="flex size-full flex-col overflow-hidden">
+      <SectionTitleBar label={t("Whale Activity")} period={period} onPeriodChange={setPeriod} />
+
+      <div className="flex w-full grow flex-col overflow-hidden rounded-lg bg-grey-900">
+        <WhalesActivitySummary netuid={netuid} period={period} />
+        <Separator />
+        <WhalesActivityList netuid={netuid} period={period} />
+      </div>
+    </div>
+  )
+}
+
+const Separator = () => <div className="h-px shrink-0 bg-grey-800"></div>
 
 // ============================================================================
 // Whale Activity Section
 // ============================================================================
-
-const formatUsd = (value: number): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
-}
-
-const truncateAddress = (address: string): string => {
-  if (!address || address.length < 12) return address
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
-}
-
-// Get display label for transaction type
-const _getTransactionTypeLabel = (type: WhaleTransactionType): string => {
-  switch (type) {
-    case "StakeAdded":
-      return "Stake Added"
-    case "StakeRemoved":
-      return "Stake Removed"
-    case "StakeMove":
-      return "Stake Move"
-    case "StakeTransfer":
-      return "Stake Transfer"
-    case "StakeSwapped":
-      return "Stake Swapped"
-    default:
-      return type
-  }
-}
-
-// Get icon for transaction type
-const getTransactionIcon = (type: WhaleTransactionType): string => {
-  switch (type) {
-    case "StakeAdded":
-      return "mdi:arrow-down"
-    case "StakeRemoved":
-      return "mdi:arrow-up"
-    case "StakeMove":
-      return "mdi:swap-horizontal"
-    case "StakeTransfer":
-      return "mdi:send"
-    case "StakeSwapped":
-      return "mdi:swap-vertical"
-    default:
-      return "mdi:circle"
-  }
-}
-
-// Get color for transaction type
-const getTransactionColor = (type: WhaleTransactionType): string => {
-  switch (type) {
-    case "StakeAdded":
-      return "bg-green"
-    case "StakeRemoved":
-      return "bg-red-500"
-    case "StakeMove":
-      return "bg-blue-500"
-    case "StakeTransfer":
-      return "bg-purple-500"
-    case "StakeSwapped":
-      return "bg-amber-500"
-    default:
-      return "bg-grey-600"
-  }
-}
-
-// Get text color for transaction type
-const getTransactionTextColor = (type: WhaleTransactionType): string => {
-  switch (type) {
-    case "StakeAdded":
-      return "text-green"
-    case "StakeRemoved":
-      return "text-red-500"
-    case "StakeMove":
-      return "text-blue-500"
-    case "StakeTransfer":
-      return "text-purple-500"
-    case "StakeSwapped":
-      return "text-amber-500"
-    default:
-      return "text-body"
-  }
-}
 
 // Is this an inflow transaction?
 const isInflowTransaction = (type: WhaleTransactionType): boolean => {
   return type === "StakeAdded"
 }
 
-const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
-  const { data: rawTransactions, isLoading } = useWhaleTransactions(netuid, { limit: 50 })
+const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
+  <div
+    className={cn(
+      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
+      className
+    )}
+  />
+)
+
+const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
+  const { t } = useTranslation()
+  const days = useDaysFromPeriod(period)
+  const { data, isLoading } = useSubnetWhalesFlow(netuid, days)
+
+  const inflowPercent = useMemo(() => {
+    if (!data) return null
+    const total = BigInt(data.total ?? 0n)
+    if (total === 0n) return null
+
+    const inflow = BigInt(data.inflow ?? 0n)
+    return Number((inflow * 100n) / total)
+  }, [data])
+
+  const hasActivity = !!data && data.total !== "0"
+
+  if (isLoading)
+    return (
+      <div className="px-12 py-10">
+        <Skeleton className="mb-3 font-medium text-white">{t("Total Flow")}</Skeleton>
+        <Skeleton className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full bg-grey-800"></Skeleton>
+        <div className={cn("flex justify-between text-body-secondary text-xs")}>
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </div>
+    )
+
+  return (
+    <div className="px-12 py-10">
+      <div className="mb-3 font-medium text-white">{t("Total Flow")}</div>
+      {inflowPercent !== null ? (
+        <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full">
+          <div className="h-full bg-green transition-all" style={{ width: `${inflowPercent}%` }} />
+          <div className="h-full grow bg-red-500 transition-all" />
+        </div>
+      ) : (
+        <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full bg-grey-800"></div>
+      )}
+      <div
+        className={cn(
+          "flex justify-between text-body-secondary text-xs",
+          !data?.total && "invisible"
+        )}
+      >
+        <span className={hasActivity ? "text-green" : "text-body-inactive"}>
+          <TokensAndFiat
+            planck={data?.inflow}
+            tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
+            noFiat
+            noSymbol
+            noCountUp
+          />{" "}
+          τ
+        </span>
+        <span className={hasActivity ? "text-red-500" : "text-body-inactive"}>
+          <TokensAndFiat
+            planck={data?.outflow}
+            tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
+            noFiat
+            noSymbol
+            noCountUp
+          />{" "}
+          τ
+        </span>
+      </div>
+    </div>
+  )
+}
+
+type WhalesActivityData = ReturnType<typeof useSubnetWhalesActivity>["data"]
+type WhalesActivityEntry = NonNullable<WhalesActivityData>[number]
+
+const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
+  const { t } = useTranslation()
+  const days = useDaysFromPeriod(period)
+  const { data: rawTransactions, isLoading } = useSubnetWhalesActivity(netuid, days)
   const { data: taoPrice } = useTaoPrice()
   const transactions = useMemo(
     () =>
@@ -120,26 +151,15 @@ const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
     [rawTransactions]
   )
 
-  const taoUsdPrice = taoPrice?.price ? parseFloat(taoPrice.price) : 0
+  const taoUsdPrice = useMemo(() => {
+    if (!taoPrice?.price) return undefined
+    return parseFloat(taoPrice.price)
+  }, [taoPrice])
 
-  // Calculate flow totals
-  const { inflow, outflow } = useMemo(() => {
-    if (!transactions || transactions.length === 0) return { inflow: 0, outflow: 0 }
-
-    let inflowTotal = 0
-    let outflowTotal = 0
-
-    for (const tx of transactions) {
-      const taoAmount = Number(tx.taoAmount) / 1e9
-      if (tx.transactionType === "StakeAdded") {
-        inflowTotal += taoAmount
-      } else if (tx.transactionType === "StakeRemoved") {
-        outflowTotal += taoAmount
-      }
-    }
-
-    return { inflow: inflowTotal, outflow: outflowTotal }
-  }, [transactions])
+  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
+  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
+  const taoToken = useToken(taoTokenId, "substrate-native")
+  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
 
   if (isLoading) {
     return (
@@ -156,116 +176,88 @@ const WhaleActivitySection: FC<{ netuid: number }> = ({ netuid }) => {
   if (!transactions || transactions.length === 0) {
     return (
       <div className="py-8 text-center text-body-secondary text-sm">
-        No whale activity found for this subnet
+        {t("No whale activity found for this subnet")}
       </div>
     )
   }
 
-  const totalFlow = inflow + outflow
-  const inflowPercent = totalFlow > 0 ? (inflow / totalFlow) * 100 : 50
-  const outflowPercent = totalFlow > 0 ? (outflow / totalFlow) * 100 : 50
+  if (!taoToken || !alphaToken) return null
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Total Flow Header */}
-      <div className="rounded-lg bg-grey-900 p-4">
-        <div className="mb-3 font-medium text-white">Whale Flow</div>
-        <div className="mb-2 flex h-2 w-full overflow-hidden rounded-full">
-          <div className="h-full bg-green transition-all" style={{ width: `${inflowPercent}%` }} />
-          <div
-            className="h-full bg-red-500 transition-all"
-            style={{ width: `${outflowPercent}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-body-secondary text-xs">
-          <span className="text-green">{formatNumber(inflow, 0)} τ In</span>
-          <span className="text-red-500">{formatNumber(outflow, 0)} τ Out</span>
+    <div className="flex grow flex-col overflow-y-auto">
+      {transactions.map((tx) => (
+        <WhaleActivityItem
+          key={tx.id}
+          tx={tx}
+          alphaToken={alphaToken}
+          taoToken={taoToken}
+          taoUsdPrice={taoUsdPrice}
+        />
+      ))}
+    </div>
+  )
+}
+
+const WhaleActivityItem: FC<{
+  tx: WhalesActivityEntry
+  alphaToken: SubDTaoToken
+  taoToken: SubNativeToken
+  taoUsdPrice?: number
+}> = ({ tx, taoToken, taoUsdPrice }) => {
+  const isBuy = isInflowTransaction(tx.transactionType)
+
+  const usdValue = useMemo(() => {
+    if (!taoUsdPrice) return null
+    const formatter = new BalanceFormatter(BigInt(tx.taoAmount), taoToken.decimals, {
+      "usd": { price: taoUsdPrice },
+    } as TokenRates)
+    return formatter.fiat("usd")
+  }, [taoUsdPrice, taoToken.decimals, tx.taoAmount])
+
+  const handleClick = useCallback(() => {
+    const extrinsicIndex = String(tx.extrinsicIndex).padStart(4, "0")
+    window.open(
+      `https://taostats.io/extrinsic/${tx.blockHeight}-${extrinsicIndex}`,
+      "_blank",
+      "noopener,noreferrer"
+    )
+  }, [tx])
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        "flex h-28 shrink-0 items-center justify-between px-12 text-left text-sm hover:bg-grey-800"
+      )}
+    >
+      <div className="flex items-center gap-8">
+        <TransactionAvatar isBuy={isBuy} address={tx.coldkey} />
+        <div className="flex flex-col gap-2">
+          <div>
+            <AccountNameOrAddress address={tx.coldkey} />
+          </div>
+          <div className={cn("text-grey-500 text-xs")}>
+            <DistanceToNow timestamp={tx.timestamp} />
+          </div>
         </div>
       </div>
-
-      {/* Activity List */}
-      {transactions.slice(0, 20).map((tx) => {
-        const taoAmount = Number(tx.taoAmount) / 1e9
-        const usdValue = taoAmount * taoUsdPrice
-        const alphaAmount = tx.alphaAmount ? Number(tx.alphaAmount) / 1e9 : null
-        const isInflow = isInflowTransaction(tx.transactionType)
-
-        return (
-          <div key={tx.id} className="rounded-xl bg-grey-900 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "flex size-10 items-center justify-center rounded-full",
-                    getTransactionColor(tx.transactionType)
-                  )}
-                >
-                  <Icon
-                    icon={getTransactionIcon(tx.transactionType)}
-                    className="size-5 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="font-medium text-sm text-white">
-                    {truncateAddress(tx.coldkey)}
-                  </div>
-                  <div className="text-body-secondary text-xs">{formatTimeAgo(tx.timestamp)}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div
-                  className={cn("font-medium text-sm", getTransactionTextColor(tx.transactionType))}
-                >
-                  {isInflow ? "+ " : "- "}
-                  {formatNumber(taoAmount, 0)} τ
-                </div>
-                <div className="text-body-secondary text-xs">{formatUsd(usdValue)}</div>
-              </div>
-            </div>
-
-            {/* Additional details for moves/transfers/swaps */}
-            {(tx.originNetuid !== null || tx.destinationColdkey) && (
-              <div className="mt-2 flex flex-wrap gap-2 border-grey-700 border-t pt-2 text-xs">
-                {tx.originNetuid !== null && (
-                  <span className="text-body-secondary">
-                    From SN{tx.originNetuid} → SN{tx.netuid}
-                  </span>
-                )}
-                {tx.destinationColdkey && (
-                  <span className="text-body-secondary">
-                    To: {truncateAddress(tx.destinationColdkey)}
-                  </span>
-                )}
-                {alphaAmount !== null && (
-                  <span className="text-body-secondary">{formatNumber(alphaAmount, 0)} α</span>
-                )}
-              </div>
-            )}
-
-            {/* Tier badge */}
-            {/* <div className="mt-2">
-              <span
-                className={cn(
-                  "inline-block rounded-full px-2 py-0.5 text-xs",
-                  tx.tier === "Whale"
-                    ? "bg-cyan-500/20 text-cyan-400"
-                    : tx.tier === "Shark"
-                      ? "bg-blue-500/20 text-blue-400"
-                      : tx.tier === "Dolphin"
-                        ? "bg-purple-500/20 text-purple-400"
-                        : tx.tier === "Fish"
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : tx.tier === "Crab"
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-grey-600/20 text-grey-400"
-                )}
-              >
-                {tx.tier}
-              </span>
-            </div> */}
-          </div>
-        )
-      })}
-    </div>
+      <div className={cn("flex flex-col items-end gap-2")}>
+        <div className={cn(isBuy ? "text-buy" : "text-sell")}>
+          {isBuy ? "+ " : "- "}
+          <TokensAndFiat
+            noFiat
+            noCountUp
+            tokenId={taoToken.id}
+            planck={BigInt(tx.taoAmount)}
+            noSymbol
+          />{" "}
+          {TAO_SYMBOL}
+        </div>
+        <div className={cn("text-grey-500 text-xs")}>
+          <FiatFromUsd amount={usdValue} noCountUp />
+        </div>
+      </div>
+    </button>
   )
 }

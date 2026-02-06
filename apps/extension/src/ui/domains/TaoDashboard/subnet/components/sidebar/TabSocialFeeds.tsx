@@ -95,7 +95,7 @@ const SentimentSummarySkeleton = () => {
   )
 }
 
-const Separator = () => <div className="h-px bg-grey-800"></div>
+const Separator = () => <div className="h-px shrink-0 bg-grey-800"></div>
 
 type Sentiment = "very_bearish" | "bearish" | "neutral" | "bullish" | "very_bullish"
 

@@ -831,11 +831,11 @@ export class Sn45Api<
      * No description
      *
      * @tags Bittensor
-     * @name GetSubnetWhaleTransactions
-     * @summary Get whale stake transactions for a subnet
+     * @name GetSubnetWhaleTransactionsLegacy
+     * @summary [To be deleted] Get whale stake transactions for a subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/whale-transactions
      */
-    getSubnetWhaleTransactions: (
+    getSubnetWhaleTransactionsLegacy: (
       netuid: string,
       query?: {
         limit?: string;
@@ -952,9 +952,9 @@ export class Sn45Api<
     /**
      * No description
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetDailyTrend
-     * @summary Daily sentiment trend for a specific subnet
+     * @summary [To be deleted] Daily sentiment trend for a specific subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/sentiment/trend
      */
     getSubnetDailyTrend: (
@@ -997,9 +997,9 @@ export class Sn45Api<
     /**
      * No description
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetTweetsLegacy
-     * @summary Recent analyzed tweets for a specific subnet
+     * @summary [To be deleted] Recent analyzed tweets for a specific subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/sentiment/tweets
      */
     getSubnetTweetsLegacy: (
@@ -1229,6 +1229,103 @@ export class Sn45Api<
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/tweets`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Bittensor
+     * @name GetSubnetWhalesActivity
+     * @summary Get whale staking events for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/whales-activity
+     */
+    getSubnetWhalesActivity: (
+      netuid: string,
+      query?: {
+        /**
+         * Number of days to look back (1-365, default: 30)
+         * @min 1
+         * @max 365
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          id: string;
+          blockHeight: number;
+          extrinsicIndex: number | null;
+          transactionType:
+            | "StakeAdded"
+            | "StakeRemoved"
+            | "StakeMove"
+            | "StakeTransfer"
+            | "StakeSwapped";
+          tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          coldkey: string;
+          hotkey: string;
+          netuid: number;
+          originNetuid: number | null;
+          taoAmount: string;
+          alphaAmount: string | null;
+          destinationColdkey: string | null;
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/whales-activity`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Bittensor
+     * @name GetSubnetWhalesFlow
+     * @summary Get whale staking flow summary for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/whales-flow
+     */
+    getSubnetWhalesFlow: (
+      netuid: string,
+      query?: {
+        /**
+         * Number of days to look back (1-365, default: 30)
+         * @min 1
+         * @max 365
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          inflow: string;
+          outflow: string;
+          total: string;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/whales-flow`,
         method: "GET",
         query: query,
         format: "json",

@@ -7,7 +7,7 @@ import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TabSignals } from "./TabSignals"
 import { TabSocialFeeds } from "./TabSocialFeeds"
-import { TabWhaleActivity } from "./TabWhalesActivity"
+import { TabWhalesActivity } from "./TabWhalesActivity"
 
 type TabType = "signals" | "social" | "whale"
 
@@ -55,6 +55,6 @@ const TabContent: FC<{
     case "social":
       return <TabSocialFeeds netuid={netuid} />
     case "whale":
-      return <TabWhaleActivity netuid={netuid} />
+      return <TabWhalesActivity netuid={netuid} />
   }
 }

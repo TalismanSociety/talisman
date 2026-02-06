@@ -6,16 +6,14 @@ import {
   subDTaoTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { cn, formatDecimals } from "@talismn/util"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useAccountByAddress, useToken } from "@ui/state"
+import { useToken } from "@ui/state"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { AccountNameOrAddress } from "../../shared/AccountNameOrAddress"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
+import { TransactionAvatar } from "../../shared/TransactionAvatar"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
 import type { TransactionEntry } from "./types"
@@ -226,52 +224,3 @@ const TransactionRowSkeleton: FC = () => {
     </div>
   )
 }
-
-const AccountNameOrAddress: FC<{ address: string }> = ({ address }) => {
-  const account = useAccountByAddress(address)
-
-  if (account) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>{account.name}</span>
-        </TooltipTrigger>
-        <TooltipContent>{account.address}</TooltipContent>
-      </Tooltip>
-    )
-  }
-
-  return (
-    <Address
-      className="text-body-secondary"
-      startCharCount={6}
-      endCharCount={6}
-      address={address}
-      noOnChainId
-    />
-  )
-}
-
-const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: string }> = ({
-  isBuy,
-  address,
-  className,
-}) => (
-  <div className={cn("relative shrink-0", className)}>
-    <AccountIcon address={address} className="size-[3.6rem] text-[3.6rem]" />
-    <div className="absolute -right-2 -bottom-2 flex size-10 items-center justify-center rounded-full bg-grey-850 p-px">
-      <div
-        className={cn(
-          "flex size-full flex-col items-center justify-center rounded-full",
-          isBuy ? "bg-buy/15" : "bg-sell/15"
-        )}
-      >
-        {isBuy ? (
-          <ArrowDownIcon className="size-7 rounded-full text-green" />
-        ) : (
-          <ArrowUpIcon className="size-7 rounded-full text-sell" />
-        )}
-      </div>
-    </div>
-  </div>
-)

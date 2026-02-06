@@ -14,6 +14,7 @@ type TokensAndFiatProps = {
   as?: "span" | "div"
   noTooltip?: boolean
   noCountUp?: boolean
+  noSymbol?: boolean
   isBalance?: boolean
   noFiat?: boolean
   withLogo?: boolean
@@ -28,6 +29,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
   className,
   noTooltip,
   noCountUp,
+  noSymbol,
   isBalance,
   noFiat,
   tokensClassName,
@@ -63,7 +65,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
       <Tokens
         amount={balance.tokens}
         decimals={token.decimals}
-        symbol={token.symbol}
+        symbol={noSymbol ? undefined : token.symbol}
         noCountUp={noCountUp}
         noTooltip={noTooltip}
         isBalance={isBalance}
