@@ -6,7 +6,7 @@ import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/state"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { Checkbox } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
@@ -132,51 +132,46 @@ export const ExternalRecipientWarning = () => {
   if (warningType === "none") return null
 
   return (
-    <div className="flex w-full items-center gap-4 rounded-sm bg-alert-warn/10 p-4 text-alert-warn text-xs">
-      <AlertCircleIcon className="shrink-0 text-[2rem]" />
-      {warningType === "network" && network && token && (
-        <div>
+    <div className="w-full rounded border border-alert-warn text-xs">
+      <div className="flex items-center gap-4 p-4 text-alert-warn">
+        <AlertCircleIcon className="shrink-0 text-[2rem]" />
+        {warningType === "network" && network && token && (
           <div>
-            <Trans
-              t={t}
-              components={{
-                Network: <span className="font-bold text-white">{network?.name}</span>,
-              }}
-              i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
-            />
-          </div>
-          <div className="mt-4 space-y-2 text-body">
-            <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
-              {t("Recipient supports {{token}} on {{network}}", {
-                token: token.name,
-                network: network.name,
-              })}
-            </Checkbox>
-            {isWarningAcknowledged && (
-              <Checkbox checked={dontRemindAgain} onChange={handleDontRemindChange}>
-                {t("Don't remind me again for this address")}
-              </Checkbox>
+            {t(
+              "Warning: Sending to a centralized exchange on the wrong network might result in loss of funds"
             )}
           </div>
-        </div>
-      )}
-      {warningType === "alpha" && (
-        <div>
+        )}
+        {warningType === "alpha" && (
           <div>
             {t(
               "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds."
             )}
           </div>
-          <div className="mt-2 space-y-2 text-body">
-            <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
-              {t("Recipient is not a centralized exchange")}
-            </Checkbox>
-            {isWarningAcknowledged && (
-              <Checkbox checked={dontRemindAgain} onChange={handleDontRemindChange}>
-                {t("Don't remind me again for this address")}
-              </Checkbox>
-            )}
-          </div>
+        )}
+      </div>
+      <hr className="border-alert-warn" />
+      {warningType === "network" && network && token && (
+        <div className="space-y-2 p-4 text-body">
+          <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
+            {t("Recipient supports {{token}} on {{network}}", {
+              token: token.name,
+              network: network.name,
+            })}
+          </Checkbox>
+          <Checkbox checked={dontRemindAgain} onChange={handleDontRemindChange}>
+            {t("Don't remind me again for this address")}
+          </Checkbox>
+        </div>
+      )}
+      {warningType === "alpha" && (
+        <div className="space-y-2 p-4 text-body">
+          <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
+            {t("Recipient is not a centralized exchange")}
+          </Checkbox>
+          <Checkbox checked={dontRemindAgain} onChange={handleDontRemindChange}>
+            {t("Don't remind me again for this address")}
+          </Checkbox>
         </div>
       )}
     </div>
