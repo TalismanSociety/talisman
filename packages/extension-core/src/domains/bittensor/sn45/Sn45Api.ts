@@ -1331,5 +1331,65 @@ export class Sn45Api<
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
+     * @name GetSubnetCombinedScore
+     * @summary Combined tokenomics, economics, and sentiment score for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/combined-score
+     */
+    getSubnetCombinedScore: (
+      netuid: string,
+      query?: {
+        /**
+         * @min 1
+         * @max 365
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          alphaFlow: string;
+          emaTaoFlow: string;
+          socialsSentimentScore: number;
+          socialsSentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+          combinedScore: number;
+          combinedSentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+          economicScore: number;
+          economicSentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/combined-score`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
   };
 }

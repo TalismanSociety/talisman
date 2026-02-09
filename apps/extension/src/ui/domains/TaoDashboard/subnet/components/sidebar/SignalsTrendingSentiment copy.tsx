@@ -1,21 +1,20 @@
-import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useSubnetCombinedScore } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { useSentimentLabel } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
+import {
+  useSubnetEconomicsWithSentiment,
+  useSubnetTokenomics,
+} from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { SectionTitleBar, useDaysFromPeriod } from "./shared"
+import { SectionTitleBar } from "./shared"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
-
-  const days = useDaysFromPeriod(period)
-  const { data, isLoading } = useSubnetCombinedScore(netuid, days)
+  const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
+  const { data: economics, isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
+  const isLoading = tokenomicsLoading || economicsLoading
 
   return (
     <div>
@@ -24,48 +23,59 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
           <TradingSentimentSkeleton />
-        ) : data ? (
-          <TrendingSentiment netuid={netuid} period={period} combinedScore={data} />
         ) : (
-          t("No data available")
+          <TrendingSentiment
+            netuid={netuid}
+            period={period}
+            tokenomics={tokenomics}
+            economics={economics}
+          />
         )}
       </div>
     </div>
   )
 }
 
-type SubnetCombinedScoreData = ReturnType<typeof useSubnetCombinedScore>["data"]
+type SubnetTokenomicsData = ReturnType<typeof useSubnetTokenomics>["data"]
+type SubnetEconomicsData = ReturnType<typeof useSubnetEconomicsWithSentiment>["data"]
 
 const TrendingSentiment: FC<
   PropsWithChildren<{
     netuid: number
     period: TimePeriod
-    combinedScore: NonNullable<SubnetCombinedScoreData>
+    tokenomics: SubnetTokenomicsData
+    economics: SubnetEconomicsData
   }>
-> = ({ netuid, combinedScore }) => {
+> = ({ netuid, tokenomics, economics }) => {
   const { t } = useTranslation()
+  const economicsData = economics?.[netuid]
 
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
-  const alphaFlow = BigInt(combinedScore.alphaFlow)
+  const alphaFlow = useMemo(() => {
+    if (!tokenomics) return 0
+    const alphaIn = parseFloat(tokenomics.alphaIn) / 1e9
+    const alphaOut = parseFloat(tokenomics.alphaOut) / 1e9
+    return alphaIn - alphaOut
+  }, [tokenomics])
 
-  const economicSentimentLabel = useSentimentLabel(combinedScore.economicSentiment)
-  const socialSentimentLabel = useSentimentLabel(combinedScore.socialsSentiment)
-  const combinedSentimentLabel = useSentimentLabel(combinedScore.combinedSentiment)
+  const EMA = useMemo(() => {
+    if (!tokenomics?.emaTaoFlow) return 0
+    return parseFloat(tokenomics.emaTaoFlow) / 2 ** 64 / 1e9
+  }, [tokenomics])
 
   const score = useMemo(() => {
-    // input is a value between -2 and +2
-    // output must be a value between 0 and 100
-    return combinedScore?.combinedScore !== undefined
-      ? Math.round(((combinedScore.combinedScore + 2) / 4) * 100)
+    return economicsData?.sentimentScore !== undefined
+      ? Math.round(((economicsData.sentimentScore + 2) / 4) * 100)
       : 0
-  }, [combinedScore])
+  }, [economicsData])
+
+  const sentimentLabel = useSentimentLabel(score)
 
   return (
     <div className="flex h-[16.5rem] items-stretch gap-14">
       <div className="flex h-full flex-col items-center justify-between">
-        <div className="mb-1 text-body-inactive text-xs">{t("Combined Score")}</div>
+        <div className="mb-1 text-body-inactive text-xs">{t("Sentiment Score")}</div>
         <SentimentGauge score={score} />
-        <div className="text-md">{combinedSentimentLabel}</div>
+        <div>{sentimentLabel}</div>
       </div>
 
       <div className="w-px self-stretch bg-grey-800" />
@@ -76,20 +86,19 @@ const TrendingSentiment: FC<
           className={cn(alphaFlow >= 0 ? "text-green" : "text-red-500")}
         >
           <div className="flex items-center gap-6">
-            <span>
-              <TokensAndFiat
-                tokenId={alphaTokenId}
-                planck={combinedScore.alphaFlow}
-                noFiat
-                noCountUp
-              />
-            </span>
-            {alphaFlow > 0n && <ArrowUpRightIcon className="size-8" />}
-            {alphaFlow < 0n && <ArrowDownRightIcon className="size-8" />}
+            <span>{formatCompactNumber(Math.abs(alphaFlow))}α</span>
+            {alphaFlow >= 0 ? (
+              <ArrowUpRightIcon className="size-8" />
+            ) : (
+              <ArrowDownRightIcon className="size-8" />
+            )}
           </div>
         </SentimentField>
-        <SentimentField label={t("Economic Sentiment")}>{economicSentimentLabel}</SentimentField>
-        <SentimentField label={t("Socials Sentiment")}>{socialSentimentLabel}</SentimentField>
+        <SentimentField label={t("EMA")} className={cn(EMA >= 0 ? "text-green" : "text-red-500")}>
+          {EMA >= 0 ? "+" : ""}
+          {EMA.toFixed(2)}
+        </SentimentField>
+        <SentimentField label={t("Combine Score")}>TODO</SentimentField>
       </div>
     </div>
   )
@@ -158,6 +167,31 @@ const SentimentGauge: FC<{ score: number }> = ({ score }) => {
   )
 }
 
+const formatCompactNumber = (num: number): string => {
+  if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B`
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+  return num.toFixed(0)
+}
+
+const useSentimentLabel = (score: number) => {
+  const { t } = useTranslation()
+
+  return useMemo(() => {
+    if (score >= 80) {
+      return t("Very Bullish")
+    } else if (score >= 60) {
+      return t("Bullish")
+    } else if (score >= 40) {
+      return t("Neutral")
+    } else if (score >= 20) {
+      return t("Bearish")
+    } else {
+      return t("Very Bearish")
+    }
+  }, [score, t])
+}
+
 const TradingSentimentSkeleton = () => (
   <div className="flex h-[16.5rem] items-stretch gap-14">
     <div className="flex h-full w-[118px] flex-col items-center justify-between">
@@ -165,6 +199,7 @@ const TradingSentimentSkeleton = () => (
         <Skeleton className="w-[9rem]" />
       </div>
       <SentimentGaucheSkeleton />
+      {/* <SentimentGauge score={score} className="h-[103px] w-[118px]" /> */}
       <div>
         <Skeleton className="w-[6rem]" />
       </div>

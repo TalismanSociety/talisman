@@ -2,6 +2,7 @@ import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { ArrowRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
 import {
   type FC,
@@ -97,49 +98,6 @@ const SentimentSummarySkeleton = () => {
 
 const Separator = () => <div className="h-px shrink-0 bg-grey-800"></div>
 
-type Sentiment = "very_bearish" | "bearish" | "neutral" | "bullish" | "very_bullish"
-
-const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
-  const { t } = useTranslation()
-
-  const label = useMemo(() => {
-    switch (sentiment) {
-      case "very_bearish":
-        return t("Very Bearish")
-      case "bearish":
-        return t("Bearish")
-      case "neutral":
-        return t("Neutral")
-      case "bullish":
-        return t("Bullish")
-      case "very_bullish":
-        return t("Very Bullish")
-      default:
-        return t("Unknown")
-    }
-  }, [sentiment, t])
-
-  const className = useMemo(() => {
-    switch (sentiment) {
-      case "very_bearish":
-      case "bearish":
-        return "bg-sell/10 text-sell"
-
-      case "very_bullish":
-      case "bullish":
-        return "bg-buy/10 text-buy"
-
-      // case "neutral":
-      default:
-        return "bg-body-secondary/10 text-body-secondary"
-    }
-  }, [sentiment])
-
-  return (
-    <div className={cn("flex h-12 items-center rounded-full px-5 text-xs", className)}>{label}</div>
-  )
-}
-
 const SentimentSummaryBar: FC<{ sentiment: SubnetSentimentData }> = ({ sentiment }) => {
   const [bearishPercent, neutralPercent, bullishPercent] = useMemo(() => {
     if (!sentiment?.count) return [false, 0, 100, 0]
@@ -201,6 +159,8 @@ const TweetsList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period
 }
 
 const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
+  const { t } = useTranslation()
+
   return (
     <a
       key={tweet.id}
@@ -224,7 +184,7 @@ const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
           )}
           <span className="text-base text-body">@{tweet.author.screenName}</span>
         </div>
-        <SentimentBadge sentiment={tweet.sentiment as Sentiment} />
+        <SentimentBadge sentiment={tweet.sentiment} />
       </div>
       <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>
       <div className="flex gap-8">
@@ -234,7 +194,7 @@ const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
       <div className="flex items-center justify-between text-grey-600 text-sm">
         <DistanceToNow timestamp={tweet.createdAt} />
         <span className="text-primary opacity-0 transition-opacity group-hover:opacity-100">
-          View <ArrowRightIcon className="inline" />
+          {t("View")} <ArrowRightIcon className="inline" />
         </span>
       </div>
     </a>

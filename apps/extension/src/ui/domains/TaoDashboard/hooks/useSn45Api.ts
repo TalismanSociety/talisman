@@ -386,50 +386,19 @@ export const useSubnetWhalesActivity = (netuid: number | null | undefined, days?
   })
 }
 
-// // Hook to get whale transactions for a subnet
-// export const useWhaleTransactions = (
-//   netuid: number | null | undefined,
-//   options?: {
-//     limit?: number
-//     tier?: WhaleTier
-//     transactionType?: WhaleTransactionType
-//     minTaoAmount?: number
-//   }
-// ) => {
-//   const limit = options?.limit ?? 50
-//   const tier = options?.tier
-//   const transactionType = options?.transactionType
-//   const minTaoAmount = options?.minTaoAmount
-
-//   return useQuery({
-//     queryKey: ["sn45", "whaleTransactions", netuid, limit, tier, transactionType, minTaoAmount],
-//     queryFn: async (): Promise<WhaleTransaction[]> => {
-//       if (!netuid) return []
-//       try {
-//         const response = await sn45Api.v1.getSubnetWhaleTransactions(String(netuid), {
-//           limit: String(limit),
-//           tier,
-//           transactionType,
-//           minTaoAmount: minTaoAmount !== undefined ? String(minTaoAmount) : undefined,
-//         })
-//         // Convert hex addresses to SS58
-//         return response.data.map((item) => ({
-//           ...item,
-//           coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
-//           hotkey: hexToSs58(item.hotkey) ?? item.hotkey,
-//           destinationColdkey: item.destinationColdkey
-//             ? (hexToSs58(item.destinationColdkey) ?? item.destinationColdkey)
-//             : null,
-//         }))
-//       } catch {
-//         return []
-//       }
-//     },
-//     enabled: !!netuid,
-//     refetchInterval: 60_000,
-//     staleTime: 30_000,
-//   })
-// }
+export const useSubnetCombinedScore = (netuid: number | null | undefined, days?: number) => {
+  return useQuery({
+    queryKey: ["sn45", "subnetCombinedScore", netuid, days],
+    queryFn: async () => {
+      if (!netuid) return null
+      const response = await sn45Api.v1.getSubnetCombinedScore(String(netuid), { days })
+      return response.data
+    },
+    enabled: !!netuid,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  })
+}
 
 // Hook to get all whale transactions (not subnet specific)
 export const useAllWhaleTransactions = (options?: {
