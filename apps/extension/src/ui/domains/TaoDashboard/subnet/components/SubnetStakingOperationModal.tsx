@@ -65,9 +65,9 @@ const ModalContent: FC<{
       title={t("Swap Details")}
       onCloseClick={onClose}
       className="size-full"
-      contentClassName="flex flex-col size-full overflow-hidden"
+      contentClassName="flex flex-col size-full overflow-hidden pr-0"
     >
-      <div className="scrollable scrollable-800 grow overflow-auto">
+      <div className="scrollable scrollable-800 grow overflow-auto pr-8">
         <SwapSummary transaction={tx} netuid={netuid} />
         <div className="h-10 shrink-0"></div>
 
