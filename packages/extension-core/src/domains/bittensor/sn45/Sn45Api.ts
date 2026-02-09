@@ -1391,5 +1391,96 @@ export class Sn45Api<
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Subnets
+     * @name GetSubnetHolders
+     * @summary Aggregated holder metrics for a specific subnet (total, change, concentration, TAO-based tiers)
+     * @request GET:/v1/bittensor/subnets/{netuid}/holders
+     */
+    getSubnetHolders: (
+      netuid: string,
+      query?: {
+        /**
+         * Number of days to look back for change calculation (1-365, default: 30)
+         * @min 1
+         * @max 365
+         * @default 30
+         */
+        days?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Current total number of unique wallet addresses holding alpha tokens on this subnet */
+          totalHolders: number;
+          /** Absolute change in holder count over the specified period (positive = growth, negative = decline) */
+          holderChange: number;
+          /** Number of wallet addresses that fall within the top 10% of holders by TAO value */
+          top10Concentration: number;
+          /** Percentage of holders who performed at least one staking event (add/remove stake) during the period */
+          avgTradePercent: number;
+          /** Distribution of holders across 6 tiers based on TAO value thresholds (consistent across subnets) */
+          breakdown: {
+            /** Holders with >= 10,000 TAO value */
+            whale: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with >= 1,000 and < 10,000 TAO value */
+            shark: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with >= 100 and < 1,000 TAO value */
+            dolphin: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with >= 10 and < 100 TAO value */
+            fish: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with >= 1 and < 10 TAO value */
+            crab: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with < 1 TAO value */
+            shrimp: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+          };
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/holders`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
   };
 }
