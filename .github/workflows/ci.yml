@@ -331,7 +331,8 @@ jobs:
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
