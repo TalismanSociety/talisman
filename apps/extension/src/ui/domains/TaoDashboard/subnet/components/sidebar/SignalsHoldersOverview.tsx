@@ -56,12 +56,39 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
 
 type SubnetHoldersData = NonNullable<ReturnType<typeof useSubnetHolders>["data"]>
 
-const HoldersOverviewSkeleton = () => null
+const HoldersOverviewSkeleton = () => (
+  <div className="flex h-[20rem] items-stretch gap-14">
+    <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
+      <MetricsFieldSkeleton withExtra />
+      <MetricsFieldSkeleton withExtra />
+      <MetricsFieldSkeleton />
+    </div>
+    <div className="w-px self-stretch bg-grey-800" />
+    <div className="h-full grow">
+      <div className="relative size-full">
+        <svg width="156" height="156" viewBox="0 0 156 156" className="size-full animate-pulse">
+          <circle cx="78" cy="78" r={DONUT_RADIUS} fill="none" stroke="#262626" strokeWidth="12" />
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
+          <span className="l text-white text-xs">
+            <Skeleton className="w-56" />
+          </span>
+          <span className="font-medium text-lg text-white leading-[1.2]">
+            <Skeleton className="w-20" />
+          </span>
+          <span className="font-bold text-sm leading-[1.2]">
+            <Skeleton className="w-36" />
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+)
 
 const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   const { t } = useTranslation()
 
-  // Concentration label based on top 10 concentration
+  // Concentration label based on top 10% concentration
   const concentrationLabel = useMemo(() => {
     if (!data || !("top10Concentration" in data)) return "Unknown"
     const concentration = data.top10Concentration
@@ -73,7 +100,7 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
 
   return (
     <div className="flex h-[20rem] items-stretch gap-14">
-      <div className="flex h-full flex-col items-start justify-between">
+      <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
         <MetricsField
           label={t("Total Holders")}
           extra={
@@ -89,7 +116,7 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         >
           {formatCompactNumber(data.totalHolders)}
         </MetricsField>
-        <MetricsField label={t("Top 10 Concentration")} extra={concentrationLabel}>
+        <MetricsField label={t("10% Concentration")} extra={concentrationLabel}>
           {formatCompactNumber(data.top10Concentration)}
         </MetricsField>
         <MetricsField label={t("Avg Trade")}>{data.avgTradePercent.toFixed(1)}%</MetricsField>
@@ -106,9 +133,11 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   )
 }
 
+const DONUT_RADIUS = 72
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS
+
 const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   const { t } = useTranslation()
-  const [hoveredTier, setHoveredTier] = useState<TierKey | null>(null)
 
   // Convert API data to tier array
   const tiers = useMemo((): TierData[] => {
@@ -121,21 +150,79 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
     }))
   }, [data])
 
-  // Find the biggest tier with holders (default selection)
-  const defaultTier = useMemo((): TierKey => {
-    const withHolders = tiers.filter((t) => t.count > 0)
-    if (withHolders.length === 0) return "dolphin"
-    // Return the tier with highest count
-    return withHolders.reduce((max, t) => (t.count > max.count ? t : max), withHolders[0]).key
+  // Find the highest tier with holders (whale > shark > dolphin > fish > crab > shrimp)
+  const highestTier = useMemo((): TierKey => {
+    for (const key of TIER_ORDER) {
+      const tier = tiers.find((t) => t.key === key)
+      if (tier && tier.count > 0) return key
+    }
+    return "dolphin" // fallback
   }, [tiers])
 
-  // Active tier is hovered tier or default
-  const activeTier = hoveredTier ?? defaultTier
+  // Active tier is the last hovered tier, or highest tier if none hovered
+  const [lastHoveredTier, setLastHoveredTier] = useState<TierKey | null>(null)
+  const activeTier = lastHoveredTier ?? highestTier
   const activeTierData = tiers.find((t) => t.key === activeTier) ?? {
     key: activeTier,
     count: 0,
     percent: 0,
   }
+
+  // Handle hover - set last hovered tier (persists after mouse leaves)
+  const handleHover = (tier: TierKey | null) => {
+    if (tier !== null) {
+      setLastHoveredTier(tier)
+    }
+  }
+
+  // Calculate visual segment data with proper sizing to avoid overlaps
+  const segmentData = useMemo(() => {
+    const gapSize = 16 // Gap between segments in pixels
+    const minSegmentLength = 0 // Minimum visible segment length
+
+    // Filter to only non-zero tiers
+    const nonZeroTiers = tiers.filter((t) => t.percent > 0)
+    if (nonZeroTiers.length === 0) return []
+
+    // Total gap space needed
+    const totalGapSpace = nonZeroTiers.length * gapSize
+    const availableSpace = DONUT_CIRCUMFERENCE - totalGapSpace
+
+    // Calculate minimum space needed if all segments were at minimum
+    const totalMinSpace = nonZeroTiers.length * minSegmentLength
+
+    // Calculate visual lengths proportionally
+    let visualLengths: { tier: TierData; length: number }[]
+
+    if (availableSpace <= totalMinSpace) {
+      // Not enough space - give everyone equal minimum
+      visualLengths = nonZeroTiers.map((tier) => ({
+        tier,
+        length: availableSpace / nonZeroTiers.length,
+      }))
+    } else {
+      // Distribute: give everyone minimum, then distribute remainder by percentage
+      const remainder = availableSpace - totalMinSpace
+      const totalPercent = nonZeroTiers.reduce((sum, t) => sum + t.percent, 0)
+
+      visualLengths = nonZeroTiers.map((tier) => ({
+        tier,
+        length: minSegmentLength + (tier.percent / totalPercent) * remainder,
+      }))
+    }
+
+    // Calculate offsets based on visual lengths
+    let offset = 0
+    return visualLengths.map(({ tier, length }) => {
+      const segment = {
+        tier,
+        length,
+        offset: offset + gapSize / 2, // Center in gap
+      }
+      offset += length + gapSize
+      return segment
+    })
+  }, [tiers])
 
   return (
     <div className="relative size-full">
@@ -148,17 +235,10 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         className="size-full"
       >
         {/* Background circle */}
-        <circle cx="78" cy="78" r="72" fill="none" stroke="#262626" strokeWidth="12" />
+        <circle cx="78" cy="78" r={DONUT_RADIUS} fill="none" stroke="#262626" strokeWidth="12" />
         {/* Tier segments */}
-        {tiers.map((tier) => {
-          const circumference = 2 * Math.PI * 72
-          let offset = 0
-          for (const t of tiers) {
-            if (t.key === tier.key) break
-            offset += (t.percent / 100) * circumference
-          }
-          const length = (tier.percent / 100) * circumference
-          if (length === 0) return null
+        {segmentData.map(({ tier, length, offset }) => {
+          const isActive = tier.key === activeTier
           return (
             // biome-ignore lint/a11y/useSemanticElements: SVG g elements cannot be semantic HTML
             <g
@@ -166,10 +246,8 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
               role="button"
               tabIndex={0}
               className="cursor-pointer outline-none"
-              onMouseEnter={() => setHoveredTier(tier.key)}
-              onMouseLeave={() => setHoveredTier(null)}
-              onFocus={() => setHoveredTier(tier.key)}
-              onBlur={() => setHoveredTier(null)}
+              onMouseEnter={() => handleHover(tier.key)}
+              onFocus={() => handleHover(tier.key)}
             >
               <circle
                 cx="78"
@@ -177,12 +255,12 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
                 r="72"
                 fill="none"
                 stroke={TIER_CONFIG[tier.key].color}
-                strokeWidth={hoveredTier === tier.key ? 16 : 12}
-                strokeDasharray={`${length} ${circumference - length}`}
+                strokeWidth={12}
+                strokeDasharray={`${length} ${DONUT_CIRCUMFERENCE - length}`}
                 strokeDashoffset={-offset}
-                strokeLinecap="butt"
+                strokeLinecap="round"
                 style={{
-                  opacity: hoveredTier && hoveredTier !== tier.key ? 0.4 : 1,
+                  opacity: isActive ? 1 : 0.4,
                   transition: "all 150ms",
                 }}
               />
@@ -223,4 +301,29 @@ const MetricsField: FC<
     <div className={cn("text-md", className)}>{children}</div>
     {!!extra && <div className={cn("text-body-inactive text-xs", extraClassName)}>{extra}</div>}
   </div>
+)
+
+const MetricsFieldSkeleton: FC<{ withExtra?: boolean }> = ({ withExtra }) => (
+  <div className={cn("flex flex-col gap-2")}>
+    <div className="text-body-inactive text-xs">
+      <Skeleton className="w-32" />
+    </div>
+    <div className={cn("text-md")}>
+      <Skeleton className="w-36" />
+    </div>
+    {!!withExtra && (
+      <div className={cn("text-body-inactive text-xs")}>
+        <Skeleton className="w-20" />
+      </div>
+    )}
+  </div>
+)
+
+const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
+  <div
+    className={cn(
+      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
+      className
+    )}
+  />
 )
