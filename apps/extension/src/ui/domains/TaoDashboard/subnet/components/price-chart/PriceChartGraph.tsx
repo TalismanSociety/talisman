@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react"
+import { cn } from "@talismn/util"
 import {
   CandlestickSeries,
   createChart,
@@ -16,23 +17,124 @@ import {
   calculateSMA,
   getSentimentColor,
 } from "./indicators"
-import type { IndicatorConfig, PriceData, ProcessedHourlyData } from "./types"
-
-interface Tweet {
-  createdAt: string
-  sentiment: string
-  impactPotential: string
-}
+import type { IndicatorConfig } from "./types"
+import { usePriceChartData } from "./usePriceChartData"
+import { useSubnetStats } from "./useSubnetStats"
 
 interface PriceChartGraphProps {
-  hourlyData: ProcessedHourlyData[]
-  priceData: PriceData[]
-  tweets: Tweet[] | undefined
+  netuid: number
+  timeRange: number
+  indicators: IndicatorConfig
+}
+
+export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid, timeRange, indicators }) => {
+  const { hourlyData, priceData, tweets, isLoading } = usePriceChartData(netuid, timeRange)
+  const { tokenPrice } = useSubnetStats(netuid)
+
+  if (isLoading) {
+    return <PriceChartGraphSkeleton />
+  }
+
+  if (hourlyData.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center text-body-secondary">
+        No data available for this subnet.
+      </div>
+    )
+  }
+
+  return (
+    <PriceChartGraphContent
+      hourlyData={hourlyData}
+      priceData={priceData}
+      tweets={tweets}
+      tokenPrice={tokenPrice}
+      indicators={indicators}
+    />
+  )
+}
+
+const PriceChartGraphSkeleton = () => (
+  <div className="relative h-[400px] w-full bg-[#181818]">
+    {/* Chart area skeleton */}
+    <div className="absolute inset-0 flex flex-col px-4 py-3">
+      {/* Grid lines simulation */}
+      <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
+      <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />
+      <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
+      <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
+
+      {/* Price scale skeleton (right side) */}
+      <div className="absolute top-4 right-2 bottom-16 flex w-14 flex-col justify-between">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-full" />
+      </div>
+
+      {/* Time scale skeleton (bottom) */}
+      <div className="absolute right-16 bottom-2 left-4 flex justify-between">
+        <Skeleton className="h-3 w-10" />
+        <Skeleton className="h-3 w-10" />
+        <Skeleton className="h-3 w-10" />
+        <Skeleton className="h-3 w-10" />
+        <Skeleton className="h-3 w-10" />
+      </div>
+
+      {/* Central chart area with candlestick-like shapes */}
+      <div className="absolute inset-x-8 top-8 bottom-20 flex items-center justify-center gap-4">
+        <div className="flex h-3/4 items-center gap-2">
+          <div className="flex h-full flex-col items-center justify-center gap-px">
+            <Skeleton className="h-4 w-px" />
+            <Skeleton className="h-16 w-3 bg-buy/30" />
+            <Skeleton className="h-6 w-px" />
+          </div>
+          <div className="flex h-full flex-col items-center justify-center gap-px">
+            <Skeleton className="h-8 w-px" />
+            <Skeleton className="h-12 w-3 bg-sell/30" />
+            <Skeleton className="h-4 w-px" />
+          </div>
+          <div className="flex h-full flex-col items-center justify-center gap-px">
+            <Skeleton className="h-6 w-px" />
+            <Skeleton className="h-20 w-3 bg-buy/30" />
+            <Skeleton className="h-6 w-px" />
+          </div>
+          <div className="flex h-full flex-col items-center justify-center gap-px">
+            <Skeleton className="h-4 w-px" />
+            <Skeleton className="h-10 w-3 bg-sell/30" />
+            <Skeleton className="h-8 w-px" />
+          </div>
+          <div className="flex h-full flex-col items-center justify-center gap-px">
+            <Skeleton className="h-10 w-px" />
+            <Skeleton className="h-14 w-3 bg-buy/30" />
+            <Skeleton className="h-4 w-px" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* TradingView logo placeholder */}
+    <div className="pointer-events-none absolute bottom-12 left-4 z-10 flex items-center gap-1 opacity-30">
+      <Skeleton className="size-5 rounded-full" />
+    </div>
+  </div>
+)
+
+const Skeleton: FC<{ className?: string }> = ({ className }) => (
+  <div className={cn("animate-pulse rounded-xs bg-grey-800", className)} />
+)
+
+// Internal component that renders the actual chart (no loading handling)
+interface PriceChartGraphContentProps {
+  hourlyData: ReturnType<typeof usePriceChartData>["hourlyData"]
+  priceData: ReturnType<typeof usePriceChartData>["priceData"]
+  tweets: ReturnType<typeof usePriceChartData>["tweets"]
   tokenPrice: number | null
   indicators: IndicatorConfig
 }
 
-export const PriceChartGraph: FC<PriceChartGraphProps> = ({
+const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   hourlyData,
   priceData,
   tweets,
