@@ -6,17 +6,24 @@ export const fiatDecimalSeparator = parts.find((p) => p.type === "decimal")?.val
 
 export const fiatGroupSeparator = parts.find((p) => p.type === "group")?.value ?? ","
 
+type FormatFiatProps = {
+  amount?: number
+  currency?: Intl.NumberFormatOptions["currency"]
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
+  minimumDecimalPlaces?: number
+  compact?: boolean
+}
+
 export const formatFiat = (
   amount = 0,
-  currency: Intl.NumberFormatOptions["currency"] | undefined,
-  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"],
-  minimumDecimalPlaces?: number
+  { currency, currencyDisplay, minimumDecimalPlaces, compact }: FormatFiatProps = {}
 ) => {
   const formatOptions: Intl.NumberFormatOptions = {
     ...(currency !== undefined && {
       style: "currency",
       currency,
       currencyDisplay: currencyDisplay ?? (currency === "usd" ? "narrowSymbol" : "symbol"),
+      notation: compact ? "compact" : "standard",
     }),
 
     ...(minimumDecimalPlaces !== undefined && {

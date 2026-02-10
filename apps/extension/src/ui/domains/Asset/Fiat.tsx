@@ -15,6 +15,7 @@ type FiatProps = {
   isBalance?: boolean
   noCountUp?: boolean
   forceCurrency?: TokenRateCurrency
+  compact?: boolean
 }
 
 type DisplayValueProps = {
@@ -32,6 +33,7 @@ export const Fiat = ({
   isBalance = false,
   noCountUp = false,
   forceCurrency,
+  compact,
 }: FiatProps) => {
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
@@ -58,6 +60,7 @@ export const Fiat = ({
           currencyDisplay={currencyDisplay}
           isBalance={isBalance}
           noCountUp={effectiveNoCountUp}
+          compact={compact}
         />
       )}
     </span>
@@ -66,7 +69,14 @@ export const Fiat = ({
 
 // Memoize to smooth up the count up animation
 const DisplayValue = React.memo(
-  ({ amount, currency, currencyDisplay, isBalance, noCountUp }: DisplayValueProps) => {
+  ({
+    amount,
+    currency,
+    currencyDisplay,
+    isBalance,
+    noCountUp,
+    compact,
+  }: DisplayValueProps & { compact?: boolean }) => {
     const decimalPlacesCount = getDecimalPlacesCount(amount)
     // for non balances (ie: prices), display 3 meaningful digits starting from the first non-zero digit => decimalPlacesCount + 2
     const decimalPlaces =
@@ -74,12 +84,17 @@ const DisplayValue = React.memo(
 
     const format = useCallback(
       (amount = 0) => {
-        if (amount !== 0 && isBalance && amount < 0.01)
-          return `< ${formatFiat(0.01, currency, currencyDisplay, 2)}`
+        if (amount > 0 && isBalance && amount < 0.01)
+          return `< ${formatFiat(0.01, { currency, currencyDisplay, minimumDecimalPlaces: 2, compact })}`
 
-        return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
+        return formatFiat(amount, {
+          currency,
+          currencyDisplay,
+          minimumDecimalPlaces: decimalPlaces,
+          compact,
+        })
       },
-      [currency, currencyDisplay, decimalPlaces, isBalance]
+      [currency, currencyDisplay, decimalPlaces, isBalance, compact]
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 

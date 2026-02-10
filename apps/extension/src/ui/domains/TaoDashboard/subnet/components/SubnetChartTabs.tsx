@@ -2,7 +2,7 @@ import { cn } from "@talismn/util"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { type NavTabConfig, TaoDashboardNavTabs } from "../../shared/TaoDashboardNavTabs"
-import { SubnetPriceChart } from "./SubnetPriceChart"
+import { SubnetPriceChart } from "./price-chart/SubnetPriceChart"
 import { SubnetTaoFlowChart } from "./SubnetTaoFlowChart"
 
 interface SubnetChartTabsProps {
@@ -30,7 +30,7 @@ export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) =>
         <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
 
-      <div className="h-[52rem] overflow-hidden rounded-lg bg-grey-850">
+      <div className="h-[52rem] overflow-hidden rounded-lg bg-grey-900">
         {/* Chart Content */}
         {activeTab === "price" ? (
           <SubnetPriceChart netuid={netuid} />
