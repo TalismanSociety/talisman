@@ -9,13 +9,19 @@ This document provides instructions for Firefox Add-on reviewers to build the Ta
 
 ## Build Instructions
 
-1. **Extract the sources ZIP** to a directory of your choice.
+1. **Extract the submitted sources ZIP** to a directory of your choice:
+
+   ```bash
+   unzip talisman-*-sources.zip -d talisman-sources
+   cd talisman-sources
+   ```
 
 2. **Build using Docker**:
 
    ```bash
+   mkdir -p output
    docker build --no-cache -t talisman-builder -f Dockerfile.firefox .
-   docker run --rm -v $(pwd)/output:/output talisman-builder
+   docker run --rm -v "$(pwd)/output:/output" talisman-builder
    ```
 
 3. **Find the built extension**:
