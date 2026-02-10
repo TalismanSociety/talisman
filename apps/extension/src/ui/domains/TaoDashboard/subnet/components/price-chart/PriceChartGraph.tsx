@@ -1,4 +1,3 @@
-import { Icon } from "@iconify/react"
 import { cn } from "@talismn/util"
 import {
   CandlestickSeries,
@@ -165,7 +164,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     // Create the chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 400,
+      height: chartContainerRef.current.clientHeight,
+      // height: 400,
       layout: {
         background: {
           color: "#181818", // grey-900
@@ -445,13 +445,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   }, [hourlyData, priceData, tweets, tokenPrice, indicators])
 
   return (
-    <div className="relative">
-      {/* TradingView logo */}
-      <div className="pointer-events-none absolute bottom-12 left-4 z-10 flex items-center gap-1 opacity-50">
-        <Icon icon="simple-icons:tradingview" className="size-5 text-white" />
-      </div>
-
-      <div ref={chartContainerRef} />
+    <div className="size-full overflow-hidden pt-10 pr-2 pb-5 pl-12">
+      <div ref={chartContainerRef} className="size-full"></div>
     </div>
   )
 }
