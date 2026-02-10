@@ -13,7 +13,7 @@ import { TaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) => {
   return (
     <SwapTxWatcherProvider>
-      <div className="flex h-[118rem] w-full flex-col gap-6 overflow-hidden">
+      <div className="flex h-[120rem] w-full flex-col gap-6 overflow-hidden">
         {/* Breadcrumb / Header */}
         <div className="flex shrink-0 items-center justify-between">
           <TaoDashboardSubnetBreadcrumb netuid={netuid} />
