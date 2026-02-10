@@ -10,7 +10,7 @@ export const SectionTitleBar: FC<{
   onPeriodChange: (period: TimePeriod) => void
 }> = ({ label, period, onPeriodChange }) => {
   return (
-    <div className="mb-8 flex items-center justify-between">
+    <div className="mb-4 flex items-center justify-between">
       <h3 className="font-medium text-md text-white">{label}</h3>
       <TaoDashboardPeriodTabs selected={period} onSelect={onPeriodChange} />
     </div>

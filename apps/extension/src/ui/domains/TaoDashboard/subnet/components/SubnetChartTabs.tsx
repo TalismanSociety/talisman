@@ -25,7 +25,7 @@ export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) =>
   )
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div className={cn("flex flex-col gap-6", className)}>
       <div>
         <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
