@@ -690,6 +690,7 @@ export default defineConfig({
             "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
               process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
             ),
+            "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
           },
         }),
         // Node.js polyfills for browser compatibility (buffer, crypto, etc.)
