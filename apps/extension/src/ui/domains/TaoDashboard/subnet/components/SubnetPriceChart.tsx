@@ -365,7 +365,9 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
       width: chartContainerRef.current.clientWidth,
       height: 400,
       layout: {
-        background: { color: "#0d0d0d" },
+        background: {
+          color: "#1b1b1b", // grey-850
+        },
         textColor: "#71717a",
       },
       grid: {
@@ -718,7 +720,7 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <div className="rounded-lg bg-[#0d0d0d]">
+      <div className="rounded-lg">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4 p-6 pb-2">
           {/* Left side - Price Display */}
