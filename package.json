@@ -21,7 +21,7 @@
     "chore:generate-init-data": "pnpm run --filter @talismn/chaindata-provider chore:generate-init-data",
     "chore:generate-clients": "pnpm -r chore:generate-clients",
     "generate-init-data": "pnpm chore:generate-init-data",
-    "chore:prepare-release": "pnpm generate-init-data && pnpm chore:download-translations",
+    "chore:prepare-release": "pnpm generate-init-data && pnpm chore:download-translations && pnpm biome check --fix",
     "dev": "pnpm dev:extension",
     "dev:firefox": "pnpm dev:extension:firefox",
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
