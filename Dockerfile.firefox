@@ -3,9 +3,10 @@
 # This Dockerfile creates a consistent build environment to ensure
 # deterministic output across different build machines.
 #
-# Usage:
-#   docker build -t talisman-builder -f Dockerfile.firefox .
-#   docker run --rm -v $(pwd)/apps/extension/dist:/talisman/apps/extension/dist talisman-builder
+# Usage (from extracted sources.zip):
+#   mkdir -p output
+#   docker build --no-cache -t talisman-builder -f Dockerfile.firefox .
+#   docker run --rm -v $(pwd)/output:/output talisman-builder
 #
 FROM node:24.8.0-slim
 
