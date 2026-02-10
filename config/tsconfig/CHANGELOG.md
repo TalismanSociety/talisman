@@ -1,5 +1,11 @@
 # @talismn/tsconfig
 
+## 0.0.4
+
+### Patch Changes
+
+- 1977d5d: fix typescript config for tests
+
 ## 0.0.3
 
 ### Patch Changes
