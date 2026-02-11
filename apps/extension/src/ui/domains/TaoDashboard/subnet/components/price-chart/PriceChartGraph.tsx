@@ -69,24 +69,6 @@ const PriceChartGraphSkeleton = () => (
       <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
       <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
 
-      {/* Price scale skeleton (right side) */}
-      <div className="absolute top-4 right-2 bottom-16 flex w-14 flex-col justify-between">
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-full" />
-      </div>
-
-      {/* Time scale skeleton (bottom) */}
-      <div className="absolute right-16 bottom-2 left-4 flex justify-between">
-        <Skeleton className="h-3 w-10" />
-        <Skeleton className="h-3 w-10" />
-        <Skeleton className="h-3 w-10" />
-        <Skeleton className="h-3 w-10" />
-        <Skeleton className="h-3 w-10" />
-      </div>
-
       {/* Central chart area with candlestick-like shapes */}
       <div className="absolute inset-x-8 top-8 bottom-20 flex items-center justify-center gap-4">
         <div className="flex h-3/4 items-center gap-2">
