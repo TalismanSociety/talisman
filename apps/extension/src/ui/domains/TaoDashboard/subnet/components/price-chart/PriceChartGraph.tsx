@@ -460,6 +460,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
         priceScaleId: "rsi",
         lastValueVisible: false,
         priceLineVisible: false,
+        crosshairMarkerVisible: false,
         autoscaleInfoProvider: rsiAutoscaleProvider,
       })
       bandFillSeries.setData(times.map((time) => ({ time, value: 70 })))
@@ -482,6 +483,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
         priceScaleId: "rsi",
         lastValueVisible: false,
         priceLineVisible: false,
+        crosshairMarkerVisible: false,
         autoscaleInfoProvider: rsiAutoscaleProvider,
       })
       maskSeries.setData(times.map((time) => ({ time, value: 30 })))
