@@ -7,7 +7,7 @@ import {
   LineSeries,
   type UTCTimestamp,
 } from "lightweight-charts"
-import { type FC, useEffect, useRef } from "react"
+import { type FC, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
 import {
@@ -17,23 +17,32 @@ import {
   calculateSMA,
   getSentimentColor,
 } from "./indicators"
+import { PriceChartToolbar } from "./PriceChartToolbar"
 import type { IndicatorConfig, OhlcvBar } from "./types"
+import { DEFAULT_INDICATORS } from "./types"
 import { useOhlcvData } from "./useOhlcvData"
 import { useSubnetStats } from "./useSubnetStats"
 
 interface PriceChartGraphProps {
   netuid: number
-  timeRange: number
-  indicators: IndicatorConfig
+  // timeRange: number
+  // indicators: IndicatorConfig
 }
 
-export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid, timeRange, indicators }) => {
+export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const { t } = useTranslation()
+  const [timeRange, _setTimeRange] = useState(7) // days - default to 1W
+  const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
+
   const { bars, isLoading, hasMore, loadMore } = useOhlcvData({ netuid })
   const { data: tweets } = useSubnetTweets(netuid, timeRange || 50)
   const {
     data: { tokenPrice },
   } = useSubnetStats(netuid)
+
+  const toggleIndicator = useCallback((key: keyof IndicatorConfig) => {
+    setIndicators((prev) => ({ ...prev, [key]: !prev[key] }))
+  }, [])
 
   if (isLoading) {
     return <PriceChartGraphSkeleton />
@@ -48,14 +57,25 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid, timeRange, i
   }
 
   return (
-    <PriceChartGraphContent
-      bars={bars}
-      hasMore={hasMore}
-      loadMore={loadMore}
-      tweets={tweets}
-      tokenPrice={tokenPrice}
-      indicators={indicators}
-    />
+    <div className="relative flex size-full flex-col overflow-hidden">
+      <PriceChartToolbar
+        indicators={indicators}
+        toggleIndicator={toggleIndicator}
+        timeRange={timeRange}
+        setTimeRange={_setTimeRange}
+        className="my-5 px-12"
+      />
+      <div className="grow">
+        <PriceChartGraphContent
+          bars={bars}
+          hasMore={hasMore}
+          loadMore={loadMore}
+          tweets={tweets}
+          tokenPrice={tokenPrice}
+          indicators={indicators}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -171,7 +191,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       },
       rightPriceScale: {
         borderVisible: false,
-        scaleMargins: { top: 0.1, bottom: 0.25 },
+        scaleMargins: { top: 0, bottom: 0.25 },
       },
       timeScale: {
         borderVisible: false,
@@ -408,9 +428,5 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
   }, [bars, tweets, tokenPrice, indicators])
 
-  return (
-    <div className="size-full overflow-hidden pt-10 pr-2 pb-5 pl-12">
-      <div ref={chartContainerRef} className="size-full"></div>
-    </div>
-  )
+  return <div ref={chartContainerRef} className="size-full"></div>
 }

@@ -8,6 +8,7 @@ interface PriceChartToolbarProps {
   setTimeRange: (range: number) => void
   indicators: IndicatorConfig
   toggleIndicator: (key: keyof IndicatorConfig) => void
+  className?: string
 }
 
 export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
@@ -15,9 +16,10 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
   setTimeRange,
   indicators,
   toggleIndicator,
+  className,
 }) => {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-6 pb-2">
+    <div className={cn("flex flex-wrap items-center justify-between gap-3", className)}>
       {/* Left side - Indicator toggles */}
       <div className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-body-disabled text-xs">Indicators:</span>

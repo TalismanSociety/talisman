@@ -114,8 +114,8 @@ export const TIME_RANGES = [
 export const DEFAULT_INDICATORS: IndicatorConfig = {
   sma7: false,
   sma25: false,
-  ema12: true,
-  ema26: true,
+  ema12: false,
+  ema26: false,
   bollingerBands: false,
   rsi: false,
 }
