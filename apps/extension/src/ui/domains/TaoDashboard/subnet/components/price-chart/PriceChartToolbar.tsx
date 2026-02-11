@@ -1,6 +1,7 @@
 import { cn } from "@talismn/util"
 import type { FC } from "react"
 
+import { INDICATOR_CONFIG, type IndicatorKey } from "./chartConfig"
 import { type IndicatorConfig, TIME_RANGES } from "./types"
 
 interface PriceChartToolbarProps {
@@ -10,6 +11,9 @@ interface PriceChartToolbarProps {
   toggleIndicator: (key: keyof IndicatorConfig) => void
   className?: string
 }
+
+/** Order of indicators in the toolbar */
+const INDICATOR_ORDER: IndicatorKey[] = ["sma7", "sma25", "sma99", "bollingerBands", "rsi"]
 
 export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
   timeRange,
@@ -23,43 +27,19 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
       {/* Left side - Indicator toggles */}
       <div className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-body-disabled text-xs">Indicators:</span>
-        <IndicatorButton
-          active={indicators.sma7}
-          color="#f59e0b"
-          label="SMA 7"
-          onClick={() => toggleIndicator("sma7")}
-        />
-        <IndicatorButton
-          active={indicators.sma25}
-          color="#8b5cf6"
-          label="SMA 25"
-          onClick={() => toggleIndicator("sma25")}
-        />
-        <IndicatorButton
-          active={indicators.ema12}
-          color="#3b82f6"
-          label="EMA 12"
-          onClick={() => toggleIndicator("ema12")}
-        />
-        <IndicatorButton
-          active={indicators.ema26}
-          color="#ec4899"
-          label="EMA 26"
-          onClick={() => toggleIndicator("ema26")}
-        />
-        <IndicatorButton
-          active={indicators.bollingerBands}
-          color="#6b7280"
-          activeTextColor="#9ca3af"
-          label="BB"
-          onClick={() => toggleIndicator("bollingerBands")}
-        />
-        <IndicatorButton
-          active={indicators.rsi}
-          color="#a855f7"
-          label="RSI"
-          onClick={() => toggleIndicator("rsi")}
-        />
+        {INDICATOR_ORDER.map((key) => {
+          const config = INDICATOR_CONFIG[key]
+          return (
+            <IndicatorButton
+              key={key}
+              active={indicators[key]}
+              color={config.color}
+              activeTextColor={"activeTextColor" in config ? config.activeTextColor : undefined}
+              label={config.label}
+              onClick={() => toggleIndicator(key)}
+            />
+          )
+        })}
       </div>
 
       {/* Right side - Live indicator and time range */}
@@ -115,14 +95,14 @@ const IndicatorButton: FC<IndicatorButtonProps> = ({
     type="button"
     onClick={onClick}
     className={cn(
-      "flex items-center gap-1 rounded px-2 py-0.5 font-medium text-xs transition-colors",
+      "flex items-center gap-1 rounded-xs px-2 py-1 font-medium text-xs transition-colors",
       active
         ? `bg-[${color}]/20 text-[${activeTextColor ?? color}]`
         : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
     )}
     style={active ? { backgroundColor: `${color}20`, color: activeTextColor ?? color } : undefined}
   >
-    <span className="size-2 rounded-full" style={{ backgroundColor: active ? color : undefined }} />
+    {/* <span className="size-2 rounded-full" style={{ backgroundColor: active ? color : undefined }} /> */}
     {label}
   </button>
 )

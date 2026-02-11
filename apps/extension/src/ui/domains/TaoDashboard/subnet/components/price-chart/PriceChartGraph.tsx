@@ -14,9 +14,9 @@ import {
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
+import { CHART_COLORS, CHART_LAYOUT, INDICATOR_CONFIG } from "./chartConfig"
 import {
   calculateBollingerBands,
-  calculateEMA,
   calculateRSI,
   calculateSMA,
   getSentimentColor,
@@ -33,54 +33,6 @@ import { useSubnetStats } from "./useSubnetStats"
 type ChartApi = IChartApi
 type SeriesApi = ISeriesApi<SeriesType>
 type PriceLine = ReturnType<SeriesApi["createPriceLine"]>
-
-// ────────────────────────────────────────────────────────────────────────────
-// Layout constants
-// ────────────────────────────────────────────────────────────────────────────
-const LAYOUT = {
-  /** Volume section height as ratio of total chart */
-  VOLUME_RATIO: 0.1,
-  /** RSI section height as ratio of total chart */
-  RSI_RATIO: 0.2,
-  /** Gap between sections */
-  SECTION_GAP: 0.02,
-  /** Number of candles visible on initial load */
-  INITIAL_VISIBLE_CANDLES: 50,
-} as const
-
-// ────────────────────────────────────────────────────────────────────────────
-// Color palette
-// ────────────────────────────────────────────────────────────────────────────
-const COLORS = {
-  // Background & grid
-  background: "#181818",
-  text: "#71717a",
-  textSecondary: "#a1a1aa",
-  gridLine: "#27272a",
-  crosshair: "#525252",
-
-  // Candles
-  bullish: "#22c55e",
-  bearish: "#ef4444",
-
-  // Indicators
-  sma7: "#f59e0b",
-  sma25: "#8b5cf6",
-  ema12: "#3b82f6",
-  ema26: "#ec4899",
-  bollingerBand: "#6b7280",
-  bollingerBandFaded: "#6b728080",
-
-  // RSI
-  rsiLine: "#a855f7",
-  rsiBandTop: "rgba(168, 85, 247, 0.08)",
-  rsiBandBottom: "rgba(168, 85, 247, 0.04)",
-  rsiOverbought: "rgba(239, 68, 68, 0.5)",
-  rsiOversold: "rgba(34, 197, 94, 0.5)",
-
-  // Price line
-  currentPrice: "#f43f5e",
-} as const
 
 // ────────────────────────────────────────────────────────────────────────────
 // Utility functions
@@ -109,12 +61,12 @@ const createChartOptions = (width: number, height: number) =>
     width,
     height,
     layout: {
-      background: { color: COLORS.background },
-      textColor: COLORS.text,
+      background: { color: CHART_COLORS.background },
+      textColor: CHART_COLORS.text,
     },
     grid: {
       vertLines: { visible: false },
-      horzLines: { color: COLORS.gridLine, style: 3 },
+      horzLines: { color: CHART_COLORS.gridLine, style: 3 },
     },
     rightPriceScale: {
       borderVisible: false,
@@ -128,27 +80,27 @@ const createChartOptions = (width: number, height: number) =>
     crosshair: {
       mode: 1,
       vertLine: {
-        color: COLORS.crosshair,
+        color: CHART_COLORS.crosshair,
         width: 1,
         style: 3,
-        labelBackgroundColor: COLORS.gridLine,
+        labelBackgroundColor: CHART_COLORS.gridLine,
       },
       horzLine: {
-        color: COLORS.crosshair,
+        color: CHART_COLORS.crosshair,
         width: 1,
         style: 3,
-        labelBackgroundColor: COLORS.gridLine,
+        labelBackgroundColor: CHART_COLORS.gridLine,
       },
     },
   }) as const
 
 const CANDLESTICK_OPTIONS = {
-  upColor: COLORS.bullish,
-  downColor: COLORS.bearish,
-  borderUpColor: COLORS.bullish,
-  borderDownColor: COLORS.bearish,
-  wickUpColor: COLORS.bullish,
-  wickDownColor: COLORS.bearish,
+  upColor: CHART_COLORS.bullish,
+  downColor: CHART_COLORS.bearish,
+  borderUpColor: CHART_COLORS.bullish,
+  borderDownColor: CHART_COLORS.bearish,
+  wickUpColor: CHART_COLORS.bullish,
+  wickDownColor: CHART_COLORS.bearish,
   priceFormat: { type: "price", precision: 6, minMove: 0.000001 },
 } as const
 
@@ -327,7 +279,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       zIndex: "10",
       fontSize: "11px",
       lineHeight: "16px",
-      color: COLORS.textSecondary,
+      color: CHART_COLORS.textSecondary,
       pointerEvents: "none",
       fontFamily: "monospace",
     } satisfies Partial<CSSStyleDeclaration>)
@@ -405,7 +357,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     const volumeData = bars.map((b) => ({
       time: b.time as UTCTimestamp,
       value: b.volume,
-      color: b.close >= b.open ? `${COLORS.bullish}80` : `${COLORS.bearish}80`,
+      color: b.close >= b.open ? `${CHART_COLORS.bullish}80` : `${CHART_COLORS.bearish}80`,
     }))
 
     candlestickSeries.setData(candleData)
@@ -414,8 +366,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     // ── Extract reusable values ─────────────────────────────────────────
     const closePrices = candleData.map((d) => d.close)
     const times = candleData.map((d) => d.time)
-    const rsiVisible = indicators.rsi && closePrices.length >= 14
-    const { VOLUME_RATIO, RSI_RATIO, SECTION_GAP } = LAYOUT
+    const rsiVisible = indicators.rsi && closePrices.length >= INDICATOR_CONFIG.rsi.period
+    const { VOLUME_RATIO, RSI_RATIO, SECTION_GAP } = CHART_LAYOUT
 
     // ── Configure layout margins ────────────────────────────────────────
     const bottomMargin = VOLUME_RATIO + SECTION_GAP + (rsiVisible ? RSI_RATIO + SECTION_GAP : 0)
@@ -451,34 +403,57 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
 
     // ── Moving averages ─────────────────────────────────────────────────
-    if (indicators.sma7 && closePrices.length >= 7)
-      addOverlay(calculateSMA(closePrices, 7), { color: COLORS.sma7, lineWidth: 1 })
+    if (indicators.sma7 && closePrices.length >= INDICATOR_CONFIG.sma7.period) {
+      const { period, color } = INDICATOR_CONFIG.sma7
+      addOverlay(calculateSMA(closePrices, period), { color, lineWidth: 1 })
+    }
 
-    if (indicators.sma25 && closePrices.length >= 25)
-      addOverlay(calculateSMA(closePrices, 25), { color: COLORS.sma25, lineWidth: 1 })
+    if (indicators.sma25 && closePrices.length >= INDICATOR_CONFIG.sma25.period) {
+      const { period, color } = INDICATOR_CONFIG.sma25
+      addOverlay(calculateSMA(closePrices, period), { color, lineWidth: 1 })
+    }
 
-    if (indicators.ema12 && closePrices.length >= 12)
-      addOverlay(calculateEMA(closePrices, 12), { color: COLORS.ema12, lineWidth: 1 })
-
-    if (indicators.ema26 && closePrices.length >= 26)
-      addOverlay(calculateEMA(closePrices, 26), { color: COLORS.ema26, lineWidth: 1 })
+    if (indicators.sma99 && closePrices.length >= INDICATOR_CONFIG.sma99.period) {
+      const { period, color } = INDICATOR_CONFIG.sma99
+      addOverlay(calculateSMA(closePrices, period), { color, lineWidth: 1 })
+    }
 
     // ── Bollinger Bands ─────────────────────────────────────────────────
-    if (indicators.bollingerBands && closePrices.length >= 20) {
-      const bb = calculateBollingerBands(closePrices, 20, 2)
-      addOverlay(bb.upper, { color: COLORS.bollingerBandFaded, lineWidth: 1, lineStyle: 2 })
-      addOverlay(bb.middle, { color: COLORS.bollingerBand, lineWidth: 1 })
-      addOverlay(bb.lower, { color: COLORS.bollingerBandFaded, lineWidth: 1, lineStyle: 2 })
+    if (indicators.bollingerBands && closePrices.length >= INDICATOR_CONFIG.bollingerBands.period) {
+      const { period, stdDev, color } = INDICATOR_CONFIG.bollingerBands
+      const bb = calculateBollingerBands(closePrices, period, stdDev)
+
+      // Area fill from upper band with gradient fading to transparent
+      const bbFillSeries = chart.addSeries(AreaSeries, {
+        priceScaleId: "right",
+        topColor: CHART_COLORS.bollingerBandFill,
+        bottomColor: "transparent",
+        lineColor: "transparent",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      })
+      const bbUpperData = times
+        .map((time, i) => ({ time, value: bb.upper[i] }))
+        .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
+      bbFillSeries.setData(bbUpperData)
+      overlaySeriesRef.current.push(bbFillSeries)
+
+      // Upper and lower lines (dashed)
+      addOverlay(bb.upper, { color: CHART_COLORS.bollingerBandFaded, lineWidth: 1, lineStyle: 2 })
+      addOverlay(bb.lower, { color: CHART_COLORS.bollingerBandFaded, lineWidth: 1, lineStyle: 2 })
+      // Middle line (solid)
+      addOverlay(bb.middle, { color, lineWidth: 1 })
     }
 
     // ── RSI indicator ───────────────────────────────────────────────────
     if (rsiVisible) {
-      const rsiData = calculateRSI(closePrices, 14)
+      const rsiData = calculateRSI(closePrices, INDICATOR_CONFIG.rsi.period)
 
       // Band fill (70 → 30 zone)
       const bandFillSeries = chart.addSeries(AreaSeries, {
-        topColor: COLORS.rsiBandTop,
-        bottomColor: COLORS.rsiBandBottom,
+        topColor: CHART_COLORS.rsiBandTop,
+        bottomColor: CHART_COLORS.rsiBandBottom,
         lineColor: "transparent",
         lineWidth: 1,
         lineStyle: 2,
@@ -499,8 +474,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
 
       // Mask below 30 to clip the band fill
       const maskSeries = chart.addSeries(AreaSeries, {
-        topColor: COLORS.background,
-        bottomColor: COLORS.background,
+        topColor: CHART_COLORS.background,
+        bottomColor: CHART_COLORS.background,
         lineColor: "transparent",
         lineWidth: 1,
         lineStyle: 2,
@@ -514,7 +489,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
 
       // RSI line (renders on top of the band)
       const rsiSeries = chart.addSeries(LineSeries, {
-        color: COLORS.rsiLine,
+        color: INDICATOR_CONFIG.rsi.color,
         lineWidth: 1,
         priceScaleId: "rsi",
         priceLineVisible: false,
@@ -530,10 +505,10 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       overlaySeriesRef.current.push(rsiSeries)
       rsiSeriesRef.current = rsiSeries
 
-      // Threshold lines at 30 and 70
+      // Threshold lines at 30 and 70 (grey)
       rsiSeries.createPriceLine({
         price: 70,
-        color: COLORS.rsiOverbought,
+        color: CHART_COLORS.rsiThreshold,
         lineWidth: 1,
         lineStyle: 2,
         axisLabelVisible: true,
@@ -541,7 +516,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       })
       rsiSeries.createPriceLine({
         price: 30,
-        color: COLORS.rsiOversold,
+        color: CHART_COLORS.rsiThreshold,
         lineWidth: 1,
         lineStyle: 2,
         axisLabelVisible: true,
@@ -562,7 +537,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       const lastCandle = candleData[candleData.length - 1]
       priceLineRef.current = candlestickSeries.createPriceLine({
         price: lastCandle.close,
-        color: COLORS.currentPrice,
+        color: CHART_COLORS.currentPrice,
         lineWidth: 1,
         lineStyle: 0,
         axisLabelVisible: true,
@@ -603,7 +578,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     if (!initialFitDoneRef.current && candleData.length > 0) {
       const total = candleData.length
       chart.timeScale().setVisibleLogicalRange({
-        from: total - LAYOUT.INITIAL_VISIBLE_CANDLES,
+        from: total - CHART_LAYOUT.INITIAL_VISIBLE_CANDLES,
         to: total - 1,
       })
       initialFitDoneRef.current = true

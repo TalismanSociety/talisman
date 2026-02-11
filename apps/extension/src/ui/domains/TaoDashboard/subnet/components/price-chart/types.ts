@@ -87,8 +87,9 @@ export interface ProcessedHourlyData {
 export interface IndicatorConfig {
   sma7: boolean
   sma25: boolean
-  ema12: boolean
-  ema26: boolean
+  sma99: boolean
+  // ema12: boolean
+  // ema26: boolean
   bollingerBands: boolean
   rsi: boolean
 }
@@ -114,8 +115,7 @@ export const TIME_RANGES = [
 export const DEFAULT_INDICATORS: IndicatorConfig = {
   sma7: false,
   sma25: false,
-  ema12: false,
-  ema26: false,
+  sma99: false,
   bollingerBands: false,
   rsi: false,
 }
