@@ -1,3 +1,78 @@
+// ---------------------------------------------------------------------------
+// OHLCV types — TradingView / lightweight-charts compatible
+// ---------------------------------------------------------------------------
+
+/**
+ * Supported candle resolutions following the TradingView UDF convention.
+ *
+ * Values represent minutes for intra-day ("1" … "240"),
+ * or a period code for daily/weekly ("1D", "1W").
+ *
+ * Currently only "60" (hourly) is produced from on-chain data;
+ * the other values are declared so the future API contract is fixed.
+ */
+export type OhlcvResolution = "1" | "5" | "15" | "60" | "240" | "1D" | "1W"
+
+/**
+ * A single OHLCV candle bar.
+ *
+ * This is the canonical wire-format for the future price-chart API and maps
+ * directly to lightweight-charts' `CandlestickData`:
+ *
+ * ```ts
+ * // lightweight-charts consumption:
+ * candlestickSeries.setData(bars)          // OHLC fields
+ * volumeSeries.setData(bars.map(toVolume)) // { time, value }
+ * ```
+ *
+ * Presentation concerns (candle colours, volume bar colours) are intentionally
+ * excluded — they belong in the chart component.
+ */
+export interface OhlcvBar {
+  /** UTC timestamp in seconds — start of the candle period (matches `UTCTimestamp`) */
+  time: number
+  /** Opening price */
+  open: number
+  /** Highest price during the period */
+  high: number
+  /** Lowest price during the period */
+  low: number
+  /** Closing price */
+  close: number
+  /** Total trading volume (TAO) during the period */
+  volume: number
+}
+
+/**
+ * Shape of the paginated API response the future endpoint will return.
+ *
+ * ```
+ * GET /api/v1/subnets/{netuid}/ohlcv?resolution=60&cursor=…&countBack=100
+ * ```
+ *
+ * The wallet consumes this via `useOhlcvData` which hides pagination details
+ * and exposes a simple `{ bars, loadMore, hasMore }` interface.
+ */
+export interface OhlcvResponse {
+  /** Candle bars sorted ascending by time */
+  bars: OhlcvBar[]
+  /** Opaque cursor for fetching the next (older) page, `null` when exhausted */
+  nextCursor: string | null
+  /** Resolution of the returned bars */
+  resolution: OhlcvResolution
+  /** Metadata about the data source */
+  meta: {
+    /** Human-readable symbol, e.g. "TAO-SUBNET-1" */
+    symbol: string
+    /** Earliest available data timestamp in seconds, `null` if unknown */
+    firstAvailableTime: number | null
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Internal / legacy types
+// ---------------------------------------------------------------------------
+
 export interface ProcessedHourlyData {
   hour: Date
   open: number

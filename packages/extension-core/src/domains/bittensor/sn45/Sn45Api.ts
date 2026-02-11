@@ -553,6 +553,50 @@ export class Sn45Api<
       }),
 
     /**
+     * @description Returns OHLCV (Open/High/Low/Close/Volume) candle data for a subnet's alpha token. Each candle is a 6-element array: `[time, open, high, low, close, volume]` - **time** – Unix epoch seconds (bucket start) - **open** – First price in the period - **high** – Highest price in the period - **low** – Lowest price in the period - **close** – Last price in the period - **volume** – Total volume in the period (TAO) Candles are sorted most-recent-first. Use `nextCursor` to paginate backwards. **MVP note:** Only `resolution=60` (1-hour candles) is currently supported.
+     *
+     * @tags Subnets
+     * @name GetSubnetOhlcv
+     * @summary OHLCV price chart for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/ohlcv
+     */
+    getSubnetOhlcv: (
+      netuid: string,
+      query?: {
+        /**
+         * Candle period. TradingView UDF convention: "1","5","15","60","240" (minutes) or "1D","1W". Only "60" is supported for MVP.
+         * @default "60"
+         */
+        resolution?: "1" | "5" | "15" | "60" | "240" | "1D" | "1W";
+        /** Number of candles to return (1-500, default 100). Most recent first. */
+        limit?: string;
+        /** Opaque cursor from a previous response's nextCursor. When absent, returns the most recent candles. */
+        cursor?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Array of candles. Each candle is [time, open, high, low, close, volume]. */
+          candles: any[][];
+          /** Opaque cursor for backward pagination. Pass as `cursor` query param to fetch older candles. null when no more data. */
+          nextCursor: string | null;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/ohlcv`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags Subnets

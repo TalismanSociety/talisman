@@ -24,12 +24,6 @@ export const SubnetPriceChart: FC<SubnetPriceChartProps> = ({ netuid, className 
       <PriceChartHeader netuid={netuid} />
       <div className="h-px shrink-0"></div>
       <div className="w-full grow overflow-hidden">
-        {/* <PriceChartToolbar
-          timeRange={timeRange}
-          setTimeRange={setTimeRange}
-          indicators={indicators}
-          toggleIndicator={toggleIndicator}
-        /> */}
         <PriceChartGraph netuid={netuid} timeRange={timeRange} indicators={indicators} />
       </div>
     </div>
