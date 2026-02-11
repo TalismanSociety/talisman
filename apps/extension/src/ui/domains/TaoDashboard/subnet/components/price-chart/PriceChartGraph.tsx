@@ -1,10 +1,14 @@
 import { cn } from "@talismn/util"
 import {
+  AreaSeries,
   CandlestickSeries,
   createChart,
   createSeriesMarkers,
   HistogramSeries,
+  type IChartApi,
+  type ISeriesApi,
   LineSeries,
+  type SeriesType,
   type UTCTimestamp,
 } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
@@ -23,10 +27,142 @@ import { DEFAULT_INDICATORS } from "./types"
 import { useOhlcvData } from "./useOhlcvData"
 import { useSubnetStats } from "./useSubnetStats"
 
+// ────────────────────────────────────────────────────────────────────────────
+// Type aliases for cleaner ref declarations
+// ────────────────────────────────────────────────────────────────────────────
+type ChartApi = IChartApi
+type SeriesApi = ISeriesApi<SeriesType>
+type PriceLine = ReturnType<SeriesApi["createPriceLine"]>
+
+// ────────────────────────────────────────────────────────────────────────────
+// Layout constants
+// ────────────────────────────────────────────────────────────────────────────
+const LAYOUT = {
+  /** Volume section height as ratio of total chart */
+  VOLUME_RATIO: 0.1,
+  /** RSI section height as ratio of total chart */
+  RSI_RATIO: 0.2,
+  /** Gap between sections */
+  SECTION_GAP: 0.02,
+  /** Number of candles visible on initial load */
+  INITIAL_VISIBLE_CANDLES: 50,
+} as const
+
+// ────────────────────────────────────────────────────────────────────────────
+// Color palette
+// ────────────────────────────────────────────────────────────────────────────
+const COLORS = {
+  // Background & grid
+  background: "#181818",
+  text: "#71717a",
+  textSecondary: "#a1a1aa",
+  gridLine: "#27272a",
+  crosshair: "#525252",
+
+  // Candles
+  bullish: "#22c55e",
+  bearish: "#ef4444",
+
+  // Indicators
+  sma7: "#f59e0b",
+  sma25: "#8b5cf6",
+  ema12: "#3b82f6",
+  ema26: "#ec4899",
+  bollingerBand: "#6b7280",
+  bollingerBandFaded: "#6b728080",
+
+  // RSI
+  rsiLine: "#a855f7",
+  rsiBandTop: "rgba(168, 85, 247, 0.08)",
+  rsiBandBottom: "rgba(168, 85, 247, 0.04)",
+  rsiOverbought: "rgba(239, 68, 68, 0.5)",
+  rsiOversold: "rgba(34, 197, 94, 0.5)",
+
+  // Price line
+  currentPrice: "#f43f5e",
+} as const
+
+// ────────────────────────────────────────────────────────────────────────────
+// Utility functions
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Format volume with τ prefix and SI suffix (K/M/B) */
+const formatVolume = (vol: number): string => {
+  if (vol >= 1e9) return `τ${(vol / 1e9).toFixed(1)}B`
+  if (vol >= 1e6) return `τ${(vol / 1e6).toFixed(1)}M`
+  if (vol >= 1e3) return `τ${(vol / 1e3).toFixed(1)}K`
+  if (vol >= 1) return `τ${vol.toFixed(1)}`
+  return `τ${vol.toPrecision(3)}`
+}
+
+/** RSI autoscale: always 0–100 range */
+const rsiAutoscaleProvider = () => ({
+  priceRange: { minValue: 0, maxValue: 100 },
+})
+
+// ────────────────────────────────────────────────────────────────────────────
+// Chart configuration
+// ────────────────────────────────────────────────────────────────────────────
+
+const createChartOptions = (width: number, height: number) =>
+  ({
+    width,
+    height,
+    layout: {
+      background: { color: COLORS.background },
+      textColor: COLORS.text,
+    },
+    grid: {
+      vertLines: { visible: false },
+      horzLines: { color: COLORS.gridLine, style: 3 },
+    },
+    rightPriceScale: {
+      borderVisible: false,
+      scaleMargins: { top: 0, bottom: 0.25 },
+    },
+    timeScale: {
+      borderVisible: false,
+      timeVisible: true,
+      secondsVisible: false,
+    },
+    crosshair: {
+      mode: 1,
+      vertLine: {
+        color: COLORS.crosshair,
+        width: 1,
+        style: 3,
+        labelBackgroundColor: COLORS.gridLine,
+      },
+      horzLine: {
+        color: COLORS.crosshair,
+        width: 1,
+        style: 3,
+        labelBackgroundColor: COLORS.gridLine,
+      },
+    },
+  }) as const
+
+const CANDLESTICK_OPTIONS = {
+  upColor: COLORS.bullish,
+  downColor: COLORS.bearish,
+  borderUpColor: COLORS.bullish,
+  borderDownColor: COLORS.bearish,
+  wickUpColor: COLORS.bullish,
+  wickDownColor: COLORS.bearish,
+  priceFormat: { type: "price", precision: 6, minMove: 0.000001 },
+} as const
+
+const VOLUME_OPTIONS = {
+  priceFormat: { type: "volume" },
+  priceScaleId: "", // overlay scale — no visible labels
+} as const
+
+// ────────────────────────────────────────────────────────────────────────────
+// Component interfaces
+// ────────────────────────────────────────────────────────────────────────────
+
 interface PriceChartGraphProps {
   netuid: number
-  // timeRange: number
-  // indicators: IndicatorConfig
 }
 
 export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
@@ -150,90 +286,73 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   tokenPrice,
   indicators,
 }) => {
+  // ── Chart refs (cleaned up on unmount) ────────────────────────────────
   const chartContainerRef = useRef<HTMLDivElement>(null)
-
-  // Persistent refs so the chart instance survives data updates
-  const chartRef = useRef<ReturnType<typeof createChart> | null>(null)
-  const candlestickSeriesRef = useRef<ReturnType<
-    ReturnType<typeof createChart>["addSeries"]
-  > | null>(null)
-  const volumeSeriesRef = useRef<ReturnType<ReturnType<typeof createChart>["addSeries"]> | null>(
-    null
-  )
-  // Extra overlay series (indicators) that need to be cleaned up between updates
-  const overlaySeriesRef = useRef<ReturnType<ReturnType<typeof createChart>["addSeries"]>[]>([])
-  const priceLineRef = useRef<ReturnType<
-    ReturnType<ReturnType<typeof createChart>["addSeries"]>["createPriceLine"]
-  > | null>(null)
+  const chartRef = useRef<ChartApi | null>(null)
+  const candlestickSeriesRef = useRef<SeriesApi | null>(null)
+  const volumeSeriesRef = useRef<SeriesApi | null>(null)
+  const rsiSeriesRef = useRef<SeriesApi | null>(null)
+  const overlaySeriesRef = useRef<SeriesApi[]>([])
+  const priceLineRef = useRef<PriceLine | null>(null)
+  const volumeLegendRef = useRef<HTMLDivElement | null>(null)
   const initialFitDoneRef = useRef(false)
 
-  // Keep hasMore / loadMore in refs so the scroll handler never becomes stale
-  // and never triggers effect re-runs
+  // Stable refs for scroll handler to avoid stale closures
   const hasMoreRef = useRef(hasMore)
   const loadMoreRef = useRef(loadMore)
   hasMoreRef.current = hasMore
   loadMoreRef.current = loadMore
 
-  // ── Effect 1: create / destroy the chart (mount-only) ─────────────────
+  // ── Effect 1: Create chart instance (mount-only) ──────────────────────
   useEffect(() => {
-    if (!chartContainerRef.current) return
+    const container = chartContainerRef.current
+    if (!container) return
 
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight,
-      layout: {
-        background: { color: "#181818" },
-        textColor: "#71717a",
-      },
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { color: "#27272a", style: 3 },
-      },
-      rightPriceScale: {
-        borderVisible: false,
-        scaleMargins: { top: 0, bottom: 0.25 },
-      },
-      timeScale: {
-        borderVisible: false,
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      crosshair: {
-        mode: 1,
-        vertLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
-        horzLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
-      },
-    })
-
-    const candlestickSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#22c55e",
-      downColor: "#ef4444",
-      borderUpColor: "#22c55e",
-      borderDownColor: "#ef4444",
-      wickUpColor: "#22c55e",
-      wickDownColor: "#ef4444",
-      priceFormat: { type: "price", precision: 6, minMove: 0.000001 },
-    })
-
-    const volumeSeries = chart.addSeries(HistogramSeries, {
-      priceFormat: { type: "volume" },
-      priceScaleId: "volume",
-    })
-    chart.priceScale("volume").applyOptions({
-      scaleMargins: { top: 0.85, bottom: 0 },
-    })
+    const chart = createChart(
+      container,
+      createChartOptions(container.clientWidth, container.clientHeight)
+    )
+    const candlestickSeries = chart.addSeries(CandlestickSeries, CANDLESTICK_OPTIONS)
+    const volumeSeries = chart.addSeries(HistogramSeries, VOLUME_OPTIONS)
 
     chartRef.current = chart
     candlestickSeriesRef.current = candlestickSeries
     volumeSeriesRef.current = volumeSeries
 
-    // Lazy-load: only fires when the user scrolls left
+    // ── Volume legend (shows value on hover) ────────────────────────────
+    const volumeLegend = document.createElement("div")
+    Object.assign(volumeLegend.style, {
+      position: "absolute",
+      left: "8px",
+      zIndex: "10",
+      fontSize: "11px",
+      lineHeight: "16px",
+      color: COLORS.textSecondary,
+      pointerEvents: "none",
+      fontFamily: "monospace",
+    } satisfies Partial<CSSStyleDeclaration>)
+    container.appendChild(volumeLegend)
+    volumeLegendRef.current = volumeLegend
+
+    chart.subscribeCrosshairMove((param) => {
+      if (volumeSeriesRef.current && volumeLegendRef.current) {
+        const volData = param.seriesData?.get(volumeSeriesRef.current) as
+          | { value?: number }
+          | undefined
+        volumeLegendRef.current.textContent =
+          volData?.value != null ? `Vol ${formatVolume(volData.value)}` : ""
+      }
+    })
+
+    // ── Lazy-load: fetch more when scrolling left ───────────────────────
     const onVisibleRangeChange = (range: { from: number; to: number } | null) => {
       if (range && range.from < 10 && hasMoreRef.current) {
         loadMoreRef.current()
       }
     }
     chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange)
+
+    // ── Resize handler ──────────────────────────────────────────────────
 
     const handleResize = () => {
       if (chartContainerRef.current) {
@@ -250,6 +369,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       candlestickSeriesRef.current = null
       volumeSeriesRef.current = null
       overlaySeriesRef.current = []
+      rsiSeriesRef.current = null
+      volumeLegendRef.current = null
       initialFitDoneRef.current = false
     }
   }, []) // mount-only — chart lifecycle is independent of data
@@ -270,6 +391,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       }
     }
     overlaySeriesRef.current = []
+    rsiSeriesRef.current = null
 
     // ── Primary data ────────────────────────────────────────────────────
     const candleData = bars.map((b) => ({
@@ -283,16 +405,37 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     const volumeData = bars.map((b) => ({
       time: b.time as UTCTimestamp,
       value: b.volume,
-      color: b.close >= b.open ? "#22c55e80" : "#ef444480",
+      color: b.close >= b.open ? `${COLORS.bullish}80` : `${COLORS.bearish}80`,
     }))
 
     candlestickSeries.setData(candleData)
     volumeSeries.setData(volumeData)
 
-    // ── Technical indicators ────────────────────────────────────────────
+    // ── Extract reusable values ─────────────────────────────────────────
     const closePrices = candleData.map((d) => d.close)
     const times = candleData.map((d) => d.time)
+    const rsiVisible = indicators.rsi && closePrices.length >= 14
+    const { VOLUME_RATIO, RSI_RATIO, SECTION_GAP } = LAYOUT
 
+    // ── Configure layout margins ────────────────────────────────────────
+    const bottomMargin = VOLUME_RATIO + SECTION_GAP + (rsiVisible ? RSI_RATIO + SECTION_GAP : 0)
+    const volumeTop = 1 - VOLUME_RATIO - (rsiVisible ? SECTION_GAP + RSI_RATIO : 0)
+    const volumeBottom = rsiVisible ? SECTION_GAP + RSI_RATIO : 0
+
+    chart.priceScale("right").applyOptions({
+      scaleMargins: { top: 0, bottom: bottomMargin },
+    })
+
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: { top: volumeTop, bottom: volumeBottom },
+    })
+
+    // ── Update volume legend position ───────────────────────────────────
+    if (volumeLegendRef.current) {
+      volumeLegendRef.current.style.top = `${volumeTop * 100}%`
+    }
+
+    // ── Helper to add line overlays ─────────────────────────────────────
     const addOverlay = (data: (number | null)[], opts: Parameters<typeof chart.addSeries>[1]) => {
       const series = chart.addSeries(LineSeries, {
         priceLineVisible: false,
@@ -307,66 +450,106 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       return series
     }
 
+    // ── Moving averages ─────────────────────────────────────────────────
     if (indicators.sma7 && closePrices.length >= 7)
-      addOverlay(calculateSMA(closePrices, 7), { color: "#f59e0b", lineWidth: 1 })
+      addOverlay(calculateSMA(closePrices, 7), { color: COLORS.sma7, lineWidth: 1 })
 
     if (indicators.sma25 && closePrices.length >= 25)
-      addOverlay(calculateSMA(closePrices, 25), { color: "#8b5cf6", lineWidth: 1 })
+      addOverlay(calculateSMA(closePrices, 25), { color: COLORS.sma25, lineWidth: 1 })
 
     if (indicators.ema12 && closePrices.length >= 12)
-      addOverlay(calculateEMA(closePrices, 12), { color: "#3b82f6", lineWidth: 1 })
+      addOverlay(calculateEMA(closePrices, 12), { color: COLORS.ema12, lineWidth: 1 })
 
     if (indicators.ema26 && closePrices.length >= 26)
-      addOverlay(calculateEMA(closePrices, 26), { color: "#ec4899", lineWidth: 1 })
+      addOverlay(calculateEMA(closePrices, 26), { color: COLORS.ema26, lineWidth: 1 })
 
+    // ── Bollinger Bands ─────────────────────────────────────────────────
     if (indicators.bollingerBands && closePrices.length >= 20) {
       const bb = calculateBollingerBands(closePrices, 20, 2)
-      addOverlay(bb.upper, { color: "#6b728080", lineWidth: 1, lineStyle: 2 })
-      addOverlay(bb.middle, { color: "#6b7280", lineWidth: 1 })
-      addOverlay(bb.lower, { color: "#6b728080", lineWidth: 1, lineStyle: 2 })
+      addOverlay(bb.upper, { color: COLORS.bollingerBandFaded, lineWidth: 1, lineStyle: 2 })
+      addOverlay(bb.middle, { color: COLORS.bollingerBand, lineWidth: 1 })
+      addOverlay(bb.lower, { color: COLORS.bollingerBandFaded, lineWidth: 1, lineStyle: 2 })
     }
 
-    if (indicators.rsi && closePrices.length >= 14) {
+    // ── RSI indicator ───────────────────────────────────────────────────
+    if (rsiVisible) {
       const rsiData = calculateRSI(closePrices, 14)
+
+      // Band fill (70 → 30 zone)
+      const bandFillSeries = chart.addSeries(AreaSeries, {
+        topColor: COLORS.rsiBandTop,
+        bottomColor: COLORS.rsiBandBottom,
+        lineColor: "transparent",
+        lineWidth: 1,
+        lineStyle: 2,
+        priceScaleId: "rsi",
+        lastValueVisible: false,
+        priceLineVisible: false,
+        autoscaleInfoProvider: rsiAutoscaleProvider,
+      })
+      bandFillSeries.setData(times.map((time) => ({ time, value: 70 })))
+      overlaySeriesRef.current.push(bandFillSeries)
+
+      // Configure RSI scale
+      chart.priceScale("rsi").applyOptions({
+        scaleMargins: { top: 1 - RSI_RATIO, bottom: 0 },
+        visible: true,
+        alignLabels: true,
+      })
+
+      // Mask below 30 to clip the band fill
+      const maskSeries = chart.addSeries(AreaSeries, {
+        topColor: COLORS.background,
+        bottomColor: COLORS.background,
+        lineColor: "transparent",
+        lineWidth: 1,
+        lineStyle: 2,
+        priceScaleId: "rsi",
+        lastValueVisible: false,
+        priceLineVisible: false,
+        autoscaleInfoProvider: rsiAutoscaleProvider,
+      })
+      maskSeries.setData(times.map((time) => ({ time, value: 30 })))
+      overlaySeriesRef.current.push(maskSeries)
+
+      // RSI line (renders on top of the band)
       const rsiSeries = chart.addSeries(LineSeries, {
-        color: "#a855f7",
+        color: COLORS.rsiLine,
         lineWidth: 1,
         priceScaleId: "rsi",
         priceLineVisible: false,
         lastValueVisible: true,
-        priceFormat: { type: "price", precision: 1, minMove: 0.1 },
-      })
-      chart.priceScale("rsi").applyOptions({
-        scaleMargins: { top: 0.8, bottom: 0.02 },
-        borderVisible: false,
+        crosshairMarkerVisible: true,
+        priceFormat: { type: "custom", formatter: (v: number) => v.toFixed(0) },
+        autoscaleInfoProvider: rsiAutoscaleProvider,
       })
       const rsiLineData = times
         .map((time, i) => ({ time, value: rsiData[i] }))
         .filter((d) => d.value !== null) as { time: UTCTimestamp; value: number }[]
       rsiSeries.setData(rsiLineData)
       overlaySeriesRef.current.push(rsiSeries)
+      rsiSeriesRef.current = rsiSeries
 
-      if (rsiLineData.length > 0) {
-        rsiSeries.createPriceLine({
-          price: 70,
-          color: "#ef444480",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: false,
-          title: "",
-        })
-        rsiSeries.createPriceLine({
-          price: 30,
-          color: "#22c55e80",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: false,
-          title: "",
-        })
-      }
+      // Threshold lines at 30 and 70
+      rsiSeries.createPriceLine({
+        price: 70,
+        color: COLORS.rsiOverbought,
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: true,
+        title: "",
+      })
+      rsiSeries.createPriceLine({
+        price: 30,
+        color: COLORS.rsiOversold,
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: true,
+        title: "",
+      })
     }
 
-    // ── Current price line (remove previous before adding new) ───────
+    // ── Current price line ──────────────────────────────────────────────
     if (priceLineRef.current) {
       try {
         candlestickSeries.removePriceLine(priceLineRef.current)
@@ -379,7 +562,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       const lastCandle = candleData[candleData.length - 1]
       priceLineRef.current = candlestickSeries.createPriceLine({
         price: lastCandle.close,
-        color: "#f43f5e",
+        color: COLORS.currentPrice,
         lineWidth: 1,
         lineStyle: 0,
         axisLabelVisible: true,
@@ -416,17 +599,16 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       }
     }
 
-    // ── Show only the latest candles on initial load ────────────────────
+    // ── Initial visible range ────────────────────────────────────────────
     if (!initialFitDoneRef.current && candleData.length > 0) {
-      const INITIAL_VISIBLE = 50
       const total = candleData.length
       chart.timeScale().setVisibleLogicalRange({
-        from: total - INITIAL_VISIBLE,
+        from: total - LAYOUT.INITIAL_VISIBLE_CANDLES,
         to: total - 1,
       })
       initialFitDoneRef.current = true
     }
   }, [bars, tweets, tokenPrice, indicators])
 
-  return <div ref={chartContainerRef} className="size-full"></div>
+  return <div ref={chartContainerRef} className="size-full" />
 }
