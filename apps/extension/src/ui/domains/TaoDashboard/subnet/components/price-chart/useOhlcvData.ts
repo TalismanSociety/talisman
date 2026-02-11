@@ -19,7 +19,7 @@ export interface UseOhlcvDataOptions {
   resolution?: OhlcvResolution
   /**
    * How many candles to fetch per page.
-   * @default 168 — 7 days of hourly candles
+   * @default 500
    */
   pageSize?: number
 }
@@ -67,7 +67,7 @@ const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
 export function useOhlcvData({
   netuid,
   resolution = "60",
-  pageSize = 168,
+  pageSize = 100,
 }: UseOhlcvDataOptions): UseOhlcvDataReturn {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["sn45", "subnetOhlcv", netuid, resolution, pageSize],

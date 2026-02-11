@@ -410,9 +410,14 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       }
     }
 
-    // ── Fit content only once (initial load) ────────────────────────────
-    if (!initialFitDoneRef.current) {
-      chart.timeScale().fitContent()
+    // ── Show only the latest candles on initial load ────────────────────
+    if (!initialFitDoneRef.current && candleData.length > 0) {
+      const INITIAL_VISIBLE = 50
+      const total = candleData.length
+      chart.timeScale().setVisibleLogicalRange({
+        from: total - INITIAL_VISIBLE,
+        to: total - 1,
+      })
       initialFitDoneRef.current = true
     }
   }, [bars, tweets, tokenPrice, indicators])
