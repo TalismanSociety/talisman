@@ -47,7 +47,9 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
         ) : data ? (
           <HoldersOverviewContent data={data} />
         ) : (
-          t("No data available")
+          <div className="flex h-[20rem] items-center justify-center text-body-secondary">
+            {t("Failed to fetch data")}
+          </div>
         )}
       </div>
     </div>

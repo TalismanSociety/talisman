@@ -8,6 +8,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts"
 import { type FC, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
 import {
   calculateBollingerBands,
@@ -27,9 +28,12 @@ interface PriceChartGraphProps {
 }
 
 export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid, timeRange, indicators }) => {
+  const { t } = useTranslation()
   const { bars, isLoading, hasMore, loadMore } = useOhlcvData({ netuid })
   const { data: tweets } = useSubnetTweets(netuid, timeRange || 50)
-  const { tokenPrice } = useSubnetStats(netuid)
+  const {
+    data: { tokenPrice },
+  } = useSubnetStats(netuid)
 
   if (isLoading) {
     return <PriceChartGraphSkeleton />
@@ -38,7 +42,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid, timeRange, i
   if (bars.length === 0) {
     return (
       <div className="flex h-[400px] items-center justify-center text-body-secondary">
-        No data available for this subnet.
+        {t("Failed to fetch data")}
       </div>
     )
   }

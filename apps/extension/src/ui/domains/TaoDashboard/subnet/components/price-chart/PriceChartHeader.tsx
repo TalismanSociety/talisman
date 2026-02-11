@@ -12,14 +12,9 @@ interface PriceChartHeaderProps {
 export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   const { t } = useTranslation()
   const {
-    tokenPrice,
-    tokenPriceUsd,
-    priceChange24h,
-    marketCap,
-    volume24h,
-    fdv,
-    dailyEmissions,
+    data: { tokenPrice, tokenPriceUsd, priceChange24h, marketCap, volume24h, fdv, dailyEmissions },
     isLoading,
+    isError,
   } = useSubnetStats(netuid)
 
   if (isLoading) {
@@ -29,7 +24,7 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   return (
     <div className="flex h-[10.2rem] flex-wrap items-center justify-between gap-4 px-12">
       <div className="flex w-full items-end justify-between gap-4">
-        <div>
+        <div className={cn(isError && "invisible")}>
           <div className="flex items-baseline gap-2">
             <span className="font-bold text-white text-xl">
               τ {tokenPrice?.toFixed(6) ?? "0.000000"}
@@ -56,16 +51,24 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
 
         <div className="flex h-full items-end gap-12">
           <Metric label={t("Market Cap")}>
-            <FiatFromUsd amount={marketCap} compact noCountUp />
+            {isError || marketCap === null ? (
+              t("N/A")
+            ) : (
+              <FiatFromUsd amount={marketCap} compact noCountUp />
+            )}
           </Metric>
           <Metric label={t("24h Volume")}>
-            <FiatFromUsd amount={volume24h} compact noCountUp />
+            {isError || volume24h === null ? (
+              t("N/A")
+            ) : (
+              <FiatFromUsd amount={volume24h} compact noCountUp />
+            )}
           </Metric>
           <Metric label={t("FDV")}>
-            <FiatFromUsd amount={fdv} compact noCountUp />
+            {isError || fdv === null ? t("N/A") : <FiatFromUsd amount={fdv} compact noCountUp />}
           </Metric>
           <Metric label={t("Emissions")}>
-            {dailyEmissions ? `τ${dailyEmissions.toFixed(3)}/d` : t("N/A")}
+            {isError || dailyEmissions === null ? t("N/A") : `τ${dailyEmissions.toFixed(3)}/d`}
           </Metric>
         </div>
       </div>

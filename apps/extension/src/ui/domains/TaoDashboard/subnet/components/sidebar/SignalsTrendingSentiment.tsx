@@ -27,7 +27,9 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
         ) : data ? (
           <TrendingSentiment netuid={netuid} period={period} combinedScore={data} />
         ) : (
-          t("No data available")
+          <div className="flex h-[16.5rem] items-center justify-center text-body-secondary">
+            {t("Failed to fetch data")}
+          </div>
         )}
       </div>
     </div>

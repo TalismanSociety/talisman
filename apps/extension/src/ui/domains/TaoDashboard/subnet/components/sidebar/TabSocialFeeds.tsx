@@ -47,7 +47,7 @@ const SentimentSummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, 
   if (!sentiment)
     return (
       <div className="flex h-[11.6rem] items-center justify-center text-body-secondary text-sm">
-        {t("Failed to fetch sentiment data")}
+        {t("Failed to fetch data")}
       </div>
     )
 

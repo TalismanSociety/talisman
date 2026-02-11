@@ -67,7 +67,7 @@ const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) 
 const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
   const days = useDaysFromPeriod(period)
-  const { data, isLoading } = useSubnetWhalesFlow(netuid, days)
+  const { data, isLoading, isError } = useSubnetWhalesFlow(netuid, days)
 
   const inflowPercent = useMemo(() => {
     if (!data) return null
@@ -91,6 +91,13 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
           <Skeleton className="h-6 w-16" />
           <Skeleton className="h-6 w-16" />
         </div>
+      </div>
+    )
+
+  if (isError)
+    return (
+      <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
+        <div className="text-center text-body-secondary">{t("Failed to fetch data")}</div>
       </div>
     )
 
