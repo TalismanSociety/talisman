@@ -42,9 +42,15 @@ export const useIsValidEthTransaction = (
       // balance checks
       const value = tx.value ?? 0n
       const maxTransactionCost = getMaxTransactionCost(tx)
-      if (!balance || value > balance) throw new Error(t("Insufficient balance"))
+      const nativeSymbol = publicClient.chain?.nativeCurrency?.symbol ?? "native token"
+      if (!balance || value > balance)
+        throw new Error(
+          t("Insufficient {{symbol}} balance to pay for fee", { symbol: nativeSymbol })
+        )
       if (!balance || maxTransactionCost > balance)
-        throw new Error(t("Insufficient balance to pay for fee"))
+        throw new Error(
+          t("Insufficient {{symbol}} balance to pay for fee", { symbol: nativeSymbol })
+        )
 
       // dry runs the transaction, if it fails we can't know for sure what the issue really is
       // there should be helpful message in the error though.

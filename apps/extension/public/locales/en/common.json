@@ -971,6 +971,7 @@
   "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees": "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
   "Insufficient balance to cover staking, the existential deposit, and the future unstaking fee": "Insufficient balance to cover staking, the existential deposit, and the future unstaking fee",
   "Insufficient balance to pay for fee": "Insufficient balance to pay for fee",
+  "Insufficient {{symbol}} balance to pay for fee": "Insufficient {{symbol}} balance to pay for fee",
   "Invalid address": "Invalid address",
   "Invalid Address": "Invalid Address",
   "Invalid contract address": "Invalid contract address",
