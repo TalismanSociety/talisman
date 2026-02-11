@@ -1,7 +1,7 @@
 import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
 import { useTokens } from "@ui/state"
 import { assign, keyBy } from "lodash-es"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 import type { SubnetData } from "./types"
 import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
@@ -66,7 +66,11 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
     }
   }, [hasSubnetPoolsNextPage, isSubnetPoolsFetchingNextPage, fetchSubnetPoolsNextPage])
 
-  const descriptionsMap = useMemo(
+  // Build maps only from fully-loaded data to prevent flickering.
+  // During pagination, intermediate states would produce partial maps (missing entries),
+  // causing consumers to see null fields. useStableMap keeps the previous map
+  // until all pages are loaded or the new map has more entries.
+  const rawDescriptionsMap = useMemo(
     () =>
       keyBy(
         subnetDescriptionsData?.pages
@@ -76,13 +80,23 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
       ),
     [subnetDescriptionsData?.pages]
   )
+  const descriptionsMap = useStableMap(
+    rawDescriptionsMap,
+    !isSubnetDescriptionsLoading &&
+      !hasSubnetDescriptionsNextPage &&
+      !isSubnetDescriptionsFetchingNextPage
+  )
 
-  const poolsMap = useMemo(
+  const rawPoolsMap = useMemo(
     () =>
       keyBy(subnetPoolsData?.pages.flatMap((page) => page.data) ?? [], (pool) =>
         Number(pool.netuid)
       ),
     [subnetPoolsData?.pages]
+  )
+  const poolsMap = useStableMap(
+    rawPoolsMap,
+    !isSubnetPoolsLoading && !hasSubnetPoolsNextPage && !isSubnetPoolsFetchingNextPage
   )
 
   const subnetsMap = useMemo(() => keyBy(subnets ?? [], (subnet) => subnet.netuid), [subnets])
@@ -110,4 +124,17 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
     isSubnetsLoading,
     isSubnetsError,
   }
+}
+
+/**
+ * Use the latest map if it has grown or if all pages are done loading.
+ * Prevents flickering when paginated queries transition from placeholder to real data,
+ * which can temporarily produce maps with fewer entries.
+ */
+const useStableMap = <T>(map: Record<string, T>, allPagesDone: boolean): Record<string, T> => {
+  const ref = useRef<Record<string, T>>({})
+  if (allPagesDone || Object.keys(map).length > Object.keys(ref.current).length) {
+    ref.current = map
+  }
+  return ref.current
 }
