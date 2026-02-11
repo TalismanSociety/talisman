@@ -50,18 +50,18 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
         </div>
 
         <div className="flex h-full items-end gap-12">
-          <Metric label={t("Market Cap")}>
-            {isError || marketCap === null ? (
-              t("N/A")
-            ) : (
-              <FiatFromUsd amount={marketCap} compact noCountUp />
-            )}
-          </Metric>
           <Metric label={t("24h Volume")}>
             {isError || volume24h === null ? (
               t("N/A")
             ) : (
               <FiatFromUsd amount={volume24h} compact noCountUp />
+            )}
+          </Metric>
+          <Metric label={t("Market Cap")}>
+            {isError || marketCap === null ? (
+              t("N/A")
+            ) : (
+              <FiatFromUsd amount={marketCap} compact noCountUp />
             )}
           </Metric>
           <Metric label={t("FDV")}>
