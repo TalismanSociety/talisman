@@ -1,5 +1,24 @@
 # @talismn/token-rates
 
+## 3.0.16
+
+### Patch Changes
+
+- dd51038: apply biome lint suggestions
+- bd74d55: github url in package.json
+- 1977d5d: fix typescript config for tests
+- 250839f: migration from preconstruct to tsup
+- 250839f: migrate eslint+prettier to biome
+- Updated dependencies [d3a5a3a]
+- Updated dependencies [dd51038]
+- Updated dependencies [b1c3d0c]
+- Updated dependencies [f6210b4]
+- Updated dependencies [bd74d55]
+- Updated dependencies [1977d5d]
+- Updated dependencies [250839f]
+- Updated dependencies [250839f]
+  - @talismn/chaindata-provider@1.3.5
+
 ## 3.0.15
 
 ### Patch Changes

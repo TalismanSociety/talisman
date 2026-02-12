@@ -1,5 +1,25 @@
 # @talismn/chaindata-provider
 
+## 1.3.5
+
+### Patch Changes
+
+- d3a5a3a: update init data
+- dd51038: apply biome lint suggestions
+- b1c3d0c: fix subscan acount links
+- f6210b4: taostats transaction url pattern
+- bd74d55: github url in package.json
+- 1977d5d: fix typescript config for tests
+- 250839f: migration from preconstruct to tsup
+- 250839f: migrate eslint+prettier to biome
+- Updated dependencies [8faa23a]
+- Updated dependencies [dd51038]
+- Updated dependencies [bd74d55]
+- Updated dependencies [1977d5d]
+- Updated dependencies [250839f]
+- Updated dependencies [250839f]
+  - @talismn/util@0.5.7
+
 ## 1.3.4
 
 ### Patch Changes
