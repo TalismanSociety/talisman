@@ -1,7 +1,7 @@
-import { Icon } from "@iconify/react"
+import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import type { FC } from "react"
-
+import type { FC, PropsWithChildren, ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { formatAlpha, formatCompactNumber } from "./formatters"
 import { useFlowHeaderData } from "./useFlowChartData"
 
@@ -11,122 +11,115 @@ interface FlowChartHeaderProps {
 }
 
 export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, timeRange }) => {
+  const { t } = useTranslation()
   const { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading } =
     useFlowHeaderData(netuid, timeRange)
 
   if (isLoading) return <FlowChartHeaderSkeleton />
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4 p-6 pb-2">
-      {/* Left side – Net Flow Display */}
-      <div>
-        <div className="flex items-baseline gap-2">
-          <span
-            className={cn("font-bold text-3xl", totals.net >= 0 ? "text-white" : "text-red-500")}
-          >
-            {totals.net >= 0 ? "+" : ""}
-            {formatCompactNumber(totals.net)}τ Net
-          </span>
-        </div>
-        <div className="mt-1 flex items-center gap-2 text-body-secondary">
-          <span>EMA TAO flow</span>
-          <span
-            className={cn(
-              "flex items-center gap-1 rounded px-2 py-0.5 text-xs",
-              distributionTrend === "accumulating"
-                ? "bg-green-500/20 text-green-500"
-                : "bg-red-500/20 text-red-500"
-            )}
-          >
-            Distribution
-            <Icon
-              icon={
-                distributionTrend === "accumulating"
-                  ? "mdi:arrow-bottom-right"
-                  : "mdi:arrow-top-right"
-              }
-              className="size-3"
-            />
-          </span>
-        </div>
-      </div>
-
-      {/* Right side – Stats */}
-      <div className="flex flex-wrap items-start gap-6 text-sm">
-        {/* TAO Flow */}
-        <div className="flex flex-col">
-          <span className="text-body-disabled text-xs">TAO Flow</span>
-          <div className="flex flex-col">
-            <span className="font-medium text-green-500">
-              {formatCompactNumber(totals.taoIn)}τ{" "}
-              <span className="text-body-disabled text-xs">In</span>
+    <div className="flex h-[10.2rem] flex-wrap items-center justify-between gap-4 px-12">
+      <div className="flex w-full items-end justify-between gap-4">
+        {/* Left side – Net Flow Display */}
+        <div>
+          <div className="flex items-baseline gap-2">
+            <span className={cn("font-bold text-xl", totals.net >= 0 ? "text-white" : "text-sell")}>
+              {t("{{amount}}τ Net", {
+                amount: `${totals.net >= 0 ? "+" : ""}${formatCompactNumber(totals.net)}`,
+              })}
             </span>
-            <span className="font-medium text-red-500">
-              {formatCompactNumber(totals.taoOut)}τ{" "}
-              <span className="text-body-disabled text-xs">Out</span>
+          </div>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="text-body-secondary text-md">{t("EMA TAO flow")}</span>
+            <span
+              className={cn(
+                "flex items-center gap-1 rounded-xs px-2 text-sm",
+                distributionTrend === "accumulating" ? "bg-buy/10 text-buy" : "bg-sell/10 text-sell"
+              )}
+            >
+              <span>{t("Distribution")}</span>
+              {distributionTrend === "accumulating" && <ArrowUpRightIcon className="size-6" />}
+              {distributionTrend === "distributing" && <ArrowDownRightIcon className="size-6" />}
             </span>
           </div>
         </div>
 
-        {/* Alpha Flow */}
-        <div className="flex flex-col">
-          <span className="text-body-disabled text-xs">Alpha Flow</span>
-          <div className="flex flex-col">
-            <span className="font-medium text-green-500">
-              {formatAlpha(alphaFlow.alphaIn)}{" "}
-              <span className="text-body-disabled text-xs">In</span>
-            </span>
-            <span className="font-medium text-red-500">
-              {formatAlpha(alphaFlow.alphaOut)}{" "}
-              <span className="text-body-disabled text-xs">Out</span>
-            </span>
-          </div>
-        </div>
+        {/* Right side – Stats */}
+        <div className="flex h-full items-start gap-12">
+          <Metric label={t("TAO Flow")}>
+            <div className="flex flex-col">
+              <span className="font-medium text-buy">
+                {formatCompactNumber(totals.taoIn)}τ{" "}
+                <span className="text-body-disabled text-xs">{t("In")}</span>
+              </span>
+              <span className="font-medium text-sell">
+                {formatCompactNumber(totals.taoOut)}τ{" "}
+                <span className="text-body-disabled text-xs">{t("Out")}</span>
+              </span>
+            </div>
+          </Metric>
 
-        {/* Emissions */}
-        <div className="flex flex-col items-end">
-          <span className="text-body-disabled text-xs">Emissions</span>
-          <span className="font-medium text-white">
+          <Metric label={t("Alpha Flow")}>
+            <div className="flex flex-col">
+              <span className="font-medium text-buy">
+                {formatAlpha(alphaFlow.alphaIn)}{" "}
+                <span className="text-body-disabled text-xs">{t("In")}</span>
+              </span>
+              <span className="font-medium text-sell">
+                {formatAlpha(alphaFlow.alphaOut)}{" "}
+                <span className="text-body-disabled text-xs">{t("Out")}</span>
+              </span>
+            </div>
+          </Metric>
+
+          <Metric label={t("Emissions")}>
             {emissionPercent !== null ? `${emissionPercent.toFixed(2)}%` : "—"}
-          </span>
-        </div>
+          </Metric>
 
-        {/* Em/Day */}
-        <div className="flex flex-col items-end">
-          <span className="text-body-disabled text-xs">Em/Day</span>
-          <span className="font-medium text-white">
+          <Metric label={t("Em/Day")}>
             {dailyEmissions !== null ? `τ${dailyEmissions.toFixed(2)}` : "—"}
-          </span>
+          </Metric>
         </div>
       </div>
     </div>
   )
 }
 
+const Metric: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }) => (
+  <div className="flex flex-col items-start justify-between gap-2">
+    <span className="text-body-disabled text-xs">{label}</span>
+    <span className="font-medium text-md text-white">{children}</span>
+  </div>
+)
+
+const Skeleton: FC<{ className?: string }> = ({ className }) => (
+  <div className={cn("animate-pulse rounded-xs bg-grey-800", className)} />
+)
+
+const MetricSkeleton: FC<{
+  titleClassName?: string
+  valueClassName?: string
+  is3Rows?: boolean
+}> = ({ titleClassName, valueClassName, is3Rows }) => (
+  <div className="flex flex-col items-start justify-between gap-2">
+    <Skeleton className={cn("h-8 w-32", titleClassName)} />
+    <Skeleton className={cn("h-10 w-40", valueClassName)} />
+    {is3Rows && <Skeleton className={cn("h-10 w-40", valueClassName)} />}
+  </div>
+)
+
 const FlowChartHeaderSkeleton = () => (
-  <div className="flex flex-wrap items-start justify-between gap-4 p-6 pb-2">
-    <div className="flex flex-col gap-2">
-      <div className="h-9 w-48 animate-pulse rounded bg-grey-800" />
-      <div className="h-5 w-36 animate-pulse rounded bg-grey-800" />
-    </div>
-    <div className="flex items-start gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="h-3 w-14 animate-pulse rounded bg-grey-800" />
-        <div className="h-4 w-20 animate-pulse rounded bg-grey-800" />
-        <div className="h-4 w-20 animate-pulse rounded bg-grey-800" />
+  <div className="flex h-[10.2rem] flex-wrap items-center justify-between gap-4 px-12">
+    <div className="flex w-full items-start justify-between gap-4">
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-14 w-96" />
+        <Skeleton className="h-12 w-72" />
       </div>
-      <div className="flex flex-col gap-1">
-        <div className="h-3 w-16 animate-pulse rounded bg-grey-800" />
-        <div className="h-4 w-20 animate-pulse rounded bg-grey-800" />
-        <div className="h-4 w-20 animate-pulse rounded bg-grey-800" />
-      </div>
-      <div className="flex flex-col items-end gap-1">
-        <div className="h-3 w-16 animate-pulse rounded bg-grey-800" />
-        <div className="h-4 w-14 animate-pulse rounded bg-grey-800" />
-      </div>
-      <div className="flex flex-col items-end gap-1">
-        <div className="h-3 w-12 animate-pulse rounded bg-grey-800" />
-        <div className="h-4 w-16 animate-pulse rounded bg-grey-800" />
+      <div className="flex items-start gap-12">
+        <MetricSkeleton titleClassName="w-28" valueClassName="w-36" is3Rows />
+        <MetricSkeleton titleClassName="w-32" valueClassName="w-36" is3Rows />
+        <MetricSkeleton titleClassName="w-28" valueClassName="w-24" />
+        <MetricSkeleton titleClassName="w-20" valueClassName="w-28" />
       </div>
     </div>
   </div>
