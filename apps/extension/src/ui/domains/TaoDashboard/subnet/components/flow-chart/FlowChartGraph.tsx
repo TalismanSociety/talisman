@@ -19,7 +19,7 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) =
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 350,
+      height: chartContainerRef.current.clientHeight,
       layout: {
         background: { color: "transparent" },
         textColor: "#71717a",
@@ -104,7 +104,10 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) =
     // Resize handler
     const handleResize = () => {
       if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth })
+        chart.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight,
+        })
       }
     }
     window.addEventListener("resize", handleResize)
@@ -119,21 +122,17 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) =
 
   if (flowData.length === 0) {
     return (
-      <div className="flex h-[350px] items-center justify-center text-body-secondary">
+      <div className="flex size-full items-center justify-center text-body-secondary">
         No flow data available for this subnet.
       </div>
     )
   }
 
-  return (
-    <div className="relative">
-      <div ref={chartContainerRef} />
-    </div>
-  )
+  return <div ref={chartContainerRef} className="size-full" />
 }
 
 const FlowChartGraphSkeleton = () => (
-  <div className="flex h-[350px] items-center justify-center">
+  <div className="flex size-full items-center justify-center">
     <div className="h-10 w-40 animate-pulse rounded-lg bg-grey-700" />
   </div>
 )
