@@ -6,7 +6,7 @@ import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import type { AlphaFlow, FlowTotals, ProcessedFlowData } from "./types"
 
 // ---------------------------------------------------------------------------
-// Data processing
+// Shared data processing
 // ---------------------------------------------------------------------------
 
 function processStakeEventsToFlow(
@@ -69,12 +69,18 @@ function processStakeEventsToFlow(
   })
 }
 
+/** Filter processed flow data by a time range (in days). 0 = all. */
+function filterByTimeRange(data: ProcessedFlowData[], timeRange: number): ProcessedFlowData[] {
+  if (timeRange === 0) return data
+  const cutoff = Date.now() - timeRange * 24 * 60 * 60 * 1000
+  return data.filter((d) => d.time.getTime() >= cutoff)
+}
+
 // ---------------------------------------------------------------------------
-// Hook
+// Hook – Header data (totals, alpha flow, emissions)
 // ---------------------------------------------------------------------------
 
-export interface UseFlowChartDataReturn {
-  flowData: ProcessedFlowData[]
+export interface UseFlowHeaderDataReturn {
   totals: FlowTotals
   alphaFlow: AlphaFlow
   emissionPercent: number | null
@@ -83,12 +89,12 @@ export interface UseFlowChartDataReturn {
   isLoading: boolean
 }
 
-export function useFlowChartData(netuid: number, timeRange: number): UseFlowChartDataReturn {
+export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHeaderDataReturn {
   const { data: stakeEvents, isLoading: stakeLoading } = useSubnetStakeEvents(netuid)
-  const { data: tokenomics } = useSubnetTokenomics(netuid)
+  const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
   const { subnetData } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
-  const isLoading = stakeLoading
+  const isLoading = stakeLoading || tokenomicsLoading
 
   // Current subnet entry
   const currentSubnet = useMemo(
@@ -96,18 +102,11 @@ export function useFlowChartData(netuid: number, timeRange: number): UseFlowChar
     [subnetData, netuid]
   )
 
-  // Process all flow data
-  const allFlowData = useMemo(() => {
-    if (!stakeEvents) return []
-    return processStakeEventsToFlow(stakeEvents)
-  }, [stakeEvents])
-
-  // Filter by selected time range
+  // Process & filter flow data to compute totals
   const flowData = useMemo(() => {
-    if (timeRange === 0) return allFlowData
-    const cutoff = Date.now() - timeRange * 24 * 60 * 60 * 1000
-    return allFlowData.filter((d) => d.time.getTime() >= cutoff)
-  }, [allFlowData, timeRange])
+    if (!stakeEvents) return []
+    return filterByTimeRange(processStakeEventsToFlow(stakeEvents), timeRange)
+  }, [stakeEvents, timeRange])
 
   // Totals for the visible window
   const totals = useMemo<FlowTotals>(() => {
@@ -139,13 +138,25 @@ export function useFlowChartData(netuid: number, timeRange: number): UseFlowChar
   const distributionTrend: "accumulating" | "distributing" =
     totals.net >= 0 ? "accumulating" : "distributing"
 
-  return {
-    flowData,
-    totals,
-    alphaFlow,
-    emissionPercent,
-    dailyEmissions,
-    distributionTrend,
-    isLoading,
-  }
+  return { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading }
+}
+
+// ---------------------------------------------------------------------------
+// Hook – Graph data (flow time-series)
+// ---------------------------------------------------------------------------
+
+export interface UseFlowGraphDataReturn {
+  flowData: ProcessedFlowData[]
+  isLoading: boolean
+}
+
+export function useFlowGraphData(netuid: number, timeRange: number): UseFlowGraphDataReturn {
+  const { data: stakeEvents, isLoading } = useSubnetStakeEvents(netuid)
+
+  const flowData = useMemo(() => {
+    if (!stakeEvents) return []
+    return filterByTimeRange(processStakeEventsToFlow(stakeEvents), timeRange)
+  }, [stakeEvents, timeRange])
+
+  return { flowData, isLoading }
 }

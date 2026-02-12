@@ -19,6 +19,7 @@
   - `pnpm exec playwright test` (E2E) and variants in `package.json`
 - Use `pnpm changeset` for versioned packages; respect CI expectations in `.github/workflows/ci.yml`.
 - I18n: wrap UI strings with `t()`/`Trans` and run `pnpm chore:update-translations` when keys change.
+- **No barrel files (`index.ts` that only re-export).**  Import directly from the source module (e.g., `./flow-chart/SubnetTaoFlowChart`) instead of creating an `index.ts` barrel. Barrels hurt tree-shaking, slow down TypeScript, and obscure dependency graphs.
 
 ## Dependency & API Guidance
 

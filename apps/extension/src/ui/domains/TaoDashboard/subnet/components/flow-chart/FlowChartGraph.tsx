@@ -3,14 +3,16 @@ import type { FC } from "react"
 import { useEffect, useRef } from "react"
 
 import { formatCompactNumber } from "./formatters"
-import type { ProcessedFlowData } from "./types"
+import { useFlowGraphData } from "./useFlowChartData"
 
 interface FlowChartGraphProps {
-  flowData: ProcessedFlowData[]
+  netuid: number
+  timeRange: number
 }
 
-export const FlowChartGraph: FC<FlowChartGraphProps> = ({ flowData }) => {
+export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null)
+  const { flowData, isLoading } = useFlowGraphData(netuid, timeRange)
 
   useEffect(() => {
     if (!chartContainerRef.current || flowData.length === 0) return
@@ -19,7 +21,7 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ flowData }) => {
       width: chartContainerRef.current.clientWidth,
       height: 350,
       layout: {
-        background: { color: "#0d0d0d" },
+        background: { color: "transparent" },
         textColor: "#71717a",
       },
       grid: {
@@ -113,9 +115,25 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ flowData }) => {
     }
   }, [flowData])
 
+  if (isLoading) return <FlowChartGraphSkeleton />
+
+  if (flowData.length === 0) {
+    return (
+      <div className="flex h-[350px] items-center justify-center text-body-secondary">
+        No flow data available for this subnet.
+      </div>
+    )
+  }
+
   return (
     <div className="relative">
       <div ref={chartContainerRef} />
     </div>
   )
 }
+
+const FlowChartGraphSkeleton = () => (
+  <div className="flex h-[350px] items-center justify-center">
+    <div className="h-10 w-40 animate-pulse rounded-lg bg-grey-700" />
+  </div>
+)
