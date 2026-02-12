@@ -42,7 +42,7 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
                 )}
               >
                 <span>{Math.abs(priceChange24h).toFixed(2)}%</span>
-                {priceChange24h > 0 && <ArrowUpRightIcon className="size-4" />}
+                {priceChange24h > 0 && <ArrowUpRightIcon className="size-6" />}
                 {priceChange24h < 0 && <ArrowDownRightIcon className="size-6" />}
               </span>
             )}
