@@ -177,7 +177,7 @@ const PriceChartGraphSkeleton = () => (
 
     {/* Centered candlestick icon */}
     <div className="absolute inset-0 flex animate-pulse items-center justify-center">
-      <svg className="h-24 w-32" viewBox="0 0 80 48" fill="none">
+      <svg className="h-24 w-32 opacity-50" viewBox="0 0 80 48" fill="none">
         {/* Candle 1 – buy */}
         <line
           x1="12"
@@ -186,17 +186,9 @@ const PriceChartGraphSkeleton = () => (
           y2="42"
           stroke="currentColor"
           strokeWidth="1"
-          className="text-grey-700"
+          className="text-buy"
         />
-        <rect
-          x="8"
-          y="14"
-          width="8"
-          height="16"
-          rx="1"
-          fill="currentColor"
-          className="text-buy/30"
-        />
+        <rect x="8" y="14" width="8" height="16" rx="1" fill="currentColor" className="text-buy" />
         {/* Candle 2 – sell */}
         <line
           x1="28"
@@ -205,7 +197,7 @@ const PriceChartGraphSkeleton = () => (
           y2="40"
           stroke="currentColor"
           strokeWidth="1"
-          className="text-grey-700"
+          className="text-sell"
         />
         <rect
           x="24"
@@ -214,7 +206,7 @@ const PriceChartGraphSkeleton = () => (
           height="14"
           rx="1"
           fill="currentColor"
-          className="text-sell/30"
+          className="text-sell"
         />
         {/* Candle 3 – buy */}
         <line
@@ -224,17 +216,9 @@ const PriceChartGraphSkeleton = () => (
           y2="38"
           stroke="currentColor"
           strokeWidth="1"
-          className="text-grey-700"
+          className="text-buy"
         />
-        <rect
-          x="40"
-          y="10"
-          width="8"
-          height="20"
-          rx="1"
-          fill="currentColor"
-          className="text-buy/30"
-        />
+        <rect x="40" y="10" width="8" height="20" rx="1" fill="currentColor" className="text-buy" />
         {/* Candle 4 – sell */}
         <line
           x1="60"
@@ -243,7 +227,7 @@ const PriceChartGraphSkeleton = () => (
           y2="44"
           stroke="currentColor"
           strokeWidth="1"
-          className="text-grey-700"
+          className="text-sell"
         />
         <rect
           x="56"
@@ -252,7 +236,7 @@ const PriceChartGraphSkeleton = () => (
           height="12"
           rx="1"
           fill="currentColor"
-          className="text-sell/30"
+          className="text-sell"
         />
         {/* Candle 5 – buy */}
         <line
@@ -262,17 +246,9 @@ const PriceChartGraphSkeleton = () => (
           y2="36"
           stroke="currentColor"
           strokeWidth="1"
-          className="text-grey-700"
+          className="text-buy"
         />
-        <rect
-          x="72"
-          y="12"
-          width="8"
-          height="16"
-          rx="1"
-          fill="currentColor"
-          className="text-buy/30"
-        />
+        <rect x="72" y="12" width="8" height="16" rx="1" fill="currentColor" className="text-buy" />
       </svg>
     </div>
 
