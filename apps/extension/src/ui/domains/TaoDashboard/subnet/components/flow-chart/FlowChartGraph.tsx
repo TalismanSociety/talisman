@@ -70,6 +70,8 @@ const FlowChartGraphContent: FC<{
         vertLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
         horzLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
       },
+      handleScroll: false,
+      handleScale: false,
     })
 
     // TAO In area (green)
