@@ -2,16 +2,7 @@
 // OHLCV types — TradingView / lightweight-charts compatible
 // ---------------------------------------------------------------------------
 
-/**
- * Supported candle resolutions following the TradingView UDF convention.
- *
- * Values represent minutes for intra-day ("1" … "240"),
- * or a period code for daily/weekly ("1D", "1W").
- *
- * Currently only "60" (hourly) is produced from on-chain data;
- * the other values are declared so the future API contract is fixed.
- */
-export type OhlcvResolution = "1" | "5" | "15" | "60" | "240" | "1D" | "1W"
+export type OhlcvResolution = "15" | "60" | "240" | "1440"
 
 /**
  * A single OHLCV candle bar.
@@ -105,12 +96,6 @@ export interface StakeEvent {
   taoAmount: string
   timestamp: string
 }
-
-export const TIME_RANGES = [
-  { label: "1D", value: 1 },
-  { label: "1W", value: 7 },
-  { label: "1M", value: 30 },
-] as const
 
 export const DEFAULT_INDICATORS: IndicatorConfig = {
   sma7: false,

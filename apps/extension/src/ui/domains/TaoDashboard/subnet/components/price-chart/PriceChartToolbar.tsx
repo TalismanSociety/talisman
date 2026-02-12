@@ -1,12 +1,12 @@
 import { cn } from "@talismn/util"
-import type { FC } from "react"
-
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { INDICATOR_CONFIG, type IndicatorKey } from "./chartConfig"
-import { type IndicatorConfig, TIME_RANGES } from "./types"
+import type { IndicatorConfig, OhlcvResolution } from "./types"
 
 interface PriceChartToolbarProps {
-  timeRange: number
-  setTimeRange: (range: number) => void
+  resolution: OhlcvResolution
+  setResolution: (range: OhlcvResolution) => void
   indicators: IndicatorConfig
   toggleIndicator: (key: keyof IndicatorConfig) => void
   className?: string
@@ -15,13 +15,29 @@ interface PriceChartToolbarProps {
 /** Order of indicators in the toolbar */
 const INDICATOR_ORDER: IndicatorKey[] = ["sma7", "sma25", "sma99", "bollingerBands", "rsi"]
 
+type ResolutionOption = {
+  label: string
+  value: OhlcvResolution
+}
+
 export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
-  timeRange,
-  setTimeRange,
+  resolution: timeRange,
+  setResolution: setTimeRange,
   indicators,
   toggleIndicator,
   className,
 }) => {
+  const { t } = useTranslation()
+
+  const timeRanges = useMemo<ResolutionOption[]>(() => {
+    return [
+      { label: t("15m"), value: "15" },
+      { label: t("1H"), value: "60" },
+      // { label: t("4H"), value: "240" },
+      // { label: t("1D"), value: "1440" },
+    ]
+  }, [t])
+
   return (
     <div className={cn("flex flex-wrap items-center justify-between gap-3", className)}>
       {/* Left side - Indicator toggles */}
@@ -44,18 +60,9 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
 
       {/* Right side - Live indicator and time range */}
       <div className="flex items-center gap-3">
-        {/* Live indicator */}
-        <div className="flex items-center gap-1.5">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex size-2 rounded-full bg-green-500" />
-          </span>
-          <span className="font-medium text-green-500 text-xs">Live</span>
-        </div>
-
         {/* Time range buttons */}
         <div className="flex items-center gap-1">
-          {TIME_RANGES.map((option) => (
+          {timeRanges.map((option) => (
             <button
               key={option.value}
               type="button"

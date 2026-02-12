@@ -553,7 +553,7 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns OHLCV (Open/High/Low/Close/Volume) candle data for a subnet's alpha token. Each candle is a 6-element array: `[time, open, high, low, close, volume]` - **time** – Unix epoch seconds (bucket start) - **open** – First price in the period - **high** – Highest price in the period - **low** – Lowest price in the period - **close** – Last price in the period - **volume** – Total volume in the period (TAO) Candles are sorted most-recent-first. Use `nextCursor` to paginate backwards. **MVP note:** Only `resolution=60` (1-hour candles) is currently supported.
+     * @description Returns OHLCV (Open/High/Low/Close/Volume) candle data for a subnet's alpha token. Each candle is a 6-element array: `[time, open, high, low, close, volume]` - **time** – Unix epoch seconds (bucket start) - **open** – Opening price in TAO for the period - **high** – Highest price in TAO for the period - **low** – Lowest price in TAO for the period - **close** – Closing price in TAO for the period - **volume** – Total TAO volume (buys + sells) in the period Supported resolutions (in minutes): 15, 60 (default), 240, 1440 (1 day). OHLC values are derived from individual stake events (buys/sells). Each trade's price is computed as taoAmount/alphaAmount, providing accurate per-trade prices bucketed into standard OHLCV candles. Candles are sorted most-recent-first. Use `nextCursor` to paginate backwards.
      *
      * @tags Subnets
      * @name GetSubnetOhlcv
@@ -564,10 +564,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Candle period. TradingView UDF convention: "1","5","15","60","240" (minutes) or "1D","1W". Only "60" is supported for MVP.
+         * Candle period in minutes: "15" (15m), "60" (1h, default), "240" (4h), "1440" (1d).
          * @default "60"
          */
-        resolution?: "1" | "5" | "15" | "60" | "240" | "1D" | "1W";
+        resolution?: "15" | "60" | "240" | "1440";
         /** Number of candles to return (1-500, default 100). Most recent first. */
         limit?: string;
         /** Opaque cursor from a previous response's nextCursor. When absent, returns the most recent candles. */

@@ -120,32 +120,6 @@ export const useSubnetPrice = (netuid: number | null | undefined) => {
   })
 }
 
-// Hook to get subnet OHLCV candles (paginated)
-export const useSubnetOhlcv = (
-  netuid: number | null | undefined,
-  options?: {
-    resolution?: "1" | "5" | "15" | "60" | "240" | "1D" | "1W"
-    limit?: number
-    cursor?: string
-  }
-) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetOhlcv", netuid, options?.resolution, options?.limit, options?.cursor],
-    queryFn: async () => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetOhlcv(String(netuid), {
-        resolution: options?.resolution,
-        limit: options?.limit ? String(options.limit) : undefined,
-        cursor: options?.cursor,
-      })
-      return response.data
-    },
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
 // Hook to get subnet tokenomics
 export const useSubnetTokenomics = (netuid: number | null | undefined) => {
   return useQuery({

@@ -22,7 +22,7 @@ import {
   getSentimentColor,
 } from "./indicators"
 import { PriceChartToolbar } from "./PriceChartToolbar"
-import type { IndicatorConfig, OhlcvBar } from "./types"
+import type { IndicatorConfig, OhlcvBar, OhlcvResolution } from "./types"
 import { DEFAULT_INDICATORS } from "./types"
 import { useOhlcvData } from "./useOhlcvData"
 import { useSubnetStats } from "./useSubnetStats"
@@ -119,11 +119,11 @@ interface PriceChartGraphProps {
 
 export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [timeRange, _setTimeRange] = useState(7) // days - default to 1W
+  const [resolution, setResolution] = useState<OhlcvResolution>("60")
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
 
-  const { bars, isLoading, hasMore, loadMore } = useOhlcvData({ netuid })
-  const { data: tweets } = useSubnetTweets(netuid, timeRange || 50)
+  const { bars, isLoading, hasMore, loadMore } = useOhlcvData({ netuid, resolution })
+  const { data: tweets } = useSubnetTweets(netuid, 30) // TODO implement cursor and pull as needed
   const {
     data: { tokenPrice },
   } = useSubnetStats(netuid)
@@ -149,8 +149,8 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
       <PriceChartToolbar
         indicators={indicators}
         toggleIndicator={toggleIndicator}
-        timeRange={timeRange}
-        setTimeRange={_setTimeRange}
+        resolution={resolution}
+        setResolution={setResolution}
         className="my-5 px-12"
       />
       <div className="grow">
