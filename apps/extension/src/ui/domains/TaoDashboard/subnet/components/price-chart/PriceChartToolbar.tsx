@@ -68,7 +68,7 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
               type="button"
               onClick={() => setTimeRange(option.value)}
               className={cn(
-                "rounded px-2.5 py-1 font-medium text-xs transition-colors",
+                "rounded-xs px-2.5 py-1 font-medium text-xs transition-colors",
                 timeRange === option.value
                   ? "bg-grey-700 text-white"
                   : "text-body-secondary hover:bg-grey-800 hover:text-body"
