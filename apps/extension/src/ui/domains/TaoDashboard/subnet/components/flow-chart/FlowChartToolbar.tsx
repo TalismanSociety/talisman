@@ -4,12 +4,13 @@ import type { FC } from "react"
 import { TIME_RANGES } from "./types"
 
 interface FlowChartToolbarProps {
-  timeRange: number
-  onTimeRangeChange: (range: number) => void
+  days: number
+  onDaysChanged: (range: number) => void
+  className?: string
 }
 
-export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({ timeRange, onTimeRangeChange }) => (
-  <div className="flex items-center justify-between px-6 pb-2">
+export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({ days, onDaysChanged, className }) => (
+  <div className={cn("flex items-center justify-between px-6 pb-2", className)}>
     {/* Legend */}
     <div className="flex items-center gap-4 text-xs">
       <span className="flex items-center gap-1.5">
@@ -28,25 +29,16 @@ export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({ timeRange, onTimeR
 
     {/* Right side controls */}
     <div className="flex items-center gap-3">
-      {/* Live indicator */}
-      <div className="flex items-center gap-1.5">
-        <span className="relative flex size-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex size-2 rounded-full bg-green-500" />
-        </span>
-        <span className="font-medium text-green-500 text-xs">Live</span>
-      </div>
-
       {/* Time range buttons */}
       <div className="flex items-center gap-1">
         {TIME_RANGES.map((option) => (
           <button
             key={option.value}
             type="button"
-            onClick={() => onTimeRangeChange(option.value)}
+            onClick={() => onDaysChanged(option.value)}
             className={cn(
               "rounded px-2.5 py-1 font-medium text-xs transition-colors",
-              timeRange === option.value
+              days === option.value
                 ? "bg-grey-700 text-white"
                 : "text-body-secondary hover:bg-grey-800 hover:text-body"
             )}

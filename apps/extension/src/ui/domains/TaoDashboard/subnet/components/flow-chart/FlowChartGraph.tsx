@@ -1,18 +1,46 @@
 import { AreaSeries, createChart, LineSeries } from "lightweight-charts"
 import type { FC } from "react"
 import { useEffect, useRef } from "react"
-
+import { useTranslation } from "react-i18next"
+import { FlowChartToolbar } from "./FlowChartToolbar"
 import { formatCompactNumber } from "./formatters"
 import { useFlowGraphData } from "./useFlowChartData"
 
-interface FlowChartGraphProps {
+export const FlowChartGraph: FC<{
   netuid: number
-  timeRange: number
+  days: number
+  onDaysChanged: (days: number) => void
+}> = ({ netuid, days, onDaysChanged }) => {
+  const { t } = useTranslation()
+  const { isLoading, netData } = useFlowGraphData(netuid, days)
+
+  // skeleton at this level so we dont display toolbar while loading
+  if (isLoading) return <FlowChartGraphSkeleton />
+
+  if (netData.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center text-body-secondary">
+        {t("Failed to fetch data")}
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative flex size-full flex-col overflow-hidden">
+      <FlowChartToolbar days={days} onDaysChanged={onDaysChanged} className="my-5 px-12" />
+      <div className="grow">
+        <FlowChartGraphContent netuid={netuid} days={days} />
+      </div>
+    </div>
+  )
 }
 
-export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) => {
+const FlowChartGraphContent: FC<{
+  netuid: number
+  days: number
+}> = ({ netuid, days }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null)
-  const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, timeRange)
+  const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, days)
 
   useEffect(() => {
     if (!chartContainerRef.current || taoInData.length === 0) return
@@ -117,7 +145,43 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) =
 }
 
 const FlowChartGraphSkeleton = () => (
-  <div className="flex size-full items-center justify-center">
-    <div className="h-10 w-40 animate-pulse rounded-lg bg-grey-700" />
+  <div className="relative size-full">
+    {/* Grid lines */}
+    <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
+    <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />
+    <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
+    <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
+
+    {/* Centered area chart icon */}
+    <div className="absolute inset-0 flex animate-pulse items-center justify-center">
+      <svg className="h-24 w-32" viewBox="0 0 80 48" fill="none">
+        {/* Green area (TAO In) */}
+        <path
+          d="M0 36 L13 28 L26 30 L40 20 L53 22 L66 14 L80 16 L80 48 L0 48 Z"
+          fill="currentColor"
+          className="text-buy/20"
+        />
+        <path
+          d="M0 36 L13 28 L26 30 L40 20 L53 22 L66 14 L80 16"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="text-buy/50"
+          fill="none"
+        />
+        {/* Red area (TAO Out) */}
+        <path
+          d="M0 42 L13 40 L26 41 L40 36 L53 38 L66 34 L80 35 L80 48 L0 48 Z"
+          fill="currentColor"
+          className="text-sell/15"
+        />
+        <path
+          d="M0 42 L13 40 L26 41 L40 36 L53 38 L66 34 L80 35"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="text-sell/40"
+          fill="none"
+        />
+      </svg>
+    </div>
   </div>
 )

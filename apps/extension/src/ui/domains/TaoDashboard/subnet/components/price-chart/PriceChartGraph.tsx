@@ -168,45 +168,112 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
 }
 
 const PriceChartGraphSkeleton = () => (
-  <div className="relative h-[400px] w-full bg-[#181818]">
-    {/* Chart area skeleton */}
-    <div className="absolute inset-0 flex flex-col px-4 py-3">
-      {/* Grid lines simulation */}
-      <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
-      <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />
-      <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
-      <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
+  <div className="relative size-full bg-[#181818]">
+    {/* Grid lines */}
+    <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
+    <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />
+    <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
+    <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
 
-      {/* Central chart area with candlestick-like shapes */}
-      <div className="absolute inset-x-8 top-8 bottom-20 flex items-center justify-center gap-4">
-        <div className="flex h-3/4 items-center gap-2">
-          <div className="flex h-full flex-col items-center justify-center gap-px">
-            <Skeleton className="h-4 w-px" />
-            <Skeleton className="h-16 w-3 bg-buy/30" />
-            <Skeleton className="h-6 w-px" />
-          </div>
-          <div className="flex h-full flex-col items-center justify-center gap-px">
-            <Skeleton className="h-8 w-px" />
-            <Skeleton className="h-12 w-3 bg-sell/30" />
-            <Skeleton className="h-4 w-px" />
-          </div>
-          <div className="flex h-full flex-col items-center justify-center gap-px">
-            <Skeleton className="h-6 w-px" />
-            <Skeleton className="h-20 w-3 bg-buy/30" />
-            <Skeleton className="h-6 w-px" />
-          </div>
-          <div className="flex h-full flex-col items-center justify-center gap-px">
-            <Skeleton className="h-4 w-px" />
-            <Skeleton className="h-10 w-3 bg-sell/30" />
-            <Skeleton className="h-8 w-px" />
-          </div>
-          <div className="flex h-full flex-col items-center justify-center gap-px">
-            <Skeleton className="h-10 w-px" />
-            <Skeleton className="h-14 w-3 bg-buy/30" />
-            <Skeleton className="h-4 w-px" />
-          </div>
-        </div>
-      </div>
+    {/* Centered candlestick icon */}
+    <div className="absolute inset-0 flex animate-pulse items-center justify-center">
+      <svg className="h-24 w-32" viewBox="0 0 80 48" fill="none">
+        {/* Candle 1 – buy */}
+        <line
+          x1="12"
+          y1="6"
+          x2="12"
+          y2="42"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-grey-700"
+        />
+        <rect
+          x="8"
+          y="14"
+          width="8"
+          height="16"
+          rx="1"
+          fill="currentColor"
+          className="text-buy/30"
+        />
+        {/* Candle 2 – sell */}
+        <line
+          x1="28"
+          y1="10"
+          x2="28"
+          y2="40"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-grey-700"
+        />
+        <rect
+          x="24"
+          y="18"
+          width="8"
+          height="14"
+          rx="1"
+          fill="currentColor"
+          className="text-sell/30"
+        />
+        {/* Candle 3 – buy */}
+        <line
+          x1="44"
+          y1="4"
+          x2="44"
+          y2="38"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-grey-700"
+        />
+        <rect
+          x="40"
+          y="10"
+          width="8"
+          height="20"
+          rx="1"
+          fill="currentColor"
+          className="text-buy/30"
+        />
+        {/* Candle 4 – sell */}
+        <line
+          x1="60"
+          y1="12"
+          x2="60"
+          y2="44"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-grey-700"
+        />
+        <rect
+          x="56"
+          y="20"
+          width="8"
+          height="12"
+          rx="1"
+          fill="currentColor"
+          className="text-sell/30"
+        />
+        {/* Candle 5 – buy */}
+        <line
+          x1="76"
+          y1="8"
+          x2="76"
+          y2="36"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-grey-700"
+        />
+        <rect
+          x="72"
+          y="12"
+          width="8"
+          height="16"
+          rx="1"
+          fill="currentColor"
+          className="text-buy/30"
+        />
+      </svg>
     </div>
 
     {/* TradingView logo placeholder */}

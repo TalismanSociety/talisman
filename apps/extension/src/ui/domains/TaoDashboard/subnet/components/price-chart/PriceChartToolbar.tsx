@@ -103,13 +103,10 @@ const IndicatorButton: FC<IndicatorButtonProps> = ({
     onClick={onClick}
     className={cn(
       "flex items-center gap-1 rounded-xs px-2 py-1 font-medium text-xs transition-colors",
-      active
-        ? `bg-[${color}]/20 text-[${activeTextColor ?? color}]`
-        : "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
+      !active && "text-body-disabled hover:bg-grey-800 hover:text-body-secondary"
     )}
     style={active ? { backgroundColor: `${color}20`, color: activeTextColor ?? color } : undefined}
   >
-    {/* <span className="size-2 rounded-full" style={{ backgroundColor: active ? color : undefined }} /> */}
     {label}
   </button>
 )
