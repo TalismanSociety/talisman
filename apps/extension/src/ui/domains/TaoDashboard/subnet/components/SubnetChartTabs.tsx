@@ -2,8 +2,8 @@ import { cn } from "@talismn/util"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { type NavTabConfig, TaoDashboardNavTabs } from "../../shared/TaoDashboardNavTabs"
+import { SubnetTaoFlowChart } from "./flow-chart/SubnetTaoFlowChart"
 import { SubnetPriceChart } from "./price-chart/SubnetPriceChart"
-import { SubnetTaoFlowChart } from "./SubnetTaoFlowChart"
 
 interface SubnetChartTabsProps {
   netuid: number
