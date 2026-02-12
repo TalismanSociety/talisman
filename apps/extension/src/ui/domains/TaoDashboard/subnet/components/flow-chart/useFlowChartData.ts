@@ -1,80 +1,10 @@
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import type { UTCTimestamp } from "lightweight-charts"
 import { useMemo } from "react"
 
-import { useSubnetStakeEvents, useSubnetTokenomics } from "../../../hooks/useSn45Api"
+import { useSubnetFlowChart, useSubnetFlowSummary } from "../../../hooks/useSn45Api"
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
-import type { AlphaFlow, FlowTotals, ProcessedFlowData } from "./types"
-
-// ---------------------------------------------------------------------------
-// Shared data processing
-// ---------------------------------------------------------------------------
-
-function processStakeEventsToFlow(
-  stakeEvents: Array<{
-    method: "Adding" | "Removing"
-    alphaAmount: string
-    taoAmount: string
-    timestamp: string
-  }>
-): ProcessedFlowData[] {
-  if (stakeEvents.length === 0) return []
-
-  const processedStakes = stakeEvents.map((e) => ({
-    ...e,
-    timestamp: new Date(e.timestamp),
-    alpha: parseFloat(e.alphaAmount) / 1e9,
-    tao: parseFloat(e.taoAmount) / 1e9,
-  }))
-
-  processedStakes.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-
-  // Group by hour
-  const hourlyMap = new Map<string, { time: Date; taoIn: number; taoOut: number }>()
-
-  for (const stake of processedStakes) {
-    const hour = new Date(Math.floor(stake.timestamp.getTime() / 3600000) * 3600000)
-    const hourKey = hour.toISOString()
-
-    if (!hourlyMap.has(hourKey)) {
-      hourlyMap.set(hourKey, { time: hour, taoIn: 0, taoOut: 0 })
-    }
-
-    const entry = hourlyMap.get(hourKey)!
-    if (stake.method === "Adding") {
-      entry.taoIn += stake.tao
-    } else {
-      entry.taoOut += stake.tao
-    }
-  }
-
-  // Sort by time and build cumulative sums
-  const hourlyEntries = Array.from(hourlyMap.values()).sort(
-    (a, b) => a.time.getTime() - b.time.getTime()
-  )
-
-  let cumulativeTaoIn = 0
-  let cumulativeTaoOut = 0
-
-  return hourlyEntries.map((entry) => {
-    cumulativeTaoIn += entry.taoIn
-    cumulativeTaoOut += entry.taoOut
-    return {
-      time: entry.time,
-      taoIn: entry.taoIn,
-      taoOut: entry.taoOut,
-      cumulativeTaoIn,
-      cumulativeTaoOut,
-      net: cumulativeTaoIn - cumulativeTaoOut,
-    }
-  })
-}
-
-/** Filter processed flow data by a time range (in days). 0 = all. */
-function filterByTimeRange(data: ProcessedFlowData[], timeRange: number): ProcessedFlowData[] {
-  if (timeRange === 0) return data
-  const cutoff = Date.now() - timeRange * 24 * 60 * 60 * 1000
-  return data.filter((d) => d.time.getTime() >= cutoff)
-}
+import type { AlphaFlow, FlowChartPoint, FlowTotals } from "./types"
 
 // ---------------------------------------------------------------------------
 // Hook – Header data (totals, alpha flow, emissions)
@@ -90,11 +20,8 @@ export interface UseFlowHeaderDataReturn {
 }
 
 export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHeaderDataReturn {
-  const { data: stakeEvents, isLoading: stakeLoading } = useSubnetStakeEvents(netuid)
-  const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
+  const { data: flowSummary, isLoading: summaryLoading } = useSubnetFlowSummary(netuid, timeRange)
   const { subnetData } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
-
-  const isLoading = stakeLoading || tokenomicsLoading
 
   // Current subnet entry
   const currentSubnet = useMemo(
@@ -102,30 +29,26 @@ export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHea
     [subnetData, netuid]
   )
 
-  // Process & filter flow data to compute totals
-  const flowData = useMemo(() => {
-    if (!stakeEvents) return []
-    return filterByTimeRange(processStakeEventsToFlow(stakeEvents), timeRange)
-  }, [stakeEvents, timeRange])
-
-  // Totals for the visible window
+  // TAO flow totals from the flow-summary endpoint (rao strings → float TAO)
   const totals = useMemo<FlowTotals>(() => {
-    if (flowData.length === 0) return { taoIn: 0, taoOut: 0, net: 0 }
-    const taoIn = flowData.reduce((sum, d) => sum + d.taoIn, 0)
-    const taoOut = flowData.reduce((sum, d) => sum + d.taoOut, 0)
-    return { taoIn, taoOut, net: taoIn - taoOut }
-  }, [flowData])
-
-  // Alpha flow from tokenomics
-  const alphaFlow = useMemo<AlphaFlow>(() => {
-    if (!tokenomics) return { alphaIn: 0, alphaOut: 0 }
+    if (!flowSummary) return { taoIn: 0, taoOut: 0, net: 0 }
     return {
-      alphaIn: parseFloat(tokenomics.alphaIn) / 1e9,
-      alphaOut: parseFloat(tokenomics.alphaOut) / 1e9,
+      taoIn: Number(flowSummary.taoFlow.taoIn) / 1e9,
+      taoOut: Number(flowSummary.taoFlow.taoOut) / 1e9,
+      net: Number(flowSummary.taoFlow.net) / 1e9,
     }
-  }, [tokenomics])
+  }, [flowSummary])
 
-  // Emissions
+  // Alpha flow from the flow-summary endpoint (rao strings → float alpha)
+  const alphaFlow = useMemo<AlphaFlow>(() => {
+    if (!flowSummary) return { alphaIn: 0, alphaOut: 0 }
+    return {
+      alphaIn: Number(flowSummary.alphaFlow.alphaIn) / 1e9,
+      alphaOut: Number(flowSummary.alphaFlow.alphaOut) / 1e9,
+    }
+  }, [flowSummary])
+
+  // Emissions (from on-chain subnet data)
   const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
 
   const emissionPercent = emissionRaw ? (Number(emissionRaw) / 1e9 / 1e9) * 100 : null
@@ -138,25 +61,51 @@ export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHea
   const distributionTrend: "accumulating" | "distributing" =
     totals.net >= 0 ? "accumulating" : "distributing"
 
-  return { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading }
+  return {
+    totals,
+    alphaFlow,
+    emissionPercent,
+    dailyEmissions,
+    distributionTrend,
+    isLoading: summaryLoading,
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Hook – Graph data (flow time-series)
+// Hook – Graph data (flow time-series from flow-chart endpoint)
 // ---------------------------------------------------------------------------
 
 export interface UseFlowGraphDataReturn {
-  flowData: ProcessedFlowData[]
+  taoInData: FlowChartPoint[]
+  taoOutData: FlowChartPoint[]
+  netData: FlowChartPoint[]
   isLoading: boolean
 }
 
 export function useFlowGraphData(netuid: number, timeRange: number): UseFlowGraphDataReturn {
-  const { data: stakeEvents, isLoading } = useSubnetStakeEvents(netuid)
+  const { data: flowChart, isLoading } = useSubnetFlowChart(netuid, timeRange)
 
-  const flowData = useMemo(() => {
-    if (!stakeEvents) return []
-    return filterByTimeRange(processStakeEventsToFlow(stakeEvents), timeRange)
-  }, [stakeEvents, timeRange])
+  const { taoInData, taoOutData, netData } = useMemo(() => {
+    if (!flowChart?.data?.length)
+      return {
+        taoInData: [] as FlowChartPoint[],
+        taoOutData: [] as FlowChartPoint[],
+        netData: [] as FlowChartPoint[],
+      }
 
-  return { flowData, isLoading }
+    const taoIn: FlowChartPoint[] = []
+    const taoOut: FlowChartPoint[] = []
+    const net: FlowChartPoint[] = []
+
+    for (const [time, cumulativeTaoIn, cumulativeTaoOut, netValue] of flowChart.data) {
+      const t = time as UTCTimestamp
+      taoIn.push({ time: t, value: cumulativeTaoIn as number })
+      taoOut.push({ time: t, value: cumulativeTaoOut as number })
+      net.push({ time: t, value: netValue as number })
+    }
+
+    return { taoInData: taoIn, taoOutData: taoOut, netData: net }
+  }, [flowChart])
+
+  return { taoInData, taoOutData, netData, isLoading }
 }

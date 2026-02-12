@@ -154,6 +154,40 @@ export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
   })
 }
 
+// Hook to get subnet flow summary (pre-computed header data)
+export const useSubnetFlowSummary = (netuid: number | null | undefined, days: number) => {
+  return useQuery({
+    queryKey: ["sn45", "subnetFlowSummary", netuid, days],
+    queryFn: async () => {
+      if (!netuid) return null
+      const response = await sn45Api.v1.getSubnetFlowSummary(String(netuid), {
+        days: String(days),
+      })
+      return response.data
+    },
+    enabled: !!netuid,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  })
+}
+
+// Hook to get subnet flow chart time-series (pre-bucketed for TradingView)
+export const useSubnetFlowChart = (netuid: number | null | undefined, days: number) => {
+  return useQuery({
+    queryKey: ["sn45", "subnetFlowChart", netuid, days],
+    queryFn: async () => {
+      if (!netuid) return null
+      const response = await sn45Api.v1.getSubnetFlowChart(String(netuid), {
+        days: String(days),
+      })
+      return response.data
+    },
+    enabled: !!netuid,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  })
+}
+
 // Hook to get subnet positions
 export const useSubnetPositions = (netuid: number | null | undefined) => {
   return useQuery({

@@ -1,4 +1,4 @@
-import { AreaSeries, createChart, LineSeries, type UTCTimestamp } from "lightweight-charts"
+import { AreaSeries, createChart, LineSeries } from "lightweight-charts"
 import type { FC } from "react"
 import { useEffect, useRef } from "react"
 
@@ -12,10 +12,10 @@ interface FlowChartGraphProps {
 
 export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null)
-  const { flowData, isLoading } = useFlowGraphData(netuid, timeRange)
+  const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, timeRange)
 
   useEffect(() => {
-    if (!chartContainerRef.current || flowData.length === 0) return
+    if (!chartContainerRef.current || taoInData.length === 0) return
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
@@ -79,22 +79,7 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) =
       },
     })
 
-    // Map to chart data
-    const taoInData = flowData.map((d) => ({
-      time: Math.floor(d.time.getTime() / 1000) as UTCTimestamp,
-      value: d.cumulativeTaoIn,
-    }))
-
-    const taoOutData = flowData.map((d) => ({
-      time: Math.floor(d.time.getTime() / 1000) as UTCTimestamp,
-      value: d.cumulativeTaoOut,
-    }))
-
-    const netData = flowData.map((d) => ({
-      time: Math.floor(d.time.getTime() / 1000) as UTCTimestamp,
-      value: d.net,
-    }))
-
+    // Data is already in { time, value } format from the hook
     taoInSeries.setData(taoInData)
     taoOutSeries.setData(taoOutData)
     netSeries.setData(netData)
@@ -116,11 +101,11 @@ export const FlowChartGraph: FC<FlowChartGraphProps> = ({ netuid, timeRange }) =
       window.removeEventListener("resize", handleResize)
       chart.remove()
     }
-  }, [flowData])
+  }, [taoInData, taoOutData, netData])
 
   if (isLoading) return <FlowChartGraphSkeleton />
 
-  if (flowData.length === 0) {
+  if (taoInData.length === 0) {
     return (
       <div className="flex size-full items-center justify-center text-body-secondary">
         No flow data available for this subnet.

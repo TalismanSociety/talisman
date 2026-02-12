@@ -1,10 +1,8 @@
-export interface ProcessedFlowData {
-  time: Date
-  taoIn: number
-  taoOut: number
-  cumulativeTaoIn: number
-  cumulativeTaoOut: number
-  net: number
+import type { UTCTimestamp } from "lightweight-charts"
+
+export interface FlowChartPoint {
+  time: UTCTimestamp
+  value: number
 }
 
 export interface FlowTotals {
