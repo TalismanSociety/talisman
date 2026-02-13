@@ -43,11 +43,11 @@ export const useIsValidEthTransaction = (
       const value = tx.value ?? 0n
       const maxTransactionCost = getMaxTransactionCost(tx)
       const nativeSymbol = publicClient.chain?.nativeCurrency?.symbol ?? "native token"
-      if (!balance || value > balance)
-        throw new Error(
-          t("Insufficient {{symbol}} balance to pay for fee", { symbol: nativeSymbol })
-        )
-      if (!balance || maxTransactionCost > balance)
+      if (typeof balance !== "bigint")
+        throw new Error(t("Failed to load {{symbol}} balance", { symbol: nativeSymbol }))
+      if (value > balance)
+        throw new Error(t("Insufficient {{symbol}} balance", { symbol: nativeSymbol }))
+      if (maxTransactionCost > balance)
         throw new Error(
           t("Insufficient {{symbol}} balance to pay for fee", { symbol: nativeSymbol })
         )
