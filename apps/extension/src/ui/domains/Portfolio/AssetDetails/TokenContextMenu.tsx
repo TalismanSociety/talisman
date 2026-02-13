@@ -4,6 +4,7 @@ import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
+import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -106,12 +107,25 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   const isBittensorDTao =
     token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)
 
+  const positions = useBittensorStakingPositions(isBittensorDTao ? token.networkId : null)
+
+  const hasPosition = useMemo(
+    () =>
+      positions.some((p) => {
+        const tokenMatch = p.token.id === token.id
+        const addressMatch =
+          !selectedAccount?.address || p.balance.address === selectedAccount.address
+        return tokenMatch && addressMatch
+      }),
+    [positions, token.id, selectedAccount?.address]
+  )
+
   const handleClick = useCallback(() => {
     open({ tokenId: token.id, address: selectedAccount?.address })
     genericEvent("open change validator modal", { tokenId: token.id })
   }, [open, token.id, genericEvent, selectedAccount?.address])
 
-  if (!isBittensorDTao) return null
+  if (!isBittensorDTao || !hasPosition) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("Change Validator")}</ContextMenuItem>
 }
