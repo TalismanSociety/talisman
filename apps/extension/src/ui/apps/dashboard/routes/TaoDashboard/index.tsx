@@ -6,17 +6,28 @@ import { TaoDashboardSubnetPage } from "./TaoDashboardSubnetPage"
 import { TaoDashboardSubnetsPage } from "./TaoDashboardSubnetsPage"
 
 export const TaoDashboardRoutes = () => {
-  // TODO check: we might not need the portfolio container as we dont use an accounts sidebar
   return (
     <PortfolioContainer>
-      <DashboardLayout sidebar="none" className="min-w-[130rem]">
-        <Routes>
-          <Route path="subnets" element={<TaoDashboardSubnetsPage />} />
-          <Route path="subnets/:netuid" element={<TaoDashboardSubnetPage />} />
-          <Route index element={<Navigate to="subnets" replace />} />
-          <Route path="*" element={<Navigate to="subnets" replace />} />
-        </Routes>
-      </DashboardLayout>
+      <Routes>
+        <Route
+          path="subnets/:netuid"
+          element={
+            <DashboardLayout sidebar="none" className="min-w-[130rem]">
+              <TaoDashboardSubnetPage />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="subnets"
+          element={
+            <DashboardLayout sidebar="accounts" className="min-w-[130rem]">
+              <TaoDashboardSubnetsPage />
+            </DashboardLayout>
+          }
+        />
+        <Route index element={<Navigate to="subnets" replace />} />
+        <Route path="*" element={<Navigate to="subnets" replace />} />
+      </Routes>
     </PortfolioContainer>
   )
 }
