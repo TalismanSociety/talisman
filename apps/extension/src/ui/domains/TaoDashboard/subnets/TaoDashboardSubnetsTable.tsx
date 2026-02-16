@@ -193,7 +193,7 @@ const SortIndicator: FC<{ order?: SortOrder }> = ({ order }) => {
   return (
     <SortIcon
       className={cn(
-        "size-12 shrink-0",
+        "size-8 shrink-0",
         order === "asc" && "rotate-180 text-primary",
         order === "desc" && "text-primary"
       )}
@@ -220,7 +220,7 @@ const HeaderCell: FC<
       onClick={onSortOrderToggle}
     >
       <span className="whitespace-nowrap">{children}</span>
-      {showInfoIcon && <InfoIcon className="size-12 shrink-0 text-body-disabled" />}
+      {showInfoIcon && <InfoIcon className="size-6 shrink-0 text-body-disabled" />}
       {!!onSortOrderToggle && <SortIndicator order={sortOrder} />}
     </button>
   )
@@ -308,7 +308,7 @@ const HeaderRow: FC<{
 
 const DataCell: FC<PropsWithChildren<{ className?: string }>> = ({ children, className }) => {
   return (
-    <div className={cn("flex flex-col items-start justify-center text-left", className)}>
+    <div className={cn("flex flex-col items-start justify-center gap-1 text-left", className)}>
       {children}
     </div>
   )
@@ -325,14 +325,14 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
   return (
     <Link
       to={`/bittensor/subnets/${subnet.netuid}`}
-      className="grid h-44 w-full grid-cols-[minmax(120px,1.4fr),minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-850"
+      className="grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-800"
     >
       {/* Subnet */}
-      <DataCell className="flex-row items-center gap-6">
-        <TokenLogo tokenId={subnet.tokenId} className="size-24 shrink-0" />
-        <div className="flex flex-col gap-0">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-white">{subnet.name}</span>
+      <DataCell className="max-w-[160px] flex-row items-center gap-6 overflow-hidden">
+        <TokenLogo tokenId={subnet.tokenId} className="size-16 shrink-0" />
+        <div className="flex grow flex-col gap-1 overflow-hidden">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="truncate font-semibold text-white">{subnet.name}</span>
             <span className="text-primary">{subnet.greekSymbol}</span>
           </div>
           <span className="text-body-secondary text-xs">SN{subnet.netuid}</span>
