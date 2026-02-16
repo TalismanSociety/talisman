@@ -362,19 +362,12 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
         {subnet.balance ? (
           <>
             <div className="">
-              <TokensAndFiat
-                tokenId={subnet.token.id}
-                planck={subnet.balance}
-                noFiat
-                noCountUp
-                isBalance
-              />
+              <TokensAndFiat tokenId={subnet.token.id} planck={subnet.balance} noFiat isBalance />
             </div>
             {subnet.balanceUsd && (
               <FiatFromUsd
                 amount={subnet.balanceUsd}
                 className="text-body-secondary text-xs"
-                noCountUp
                 isBalance
               />
             )}
