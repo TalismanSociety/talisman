@@ -33,8 +33,8 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
     return [
       { label: t("15m"), value: "15" },
       { label: t("1H"), value: "60" },
-      // { label: t("4H"), value: "240" },
-      // { label: t("1D"), value: "1440" },
+      { label: t("4H"), value: "240" },
+      { label: t("1D"), value: "1440" },
     ]
   }, [t])
 
