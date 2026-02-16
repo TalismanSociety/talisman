@@ -2,6 +2,7 @@ import { type Balance, Balances } from "@talismn/balances"
 import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances, useTokens } from "@ui/state"
 import { useMemo } from "react"
 import {
@@ -70,13 +71,14 @@ const parseRaoToNumber = (value: string | null | undefined): number => {
 export const useTaoDashboardSubnets = () => {
   // const { t } = useTranslation()
   const allTokens = useTokens()
-  const { data: economicsData, isLoading: _isEconomicsLoading } = useSubnetEconomicsWithSentiment()
-  const { data: leaderboardData, isLoading: _isLeaderboardLoading } = useSubnetLeaderboard("1d")
-  const { data: taoPrice } = useTaoPrice()
+  const { data: economicsData, isLoading: isEconomicsLoading } = useSubnetEconomicsWithSentiment()
+  const { data: leaderboardData, isLoading: isLeaderboardLoading } = useSubnetLeaderboard("1d")
+  const { data: taoPrice, isLoading: isTaoPriceLoading } = useTaoPrice()
 
   const { selectedAccounts } = usePortfolioNavigation()
 
   const balances = useBalances("all")
+  const balancesStatus = useBalancesStatus(balances)
 
   const subnetTokens = useMemo(() => {
     return allTokens.filter(
@@ -176,14 +178,24 @@ export const useTaoDashboardSubnets = () => {
       .sort((a, b) => a.token.netuid - b.token.netuid)
   }, [subnetTokens, economicsMap, leaderboardMap, taoUsdPrice, balancesPerNetuid])
 
-  return subnets
+  const loading = useMemo(
+    () => ({
+      price: isLeaderboardLoading || isEconomicsLoading || isTaoPriceLoading,
+      balance: balancesStatus.status === "fetching",
+      score: isLeaderboardLoading,
+      staked: isLeaderboardLoading,
+      volume: isLeaderboardLoading || isEconomicsLoading,
+      mcap: isLeaderboardLoading,
+      emission: isLeaderboardLoading,
+      chart: isLeaderboardLoading,
+    }),
+    [isLeaderboardLoading, isEconomicsLoading, isTaoPriceLoading, balancesStatus.status]
+  )
+
+  const isLoading = Object.values(loading).some(Boolean)
+
+  return { subnets, isLoading, loading }
 }
 
-export type TaoDashboardSubnet = ReturnType<typeof useTaoDashboardSubnets>[number]
-
-// Hook for loading state
-export const useTaoDashboardSubnetsLoading = () => {
-  const { isLoading: economicsLoading } = useSubnetEconomicsWithSentiment()
-  const { isLoading: leaderboardLoading } = useSubnetLeaderboard("1d")
-  return economicsLoading || leaderboardLoading
-}
+export type TaoDashboardSubnet = ReturnType<typeof useTaoDashboardSubnets>["subnets"][number]
+export type TaoDashboardSubnetsLoading = ReturnType<typeof useTaoDashboardSubnets>["loading"]

@@ -9,8 +9,8 @@ import { TokenLogo } from "../../Asset/TokenLogo"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import {
   type TaoDashboardSubnet,
+  type TaoDashboardSubnetsLoading,
   useTaoDashboardSubnets,
-  useTaoDashboardSubnetsLoading,
 } from "./useTaoDashboardSubnets"
 
 type SortOrder = "asc" | "desc"
@@ -129,8 +129,7 @@ const PriceChange: FC<{ change: number }> = ({ change }) => {
 }
 
 export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" }) => {
-  const subnets = useTaoDashboardSubnets()
-  const isLoading = useTaoDashboardSubnetsLoading()
+  const { subnets, isLoading, loading } = useTaoDashboardSubnets()
   const [sortSetting, setSortSetting] = useState<SortSetting>(DEFAULT_SORT_SETTING)
 
   const filteredSubnets = useMemo(() => {
@@ -184,7 +183,7 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" 
       <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
       <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
         {sortedSubnets.map((subnet) => (
-          <SubnetRow key={subnet.netuid} subnet={subnet} />
+          <SubnetRow key={subnet.netuid} subnet={subnet} loading={loading} />
         ))}
       </div>
     </div>
@@ -318,7 +317,14 @@ const DataCell: FC<PropsWithChildren<{ className?: string }>> = ({ children, cla
   )
 }
 
-const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
+const SkeletonBar: FC<{ className?: string }> = ({ className }) => {
+  return <div className={cn("h-4 animate-pulse rounded bg-grey-700", className)} />
+}
+
+const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLoading }> = ({
+  subnet,
+  loading,
+}) => {
   const { t } = useTranslation()
   // Compare last price to first price in 7d data to determine chart color
   const firstPrice = subnet.chartData[0] ?? 0
@@ -348,18 +354,32 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
 
       {/* Price */}
       <DataCell>
-        <div className="font-medium text-white">
-          {formatTaoPrice(subnet.price)} <span className="text-primary">τ</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-body-secondary">{formatUsdPrice(subnet.priceUsd)}</span>
-          <PriceChange change={subnet.priceChange} />
-        </div>
+        {loading.price ? (
+          <>
+            <SkeletonBar className="w-20" />
+            <SkeletonBar className="h-3 w-24" />
+          </>
+        ) : (
+          <>
+            <div className="font-medium text-white">
+              {formatTaoPrice(subnet.price)} <span className="text-primary">τ</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-body-secondary">{formatUsdPrice(subnet.priceUsd)}</span>
+              <PriceChange change={subnet.priceChange} />
+            </div>
+          </>
+        )}
       </DataCell>
 
       {/* My Balance */}
       <DataCell>
-        {subnet.balance ? (
+        {loading.balance ? (
+          <>
+            <SkeletonBar className="w-20" />
+            <SkeletonBar className="h-3 w-14" />
+          </>
+        ) : subnet.balance ? (
           <>
             <div className="">
               <TokensAndFiat tokenId={subnet.token.id} planck={subnet.balance} noFiat isBalance />
@@ -379,38 +399,70 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
 
       {/* Score */}
       <DataCell>
-        <div className="flex flex-col gap-2">
-          <span className="font-medium text-white">{Math.round(subnet.score)}</span>
-          <SentimentBadge sentiment={sentiment} />
-        </div>
+        {loading.score ? (
+          <div className="flex flex-col gap-2">
+            <SkeletonBar className="w-8" />
+            <SkeletonBar className="h-5 w-16" />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <span className="font-medium text-white">{Math.round(subnet.score)}</span>
+            <SentimentBadge sentiment={sentiment} />
+          </div>
+        )}
       </DataCell>
 
       {/* Staked */}
       <DataCell>
-        <div className="text-white">{formatNumber(subnet.stakedTao)} τ</div>
-        <div className="text-body-secondary text-xs">
-          {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
-        </div>
+        {loading.staked ? (
+          <>
+            <SkeletonBar className="w-16" />
+            <SkeletonBar className="h-3 w-16" />
+          </>
+        ) : (
+          <>
+            <div className="text-white">{formatNumber(subnet.stakedTao)} τ</div>
+            <div className="text-body-secondary text-xs">
+              {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
+            </div>
+          </>
+        )}
       </DataCell>
 
       {/* Volume */}
       <DataCell>
-        <span className="text-white">{formatTaoAmount(subnet.volume)}</span>
+        {loading.volume ? (
+          <SkeletonBar className="w-14" />
+        ) : (
+          <span className="text-white">{formatTaoAmount(subnet.volume)}</span>
+        )}
       </DataCell>
 
       {/* MCap */}
       <DataCell>
-        <span className="text-white">{formatTaoAmount(subnet.mcap)}</span>
+        {loading.mcap ? (
+          <SkeletonBar className="w-14" />
+        ) : (
+          <span className="text-white">{formatTaoAmount(subnet.mcap)}</span>
+        )}
       </DataCell>
 
       {/* Emissions */}
       <DataCell>
-        <span className="text-white">{subnet.emission.toFixed(2)}%</span>
+        {loading.emission ? (
+          <SkeletonBar className="w-10" />
+        ) : (
+          <span className="text-white">{subnet.emission.toFixed(2)}%</span>
+        )}
       </DataCell>
 
       {/* Chart */}
       <DataCell>
-        <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+        {loading.chart ? (
+          <div className="h-5 w-[60px] animate-pulse rounded bg-grey-700" />
+        ) : (
+          <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+        )}
       </DataCell>
     </Link>
   )
