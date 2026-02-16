@@ -95,7 +95,7 @@ const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ senti
   return (
     <span
       className={cn(
-        "ml-4 rounded px-4 py-1 text-[10px]",
+        "rounded px-4 py-1 text-[10px]",
         sentiment === "bullish" && "bg-green/20 text-green",
         sentiment === "bearish" && "bg-red-500/20 text-red-500"
       )}
@@ -368,7 +368,7 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
 
       {/* Score */}
       <DataCell>
-        <div className="flex flex-wrap items-center">
+        <div className="flex flex-col gap-2">
           <span className="font-medium text-white">{Math.round(subnet.score)}</span>
           <SentimentBadge sentiment={sentiment} />
         </div>

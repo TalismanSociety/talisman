@@ -12,22 +12,6 @@ import { BITTENSOR_NETWORK_ID } from "./constants"
 
 type SubnetSentiment = "bullish" | "bearish" | null
 
-// Greek letter symbols for subnet tokens
-const SUBNET_SYMBOLS: Record<number, string> = {
-  1: "α",
-  2: "β",
-  3: "γ",
-  4: "δ",
-  5: "ε",
-  6: "ζ",
-  7: "η",
-  8: "θ",
-  9: "ι",
-  10: "κ",
-  11: "λ",
-  12: "μ",
-}
-
 // Placeholder data for user balance (needs wallet integration) and chart data
 const PLACEHOLDER_BALANCE: Record<
   number,
@@ -142,7 +126,7 @@ export const useTaoDashboardSubnets = () => {
           netuid: token.netuid,
           name: token.subnetName ?? t("Subnet {{netuid}}", { netuid: token.netuid }),
           symbol: token.symbol,
-          greekSymbol: SUBNET_SYMBOLS[token.netuid] ?? token.symbol,
+          greekSymbol: token.symbol,
           logo: token.logo,
           price: priceInTao,
           priceUsd,
