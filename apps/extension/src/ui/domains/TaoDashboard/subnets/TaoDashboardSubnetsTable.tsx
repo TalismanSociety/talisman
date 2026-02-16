@@ -270,8 +270,8 @@ const HeaderRow: FC<{
         {t("Price")}
       </HeaderCell>
       <HeaderCell
-        sortOrder={getSortOrder("balance")}
-        onSortOrderToggle={handleSortToggle("balance", "desc")}
+        sortOrder={getSortOrder("balanceUsd")}
+        onSortOrderToggle={handleSortToggle("balanceUsd", "desc")}
       >
         {t("Balance")}
       </HeaderCell>
