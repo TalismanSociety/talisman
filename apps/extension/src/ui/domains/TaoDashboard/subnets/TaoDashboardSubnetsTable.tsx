@@ -9,6 +9,7 @@ import { TokenLogo } from "../../Asset/TokenLogo"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import {
   type TaoDashboardSubnet,
+  type TaoDashboardSubnetsErrors,
   type TaoDashboardSubnetsLoading,
   useTaoDashboardSubnets,
 } from "./useTaoDashboardSubnets"
@@ -31,7 +32,8 @@ const formatNumber = (num: number, decimals = 2) => {
 }
 
 // Format price in TAO
-const formatTaoPrice = (price: number) => {
+const formatTaoPrice = (price: number | undefined) => {
+  if (price === undefined) return "-"
   if (price === 0) return "0"
   if (price < 0.0001) return price.toFixed(6)
   if (price < 0.01) return price.toFixed(4)
@@ -39,7 +41,8 @@ const formatTaoPrice = (price: number) => {
 }
 
 // Format USD price
-const formatUsdPrice = (price: number) => {
+const formatUsdPrice = (price: number | undefined) => {
+  if (price === undefined) return "-"
   if (price === 0) return "$0"
   if (price >= 1000000000) return `$ ${(price / 1000000000).toFixed(1)}B`
   if (price >= 1000000) return `$ ${(price / 1000000).toFixed(1)}M`
@@ -108,7 +111,9 @@ const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ senti
 }
 
 // Price change indicator
-const PriceChange: FC<{ change: number }> = ({ change }) => {
+const PriceChange: FC<{ change: number | undefined }> = ({ change }) => {
+  if (change === undefined) return null
+
   const isPositive = change > 0
   const isNegative = change < 0
 
@@ -129,7 +134,7 @@ const PriceChange: FC<{ change: number }> = ({ change }) => {
 }
 
 export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" }) => {
-  const { subnets, isLoading, loading } = useTaoDashboardSubnets()
+  const { subnets, isLoading, loading, errors } = useTaoDashboardSubnets()
   const [sortSetting, setSortSetting] = useState<SortSetting>(DEFAULT_SORT_SETTING)
 
   const filteredSubnets = useMemo(() => {
@@ -183,7 +188,7 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" 
       <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
       <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
         {sortedSubnets.map((subnet) => (
-          <SubnetRow key={subnet.netuid} subnet={subnet} loading={loading} />
+          <SubnetRow key={subnet.netuid} subnet={subnet} loading={loading} errors={errors} />
         ))}
       </div>
     </div>
@@ -263,8 +268,8 @@ const HeaderRow: FC<{
         {t("Subnet")}
       </HeaderCell>
       <HeaderCell
-        sortOrder={getSortOrder("price")}
-        onSortOrderToggle={handleSortToggle("price", "desc")}
+        sortOrder={getSortOrder("priceTao")}
+        onSortOrderToggle={handleSortToggle("priceTao", "desc")}
       >
         {t("Price")}
       </HeaderCell>
@@ -309,27 +314,32 @@ const HeaderRow: FC<{
   )
 }
 
-const DataCell: FC<PropsWithChildren<{ className?: string }>> = ({ children, className }) => {
+const DataCell: FC<PropsWithChildren<{ error?: boolean; className?: string }>> = ({
+  children,
+  className,
+  error,
+}) => {
   return (
     <div className={cn("flex flex-col items-start justify-center gap-1 text-left", className)}>
-      {children}
+      {error === true ? <span className="text-body-inactive">N/A</span> : children}
     </div>
   )
 }
 
 const SkeletonBar: FC<{ className?: string }> = ({ className }) => {
-  return <div className={cn("h-4 animate-pulse rounded bg-grey-700", className)} />
+  return <div className={cn("h-4 animate-pulse rounded-xs bg-grey-700", className)} />
 }
 
-const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLoading }> = ({
-  subnet,
-  loading,
-}) => {
+const SubnetRow: FC<{
+  subnet: TaoDashboardSubnet
+  loading: TaoDashboardSubnetsLoading
+  errors: TaoDashboardSubnetsErrors
+}> = ({ subnet, loading, errors }) => {
   const { t } = useTranslation()
   // Compare last price to first price in 7d data to determine chart color
-  const firstPrice = subnet.chartData[0] ?? 0
-  const lastPrice = subnet.chartData[subnet.chartData.length - 1] ?? 0
-  const isChartPositive = lastPrice >= firstPrice
+  const firstPrice = !subnet.chartData ? 0 : (subnet.chartData[0] ?? 0)
+  const lastPrice = !subnet.chartData ? 0 : (subnet.chartData[subnet.chartData.length - 1] ?? 0)
+  const isChartPositive = lastPrice > firstPrice
   const sentiment =
     subnet.sentiment === "bullish" || subnet.sentiment === "bearish" ? subnet.sentiment : null
 
@@ -353,18 +363,20 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLo
       </DataCell>
 
       {/* Price */}
-      <DataCell>
-        {loading.price ? (
+      <DataCell error={errors.price}>
+        {loading.price && (subnet.priceTao === undefined || subnet.priceUsd === undefined) ? (
           <>
-            <SkeletonBar className="w-20" />
-            <SkeletonBar className="h-3 w-24" />
+            <SkeletonBar className="h-8 w-32" />
+            <SkeletonBar className="h-6 w-40" />
           </>
         ) : (
           <>
-            <div className="font-medium text-white">
-              {formatTaoPrice(subnet.price)} <span className="text-primary">τ</span>
+            <div className={cn("font-medium text-white", loading.price && "animate-pulse")}>
+              {formatTaoPrice(subnet.priceTao)} <span className="text-primary">τ</span>
             </div>
-            <div className="flex items-center gap-2 text-xs">
+            <div
+              className={cn("flex items-center gap-2 text-xs", loading.price && "animate-pulse")}
+            >
               <span className="text-body-secondary">{formatUsdPrice(subnet.priceUsd)}</span>
               <PriceChange change={subnet.priceChange} />
             </div>
@@ -373,11 +385,11 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLo
       </DataCell>
 
       {/* My Balance */}
-      <DataCell>
+      <DataCell error={errors.balance}>
         {loading.balance ? (
           <>
-            <SkeletonBar className="w-20" />
-            <SkeletonBar className="h-3 w-14" />
+            <SkeletonBar className="h-8 w-24" />
+            <SkeletonBar className="h-6 w-20" />
           </>
         ) : subnet.balance ? (
           <>
@@ -398,11 +410,10 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLo
       </DataCell>
 
       {/* Score */}
-      <DataCell>
+      <DataCell error={errors.score}>
         {loading.score ? (
           <div className="flex flex-col gap-2">
-            <SkeletonBar className="w-8" />
-            <SkeletonBar className="h-5 w-16" />
+            <SkeletonBar className="h-8 w-12" />
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -413,15 +424,17 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLo
       </DataCell>
 
       {/* Staked */}
-      <DataCell>
+      <DataCell error={errors.staked}>
         {loading.staked ? (
           <>
-            <SkeletonBar className="w-16" />
-            <SkeletonBar className="h-3 w-16" />
+            <SkeletonBar className="h-8 w-24" />
+            <SkeletonBar className="h-6 w-20" />
           </>
         ) : (
           <>
-            <div className="text-white">{formatNumber(subnet.stakedTao)} τ</div>
+            <div className="text-white">
+              {subnet.stakedTao !== undefined ? `${formatNumber(subnet.stakedTao)} τ` : "-"}
+            </div>
             <div className="text-body-secondary text-xs">
               {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
             </div>
@@ -430,37 +443,37 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet; loading: TaoDashboardSubnetsLo
       </DataCell>
 
       {/* Volume */}
-      <DataCell>
+      <DataCell error={errors.volume}>
         {loading.volume ? (
-          <SkeletonBar className="w-14" />
+          <SkeletonBar className="h-8 w-20" />
         ) : (
           <span className="text-white">{formatTaoAmount(subnet.volume)}</span>
         )}
       </DataCell>
 
       {/* MCap */}
-      <DataCell>
+      <DataCell error={errors.mcap}>
         {loading.mcap ? (
-          <SkeletonBar className="w-14" />
+          <SkeletonBar className="h-8 w-28" />
         ) : (
           <span className="text-white">{formatTaoAmount(subnet.mcap)}</span>
         )}
       </DataCell>
 
       {/* Emissions */}
-      <DataCell>
+      <DataCell error={errors.emission}>
         {loading.emission ? (
-          <SkeletonBar className="w-10" />
+          <SkeletonBar className="h-8 w-20" />
         ) : (
-          <span className="text-white">{subnet.emission.toFixed(2)}%</span>
+          <span className={subnet.emission ? "text-white" : "text-body-inactive"}>
+            {Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(subnet.emission)}%
+          </span>
         )}
       </DataCell>
 
       {/* Chart */}
       <DataCell>
-        {loading.chart ? (
-          <div className="h-5 w-[60px] animate-pulse rounded bg-grey-700" />
-        ) : (
+        {!loading.chart && !!subnet.chartData && (
           <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
         )}
       </DataCell>

@@ -21,6 +21,17 @@ const hexToSs58 = (hex: string | null | undefined): string | null | undefined =>
 // Create a singleton API instance
 const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
 
+export type SubnetLeaderboardResponse = Awaited<
+  ReturnType<typeof sn45Api.v1.getSubnetLeaderboard>
+>["data"]
+
+export type SubnetLeaderboardRow = Omit<
+  SubnetLeaderboardResponse["subnets"][number],
+  "priceHistory7d"
+> & {
+  priceHistory7d: number[] | null
+}
+
 // Hook to get the TAO price
 export const useTaoPrice = () => {
   return useQuery({
@@ -51,9 +62,23 @@ export const useSubnetEconomics = () => {
 export const useSubnetLeaderboard = (period: "1d" | "1w" | "1m" = "1d") => {
   return useQuery({
     queryKey: ["sn45", "subnetLeaderboard", period],
-    queryFn: async () => {
+    queryFn: async (): Promise<
+      Omit<SubnetLeaderboardResponse, "subnets"> & { subnets: SubnetLeaderboardRow[] }
+    > => {
       const response = await sn45Api.v1.getSubnetLeaderboard({ period })
-      return response.data
+      const data = response.data
+
+      return {
+        ...data,
+        subnets: data.subnets.map((subnet) => ({
+          ...subnet,
+          priceHistory7d: Array.isArray(subnet.priceHistory7d)
+            ? subnet.priceHistory7d
+                .map((value) => Number(value))
+                .filter((value) => Number.isFinite(value))
+            : null,
+        })),
+      }
     },
     refetchInterval: 60_000,
     staleTime: 30_000,
@@ -500,9 +525,17 @@ export const useAllWhaleTransactions = (options?: {
 
 // Combined hook for subnet economics with sentiment data
 export const useSubnetEconomicsWithSentiment = () => {
-  const { data: economics, isLoading: economicsLoading } = useSubnetEconomics()
-  const { data: sentimentList, isLoading: sentimentLoading } = useSubnetSentimentList()
-  const { data: taoPrice } = useTaoPrice()
+  const {
+    data: economics,
+    isLoading: economicsLoading,
+    isError: isEconomicsError,
+  } = useSubnetEconomics()
+  const {
+    data: sentimentList,
+    isLoading: sentimentLoading,
+    isError: isSentimentError,
+  } = useSubnetSentimentList()
+  const { data: taoPrice, isError: isTaoPriceError } = useTaoPrice()
 
   const data = useMemo(() => {
     if (!economics) return []
@@ -534,6 +567,7 @@ export const useSubnetEconomicsWithSentiment = () => {
   return {
     data,
     isLoading: economicsLoading || sentimentLoading,
+    isError: isEconomicsError || isSentimentError || isTaoPriceError,
   }
 }
 
