@@ -1,5 +1,7 @@
 import { ArrowDownRightIcon, ArrowUpRightIcon, InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
@@ -55,10 +57,10 @@ const formatTaoAmount = (num: number) => {
 }
 
 // Format balance with commas
-const formatBalance = (num: number) => {
-  if (num === 0) return "0"
-  return num.toLocaleString("en-US", { maximumFractionDigits: 0 })
-}
+// const formatBalance = (num: number) => {
+//   if (num === 0) return "0"
+//   return num.toLocaleString("en-US", { maximumFractionDigits: 0 })
+// }
 
 // Mini sparkline chart component
 const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isPositive }) => {
@@ -137,8 +139,8 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" 
 
     return subnets.filter((subnet) => {
       return (
-        subnet.name.toLowerCase().includes(trimmedSearch) ||
-        subnet.greekSymbol.toLowerCase().includes(trimmedSearch) ||
+        subnet.token.subnetName?.toLowerCase().includes(trimmedSearch) ||
+        subnet.token.symbol.toLowerCase().includes(trimmedSearch) ||
         `sn${subnet.netuid}`.includes(trimmedSearch) ||
         String(subnet.netuid).includes(trimmedSearch)
       )
@@ -254,7 +256,7 @@ const HeaderRow: FC<{
   )
 
   return (
-    <div className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive">
+    <div className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive">
       <HeaderCell
         sortOrder={getSortOrder("netuid")}
         onSortOrderToggle={handleSortToggle("netuid", "asc")}
@@ -317,6 +319,7 @@ const DataCell: FC<PropsWithChildren<{ className?: string }>> = ({ children, cla
 }
 
 const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
+  const { t } = useTranslation()
   // Compare last price to first price in 7d data to determine chart color
   const firstPrice = subnet.chartData[0] ?? 0
   const lastPrice = subnet.chartData[subnet.chartData.length - 1] ?? 0
@@ -326,18 +329,20 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
 
   return (
     <Link
-      to={`/bittensor/subnets/${subnet.netuid}`}
-      className="grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-800"
+      to={`/bittensor/subnets/${subnet.token.netuid}`}
+      className="grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-800"
     >
       {/* Subnet */}
       <DataCell className="max-w-[160px] flex-row items-center gap-6 overflow-hidden">
-        <TokenLogo tokenId={subnet.tokenId} className="size-16 shrink-0" />
+        <TokenLogo tokenId={subnet.token.id} className="size-16 shrink-0" />
         <div className="flex grow flex-col gap-1 overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
-            <span className="truncate font-semibold text-white">{subnet.name}</span>
-            <span className="text-primary">{subnet.greekSymbol}</span>
+            <span className="truncate font-semibold text-white">
+              {subnet.token.subnetName || t("Subnet {{netuid}}", { netuid: subnet.token.netuid })}
+            </span>
+            <span className="text-primary">{subnet.token.symbol}</span>
           </div>
-          <span className="text-body-secondary text-xs">SN{subnet.netuid}</span>
+          <span className="text-body-secondary text-xs">SN{subnet.token.netuid}</span>
         </div>
       </DataCell>
 
@@ -354,15 +359,28 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
 
       {/* My Balance */}
       <DataCell>
-        {subnet.balance > 0 ? (
+        {subnet.balance ? (
           <>
             <div className="">
-              {formatBalance(subnet.balance)} {subnet.greekSymbol}
+              <TokensAndFiat
+                tokenId={subnet.token.id}
+                planck={subnet.balance}
+                noFiat
+                noCountUp
+                isBalance
+              />
             </div>
-            <div className="text-body-secondary text-xs">${formatBalance(subnet.balanceUsd)}</div>
+            {subnet.balanceUsd && (
+              <FiatFromUsd
+                amount={subnet.balanceUsd}
+                className="text-body-secondary text-xs"
+                noCountUp
+                isBalance
+              />
+            )}
           </>
         ) : (
-          <span className="text-body-inactive">0 {subnet.greekSymbol}</span>
+          <span className="text-body-inactive">0 {subnet.token.symbol}</span>
         )}
       </DataCell>
 
@@ -376,11 +394,9 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
 
       {/* Staked */}
       <DataCell>
-        <div className="text-white">
-          {formatNumber(subnet.stakedTao)} <span className="text-primary">τ</span>
-        </div>
+        <div className="text-white">{formatNumber(subnet.stakedTao)} τ</div>
         <div className="text-body-secondary text-xs">
-          {formatNumber(subnet.stakedAlpha)} {subnet.greekSymbol}
+          {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
         </div>
       </DataCell>
 

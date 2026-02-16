@@ -1,8 +1,9 @@
+import { type Balance, Balances } from "@talismn/balances"
 import type { SubDTaoToken } from "@talismn/chaindata-provider"
-import { useTokens } from "@ui/state"
+import { isAddressEqual } from "@talismn/crypto"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useBalances, useTokens } from "@ui/state"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import {
   useSubnetEconomicsWithSentiment,
   useSubnetLeaderboard,
@@ -67,11 +68,15 @@ const parseRaoToNumber = (value: string | null | undefined): number => {
 }
 
 export const useTaoDashboardSubnets = () => {
-  const { t } = useTranslation()
+  // const { t } = useTranslation()
   const allTokens = useTokens()
   const { data: economicsData, isLoading: _isEconomicsLoading } = useSubnetEconomicsWithSentiment()
   const { data: leaderboardData, isLoading: _isLeaderboardLoading } = useSubnetLeaderboard("1d")
   const { data: taoPrice } = useTaoPrice()
+
+  const { selectedAccounts } = usePortfolioNavigation()
+
+  const balances = useBalances("all")
 
   const subnetTokens = useMemo(() => {
     return allTokens.filter(
@@ -82,6 +87,20 @@ export const useTaoDashboardSubnets = () => {
         token.networkId === BITTENSOR_NETWORK_ID // ignore testnet
     )
   }, [allTokens])
+
+  const balancesPerNetuid = useMemo(() => {
+    return balances.each.reduce((acc, b) => {
+      if (
+        b.token?.type === "substrate-dtao" &&
+        b.token.networkId === BITTENSOR_NETWORK_ID &&
+        selectedAccounts.some((acc) => isAddressEqual(acc.address, b.address))
+      ) {
+        if (!acc.has(b.token.netuid)) acc.set(b.token.netuid, [])
+        acc.get(b.token.netuid)?.push(b)
+      }
+      return acc
+    }, new Map<number, Balance[]>())
+  }, [balances, selectedAccounts])
 
   // Create a map for quick lookup of economics data by netuid
   const economicsMap = useMemo(() => {
@@ -121,13 +140,19 @@ export const useTaoDashboardSubnets = () => {
         // Determine sentiment based on score
         const sentiment: SubnetSentiment = score >= 80 ? "bullish" : score <= 20 ? "bearish" : null
 
+        const balances = balancesPerNetuid.has(token.netuid)
+          ? (new Balances(balancesPerNetuid.get(token.netuid)!) ?? 0)
+          : null
+
         return {
-          tokenId: token.id,
           netuid: token.netuid,
-          name: token.subnetName ?? t("Subnet {{netuid}}", { netuid: token.netuid }),
-          symbol: token.symbol,
-          greekSymbol: token.symbol,
-          logo: token.logo,
+          token,
+          // tokenId: token.id,
+          // netuid: token.netuid,
+          // name: token.subnetName ?? t("Subnet {{netuid}}", { netuid: token.netuid }),
+          // symbol: token.symbol,
+          // greekSymbol: token.symbol,
+          // logo: token.logo,
           price: priceInTao,
           priceUsd,
           priceChange,
@@ -138,8 +163,8 @@ export const useTaoDashboardSubnets = () => {
           flowDirection: economics?.flowDirection ?? ("neutral" as const),
           sentimentScore: economics?.sentimentScore ?? 0,
           // Balance from placeholder (needs wallet integration)
-          balance: placeholder.balance,
-          balanceUsd: placeholder.balanceUsd,
+          balance: balances?.sum.planck.transferable ?? null,
+          balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
           // Real data from leaderboard
           stakedTao: stakedAlpha * priceInTao, // Convert alpha to TAO equivalent
           stakedAlpha,
@@ -148,8 +173,8 @@ export const useTaoDashboardSubnets = () => {
           chartData: leaderboard?.priceHistory7d ?? placeholder.chartData,
         }
       })
-      .sort((a, b) => a.netuid - b.netuid)
-  }, [subnetTokens, economicsMap, leaderboardMap, taoUsdPrice, t])
+      .sort((a, b) => a.token.netuid - b.token.netuid)
+  }, [subnetTokens, economicsMap, leaderboardMap, taoUsdPrice, balancesPerNetuid])
 
   return subnets
 }
