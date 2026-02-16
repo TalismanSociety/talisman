@@ -126,13 +126,27 @@ const PriceChange: FC<{ change: number }> = ({ change }) => {
   )
 }
 
-export const TaoDashboardSubnetsTable = () => {
+export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" }) => {
   const subnets = useTaoDashboardSubnets()
   const isLoading = useTaoDashboardSubnetsLoading()
   const [sortSetting, setSortSetting] = useState<SortSetting>(DEFAULT_SORT_SETTING)
 
+  const filteredSubnets = useMemo(() => {
+    const trimmedSearch = search.trim().toLowerCase()
+    if (!trimmedSearch) return subnets
+
+    return subnets.filter((subnet) => {
+      return (
+        subnet.name.toLowerCase().includes(trimmedSearch) ||
+        subnet.greekSymbol.toLowerCase().includes(trimmedSearch) ||
+        `sn${subnet.netuid}`.includes(trimmedSearch) ||
+        String(subnet.netuid).includes(trimmedSearch)
+      )
+    })
+  }, [search, subnets])
+
   const sortedSubnets = useMemo(() => {
-    return subnets.concat().sort((a, b) => {
+    return filteredSubnets.concat().sort((a, b) => {
       const valA = a[sortSetting.key]
       const valB = b[sortSetting.key]
 
@@ -147,7 +161,7 @@ export const TaoDashboardSubnetsTable = () => {
           return 0
       }
     })
-  }, [subnets, sortSetting])
+  }, [filteredSubnets, sortSetting])
 
   if (isLoading && subnets.length === 0) {
     return (
