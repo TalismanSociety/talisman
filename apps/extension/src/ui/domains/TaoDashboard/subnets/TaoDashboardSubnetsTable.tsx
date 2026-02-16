@@ -1,8 +1,8 @@
-import { InfoIcon } from "@talismn/icons"
+import { ArrowDownRightIcon, ArrowUpRightIcon, InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
-
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import {
@@ -120,8 +120,8 @@ const PriceChange: FC<{ change: number }> = ({ change }) => {
       )}
     >
       {change > 0 ? "+" : ""}
-      {change.toFixed(1)}%{isPositive && <span>↗</span>}
-      {isNegative && <span>↘</span>}
+      {change.toFixed(1)}%{isPositive && <ArrowUpRightIcon />}
+      {isNegative && <ArrowDownRightIcon />}
     </span>
   )
 }
@@ -230,6 +230,8 @@ const HeaderRow: FC<{
   sortSetting: SortSetting
   setSortSetting: React.Dispatch<React.SetStateAction<SortSetting>>
 }> = ({ sortSetting, setSortSetting }) => {
+  const { t } = useTranslation()
+
   const handleSortToggle = useCallback(
     (key: keyof TaoDashboardSubnet, first: SortOrder) => () => {
       setSortSetting((current) => {
@@ -252,56 +254,56 @@ const HeaderRow: FC<{
   )
 
   return (
-    <div className="grid h-36 w-full grid-cols-[minmax(120px,1.4fr),minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive">
+    <div className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(90px,0.8fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive">
       <HeaderCell
         sortOrder={getSortOrder("netuid")}
         onSortOrderToggle={handleSortToggle("netuid", "asc")}
       >
-        Subnet
+        {t("Subnet")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("price")}
         onSortOrderToggle={handleSortToggle("price", "desc")}
       >
-        Price
+        {t("Price")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("balance")}
         onSortOrderToggle={handleSortToggle("balance", "desc")}
       >
-        My Balance
+        {t("Balance")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("score")}
         onSortOrderToggle={handleSortToggle("score", "desc")}
       >
-        Score
+        {t("Score")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("stakedTao")}
         onSortOrderToggle={handleSortToggle("stakedTao", "desc")}
       >
-        Staked
+        {t("Staked")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("volume")}
         onSortOrderToggle={handleSortToggle("volume", "desc")}
       >
-        Volume
+        {t("Volume")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("mcap")}
         onSortOrderToggle={handleSortToggle("mcap", "desc")}
       >
-        MCap
+        {t("MCap")}
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("emission")}
         onSortOrderToggle={handleSortToggle("emission", "desc")}
       >
-        Emissions
+        {t("Em.")}
       </HeaderCell>
-      <HeaderCell>Chart</HeaderCell>
+      <HeaderCell></HeaderCell>
     </div>
   )
 }
@@ -354,13 +356,13 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
       <DataCell>
         {subnet.balance > 0 ? (
           <>
-            <div className="text-green">
+            <div className="">
               {formatBalance(subnet.balance)} {subnet.greekSymbol}
             </div>
             <div className="text-body-secondary text-xs">${formatBalance(subnet.balanceUsd)}</div>
           </>
         ) : (
-          <span className="text-body-secondary">0 {subnet.greekSymbol}</span>
+          <span className="text-body-inactive">0 {subnet.greekSymbol}</span>
         )}
       </DataCell>
 

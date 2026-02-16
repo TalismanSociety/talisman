@@ -1,8 +1,9 @@
 import { Balances } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { cn } from "@talismn/util"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBalances, useIsBalanceInitializing, useToken } from "@ui/state"
-import { type FC, useMemo } from "react"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import { BITTENSOR_NETWORK_ID } from "./constants"
@@ -16,7 +17,7 @@ const formatStatsUsd = (num: number) => {
 }
 
 // Stat item for the header
-const StatItem: FC<{ label: string; value: string; change?: number }> = ({
+const StatItem: FC<{ label: ReactNode; value: ReactNode; change?: number }> = ({
   label,
   value,
   change,
@@ -103,42 +104,38 @@ export const TaoDashboardHeader = () => {
   }, [taoPrice, leaderboardData])
 
   return (
-    <div className="flex h-auto min-h-64 items-stretch justify-between rounded-[0.75rem] border border-grey-800 text-left text-base text-body-secondary">
-      <div className="flex flex-col justify-center gap-4 px-6 py-8">
-        <div className="text-body-secondary text-sm">{t("Available Tao Balance")}</div>
-        <div className={cn("font-bold text-2xl text-body", isLoading && "animate-pulse")}>
-          {!taoBalances.sum.planck.transferable && isLoading ? (
-            <span className="rounded bg-grey-700 text-grey-700">0.00 τ</span>
-          ) : (
-            <>
-              {/* TODO: remove placeholder */}
-              123,456.00 <span className="text-primary">τ</span>
-            </>
-          )}
-        </div>
-      </div>
+    <div className="flex h-auto min-h-64 items-center justify-between rounded-[0.75rem] border border-grey-800 px-16 text-left text-base text-body-secondary">
+      <StatItem
+        label={t("Available Tao")}
+        value={
+          // TODO loading state
+          <span className={cn(isLoading && "animate-pulse")}>
+            <TokensAndFiat
+              tokenId={tao?.id}
+              planck={taoBalances.sum.planck.transferable}
+              noFiat
+              noCountUp
+              noSymbol
+              isBalance
+            />
+            {" τ"}
+          </span>
+        }
+      />
 
-      {/* Vertical divider */}
-      <div className="my-4 w-px bg-grey-800" />
+      <div className="h-44 w-px shrink-0 bg-grey-800" />
 
-      {/* Stats */}
-      <div className="flex flex-1 items-center justify-around gap-8 px-6 py-8">
-        <StatItem
-          label={t("Total Market Cap")}
-          value={formatStatsUsd(stats.marketCap)}
-          change={stats.marketCapChange24h ?? undefined}
-        />
-        <StatItem label={t("24h Trading Volume")} value={formatStatsUsd(stats.totalSubnetVolume)} />
-        <StatItem
-          label={t("TAO Price")}
-          value={formatStatsUsd(stats.taoUsd)}
-          change={stats.priceChange24h ?? undefined}
-        />
-      </div>
-
-      <div className="flex items-end px-6 py-4">
-        <PoweredBySn45 />
-      </div>
+      <StatItem
+        label={t("Total Market Cap")}
+        value={formatStatsUsd(stats.marketCap)}
+        change={stats.marketCapChange24h ?? undefined}
+      />
+      <StatItem label={t("24h Trading Volume")} value={formatStatsUsd(stats.totalSubnetVolume)} />
+      <StatItem
+        label={t("TAO Price")}
+        value={formatStatsUsd(stats.taoUsd)}
+        change={stats.priceChange24h ?? undefined}
+      />
     </div>
   )
 }
