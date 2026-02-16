@@ -319,9 +319,10 @@ const DataCell: FC<PropsWithChildren<{ error?: boolean; className?: string }>> =
   className,
   error,
 }) => {
+  const { t } = useTranslation()
   return (
     <div className={cn("flex flex-col items-start justify-center gap-1 text-left", className)}>
-      {error === true ? <span className="text-body-inactive">N/A</span> : children}
+      {error === true ? <span className="text-body-inactive">{t("N/A")}</span> : children}
     </div>
   )
 }
