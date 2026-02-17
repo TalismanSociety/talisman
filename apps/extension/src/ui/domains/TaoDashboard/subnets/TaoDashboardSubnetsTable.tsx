@@ -40,16 +40,6 @@ const formatTaoPrice = (price: number | undefined) => {
   return price.toFixed(2)
 }
 
-// Format USD price
-const formatUsdPrice = (price: number | undefined) => {
-  if (price === undefined) return "-"
-  if (price === 0) return "$0"
-  if (price >= 1000000000) return `$ ${(price / 1000000000).toFixed(1)}B`
-  if (price >= 1000000) return `$ ${(price / 1000000).toFixed(1)}M`
-  if (price < 0.01) return `$${price.toFixed(4)}`
-  return `$${price.toFixed(2)}`
-}
-
 // Format large TAO amounts
 const formatTaoAmount = (num: number) => {
   if (num === 0) return "0 τ"
@@ -373,12 +363,11 @@ const SubnetRow: FC<{
         ) : (
           <>
             <div className={cn("font-medium text-white", loading.price && "animate-pulse")}>
-              {formatTaoPrice(subnet.priceTao)} <span className="text-primary">τ</span>
+              {formatTaoPrice(subnet.priceTao)} τ
             </div>
             <div
               className={cn("flex items-center gap-2 text-xs", loading.price && "animate-pulse")}
             >
-              <span className="text-body-secondary">{formatUsdPrice(subnet.priceUsd)}</span>
               <PriceChange change={subnet.priceChange} />
             </div>
           </>
