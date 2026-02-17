@@ -70,6 +70,20 @@ export const useSubnetLeaderboard = (period: "1d" | "1w" | "1m" = "1d") => {
   })
 }
 
+export const useSubnetLeaderboardEntry = (
+  netuid: number | null | undefined,
+  period: "1d" | "1w" | "1m" = "1d"
+) => {
+  const query = useSubnetLeaderboard(period)
+
+  const data = useMemo(() => {
+    if (!query.data) return null
+    return query.data.subnets.find((subnet) => subnet.netuid === netuid) ?? null
+  }, [query.data, netuid])
+
+  return { ...query, data }
+}
+
 // Hook to get sentiment summary
 export const useSentimentSummary = () => {
   return useQuery({

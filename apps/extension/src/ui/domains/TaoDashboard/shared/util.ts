@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import type { LeaderboardPeriod, TimePeriod } from "./types"
 
 export const getDaysPerPeriod = (period: TimePeriod): number => {
@@ -11,6 +12,10 @@ export const getDaysPerPeriod = (period: TimePeriod): number => {
   }
 }
 
+export const useDaysPerPeriod = (period: TimePeriod): number => {
+  return useMemo(() => getDaysPerPeriod(period), [period])
+}
+
 export const getLeaderboardPeriod = (period: TimePeriod): LeaderboardPeriod => {
   switch (period) {
     case "1D":
@@ -20,4 +25,8 @@ export const getLeaderboardPeriod = (period: TimePeriod): LeaderboardPeriod => {
     case "1M":
       return "1m"
   }
+}
+
+export const useLeaderboardPeriod = (period: TimePeriod): LeaderboardPeriod => {
+  return useMemo(() => getLeaderboardPeriod(period), [period])
 }

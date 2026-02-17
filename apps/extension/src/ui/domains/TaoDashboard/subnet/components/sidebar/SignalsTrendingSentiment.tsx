@@ -1,21 +1,37 @@
-import { subDTaoTokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useSubnetCombinedScore } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { useSentimentLabel } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
+import {
+  type SubnetLeaderboardRow,
+  useSubnetLeaderboardEntry,
+} from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import { useSentimentLabelFromScore100 } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useLeaderboardPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
-import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
+import { log } from "extension-shared"
+import {
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { SectionTitleBar, useDaysFromPeriod } from "./shared"
+import { SectionTitleBar } from "./shared"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
 
-  const days = useDaysFromPeriod(period)
-  const { data, isLoading } = useSubnetCombinedScore(netuid, days)
+  const leaderboardPeriod = useLeaderboardPeriod(period)
+  const { data, isLoading } = useSubnetLeaderboardEntry(netuid, leaderboardPeriod)
+
+  useEffect(() => {
+    if (data) log.log("useSubnetLeaderboardEntry %s %s", netuid, period, data)
+  }, [period, data, netuid])
 
   return (
     <div>
@@ -30,7 +46,7 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
         {isLoading ? (
           <TradingSentimentSkeleton />
         ) : data ? (
-          <TrendingSentiment netuid={netuid} period={period} combinedScore={data} />
+          <TrendingSentiment data={data} />
         ) : (
           <div className="flex h-[16.5rem] items-center justify-center text-body-secondary">
             {t("Failed to fetch data")}
@@ -62,62 +78,45 @@ const InfoTooltip = () => {
   )
 }
 
-type SubnetCombinedScoreData = ReturnType<typeof useSubnetCombinedScore>["data"]
+// type SubnetCombinedScoreData = ReturnType<typeof useSubnetCombinedScore>["data"]
 
 const TrendingSentiment: FC<
   PropsWithChildren<{
-    netuid: number
-    period: TimePeriod
-    combinedScore: NonNullable<SubnetCombinedScoreData>
+    data: SubnetLeaderboardRow
+    // combinedScore: NonNullable<SubnetCombinedScoreData>
   }>
-> = ({ netuid, combinedScore }) => {
+> = ({ data }) => {
   const { t } = useTranslation()
 
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
-  const alphaFlow = BigInt(combinedScore.alphaFlow)
-
-  const economicSentimentLabel = useSentimentLabel(combinedScore.economicSentiment)
-  const socialSentimentLabel = useSentimentLabel(combinedScore.socialsSentiment)
-  const combinedSentimentLabel = useSentimentLabel(combinedScore.combinedSentiment)
-
-  const score = useMemo(() => {
-    // input is a value between -2 and +2
-    // output must be a value between 0 and 100
-    return combinedScore?.combinedScore !== undefined
-      ? Math.round(((combinedScore.combinedScore + 2) / 4) * 100)
-      : 0
-  }, [combinedScore])
+  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
+  const taoFlow = data.emaTaoFlow ? BigInt(data.emaTaoFlow) : 0n
+  const scoreLabel = useSentimentLabelFromScore100(data.score)
 
   return (
     <div className="flex h-[16.5rem] items-stretch gap-14">
       <div className="flex h-full flex-col items-center justify-between">
         <div className="mb-1 text-body-inactive text-xs">{t("Combined Score")}</div>
-        <SentimentGauge score={score} />
-        <div className="text-md">{combinedSentimentLabel}</div>
+        <SentimentGauge score={data.score ?? 50} />
+        <div className="text-md">{scoreLabel}</div>
       </div>
 
       <div className="w-px self-stretch bg-grey-800" />
 
       <div className="flex h-full flex-col items-start justify-between">
         <SentimentField
-          label={t("Alpha Flow")}
-          className={cn(alphaFlow >= 0 ? "text-green" : "text-red-500")}
+          label={t("Flow Change")}
+          className={cn(taoFlow >= 0n ? "text-buy" : "text-sell")}
         >
           <div className="flex items-center gap-6">
             <span>
-              <TokensAndFiat
-                tokenId={alphaTokenId}
-                planck={combinedScore.alphaFlow}
-                noFiat
-                noCountUp
-              />
+              <TokensAndFiat tokenId={taoTokenId} planck={taoFlow} noFiat noCountUp noSymbol /> τ
             </span>
-            {alphaFlow > 0n && <ArrowUpRightIcon className="size-8" />}
-            {alphaFlow < 0n && <ArrowDownRightIcon className="size-8" />}
+            {taoFlow > 0n && <ArrowUpRightIcon className="size-8" />}
+            {taoFlow < 0n && <ArrowDownRightIcon className="size-8" />}
           </div>
         </SentimentField>
-        <SentimentField label={t("Economic Sentiment")}>{economicSentimentLabel}</SentimentField>
-        <SentimentField label={t("Socials Sentiment")}>{socialSentimentLabel}</SentimentField>
+        <SentimentField label={t("Volume Change")}>TODO</SentimentField>
+        <SentimentField label={t("Sentiment Change")}>TODO</SentimentField>
       </div>
     </div>
   )

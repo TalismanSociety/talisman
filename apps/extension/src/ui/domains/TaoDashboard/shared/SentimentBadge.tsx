@@ -35,10 +35,12 @@ export const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
   )
 }
 
-export const useSentimentLabel = (sentiment: Sentiment) => {
+export const useSentimentLabel = (sentiment: Sentiment | null) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
+    if (!sentiment) return t("N/A")
+
     switch (sentiment) {
       case "very_bearish":
         return t("Very Bearish")
@@ -54,4 +56,20 @@ export const useSentimentLabel = (sentiment: Sentiment) => {
         return t("Unknown")
     }
   }, [sentiment, t])
+}
+
+export const useSentimentFromScore100 = (score: number | null): Sentiment | null => {
+  return useMemo(() => {
+    if (score === null) return null
+    if (score < 20) return "very_bearish"
+    if (score < 40) return "bearish"
+    if (score < 60) return "neutral"
+    if (score < 80) return "bullish"
+    return "very_bullish"
+  }, [score])
+}
+
+export const useSentimentLabelFromScore100 = (score: number | null) => {
+  const sentiment = useSentimentFromScore100(score)
+  return useSentimentLabel(sentiment)
 }
