@@ -1,5 +1,6 @@
+import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { useSubnetStakeEvents } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import { useSubnetTradeFlow } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   type CSSProperties,
@@ -9,120 +10,85 @@ import {
   useMemo,
   useState,
 } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { formatNumber, SectionTitleBar } from "./shared"
 
 export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1W")
-  const { data: stakeEvents, isLoading } = useSubnetStakeEvents(netuid)
+  const apiPeriod = period.toLowerCase() as "1d" | "1w" | "1m"
+  const { data: tradeFlow, isLoading } = useSubnetTradeFlow(netuid, apiPeriod)
 
   return (
     <div>
       <SectionTitleBar
         label={t("Trade Flow")}
-        tooltip={<InfoTooltip />}
+        // tooltip={<InfoTooltip />}
         period={period}
         onPeriodChange={setPeriod}
       />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
-        {isLoading ? (
-          <StakeEventsSkeleton />
-        ) : (
-          <StakeEvents period={period} stakeEvents={stakeEvents} />
-        )}
+        {isLoading ? <TradeFlowSkeleton /> : <TradeFlow tradeFlow={tradeFlow} />}
       </div>
     </div>
   )
 }
 
-const InfoTooltip = () => {
-  const { t } = useTranslation()
-  return (
-    <div className="leading-paragraph">
-      <Trans t={t}>
-        <ul className="list-outside list-disc pl-8">
-          <li>Momentum: % change in price over the period</li>
-          <li>Accumulation: % of activity coming from buyers</li>
-          <li>Trade Velocity: How active trading is relative to baseline</li>
-        </ul>
-      </Trans>
-    </div>
-  )
-}
+// const InfoTooltip = () => {
+//   const { t } = useTranslation()
+//   return (
+//     <div className="leading-paragraph">
+//       <Trans t={t}>
+//         <ul className="list-outside list-disc pl-8">
+//           <li>Momentum: % change in price over the period</li>
+//           <li>Accumulation: % of activity coming from buyers</li>
+//           <li>Trade Velocity: How active trading is relative to baseline</li>
+//         </ul>
+//       </Trans>
+//     </div>
+//   )
+// }
 
-type SubnetStakeEventsData = NonNullable<ReturnType<typeof useSubnetStakeEvents>["data"]>
+type SubnetTradeFlowData = NonNullable<ReturnType<typeof useSubnetTradeFlow>["data"]>
 
-const StakeEvents: FC<
-  PropsWithChildren<{ period: TimePeriod; stakeEvents: SubnetStakeEventsData | null | undefined }>
-> = ({ period, stakeEvents }) => {
+const toTao = (raoAmount: string): number => Number(raoAmount) / 1e9
+
+const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | undefined }>> = ({
+  tradeFlow,
+}) => {
   const { t } = useTranslation()
 
   const metrics = useMemo(() => {
-    if (!stakeEvents) {
+    if (!tradeFlow) {
       return {
         buys: 0,
         sells: 0,
         buyVol: 0,
         sellVol: 0,
-        ratio: 1,
-        ratioLabel: "Balanced",
-        activeTraders: 0,
         buyers: 0,
         sellers: 0,
-        avgTrade: 0,
-        avgTradeLabel: "Retail flow",
+        momentum: 0,
+        accumulation: 0,
+        tradeVelocity: 0,
       }
     }
 
-    const now = Date.now()
-    const periodMs =
-      period === "1D"
-        ? 24 * 60 * 60 * 1000
-        : period === "1W"
-          ? 7 * 24 * 60 * 60 * 1000
-          : 30 * 24 * 60 * 60 * 1000
-
-    const filtered = stakeEvents.filter((e) => new Date(e.timestamp).getTime() > now - periodMs)
-
-    const buys = filtered.filter((e) => e.method === "Adding")
-    const sells = filtered.filter((e) => e.method === "Removing")
-
-    const buyVol = buys.reduce((sum, e) => sum + parseFloat(e.taoAmount) / 1e9, 0)
-    const sellVol = sells.reduce((sum, e) => sum + parseFloat(e.taoAmount) / 1e9, 0)
-
-    const ratio = sellVol > 0 ? buyVol / sellVol : buyVol > 0 ? 999 : 1
-
-    const buyAddresses = new Set(buys.map((e) => e.coldkey).filter(Boolean))
-    const sellAddresses = new Set(sells.map((e) => e.coldkey).filter(Boolean))
-    const allAddresses = new Set([...buyAddresses, ...sellAddresses])
-
-    const totalVol = buyVol + sellVol
-    const avgTrade = filtered.length > 0 ? totalVol / filtered.length : 0
-
-    let ratioLabel = "Balanced"
-    if (ratio >= 1.2) ratioLabel = "Bullish"
-    else if (ratio <= 0.8) ratioLabel = "Bearish"
-
-    const avgTradeLabel = avgTrade >= 10 ? "Whale flow" : "Retail flow"
-
     return {
-      buys: buys.length,
-      sells: sells.length,
-      buyVol,
-      sellVol,
-      ratio,
-      ratioLabel,
-      activeTraders: allAddresses.size,
-      buyers: buyAddresses.size,
-      sellers: sellAddresses.size,
-      avgTrade,
-      avgTradeLabel,
+      buys: tradeFlow.buys,
+      sells: tradeFlow.sells,
+      buyVol: toTao(tradeFlow.buyVol),
+      sellVol: toTao(tradeFlow.sellVol),
+      buyers: tradeFlow.buyers,
+      sellers: tradeFlow.sellers,
+      momentum: tradeFlow.momentum,
+      accumulation: tradeFlow.accumulation,
+      tradeVelocity: tradeFlow.tradeVelocity,
     }
-  }, [stakeEvents, period])
+  }, [tradeFlow])
 
-  if (!stakeEvents)
+  if (!tradeFlow)
     return (
       <div className="flex h-[20rem] items-center justify-center text-body-secondary">
         {t("Failed to fetch data")}
@@ -162,14 +128,37 @@ const StakeEvents: FC<
       <div className="w-px self-stretch bg-grey-800" />
 
       <div className="flex h-full flex-col justify-between">
-        <MetricField label={t("Ratio")} extra={metrics.ratioLabel}>
-          {metrics.ratio.toFixed(2)}
+        <MetricField
+          label={t("Momentum")}
+          tooltip={t("Percentage change in price over the selected period")}
+          className={cn(metrics.momentum > 0 && "text-buy", metrics.momentum <= 0 && "text-sell")}
+        >
+          {metrics.momentum > 0 && "+"}
+          {metrics.momentum.toFixed(2)}%
         </MetricField>
-        <MetricField label={t("Active Traders")} extra={t("Unique Wallets")}>
-          {metrics.activeTraders}
+        <MetricField
+          label={t("Accumulation")}
+          tooltip={t("Percentage of trading activity coming from buyers versus sellers")}
+          className={cn(
+            metrics.accumulation > 0 && "text-buy",
+            metrics.accumulation <= 0 && "text-sell"
+          )}
+        >
+          {metrics.accumulation > 0 && "+"}
+          {metrics.accumulation.toFixed(2)}%
         </MetricField>
-        <MetricField label={t("Avg Trade")} extra={metrics.avgTradeLabel}>
-          {metrics.avgTrade.toFixed(1)}τ
+        <MetricField
+          label={t("Trade Velocity")}
+          tooltip={t(
+            "How active trading is relative to a baseline period immediately preceding the selected window"
+          )}
+          className={cn(
+            metrics.tradeVelocity > 0 && "text-buy",
+            metrics.tradeVelocity <= 0 && "text-sell"
+          )}
+        >
+          {metrics.tradeVelocity > 0 && "+"}
+          {metrics.tradeVelocity.toFixed(2)}%
         </MetricField>
       </div>
     </div>
@@ -177,10 +166,23 @@ const StakeEvents: FC<
 }
 
 const MetricField: FC<
-  PropsWithChildren<{ label: ReactNode; extra?: ReactNode; className?: string }>
-> = ({ label, children, extra, className }) => (
-  <div className={cn("flex flex-col")}>
-    <div className="text-body-inactive text-xs">{label}</div>
+  PropsWithChildren<{
+    label: ReactNode
+    tooltip?: ReactNode
+    extra?: ReactNode
+    className?: string
+  }>
+> = ({ label, tooltip, children, extra, className }) => (
+  <div className={cn("flex flex-col gap-1")}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-1 text-body-inactive text-xs">
+          {label}
+          {!!tooltip && <InfoIcon />}
+        </div>
+      </TooltipTrigger>
+      {!!tooltip && <TooltipContent>{tooltip}</TooltipContent>}
+    </Tooltip>
     <div className={cn("text-md", className)}>{children}</div>
     {!!extra && <div className="text-body-inactive text-xs">{extra}</div>}
   </div>
@@ -234,7 +236,7 @@ const ComparisonBar: FC<{
   )
 }
 
-const StakeEventsSkeleton = () => (
+const TradeFlowSkeleton = () => (
   <div className="flex h-[20rem] items-stretch gap-14">
     <div className="flex h-full w-[16rem] flex-col items-center justify-between">
       <ComparisonFieldSkeleton />
@@ -256,13 +258,10 @@ const MetricFieldSkeleton = () => {
   return (
     <div className={cn("flex flex-col gap-1")}>
       <div className="text-body-inactive text-xs">
-        <Skeleton className="w-[5rem]" />
+        <Skeleton className="w-[8rem]" />
       </div>
       <div className={cn("text-md")}>
-        <Skeleton className="w-[4rem]" />
-      </div>
-      <div className="text-body-inactive text-xs">
-        <Skeleton className="w-[7rem]" />
+        <Skeleton className="w-[5rem]" />
       </div>
     </div>
   )
@@ -284,7 +283,7 @@ const ComparisonFieldSkeleton = () => {
           <Skeleton className="w-[5rem]" />
         </div>
         <div>
-          <Skeleton className="w-[5rem]" />{" "}
+          <Skeleton className="w-[5rem]" />
         </div>
       </div>
       <Skeleton className="h-4 w-full rounded-full"></Skeleton>

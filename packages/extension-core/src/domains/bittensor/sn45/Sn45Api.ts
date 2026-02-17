@@ -439,43 +439,77 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns leaderboard rows for all subnets, combining trading activity, emission, sentiment, and derived velocity signals. Numeric amounts that can exceed safe JSON integer range are returned as string-encoded integers.
      *
      * @tags Subnets
      * @name GetSubnetLeaderboard
-     * @summary Subnet leaderboard with aggregated metrics
+     * @summary Subnet leaderboard with model-enriched metrics
      * @request GET:/v1/bittensor/subnets/leaderboard
      */
     getSubnetLeaderboard: (
       query?: {
-        /** @default "1d" */
+        /**
+         * Leaderboard window. Accepted values: 1d (24h), 1w (7 days), 1m (30 days). Defaults to 1d.
+         * @default "1d"
+         */
         period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
+          /** Requested leaderboard window. Mirrors the `period` query parameter. */
           period: "1d" | "1w" | "1m";
+          /** ISO timestamp indicating when leaderboard data was last refreshed. */
           updatedAt: string;
+          /** Leaderboard rows for all subnets, sorted by descending composite score. */
           subnets: {
+            /** Subnet identifier (netuid). */
             netuid: number;
+            /** Latest subnet alpha price in TAO. Null when no recent price snapshot exists. */
             currentPrice: number | null;
+            /** Percent price change over the requested period (e.g. 1d, 1w, 1m). */
             priceChange: number | null;
+            /** Total TAO staked, in rao (1 TAO = 1e9 rao). String-encoded integer; may be null. */
             stakedTao: string | null;
+            /** Total alpha staked for the subnet, in alpha rao units. String-encoded integer; may be null. */
             stakedAlpha: string | null;
+            /** Total traded TAO volume during the requested period, in rao. String-encoded integer. */
             volume: string;
+            /** Number of stake events (buy + sell) during the requested period. */
             txCount: number;
+            /** Number of buy-side stake events during the requested period. */
             buyCount: number;
+            /** Number of sell-side stake events during the requested period. */
             sellCount: number;
+            /** Subnet market cap proxy, in rao-denominated units. String-encoded integer; may be null. */
             mcap: string | null;
+            /** Alpha-out emission amount from latest emission snapshot, as string-encoded integer. */
             alphaOutEmission: string | null;
+            /** Alpha-in emission amount from latest emission snapshot, as string-encoded integer. */
             alphaInEmission: string | null;
+            /** TAO-in emission amount from latest emission snapshot, as string-encoded integer. */
             taoInEmission: string | null;
+            /** Current number of unique holder wallets for the subnet. */
             totalHolders: number;
+            /** Exponentially weighted moving average of TAO flow from leaderboard model output. String-encoded integer; may be null. */
             emaTaoFlow: string | null;
+            /** EMA-based price ratio signal used by the ranking model. May be null. */
+            emaPriceRatio: number | null;
+            /** Emission percentage signal for the subnet, represented as percent value. */
             emissionPct: number | null;
-            priceHistory7d: any[] | null;
-            score: number | null;
+            /** Seven-day price history series in TAO, ordered oldest to newest. Empty array when history is unavailable. */
+            priceHistory7d: number[];
+            /** Current subnet sentiment score merged into leaderboard model. May be null. */
+            sentimentScore: number | null;
+            /** Rate-of-change signal for sentiment used in leaderboard scoring. May be null. */
+            sentimentVelocity: number | null;
+            /** Rate-of-change signal for TAO flow used in leaderboard scoring. */
+            taoFlowVelocity: number;
+            /** Rate-of-change signal of volume-to-market-cap used in leaderboard scoring. */
+            volMcapVelocity: number;
+            /** Composite leaderboard score used to rank subnets (higher is better). */
+            score: number;
           }[];
         },
         {
@@ -705,6 +739,60 @@ export class Sn45Api<
         }
       >({
         path: `/v1/bittensor/subnets/${netuid}/flow-chart`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns buy/sell counts, buy/sell volume in rao, unique participant counts, and derived momentum/activity metrics for a selected period. Momentum is computed from moving price change over the same window. Trade velocity compares current activity against the immediately preceding equal-length baseline window.
+     *
+     * @tags Subnets
+     * @name GetSubnetTradeFlow
+     * @summary Trade flow metrics for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/trade-flow
+     */
+    getSubnetTradeFlow: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for metrics. Accepted values: 1d (24h), 1w (7 days), 1m (30 days). Defaults to 1d.
+         * @default "1d"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Number of buy-side stake events (method=Adding) in the selected period. */
+          buys: number;
+          /** Number of sell-side stake events (method=Removing) in the selected period. */
+          sells: number;
+          /** Total buy-side TAO amount in rao for the selected period. String-encoded integer (1 TAO = 1e9 rao). */
+          buyVol: string;
+          /** Total sell-side TAO amount in rao for the selected period. String-encoded integer (1 TAO = 1e9 rao). */
+          sellVol: string;
+          /** Number of unique buyer addresses (distinct coldkeys with buy-side events). */
+          buyers: number;
+          /** Number of unique seller addresses (distinct coldkeys with sell-side events). */
+          sellers: number;
+          /** Percent change in subnet moving price over the selected period: ((endPrice - startPrice) / startPrice) * 100. */
+          momentum: number;
+          /** Buy-side activity share in percent, based on event counts: buys / (buys + sells) * 100. */
+          accumulation: number;
+          /** Trading activity versus baseline, in percent. Computed as percent change of total event count versus the immediately preceding equal-length window. */
+          tradeVelocity: number;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/trade-flow`,
         method: "GET",
         query: query,
         format: "json",
@@ -1551,44 +1639,30 @@ export class Sn45Api<
           top10Concentration: number;
           /** Percentage of holders who performed at least one staking event (add/remove stake) during the period */
           avgTradePercent: number;
-          /** Distribution of holders across 6 tiers based on TAO value thresholds (consistent across subnets) */
+          /** Distribution of holders across 4 tiers based on TAO value thresholds (consistent across subnets) */
           breakdown: {
-            /** Holders with >= 10,000 TAO value */
+            /** Holders with > 1,000 TAO value */
             whale: {
               /** Number of holders in this tier */
               count: number;
               /** Percentage of total holders in this tier */
               percent: number;
             };
-            /** Holders with >= 1,000 and < 10,000 TAO value */
-            shark: {
-              /** Number of holders in this tier */
-              count: number;
-              /** Percentage of total holders in this tier */
-              percent: number;
-            };
-            /** Holders with >= 100 and < 1,000 TAO value */
+            /** Holders with > 100 and <= 1,000 TAO value */
             dolphin: {
               /** Number of holders in this tier */
               count: number;
               /** Percentage of total holders in this tier */
               percent: number;
             };
-            /** Holders with >= 10 and < 100 TAO value */
+            /** Holders with > 10 and <= 100 TAO value */
             fish: {
               /** Number of holders in this tier */
               count: number;
               /** Percentage of total holders in this tier */
               percent: number;
             };
-            /** Holders with >= 1 and < 10 TAO value */
-            crab: {
-              /** Number of holders in this tier */
-              count: number;
-              /** Percentage of total holders in this tier */
-              percent: number;
-            };
-            /** Holders with < 1 TAO value */
+            /** Holders with <= 10 TAO value */
             shrimp: {
               /** Number of holders in this tier */
               count: number;

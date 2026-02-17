@@ -1,7 +1,5 @@
-import { subNativeTokenId } from "@talismn/chaindata-provider"
-import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
+import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import {
   type SubnetLeaderboardRow,
   useSubnetLeaderboardEntry,
@@ -9,17 +7,10 @@ import {
 import { useSentimentLabelFromScore100 } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { useLeaderboardPeriod } from "@ui/domains/TaoDashboard/shared/util"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { log } from "extension-shared"
-import {
-  type FC,
-  type PropsWithChildren,
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { type FC, type PropsWithChildren, type ReactNode, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./shared"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
@@ -37,7 +28,7 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
     <div>
       <SectionTitleBar
         label={t("Trending sentiment")}
-        tooltip={<InfoTooltip />}
+        // tooltip={<InfoTooltip />}
         period={period}
         onPeriodChange={setPeriod}
       />
@@ -57,39 +48,33 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
   )
 }
 
-const InfoTooltip = () => {
-  const { t } = useTranslation()
-  return (
-    <div className="leading-paragraph">
-      <Trans t={t}>
-        <div>Combined Score is computed from:</div>
-        <ul className="list-outside list-disc pl-8">
-          <li>
-            Tao Flow Change (taoFlow): Acceleration/decelaration of Tao Flow compared to recent
-            average
-          </li>
-          <li>
-            Volume Change (volVel): Volume expansion or contraction compared to recent average
-          </li>
-          <li>Sentiment Change (sentVel): Shift in social sentiment compared to baseline</li>
-        </ul>
-      </Trans>
-    </div>
-  )
-}
-
-// type SubnetCombinedScoreData = ReturnType<typeof useSubnetCombinedScore>["data"]
+// const InfoTooltip = () => {
+//   const { t } = useTranslation()
+//   return (
+//     <div className="leading-paragraph">
+//       <Trans t={t}>
+//         <div>Combined Score is computed from:</div>
+//         <ul className="list-outside list-disc pl-8">
+//           <li>
+//             Tao Flow Change (taoFlow): Acceleration/decelaration of Tao Flow compared to recent
+//             average
+//           </li>
+//           <li>
+//             Volume Change (volVel): Volume expansion or contraction compared to recent average
+//           </li>
+//           <li>Sentiment Change (sentVel): Shift in social sentiment compared to baseline</li>
+//         </ul>
+//       </Trans>
+//     </div>
+//   )
+// }
 
 const TrendingSentiment: FC<
   PropsWithChildren<{
     data: SubnetLeaderboardRow
-    // combinedScore: NonNullable<SubnetCombinedScoreData>
   }>
 > = ({ data }) => {
   const { t } = useTranslation()
-
-  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
-  const taoFlow = data.emaTaoFlow ? BigInt(data.emaTaoFlow) : 0n
   const scoreLabel = useSentimentLabelFromScore100(data.score)
 
   return (
@@ -105,30 +90,55 @@ const TrendingSentiment: FC<
       <div className="flex h-full flex-col items-start justify-between">
         <SentimentField
           label={t("Flow Change")}
-          className={cn(taoFlow >= 0n ? "text-buy" : "text-sell")}
+          tooltip={t("Acceleration/decelaration of Tao Flow compared to recent average")}
+          className={cn(
+            data.taoFlowVelocity >= 0 && "text-buy",
+            data.taoFlowVelocity < 0 && "text-sell"
+          )}
         >
-          <div className="flex items-center gap-6">
-            <span>
-              <TokensAndFiat tokenId={taoTokenId} planck={taoFlow} noFiat noCountUp noSymbol /> τ
-            </span>
-            {taoFlow > 0n && <ArrowUpRightIcon className="size-8" />}
-            {taoFlow < 0n && <ArrowDownRightIcon className="size-8" />}
-          </div>
+          {data.taoFlowVelocity > 0 && "+"}
+          {data.taoFlowVelocity}
         </SentimentField>
-        <SentimentField label={t("Volume Change")}>TODO</SentimentField>
-        <SentimentField label={t("Sentiment Change")}>TODO</SentimentField>
+        <SentimentField
+          label={t("Volume Change")}
+          tooltip={t("Volume expansion or contraction compared to recent average")}
+          className={cn(
+            data.volMcapVelocity >= 0 && "text-buy",
+            data.volMcapVelocity < 0 && "text-sell"
+          )}
+        >
+          {data.volMcapVelocity > 0 && "+"}
+          {data.volMcapVelocity}
+        </SentimentField>
+        <SentimentField
+          label={t("Sentiment Change")}
+          tooltip={t("Shift in social sentiment compared to baseline")}
+          className={cn(
+            data.sentimentVelocity !== null && data.sentimentVelocity > 0 && "text-buy",
+            data.sentimentVelocity !== null && data.sentimentVelocity < 0 && "text-sell"
+          )}
+        >
+          {data.sentimentVelocity !== null && data.sentimentVelocity > 0 && "+"}
+          {data.sentimentVelocity ?? t("N/A")}
+        </SentimentField>
       </div>
     </div>
   )
 }
 
-const SentimentField: FC<PropsWithChildren<{ label: ReactNode; className?: string }>> = ({
-  label,
-  children,
-  className,
-}) => (
+const SentimentField: FC<
+  PropsWithChildren<{ label: ReactNode; tooltip?: ReactNode; className?: string }>
+> = ({ label, children, tooltip, className }) => (
   <div className={cn("flex flex-col gap-2")}>
-    <div className="text-body-inactive text-xs">{label}</div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-1 text-body-inactive text-xs">
+          {label}
+          {!!tooltip && <InfoIcon />}
+        </div>
+      </TooltipTrigger>
+      {!!tooltip && <TooltipContent>{tooltip}</TooltipContent>}
+    </Tooltip>
     <div className={cn("text-md", className)}>{children}</div>
   </div>
 )

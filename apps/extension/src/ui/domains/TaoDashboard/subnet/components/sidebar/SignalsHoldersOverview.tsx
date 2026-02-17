@@ -2,27 +2,27 @@
 // Holders Overview Section
 // ============================================================================
 
+import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { formatCompactNumber, SectionTitleBar, useDaysFromPeriod } from "./shared"
 
 // Tier configuration with colors matching the design
 const TIER_CONFIG = {
-  whale: { label: "Whale", color: "#22d3ee", taoRange: "10K+ τ" },
-  shark: { label: "Shark", color: "#10b981", taoRange: "1K-10K τ" },
-  dolphin: { label: "Dolphin", color: "#fd8fff", taoRange: "100-1K τ" },
-  fish: { label: "Fish", color: "#3b82f6", taoRange: "10-100 τ" },
-  crab: { label: "Crab", color: "#f59e0b", taoRange: "1-10 τ" },
-  shrimp: { label: "Shrimp", color: "#6b7280", taoRange: "< 1 τ" },
+  whale: { color: "#7256FF", taoRange: "> 1K τ" },
+  dolphin: { color: "#FD8FFF", taoRange: "> 100 to 1K τ" },
+  fish: { color: "#9BC7FF", taoRange: "> 10 to 100 τ" },
+  shrimp: { color: "#FBF5D8", taoRange: "≤ 10 τ" },
 } as const
 
 type TierKey = keyof typeof TIER_CONFIG
 
 // Ordered tiers from largest to smallest
-const TIER_ORDER: TierKey[] = ["whale", "shark", "dolphin", "fish", "crab", "shrimp"]
+const TIER_ORDER: TierKey[] = ["whale", "dolphin", "fish", "shrimp"]
 
 interface TierData {
   key: TierKey
@@ -41,7 +41,7 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
     <div>
       <SectionTitleBar
         label={t("Holders Overview")}
-        tooltip={<InfoTooltip />}
+        // tooltip={<InfoTooltip />}
         period={period}
         onPeriodChange={setPeriod}
       />
@@ -61,20 +61,20 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
   )
 }
 
-const InfoTooltip = () => {
-  const { t } = useTranslation()
-  return (
-    <div className="leading-paragraph">
-      <Trans t={t}>
-        <ul className="list-outside list-disc pl-8">
-          <li>Total Holders: Total subnet alpha holders</li>
-          <li>Whale Concentration: % of alpha held by top 10 holders</li>
-          <li>Whale Dominance: % of trade volume by top 5 holders</li>
-        </ul>
-      </Trans>
-    </div>
-  )
-}
+// const InfoTooltip = () => {
+//   const { t } = useTranslation()
+//   return (
+//     <div className="leading-paragraph">
+//       <Trans t={t}>
+//         <ul className="list-outside list-disc pl-8">
+//           <li>Total Holders: Total subnet alpha holders</li>
+//           <li>Whale Concentration: % of alpha held by top 10 holders</li>
+//           <li>Whale Dominance: % of trade volume by top 5 holders</li>
+//         </ul>
+//       </Trans>
+//     </div>
+//   )
+// }
 type SubnetHoldersData = NonNullable<ReturnType<typeof useSubnetHolders>["data"]>
 
 const HoldersOverviewSkeleton = () => (
@@ -110,20 +110,21 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   const { t } = useTranslation()
 
   // Concentration label based on top 10% concentration
-  const concentrationLabel = useMemo(() => {
-    if (!data || !("top10Concentration" in data)) return "Unknown"
-    const concentration = data.top10Concentration
-    if (concentration >= 80) return t("Institution heavy")
-    if (concentration >= 60) return t("Whale heavy")
-    if (concentration >= 40) return t("Mixed")
-    return t("Distributed")
-  }, [data, t])
+  // const concentrationLabel = useMemo(() => {
+  //   if (!data || !("top10Concentration" in data)) return "Unknown"
+  //   const concentration = data.top10Concentration
+  //   if (concentration >= 80) return t("Institution heavy")
+  //   if (concentration >= 60) return t("Whale heavy")
+  //   if (concentration >= 40) return t("Mixed")
+  //   return t("Distributed")
+  // }, [data, t])
 
   return (
     <div className="flex h-[20rem] items-stretch gap-14">
       <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
         <MetricsField
           label={t("Total Holders")}
+          tooltip={t("Total number of unique wallets holding the subnet's alpha token")}
           extra={
             <>
               {data.holderChange > 0 ? "+" : ""}
@@ -137,10 +138,18 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         >
           {formatCompactNumber(data.totalHolders)}
         </MetricsField>
-        <MetricsField label={t("10% Concentration")} extra={concentrationLabel}>
+        <MetricsField
+          label={t("Concentration")}
+          tooltip={t(
+            "Number of wallet addresses that fall within the top 10% of holders by TAO value"
+          )}
+          // extra={concentrationLabel}
+        >
           {formatCompactNumber(data.top10Concentration)}
         </MetricsField>
-        <MetricsField label={t("Avg Trade")}>{data.avgTradePercent.toFixed(1)}%</MetricsField>
+        <MetricsField label={t("Avg Trade")} tooltip={t("Average trade volume by holders")}>
+          {data.avgTradePercent.toFixed(1)}%
+        </MetricsField>
       </div>
 
       {/* Vertical Divider */}
@@ -158,8 +167,6 @@ const DONUT_RADIUS = 72
 const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS
 
 const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
-  const { t } = useTranslation()
-
   // Convert API data to tier array
   const tiers = useMemo((): TierData[] => {
     if (!data || !("breakdown" in data)) return []
@@ -171,7 +178,7 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
     }))
   }, [data])
 
-  // Find the highest tier with holders (whale > shark > dolphin > fish > crab > shrimp)
+  // Find the highest tier with holders (whale > dolphin > fish > shrimp)
   const highestTier = useMemo((): TierKey => {
     for (const key of TIER_ORDER) {
       const tier = tiers.find((t) => t.key === key)
@@ -293,7 +300,7 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
       {/* Center content overlay - positioned in the center of the SVG */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
         <span className="l text-white text-xs">
-          {t(`{{tier}} Accounts`, { tier: TIER_CONFIG[activeTier].label })}
+          <TierLabel tier={activeTier} />
         </span>
         <span className="font-medium text-lg text-white leading-[1.2]">
           {formatCompactNumber(activeTierData.count)}
@@ -309,16 +316,42 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   )
 }
 
+const TierLabel: FC<{ tier: TierKey }> = ({ tier }) => {
+  const { t } = useTranslation()
+  return useMemo(() => {
+    switch (tier) {
+      case "whale":
+        return t("Whales")
+      case "dolphin":
+        return t("Dolphins")
+      case "fish":
+        return t("Fishs")
+      case "shrimp":
+        return t("Shrimps")
+    }
+  }, [tier, t])
+}
+
 const MetricsField: FC<
   PropsWithChildren<{
     label: ReactNode
+    tooltip?: ReactNode
     extra?: ReactNode
     className?: string
     extraClassName?: string
   }>
-> = ({ label, extra, children, className, extraClassName }) => (
+> = ({ label, tooltip, extra, children, className, extraClassName }) => (
   <div className={cn("flex flex-col gap-2")}>
-    <div className="text-body-inactive text-xs">{label}</div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-1 text-body-inactive text-xs">
+          {label}
+          {!!tooltip && <InfoIcon />}
+        </div>
+      </TooltipTrigger>
+      {!!tooltip && <TooltipContent>{tooltip}</TooltipContent>}
+    </Tooltip>
+
     <div className={cn("text-md", className)}>{children}</div>
     {!!extra && <div className={cn("text-body-inactive text-xs", extraClassName)}>{extra}</div>}
   </div>

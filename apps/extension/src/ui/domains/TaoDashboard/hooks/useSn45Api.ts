@@ -171,6 +171,24 @@ export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
   })
 }
 
+// Hook to get subnet trade flow metrics
+export const useSubnetTradeFlow = (
+  netuid: number | null | undefined,
+  period: "1d" | "1w" | "1m" = "1d"
+) => {
+  return useQuery({
+    queryKey: ["sn45", "subnetTradeFlow", netuid, period],
+    queryFn: async () => {
+      if (!netuid) return null
+      const response = await sn45Api.v1.getSubnetTradeFlow(String(netuid), { period })
+      return response.data
+    },
+    enabled: !!netuid,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  })
+}
+
 // Hook to get subnet flow summary (pre-computed header data)
 export const useSubnetFlowSummary = (netuid: number | null | undefined, days: number) => {
   return useQuery({
