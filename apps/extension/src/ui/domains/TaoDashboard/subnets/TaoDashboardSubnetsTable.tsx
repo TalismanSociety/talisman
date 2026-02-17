@@ -91,8 +91,8 @@ const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ senti
     <span
       className={cn(
         "rounded px-4 py-1 text-[10px]",
-        sentiment === "bullish" && "bg-green/20 text-green",
-        sentiment === "bearish" && "bg-red-500/20 text-red-500"
+        sentiment === "bullish" && "bg-buy/20 text-buy",
+        sentiment === "bearish" && "bg-sell/20 text-sell"
       )}
     >
       {sentiment === "bullish" ? "Bullish" : "Bearish"}
@@ -111,8 +111,8 @@ const PriceChange: FC<{ change: number | undefined }> = ({ change }) => {
     <span
       className={cn(
         "flex items-center gap-1 whitespace-nowrap",
-        isPositive && "text-green",
-        isNegative && "text-red-500",
+        isPositive && "text-buy",
+        isNegative && "text-sell",
         !isPositive && !isNegative && "text-body-secondary"
       )}
     >
