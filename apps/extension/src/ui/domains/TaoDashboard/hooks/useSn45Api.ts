@@ -1,22 +1,7 @@
-import { encodeAddressSs58 } from "@talismn/crypto"
-import { fromHex } from "@talismn/scale"
-import { isHexString } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Sn45Api } from "extension-core"
 import { SN45_API_BASE_URL } from "extension-shared"
 import { useMemo } from "react"
-
-// Convert hex public key to SS58 address with prefix 42 (Polkadot generic)
-const hexToSs58 = (hex: string | null | undefined): string | null | undefined => {
-  if (!hex) return hex
-  if (!isHexString(hex)) return hex // Already SS58 or other format
-  try {
-    const publicKey = fromHex(hex)
-    return encodeAddressSs58(publicKey, 42)
-  } catch {
-    return hex // Return original if conversion fails
-  }
-}
 
 // Create a singleton API instance
 const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
@@ -120,10 +105,7 @@ export const useWhaleMovements = (minTao = 50, limit = 20) => {
         minTao: String(minTao),
         limit: String(limit),
       })
-      return response.data.map((item) => ({
-        ...item,
-        coldkey: hexToSs58(item.coldkey),
-      }))
+      return response.data
     },
     refetchInterval: 60_000,
     staleTime: 30_000,
@@ -167,11 +149,7 @@ export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
     queryFn: async () => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetStakeEvents(String(netuid))
-      return response.data.map((item) => ({
-        ...item,
-        coldkey: hexToSs58(item.coldkey)!,
-        hotkey: hexToSs58(item.hotkey)!,
-      }))
+      return response.data
     },
     enabled: !!netuid,
     refetchInterval: 60_000,
@@ -220,10 +198,7 @@ export const useSubnetPositions = (netuid: number | null | undefined) => {
     queryFn: async () => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetPositions(String(netuid))
-      return response.data.map((item) => ({
-        ...item,
-        coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
-      }))
+      return response.data
     },
     enabled: !!netuid,
     refetchInterval: 120_000,
@@ -344,64 +319,7 @@ export const useSubnetEvents = (netuid: number | null | undefined, limit = 250) 
     queryFn: async () => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetEvents(String(netuid), { limit: String(limit) })
-      const data = response.data
-
-      // Convert all coldkey/hotkey fields from hex to SS58
-      return {
-        liquidityEvents: data.liquidityEvents.map((e) => ({
-          ...e,
-          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
-        })),
-        stakeSwapsIn: data.stakeSwapsIn.map((e) => ({
-          ...e,
-          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-        stakeSwapsOut: data.stakeSwapsOut.map((e) => ({
-          ...e,
-          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-        stakeTransfersIn: data.stakeTransfersIn.map((e) => ({
-          ...e,
-          originColdkey: hexToSs58(e.originColdkey) ?? e.originColdkey,
-          destinationColdkey: hexToSs58(e.destinationColdkey) ?? e.destinationColdkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-        stakeTransfersOut: data.stakeTransfersOut.map((e) => ({
-          ...e,
-          originColdkey: hexToSs58(e.originColdkey) ?? e.originColdkey,
-          destinationColdkey: hexToSs58(e.destinationColdkey) ?? e.destinationColdkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-        stakeMovesIn: data.stakeMovesIn.map((e) => ({
-          ...e,
-          sourceHotkey: hexToSs58(e.sourceHotkey) ?? e.sourceHotkey,
-          destHotkey: hexToSs58(e.destHotkey) ?? e.destHotkey,
-          destColdkey: hexToSs58(e.destColdkey) ?? e.destColdkey,
-        })),
-        stakeMovesOut: data.stakeMovesOut.map((e) => ({
-          ...e,
-          sourceHotkey: hexToSs58(e.sourceHotkey) ?? e.sourceHotkey,
-          destHotkey: hexToSs58(e.destHotkey) ?? e.destHotkey,
-          destColdkey: hexToSs58(e.destColdkey) ?? e.destColdkey,
-        })),
-        alphaBurns: data.alphaBurns.map((e) => ({
-          ...e,
-          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-        alphaRecycles: data.alphaRecycles.map((e) => ({
-          ...e,
-          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-        autoStakeAdds: data.autoStakeAdds.map((e) => ({
-          ...e,
-          coldkey: hexToSs58(e.coldkey) ?? e.coldkey,
-          hotkey: hexToSs58(e.hotkey) ?? e.hotkey,
-        })),
-      }
+      return response.data
     },
     enabled: !!netuid,
     refetchInterval: 60_000,
@@ -506,14 +424,7 @@ export const useAllWhaleTransactions = (options?: {
           netuid: netuid !== undefined ? String(netuid) : undefined,
         })
         // Convert hex addresses to SS58
-        return response.data.map((item) => ({
-          ...item,
-          coldkey: hexToSs58(item.coldkey) ?? item.coldkey,
-          hotkey: hexToSs58(item.hotkey) ?? item.hotkey,
-          destinationColdkey: item.destinationColdkey
-            ? (hexToSs58(item.destinationColdkey) ?? item.destinationColdkey)
-            : null,
-        }))
+        return response.data
       } catch {
         return []
       }
