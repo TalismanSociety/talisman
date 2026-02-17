@@ -5,8 +5,8 @@ import type { WalletTransactionDot, WalletTransactionInfo } from "extension-core
 import { useMemo } from "react"
 
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
+import type { LocalTransactionEntry, TransactionEntry } from "../../shared/types"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
-import type { LocalTransactionEntry, TransactionEntry } from "./types"
 
 export const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) => {
   const accounts = useAccounts("owned")

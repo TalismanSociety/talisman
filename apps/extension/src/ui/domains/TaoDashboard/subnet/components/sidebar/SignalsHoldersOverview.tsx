@@ -4,9 +4,9 @@
 
 import { cn } from "@talismn/util"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { formatCompactNumber, SectionTitleBar, useDaysFromPeriod } from "./shared"
 
 // Tier configuration with colors matching the design
@@ -39,7 +39,12 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div>
-      <SectionTitleBar label={t("Holders Overview")} period={period} onPeriodChange={setPeriod} />
+      <SectionTitleBar
+        label={t("Holders Overview")}
+        tooltip={<InfoTooltip />}
+        period={period}
+        onPeriodChange={setPeriod}
+      />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
@@ -56,6 +61,20 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
   )
 }
 
+const InfoTooltip = () => {
+  const { t } = useTranslation()
+  return (
+    <div className="leading-paragraph">
+      <Trans t={t}>
+        <ul className="list-outside list-disc pl-8">
+          <li>Total Holders: Total subnet alpha holders</li>
+          <li>Whale Concentration: % of alpha held by top 10 holders</li>
+          <li>Whale Dominance: % of trade volume by top 5 holders</li>
+        </ul>
+      </Trans>
+    </div>
+  )
+}
 type SubnetHoldersData = NonNullable<ReturnType<typeof useSubnetHolders>["data"]>
 
 const HoldersOverviewSkeleton = () => (

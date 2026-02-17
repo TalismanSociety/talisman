@@ -3,7 +3,7 @@ import { ArrowRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
-import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   type FC,
   Fragment,

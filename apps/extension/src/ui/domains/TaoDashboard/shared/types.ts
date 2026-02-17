@@ -31,3 +31,7 @@ export type IndexedTransactionEntry = Prettify<
 >
 
 export type TransactionEntry = LocalTransactionEntry | IndexedTransactionEntry
+
+export type TimePeriod = "1D" | "1W" | "1M"
+
+export type LeaderboardPeriod = "1d" | "1w" | "1m"

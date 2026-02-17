@@ -15,8 +15,8 @@ import { dump as convertToYaml } from "js-yaml"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
+import type { TransactionEntry } from "../../shared/types"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
-import type { TransactionEntry } from "./types"
 import {
   type MatchedCall,
   type StakingOperationType,

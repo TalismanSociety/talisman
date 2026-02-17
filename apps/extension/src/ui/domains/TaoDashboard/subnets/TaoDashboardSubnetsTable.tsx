@@ -6,6 +6,7 @@ import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from 
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { TokenLogo } from "../../Asset/TokenLogo"
+import type { TimePeriod } from "../shared/types"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import {
   type TaoDashboardSubnet,
@@ -48,12 +49,6 @@ const formatTaoAmount = (num: number) => {
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K τ`
   return `${num.toFixed(0)} τ`
 }
-
-// Format balance with commas
-// const formatBalance = (num: number) => {
-//   if (num === 0) return "0"
-//   return num.toLocaleString("en-US", { maximumFractionDigits: 0 })
-// }
 
 // Mini sparkline chart component
 const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isPositive }) => {
@@ -123,8 +118,11 @@ const PriceChange: FC<{ change: number | undefined }> = ({ change }) => {
   )
 }
 
-export const TaoDashboardSubnetsTable: FC<{ search?: string }> = ({ search = "" }) => {
-  const { subnets, isLoading, loading, errors } = useTaoDashboardSubnets()
+export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod }> = ({
+  search = "",
+  period,
+}) => {
+  const { subnets, isLoading, loading, errors } = useTaoDashboardSubnets(period)
   const [sortSetting, setSortSetting] = useState<SortSetting>(DEFAULT_SORT_SETTING)
 
   const filteredSubnets = useMemo(() => {

@@ -14,14 +14,14 @@ import { useTranslation } from "react-i18next"
 import { AccountNameOrAddress } from "../../shared/AccountNameOrAddress"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { TransactionAvatar } from "../../shared/TransactionAvatar"
+import type { TransactionEntry } from "../../shared/types"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
-import type { TransactionEntry } from "./types"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
 
 // Re-export types for backward compatibility
-export type { IndexedTransactionEntry, TransactionEntry } from "./types"
+export type { IndexedTransactionEntry, TransactionEntry } from "../../shared/types"
 
 type Tab = "my" | "all"
 

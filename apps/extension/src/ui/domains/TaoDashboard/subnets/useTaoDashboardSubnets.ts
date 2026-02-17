@@ -11,57 +11,11 @@ import {
   useSubnetLeaderboard,
   useTaoPrice,
 } from "../hooks/useSn45Api"
+import type { TimePeriod } from "../shared/types"
+import { getLeaderboardPeriod } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
 type SubnetSentiment = "bullish" | "bearish" | null
-
-// // Placeholder data for user balance (needs wallet integration) and chart data
-// const PLACEHOLDER_BALANCE: Record<
-//   number,
-//   {
-//     balance: number
-//     balanceUsd: number
-//     sentiment: "bullish" | "bearish" | null
-//     chartData: number[]
-//   }
-// > = {
-//   1: {
-//     balance: 12450,
-//     balanceUsd: 5892,
-//     sentiment: "bullish",
-//     chartData: [60, 55, 50, 45, 50, 45, 40],
-//   },
-//   3: {
-//     balance: 8200,
-//     balanceUsd: 101598,
-//     sentiment: null,
-//     chartData: [40, 45, 50, 55, 60, 65, 70],
-//   },
-//   6: {
-//     balance: 45000,
-//     balanceUsd: 123750,
-//     sentiment: null,
-//     chartData: [40, 45, 50, 55, 50, 55, 60],
-//   },
-//   8: {
-//     balance: 2100,
-//     balanceUsd: 44226,
-//     sentiment: "bearish",
-//     chartData: [40, 45, 55, 60, 65, 70, 75],
-//   },
-// }
-
-// // Default placeholder for balance/chart data
-// const getPlaceholderBalance = (netuid: number) => {
-//   return (
-//     PLACEHOLDER_BALANCE[netuid] ?? {
-//       balance: 0,
-//       balanceUsd: 0,
-//       sentiment: null,
-//       chartData: Array.from({ length: 7 }, () => Math.random() * 100),
-//     }
-//   )
-// }
 
 // Convert bigint string to number with decimals (values are in rao, 1e9)
 const parseRaoToNumber = (value: string | null | undefined): number => {
@@ -69,7 +23,12 @@ const parseRaoToNumber = (value: string | null | undefined): number => {
   return Number(BigInt(value)) / 1e9
 }
 
-export const useTaoDashboardSubnets = () => {
+export const useTaoDashboardSubnets = (period: TimePeriod) => {
+  const leaderboardPeriod = useMemo<"1d" | "1w" | "1m">(
+    () => getLeaderboardPeriod(period),
+    [period]
+  )
+
   const allTokens = useTokens()
   const {
     data: economicsData,
@@ -80,7 +39,7 @@ export const useTaoDashboardSubnets = () => {
     data: leaderboardData,
     isLoading: isLeaderboardLoading,
     isError: isLeaderboardError,
-  } = useSubnetLeaderboard("1d")
+  } = useSubnetLeaderboard(leaderboardPeriod)
   const { data: taoPrice, isLoading: isTaoPriceLoading, isError: isTaoPriceError } = useTaoPrice()
 
   const { selectedAccounts } = usePortfolioNavigation()

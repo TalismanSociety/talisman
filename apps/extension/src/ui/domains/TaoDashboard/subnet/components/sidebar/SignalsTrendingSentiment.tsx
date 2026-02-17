@@ -4,10 +4,10 @@ import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useSubnetCombinedScore } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useSentimentLabel } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
-import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { SectionTitleBar, useDaysFromPeriod } from "./shared"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
@@ -19,7 +19,12 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
 
   return (
     <div>
-      <SectionTitleBar label={t("Trending sentiment")} period={period} onPeriodChange={setPeriod} />
+      <SectionTitleBar
+        label={t("Trending sentiment")}
+        tooltip={<InfoTooltip />}
+        period={period}
+        onPeriodChange={setPeriod}
+      />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
@@ -32,6 +37,27 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+const InfoTooltip = () => {
+  const { t } = useTranslation()
+  return (
+    <div className="leading-paragraph">
+      <Trans t={t}>
+        <div>Combined Score is computed from:</div>
+        <ul className="list-outside list-disc pl-8">
+          <li>
+            Tao Flow Change (taoFlow): Acceleration/decelaration of Tao Flow compared to recent
+            average
+          </li>
+          <li>
+            Volume Change (volVel): Volume expansion or contraction compared to recent average
+          </li>
+          <li>Sentiment Change (sentVel): Shift in social sentiment compared to baseline</li>
+        </ul>
+      </Trans>
     </div>
   )
 }

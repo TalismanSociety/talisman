@@ -1,6 +1,6 @@
 import { cn } from "@talismn/util"
 import { useSubnetStakeEvents } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   type CSSProperties,
   type FC,
@@ -9,7 +9,7 @@ import {
   useMemo,
   useState,
 } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { formatNumber, SectionTitleBar } from "./shared"
 
 export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
@@ -19,7 +19,12 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div>
-      <SectionTitleBar label={t("Trade Flow")} period={period} onPeriodChange={setPeriod} />
+      <SectionTitleBar
+        label={t("Trade Flow")}
+        tooltip={<InfoTooltip />}
+        period={period}
+        onPeriodChange={setPeriod}
+      />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
@@ -28,6 +33,21 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
           <StakeEvents period={period} stakeEvents={stakeEvents} />
         )}
       </div>
+    </div>
+  )
+}
+
+const InfoTooltip = () => {
+  const { t } = useTranslation()
+  return (
+    <div className="leading-paragraph">
+      <Trans t={t}>
+        <ul className="list-outside list-disc pl-8">
+          <li>Momentum: % change in price over the period</li>
+          <li>Accumulation: % of activity coming from buyers</li>
+          <li>Trade Velocity: How active trading is relative to baseline</li>
+        </ul>
+      </Trans>
     </div>
   )
 }

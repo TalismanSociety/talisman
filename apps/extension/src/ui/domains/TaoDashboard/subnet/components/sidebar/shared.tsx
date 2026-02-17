@@ -1,17 +1,33 @@
-import {
-  TaoDashboardPeriodTabs,
-  type TimePeriod,
-} from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import { InfoIcon } from "@talismn/icons"
+import { TaoDashboardPeriodTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { getDaysPerPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import { type FC, type ReactNode, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const SectionTitleBar: FC<{
   label: ReactNode
   period: TimePeriod
+  tooltip?: ReactNode
   onPeriodChange: (period: TimePeriod) => void
-}> = ({ label, period, onPeriodChange }) => {
+}> = ({ label, period, tooltip, onPeriodChange }) => {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h3 className="font-medium text-md text-white">{label}</h3>
+      <h3 className="flex items-center gap-2 font-medium text-md text-white">
+        <span>{label}</span>
+        {!!tooltip && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <InfoIcon className="size-[0.9em]" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="max-w-lg">{tooltip}</div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </h3>
       <TaoDashboardPeriodTabs selected={period} onSelect={onPeriodChange} />
     </div>
   )
@@ -51,17 +67,6 @@ export const formatTimeAgo = (timestamp: string) => {
   return `${diffDays}d ago`
 }
 
-const daysFromPeriod = (period: TimePeriod): number => {
-  switch (period) {
-    case "1D":
-      return 1
-    case "1W":
-      return 7
-    case "1M":
-      return 30
-  }
-}
-
 export const useDaysFromPeriod = (period: TimePeriod): number => {
-  return useMemo(() => daysFromPeriod(period), [period])
+  return useMemo(() => getDaysPerPeriod(period), [period])
 }

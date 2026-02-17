@@ -1,19 +1,7 @@
 import { cn } from "@talismn/util"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-export type TimePeriod = "1D" | "1W" | "1M"
-
-export const getDaysPerPeriod = (period: TimePeriod): number => {
-  switch (period) {
-    case "1D":
-      return 1
-    case "1W":
-      return 7
-    case "1M":
-      return 30
-  }
-}
+import type { TimePeriod } from "./types"
 
 interface PeriodTabConfig {
   value: TimePeriod
