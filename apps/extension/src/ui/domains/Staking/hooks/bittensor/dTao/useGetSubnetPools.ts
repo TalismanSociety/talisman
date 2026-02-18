@@ -1,16 +1,15 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
-import type { SubnetSummary } from "./types"
 
-export const useGetSubnets = () => {
-  return useQuery<SubnetSummary[]>({
-    queryKey: ["subnets"],
+export function useGetSubnetPools() {
+  return useQuery({
+    queryKey: ["subnetPools"],
     queryFn: async ({ signal }) => {
       try {
-        return (await taoDataApi.subnets.listSubnets({ signal })).data
+        return (await taoDataApi.pools.listPools({ signal })).data
       } catch (error) {
-        throw toTaoDataApiError(error, "Failed to load subnets")
+        throw toTaoDataApiError(error, "Failed to load subnet pools")
       }
     },
     retry: shouldRetryTaoDataApiError,

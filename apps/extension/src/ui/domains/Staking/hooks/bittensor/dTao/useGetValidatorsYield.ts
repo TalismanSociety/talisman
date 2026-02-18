@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
-import type { SubnetSummary } from "./types"
+import type { ValidatorYield } from "./types"
 
-export const useGetSubnets = () => {
-  return useQuery<SubnetSummary[]>({
-    queryKey: ["subnets"],
+export function useGetValidatorsYield({ netuid }: { netuid: number }) {
+  return useQuery<ValidatorYield[]>({
+    queryKey: ["validatorsYield", netuid],
     queryFn: async ({ signal }) => {
       try {
-        return (await taoDataApi.subnets.listSubnets({ signal })).data
+        return (await taoDataApi.subnets.listSubnetValidators(String(netuid), { signal })).data
       } catch (error) {
-        throw toTaoDataApiError(error, "Failed to load subnets")
+        throw toTaoDataApiError(error, "Failed to load subnet validators")
       }
     },
     retry: shouldRetryTaoDataApiError,

@@ -1,60 +1,51 @@
 import { keepAlive, type Loadable } from "@talismn/util"
-import { log, TAOSTATS_BASE_PATH } from "extension-shared"
+import { log } from "extension-shared"
 import { Observable, shareReplay, startWith } from "rxjs"
 
 import { getBlobStore } from "../../db"
+import { getTaoDataApi } from "./tao-data/exports"
 import type { BittensorValidator } from "./types"
 
 const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators")
 
-const MAX_PAGE_SIZE = 100
 const REFRESH_INTERVAL = 600_000 // 10 mins
+const taoDataApi = getTaoDataApi()
 
 let lastUpdatedAt = 0
 
-type Pagination = {
-  current_page: number
-  per_page: number
-  total_items: number
-  total_pages: number
-  next_page: number | null
-  prev_page: number | null
-}
-
-type BittensorValidatorsData = {
-  pagination: Pagination
-  data: BittensorValidator[]
-}
-
-const fetchBittensorValidatorsPage = async (
-  page: number = 1,
-  signal?: AbortSignal
-): Promise<BittensorValidatorsData> => {
-  const res = await fetch(
-    `${TAOSTATS_BASE_PATH}/api/dtao/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal,
-    }
-  )
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return await res.json()
-}
-
 const fetchAllBittensorValidators = async (signal?: AbortSignal): Promise<BittensorValidator[]> => {
-  const allValidators: BittensorValidator[] = []
-  let nextPage: number | null = 1
+  const response = await taoDataApi.validators.listValidators({ signal })
 
-  while (nextPage !== null) {
-    const pageData = await fetchBittensorValidatorsPage(nextPage, signal)
-    allValidators.push(...pageData.data)
-    nextPage = pageData.pagination.next_page
-  }
-
-  return allValidators
+  return response.data.map((validator) => ({
+    hotkey: {
+      ss58: validator.hotkey,
+      hex: "",
+    },
+    coldkey: {
+      ss58: validator.coldkey,
+      hex: "",
+    },
+    name: validator.name ?? "",
+    block_number: 0,
+    timestamp: "",
+    created_on_date: "",
+    rank: validator.rank,
+    root_rank: 0,
+    alpha_rank: 0,
+    active_subnets: validator.active_subnets,
+    global_nominators: validator.global_nominators,
+    global_nominators_24_hr_change: 0,
+    take: "0",
+    global_weighted_stake: validator.global_weighted_stake,
+    global_weighted_stake_24_hr_change: "0",
+    global_alpha_stake_as_tao: "0",
+    root_stake: "0",
+    weighted_root_stake: "0",
+    dominance: "0",
+    dominance_24_hr_change: "0",
+    nominator_return_per_day: "0",
+    validator_return_per_day: "0",
+  }))
 }
 
 export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
@@ -76,7 +67,6 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
 
       log.debug("Refreshing bittensor validators")
 
-      // Fetch all pages first, then emit once complete
       const newData = await fetchAllBittensorValidators(controller.signal)
 
       lastUpdatedAt = Date.now()
