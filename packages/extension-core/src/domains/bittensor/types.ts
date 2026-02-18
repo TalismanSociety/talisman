@@ -2,7 +2,6 @@ import type { Loadable } from "@talismn/util"
 
 export type BittensorValidator = {
   hotkey: string
-  coldkey: string
   name: string | null
   rank: number
   active_subnets: number

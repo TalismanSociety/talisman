@@ -301,21 +301,6 @@ export class TaoDataApi<
           market_cap: number | string;
           /** TAO trading volume over the last 24 hours. */
           tao_volume_24_hr: number | string;
-          /** Number of unique sellers in the last 24 hours. */
-          sellers_24h: number | string;
-          /** Seven-day price series ordered from oldest to newest. */
-          seven_day_prices: (
-            | number
-            | string
-            | {
-                /** Block height for the historical price sample. */
-                block_number: number;
-                /** ISO timestamp for the historical price sample. */
-                timestamp: string;
-                /** Pool price at the sample timestamp. */
-                price: number | string;
-              }
-          )[];
         }[],
         | {
             error: {
@@ -425,8 +410,6 @@ export class TaoDataApi<
         {
           /** Validator hotkey in ss58 format. */
           hotkey: string;
-          /** Validator coldkey in ss58 format. */
-          coldkey: string;
           /** Validator display name when available. */
           name: string | null;
           /** Validator global weighted stake value. */
