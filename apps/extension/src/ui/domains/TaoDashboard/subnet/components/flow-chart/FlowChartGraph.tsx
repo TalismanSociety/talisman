@@ -1,10 +1,27 @@
-import { AreaSeries, createChart, LineSeries } from "lightweight-charts"
+import { AreaSeries, createChart, LineSeries, type Time } from "lightweight-charts"
 import type { FC } from "react"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FlowChartToolbar } from "./FlowChartToolbar"
 import { formatCompactNumber } from "./formatters"
 import { useFlowGraphData } from "./useFlowChartData"
+
+const chartTimeToDate = (time: Time): Date => {
+  if (typeof time === "number") return new Date(time * 1000)
+  if (typeof time === "string") return new Date(time)
+  return new Date(time.year, time.month - 1, time.day)
+}
+
+const formatLocalChartTime = (time: Time): string => {
+  const date = chartTimeToDate(time)
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
 
 export const FlowChartGraph: FC<{
   netuid: number
@@ -69,6 +86,10 @@ const FlowChartGraphContent: FC<{
         mode: 1,
         vertLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
         horzLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
+      },
+      localization: {
+        locale: Intl.DateTimeFormat().resolvedOptions().locale,
+        timeFormatter: formatLocalChartTime,
       },
       handleScroll: false,
       handleScale: false,

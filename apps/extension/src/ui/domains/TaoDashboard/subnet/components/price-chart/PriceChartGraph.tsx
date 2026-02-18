@@ -9,6 +9,7 @@ import {
   type ISeriesApi,
   LineSeries,
   type SeriesType,
+  type Time,
   type UTCTimestamp,
 } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
@@ -52,6 +53,23 @@ const rsiAutoscaleProvider = () => ({
   priceRange: { minValue: 0, maxValue: 100 },
 })
 
+const chartTimeToDate = (time: Time): Date => {
+  if (typeof time === "number") return new Date(time * 1000)
+  if (typeof time === "string") return new Date(time)
+  return new Date(time.year, time.month - 1, time.day)
+}
+
+const formatLocalChartTime = (time: Time): string => {
+  const date = chartTimeToDate(time)
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Chart configuration
 // ────────────────────────────────────────────────────────────────────────────
@@ -91,6 +109,10 @@ const createChartOptions = (width: number, height: number) =>
         style: 3,
         labelBackgroundColor: CHART_COLORS.gridLine,
       },
+    },
+    localization: {
+      locale: Intl.DateTimeFormat().resolvedOptions().locale,
+      timeFormatter: formatLocalChartTime,
     },
   }) as const
 
