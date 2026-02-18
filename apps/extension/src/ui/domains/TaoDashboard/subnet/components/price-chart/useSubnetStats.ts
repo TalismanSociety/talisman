@@ -14,6 +14,13 @@ export interface SubnetStatsData {
   dailyEmissions: number | null
 }
 
+const parseRaoToTao = (value: string | null | undefined): number | null => {
+  if (!value) return null
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed)) return null
+  return parsed / 1e9
+}
+
 export function useSubnetStats(netuid: number) {
   const {
     data: taoPrice,
@@ -48,11 +55,15 @@ export function useSubnetStats(netuid: number) {
       ? parseFloat(currentSubnet.price_change_1_day)
       : null
 
-    const marketCap = currentSubnet?.market_cap ? parseFloat(currentSubnet.market_cap) : null
-    const volume24h = currentSubnet?.tao_volume_24_hr
-      ? parseFloat(currentSubnet.tao_volume_24_hr) * (taoUsdPrice || 0)
-      : null
-    const totalAlpha = currentSubnet?.total_alpha ? parseFloat(currentSubnet.total_alpha) : null
+    const marketCapTao = parseRaoToTao(currentSubnet?.market_cap)
+    const marketCap =
+      marketCapTao !== null && taoUsdPrice !== null ? marketCapTao * taoUsdPrice : null
+
+    const volume24hTao = parseRaoToTao(currentSubnet?.tao_volume_24_hr)
+    const volume24h =
+      volume24hTao !== null && taoUsdPrice !== null ? volume24hTao * taoUsdPrice : null
+
+    const totalAlpha = parseRaoToTao(currentSubnet?.total_alpha)
     const fdv = totalAlpha && tokenPriceUsd ? totalAlpha * tokenPriceUsd : null
 
     const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
