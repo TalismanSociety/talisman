@@ -89,8 +89,8 @@ export const BittensorClaimSubnetSelect = () => {
   const displayedSubnets = useMemo(() => {
     const lowerSearch = deferredSearch.toLowerCase()
     const filtered = sortedSubnets.filter((subnet) => {
-      const { netuid, subnet_name, symbol } = subnet
-      const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
+      const { netuid, name, symbol } = subnet
+      const subnetName = `${netuid} ${name} ${symbol}`.toLowerCase()
       return subnetName.includes(lowerSearch)
     })
 

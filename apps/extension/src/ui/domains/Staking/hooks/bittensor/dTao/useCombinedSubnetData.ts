@@ -4,7 +4,6 @@ import { assign, keyBy } from "lodash-es"
 import { useEffect, useMemo, useRef } from "react"
 
 import type { SubnetData } from "./types"
-import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
 import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
 import { useGetSubnets } from "./useGetInfiniteSubnets"
 
@@ -24,7 +23,6 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
           (t): SubnetData => ({
             netuid: t.netuid,
             name: t.subnetName,
-            subnet_name: t.subnetName,
             symbol: t.symbol,
           })
         ),
@@ -32,14 +30,6 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
   )
 
   const { data: subnets, isLoading: isSubnetsLoading, isError: isSubnetsError } = useGetSubnets()
-  const {
-    data: subnetDescriptionsData,
-    hasNextPage: hasSubnetDescriptionsNextPage,
-    isFetchingNextPage: isSubnetDescriptionsFetchingNextPage,
-    isError: isSubnetDescriptionsError,
-    isLoading: isSubnetDescriptionsLoading,
-    fetchNextPage: fetchSubnetDescriptionsNextPage,
-  } = useGetInfiniteSubnetIdentities()
 
   const {
     data: subnetPoolsData,
@@ -51,16 +41,6 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
   } = useGetInfiniteSubnetPools()
 
   useEffect(() => {
-    if (hasSubnetDescriptionsNextPage && !isSubnetDescriptionsFetchingNextPage) {
-      fetchSubnetDescriptionsNextPage()
-    }
-  }, [
-    hasSubnetDescriptionsNextPage,
-    isSubnetDescriptionsFetchingNextPage,
-    fetchSubnetDescriptionsNextPage,
-  ])
-
-  useEffect(() => {
     if (hasSubnetPoolsNextPage && !isSubnetPoolsFetchingNextPage) {
       fetchSubnetPoolsNextPage()
     }
@@ -70,23 +50,6 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
   // During pagination, intermediate states would produce partial maps (missing entries),
   // causing consumers to see null fields. useStableMap keeps the previous map
   // until all pages are loaded or the new map has more entries.
-  const rawDescriptionsMap = useMemo(
-    () =>
-      keyBy(
-        subnetDescriptionsData?.pages
-          .flatMap((page) => page.data)
-          .map((desc) => ({ ...desc, descriptionName: desc.subnet_name })) ?? [],
-        (desc) => desc.netuid
-      ),
-    [subnetDescriptionsData?.pages]
-  )
-  const descriptionsMap = useStableMap(
-    rawDescriptionsMap,
-    !isSubnetDescriptionsLoading &&
-      !hasSubnetDescriptionsNextPage &&
-      !isSubnetDescriptionsFetchingNextPage
-  )
-
   const rawPoolsMap = useMemo(
     () =>
       keyBy(subnetPoolsData?.pages.flatMap((page) => page.data) ?? [], (pool) =>
@@ -108,19 +71,18 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
           assign(
             {},
             tokenSubnet,
-            descriptionsMap[Number(tokenSubnet.netuid)] || {},
             poolsMap[Number(tokenSubnet.netuid)] || {},
             subnetsMap[Number(tokenSubnet.netuid)] || {}
           )
       )
       .sort((a, b) => (Number(a.netuid) || 0) - (Number(b.netuid) || 0))
-  }, [alphaTokenSubnets, descriptionsMap, poolsMap, subnetsMap])
+  }, [alphaTokenSubnets, poolsMap, subnetsMap])
 
   return {
     subnetData,
-    isError: isSubnetDescriptionsError || isSubnetPoolsError,
-    isLoading: isSubnetDescriptionsLoading || isSubnetPoolsLoading,
-    isFetchingNextPage: isSubnetDescriptionsFetchingNextPage || isSubnetPoolsFetchingNextPage,
+    isError: isSubnetPoolsError,
+    isLoading: isSubnetPoolsLoading,
+    isFetchingNextPage: isSubnetPoolsFetchingNextPage,
     isSubnetsLoading,
     isSubnetsError,
   }

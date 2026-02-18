@@ -45,27 +45,7 @@ export type SubnetApiResponse = {
   pagination: Pagination
   data: SubnetPool[]
 }
-type SubnetIdentity = {
-  netuid: number
-  subnet_name: string
-  github_repo: string | null
-  subnet_contact: string | null
-  subnet_url: string | null
-  discord: string | null
-  description: string | null
-  additional: string | null
-}
-
-export type SubnetApiDescriptionsResponse = {
-  pagination: Pagination
-  data: SubnetIdentity[]
-}
-
-export type SubnetData = Partial<SubnetIdentity> &
-  Partial<SubnetPool> &
-  Partial<Subnet> & {
-    descriptionName?: string
-  }
+export type SubnetData = Partial<SubnetPool> & Partial<Subnet>
 
 export type ValidatorYield = {
   hotkey: {
