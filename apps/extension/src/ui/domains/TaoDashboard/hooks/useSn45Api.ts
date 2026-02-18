@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { Sn45Api } from "extension-core"
-import { SN45_API_BASE_URL } from "extension-shared"
+import { getSn45Api } from "extension-core"
 import { useMemo } from "react"
 
 // Create a singleton API instance
-const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
+const sn45Api = getSn45Api()
 
 export type SubnetLeaderboardResponse = Awaited<
   ReturnType<typeof sn45Api.v1.getSubnetLeaderboard>

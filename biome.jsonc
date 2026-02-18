@@ -112,7 +112,7 @@
       // Auto-generated API client - skip linting and formatting
       "includes": [
         "packages/extension-core/src/domains/bittensor/sn45/Sn45Api.ts",
-        "packages/extension-core/src/domains/bittensor/tao/TaoDataApi.ts"
+        "packages/extension-core/src/domains/bittensor/tao-data/TaoDataApi.ts"
       ],
       "linter": {
         "enabled": false

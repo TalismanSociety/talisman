@@ -1,6 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
-import { Sn45Api } from "extension-core"
-import { SN45_API_BASE_URL } from "extension-shared"
+import { getSn45Api } from "extension-core"
 import { useCallback, useMemo } from "react"
 
 import type { OhlcvBar, OhlcvResolution } from "./types"
@@ -50,8 +49,7 @@ export interface UseOhlcvDataReturn {
 
 // ---------------------------------------------------------------------------
 // Singleton API client (shared with useSn45Api)
-// ---------------------------------------------------------------------------
-const sn45Api = new Sn45Api({ baseUrl: SN45_API_BASE_URL })
+const sn45Api = getSn45Api()
 
 // ---------------------------------------------------------------------------
 // Hook implementation
