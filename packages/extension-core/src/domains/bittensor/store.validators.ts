@@ -6,7 +6,7 @@ import { getBlobStore } from "../../db"
 import { getTaoDataApi } from "./tao-data/exports"
 import type { BittensorValidator } from "./types"
 
-const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators")
+const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators:v2")
 
 const REFRESH_INTERVAL = 600_000 // 10 mins
 const taoDataApi = getTaoDataApi()
@@ -16,36 +16,7 @@ let lastUpdatedAt = 0
 const fetchAllBittensorValidators = async (signal?: AbortSignal): Promise<BittensorValidator[]> => {
   const response = await taoDataApi.validators.listValidators({ signal })
 
-  return response.data.map((validator) => ({
-    hotkey: {
-      ss58: validator.hotkey,
-      hex: "",
-    },
-    coldkey: {
-      ss58: validator.coldkey,
-      hex: "",
-    },
-    name: validator.name ?? "",
-    block_number: 0,
-    timestamp: "",
-    created_on_date: "",
-    rank: validator.rank,
-    root_rank: 0,
-    alpha_rank: 0,
-    active_subnets: validator.active_subnets,
-    global_nominators: validator.global_nominators,
-    global_nominators_24_hr_change: 0,
-    take: "0",
-    global_weighted_stake: validator.global_weighted_stake,
-    global_weighted_stake_24_hr_change: "0",
-    global_alpha_stake_as_tao: "0",
-    root_stake: "0",
-    weighted_root_stake: "0",
-    dominance: "0",
-    dominance_24_hr_change: "0",
-    nominator_return_per_day: "0",
-    validator_return_per_day: "0",
-  }))
+  return response.data
 }
 
 export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {

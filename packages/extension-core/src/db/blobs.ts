@@ -13,7 +13,7 @@ export type DbBlobId =
   | "yieldxyz-products"
   | "yieldxyz-providers"
   | "dynamic-tokens"
-  | "bittensor-validators"
+  | "bittensor-validators:v2"
 
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 

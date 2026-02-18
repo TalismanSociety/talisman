@@ -19,10 +19,10 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
 
     const combined: BondOption[] =
       validators?.map((validator) => {
-        const validatorYield = validatorYieldMap[validator.hotkey.ss58]
+        const validatorYield = validatorYieldMap[validator.hotkey]
 
         return {
-          hotkey: validator.hotkey?.ss58 ?? "",
+          hotkey: validator.hotkey,
           name: validator?.name ?? "",
           totalStaked: parseFloat(validator?.global_weighted_stake ?? "0"),
           totalStakers: validator?.global_nominators ?? 0,
