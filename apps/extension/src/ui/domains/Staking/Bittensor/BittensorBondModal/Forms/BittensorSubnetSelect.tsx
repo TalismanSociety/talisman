@@ -318,7 +318,7 @@ const SubnetRow: FC<{
             <div className="flex grow items-center gap-2 overflow-hidden">
               <TokensAndFiat
                 tokenId={taoTokenId}
-                planck={option.total_tao}
+                planck={String(option.total_tao)}
                 noFiat
                 noCountUp
                 noTooltip
@@ -326,7 +326,7 @@ const SubnetRow: FC<{
               <div className="inline-block size-2 rounded-full bg-body-disabled" />
               <TokensAndFiat
                 tokenId={tokenAlpha.id}
-                planck={option.total_alpha}
+                planck={String(option.total_alpha)}
                 noFiat
                 noCountUp
                 noTooltip

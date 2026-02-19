@@ -15,9 +15,9 @@ export interface SubnetStatsData {
   dailyEmissions: number | null
 }
 
-const parseRaoToTao = (value: string | null | undefined): number | null => {
-  if (!value) return null
-  const result = raoToTao(value)
+const parseRaoToTao = (value: string | number | null | undefined): number | null => {
+  if (value === null || value === undefined) return null
+  const result = raoToTao(typeof value === "number" ? String(value) : value)
   return Number.isFinite(result) ? result : null
 }
 
@@ -52,7 +52,7 @@ export function useSubnetStats(netuid: number) {
     const tokenPriceUsd = tokenPrice && taoUsdPrice ? tokenPrice * taoUsdPrice : null
 
     const priceChange24h = currentSubnet?.price_change_1_day
-      ? parseFloat(currentSubnet.price_change_1_day)
+      ? Number(currentSubnet.price_change_1_day)
       : null
 
     const marketCapTao = parseRaoToTao(currentSubnet?.market_cap)

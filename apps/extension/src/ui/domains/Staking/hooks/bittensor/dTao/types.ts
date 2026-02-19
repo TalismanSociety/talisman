@@ -1,28 +1,16 @@
 import type { Enum } from "@polkadot-api/substrate-bindings"
+import type { TaoDataApi } from "extension-core"
 
-type SevenDayPricePoint = {
-  block_number: number
-  timestamp: string // ISO string date format
-  price: number | string
-}
+type TaoDataClient = TaoDataApi<unknown>
+type TaoDataResponseData<T> = T extends (...args: infer _Args) => Promise<infer R>
+  ? R extends { data: infer D }
+    ? D
+    : never
+  : never
 
-export type SubnetPool = {
-  netuid: number
-  total_tao: string
-  total_alpha: string
-  price: string
-  price_change_1_day: string | null
-  market_cap: string
-  tao_volume_24_hr: string
-  sellers_24h: number | string
-  seven_day_prices: Array<number | string | SevenDayPricePoint>
-}
+export type SubnetPool = TaoDataResponseData<TaoDataClient["pools"]["listPools"]>[number]
 
-export type SubnetSummary = {
-  netuid: number
-  emission: string
-  tempo: number
-}
+export type SubnetSummary = TaoDataResponseData<TaoDataClient["subnets"]["listSubnets"]>[number]
 
 export type SubnetData = Partial<SubnetPool> &
   Partial<SubnetSummary> & {
@@ -30,21 +18,9 @@ export type SubnetData = Partial<SubnetPool> &
     symbol?: string
   }
 
-export type ValidatorYield = {
-  hotkey: string
-  stake: number
-  thirty_day_apy: number | null
-  name?: string
-  netuid?: number
-  block_number?: number
-  timestamp?: string
-  one_hour_apy?: string
-  one_day_apy?: string
-  seven_day_apy?: string
-  one_day_epoch_participation?: number | null
-  seven_day_epoch_participation?: number | null
-  thirty_day_epoch_participation?: number | null
-}
+export type ValidatorYield = TaoDataResponseData<
+  TaoDataClient["subnets"]["listSubnetValidators"]
+>[number]
 
 export type RootClaimTypeEnum = Enum<{
   Swap: undefined
