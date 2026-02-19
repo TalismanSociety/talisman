@@ -227,7 +227,7 @@ export const useBittensorStakingOperation = (params: UseStakingOperationParams |
           if (extHash === hash) {
             // Decode the call using sapi's robust extrinsic decoder
             const decodedCall = sapi.getDecodedCallFromExtrinsic(extHex as `0x${string}`)
-            log.log("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
+            log.debug("[Slippage Debug] Found extrinsic:", { hash, decodedCall })
 
             // Find the actual SubtensorModule staking call (handles wrapped calls)
             // Pass coldkey to correctly identify the call in batches with many proxy calls
@@ -248,14 +248,14 @@ export const useBittensorStakingOperation = (params: UseStakingOperationParams |
                   method: stakeCall.method,
                   args,
                 }
-                log.log("[Slippage Debug] Found SubtensorModule staking call:", {
+                log.debug("[Slippage Debug] Found SubtensorModule staking call:", {
                   pallet: stakeCall.pallet,
                   method: stakeCall.method,
                   operationType,
                   args,
                 })
               } else {
-                log.log(
+                log.debug(
                   "[Slippage Debug] No matching SubtensorModule staking call found in extrinsic",
                   { params, decodedCall, coldkey }
                 )

@@ -2,7 +2,7 @@ import { ArrowDownRightIcon, ArrowUpRightIcon, InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
+import { type FC, memo, type PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -52,6 +52,8 @@ const formatTaoAmount = (num: number) => {
 
 // Mini sparkline chart component
 const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isPositive }) => {
+  if (data.length <= 1) return null
+
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
@@ -80,6 +82,7 @@ const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isP
 
 // Sentiment badge component
 const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ sentiment }) => {
+  const { t } = useTranslation()
   if (!sentiment) return null
 
   return (
@@ -90,7 +93,7 @@ const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ senti
         sentiment === "bearish" && "bg-sell/20 text-sell"
       )}
     >
-      {sentiment === "bullish" ? "Bullish" : "Bearish"}
+      {sentiment === "bullish" ? t("Bullish") : t("Bearish")}
     </span>
   )
 }
@@ -297,7 +300,7 @@ const HeaderRow: FC<{
       >
         {t("Em.")}
       </HeaderCell>
-      <HeaderCell></HeaderCell>
+      <HeaderCell>{t("7d Price")}</HeaderCell>
     </div>
   )
 }
@@ -323,7 +326,7 @@ const SubnetRow: FC<{
   subnet: TaoDashboardSubnet
   loading: TaoDashboardSubnetsLoading
   errors: TaoDashboardSubnetsErrors
-}> = ({ subnet, loading, errors }) => {
+}> = memo(({ subnet, loading, errors }) => {
   const { t } = useTranslation()
   // Compare last price to first price in 7d data to determine chart color
   const firstPrice = !subnet.chartData ? 0 : (subnet.chartData[0] ?? 0)
@@ -467,4 +470,4 @@ const SubnetRow: FC<{
       </DataCell>
     </Link>
   )
-}
+})

@@ -21,6 +21,7 @@ export const TaoDashboardNavTabs = <T extends string>({
 }: TaoDashboardNavTabsProps<T>) => {
   return (
     <div
+      role="tablist"
       className={cn(
         "inline-flex h-28 max-w-full shrink-0 items-center gap-4 overflow-hidden rounded-lg border border-grey-700 p-4 text-sm",
         className
@@ -48,6 +49,8 @@ const Tab: FC<
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isSelected}
       className={cn(
         "relative h-full rounded-sm px-10 text-body-secondary",
         isSelected ? "bg-grey-800 font-bold text-body" : "hover:bg-grey-800"

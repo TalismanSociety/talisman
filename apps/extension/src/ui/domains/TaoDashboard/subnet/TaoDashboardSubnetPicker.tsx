@@ -182,7 +182,7 @@ const SubnetRow: FC<{
     () => [subNativeTokenId(networkId), subDTaoTokenId(networkId, option.netuid!)] as const,
     [networkId, option.netuid]
   )
-  const tokanAlpha = useToken(dtaoTokenId, "substrate-dtao")
+  const tokenAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
   const emission = useMemo(
     () =>
@@ -193,7 +193,7 @@ const SubnetRow: FC<{
     [option.emission, t]
   )
 
-  if (!tokanAlpha) return null
+  if (!tokenAlpha) return null
 
   return (
     <button
@@ -206,11 +206,11 @@ const SubnetRow: FC<{
         isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
-      <TokenLogo tokenId={tokanAlpha.id} className="size-16 shrink-0" />
+      <TokenLogo tokenId={tokenAlpha.id} className="size-16 shrink-0" />
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden text-sm">
         <div className="flex w-full items-center justify-between gap-8 overflow-hidden text-white">
           <div className="truncate">
-            {tokanAlpha.netuid} | {tokanAlpha.subnetName} {tokanAlpha.symbol}
+            {tokenAlpha.netuid} | {tokenAlpha.subnetName} {tokenAlpha.symbol}
           </div>
           <div className={cn("shrink-0", isLoading && "animate-pulse")}>{emission}</div>
         </div>
@@ -232,7 +232,7 @@ const SubnetRow: FC<{
               />
               <div className="inline-block size-2 rounded-full bg-body-disabled" />
               <TokensAndFiat
-                tokenId={tokanAlpha.id}
+                tokenId={tokenAlpha.id}
                 planck={option.total_alpha}
                 noFiat
                 noCountUp

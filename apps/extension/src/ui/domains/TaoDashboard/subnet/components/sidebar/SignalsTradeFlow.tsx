@@ -79,28 +79,28 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
     <div className="flex h-[20rem] items-stretch gap-14">
       <div className="flex h-full w-[16rem] flex-col items-center justify-between">
         <ComparisonField
-          labelLeft={t("Buys")}
-          labelRight={t("Sells")}
-          valueLeft={metrics.buys}
-          valueRight={metrics.sells}
-          contentLeft={metrics.buys}
-          contentRight={metrics.sells}
+          labelLeft={t("Sells")}
+          labelRight={t("Buys")}
+          valueLeft={metrics.sells}
+          valueRight={metrics.buys}
+          contentLeft={metrics.sells}
+          contentRight={metrics.buys}
         />
         <ComparisonField
-          labelLeft={t("Buy Vol")}
-          labelRight={t("Sell Vol")}
-          valueLeft={metrics.buyVol}
-          valueRight={metrics.sellVol}
-          contentLeft={`τ${formatNumber(metrics.buyVol, 0)}`}
-          contentRight={`τ${formatNumber(metrics.sellVol, 0)}`}
+          labelLeft={t("Sell Vol")}
+          labelRight={t("Buy Vol")}
+          valueLeft={metrics.sellVol}
+          valueRight={metrics.buyVol}
+          contentLeft={`τ${formatNumber(metrics.sellVol, 0)}`}
+          contentRight={`τ${formatNumber(metrics.buyVol, 0)}`}
         />
         <ComparisonField
-          labelLeft={t("Buyers")}
-          labelRight={t("Sellers")}
-          valueLeft={metrics.buyers}
-          valueRight={metrics.sellers}
-          contentLeft={metrics.buyers}
-          contentRight={metrics.sellers}
+          labelLeft={t("Sellers")}
+          labelRight={t("Buyers")}
+          valueLeft={metrics.sellers}
+          valueRight={metrics.buyers}
+          contentLeft={metrics.sellers}
+          contentRight={metrics.buyers}
         />
       </div>
 

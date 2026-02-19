@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react"
 import { cn } from "@talismn/util"
 import type { FC } from "react"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 // Icon components using iconify
 const ActivityIcon = () => <Icon icon="mdi:chart-line" className="size-12" />
@@ -109,6 +110,7 @@ function computeTradingMetrics(
 }
 
 export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, className }) => {
+  const { t } = useTranslation()
   const { data: stakeEvents, isLoading: stakeLoading } = useSubnetStakeEvents(netuid)
   const { data: positions, isLoading: positionsLoading } = useSubnetPositions(netuid)
   const { data: tokenomics, isLoading: tokenomicsLoading } = useSubnetTokenomics(netuid)
@@ -122,7 +124,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="flex items-center gap-2">
-        <span className="font-medium text-body text-sm">Trading Signals</span>
+        <span className="font-medium text-body text-sm">{t("Trading Signals")}</span>
         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">24h</span>
       </div>
 
@@ -153,10 +155,10 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
               </div>
               <div className="text-[9px] text-body-secondary">
                 {tradingMetrics.buySellRatio24h >= 1.2
-                  ? "Bullish pressure"
+                  ? t("Bullish pressure")
                   : tradingMetrics.buySellRatio24h <= 0.8
-                    ? "Sell pressure"
-                    : "Balanced"}
+                    ? t("Sell pressure")
+                    : t("Balanced")}
               </div>
             </>
           )}
@@ -175,7 +177,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
               <div className="font-bold text-[#2563eb] text-lg">
                 {tradingMetrics.uniqueTraders24h}
               </div>
-              <div className="text-[9px] text-body-secondary">Unique wallets</div>
+              <div className="text-[9px] text-body-secondary">{t("Unique wallets")}</div>
             </>
           )}
         </div>
@@ -194,7 +196,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
                 {tradingMetrics.avgTradeSize.toFixed(1)}τ
               </div>
               <div className="text-[9px] text-body-secondary">
-                {tradingMetrics.avgTradeSize >= 10 ? "Whale activity" : "Retail flow"}
+                {tradingMetrics.avgTradeSize >= 10 ? t("Whale activity") : t("Retail flow")}
               </div>
             </>
           )}
@@ -213,7 +215,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
               <div className="font-bold text-[#ea580c] text-lg">
                 {tradingMetrics.tradesPerHour.toFixed(1)}
               </div>
-              <div className="text-[9px] text-body-secondary">Trades/hour</div>
+              <div className="text-[9px] text-body-secondary">{t("Trades/hour")}</div>
             </>
           )}
         </div>
@@ -241,7 +243,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
                 {tradingMetrics.whaleConcentration.toFixed(0)}%
               </div>
               <div className="text-[9px] text-body-secondary">
-                {tradingMetrics.totalHolders} holders
+                {t("{{count}} holders", { count: tradingMetrics.totalHolders })}
               </div>
             </>
           )}
@@ -268,12 +270,12 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
                 )}
               >
                 {tradingMetrics.flowMomentum === "accumulating"
-                  ? "↗ Accumulating"
+                  ? t("↗ Accumulating")
                   : tradingMetrics.flowMomentum === "distributing"
-                    ? "↘ Distributing"
-                    : "→ Neutral"}
+                    ? t("↘ Distributing")
+                    : t("→ Neutral")}
               </div>
-              <div className="text-[9px] text-body-secondary">EMA TAO flow</div>
+              <div className="text-[9px] text-body-secondary">{t("EMA TAO flow")}</div>
             </>
           )}
         </div>

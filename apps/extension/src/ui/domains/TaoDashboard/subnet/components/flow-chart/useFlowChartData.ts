@@ -54,7 +54,7 @@ export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHea
   const emissionPercent = emissionRaw ? (Number(emissionRaw) / 1e9 / 1e9) * 100 : null
 
   const dailyEmissions = emissionRaw
-    ? (Number(emissionRaw) / 1e9) * (7200 / (currentSubnet?.tempo || 360))
+    ? (Number(emissionRaw) / 1e9) * (7200 / (currentSubnet?.tempo ?? 360))
     : null
 
   // Trend direction

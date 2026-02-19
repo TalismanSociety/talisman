@@ -214,14 +214,10 @@ export const useSubnetHolders = (netuid: number | null | undefined, days = 30) =
     queryKey: ["sn45", "subnetHolders", netuid, days],
     queryFn: async () => {
       if (!netuid) return null
-      try {
-        const response = await sn45Api.v1.getSubnetHolders(String(netuid), {
-          days,
-        })
-        return response.data ?? null
-      } catch {
-        return null
-      }
+      const response = await sn45Api.v1.getSubnetHolders(String(netuid), {
+        days,
+      })
+      return response.data ?? null
     },
     enabled: !!netuid,
     refetchInterval: 300_000, // 5 minutes

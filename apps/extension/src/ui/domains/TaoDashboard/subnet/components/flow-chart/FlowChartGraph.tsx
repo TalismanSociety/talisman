@@ -159,7 +159,7 @@ const FlowChartGraphContent: FC<{
   if (taoInData.length === 0) {
     return (
       <div className="flex size-full items-center justify-center text-body-secondary">
-        No flow data available for this subnet.
+        {t("No flow data available for this subnet.")}
       </div>
     )
   }

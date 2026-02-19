@@ -68,7 +68,7 @@ export function useSubnetStats(netuid: number) {
 
     const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
     const dailyEmissions = emissionRaw
-      ? (Number(emissionRaw) / 1e9) * (7200 / (currentSubnet?.tempo || 360))
+      ? (Number(emissionRaw) / 1e9) * (7200 / (currentSubnet?.tempo ?? 360))
       : null
 
     return {

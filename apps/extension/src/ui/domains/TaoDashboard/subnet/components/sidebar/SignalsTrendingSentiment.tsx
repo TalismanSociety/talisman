@@ -12,8 +12,7 @@ import {
   useScore1To100,
   useScore2To100,
 } from "@ui/domains/TaoDashboard/shared/util"
-import { log } from "extension-shared"
-import { type FC, type PropsWithChildren, type ReactNode, useEffect, useState } from "react"
+import { type FC, type PropsWithChildren, type ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./shared"
@@ -24,10 +23,6 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
 
   const leaderboardPeriod = useLeaderboardPeriod(period)
   const { data, isLoading } = useSubnetLeaderboardEntry(netuid, leaderboardPeriod)
-
-  useEffect(() => {
-    if (data) log.log("useSubnetLeaderboardEntry %s %s", netuid, period, data)
-  }, [period, data, netuid])
 
   return (
     <div>

@@ -66,6 +66,9 @@ export function calculateRSI(data: number[], period: number): (number | null)[] 
   const gains: number[] = []
   const losses: number[] = []
 
+  let smoothedAvgGain = 0
+  let smoothedAvgLoss = 0
+
   for (let i = 0; i < data.length; i++) {
     if (i === 0) {
       result.push(null)
@@ -79,30 +82,25 @@ export function calculateRSI(data: number[], period: number): (number | null)[] 
     if (i < period) {
       result.push(null)
     } else if (i === period) {
-      const avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period
-      const avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period
-      if (avgLoss === 0) {
+      // Seed with simple moving average of first `period` gains/losses
+      smoothedAvgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period
+      smoothedAvgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period
+      if (smoothedAvgLoss === 0) {
         result.push(100)
       } else {
-        const rs = avgGain / avgLoss
+        const rs = smoothedAvgGain / smoothedAvgLoss
         result.push(100 - 100 / (1 + rs))
       }
     } else {
-      const prevRsi = result[i - 1]
-      if (prevRsi === null) {
-        result.push(null)
-        continue
-      }
-      const prevAvgGain = gains.slice(0, i - 1).reduce((a, b) => a + b, 0) / (i - 1)
-      const prevAvgLoss = losses.slice(0, i - 1).reduce((a, b) => a + b, 0) / (i - 1)
+      // Wilder's smoothing: use the previous smoothed average, not a full re-average
       const currentGain = gains[gains.length - 1]
       const currentLoss = losses[losses.length - 1]
-      const avgGain = (prevAvgGain * (period - 1) + currentGain) / period
-      const avgLoss = (prevAvgLoss * (period - 1) + currentLoss) / period
-      if (avgLoss === 0) {
+      smoothedAvgGain = (smoothedAvgGain * (period - 1) + currentGain) / period
+      smoothedAvgLoss = (smoothedAvgLoss * (period - 1) + currentLoss) / period
+      if (smoothedAvgLoss === 0) {
         result.push(100)
       } else {
-        const rs = avgGain / avgLoss
+        const rs = smoothedAvgGain / smoothedAvgLoss
         result.push(100 - 100 / (1 + rs))
       }
     }

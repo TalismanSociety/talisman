@@ -32,6 +32,7 @@ export const TaoDashboardPeriodTabs = ({
 
   return (
     <div
+      role="tablist"
       className={cn(
         "inline-flex h-[2.6rem] max-w-full items-center gap-1 overflow-hidden rounded-xs bg-grey-850 p-1 font-bold text-sm",
         className
@@ -59,6 +60,8 @@ const Tab: FC<
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isSelected}
       className={cn(
         "relative h-full rounded-sm px-3 font-bold text-body",
         isSelected ? "bg-grey-700" : "hover:bg-grey-750"

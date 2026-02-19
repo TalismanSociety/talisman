@@ -42,7 +42,7 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
     <div className={cn("flex flex-wrap items-center justify-between gap-3", className)}>
       {/* Left side - Indicator toggles */}
       <div className="flex flex-wrap items-center gap-1">
-        <span className="mr-1 text-body-disabled text-xs">Indicators:</span>
+        <span className="mr-1 text-body-disabled text-xs">{t("Indicators:")}</span>
         {INDICATOR_ORDER.map((key) => {
           const config = INDICATOR_CONFIG[key]
           return (

@@ -23,7 +23,7 @@ export const TaoDashboardTabs = <T extends string>({
   defaultSelectedClassName = "border-white text-white",
 }: TaoDashboardTabsProps<T>) => {
   return (
-    <div className={cn("flex h-20 w-full shrink-0 overflow-hidden", className)}>
+    <div role="tablist" className={cn("flex h-20 w-full shrink-0 overflow-hidden", className)}>
       {tabs.map((tab) => (
         <Tab
           key={tab.value}
@@ -48,6 +48,8 @@ const Tab: FC<
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isSelected}
       className={cn(
         "relative h-full flex-1 border-grey-700 border-b-2 font-semibold text-body-inactive text-sm transition-colors",
         isSelected ? selectedClassName : "hover:bg-grey-800"

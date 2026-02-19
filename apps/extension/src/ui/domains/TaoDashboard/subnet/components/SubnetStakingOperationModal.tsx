@@ -10,9 +10,8 @@ import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useToken } from "@ui/state"
-import { log } from "extension-shared"
 import { dump as convertToYaml } from "js-yaml"
-import { type FC, useEffect, useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 import type { TransactionEntry } from "../../shared/types"
@@ -243,11 +242,12 @@ const SlippageFields: FC<{
     }
   }, [transaction, netuid])
 
-  const { data: slippage, isLoading, isError, error } = useBittensorStakingOperation(slippageParams)
-
-  useEffect(() => {
-    log.log("Slippage data:", { slippage, isLoading, error })
-  }, [slippage, isLoading, error])
+  const {
+    data: slippage,
+    isLoading: _isLoading,
+    isError,
+    error,
+  } = useBittensorStakingOperation(slippageParams)
 
   // Check if the error is due to historical data being unavailable (non-archive node)
   const isHistoricalDataUnavailable = isError && error?.name === "HistoricalDataUnavailableError"
