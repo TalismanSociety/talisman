@@ -1,4 +1,4 @@
-import { formatCompactNumber, formatLocalChartTime } from "@ui/domains/TaoDashboard/shared/util"
+import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import {
   AreaSeries,
   createChart,
@@ -9,6 +9,7 @@ import {
 import type { FC } from "react"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { createChartOptions } from "../chartOptions"
 import { FlowChartToolbar } from "./FlowChartToolbar"
 import type { FlowChartPoint } from "./types"
 import { useFlowGraphData } from "./useFlowChartData"
@@ -61,38 +62,20 @@ const FlowChartGraphContent: FC<{
   useEffect(() => {
     if (!chartContainerRef.current) return
 
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight,
-      layout: {
-        background: { color: "transparent" },
+    const chart = createChart(
+      chartContainerRef.current,
+      createChartOptions({
+        width: chartContainerRef.current.clientWidth,
+        height: chartContainerRef.current.clientHeight,
+        backgroundColor: "transparent",
         textColor: "#71717a",
-      },
-      grid: {
-        vertLines: { color: "#27272a", style: 3 },
-        horzLines: { color: "#27272a", style: 3 },
-      },
-      rightPriceScale: {
-        borderVisible: false,
-        scaleMargins: { top: 0.1, bottom: 0.1 },
-      },
-      timeScale: {
-        borderVisible: false,
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      crosshair: {
-        mode: 1,
-        vertLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
-        horzLine: { color: "#525252", width: 1, style: 3, labelBackgroundColor: "#27272a" },
-      },
-      localization: {
-        locale: Intl.DateTimeFormat().resolvedOptions().locale,
-        timeFormatter: formatLocalChartTime,
-      },
-      handleScroll: false,
-      handleScale: false,
-    })
+        gridLineColor: "#27272a",
+        crosshairColor: "#525252",
+        rightPriceScaleMargins: { top: 0.1, bottom: 0.1 },
+        handleScroll: false,
+        handleScale: false,
+      })
+    )
 
     const priceFormatter = (price: number) => `${formatCompactNumber(price)}τ`
 

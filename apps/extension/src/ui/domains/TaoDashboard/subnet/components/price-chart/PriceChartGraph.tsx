@@ -1,5 +1,4 @@
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
-import { formatLocalChartTime } from "@ui/domains/TaoDashboard/shared/util"
 import {
   AreaSeries,
   CandlestickSeries,
@@ -15,6 +14,7 @@ import {
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
+import { createChartOptions } from "../chartOptions"
 import { CHART_COLORS, CHART_LAYOUT, INDICATOR_CONFIG } from "./chartConfig"
 import {
   calculateBollingerBands,
@@ -56,48 +56,6 @@ const rsiAutoscaleProvider = () => ({
 // ────────────────────────────────────────────────────────────────────────────
 // Chart configuration
 // ────────────────────────────────────────────────────────────────────────────
-
-const createChartOptions = (width: number, height: number) =>
-  ({
-    width,
-    height,
-    layout: {
-      background: { color: CHART_COLORS.background },
-      textColor: CHART_COLORS.text,
-    },
-    grid: {
-      vertLines: { visible: false },
-      horzLines: { color: CHART_COLORS.gridLine, style: 3 },
-    },
-    rightPriceScale: {
-      borderVisible: false,
-      scaleMargins: { top: 0, bottom: 0.25 },
-    },
-    timeScale: {
-      borderVisible: false,
-      timeVisible: true,
-      secondsVisible: false,
-    },
-    crosshair: {
-      mode: 1,
-      vertLine: {
-        color: CHART_COLORS.crosshair,
-        width: 1,
-        style: 3,
-        labelBackgroundColor: CHART_COLORS.gridLine,
-      },
-      horzLine: {
-        color: CHART_COLORS.crosshair,
-        width: 1,
-        style: 3,
-        labelBackgroundColor: CHART_COLORS.gridLine,
-      },
-    },
-    localization: {
-      locale: Intl.DateTimeFormat().resolvedOptions().locale,
-      timeFormatter: formatLocalChartTime,
-    },
-  }) as const
 
 const CANDLESTICK_OPTIONS = {
   upColor: CHART_COLORS.bullish,
@@ -306,7 +264,16 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
 
     const chart = createChart(
       container,
-      createChartOptions(container.clientWidth, container.clientHeight)
+      createChartOptions({
+        width: container.clientWidth,
+        height: container.clientHeight,
+        backgroundColor: CHART_COLORS.background,
+        textColor: CHART_COLORS.text,
+        gridLineColor: CHART_COLORS.gridLine,
+        crosshairColor: CHART_COLORS.crosshair,
+        rightPriceScaleMargins: { top: 0, bottom: 0.25 },
+        hideVerticalGridLines: true,
+      })
     )
     const candlestickSeries = chart.addSeries(CandlestickSeries, CANDLESTICK_OPTIONS)
     const volumeSeries = chart.addSeries(HistogramSeries, VOLUME_OPTIONS)
