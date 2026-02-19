@@ -6,7 +6,12 @@ import {
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useSentimentLabelFromScore100 } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
-import { useLeaderboardPeriod } from "@ui/domains/TaoDashboard/shared/util"
+import {
+  useColorFromScore100,
+  useLeaderboardPeriod,
+  useScore1To100,
+  useScore2To100,
+} from "@ui/domains/TaoDashboard/shared/util"
 import { log } from "extension-shared"
 import { type FC, type PropsWithChildren, type ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -77,6 +82,15 @@ const TrendingSentiment: FC<
   const { t } = useTranslation()
   const scoreLabel = useSentimentLabelFromScore100(data.score)
 
+  const flowChangeScore = useScore2To100(data.taoFlowVelocity)
+  const flowChangeColor = useColorFromScore100(flowChangeScore)
+
+  const volChangeScore = useScore2To100(data.volMcapVelocity)
+  const volChangeColor = useColorFromScore100(volChangeScore)
+
+  const sentChangeScore = useScore1To100(data.sentimentVelocity)
+  const sentChangeColor = useColorFromScore100(sentChangeScore)
+
   return (
     <div className="flex h-[16.5rem] items-stretch gap-14">
       <div className="flex h-full flex-col items-center justify-between">
@@ -90,36 +104,28 @@ const TrendingSentiment: FC<
       <div className="flex h-full flex-col items-start justify-between">
         <SentimentField
           label={t("Flow Change")}
-          tooltip={t("Acceleration/decelaration of Tao Flow compared to recent average")}
-          className={cn(
-            data.taoFlowVelocity >= 0 && "text-buy",
-            data.taoFlowVelocity < 0 && "text-sell"
+          tooltip={t(
+            "0-100 score based on acceleration or deceleration of Tao Flow compared to previous period"
           )}
+          className={cn(flowChangeColor)}
         >
-          {data.taoFlowVelocity > 0 && "+"}
-          {data.taoFlowVelocity}
+          {flowChangeScore}
         </SentimentField>
         <SentimentField
           label={t("Volume Change")}
-          tooltip={t("Volume expansion or contraction compared to recent average")}
-          className={cn(
-            data.volMcapVelocity >= 0 && "text-buy",
-            data.volMcapVelocity < 0 && "text-sell"
+          tooltip={t(
+            "0-100 score based on volume expansion or contraction compared to previous period"
           )}
+          className={cn(volChangeColor)}
         >
-          {data.volMcapVelocity > 0 && "+"}
-          {data.volMcapVelocity}
+          {volChangeScore}
         </SentimentField>
         <SentimentField
           label={t("Sentiment Change")}
-          tooltip={t("Shift in social sentiment compared to baseline")}
-          className={cn(
-            data.sentimentVelocity !== null && data.sentimentVelocity > 0 && "text-buy",
-            data.sentimentVelocity !== null && data.sentimentVelocity < 0 && "text-sell"
-          )}
+          tooltip={t("0-100 score based on shift in social sentiment compared to previous period")}
+          className={cn(sentChangeColor)}
         >
-          {data.sentimentVelocity !== null && data.sentimentVelocity > 0 && "+"}
-          {data.sentimentVelocity ?? t("N/A")}
+          {sentChangeScore ?? t("N/A")}
         </SentimentField>
       </div>
     </div>
@@ -130,9 +136,9 @@ const SentimentField: FC<
   PropsWithChildren<{ label: ReactNode; tooltip?: ReactNode; className?: string }>
 > = ({ label, children, tooltip, className }) => (
   <div className={cn("flex flex-col gap-2")}>
-    <Tooltip>
+    <Tooltip placement="bottom-end">
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-1 text-body-inactive text-xs">
+        <div className="flex max-w-sm items-center gap-1 text-body-inactive text-xs">
           {label}
           {!!tooltip && <InfoIcon />}
         </div>
