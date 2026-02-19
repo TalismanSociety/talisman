@@ -6,7 +6,7 @@ import { useMemo } from "react"
 
 import { useTranslation } from "react-i18next"
 import type { SubnetData } from "./types"
-import { useGetSubnets } from "./useGetInfiniteSubnets"
+import { useGetSubnets } from "./useGetSubnets"
 
 export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
 

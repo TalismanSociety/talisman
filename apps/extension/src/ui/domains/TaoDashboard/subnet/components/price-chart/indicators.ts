@@ -13,28 +13,6 @@ export function calculateSMA(data: number[], period: number): (number | null)[] 
   return result
 }
 
-export function calculateEMA(data: number[], period: number): (number | null)[] {
-  const result: (number | null)[] = []
-  const multiplier = 2 / (period + 1)
-
-  for (let i = 0; i < data.length; i++) {
-    if (i < period - 1) {
-      result.push(null)
-    } else if (i === period - 1) {
-      const sma = data.slice(0, period).reduce((a, b) => a + b, 0) / period
-      result.push(sma)
-    } else {
-      const prevEma = result[i - 1]
-      if (prevEma !== null) {
-        result.push((data[i] - prevEma) * multiplier + prevEma)
-      } else {
-        result.push(null)
-      }
-    }
-  }
-  return result
-}
-
 export function calculateBollingerBands(
   data: number[],
   period: number,

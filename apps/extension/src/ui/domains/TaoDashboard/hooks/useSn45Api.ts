@@ -70,21 +70,6 @@ export const useSubnetLeaderboardEntry = (
   return { ...query, data }
 }
 
-// Hook to get subnet price history
-export const useSubnetPrice = (netuid: number | null | undefined) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetPrice", netuid],
-    queryFn: async () => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetPrice(String(netuid))
-      return response.data
-    },
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
 // Hook to get subnet tokenomics
 export const useSubnetTokenomics = (netuid: number | null | undefined) => {
   return useQuery({
