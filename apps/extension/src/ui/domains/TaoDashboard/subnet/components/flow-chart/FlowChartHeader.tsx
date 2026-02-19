@@ -1,6 +1,9 @@
+import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import type { FC, PropsWithChildren, ReactNode } from "react"
+import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
+import { useToken } from "@ui/state"
+import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { formatAlpha, formatCompactNumber } from "./formatters"
 import { useFlowHeaderData } from "./useFlowChartData"
@@ -14,6 +17,7 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, timeRange })
   const { t } = useTranslation()
   const { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading } =
     useFlowHeaderData(netuid, timeRange)
+  const alphaToken = useToken(useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid]))
 
   if (isLoading) return <FlowChartHeaderSkeleton />
 
@@ -62,11 +66,11 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, timeRange })
           <Metric label={t("Alpha Flow")}>
             <div className="flex flex-col">
               <span className="font-medium text-buy">
-                {formatAlpha(alphaFlow.alphaIn)}{" "}
+                {formatAlpha(alphaFlow.alphaIn, alphaToken?.symbol)}{" "}
                 <span className="text-body-disabled text-xs">{t("In")}</span>
               </span>
               <span className="font-medium text-sell">
-                {formatAlpha(alphaFlow.alphaOut)}{" "}
+                {formatAlpha(alphaFlow.alphaOut, alphaToken?.symbol)}{" "}
                 <span className="text-body-disabled text-xs">{t("Out")}</span>
               </span>
             </div>
