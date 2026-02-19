@@ -37,8 +37,13 @@ const TAB_TO_PATH: Record<EarnTabsKey, string> = {
   bittensor: "/bittensor/subnets",
 }
 
-const getTabFromPath = (pathname: string): EarnTabsKey =>
-  pathname.includes("/discover") ? "discover" : "assets"
+const getTabFromPath = (pathname: string): EarnTabsKey => {
+  return (
+    (Object.entries(TAB_TO_PATH).find(([, path]) =>
+      pathname.startsWith(path)
+    )?.[0] as EarnTabsKey) || "assets"
+  )
+}
 
 const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutletContext>()
 

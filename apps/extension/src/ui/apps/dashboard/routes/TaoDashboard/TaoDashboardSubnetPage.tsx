@@ -12,8 +12,10 @@ export const TaoDashboardSubnetPage = () => {
 
   // check that a token exists for this subnet
   const token = useMemo(() => {
-    if (!Number(netuid)) return null
-    const tokenId = subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid))
+    const parsedNetuid = Number(netuid)
+    if (!Number.isInteger(parsedNetuid) || parsedNetuid < 0) return null
+
+    const tokenId = subDTaoTokenId(BITTENSOR_NETWORK_ID, parsedNetuid)
     const token = tokens[tokenId]
     return isTokenSubDTao(token) ? token : null
   }, [netuid, tokens])
