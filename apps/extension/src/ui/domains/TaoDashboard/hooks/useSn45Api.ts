@@ -29,19 +29,6 @@ export const useTaoPrice = () => {
   })
 }
 
-// Hook to get subnet economics list (for table data)
-export const useSubnetEconomics = () => {
-  return useQuery({
-    queryKey: ["sn45", "subnetEconomics"],
-    queryFn: async () => {
-      const response = await sn45Api.v1.getSubnetEconomicsList()
-      return response.data
-    },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
 // Hook to get subnet leaderboard data
 export const useSubnetLeaderboard = (period: "1d" | "1w" | "1m" = "1d") => {
   return useQuery({
@@ -81,19 +68,6 @@ export const useSubnetLeaderboardEntry = (
   }, [query.data, netuid])
 
   return { ...query, data }
-}
-
-// Hook to get sentiment by subnet
-export const useSubnetSentimentList = () => {
-  return useQuery({
-    queryKey: ["sn45", "subnetSentimentList"],
-    queryFn: async () => {
-      const response = await sn45Api.v1.getSubnetSentimentList()
-      return response.data
-    },
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-  })
 }
 
 // Hook to get subnet price history
@@ -303,52 +277,4 @@ export const useSubnetWhalesActivity = (netuid: number | null | undefined, days?
     refetchInterval: 60_000,
     staleTime: 30_000,
   })
-}
-
-// Combined hook for subnet economics with sentiment data
-export const useSubnetEconomicsWithSentiment = () => {
-  const {
-    data: economics,
-    isLoading: economicsLoading,
-    isError: isEconomicsError,
-  } = useSubnetEconomics()
-  const {
-    data: sentimentList,
-    isLoading: sentimentLoading,
-    isError: isSentimentError,
-  } = useSubnetSentimentList()
-  const { data: taoPrice, isError: isTaoPriceError } = useTaoPrice()
-
-  const data = useMemo(() => {
-    if (!economics) return []
-
-    const sentimentMap = new Map((sentimentList ?? []).map((s) => [s.subnetId, s]))
-
-    return economics.map((econ) => {
-      const sentiment = sentimentMap.get(econ.netuid)
-      const taoUsdPrice = taoPrice?.price ? parseFloat(taoPrice.price) : 0
-      const priceUsd = econ.price * taoUsdPrice
-
-      return {
-        netuid: econ.netuid,
-        price: econ.price,
-        priceUsd,
-        volume: econ.volume,
-        alphaIn: econ.alphaIn,
-        alphaOut: econ.alphaOut,
-        netAlpha: econ.netAlpha,
-        emaTaoFlow: econ.emaTaoFlow,
-        economicScore: econ.economicScore,
-        flowDirection: econ.flowDirection,
-        sentimentScore: sentiment?.sentimentScore ?? 0,
-        sentimentTotal: sentiment?.total ?? 0,
-      }
-    })
-  }, [economics, sentimentList, taoPrice])
-
-  return {
-    data,
-    isLoading: economicsLoading || sentimentLoading,
-    isError: isEconomicsError || isSentimentError || isTaoPriceError,
-  }
 }

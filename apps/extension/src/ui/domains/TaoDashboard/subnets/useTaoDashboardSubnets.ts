@@ -5,12 +5,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances, useTokens } from "@ui/state"
 import { useMemo } from "react"
-import {
-  type SubnetLeaderboardRow,
-  useSubnetEconomicsWithSentiment,
-  useSubnetLeaderboard,
-  useTaoPrice,
-} from "../hooks/useSn45Api"
+import { type SubnetLeaderboardRow, useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import type { TimePeriod } from "../shared/types"
 import { getLeaderboardPeriod, raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
@@ -24,11 +19,6 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   )
 
   const allTokens = useTokens()
-  const {
-    data: economicsData,
-    isLoading: isEconomicsLoading,
-    isError: isEconomicsError,
-  } = useSubnetEconomicsWithSentiment()
   const {
     data: leaderboardData,
     isLoading: isLeaderboardLoading,
@@ -65,11 +55,6 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     }, new Map<number, Balance[]>())
   }, [balances, selectedAccounts])
 
-  // Create a map for quick lookup of economics data by netuid
-  const economicsMap = useMemo(() => {
-    return new Map(economicsData.map((e) => [e.netuid, e]))
-  }, [economicsData])
-
   // Index leaderboard by netuid
   const leaderboardMap = useMemo(() => {
     if (!leaderboardData?.subnets) return new Map<number, SubnetLeaderboardRow>()
@@ -81,21 +66,16 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   const subnets = useMemo(() => {
     return subnetTokens
       .map((token) => {
-        const economics = economicsMap.get(token.netuid)
         const leaderboard = leaderboardMap.get(token.netuid)
 
-        // Use leaderboard price if available, fallback to economics
-        const priceTao = leaderboard?.currentPrice ?? economics?.price
+        const priceTao = leaderboard?.currentPrice ?? undefined
         const priceUsd = typeof priceTao === "number" ? priceTao * taoUsdPrice : undefined
 
-        // Use leaderboard data for price change, staked, mcap, volume
         const priceChange = leaderboard?.priceChange ?? undefined
         const stakedAlpha = raoToTao(leaderboard?.stakedAlpha)
-        // mcap and volume from API are in TAO (rao units)
         const mcap = raoToTao(leaderboard?.mcap)
-        const volume = leaderboard ? raoToTao(leaderboard.volume) : (economics?.volume ?? 0)
+        const volume = raoToTao(leaderboard?.volume)
 
-        // Use emissionPct and score directly from the API
         const emission = leaderboard?.emissionPct ?? 0
         const score = leaderboard?.score ?? 0
 
@@ -116,12 +96,9 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           score,
           sentiment,
           volume,
-          netAlpha: economics?.netAlpha ?? 0,
-          flowDirection: economics?.flowDirection ?? ("neutral" as const),
-          sentimentScore: economics?.sentimentScore ?? 0,
           balance: balances?.sum.planck.transferable ?? null,
           balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
-          stakedTao: priceTao ? stakedAlpha * priceTao : undefined, // Convert alpha to TAO equivalent
+          stakedTao: priceTao ? stakedAlpha * priceTao : undefined,
           stakedAlpha,
           mcap,
           emission,
@@ -129,34 +106,34 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
         }
       })
       .sort((a, b) => a.token.netuid - b.token.netuid)
-  }, [subnetTokens, economicsMap, leaderboardMap, taoUsdPrice, balancesPerNetuid])
+  }, [subnetTokens, leaderboardMap, taoUsdPrice, balancesPerNetuid])
 
   const loading = useMemo(
     () => ({
-      price: isLeaderboardLoading || isEconomicsLoading || isTaoPriceLoading,
+      price: isLeaderboardLoading || isTaoPriceLoading,
       balance: balancesStatus.status === "fetching",
       score: isLeaderboardLoading,
       staked: isLeaderboardLoading,
-      volume: isLeaderboardLoading || isEconomicsLoading,
+      volume: isLeaderboardLoading,
       mcap: isLeaderboardLoading,
       emission: isLeaderboardLoading,
       chart: isLeaderboardLoading,
     }),
-    [isLeaderboardLoading, isEconomicsLoading, isTaoPriceLoading, balancesStatus.status]
+    [isLeaderboardLoading, isTaoPriceLoading, balancesStatus.status]
   )
 
   const errors = useMemo(
     () => ({
-      price: isLeaderboardError || isEconomicsError || isTaoPriceError,
+      price: isLeaderboardError || isTaoPriceError,
       balance: false,
       score: isLeaderboardError,
       staked: isLeaderboardError,
-      volume: isLeaderboardError || isEconomicsError,
+      volume: isLeaderboardError,
       mcap: isLeaderboardError,
       emission: isLeaderboardError,
       chart: isLeaderboardError,
     }),
-    [isLeaderboardError, isEconomicsError, isTaoPriceError]
+    [isLeaderboardError, isTaoPriceError]
   )
 
   const isLoading = Object.values(loading).some(Boolean)

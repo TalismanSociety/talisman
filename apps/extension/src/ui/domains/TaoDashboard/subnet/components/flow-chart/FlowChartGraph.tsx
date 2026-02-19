@@ -1,9 +1,17 @@
-import { AreaSeries, createChart, LineSeries, type Time } from "lightweight-charts"
+import {
+  AreaSeries,
+  createChart,
+  type IChartApi,
+  type ISeriesApi,
+  LineSeries,
+  type Time,
+} from "lightweight-charts"
 import type { FC } from "react"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FlowChartToolbar } from "./FlowChartToolbar"
 import { formatCompactNumber } from "./formatters"
+import type { FlowChartPoint } from "./types"
 import { useFlowGraphData } from "./useFlowChartData"
 
 const chartTimeToDate = (time: Time): Date => {
@@ -58,10 +66,18 @@ const FlowChartGraphContent: FC<{
 }> = ({ netuid, days }) => {
   const { t } = useTranslation()
   const chartContainerRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+  const seriesRef = useRef<{
+    taoIn: ISeriesApi<"Area"> | null
+    taoOut: ISeriesApi<"Area"> | null
+    net: ISeriesApi<"Line"> | null
+  }>({ taoIn: null, taoOut: null, net: null })
+
   const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, days)
 
+  // Effect 1: Create chart instance (only depends on container ref)
   useEffect(() => {
-    if (!chartContainerRef.current || taoInData.length === 0) return
+    if (!chartContainerRef.current) return
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
@@ -96,54 +112,43 @@ const FlowChartGraphContent: FC<{
       handleScale: false,
     })
 
+    const priceFormatter = (price: number) => `${formatCompactNumber(price)}τ`
+
     // TAO In area (green)
-    const taoInSeries = chart.addSeries(AreaSeries, {
+    seriesRef.current.taoIn = chart.addSeries(AreaSeries, {
       lineColor: "#22c55e",
       topColor: "rgba(34, 197, 94, 0.4)",
       bottomColor: "rgba(34, 197, 94, 0.0)",
       lineWidth: 2,
-      priceFormat: {
-        type: "custom",
-        formatter: (price: number) => `${formatCompactNumber(price)}τ`,
-      },
+      priceFormat: { type: "custom", formatter: priceFormatter },
     })
 
     // TAO Out area (red)
-    const taoOutSeries = chart.addSeries(AreaSeries, {
+    seriesRef.current.taoOut = chart.addSeries(AreaSeries, {
       lineColor: "#ef4444",
       topColor: "rgba(239, 68, 68, 0.3)",
       bottomColor: "rgba(239, 68, 68, 0.0)",
       lineWidth: 2,
-      priceFormat: {
-        type: "custom",
-        formatter: (price: number) => `${formatCompactNumber(price)}τ`,
-      },
+      priceFormat: { type: "custom", formatter: priceFormatter },
     })
 
     // Net flow line (blue dashed)
-    const netSeries = chart.addSeries(LineSeries, {
+    seriesRef.current.net = chart.addSeries(LineSeries, {
       color: "#3b82f6",
       lineWidth: 2,
       lineStyle: 2,
-      priceFormat: {
-        type: "custom",
-        formatter: (price: number) => `${formatCompactNumber(price)}τ`,
-      },
+      priceFormat: { type: "custom", formatter: priceFormatter },
     })
 
-    // Data is already in { time, value } format from the hook
-    taoInSeries.setData(taoInData)
-    taoOutSeries.setData(taoOutData)
-    netSeries.setData(netData)
-
-    chart.timeScale().fitContent()
+    chartRef.current = chart
 
     // Resize handler
+    const container = chartContainerRef.current
     const handleResize = () => {
-      if (chartContainerRef.current) {
+      if (container) {
         chart.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-          height: chartContainerRef.current.clientHeight,
+          width: container.clientWidth,
+          height: container.clientHeight,
         })
       }
     }
@@ -151,8 +156,23 @@ const FlowChartGraphContent: FC<{
 
     return () => {
       window.removeEventListener("resize", handleResize)
+      chartRef.current = null
+      seriesRef.current = { taoIn: null, taoOut: null, net: null }
       chart.remove()
     }
+  }, []) // chart creation — only once per mount
+
+  // Effect 2: Update data on existing series (no chart teardown)
+  useEffect(() => {
+    const { taoIn, taoOut, net } = seriesRef.current
+    const chart = chartRef.current
+    if (!chart || !taoIn || !taoOut || !net) return
+
+    taoIn.setData(taoInData as FlowChartPoint[])
+    taoOut.setData(taoOutData as FlowChartPoint[])
+    net.setData(netData as FlowChartPoint[])
+
+    chart.timeScale().fitContent()
   }, [taoInData, taoOutData, netData])
 
   if (isLoading) return <FlowChartGraphSkeleton />

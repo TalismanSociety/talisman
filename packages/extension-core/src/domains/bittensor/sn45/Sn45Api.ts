@@ -328,7 +328,7 @@ export class Sn45Api<
       query?: {
         /** Minimum TAO threshold (in TAO units). Defaults to 50. */
         minTao?: string;
-        /** Maximum number of records to return. Defaults to 50. */
+        /** Maximum number of records to return (1-500, default 50). */
         limit?: string;
       },
       params: RequestParams = {},
@@ -374,15 +374,20 @@ export class Sn45Api<
      */
     getWhaleTransactions: (
       query?: {
-        /** Maximum number of transactions to return. Defaults to 50. */
+        /** Maximum number of transactions to return (1-500, default 50). */
         limit?: string;
-        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale) */
-        tier?: string;
-        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped) */
-        transactionType?: string;
-        /** Minimum TAO amount (in TAO, not rao) */
+        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale). */
+        tier?: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped). */
+        transactionType?:
+          | "StakeAdded"
+          | "StakeRemoved"
+          | "StakeMove"
+          | "StakeTransfer"
+          | "StakeSwapped";
+        /** Minimum TAO amount (in TAO, not rao). */
         minTaoAmount?: string;
-        /** Filter by subnet ID */
+        /** Filter by subnet ID. */
         netuid?: string;
       },
       params: RequestParams = {},
@@ -438,9 +443,9 @@ export class Sn45Api<
     /**
      * @description Returns one latest economics row per subnet using recent tokenomics snapshots. Values are normalized for UI consumption and include derived flow direction and economics score.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetEconomicsList
-     * @summary Economics data for subnets
+     * @summary [To be deleted] Economics data for subnets
      * @request GET:/v1/bittensor/subnets/economics
      */
     getSubnetEconomicsList: (params: RequestParams = {}) =>
@@ -901,7 +906,7 @@ export class Sn45Api<
     getSubnetEvents: (
       netuid: string,
       query?: {
-        /** Maximum records per event category. Defaults to 250. */
+        /** Maximum records per event category (1-1000, default 250). */
         limit?: string;
       },
       params: RequestParams = {},
@@ -1228,13 +1233,18 @@ export class Sn45Api<
     getSubnetWhaleTransactionsLegacy: (
       netuid: string,
       query?: {
-        /** Maximum number of transactions to return. Defaults to 50. */
+        /** Maximum number of transactions to return (1-500, default 50). */
         limit?: string;
-        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale) */
-        tier?: string;
-        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped) */
-        transactionType?: string;
-        /** Minimum TAO amount (in TAO, not rao) */
+        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale). */
+        tier?: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped). */
+        transactionType?:
+          | "StakeAdded"
+          | "StakeRemoved"
+          | "StakeMove"
+          | "StakeTransfer"
+          | "StakeSwapped";
+        /** Minimum TAO amount (in TAO, not rao). */
         minTaoAmount?: string;
       },
       params: RequestParams = {},
@@ -1331,9 +1341,9 @@ export class Sn45Api<
     /**
      * @description Returns per-subnet social sentiment aggregates over the last 30 days. Each row contains class counts and a derived weighted sentiment score.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetSentimentList
-     * @summary Sentiment breakdown by subnet for the last 30 days
+     * @summary [To be deleted] Sentiment breakdown by subnet for the last 30 days
      * @request GET:/v1/bittensor/subnets/sentiment
      */
     getSubnetSentimentList: (params: RequestParams = {}) =>
@@ -1434,7 +1444,7 @@ export class Sn45Api<
     getSubnetTweetsLegacy: (
       netuid: string,
       query?: {
-        /** Maximum number of tweets to return. Defaults to 50. */
+        /** Maximum number of tweets to return (1-200, default 50). */
         limit?: string;
       },
       params: RequestParams = {},
