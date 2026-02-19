@@ -1,3 +1,4 @@
+import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
@@ -29,7 +30,15 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
   )
 
   const [portfolioTree, watchedTree] = useMemo(() => {
-    const lowerSearch = search.toLowerCase()
+    // if full search input is a valid SS58 address, normalize it for comparison
+    let lowerSearch = search.toLowerCase()
+    if (search && isSs58Address(search)) {
+      try {
+        lowerSearch = normalizeAddress(search).toLowerCase()
+      } catch {
+        // keep original lowerSearch
+      }
+    }
     return [
       searchTree(portfolioUiTree, lowerSearch, accountsMap),
       searchTree(watchedUiTree, lowerSearch, accountsMap),
@@ -70,9 +79,17 @@ const searchTree = (
 
   const setAccountVisibility = (item: UiTreeAccount) => {
     const account = accountsMap[item.address] as Account | undefined // may be undefined for a moment right after deletion
+    const normalizedAddress = (() => {
+      try {
+        return account?.address ? normalizeAddress(account.address).toLowerCase() : undefined
+      } catch {
+        return undefined
+      }
+    })()
     item.isVisible =
-      account?.name?.toLowerCase().includes(lowerSearch) ??
-      account?.address?.toLowerCase().includes(lowerSearch) ??
+      account?.name?.toLowerCase().includes(lowerSearch) ||
+      account?.address?.toLowerCase().includes(lowerSearch) ||
+      normalizedAddress?.includes(lowerSearch) ||
       false
   }
 
