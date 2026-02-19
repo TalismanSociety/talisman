@@ -20,9 +20,6 @@ import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
 
-// Re-export types for backward compatibility
-export type { IndexedTransactionEntry, TransactionEntry } from "../../shared/types"
-
 type Tab = "my" | "all"
 
 const MAX_ITEMS_PER_TAB = 20

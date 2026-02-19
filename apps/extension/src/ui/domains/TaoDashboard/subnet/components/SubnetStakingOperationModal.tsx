@@ -3,7 +3,7 @@ import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalCont
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { type SubDTaoToken, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { classNames, cn, formatDecimals } from "@talismn/util"
+import { cn, formatDecimals } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -455,7 +455,7 @@ const MatchedCallDisplay: FC<{ call: MatchedCall }> = ({ call }) => {
         <button
           type="button"
           onClick={() => setDisplayAsJson(false)}
-          className={classNames(
+          className={cn(
             "cursor-pointer",
             !displayAsJson ? "text-body" : "underline hover:text-grey-300"
           )}
@@ -466,7 +466,7 @@ const MatchedCallDisplay: FC<{ call: MatchedCall }> = ({ call }) => {
         <button
           type="button"
           onClick={() => setDisplayAsJson(true)}
-          className={classNames(
+          className={cn(
             "cursor-pointer",
             displayAsJson ? "text-body" : "underline hover:text-grey-300"
           )}

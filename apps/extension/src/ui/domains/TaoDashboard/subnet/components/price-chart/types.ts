@@ -38,17 +38,6 @@ export interface OhlcvBar {
 // Internal / legacy types
 // ---------------------------------------------------------------------------
 
-export interface ProcessedHourlyData {
-  hour: Date
-  open: number
-  high: number
-  low: number
-  close: number
-  taoIn: number
-  taoOut: number
-  volume: number
-}
-
 export interface IndicatorConfig {
   sma7: boolean
   sma25: boolean
@@ -57,18 +46,6 @@ export interface IndicatorConfig {
   // ema26: boolean
   bollingerBands: boolean
   rsi: boolean
-}
-
-export interface PriceData {
-  movingPrice: string
-  timestamp: string
-}
-
-export interface StakeEvent {
-  method: "Adding" | "Removing"
-  alphaAmount: string
-  taoAmount: string
-  timestamp: string
 }
 
 export const DEFAULT_INDICATORS: IndicatorConfig = {

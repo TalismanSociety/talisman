@@ -249,16 +249,17 @@ export const SwapConfirmFeeEstimateValue: FC<{
 
 const MAX_TOTAL_FEE_DISCOUNT = 1
 
-export const SwapConfirmTalismanFeeLabel: FC<{ netuid?: number | null; containerId: string }> = ({
-  netuid,
-  containerId,
-}) => {
+export const SwapConfirmTalismanFeeLabel: FC<{
+  netuid?: number | null
+  containerId: string
+  direction: "taoToAlpha" | "alphaToTao"
+}> = ({ netuid, containerId, direction }) => {
   const { t } = useTranslation()
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
   const { tier } = useGetSeekDiscount()
   const subnetFee = useGetSubnetFee({
     netuid: netuid ?? 0,
-    direction: "taoToAlpha",
+    direction,
   })
 
   const subnetFeeDiscount = useMemo(() => {

@@ -44,7 +44,7 @@ export const SwapBuyInput: FC = () => {
         {address && (
           <div className="flex items-center gap-2">
             <BalanceDisplay />
-            <MaxButton tokenId={tokenIn.id} maxAmount={maxValueIn} onClick={handleMaxClick} />
+            <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
           </div>
         )}
       </div>
@@ -104,7 +104,6 @@ const BalanceDisplay: FC = () => {
 }
 
 const MaxButton: FC<{
-  tokenId: TokenId
   maxAmount?: bigint
   onClick: () => void
 }> = ({ maxAmount, onClick }) => {

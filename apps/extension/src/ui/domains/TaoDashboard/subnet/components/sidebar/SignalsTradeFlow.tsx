@@ -34,8 +34,6 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
 
 type SubnetTradeFlowData = NonNullable<ReturnType<typeof useSubnetTradeFlow>["data"]>
 
-const toTao = (raoAmount: string): number => raoToTao(raoAmount)
-
 const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | undefined }>> = ({
   tradeFlow,
 }) => {
@@ -59,8 +57,8 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
     return {
       buys: tradeFlow.buys,
       sells: tradeFlow.sells,
-      buyVol: toTao(tradeFlow.buyVol),
-      sellVol: toTao(tradeFlow.sellVol),
+      buyVol: raoToTao(tradeFlow.buyVol),
+      sellVol: raoToTao(tradeFlow.sellVol),
       buyers: tradeFlow.buyers,
       sellers: tradeFlow.sellers,
       momentum: tradeFlow.momentum,

@@ -1,7 +1,7 @@
 import type { FC } from "react"
 
 import { PoweredBySn45 } from "../subnets/TaoDashboardHeader"
-import { SubnetCharts } from "./components/SubnetChartTabs"
+import { SubnetCharts } from "./components/SubnetCharts"
 import { SubnetTransactions } from "./components/SubnetTransactions"
 import { TaoDashboardSidebar } from "./components/sidebar/TaoDashboardSidebar"
 import { SwapTxNotifications } from "./swap/SwapTxNotifications"
