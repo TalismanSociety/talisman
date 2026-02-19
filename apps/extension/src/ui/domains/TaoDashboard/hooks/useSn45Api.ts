@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import type { TimePeriod } from "../shared/types"
 
 // Create a singleton API instance
-const sn45Api = getSn45Api()
+export const sn45Api = getSn45Api()
 
 export type SubnetLeaderboardResponse = Awaited<
   ReturnType<typeof sn45Api.v1.getSubnetLeaderboard>

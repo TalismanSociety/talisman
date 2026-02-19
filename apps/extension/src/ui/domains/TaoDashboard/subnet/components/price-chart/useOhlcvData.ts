@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
-import { getSn45Api } from "extension-core"
+import { sn45Api } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useCallback, useMemo } from "react"
-
 import type { OhlcvBar, OhlcvResolution } from "./types"
 
 // ---------------------------------------------------------------------------
@@ -45,11 +44,29 @@ export interface UseOhlcvDataReturn {
   loadMore: () => void
   /** Dataset metadata */
   meta: OhlcvMeta
+  /** The error returned by the initial fetch, if any */
+  error: Error | null
+  /** `true` when the initial fetch has errored */
+  isError: boolean
 }
 
-// ---------------------------------------------------------------------------
-// Singleton API client (shared with useSn45Api)
-const sn45Api = getSn45Api()
+/**
+ * Determines whether a failed SN45 API request should be retried.
+ * Skips retry for 4xx client errors (except 429 Too Many Requests).
+ */
+const shouldRetrySn45Error = (failureCount: number, error: unknown): boolean => {
+  const status =
+    typeof error === "object" && error !== null && "status" in error
+      ? (error as { status?: unknown }).status
+      : undefined
+
+  // Don't retry 4xx client errors (bad request, not found, etc.), except 429
+  if (typeof status === "number" && status >= 400 && status < 500 && status !== 429) {
+    return false
+  }
+
+  return failureCount < 2
+}
 
 // ---------------------------------------------------------------------------
 // Hook implementation
@@ -67,32 +84,35 @@ export function useOhlcvData({
   resolution = "60",
   pageSize = 100,
 }: UseOhlcvDataOptions): UseOhlcvDataReturn {
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    queryKey: ["sn45", "subnetOhlcv", netuid, resolution, pageSize],
-    queryFn: async ({
-      pageParam,
-      signal,
-    }: {
-      pageParam: string | undefined
-      signal: AbortSignal
-    }) => {
-      const response = await sn45Api.v1.getSubnetOhlcv(
-        String(netuid),
-        {
-          resolution,
-          limit: String(pageSize),
-          cursor: pageParam,
-        },
-        { signal }
-      )
-      return response.data
-    },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, isError } =
+    useInfiniteQuery({
+      queryKey: ["sn45", "subnetOhlcv", netuid, resolution, pageSize],
+      queryFn: async ({
+        pageParam,
+        signal,
+      }: {
+        pageParam: string | undefined
+        signal: AbortSignal
+      }) => {
+        const response = await sn45Api.v1.getSubnetOhlcv(
+          String(netuid),
+          {
+            resolution,
+            limit: String(pageSize),
+            cursor: pageParam,
+          },
+          { signal }
+        )
+        return response.data
+      },
+      initialPageParam: undefined as string | undefined,
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      enabled: !!netuid,
+      refetchInterval: 60_000,
+      staleTime: 30_000,
+      retry: shouldRetrySn45Error,
+      refetchOnReconnect: true,
+    })
 
   // Flatten all pages into a single sorted array of OhlcvBar
   const bars = useMemo<OhlcvBar[]>(() => {
@@ -150,5 +170,7 @@ export function useOhlcvData({
     hasMore: hasNextPage ?? false,
     loadMore,
     meta,
+    error: error as Error | null,
+    isError,
   }
 }

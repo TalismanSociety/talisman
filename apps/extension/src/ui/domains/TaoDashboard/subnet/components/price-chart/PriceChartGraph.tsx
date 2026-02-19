@@ -85,7 +85,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const [resolution, setResolution] = useState<OhlcvResolution>("60")
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
 
-  const { bars, isLoading, hasMore, loadMore } = useOhlcvData({ netuid, resolution })
+  const { bars, isLoading, isError, hasMore, loadMore } = useOhlcvData({ netuid, resolution })
   const { data: tweets } = useSubnetTweets(netuid, "1m") // TODO implement cursor and pull as needed
   const {
     data: { tokenPrice },
@@ -99,7 +99,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
     return <PriceChartGraphSkeleton />
   }
 
-  if (bars.length === 0) {
+  if (isError || bars.length === 0) {
     return (
       <div className="flex h-[400px] items-center justify-center text-body-secondary">
         {t("Failed to fetch data")}
