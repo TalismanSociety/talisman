@@ -5,7 +5,7 @@ import type { SubnetSummary } from "./types"
 
 export const useGetSubnets = () => {
   return useQuery<SubnetSummary[]>({
-    queryKey: ["subnets"],
+    queryKey: ["taoData", "subnets"],
     queryFn: async ({ signal }) => {
       try {
         return (await taoDataApi.subnets.listSubnets({ signal })).data

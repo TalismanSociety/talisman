@@ -175,8 +175,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return null
   }, [balanceTokenIn, balanceTokenOut, feeEstimate, minAlphaUnstake, state.valueIn, t, tokenIn])
 
-  const canSubmit =
-    !!payload && !inputErrorMessage && typeof state.valueIn === "bigint" && state.valueIn > 0n
+  const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
+
+  const canSubmit = !!payload && isValid
 
   return {
     netuid,

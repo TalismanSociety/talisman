@@ -11,7 +11,7 @@ import {
   type SeriesType,
   type UTCTimestamp,
 } from "lightweight-charts"
-import { type FC, useCallback, useEffect, useRef, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
 import { createChartOptions } from "../chartOptions"
@@ -315,18 +315,17 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
     chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange)
 
-    // ── Resize handler ──────────────────────────────────────────────────
-
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth })
+    // ── Resize observer ──────────────────────────────────────────────────
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        chart.applyOptions({ width: entry.contentRect.width })
       }
-    }
-    window.addEventListener("resize", handleResize)
+    })
+    resizeObserver.observe(container)
 
     return () => {
       chart.timeScale().unsubscribeVisibleLogicalRangeChange(onVisibleRangeChange)
-      window.removeEventListener("resize", handleResize)
+      resizeObserver.disconnect()
       chart.remove()
       chartRef.current = null
       candlestickSeriesRef.current = null
@@ -338,25 +337,10 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
   }, []) // mount-only — chart lifecycle is independent of data
 
-  // ── Effect 2: update series data when bars / indicators change ────────
-  useEffect(() => {
-    const chart = chartRef.current
-    const candlestickSeries = candlestickSeriesRef.current
-    const volumeSeries = volumeSeriesRef.current
-    if (!chart || !candlestickSeries || !volumeSeries || bars.length === 0) return
+  // ── Memoised chart & indicator data (recomputed only when bars change) ─
+  const chartData = useMemo(() => {
+    if (bars.length === 0) return null
 
-    // ── Remove previous overlay series (indicators, price lines, etc.) ──
-    for (const s of overlaySeriesRef.current) {
-      try {
-        chart.removeSeries(s)
-      } catch {
-        /* series may already have been removed */
-      }
-    }
-    overlaySeriesRef.current = []
-    rsiSeriesRef.current = null
-
-    // ── Primary data ────────────────────────────────────────────────────
     const candleData = bars.map((b) => ({
       time: b.time as UTCTimestamp,
       open: b.open,
@@ -371,13 +355,66 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       color: b.close >= b.open ? `${CHART_COLORS.bullish}80` : `${CHART_COLORS.bearish}80`,
     }))
 
+    const closePrices = candleData.map((d) => d.close)
+    const times = candleData.map((d) => d.time)
+
+    return {
+      candleData,
+      volumeData,
+      closePrices,
+      times,
+      sma7:
+        closePrices.length >= INDICATOR_CONFIG.sma7.period
+          ? calculateSMA(closePrices, INDICATOR_CONFIG.sma7.period)
+          : null,
+      sma25:
+        closePrices.length >= INDICATOR_CONFIG.sma25.period
+          ? calculateSMA(closePrices, INDICATOR_CONFIG.sma25.period)
+          : null,
+      sma99:
+        closePrices.length >= INDICATOR_CONFIG.sma99.period
+          ? calculateSMA(closePrices, INDICATOR_CONFIG.sma99.period)
+          : null,
+      bollingerBands:
+        closePrices.length >= INDICATOR_CONFIG.bollingerBands.period
+          ? calculateBollingerBands(
+              closePrices,
+              INDICATOR_CONFIG.bollingerBands.period,
+              INDICATOR_CONFIG.bollingerBands.stdDev
+            )
+          : null,
+      rsi:
+        closePrices.length >= INDICATOR_CONFIG.rsi.period
+          ? calculateRSI(closePrices, INDICATOR_CONFIG.rsi.period)
+          : null,
+    }
+  }, [bars])
+
+  // ── Effect 2: update series data when bars / indicators change ────────
+  useEffect(() => {
+    const chart = chartRef.current
+    const candlestickSeries = candlestickSeriesRef.current
+    const volumeSeries = volumeSeriesRef.current
+    if (!chart || !candlestickSeries || !volumeSeries || !chartData) return
+
+    const { candleData, volumeData, times } = chartData
+
+    // ── Remove previous overlay series (indicators, price lines, etc.) ──
+    for (const s of overlaySeriesRef.current) {
+      try {
+        chart.removeSeries(s)
+      } catch {
+        /* series may already have been removed */
+      }
+    }
+    overlaySeriesRef.current = []
+    rsiSeriesRef.current = null
+
+    // ── Primary data ────────────────────────────────────────────────────
     candlestickSeries.setData(candleData)
     volumeSeries.setData(volumeData)
 
-    // ── Extract reusable values ─────────────────────────────────────────
-    const closePrices = candleData.map((d) => d.close)
-    const times = candleData.map((d) => d.time)
-    const rsiVisible = indicators.rsi && closePrices.length >= INDICATOR_CONFIG.rsi.period
+    const rsiVisible = indicators.rsi && chartData.rsi !== null
     const { VOLUME_RATIO, RSI_RATIO, SECTION_GAP } = CHART_LAYOUT
 
     // ── Configure layout margins ────────────────────────────────────────
@@ -414,25 +451,22 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
 
     // ── Moving averages ─────────────────────────────────────────────────
-    if (indicators.sma7 && closePrices.length >= INDICATOR_CONFIG.sma7.period) {
-      const { period, color } = INDICATOR_CONFIG.sma7
-      addOverlay(calculateSMA(closePrices, period), { color, lineWidth: 1 })
+    if (indicators.sma7 && chartData.sma7) {
+      addOverlay(chartData.sma7, { color: INDICATOR_CONFIG.sma7.color, lineWidth: 1 })
     }
 
-    if (indicators.sma25 && closePrices.length >= INDICATOR_CONFIG.sma25.period) {
-      const { period, color } = INDICATOR_CONFIG.sma25
-      addOverlay(calculateSMA(closePrices, period), { color, lineWidth: 1 })
+    if (indicators.sma25 && chartData.sma25) {
+      addOverlay(chartData.sma25, { color: INDICATOR_CONFIG.sma25.color, lineWidth: 1 })
     }
 
-    if (indicators.sma99 && closePrices.length >= INDICATOR_CONFIG.sma99.period) {
-      const { period, color } = INDICATOR_CONFIG.sma99
-      addOverlay(calculateSMA(closePrices, period), { color, lineWidth: 1 })
+    if (indicators.sma99 && chartData.sma99) {
+      addOverlay(chartData.sma99, { color: INDICATOR_CONFIG.sma99.color, lineWidth: 1 })
     }
 
     // ── Bollinger Bands ─────────────────────────────────────────────────
-    if (indicators.bollingerBands && closePrices.length >= INDICATOR_CONFIG.bollingerBands.period) {
-      const { period, stdDev, color } = INDICATOR_CONFIG.bollingerBands
-      const bb = calculateBollingerBands(closePrices, period, stdDev)
+    if (indicators.bollingerBands && chartData.bollingerBands) {
+      const { color } = INDICATOR_CONFIG.bollingerBands
+      const bb = chartData.bollingerBands
 
       // Area fill from upper band with gradient fading to transparent
       const bbFillSeries = chart.addSeries(AreaSeries, {
@@ -459,7 +493,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
 
     // ── RSI indicator ───────────────────────────────────────────────────
     if (rsiVisible) {
-      const rsiData = calculateRSI(closePrices, INDICATOR_CONFIG.rsi.period)
+      const rsiData = chartData.rsi!
 
       // Band fill (70 → 30 zone)
       const bandFillSeries = chart.addSeries(AreaSeries, {
@@ -596,7 +630,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       })
       initialFitDoneRef.current = true
     }
-  }, [bars, tweets, tokenPrice, indicators])
+  }, [chartData, tweets, tokenPrice, indicators])
 
   return <div ref={chartContainerRef} className="size-full" />
 }

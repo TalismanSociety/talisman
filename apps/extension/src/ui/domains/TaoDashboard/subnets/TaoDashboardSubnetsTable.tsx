@@ -62,7 +62,7 @@ const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isP
     .join(" ")
 
   return (
-    <svg width="60" height="20" className="overflow-visible">
+    <svg width="60" height="20" className="overflow-visible" aria-hidden="true">
       <polyline
         points={points}
         fill="none"
@@ -157,7 +157,8 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod 
 
   if (isLoading && subnets.length === 0) {
     return (
-      <div className="w-full overflow-hidden rounded-lg bg-black-secondary">
+      // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
+      <div role="table" className="w-full overflow-hidden rounded-lg bg-black-secondary">
         <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
         <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -170,7 +171,8 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod 
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-lg bg-black-secondary">
+    // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
+    <div role="table" className="w-full overflow-hidden rounded-lg bg-black-secondary">
       <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
       <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
         {sortedSubnets.map((subnet) => (
@@ -202,8 +204,11 @@ const HeaderCell: FC<
   }>
 > = ({ children, sortOrder, onSortOrderToggle, className, showInfoIcon }) => {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
     <button
       type="button"
+      role="columnheader"
+      aria-sort={sortOrder === "asc" ? "ascending" : sortOrder === "desc" ? "descending" : "none"}
       className={cn(
         "flex items-center justify-start gap-1 text-left text-body-secondary text-xs uppercase",
         onSortOrderToggle ? "cursor-pointer" : "cursor-default",
@@ -246,7 +251,12 @@ const HeaderRow: FC<{
   )
 
   return (
-    <div className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive">
+    // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
+    // biome-ignore lint/a11y/useFocusableInteractive: child buttons are focusable
+    <div
+      role="row"
+      className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
+    >
       <HeaderCell
         sortOrder={getSortOrder("netuid")}
         onSortOrderToggle={handleSortToggle("netuid", "asc")}
@@ -307,7 +317,11 @@ const DataCell: FC<PropsWithChildren<{ error?: boolean; className?: string }>> =
 }) => {
   const { t } = useTranslation()
   return (
-    <div className={cn("flex flex-col items-start justify-center gap-1 text-left", className)}>
+    // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
+    <div
+      role="cell"
+      className={cn("flex flex-col items-start justify-center gap-1 text-left", className)}
+    >
       {error === true ? <span className="text-body-inactive">{t("N/A")}</span> : children}
     </div>
   )
@@ -333,6 +347,10 @@ const SubnetRow: FC<{
   return (
     <Link
       to={`/bittensor/subnets/${subnet.token.netuid}`}
+      role="row"
+      aria-label={t("View subnet {{name}}", {
+        name: subnet.token.subnetName || `SN${subnet.token.netuid}`,
+      })}
       className="grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-800"
     >
       {/* Subnet */}

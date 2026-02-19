@@ -4,7 +4,7 @@ import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./tao
 
 export function useGetSubnetPools() {
   return useQuery({
-    queryKey: ["subnetPools"],
+    queryKey: ["taoData", "subnetPools"],
     queryFn: async ({ signal }) => {
       try {
         return (await taoDataApi.pools.listPools({ signal })).data

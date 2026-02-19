@@ -107,20 +107,18 @@ const FlowChartGraphContent: FC<{
 
     chartRef.current = chart
 
-    // Resize handler
+    // Resize observer
     const container = chartContainerRef.current
-    const handleResize = () => {
-      if (container) {
-        chart.applyOptions({
-          width: container.clientWidth,
-          height: container.clientHeight,
-        })
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        chart.applyOptions({ width, height })
       }
-    }
-    window.addEventListener("resize", handleResize)
+    })
+    resizeObserver.observe(container)
 
     return () => {
-      window.removeEventListener("resize", handleResize)
+      resizeObserver.disconnect()
       chartRef.current = null
       seriesRef.current = { taoIn: null, taoOut: null, net: null }
       chart.remove()
