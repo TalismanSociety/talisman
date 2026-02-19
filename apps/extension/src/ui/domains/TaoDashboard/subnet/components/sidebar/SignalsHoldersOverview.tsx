@@ -5,11 +5,13 @@
 import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { formatCompactNumber, useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { formatCompactNumber, SectionTitleBar, useDaysFromPeriod } from "./shared"
+import { SectionTitleBar } from "./SectionTitleBar"
 
 // Tier configuration with colors matching the design
 const TIER_CONFIG = {
@@ -341,13 +343,4 @@ const MetricsFieldSkeleton: FC<{ withExtra?: boolean }> = ({ withExtra }) => (
       </div>
     )}
   </div>
-)
-
-const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
-  <div
-    className={cn(
-      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
-      className
-    )}
-  />
 )

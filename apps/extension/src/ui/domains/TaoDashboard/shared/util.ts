@@ -36,6 +36,10 @@ export const getDaysPerPeriod = (period: TimePeriod): number => {
   }
 }
 
+export const useDaysFromPeriod = (period: TimePeriod): number => {
+  return useMemo(() => getDaysPerPeriod(period), [period])
+}
+
 export const getLeaderboardPeriod = (period: TimePeriod): LeaderboardPeriod => {
   switch (period) {
     case "1D":
@@ -76,4 +80,31 @@ export const useColorFromScore100 = (score: number | null | undefined): string |
   if (score > 50) return "text-buy"
   if (score < 50) return "text-sell"
   return null
+}
+
+const compactNumberFormatterByDecimals = new Map<number, Intl.NumberFormat>()
+
+const getCompactNumberFormatter = (decimals: number): Intl.NumberFormat => {
+  const cached = compactNumberFormatterByDecimals.get(decimals)
+  if (cached) return cached
+
+  const formatter = new Intl.NumberFormat(undefined, {
+    notation: "compact",
+    compactDisplay: "short",
+    maximumFractionDigits: decimals,
+  })
+
+  compactNumberFormatterByDecimals.set(decimals, formatter)
+  return formatter
+}
+
+/** Format a number with K / M / B suffixes for compact display. */
+export const formatCompactNumber = (num: number, decimals = 1): string => {
+  if (num === 0) return "0"
+  return getCompactNumberFormatter(decimals).format(num)
+}
+
+/** Format alpha token amounts with Ka / Ma suffix */
+export const formatCompactAlpha = (num: number, symbol = "a"): string => {
+  return `${formatCompactNumber(num, 0)}${symbol}`
 }

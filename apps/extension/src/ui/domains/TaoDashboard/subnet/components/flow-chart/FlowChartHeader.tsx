@@ -1,11 +1,12 @@
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { formatCompactAlpha, formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { useToken } from "@ui/state"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { formatAlpha, formatCompactNumber } from "./formatters"
 import { useFlowHeaderData } from "./useFlowChartData"
 
 interface FlowChartHeaderProps {
@@ -66,11 +67,11 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, timeRange })
           <Metric label={t("Alpha Flow")}>
             <div className="flex flex-col">
               <span className="font-medium text-buy">
-                {formatAlpha(alphaFlow.alphaIn, alphaToken?.symbol)}{" "}
+                {formatCompactAlpha(alphaFlow.alphaIn, alphaToken?.symbol)}{" "}
                 <span className="text-body-disabled text-xs">{t("In")}</span>
               </span>
               <span className="font-medium text-sell">
-                {formatAlpha(alphaFlow.alphaOut, alphaToken?.symbol)}{" "}
+                {formatCompactAlpha(alphaFlow.alphaOut, alphaToken?.symbol)}{" "}
                 <span className="text-body-disabled text-xs">{t("Out")}</span>
               </span>
             </div>
@@ -94,10 +95,6 @@ const Metric: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }
     <span className="text-body-disabled text-xs">{label}</span>
     <span className="font-medium text-md text-white">{children}</span>
   </div>
-)
-
-const Skeleton: FC<{ className?: string }> = ({ className }) => (
-  <div className={cn("animate-pulse rounded-xs bg-grey-800", className)} />
 )
 
 const MetricSkeleton: FC<{

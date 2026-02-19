@@ -1,9 +1,10 @@
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { ArrowRightIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
+import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import {
   type FC,
   Fragment,
@@ -14,7 +15,7 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { SectionTitleBar, useDaysFromPeriod } from "./shared"
+import { SectionTitleBar } from "./SectionTitleBar"
 
 export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
@@ -268,13 +269,4 @@ const SquareBadge: FC<PropsWithChildren> = ({ children }) => (
   <div className="inline-flex h-12 items-center rounded-xs border border-body-secondary px-5 text-body-secondary text-xs">
     {children}
   </div>
-)
-
-const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
-  <div
-    className={cn(
-      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
-      className
-    )}
-  />
 )

@@ -1,4 +1,4 @@
-import { cn } from "@talismn/util"
+import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import {
   AreaSeries,
   CandlestickSeries,
@@ -279,10 +279,6 @@ const PriceChartGraphSkeleton = () => (
       <Skeleton className="size-5 rounded-full" />
     </div>
   </div>
-)
-
-const Skeleton: FC<{ className?: string }> = ({ className }) => (
-  <div className={cn("animate-pulse rounded-xs bg-grey-800", className)} />
 )
 
 // Internal component that renders the actual chart (no loading handling)

@@ -2,7 +2,7 @@ import { ScrollContainer, useScrollContainer } from "@talisman/components/Scroll
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { type DotNetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
-import { classNames, cn, planckToTokens } from "@talismn/util"
+import { cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -102,7 +102,7 @@ export const BittensorValidatorPicker: FC<{
       <div className="flex items-center gap-4 px-12">
         <div className="grow">
           <SearchInputControlled
-            containerClassName={classNames(
+            containerClassName={cn(
               "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
               "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
             )}
@@ -296,7 +296,7 @@ const ValidatorRow: FC<{
       type="button"
       key={option.hotkey}
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800 text-body-secondary"

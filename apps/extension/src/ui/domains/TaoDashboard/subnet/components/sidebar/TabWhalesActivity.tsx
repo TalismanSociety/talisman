@@ -19,13 +19,15 @@ import {
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { AccountNameOrAddress } from "@ui/domains/TaoDashboard/shared/AccountNameOrAddress"
 import { TAO_SYMBOL } from "@ui/domains/TaoDashboard/shared/constants"
+import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAvatar"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { useToken } from "@ui/state"
-import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { SectionTitleBar, useDaysFromPeriod } from "./shared"
+import { SectionTitleBar } from "./SectionTitleBar"
 
 export const TabWhalesActivity: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
@@ -54,15 +56,6 @@ const Separator = () => <div className="h-px shrink-0 bg-grey-800"></div>
 const isInflowTransaction = (type: WhaleTransactionType): boolean => {
   return type === "StakeAdded"
 }
-
-const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
-  <div
-    className={cn(
-      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
-      className
-    )}
-  />
-)
 
 const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()

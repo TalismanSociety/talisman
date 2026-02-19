@@ -5,6 +5,7 @@ import {
   useSubnetLeaderboardEntry,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useSentimentLabelFromScore100 } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
+import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   useColorFromScore100,
@@ -15,7 +16,7 @@ import {
 import { type FC, type PropsWithChildren, type ReactNode, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { SectionTitleBar } from "./shared"
+import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
@@ -224,13 +225,4 @@ const SentimentFieldSkeleton = () => (
       <Skeleton className="w-[4rem]" />
     </div>
   </div>
-)
-
-const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
-  <div
-    className={cn(
-      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
-      className
-    )}
-  />
 )

@@ -1,3 +1,4 @@
+import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import {
   AreaSeries,
   createChart,
@@ -10,7 +11,6 @@ import type { FC } from "react"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FlowChartToolbar } from "./FlowChartToolbar"
-import { formatCompactNumber } from "./formatters"
 import type { FlowChartPoint } from "./types"
 import { useFlowGraphData } from "./useFlowChartData"
 

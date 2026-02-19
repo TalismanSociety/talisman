@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import type { TimePeriod } from "../shared/types"
+import { formatCompactNumber } from "../shared/util"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import {
   type TaoDashboardSubnet,
@@ -24,13 +25,7 @@ type SortSetting = {
 const DEFAULT_SORT_SETTING: SortSetting = { key: "netuid", order: "asc" }
 
 // Format number with appropriate precision
-const formatNumber = (num: number, decimals = 2) => {
-  if (num === 0) return "0"
-  if (Math.abs(num) >= 1000000000) return `${(num / 1000000000).toFixed(1)}B`
-  if (Math.abs(num) >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-  if (Math.abs(num) >= 1000) return `${(num / 1000).toFixed(2)}k`
-  return num.toFixed(decimals)
-}
+const formatNumber = (num: number, decimals = 2) => formatCompactNumber(num, decimals)
 
 // Format price in TAO
 const formatTaoPrice = (price: number | undefined) => {

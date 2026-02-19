@@ -1,6 +1,7 @@
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetStats } from "./useSubnetStats"
@@ -105,10 +106,6 @@ const MetricSkeleton: FC<{ titleClassName?: string; valueClassName?: string }> =
     <Skeleton className={cn("h-8 w-32", titleClassName)} />
     <Skeleton className={cn("h-10 w-40", valueClassName)} />
   </div>
-)
-
-const Skeleton: FC<{ className?: string }> = ({ className }) => (
-  <div className={cn("animate-pulse rounded-xs bg-grey-800", className)} />
 )
 
 const Metric: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }) => {

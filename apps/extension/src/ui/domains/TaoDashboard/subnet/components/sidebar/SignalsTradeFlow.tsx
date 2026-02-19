@@ -1,8 +1,9 @@
 import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetTradeFlow } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
-import { raoToTao } from "@ui/domains/TaoDashboard/shared/util"
+import { formatCompactNumber, raoToTao } from "@ui/domains/TaoDashboard/shared/util"
 import {
   type CSSProperties,
   type FC,
@@ -13,7 +14,7 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { formatNumber, SectionTitleBar } from "./shared"
+import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
@@ -90,8 +91,8 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
           labelRight={t("Buy Vol")}
           valueLeft={metrics.sellVol}
           valueRight={metrics.buyVol}
-          contentLeft={`τ${formatNumber(metrics.sellVol, 0)}`}
-          contentRight={`τ${formatNumber(metrics.buyVol, 0)}`}
+          contentLeft={`τ${formatCompactNumber(metrics.sellVol, 0)}`}
+          contentRight={`τ${formatCompactNumber(metrics.buyVol, 0)}`}
         />
         <ComparisonField
           labelLeft={t("Sellers")}
@@ -269,12 +270,3 @@ const ComparisonFieldSkeleton = () => {
     </div>
   )
 }
-
-const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({ className }) => (
-  <div
-    className={cn(
-      "my-px h-[0.9em] shrink-0 animate-pulse rounded-xs bg-grey-800 text-grey-800",
-      className
-    )}
-  />
-)
