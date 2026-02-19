@@ -1,6 +1,30 @@
 import { useMemo } from "react"
 import type { LeaderboardPeriod, TimePeriod } from "./types"
 
+const RAO_PER_TAO = 1_000_000_000n
+
+/**
+ * Convert a rao-encoded string (or bigint) to a TAO number for display.
+ *
+ * Uses BigInt arithmetic for the integer part so precision is preserved
+ * for amounts > Number.MAX_SAFE_INTEGER rao (~9 007 199 TAO).
+ */
+export const raoToTao = (value: string | bigint | null | undefined): number => {
+  if (value === null || value === undefined) return 0
+  try {
+    const bi = typeof value === "bigint" ? value : BigInt(value)
+    const sign = bi < 0n ? -1 : 1
+    const abs = bi < 0n ? -bi : bi
+    const integerPart = abs / RAO_PER_TAO
+    const remainder = abs % RAO_PER_TAO
+    return sign * (Number(integerPart) + Number(remainder) / 1e9)
+  } catch {
+    // If BigInt parsing fails, fall back to Number parsing
+    const n = Number(value)
+    return Number.isFinite(n) ? n / 1e9 : 0
+  }
+}
+
 export const getDaysPerPeriod = (period: TimePeriod): number => {
   switch (period) {
     case "1D":

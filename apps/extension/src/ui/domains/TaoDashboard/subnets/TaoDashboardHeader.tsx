@@ -6,6 +6,7 @@ import { useBalances, useIsBalanceInitializing, useToken } from "@ui/state"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
+import { raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
 // Format large USD values
@@ -97,8 +98,7 @@ export const TaoDashboardHeader = () => {
     const priceChange24h = taoPrice?.priceChange24h ?? null
 
     // Subnet volume from leaderboard (convert rao to TAO, then to USD)
-    const parseRao = (val: string | null | undefined) => (val ? Number(BigInt(val)) / 1e9 : 0)
-    const totalSubnetVolume = subnets.reduce((sum, s) => sum + parseRao(s.volume) * taoUsd, 0)
+    const totalSubnetVolume = subnets.reduce((sum, s) => sum + raoToTao(s.volume) * taoUsd, 0)
 
     // Market cap change
     const marketCapChange24h = taoPrice?.marketCapChange24h ?? null

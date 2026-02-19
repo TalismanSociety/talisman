@@ -3,6 +3,7 @@ import type { UTCTimestamp } from "lightweight-charts"
 import { useMemo } from "react"
 
 import { useSubnetFlowChart, useSubnetFlowSummary } from "../../../hooks/useSn45Api"
+import { raoToTao } from "../../../shared/util"
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import type { AlphaFlow, FlowChartPoint, FlowTotals } from "./types"
 
@@ -33,9 +34,9 @@ export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHea
   const totals = useMemo<FlowTotals>(() => {
     if (!flowSummary) return { taoIn: 0, taoOut: 0, net: 0 }
     return {
-      taoIn: Number(flowSummary.taoFlow.taoIn) / 1e9,
-      taoOut: Number(flowSummary.taoFlow.taoOut) / 1e9,
-      net: Number(flowSummary.taoFlow.net) / 1e9,
+      taoIn: raoToTao(flowSummary.taoFlow.taoIn),
+      taoOut: raoToTao(flowSummary.taoFlow.taoOut),
+      net: raoToTao(flowSummary.taoFlow.net),
     }
   }, [flowSummary])
 
@@ -43,18 +44,18 @@ export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHea
   const alphaFlow = useMemo<AlphaFlow>(() => {
     if (!flowSummary) return { alphaIn: 0, alphaOut: 0 }
     return {
-      alphaIn: Number(flowSummary.alphaFlow.alphaIn) / 1e9,
-      alphaOut: Number(flowSummary.alphaFlow.alphaOut) / 1e9,
+      alphaIn: raoToTao(flowSummary.alphaFlow.alphaIn),
+      alphaOut: raoToTao(flowSummary.alphaFlow.alphaOut),
     }
   }, [flowSummary])
 
   // Emissions (from on-chain subnet data)
   const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
 
-  const emissionPercent = emissionRaw ? (Number(emissionRaw) / 1e9 / 1e9) * 100 : null
+  const emissionPercent = emissionRaw ? (raoToTao(emissionRaw) / 1e9) * 100 : null
 
   const dailyEmissions = emissionRaw
-    ? (Number(emissionRaw) / 1e9) * (7200 / (currentSubnet?.tempo ?? 360))
+    ? raoToTao(emissionRaw) * (7200 / (currentSubnet?.tempo ?? 360))
     : null
 
   // Trend direction

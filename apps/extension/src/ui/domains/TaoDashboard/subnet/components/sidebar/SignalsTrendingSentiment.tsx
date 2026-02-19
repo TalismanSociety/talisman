@@ -12,7 +12,7 @@ import {
   useScore1To100,
   useScore2To100,
 } from "@ui/domains/TaoDashboard/shared/util"
-import { type FC, type PropsWithChildren, type ReactNode, useState } from "react"
+import { type FC, type PropsWithChildren, type ReactNode, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./shared"
@@ -119,6 +119,7 @@ const SentimentField: FC<
 )
 
 const SentimentGauge: FC<{ score: number }> = ({ score }) => {
+  const gradientId = useId()
   const needleRotation = (score / 100) * 180 - 90
 
   return (
@@ -133,7 +134,7 @@ const SentimentGauge: FC<{ score: number }> = ({ score }) => {
       {/* outer gradient shape */}
       <path
         d="M112.425 71.6381C114.629 72.1594 116.853 70.7968 117.22 68.5622C118.433 61.1737 118.232 53.6087 116.611 46.2731C114.695 37.6005 110.846 29.4724 105.351 22.4949C99.8553 15.5175 92.8555 9.87071 84.8734 5.9758C76.8913 2.0809 68.1329 0.038366 59.2513 0.00053521C50.3697 -0.0372955 41.5942 1.93055 33.5792 5.75732C25.5642 9.58408 18.5166 15.171 12.962 22.1014C7.40744 29.0318 3.48919 37.1269 1.49952 45.7828C-0.183427 53.1043 -0.449851 60.6673 0.700682 68.0659C1.04865 70.3036 3.26099 71.6851 5.46908 71.1825C7.67717 70.68 9.04238 68.4835 8.71953 66.2421C7.82792 60.0519 8.08544 53.738 9.49175 47.6199C11.2049 40.1671 14.5785 33.1972 19.361 27.2301C24.1436 21.263 30.2116 16.4526 37.1125 13.1577C44.0135 9.86288 51.5693 8.16855 59.2164 8.20112C66.8635 8.23369 74.4045 9.99233 81.2772 13.3459C88.1498 16.6994 94.1766 21.5613 98.9082 27.5689C103.64 33.5766 106.954 40.5749 108.603 48.0421C109.958 54.1719 110.161 60.4878 109.217 66.6702C108.875 68.9088 110.221 71.1168 112.425 71.6381Z"
-        fill="url(#paint0_linear_3288_4495)"
+        fill={`url(#${gradientId})`}
       />
       {/* central shape including needle */}
       <g transform={`rotate(${needleRotation}, 59, 59)`}>
@@ -155,7 +156,7 @@ const SentimentGauge: FC<{ score: number }> = ({ score }) => {
       </text>
       <defs>
         <linearGradient
-          id="paint0_linear_3288_4495"
+          id={gradientId}
           x1="116.42"
           y1="60.5803"
           x2="4.21428"

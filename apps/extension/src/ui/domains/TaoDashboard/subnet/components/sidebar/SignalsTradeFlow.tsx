@@ -2,6 +2,7 @@ import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetTradeFlow } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { raoToTao } from "@ui/domains/TaoDashboard/shared/util"
 import {
   type CSSProperties,
   type FC,
@@ -33,7 +34,7 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
 
 type SubnetTradeFlowData = NonNullable<ReturnType<typeof useSubnetTradeFlow>["data"]>
 
-const toTao = (raoAmount: string): number => Number(raoAmount) / 1e9
+const toTao = (raoAmount: string): number => raoToTao(raoAmount)
 
 const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | undefined }>> = ({
   tradeFlow,

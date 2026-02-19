@@ -2,6 +2,8 @@
 // OHLCV types — TradingView / lightweight-charts compatible
 // ---------------------------------------------------------------------------
 
+import { raoToTao } from "../../../shared/util"
+
 export type OhlcvResolution = "15" | "60" | "240" | "1440"
 
 /**
@@ -124,8 +126,8 @@ export function processStakeEventsToOHLC(
   const processedStakes = stakeEvents.map((e) => ({
     ...e,
     timestamp: new Date(e.timestamp),
-    alpha: parseFloat(e.alphaAmount) / 1e9,
-    tao: parseFloat(e.taoAmount) / 1e9,
+    alpha: raoToTao(e.alphaAmount),
+    tao: raoToTao(e.taoAmount),
   }))
 
   processedStakes.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())

@@ -56,6 +56,7 @@ const FlowChartGraphContent: FC<{
   netuid: number
   days: number
 }> = ({ netuid, days }) => {
+  const { t } = useTranslation()
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, days)
 

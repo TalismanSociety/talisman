@@ -2,7 +2,6 @@ import { bind } from "@react-rxjs/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { getBalanceId } from "@talismn/balances"
 import { subDTaoTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
-import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakeInputError"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
@@ -11,18 +10,12 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountByAddress, useAccounts, useBalances, useNetworkById, useToken } from "@ui/state"
-import {
-  isAccountCompatibleWithNetwork,
-  isAccountOfType,
-  type WalletTransactionInfo,
-} from "extension-core"
-import { log } from "extension-shared"
+import { isAccountCompatibleWithNetwork, type WalletTransactionInfo } from "extension-core"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
-import { useSwapTxWatcher } from "./SwapTxWatcher"
+import { useSwapSubmit } from "./useSwapSubmit"
 
 // keep track of the last selected account globally, as the provider will be reset each time its unmounted
 const subjectLastSelectedAddress = new BehaviorSubject<string | null>(null)
@@ -45,13 +38,11 @@ const DEFAULT_INPUTS: SwapBuyInputs = {
 const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const lastSelectedAddress = useLastSelectedAddress()
   const defaultAddress = useBestAccountAddress()
-  const { addTransaction } = useSwapTxWatcher()
 
   const [state, setState] = useState<SwapBuyInputs>(
     // preselect account straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
   )
-  const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
@@ -123,30 +114,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((s) => ({ ...s, hotkey }))
   }, [])
 
-  const { t } = useTranslation()
-  const onSubmit = useCallback(
-    (hash: `0x${string}`, innerHash?: `0x${string}`) => {
-      log.debug("Transaction submitted", { hash })
+  const resetValueIn = useCallback(() => {
+    setState((prev) => ({ ...prev, valueIn: null }))
+  }, [])
 
-      if (innerHash) {
-        addTransaction({
-          label: t("MEV Shield"),
-          hash,
-        })
-        addTransaction({
-          label: t("Buy SN{{netuid}}", { netuid }),
-          hash: innerHash,
-        })
-      } else {
-        addTransaction({
-          label: t("Buy SN{{netuid}}", { netuid }),
-          hash,
-        })
-      }
-      setState((prev) => ({ ...prev, valueIn: null }))
-    },
-    [addTransaction, netuid, t]
-  )
+  const { isMevShieldDisabled, withMevShield, setIsMevProtectionEnabled, txMode, onSubmit } =
+    useSwapSubmit({ netuid, account, direction: "buy", resetValueIn })
 
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
@@ -171,17 +144,6 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   }, [currentHotkey])
 
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
-
-  const isMevShieldDisabled = useMemo(() => {
-    // no need for root staking
-    // supported only for hot wallets
-    return !netuid || !isAccountOfType(account, "keypair")
-  }, [netuid, account])
-
-  const withMevShield = useMemo(
-    () => !isMevShieldDisabled && isMevProtectionEnabled,
-    [isMevShieldDisabled, isMevProtectionEnabled]
-  )
 
   const {
     payload,
@@ -217,11 +179,6 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
       hotkey,
     }
   }, [tokenIdIn, valueIn, valueOut, tokenIdOutGeneric, hotkey])
-
-  const txMode = useMemo(
-    (): ScaleApiSubmitMode => (withMevShield ? "bittensor-mev-shield" : "default"),
-    [withMevShield]
-  )
 
   const {
     data: feeEstimate,

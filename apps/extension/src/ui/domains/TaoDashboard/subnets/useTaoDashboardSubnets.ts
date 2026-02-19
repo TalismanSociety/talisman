@@ -12,16 +12,10 @@ import {
   useTaoPrice,
 } from "../hooks/useSn45Api"
 import type { TimePeriod } from "../shared/types"
-import { getLeaderboardPeriod } from "../shared/util"
+import { getLeaderboardPeriod, raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
 type SubnetSentiment = "bullish" | "bearish" | null
-
-// Convert bigint string to number with decimals (values are in rao, 1e9)
-const parseRaoToNumber = (value: string | null | undefined): number => {
-  if (!value) return 0
-  return Number(BigInt(value)) / 1e9
-}
 
 export const useTaoDashboardSubnets = (period: TimePeriod) => {
   const leaderboardPeriod = useMemo<"1d" | "1w" | "1m">(
@@ -96,10 +90,10 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
 
         // Use leaderboard data for price change, staked, mcap, volume
         const priceChange = leaderboard?.priceChange ?? undefined
-        const stakedAlpha = parseRaoToNumber(leaderboard?.stakedAlpha)
+        const stakedAlpha = raoToTao(leaderboard?.stakedAlpha)
         // mcap and volume from API are in TAO (rao units)
-        const mcap = parseRaoToNumber(leaderboard?.mcap)
-        const volume = leaderboard ? parseRaoToNumber(leaderboard.volume) : (economics?.volume ?? 0)
+        const mcap = raoToTao(leaderboard?.mcap)
+        const volume = leaderboard ? raoToTao(leaderboard.volume) : (economics?.volume ?? 0)
 
         // Use emissionPct and score directly from the API
         const emission = leaderboard?.emissionPct ?? 0

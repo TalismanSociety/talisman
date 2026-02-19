@@ -17,6 +17,7 @@ import {
   useSubnetStakeEvents,
   useSubnetTokenomics,
 } from "../../hooks/useSn45Api"
+import { raoToTao } from "../../shared/util"
 
 interface TradingSignalsGridProps {
   netuid: number
@@ -56,8 +57,8 @@ function computeTradingMetrics(
   const buys24h = recent24h.filter((e) => e.method === "Adding")
   const sells24h = recent24h.filter((e) => e.method === "Removing")
 
-  const buyVolume = buys24h.reduce((sum, e) => sum + parseFloat(e.taoAmount) / 1e9, 0)
-  const sellVolume = sells24h.reduce((sum, e) => sum + parseFloat(e.taoAmount) / 1e9, 0)
+  const buyVolume = buys24h.reduce((sum, e) => sum + raoToTao(e.taoAmount), 0)
+  const sellVolume = sells24h.reduce((sum, e) => sum + raoToTao(e.taoAmount), 0)
 
   // Buy/Sell Ratio (volume-weighted)
   const buySellRatio24h = sellVolume > 0 ? buyVolume / sellVolume : buyVolume > 0 ? 999 : 1
@@ -66,10 +67,7 @@ function computeTradingMetrics(
   const uniqueTraders24h = new Set(recent24h.map((e) => e.coldkey).filter(Boolean)).size
 
   // Average trade size (all time)
-  const totalTaoVolume = (stakeEvents ?? []).reduce(
-    (sum, e) => sum + parseFloat(e.taoAmount) / 1e9,
-    0
-  )
+  const totalTaoVolume = (stakeEvents ?? []).reduce((sum, e) => sum + raoToTao(e.taoAmount), 0)
   const avgTradeSize =
     stakeEvents && stakeEvents.length > 0 ? totalTaoVolume / stakeEvents.length : 0
 
@@ -89,7 +87,7 @@ function computeTradingMetrics(
   let flowMomentum: "accumulating" | "distributing" | "neutral" = "neutral"
   let flowMomentumValue = 0
   if (tokenomics?.emaTaoFlow) {
-    flowMomentumValue = parseFloat(tokenomics.emaTaoFlow) / 1e9
+    flowMomentumValue = raoToTao(tokenomics.emaTaoFlow)
     if (flowMomentumValue > 1000) {
       flowMomentum = "accumulating"
     } else if (flowMomentumValue < -1000) {

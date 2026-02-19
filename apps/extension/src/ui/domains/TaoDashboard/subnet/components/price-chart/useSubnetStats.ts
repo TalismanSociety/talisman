@@ -2,6 +2,7 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useMemo } from "react"
 
 import { useSubnetTokenomics, useTaoPrice } from "../../../hooks/useSn45Api"
+import { raoToTao } from "../../../shared/util"
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 
 export interface SubnetStatsData {
@@ -16,9 +17,8 @@ export interface SubnetStatsData {
 
 const parseRaoToTao = (value: string | null | undefined): number | null => {
   if (!value) return null
-  const parsed = Number(value)
-  if (!Number.isFinite(parsed)) return null
-  return parsed / 1e9
+  const result = raoToTao(value)
+  return Number.isFinite(result) ? result : null
 }
 
 export function useSubnetStats(netuid: number) {
@@ -68,7 +68,7 @@ export function useSubnetStats(netuid: number) {
 
     const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
     const dailyEmissions = emissionRaw
-      ? (Number(emissionRaw) / 1e9) * (7200 / (currentSubnet?.tempo ?? 360))
+      ? raoToTao(emissionRaw) * (7200 / (currentSubnet?.tempo ?? 360))
       : null
 
     return {

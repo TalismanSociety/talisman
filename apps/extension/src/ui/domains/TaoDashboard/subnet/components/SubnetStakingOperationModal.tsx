@@ -15,6 +15,7 @@ import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 import type { TransactionEntry } from "../../shared/types"
+import { raoToTao } from "../../shared/util"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import {
   type MatchedCall,
@@ -255,7 +256,7 @@ const SlippageFields: FC<{
   // Format price (TAO per Alpha)
   const formatPrice = (price: bigint | number | null | undefined): string => {
     if (price === null || price === undefined) return ""
-    const numPrice = typeof price === "bigint" ? Number(price) / 1e9 : price
+    const numPrice = typeof price === "bigint" ? raoToTao(price) : price
     return t("{{price}} τ / {{alphaSymbol}}", {
       price: formatDecimals(numPrice, 9),
       alphaSymbol: alphaToken.symbol,
