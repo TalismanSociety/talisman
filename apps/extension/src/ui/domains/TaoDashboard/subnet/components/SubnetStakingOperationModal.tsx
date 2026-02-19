@@ -1,7 +1,7 @@
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { type SubDTaoToken, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
+import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { cn, formatDecimals } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -9,14 +9,13 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useToken } from "@ui/state"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
+import { useSubnetTokens } from "../../hooks/useSubnetTokens"
 import type { TransactionEntry } from "../../shared/types"
 import { raoToTao } from "../../shared/util"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import {
   type MatchedCall,
   type StakingOperationType,
@@ -133,6 +132,7 @@ const SwapSummary: FC<{ transaction: TransactionEntry; netuid: number }> = ({
   netuid,
 }) => {
   const { t } = useTranslation()
+  const { alphaTokenId } = useSubnetTokens(netuid)
   const isBuy = transaction.direction === "buy"
   const isUnknown = transaction.status !== "indexed" && transaction.status !== "failed"
   const sign = isBuy ? "+" : "-"
@@ -144,13 +144,7 @@ const SwapSummary: FC<{ transaction: TransactionEntry; netuid: number }> = ({
         <div
           className={cn("text-lg", isBuy ? "text-buy" : "text-sell", isUnknown && "animate-pulse")}
         >
-          {sign}{" "}
-          <TokensAndFiat
-            noFiat
-            noCountUp
-            tokenId={subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)}
-            planck={alphaValue}
-          />
+          {sign} <TokensAndFiat noFiat noCountUp tokenId={alphaTokenId} planck={alphaValue} />
         </div>
       </div>
       <div className="h-px w-full shrink-0 bg-body-disabled/50"></div>
@@ -556,14 +550,4 @@ const FieldValueTxHash: FC<{ hash: string }> = ({ hash }) => {
       </a>
     </div>
   )
-}
-
-const useSubnetTokens = (netuid: number) => {
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
-  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
-
-  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
-  const taoToken = useToken(taoTokenId, "substrate-native")
-
-  return { alphaToken, taoToken }
 }

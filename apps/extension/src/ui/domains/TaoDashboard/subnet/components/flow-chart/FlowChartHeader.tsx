@@ -1,11 +1,9 @@
-import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { formatCompactAlpha, formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
-import { useToken } from "@ui/state"
-import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
+import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useFlowHeaderData } from "./useFlowChartData"
 
@@ -18,7 +16,7 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, timeRange })
   const { t } = useTranslation()
   const { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading } =
     useFlowHeaderData(netuid, timeRange)
-  const alphaToken = useToken(useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid]))
+  const { alphaToken } = useSubnetTokens(netuid)
 
   if (isLoading) return <FlowChartHeaderSkeleton />
 

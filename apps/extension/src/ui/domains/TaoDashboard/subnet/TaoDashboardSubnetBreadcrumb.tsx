@@ -1,20 +1,17 @@
 import { Breadcrumb, type BreadcrumbItem } from "@talisman/components/Breadcrumb"
-import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
+import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useToken } from "@ui/state"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 import { useTaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 
 export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
 
-  const tokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
-  const token = useToken(tokenId, "substrate-dtao")
+  const { alphaToken: token } = useSubnetTokens(netuid)
   const { open } = useTaoDashboardSubnetPickerModal()
 
   const items = useMemo(

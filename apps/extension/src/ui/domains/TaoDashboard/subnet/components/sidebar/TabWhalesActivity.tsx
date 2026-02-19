@@ -1,11 +1,6 @@
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { BalanceFormatter } from "@talismn/balances"
-import {
-  type SubDTaoToken,
-  type SubNativeToken,
-  subDTaoTokenId,
-  subNativeTokenId,
-} from "@talismn/chaindata-provider"
+import type { SubDTaoToken, SubNativeToken } from "@talismn/chaindata-provider"
 import type { TokenRates } from "@talismn/token-rates"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -17,14 +12,13 @@ import {
   type WhaleTransaction,
   type WhaleTransactionType,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
+import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { AccountNameOrAddress } from "@ui/domains/TaoDashboard/shared/AccountNameOrAddress"
 import { TAO_SYMBOL } from "@ui/domains/TaoDashboard/shared/constants"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAvatar"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
-import { useToken } from "@ui/state"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SectionTitleBar } from "./SectionTitleBar"
@@ -60,6 +54,7 @@ const isInflowTransaction = (type: WhaleTransactionType): boolean => {
 const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
   const days = useDaysFromPeriod(period)
+  const { taoTokenId } = useSubnetTokens(netuid)
   const { data, isLoading, isError } = useSubnetWhalesFlow(netuid, days)
 
   const inflowPercent = useMemo(() => {
@@ -112,24 +107,10 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
         )}
       >
         <span className={hasActivity ? "text-green" : "text-body-inactive"}>
-          <TokensAndFiat
-            planck={data?.inflow}
-            tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
-            noFiat
-            noSymbol
-            noCountUp
-          />{" "}
-          τ
+          <TokensAndFiat planck={data?.inflow} tokenId={taoTokenId} noFiat noSymbol noCountUp /> τ
         </span>
         <span className={hasActivity ? "text-red-500" : "text-body-inactive"}>
-          <TokensAndFiat
-            planck={data?.outflow}
-            tokenId={subNativeTokenId(BITTENSOR_NETWORK_ID)}
-            noFiat
-            noSymbol
-            noCountUp
-          />{" "}
-          τ
+          <TokensAndFiat planck={data?.outflow} tokenId={taoTokenId} noFiat noSymbol noCountUp /> τ
         </span>
       </div>
     </div>
@@ -158,10 +139,7 @@ const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid
     return parseFloat(taoPrice.price)
   }, [taoPrice])
 
-  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
-  const taoToken = useToken(taoTokenId, "substrate-native")
-  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
+  const { alphaToken, taoToken } = useSubnetTokens(netuid)
 
   if (!isLoading)
     if (!transactions || transactions.length === 0) {

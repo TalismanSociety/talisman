@@ -1,3 +1,4 @@
+import type { Time } from "lightweight-charts"
 import { useMemo } from "react"
 import type { LeaderboardPeriod, TimePeriod } from "./types"
 
@@ -107,4 +108,21 @@ export const formatCompactNumber = (num: number, decimals = 1): string => {
 /** Format alpha token amounts with Ka / Ma suffix */
 export const formatCompactAlpha = (num: number, symbol = "a"): string => {
   return `${formatCompactNumber(num, 0)}${symbol}`
+}
+
+const chartTimeToDate = (time: Time): Date => {
+  if (typeof time === "number") return new Date(time * 1000)
+  if (typeof time === "string") return new Date(time)
+  return new Date(time.year, time.month - 1, time.day)
+}
+
+export const formatLocalChartTime = (time: Time): string => {
+  const date = chartTimeToDate(time)
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }

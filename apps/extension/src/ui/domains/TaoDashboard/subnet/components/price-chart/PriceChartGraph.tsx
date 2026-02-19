@@ -1,4 +1,5 @@
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { formatLocalChartTime } from "@ui/domains/TaoDashboard/shared/util"
 import {
   AreaSeries,
   CandlestickSeries,
@@ -9,7 +10,6 @@ import {
   type ISeriesApi,
   LineSeries,
   type SeriesType,
-  type Time,
   type UTCTimestamp,
 } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
@@ -52,23 +52,6 @@ const formatVolume = (vol: number): string => {
 const rsiAutoscaleProvider = () => ({
   priceRange: { minValue: 0, maxValue: 100 },
 })
-
-const chartTimeToDate = (time: Time): Date => {
-  if (typeof time === "number") return new Date(time * 1000)
-  if (typeof time === "string") return new Date(time)
-  return new Date(time.year, time.month - 1, time.day)
-}
-
-const formatLocalChartTime = (time: Time): string => {
-  const date = chartTimeToDate(time)
-  return date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Chart configuration

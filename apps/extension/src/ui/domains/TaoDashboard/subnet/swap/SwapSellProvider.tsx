@@ -1,12 +1,11 @@
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
-import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
+import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useToken } from "@ui/state"
 import type { WalletTransactionInfo } from "extension-core"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -59,8 +58,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const tokenIn = selectedPosition?.token ?? null
   const tokenIdIn = tokenIn?.id ?? null
 
-  const tokenIdOut = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
-  const tokenOut = useToken(tokenIdOut, "substrate-native")
+  const { taoTokenId: tokenIdOut, taoToken: tokenOut } = useSubnetTokens(netuid)
 
   const address = selectedPosition?.balance.address ?? null
   const hotkey = tokenIn?.hotkey ?? null

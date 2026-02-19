@@ -1,21 +1,15 @@
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { BalanceFormatter } from "@talismn/balances"
-import {
-  type SubDTaoToken,
-  type SubNativeToken,
-  subDTaoTokenId,
-  subNativeTokenId,
-} from "@talismn/chaindata-provider"
+import type { SubDTaoToken, SubNativeToken } from "@talismn/chaindata-provider"
 import { cn, formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useToken } from "@ui/state"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useSubnetTokens } from "../../hooks/useSubnetTokens"
 import { AccountNameOrAddress } from "../../shared/AccountNameOrAddress"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { TransactionAvatar } from "../../shared/TransactionAvatar"
 import type { TransactionEntry } from "../../shared/types"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
@@ -46,16 +40,6 @@ export const SubnetTransactions: FC<{
       <SubnetStakingOperationModal netuid={netuid} />
     </div>
   )
-}
-
-const useSubnetTokens = (netuid: number) => {
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
-  const alphaToken = useToken(alphaTokenId, "substrate-dtao")
-
-  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
-  const taoToken = useToken(taoTokenId, "substrate-native")
-
-  return { alphaToken, taoToken }
 }
 
 const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
