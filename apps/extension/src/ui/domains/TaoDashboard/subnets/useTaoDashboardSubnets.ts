@@ -89,7 +89,6 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       .map((token) => {
         const economics = economicsMap.get(token.netuid)
         const leaderboard = leaderboardMap.get(token.netuid)
-        // const placeholder = getPlaceholderBalance(token.netuid)
 
         // Use leaderboard price if available, fallback to economics
         const priceTao = leaderboard?.currentPrice ?? economics?.price
@@ -126,10 +125,8 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           netAlpha: economics?.netAlpha ?? 0,
           flowDirection: economics?.flowDirection ?? ("neutral" as const),
           sentimentScore: economics?.sentimentScore ?? 0,
-          // Balance from placeholder (needs wallet integration)
           balance: balances?.sum.planck.transferable ?? null,
           balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
-          // Real data from leaderboard
           stakedTao: priceTao ? stakedAlpha * priceTao : undefined, // Convert alpha to TAO equivalent
           stakedAlpha,
           mcap,

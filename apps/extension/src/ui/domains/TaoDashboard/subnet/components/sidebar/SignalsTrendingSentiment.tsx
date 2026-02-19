@@ -31,12 +31,7 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
 
   return (
     <div>
-      <SectionTitleBar
-        label={t("Trending sentiment")}
-        // tooltip={<InfoTooltip />}
-        period={period}
-        onPeriodChange={setPeriod}
-      />
+      <SectionTitleBar label={t("Trending sentiment")} period={period} onPeriodChange={setPeriod} />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
@@ -52,27 +47,6 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
     </div>
   )
 }
-
-// const InfoTooltip = () => {
-//   const { t } = useTranslation()
-//   return (
-//     <div className="leading-paragraph">
-//       <Trans t={t}>
-//         <div>Combined Score is computed from:</div>
-//         <ul className="list-outside list-disc pl-8">
-//           <li>
-//             Tao Flow Change (taoFlow): Acceleration/decelaration of Tao Flow compared to recent
-//             average
-//           </li>
-//           <li>
-//             Volume Change (volVel): Volume expansion or contraction compared to recent average
-//           </li>
-//           <li>Sentiment Change (sentVel): Shift in social sentiment compared to baseline</li>
-//         </ul>
-//       </Trans>
-//     </div>
-//   )
-// }
 
 const TrendingSentiment: FC<
   PropsWithChildren<{

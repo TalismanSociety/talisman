@@ -39,12 +39,7 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div>
-      <SectionTitleBar
-        label={t("Holders Overview")}
-        // tooltip={<InfoTooltip />}
-        period={period}
-        onPeriodChange={setPeriod}
-      />
+      <SectionTitleBar label={t("Holders Overview")} period={period} onPeriodChange={setPeriod} />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
@@ -61,20 +56,6 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
   )
 }
 
-// const InfoTooltip = () => {
-//   const { t } = useTranslation()
-//   return (
-//     <div className="leading-paragraph">
-//       <Trans t={t}>
-//         <ul className="list-outside list-disc pl-8">
-//           <li>Total Holders: Total subnet alpha holders</li>
-//           <li>Whale Concentration: % of alpha held by top 10 holders</li>
-//           <li>Whale Dominance: % of trade volume by top 5 holders</li>
-//         </ul>
-//       </Trans>
-//     </div>
-//   )
-// }
 type SubnetHoldersData = NonNullable<ReturnType<typeof useSubnetHolders>["data"]>
 
 const HoldersOverviewSkeleton = () => (
@@ -109,16 +90,6 @@ const HoldersOverviewSkeleton = () => (
 const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   const { t } = useTranslation()
 
-  // Concentration label based on top 10% concentration
-  // const concentrationLabel = useMemo(() => {
-  //   if (!data || !("top10Concentration" in data)) return "Unknown"
-  //   const concentration = data.top10Concentration
-  //   if (concentration >= 80) return t("Institution heavy")
-  //   if (concentration >= 60) return t("Whale heavy")
-  //   if (concentration >= 40) return t("Mixed")
-  //   return t("Distributed")
-  // }, [data, t])
-
   return (
     <div className="flex h-[20rem] items-stretch gap-14">
       <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
@@ -143,7 +114,6 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
           tooltip={t(
             "Number of wallet addresses that fall within the top 10% of holders by TAO value"
           )}
-          // extra={concentrationLabel}
         >
           {formatCompactNumber(data.top10Concentration)}
         </MetricsField>

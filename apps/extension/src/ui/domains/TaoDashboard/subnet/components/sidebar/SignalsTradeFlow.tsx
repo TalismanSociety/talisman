@@ -22,12 +22,7 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
 
   return (
     <div>
-      <SectionTitleBar
-        label={t("Trade Flow")}
-        // tooltip={<InfoTooltip />}
-        period={period}
-        onPeriodChange={setPeriod}
-      />
+      <SectionTitleBar label={t("Trade Flow")} period={period} onPeriodChange={setPeriod} />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? <TradeFlowSkeleton /> : <TradeFlow tradeFlow={tradeFlow} />}
@@ -35,21 +30,6 @@ export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
     </div>
   )
 }
-
-// const InfoTooltip = () => {
-//   const { t } = useTranslation()
-//   return (
-//     <div className="leading-paragraph">
-//       <Trans t={t}>
-//         <ul className="list-outside list-disc pl-8">
-//           <li>Momentum: % change in price over the period</li>
-//           <li>Accumulation: % of activity coming from buyers</li>
-//           <li>Trade Velocity: How active trading is relative to baseline</li>
-//         </ul>
-//       </Trans>
-//     </div>
-//   )
-// }
 
 type SubnetTradeFlowData = NonNullable<ReturnType<typeof useSubnetTradeFlow>["data"]>
 
