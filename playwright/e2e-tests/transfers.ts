@@ -9,15 +9,6 @@ export const testAssets = [
     amount: "0.001",
   },
   {
-    assetName: "PAS",
-    chain: "PAsset Hub",
-    needsEnabling: true,
-    chainType: "polkadot",
-    tokenType: "Native",
-    sendTo: "5DHyKJK9qY5nosXAvyGiSRTdnC76Z45RcuAMq5223T1Vrtbc",
-    amount: "0.001",
-  },
-  {
     assetName: "AVAIL",
     chain: "Avail Turing Testnet",
     needsEnabling: true,
