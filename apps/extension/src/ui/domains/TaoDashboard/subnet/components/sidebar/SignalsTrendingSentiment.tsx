@@ -248,10 +248,10 @@ const SentimentGaucheSkeleton = () => (
 const SentimentFieldSkeleton = () => (
   <div className="flex flex-col gap-2">
     <div className="text-body-inactive text-xs">
-      <Skeleton className="w-[6rem]" />
+      <Skeleton className="w-[12rem]" />
     </div>
     <div className="text-md">
-      <Skeleton className="w-[10rem]" />
+      <Skeleton className="w-[4rem]" />
     </div>
   </div>
 )
