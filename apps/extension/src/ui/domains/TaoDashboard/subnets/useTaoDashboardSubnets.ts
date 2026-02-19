@@ -7,20 +7,18 @@ import { useBalances, useTokens } from "@ui/state"
 import { useMemo } from "react"
 import { type SubnetLeaderboardRow, useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import type { TimePeriod } from "../shared/types"
-import { raoToTao, useLeaderboardPeriod } from "../shared/util"
+import { raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
 type SubnetSentiment = "bullish" | "bearish" | null
 
 export const useTaoDashboardSubnets = (period: TimePeriod) => {
-  const leaderboardPeriod = useLeaderboardPeriod(period)
-
   const allTokens = useTokens()
   const {
     data: leaderboardData,
     isLoading: isLeaderboardLoading,
     isError: isLeaderboardError,
-  } = useSubnetLeaderboard(leaderboardPeriod)
+  } = useSubnetLeaderboard(period)
   const { data: taoPrice, isLoading: isTaoPriceLoading, isError: isTaoPriceError } = useTaoPrice()
 
   const { selectedAccounts } = usePortfolioNavigation()

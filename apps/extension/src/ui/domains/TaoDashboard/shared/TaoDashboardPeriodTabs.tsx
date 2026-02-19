@@ -23,9 +23,9 @@ export const TaoDashboardPeriodTabs = ({
 
   const tabs = useMemo<PeriodTabConfig[]>(
     () => [
-      { value: "1D", label: t("1D") },
-      { value: "1W", label: t("1W") },
-      { value: "1M", label: t("1M") },
+      { value: "1d", label: t("1D") },
+      { value: "1w", label: t("1W") },
+      { value: "1m", label: t("1M") },
     ],
     [t]
   )

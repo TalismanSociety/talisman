@@ -1,16 +1,21 @@
 import { cn } from "@talismn/util"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TIME_RANGES } from "./types"
 
 interface FlowChartToolbarProps {
-  days: number
-  onDaysChanged: (range: number) => void
+  period: TimePeriod
+  onPeriodChanged: (period: TimePeriod) => void
   className?: string
 }
 
-export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({ days, onDaysChanged, className }) => {
+export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({
+  period,
+  onPeriodChanged,
+  className,
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -39,10 +44,10 @@ export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({ days, onDaysChange
             <button
               key={option.value}
               type="button"
-              onClick={() => onDaysChanged(option.value)}
+              onClick={() => onPeriodChanged(option.value)}
               className={cn(
                 "rounded-xs px-2.5 py-1 font-medium text-xs transition-colors",
-                days === option.value
+                period === option.value
                   ? "bg-grey-700 text-white"
                   : "text-body-secondary hover:bg-grey-800 hover:text-body"
               )}

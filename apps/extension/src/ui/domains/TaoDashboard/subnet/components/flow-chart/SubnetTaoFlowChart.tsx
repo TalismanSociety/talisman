@@ -1,4 +1,5 @@
 import { cn } from "@talismn/util"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { FC } from "react"
 import { useState } from "react"
 
@@ -11,14 +12,14 @@ interface SubnetTaoFlowChartProps {
 }
 
 export const SubnetTaoFlowChart: FC<SubnetTaoFlowChartProps> = ({ netuid, className }) => {
-  const [days, setDays] = useState(7) // default 1W
+  const [period, setPeriod] = useState<TimePeriod>("1w")
 
   return (
     <div className={cn("flex size-full flex-col", className)}>
-      <FlowChartHeader netuid={netuid} timeRange={days} />
+      <FlowChartHeader netuid={netuid} period={period} />
       <div className="h-px shrink-0 bg-grey-800"></div>
       <div className="w-full grow overflow-hidden">
-        <FlowChartGraph netuid={netuid} days={days} onDaysChanged={setDays} />
+        <FlowChartGraph netuid={netuid} period={period} onPeriodChanged={setPeriod} />
       </div>
     </div>
   )

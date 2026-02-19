@@ -4,7 +4,6 @@ import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/ho
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
-import { useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import {
   type FC,
   Fragment,
@@ -19,7 +18,7 @@ import { SectionTitleBar } from "./SectionTitleBar"
 
 export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState<TimePeriod>("1W")
+  const [period, setPeriod] = useState<TimePeriod>("1w")
 
   return (
     <div className="flex size-full flex-col overflow-hidden">
@@ -38,10 +37,7 @@ type SubnetSentimentData = ReturnType<typeof useSubnetSentiment>["data"]
 
 const SentimentSummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
-
-  const days = useDaysFromPeriod(period)
-
-  const { data: sentiment, isLoading } = useSubnetSentiment(netuid, days)
+  const { data: sentiment, isLoading } = useSubnetSentiment(netuid, period)
 
   if (isLoading) return <SentimentSummarySkeleton />
 
@@ -130,8 +126,7 @@ type Tweet = NonNullable<TweetsData>[number]
 
 const TweetsList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
-  const days = useDaysFromPeriod(period)
-  const { data: tweets, isLoading } = useSubnetTweets(netuid, days)
+  const { data: tweets, isLoading } = useSubnetTweets(netuid, period)
 
   const refContainer = useRef<HTMLDivElement>(null)
 

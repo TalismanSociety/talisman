@@ -1,3 +1,4 @@
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { UTCTimestamp } from "lightweight-charts"
 
 export interface FlowChartPoint {
@@ -18,11 +19,11 @@ export interface AlphaFlow {
 
 export interface TimeRangeOption {
   label: string
-  value: number
+  value: TimePeriod
 }
 
 export const TIME_RANGES: TimeRangeOption[] = [
-  { label: "1D", value: 1 },
-  { label: "1W", value: 7 },
-  { label: "1M", value: 30 },
+  { label: "1D", value: "1d" },
+  { label: "1W", value: "1w" },
+  { label: "1M", value: "1m" },
 ]

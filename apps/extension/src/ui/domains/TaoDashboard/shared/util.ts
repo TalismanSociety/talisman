@@ -1,6 +1,5 @@
 import type { Time } from "lightweight-charts"
 import { useMemo } from "react"
-import type { LeaderboardPeriod, TimePeriod } from "./types"
 
 const RAO_PER_TAO = 1_000_000_000n
 
@@ -24,36 +23,6 @@ export const raoToTao = (value: string | bigint | null | undefined): number => {
     const n = Number(value)
     return Number.isFinite(n) ? n / 1e9 : 0
   }
-}
-
-export const getDaysPerPeriod = (period: TimePeriod): number => {
-  switch (period) {
-    case "1D":
-      return 1
-    case "1W":
-      return 7
-    case "1M":
-      return 30
-  }
-}
-
-export const useDaysFromPeriod = (period: TimePeriod): number => {
-  return useMemo(() => getDaysPerPeriod(period), [period])
-}
-
-export const getLeaderboardPeriod = (period: TimePeriod): LeaderboardPeriod => {
-  switch (period) {
-    case "1D":
-      return "1d"
-    case "1W":
-      return "1w"
-    case "1M":
-      return "1m"
-  }
-}
-
-export const useLeaderboardPeriod = (period: TimePeriod): LeaderboardPeriod => {
-  return useMemo(() => getLeaderboardPeriod(period), [period])
 }
 
 /** converts a [-2,2] score to a [0,100] score */

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 export const TaoDashboardSubnetsPage = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
-  const [period, setPeriod] = useState<TimePeriod>("1D")
+  const [period, setPeriod] = useState<TimePeriod>("1d")
 
   return (
     <div className="flex w-full min-w-[45rem] flex-col gap-6 overflow-hidden">

@@ -735,8 +735,11 @@ export class Sn45Api<
     getSubnetFlowSummary: (
       netuid: string,
       query?: {
-        /** @default "7" */
-        days?: string;
+        /**
+         * Time window for TAO flow totals. Accepted values: 1d, 1w, 1m. Defaults to 1w.
+         * @default "1w"
+         */
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -784,8 +787,11 @@ export class Sn45Api<
     getSubnetFlowChart: (
       netuid: string,
       query?: {
-        /** @default "7" */
-        days?: string;
+        /**
+         * Time window for chart data. Accepted values: 1d, 1w, 1m. Defaults to 1w.
+         * @default "1w"
+         */
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1111,8 +1117,11 @@ export class Sn45Api<
     getSubnetHolderHistory: (
       netuid: string,
       query?: {
-        /** Lookback window in days. Defaults to 30. */
-        days?: string;
+        /**
+         * Time window for holder history. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1174,8 +1183,11 @@ export class Sn45Api<
     getSubnetHolderDistribution: (
       netuid: string,
       query?: {
-        /** Lookback window in days. Defaults to 30. */
-        days?: string;
+        /**
+         * Time window for holder distribution. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1391,12 +1403,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Lookback window in days (1-30). Defaults to 30.
-         * @min 1
-         * @max 30
-         * @default 30
+         * Time window for daily trend aggregation. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1570,12 +1580,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Lookback window in days (1-365). Defaults to 30.
-         * @min 1
-         * @max 365
-         * @default 30
+         * Lookback period. Accepted values: 1d, 1w, 1m. Defaults to 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1629,12 +1637,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Lookback window in days (1-365). Defaults to 30.
-         * @min 1
-         * @max 365
-         * @default 30
+         * Lookback period. Accepted values: 1d, 1w, 1m. Defaults to 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1759,12 +1765,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Number of days to look back (1-365, default: 30)
-         * @min 1
-         * @max 365
-         * @default 30
+         * Lookback period for whale activity. Accepted values: 1d, 1w, 1m. Default: 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1828,12 +1832,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Number of days to look back (1-365, default: 30)
-         * @min 1
-         * @max 365
-         * @default 30
+         * Lookback period for whale flow. Accepted values: 1d, 1w, 1m. Default: 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1872,12 +1874,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Lookback window in days (1-365). Defaults to 30.
-         * @min 1
-         * @max 365
-         * @default 30
+         * Time window for score aggregation. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>
@@ -1941,12 +1941,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Number of days to look back for change calculation (1-365, default: 30)
-         * @min 1
-         * @max 365
-         * @default 30
+         * Lookback period for holder-change and trader-activity calculations. Accepted values: 1d, 1w, 1m. Default: 1m.
+         * @default "1m"
          */
-        days?: number;
+        period?: "1d" | "1w" | "1m";
       },
       params: RequestParams = {},
     ) =>

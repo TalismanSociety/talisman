@@ -7,7 +7,7 @@ import { cn } from "@talismn/util"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
-import { formatCompactNumber, useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
+import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -34,10 +34,8 @@ interface TierData {
 
 export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState<TimePeriod>("1W")
-
-  const days = useDaysFromPeriod(period)
-  const { data, isLoading } = useSubnetHolders(netuid, days)
+  const [period, setPeriod] = useState<TimePeriod>("1w")
+  const { data, isLoading } = useSubnetHolders(netuid, period)
 
   return (
     <div>

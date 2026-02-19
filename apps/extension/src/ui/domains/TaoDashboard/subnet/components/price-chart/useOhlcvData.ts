@@ -69,12 +69,22 @@ export function useOhlcvData({
 }: UseOhlcvDataOptions): UseOhlcvDataReturn {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["sn45", "subnetOhlcv", netuid, resolution, pageSize],
-    queryFn: async ({ pageParam }: { pageParam: string | undefined }) => {
-      const response = await sn45Api.v1.getSubnetOhlcv(String(netuid), {
-        resolution,
-        limit: String(pageSize),
-        cursor: pageParam,
-      })
+    queryFn: async ({
+      pageParam,
+      signal,
+    }: {
+      pageParam: string | undefined
+      signal: AbortSignal
+    }) => {
+      const response = await sn45Api.v1.getSubnetOhlcv(
+        String(netuid),
+        {
+          resolution,
+          limit: String(pageSize),
+          cursor: pageParam,
+        },
+        { signal }
+      )
       return response.data
     },
     initialPageParam: undefined as string | undefined,

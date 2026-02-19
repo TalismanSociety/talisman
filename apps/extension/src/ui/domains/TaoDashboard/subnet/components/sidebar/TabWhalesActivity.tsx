@@ -18,14 +18,13 @@ import { TAO_SYMBOL } from "@ui/domains/TaoDashboard/shared/constants"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAvatar"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
-import { useDaysFromPeriod } from "@ui/domains/TaoDashboard/shared/util"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 export const TabWhalesActivity: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState<TimePeriod>("1W")
+  const [period, setPeriod] = useState<TimePeriod>("1w")
 
   return (
     <div className="flex size-full flex-col overflow-hidden">
@@ -53,9 +52,8 @@ const isInflowTransaction = (type: WhaleTransactionType): boolean => {
 
 const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
-  const days = useDaysFromPeriod(period)
   const { taoTokenId } = useSubnetTokens(netuid)
-  const { data, isLoading, isError } = useSubnetWhalesFlow(netuid, days)
+  const { data, isLoading, isError } = useSubnetWhalesFlow(netuid, period)
 
   const inflowPercent = useMemo(() => {
     if (!data) return null
@@ -122,8 +120,7 @@ type WhalesActivityEntry = NonNullable<WhalesActivityData>[number]
 
 const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
-  const days = useDaysFromPeriod(period)
-  const { data: rawTransactions, isLoading } = useSubnetWhalesActivity(netuid, days)
+  const { data: rawTransactions, isLoading } = useSubnetWhalesActivity(netuid, period)
   const { data: taoPrice } = useTaoPrice()
   const transactions = useMemo(
     () =>

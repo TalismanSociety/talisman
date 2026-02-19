@@ -9,7 +9,6 @@ import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skelet
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   useColorFromScore100,
-  useLeaderboardPeriod,
   useScore1To100,
   useScore2To100,
 } from "@ui/domains/TaoDashboard/shared/util"
@@ -20,10 +19,8 @@ import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState<TimePeriod>("1W")
-
-  const leaderboardPeriod = useLeaderboardPeriod(period)
-  const { data, isLoading } = useSubnetLeaderboardEntry(netuid, leaderboardPeriod)
+  const [period, setPeriod] = useState<TimePeriod>("1w")
+  const { data, isLoading } = useSubnetLeaderboardEntry(netuid, period)
 
   return (
     <div>

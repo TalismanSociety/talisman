@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getSn45Api } from "extension-core"
 import { useMemo } from "react"
+import type { TimePeriod } from "../shared/types"
 
 // Create a singleton API instance
 const sn45Api = getSn45Api()
@@ -20,8 +21,8 @@ export type SubnetLeaderboardRow = Omit<
 export const useTaoPrice = () => {
   return useQuery({
     queryKey: ["sn45", "taoPrice"],
-    queryFn: async () => {
-      const response = await sn45Api.v1.getTaoPrice()
+    queryFn: async ({ signal }) => {
+      const response = await sn45Api.v1.getTaoPrice({ signal })
       return response.data
     },
     refetchInterval: 60_000,
@@ -30,13 +31,15 @@ export const useTaoPrice = () => {
 }
 
 // Hook to get subnet leaderboard data
-export const useSubnetLeaderboard = (period: "1d" | "1w" | "1m" = "1d") => {
+export const useSubnetLeaderboard = (period: TimePeriod = "1d") => {
   return useQuery({
     queryKey: ["sn45", "subnetLeaderboard", period],
-    queryFn: async (): Promise<
+    queryFn: async ({
+      signal,
+    }): Promise<
       Omit<SubnetLeaderboardResponse, "subnets"> & { subnets: SubnetLeaderboardRow[] }
     > => {
-      const response = await sn45Api.v1.getSubnetLeaderboard({ period })
+      const response = await sn45Api.v1.getSubnetLeaderboard({ period }, { signal })
       const data = response.data
 
       return {
@@ -58,7 +61,7 @@ export const useSubnetLeaderboard = (period: "1d" | "1w" | "1m" = "1d") => {
 
 export const useSubnetLeaderboardEntry = (
   netuid: number | null | undefined,
-  period: "1d" | "1w" | "1m" = "1d"
+  period: TimePeriod = "1d"
 ) => {
   const query = useSubnetLeaderboard(period)
 
@@ -74,9 +77,9 @@ export const useSubnetLeaderboardEntry = (
 export const useSubnetTokenomics = (netuid: number | null | undefined) => {
   return useQuery({
     queryKey: ["sn45", "subnetTokenomics", netuid],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetTokenomics(String(netuid))
+      const response = await sn45Api.v1.getSubnetTokenomics(String(netuid), { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -89,9 +92,9 @@ export const useSubnetTokenomics = (netuid: number | null | undefined) => {
 export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
   return useQuery({
     queryKey: ["sn45", "subnetStakeEvents", netuid],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetStakeEvents(String(netuid))
+      const response = await sn45Api.v1.getSubnetStakeEvents(String(netuid), { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -103,13 +106,13 @@ export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
 // Hook to get subnet trade flow metrics
 export const useSubnetTradeFlow = (
   netuid: number | null | undefined,
-  period: "1d" | "1w" | "1m" = "1d"
+  period: TimePeriod = "1d"
 ) => {
   return useQuery({
     queryKey: ["sn45", "subnetTradeFlow", netuid, period],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetTradeFlow(String(netuid), { period })
+      const response = await sn45Api.v1.getSubnetTradeFlow(String(netuid), { period }, { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -119,14 +122,21 @@ export const useSubnetTradeFlow = (
 }
 
 // Hook to get subnet flow summary (pre-computed header data)
-export const useSubnetFlowSummary = (netuid: number | null | undefined, days: number) => {
+export const useSubnetFlowSummary = (
+  netuid: number | null | undefined,
+  period: TimePeriod = "1w"
+) => {
   return useQuery({
-    queryKey: ["sn45", "subnetFlowSummary", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetFlowSummary", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetFlowSummary(String(netuid), {
-        days: String(days),
-      })
+      const response = await sn45Api.v1.getSubnetFlowSummary(
+        String(netuid),
+        {
+          period,
+        },
+        { signal }
+      )
       return response.data
     },
     enabled: !!netuid,
@@ -136,14 +146,21 @@ export const useSubnetFlowSummary = (netuid: number | null | undefined, days: nu
 }
 
 // Hook to get subnet flow chart time-series (pre-bucketed for TradingView)
-export const useSubnetFlowChart = (netuid: number | null | undefined, days: number) => {
+export const useSubnetFlowChart = (
+  netuid: number | null | undefined,
+  period: TimePeriod = "1w"
+) => {
   return useQuery({
-    queryKey: ["sn45", "subnetFlowChart", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetFlowChart", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetFlowChart(String(netuid), {
-        days: String(days),
-      })
+      const response = await sn45Api.v1.getSubnetFlowChart(
+        String(netuid),
+        {
+          period,
+        },
+        { signal }
+      )
       return response.data
     },
     enabled: !!netuid,
@@ -156,9 +173,9 @@ export const useSubnetFlowChart = (netuid: number | null | undefined, days: numb
 export const useSubnetPositions = (netuid: number | null | undefined) => {
   return useQuery({
     queryKey: ["sn45", "subnetPositions", netuid],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetPositions(String(netuid))
+      const response = await sn45Api.v1.getSubnetPositions(String(netuid), { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -168,14 +185,18 @@ export const useSubnetPositions = (netuid: number | null | undefined) => {
 }
 
 // Hook to get subnet holder metrics
-export const useSubnetHolders = (netuid: number | null | undefined, days = 30) => {
+export const useSubnetHolders = (netuid: number | null | undefined, period: TimePeriod = "1m") => {
   return useQuery({
-    queryKey: ["sn45", "subnetHolders", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetHolders", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetHolders(String(netuid), {
-        days,
-      })
+      const response = await sn45Api.v1.getSubnetHolders(
+        String(netuid),
+        {
+          period,
+        },
+        { signal }
+      )
       return response.data ?? null
     },
     enabled: !!netuid,
@@ -207,12 +228,12 @@ export interface WhaleTransaction {
   timestamp: string
 }
 
-export const useSubnetSentiment = (netuid: number | null | undefined, days?: number) => {
+export const useSubnetSentiment = (netuid: number | null | undefined, period?: TimePeriod) => {
   return useQuery({
-    queryKey: ["sn45", "subnetSentiment", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetSentiment", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetSentiment(String(netuid), { days })
+      const response = await sn45Api.v1.getSubnetSentiment(String(netuid), { period }, { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -222,12 +243,12 @@ export const useSubnetSentiment = (netuid: number | null | undefined, days?: num
 }
 
 // Hook to get subnet tweets
-export const useSubnetTweets = (netuid: number | null | undefined, days: number) => {
+export const useSubnetTweets = (netuid: number | null | undefined, period: TimePeriod = "1m") => {
   return useQuery({
-    queryKey: ["sn45", "subnetTweets", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetTweets", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetTweets(String(netuid), { days })
+      const response = await sn45Api.v1.getSubnetTweets(String(netuid), { period }, { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -236,12 +257,12 @@ export const useSubnetTweets = (netuid: number | null | undefined, days: number)
   })
 }
 
-export const useSubnetWhalesFlow = (netuid: number | null | undefined, days?: number) => {
+export const useSubnetWhalesFlow = (netuid: number | null | undefined, period?: TimePeriod) => {
   return useQuery({
-    queryKey: ["sn45", "subnetWhalesFlow", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetWhalesFlow", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetWhalesFlow(String(netuid), { days })
+      const response = await sn45Api.v1.getSubnetWhalesFlow(String(netuid), { period }, { signal })
       return response.data
     },
     enabled: !!netuid,
@@ -250,12 +271,16 @@ export const useSubnetWhalesFlow = (netuid: number | null | undefined, days?: nu
   })
 }
 
-export const useSubnetWhalesActivity = (netuid: number | null | undefined, days?: number) => {
+export const useSubnetWhalesActivity = (netuid: number | null | undefined, period?: TimePeriod) => {
   return useQuery({
-    queryKey: ["sn45", "subnetWhalesActivity", netuid, days],
-    queryFn: async () => {
+    queryKey: ["sn45", "subnetWhalesActivity", netuid, period],
+    queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetWhalesActivity(String(netuid), { days })
+      const response = await sn45Api.v1.getSubnetWhalesActivity(
+        String(netuid),
+        { period },
+        { signal }
+      )
       return response.data
     },
     enabled: !!netuid,

@@ -18,9 +18,8 @@ import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState<TimePeriod>("1W")
-  const apiPeriod = period.toLowerCase() as "1d" | "1w" | "1m"
-  const { data: tradeFlow, isLoading } = useSubnetTradeFlow(netuid, apiPeriod)
+  const [period, setPeriod] = useState<TimePeriod>("1w")
+  const { data: tradeFlow, isLoading } = useSubnetTradeFlow(netuid, period)
 
   return (
     <div>

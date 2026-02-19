@@ -1,4 +1,5 @@
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { UTCTimestamp } from "lightweight-charts"
 import { useMemo } from "react"
 
@@ -20,8 +21,8 @@ export interface UseFlowHeaderDataReturn {
   isLoading: boolean
 }
 
-export function useFlowHeaderData(netuid: number, timeRange: number): UseFlowHeaderDataReturn {
-  const { data: flowSummary, isLoading: summaryLoading } = useSubnetFlowSummary(netuid, timeRange)
+export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHeaderDataReturn {
+  const { data: flowSummary, isLoading: summaryLoading } = useSubnetFlowSummary(netuid, period)
   const { subnetData } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   // Current subnet entry
@@ -83,8 +84,8 @@ export interface UseFlowGraphDataReturn {
   isLoading: boolean
 }
 
-export function useFlowGraphData(netuid: number, timeRange: number): UseFlowGraphDataReturn {
-  const { data: flowChart, isLoading } = useSubnetFlowChart(netuid, timeRange)
+export function useFlowGraphData(netuid: number, period: TimePeriod): UseFlowGraphDataReturn {
+  const { data: flowChart, isLoading } = useSubnetFlowChart(netuid, period)
 
   const { taoInData, taoOutData, netData } = useMemo(() => {
     if (!flowChart?.data?.length)

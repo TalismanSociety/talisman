@@ -1,3 +1,4 @@
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import {
   AreaSeries,
@@ -16,11 +17,11 @@ import { useFlowGraphData } from "./useFlowChartData"
 
 export const FlowChartGraph: FC<{
   netuid: number
-  days: number
-  onDaysChanged: (days: number) => void
-}> = ({ netuid, days, onDaysChanged }) => {
+  period: TimePeriod
+  onPeriodChanged: (period: TimePeriod) => void
+}> = ({ netuid, period, onPeriodChanged }) => {
   const { t } = useTranslation()
-  const { isLoading, netData } = useFlowGraphData(netuid, days)
+  const { isLoading, netData } = useFlowGraphData(netuid, period)
 
   // skeleton at this level so we dont display toolbar while loading
   if (isLoading) return <FlowChartGraphSkeleton />
@@ -35,9 +36,9 @@ export const FlowChartGraph: FC<{
 
   return (
     <div className="relative flex size-full flex-col overflow-hidden">
-      <FlowChartToolbar days={days} onDaysChanged={onDaysChanged} className="my-5 px-12" />
+      <FlowChartToolbar period={period} onPeriodChanged={onPeriodChanged} className="my-5 px-12" />
       <div className="grow">
-        <FlowChartGraphContent netuid={netuid} days={days} />
+        <FlowChartGraphContent netuid={netuid} period={period} />
       </div>
     </div>
   )
@@ -45,8 +46,8 @@ export const FlowChartGraph: FC<{
 
 const FlowChartGraphContent: FC<{
   netuid: number
-  days: number
-}> = ({ netuid, days }) => {
+  period: TimePeriod
+}> = ({ netuid, period }) => {
   const { t } = useTranslation()
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -56,7 +57,7 @@ const FlowChartGraphContent: FC<{
     net: ISeriesApi<"Line"> | null
   }>({ taoIn: null, taoOut: null, net: null })
 
-  const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, days)
+  const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, period)
 
   // Effect 1: Create chart instance (only depends on container ref)
   useEffect(() => {

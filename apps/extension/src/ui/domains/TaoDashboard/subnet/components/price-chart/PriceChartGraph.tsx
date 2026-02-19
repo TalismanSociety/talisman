@@ -86,7 +86,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
 
   const { bars, isLoading, hasMore, loadMore } = useOhlcvData({ netuid, resolution })
-  const { data: tweets } = useSubnetTweets(netuid, 30) // TODO implement cursor and pull as needed
+  const { data: tweets } = useSubnetTweets(netuid, "1m") // TODO implement cursor and pull as needed
   const {
     data: { tokenPrice },
   } = useSubnetStats(netuid)

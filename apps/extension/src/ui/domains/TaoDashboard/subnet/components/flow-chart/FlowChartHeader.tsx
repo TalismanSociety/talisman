@@ -2,6 +2,7 @@ import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactAlpha, formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,13 +10,13 @@ import { useFlowHeaderData } from "./useFlowChartData"
 
 interface FlowChartHeaderProps {
   netuid: number
-  timeRange: number
+  period: TimePeriod
 }
 
-export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, timeRange }) => {
+export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, period }) => {
   const { t } = useTranslation()
   const { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading } =
-    useFlowHeaderData(netuid, timeRange)
+    useFlowHeaderData(netuid, period)
   const { alphaToken } = useSubnetTokens(netuid)
 
   if (isLoading) return <FlowChartHeaderSkeleton />
