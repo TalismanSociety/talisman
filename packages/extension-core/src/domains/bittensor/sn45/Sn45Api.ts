@@ -274,7 +274,7 @@ export class Sn45Api<
 > extends HttpClient<SecurityDataType> {
   v1 = {
     /**
-     * No description
+     * @description Returns the most recent TAO market snapshot including spot price and common market metrics. Null values indicate that the upstream field is unavailable for the latest record.
      *
      * @tags Bittensor
      * @name GetTaoPrice
@@ -284,14 +284,23 @@ export class Sn45Api<
     getTaoPrice: (params: RequestParams = {}) =>
       this.request<
         {
+          /** Latest TAO price in USD. Null when no recent snapshot exists. */
           price: string | null;
+          /** ISO timestamp for the returned price snapshot. */
           timestamp: string | null;
+          /** Market capitalization in USD. */
           marketCap: number | null;
+          /** 24-hour trading volume in USD. */
           volume24h: number | null;
+          /** TAO price change over 24 hours, as a percentage. */
           priceChange24h: number | null;
+          /** TAO price change over 7 days, as a percentage. */
           priceChange7d: number | null;
+          /** TAO price change over 30 days, as a percentage. */
           priceChange30d: number | null;
+          /** Market cap change over 24 hours, as a percentage. */
           marketCapChange24h: number | null;
+          /** Upstream data source identifier for the price snapshot. */
           source: string | null;
         },
         {
@@ -308,28 +317,37 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning large stake add/remove events filtered by minimum TAO amount.
      *
-     * @tags Bittensor
+     * @tags Deprecated
      * @name GetWhaleMovements
-     * @summary Large stake transactions (whale movements)
+     * @summary [To be deleted] Large stake transactions (whale movements)
      * @request GET:/v1/bittensor/whales
      */
     getWhaleMovements: (
       query?: {
+        /** Minimum TAO threshold (in TAO units). Defaults to 50. */
         minTao?: string;
+        /** Maximum number of records to return. Defaults to 50. */
         limit?: string;
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
+          /** Stake event direction. */
           method: "Adding" | "Removing";
+          /** Coldkey address (SS58-encoded). */
           coldkey: string;
+          /** Truncated display representation of the coldkey. */
           coldkeyShort: string;
+          /** Subnet identifier (netuid). */
           netuid: number;
+          /** TAO amount in TAO units (converted from rao). */
           taoAmount: number;
+          /** Alpha amount in alpha units (converted from rao). */
           alphaAmount: number;
+          /** ISO timestamp of the event. */
           timestamp: string;
         }[],
         {
@@ -347,15 +365,16 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns whale stake transactions across subnets with optional filtering by tier, type, amount, and subnet ID.
      *
-     * @tags Bittensor
+     * @tags Bittensor, Deprecated
      * @name GetWhaleTransactions
      * @summary Get all whale stake transactions across all subnets
      * @request GET:/v1/bittensor/whale-transactions
      */
     getWhaleTransactions: (
       query?: {
+        /** Maximum number of transactions to return. Defaults to 50. */
         limit?: string;
         /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale) */
         tier?: string;
@@ -370,23 +389,36 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Whale transaction identifier. */
           id: string;
+          /** Block number containing the transaction. */
           blockHeight: number;
+          /** Extrinsic index within the block, when available. */
           extrinsicIndex: number | null;
+          /** Whale transaction type. */
           transactionType:
             | "StakeAdded"
             | "StakeRemoved"
             | "StakeMove"
             | "StakeTransfer"
             | "StakeSwapped";
+          /** Whale tier classification for the source wallet. */
           tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          /** Source coldkey address (SS58-encoded). */
           coldkey: string;
+          /** Source hotkey address (SS58-encoded). */
           hotkey: string;
+          /** Subnet identifier (netuid). */
           netuid: number;
+          /** Origin subnet for cross-subnet operations, when applicable. */
           originNetuid: number | null;
+          /** TAO amount as string-encoded integer in rao. */
           taoAmount: string;
+          /** Alpha amount as string-encoded integer in rao, when applicable. */
           alphaAmount: string | null;
+          /** Destination coldkey for transfers, when applicable. */
           destinationColdkey: string | null;
+          /** ISO timestamp of the whale transaction. */
           timestamp: string;
         }[],
         {
@@ -404,7 +436,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns one latest economics row per subnet using recent tokenomics snapshots. Values are normalized for UI consumption and include derived flow direction and economics score.
      *
      * @tags Subnets
      * @name GetSubnetEconomicsList
@@ -414,15 +446,25 @@ export class Sn45Api<
     getSubnetEconomicsList: (params: RequestParams = {}) =>
       this.request<
         {
+          /** Subnet identifier (netuid). */
           netuid: number;
+          /** Latest subnet moving price in TAO. */
           price: number;
+          /** Latest total traded TAO volume, normalized to TAO units. */
           volume: number;
+          /** Latest alpha-in flow amount, normalized to alpha units. */
           alphaIn: number;
+          /** Latest alpha-out flow amount, normalized to alpha units. */
           alphaOut: number;
+          /** Net alpha flow computed as alphaIn - alphaOut. */
           netAlpha: number;
+          /** Latest EMA TAO flow value, normalized to TAO units. */
           emaTaoFlow: number;
+          /** Derived economics score on a roughly -2 to +2 scale. */
           economicScore: number;
+          /** Directional label derived from net alpha flow. */
           flowDirection: "inflow" | "outflow" | "neutral";
+          /** ISO timestamp for the source tokenomics snapshot. */
           timestamp: string;
         }[],
         {
@@ -527,7 +569,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns recent stake add/remove events for a subnet with associated extrinsic hashes. Amounts are string-encoded integers in rao.
      *
      * @tags Subnets
      * @name GetSubnetStakeEvents
@@ -537,13 +579,21 @@ export class Sn45Api<
     getSubnetStakeEvents: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
+          /** Stake event type. */
           method: "Adding" | "Removing";
+          /** Alpha amount involved, string-encoded integer in rao. */
           alphaAmount: string;
+          /** TAO amount involved, string-encoded integer in rao. */
           taoAmount: string;
+          /** ISO timestamp of the stake event. */
           timestamp: string;
+          /** Coldkey address (SS58-encoded). */
           coldkey: string;
+          /** Hotkey address (SS58-encoded). */
           hotkey: string;
+          /** Extrinsic hash associated with the event. */
           hash: string;
+          /** Block number containing the stake event. */
           blockHeight: number;
         }[],
         {
@@ -560,7 +610,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns historical moving price samples for a subnet in ascending time order. Useful for charting simple price history series.
      *
      * @tags Subnets
      * @name GetSubnetPrice
@@ -570,7 +620,9 @@ export class Sn45Api<
     getSubnetPrice: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
+          /** Subnet moving price in TAO at the snapshot time. */
           movingPrice: string;
+          /** ISO timestamp of the price sample. */
           timestamp: string;
         }[],
         {
@@ -631,7 +683,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns the latest tokenomics snapshot for a subnet, including price, volume, alpha flows, and EMA TAO flow. Amount-like fields are string-encoded integers in rao.
      *
      * @tags Subnets
      * @name GetSubnetTokenomics
@@ -641,11 +693,17 @@ export class Sn45Api<
     getSubnetTokenomics: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
+          /** Latest moving price for the subnet, in TAO. */
           movingPrice: string;
+          /** Latest traded TAO volume, string-encoded integer in rao. */
           volume: string;
+          /** Latest alpha-in amount, string-encoded integer in rao. */
           alphaIn: string;
+          /** Latest alpha-out amount, string-encoded integer in rao. */
           alphaOut: string;
+          /** Latest EMA TAO flow value, string-encoded integer in rao. */
           emaTaoFlow: string;
+          /** ISO timestamp of the tokenomics snapshot. */
           timestamp: string;
         },
         {
@@ -800,7 +858,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns top wallet positions for a subnet ordered by alpha balance. Numeric value fields are string-encoded integers in rao.
      *
      * @tags Subnets
      * @name GetSubnetPositions
@@ -810,9 +868,13 @@ export class Sn45Api<
     getSubnetPositions: (netuid: string, params: RequestParams = {}) =>
       this.request<
         {
+          /** Wallet coldkey address (SS58-encoded). */
           coldkey: string;
+          /** Current alpha balance, string-encoded integer in rao. */
           alphaBalance: string;
+          /** Accumulated TAO cost basis, string-encoded integer in rao. */
           costBasisTao: string;
+          /** Cumulative realized profit in TAO terms, string-encoded integer in rao. */
           cumulativeRealizedProfit: string;
         }[],
         {
@@ -829,111 +891,193 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning categorized on-chain event overlays for a subnet, intended for chart marker rendering.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetEvents
-     * @summary Recent on-chain event overlays for a subnet (for chart markers)
+     * @summary [To be deleted] Recent on-chain event overlays for a subnet (for chart markers)
      * @request GET:/v1/bittensor/subnets/{netuid}/events
      */
     getSubnetEvents: (
       netuid: string,
       query?: {
+        /** Maximum records per event category. Defaults to 250. */
         limit?: string;
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
+          /** Liquidity events touching the subnet. */
           liquidityEvents: {
+            /** Event identifier. */
             id: string;
+            /** Liquidity event method name. */
             method: string;
+            /** SS58 coldkey associated with the event. */
             coldkey: string;
+            /** Subnet identifier (netuid). */
             netuid: number;
+            /** TAO amount in event units. Null when unavailable. */
             taoAmount: number | null;
+            /** Alpha amount in event units. Null when unavailable. */
             alphaAmount: number | null;
+            /** ISO timestamp for the event. */
             timestamp: string;
           }[];
+          /** Stake swap events into the subnet. */
           stakeSwapsIn: {
+            /** Stake swap event identifier. */
             id: string;
+            /** SS58 coldkey initiating the swap. */
             coldkey: string;
+            /** SS58 hotkey associated with the swap. */
             hotkey: string;
+            /** Source subnet identifier. */
             originNetuid: number;
+            /** Destination subnet identifier. */
             destinationNetuid: number;
+            /** TAO amount swapped. */
             taoAmount: number;
+            /** ISO timestamp for the swap event. */
             timestamp: string;
           }[];
+          /** Stake swap events out of the subnet. */
           stakeSwapsOut: {
+            /** Stake swap event identifier. */
             id: string;
+            /** SS58 coldkey initiating the swap. */
             coldkey: string;
+            /** SS58 hotkey associated with the swap. */
             hotkey: string;
+            /** Source subnet identifier. */
             originNetuid: number;
+            /** Destination subnet identifier. */
             destinationNetuid: number;
+            /** TAO amount swapped. */
             taoAmount: number;
+            /** ISO timestamp for the swap event. */
             timestamp: string;
           }[];
+          /** Stake transfer events into the subnet. */
           stakeTransfersIn: {
+            /** Stake transfer event identifier. */
             id: string;
+            /** Source SS58 coldkey. */
             originColdkey: string;
+            /** Destination SS58 coldkey. */
             destinationColdkey: string;
+            /** SS58 hotkey associated with the transfer. */
             hotkey: string;
+            /** Source subnet identifier. */
             originNetuid: number;
+            /** Destination subnet identifier. */
             destinationNetuid: number;
+            /** TAO amount transferred. */
             taoAmount: number;
+            /** ISO timestamp for the transfer event. */
             timestamp: string;
           }[];
+          /** Stake transfer events out of the subnet. */
           stakeTransfersOut: {
+            /** Stake transfer event identifier. */
             id: string;
+            /** Source SS58 coldkey. */
             originColdkey: string;
+            /** Destination SS58 coldkey. */
             destinationColdkey: string;
+            /** SS58 hotkey associated with the transfer. */
             hotkey: string;
+            /** Source subnet identifier. */
             originNetuid: number;
+            /** Destination subnet identifier. */
             destinationNetuid: number;
+            /** TAO amount transferred. */
             taoAmount: number;
+            /** ISO timestamp for the transfer event. */
             timestamp: string;
           }[];
+          /** Stake move events into the subnet. */
           stakeMovesIn: {
+            /** Stake move event identifier. */
             id: string;
+            /** Source SS58 hotkey. */
             sourceHotkey: string;
+            /** Source subnet identifier. */
             sourceNetuid: number;
+            /** Destination SS58 hotkey. */
             destHotkey: string;
+            /** Destination SS58 coldkey. */
             destColdkey: string;
+            /** Destination subnet identifier. */
             destNetuid: number;
+            /** TAO amount moved. */
             taoAmount: number;
+            /** ISO timestamp for the move event. */
             timestamp: string;
           }[];
+          /** Stake move events out of the subnet. */
           stakeMovesOut: {
+            /** Stake move event identifier. */
             id: string;
+            /** Source SS58 hotkey. */
             sourceHotkey: string;
+            /** Source subnet identifier. */
             sourceNetuid: number;
+            /** Destination SS58 hotkey. */
             destHotkey: string;
+            /** Destination SS58 coldkey. */
             destColdkey: string;
+            /** Destination subnet identifier. */
             destNetuid: number;
+            /** TAO amount moved. */
             taoAmount: number;
+            /** ISO timestamp for the move event. */
             timestamp: string;
           }[];
+          /** Alpha burn events for the subnet. */
           alphaBurns: {
+            /** Alpha burn/recycle event identifier. */
             id: string;
+            /** SS58 coldkey associated with the event. */
             coldkey: string;
+            /** SS58 hotkey associated with the event. */
             hotkey: string;
+            /** Subnet identifier (netuid). */
             netuid: number;
+            /** Alpha amount involved in the event. */
             alphaCurrency: number;
+            /** ISO timestamp for the event. */
             timestamp: string;
           }[];
+          /** Alpha recycle events for the subnet. */
           alphaRecycles: {
+            /** Alpha burn/recycle event identifier. */
             id: string;
+            /** SS58 coldkey associated with the event. */
             coldkey: string;
+            /** SS58 hotkey associated with the event. */
             hotkey: string;
+            /** Subnet identifier (netuid). */
             netuid: number;
+            /** Alpha amount involved in the event. */
             alphaCurrency: number;
+            /** ISO timestamp for the event. */
             timestamp: string;
           }[];
+          /** Auto-stake-add events for the subnet. */
           autoStakeAdds: {
+            /** Auto-stake-add event identifier. */
             id: string;
+            /** SS58 coldkey associated with the event. */
             coldkey: string;
+            /** SS58 hotkey associated with the event. */
             hotkey: string;
+            /** Subnet identifier (netuid). */
             netuid: number;
+            /** Auto-staked amount. */
             amount: number;
+            /** ISO timestamp for the event. */
             timestamp: string;
           }[];
         },
@@ -952,36 +1096,52 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning historical holder-tier breakdowns for a subnet based on tracked top wallets.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetHolderHistory
-     * @summary Historical holder distribution for a specific subnet (top 500 wallets tracked)
+     * @summary [To be deleted] Historical holder distribution for a specific subnet (top 500 wallets tracked)
      * @request GET:/v1/bittensor/subnets/{netuid}/holder-history
      */
     getSubnetHolderHistory: (
       netuid: string,
       query?: {
+        /** Lookback window in days. Defaults to 30. */
         days?: string;
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
+          /** UTC snapshot date (YYYY-MM-DD). */
           date: string;
+          /** Number of tracked holders for the snapshot date. */
           totalHolders: number;
+          /** Count of whale-tier holders on the snapshot date. */
           whaleCount: number;
+          /** Count of dolphin-tier holders on the snapshot date. */
           dolphinCount: number;
+          /** Count of fish-tier holders on the snapshot date. */
           fishCount: number;
+          /** Count of shrimp-tier holders on the snapshot date. */
           shrimpCount: number;
+          /** Total whale-held alpha in alpha units. */
           whaleAlpha: number;
+          /** Total dolphin-held alpha in alpha units. */
           dolphinAlpha: number;
+          /** Total fish-held alpha in alpha units. */
           fishAlpha: number;
+          /** Total shrimp-held alpha in alpha units. */
           shrimpAlpha: number;
+          /** Total alpha across all tracked holders in alpha units. */
           totalAlpha: number;
+          /** Whale share of total alpha, as a percentage. */
           whalePercent: number;
+          /** Dolphin share of total alpha, as a percentage. */
           dolphinPercent: number;
+          /** Fish share of total alpha, as a percentage. */
           fishPercent: number;
+          /** Shrimp share of total alpha, as a percentage. */
           shrimpPercent: number;
         }[],
         {
@@ -999,34 +1159,48 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning daily holder distribution buckets for a subnet across predefined alpha balance tiers.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetHolderDistribution
-     * @summary Daily holder distribution by alpha balance tiers for a specific subnet
+     * @summary [To be deleted] Daily holder distribution by alpha balance tiers for a specific subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/holder-distribution
      */
     getSubnetHolderDistribution: (
       netuid: string,
       query?: {
+        /** Lookback window in days. Defaults to 30. */
         days?: string;
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
+          /** Daily holder distribution record identifier. */
           id: string;
+          /** Subnet identifier (netuid). */
           netuid: number;
+          /** UTC snapshot date (ISO datetime). */
           snapshotDate: string;
+          /** Holders with alpha balance under 100. */
           holdersUnder100: number;
+          /** Holders with alpha balance between 100 and 1,000. */
           holders100To1k: number;
+          /** Holders with alpha balance between 1,000 and 10,000. */
           holders1kTo10k: number;
+          /** Holders with alpha balance between 10,000 and 100,000. */
           holders10kTo100k: number;
+          /** Holders with alpha balance between 100,000 and 1,000,000. */
           holders100kTo1m: number;
+          /** Holders with alpha balance at or above 1,000,000. */
           holders1mPlus: number;
+          /** Total holder count for the snapshot date. */
           totalHolders: number;
+          /** Total alpha amount, string-encoded integer. */
           totalAlpha: string;
+          /** Block height for the snapshot. */
           blockHeight: number;
+          /** ISO timestamp when the snapshot was indexed. */
           timestamp: string;
         }[],
         {
@@ -1044,9 +1218,9 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning whale stake transactions scoped to a single subnet with optional filters.
      *
-     * @tags Bittensor
+     * @tags Deprecated
      * @name GetSubnetWhaleTransactionsLegacy
      * @summary [To be deleted] Get whale stake transactions for a subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/whale-transactions
@@ -1054,6 +1228,7 @@ export class Sn45Api<
     getSubnetWhaleTransactionsLegacy: (
       netuid: string,
       query?: {
+        /** Maximum number of transactions to return. Defaults to 50. */
         limit?: string;
         /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale) */
         tier?: string;
@@ -1066,23 +1241,36 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Whale transaction identifier. */
           id: string;
+          /** Block number containing the transaction. */
           blockHeight: number;
+          /** Extrinsic index within the block, when available. */
           extrinsicIndex: number | null;
+          /** Whale transaction type. */
           transactionType:
             | "StakeAdded"
             | "StakeRemoved"
             | "StakeMove"
             | "StakeTransfer"
             | "StakeSwapped";
+          /** Whale tier classification for the source wallet. */
           tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          /** Source coldkey address (SS58-encoded). */
           coldkey: string;
+          /** Source hotkey address (SS58-encoded). */
           hotkey: string;
+          /** Subnet identifier (netuid). */
           netuid: number;
+          /** Origin subnet for cross-subnet operations, when applicable. */
           originNetuid: number | null;
+          /** TAO amount as string-encoded integer in rao. */
           taoAmount: string;
+          /** Alpha amount as string-encoded integer in rao, when applicable. */
           alphaAmount: string | null;
+          /** Destination coldkey for transfers, when applicable. */
           destinationColdkey: string | null;
+          /** ISO timestamp of the whale transaction. */
           timestamp: string;
         }[],
         {
@@ -1100,23 +1288,31 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning global sentiment aggregates across all subnets for the recent analysis window.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSentimentSummary
-     * @summary Sentiment summary for Bittensor subnets
+     * @summary [To be deleted] Sentiment summary for Bittensor subnets
      * @request GET:/v1/bittensor/subnets/sentiment/summary
      */
     getSentimentSummary: (params: RequestParams = {}) =>
       this.request<
         {
+          /** Total number of analyzed tweets in scope. */
           total: number;
+          /** Count of very bullish tweets. */
           veryBullish: number;
+          /** Count of bullish tweets. */
           bullish: number;
+          /** Count of neutral tweets. */
           neutral: number;
+          /** Count of bearish tweets. */
           bearish: number;
+          /** Count of very bearish tweets. */
           veryBearish: number;
+          /** Number of distinct subnets represented in the aggregate. */
           subnetCount: number;
+          /** Weighted sentiment score derived from class counts. */
           sentimentScore: number;
         },
         {
@@ -1133,7 +1329,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns per-subnet social sentiment aggregates over the last 30 days. Each row contains class counts and a derived weighted sentiment score.
      *
      * @tags Subnets
      * @name GetSubnetSentimentList
@@ -1143,13 +1339,21 @@ export class Sn45Api<
     getSubnetSentimentList: (params: RequestParams = {}) =>
       this.request<
         {
+          /** Subnet identifier (netuid). */
           subnetId: number;
+          /** Total analyzed tweets included for this subnet. */
           total: number;
+          /** Count of very bullish tweets. */
           veryBullish: number;
+          /** Count of bullish tweets. */
           bullish: number;
+          /** Count of neutral tweets. */
           neutral: number;
+          /** Count of bearish tweets. */
           bearish: number;
+          /** Count of very bearish tweets. */
           veryBearish: number;
+          /** Weighted sentiment score derived from sentiment class counts. */
           sentimentScore: number;
         }[],
         {
@@ -1166,7 +1370,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning daily sentiment aggregates for a subnet over a bounded lookback window.
      *
      * @tags Deprecated
      * @name GetSubnetDailyTrend
@@ -1177,6 +1381,7 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
+         * Lookback window in days (1-30). Defaults to 30.
          * @min 1
          * @max 30
          * @default 30
@@ -1187,13 +1392,21 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** UTC date bucket (YYYY-MM-DD). */
           date: string;
+          /** Total analyzed tweets for the day. */
           total: number;
+          /** Count of very bullish tweets for the day. */
           veryBullish: number;
+          /** Count of bullish tweets for the day. */
           bullish: number;
+          /** Count of neutral tweets for the day. */
           neutral: number;
+          /** Count of bearish tweets for the day. */
           bearish: number;
+          /** Count of very bearish tweets for the day. */
           veryBearish: number;
+          /** Weighted daily sentiment score. */
           sentimentScore: number;
         }[],
         {
@@ -1211,7 +1424,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint returning recent analyzed tweets and sentiment metadata for a specific subnet.
      *
      * @tags Deprecated
      * @name GetSubnetTweetsLegacy
@@ -1221,20 +1434,30 @@ export class Sn45Api<
     getSubnetTweetsLegacy: (
       netuid: string,
       query?: {
+        /** Maximum number of tweets to return. Defaults to 50. */
         limit?: string;
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
+          /** Tweet identifier. */
           id: string;
+          /** Tweet text content. */
           text: string;
+          /** Canonical tweet URL. */
           url: string;
+          /** ISO timestamp when the tweet was created. */
           createdAt: string;
+          /** Like count at ingestion time. */
           likeCount: number;
+          /** Retweet count at ingestion time. */
           retweetCount: number;
+          /** Reply count at ingestion time. */
           replyCount: number;
+          /** View count at ingestion time, when available. */
           viewCount: number;
+          /** Model-assigned sentiment label for the tweet. */
           sentiment:
             | "very_bullish"
             | "bullish"
@@ -1257,35 +1480,57 @@ export class Sn45Api<
             | "tutorial"
             | "hiring"
             | "governance";
+          /** Model-assigned technical depth assessment. */
           technicalQuality: "none" | "low" | "medium" | "high";
+          /** Model-assigned analysis category. */
           marketAnalysis:
             | "social"
             | "other"
             | "technical"
             | "political"
             | "economic";
+          /** Model-assigned potential market impact level. */
           impactPotential: "none" | "low" | "medium" | "high";
+          /** Confidence level for subnet relevance classification. */
           relevanceConfidence: "low" | "medium" | "high";
+          /** ISO timestamp when tweet analysis was produced. */
           analyzedAt: string;
+          /** True when this item represents a retweet. */
           isRetweet: boolean;
+          /** True when this item quotes another tweet. */
           isQuote: boolean;
+          /** True when this item is a reply. */
           isReply: boolean;
+          /** True when tweet is in a conversation thread. */
           isPartOfThread: boolean;
+          /** True when tweet has one or more replies. */
           hasReplies: boolean;
+          /** Screen name of retweeter when item is a retweet. */
           retweetedBy: string | null;
+          /** Reply context for reply tweets. */
           replyTo: {
+            /** Username being replied to. */
             username: string;
+            /** Preview text of the replied tweet, when available. */
             text?: string;
           };
+          /** Quoted tweet context for quote tweets. */
           quotedPost: {
+            /** Text content of the quoted tweet. */
             text: string;
+            /** Author screen name of the quoted tweet. */
             authorScreenName: string;
           };
           author: {
+            /** Display name of the tweet author. */
             name: string;
+            /** Screen name (handle) of the tweet author. */
             screenName: string;
+            /** Profile image URL of the tweet author. */
             profileImage: string;
+            /** Whether the author is verified. */
             verified: boolean;
+            /** Whether the author has blue verification status. */
             blueVerified: boolean;
           };
         }[],
@@ -1304,7 +1549,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns aggregate social sentiment counts and a derived score for a single subnet. Sentiment is computed from analyzed tweets within the requested lookback window.
      *
      * @tags Subnets, Sentiment
      * @name GetSubnetSentiment
@@ -1315,6 +1560,7 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
+         * Lookback window in days (1-365). Defaults to 30.
          * @min 1
          * @max 365
          * @default 30
@@ -1325,13 +1571,21 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Total analyzed tweets in the selected window. */
           count: number;
+          /** Count of very bullish tweets. */
           veryBullish: number;
+          /** Count of bullish tweets. */
           bullish: number;
+          /** Count of neutral tweets. */
           neutral: number;
+          /** Count of bearish tweets. */
           bearish: number;
+          /** Count of very bearish tweets. */
           veryBearish: number;
+          /** Weighted sentiment score derived from class counts. */
           score: number;
+          /** Label mapped from the weighted sentiment score. */
           sentiment:
             | "very_bearish"
             | "bearish"
@@ -1354,7 +1608,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns recent analyzed tweets for a subnet with sentiment labels, classification metadata, and author context. Use this endpoint to render social feed cards and tweet-level sentiment details.
      *
      * @tags Subnets
      * @name GetSubnetTweets
@@ -1365,6 +1619,7 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
+         * Lookback window in days (1-365). Defaults to 30.
          * @min 1
          * @max 365
          * @default 30
@@ -1375,14 +1630,23 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Tweet identifier. */
           id: string;
+          /** Tweet text content. */
           text: string;
+          /** Canonical tweet URL. */
           url: string;
+          /** ISO timestamp when the tweet was created. */
           createdAt: string;
+          /** Like count at ingestion time. */
           likeCount: number;
+          /** Retweet count at ingestion time. */
           retweetCount: number;
+          /** Reply count at ingestion time. */
           replyCount: number;
+          /** View count at ingestion time, when available. */
           viewCount: number;
+          /** Model-assigned sentiment label for the tweet. */
           sentiment:
             | "very_bullish"
             | "bullish"
@@ -1405,35 +1669,57 @@ export class Sn45Api<
             | "tutorial"
             | "hiring"
             | "governance";
+          /** Model-assigned technical depth assessment. */
           technicalQuality: "none" | "low" | "medium" | "high";
+          /** Model-assigned analysis category. */
           marketAnalysis:
             | "social"
             | "other"
             | "technical"
             | "political"
             | "economic";
+          /** Model-assigned potential market impact level. */
           impactPotential: "none" | "low" | "medium" | "high";
+          /** Confidence level for subnet relevance classification. */
           relevanceConfidence: "low" | "medium" | "high";
+          /** ISO timestamp when tweet analysis was produced. */
           analyzedAt: string;
+          /** True when this item represents a retweet. */
           isRetweet: boolean;
+          /** True when this item quotes another tweet. */
           isQuote: boolean;
+          /** True when this item is a reply. */
           isReply: boolean;
+          /** True when tweet is in a conversation thread. */
           isPartOfThread: boolean;
+          /** True when tweet has one or more replies. */
           hasReplies: boolean;
+          /** Screen name of retweeter when item is a retweet. */
           retweetedBy: string | null;
+          /** Reply context for reply tweets. */
           replyTo: {
+            /** Username being replied to. */
             username: string;
+            /** Preview text of the replied tweet, when available. */
             text?: string;
           };
+          /** Quoted tweet context for quote tweets. */
           quotedPost: {
+            /** Text content of the quoted tweet. */
             text: string;
+            /** Author screen name of the quoted tweet. */
             authorScreenName: string;
           };
           author: {
+            /** Display name of the tweet author. */
             name: string;
+            /** Screen name (handle) of the tweet author. */
             screenName: string;
+            /** Profile image URL of the tweet author. */
             profileImage: string;
+            /** Whether the author is verified. */
             verified: boolean;
+            /** Whether the author has blue verification status. */
             blueVerified: boolean;
           };
         }[],
@@ -1452,7 +1738,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns whale-tier stake transactions for a subnet within the selected lookback window. Amounts are string-encoded integers in rao and addresses are returned in SS58 format.
      *
      * @tags Bittensor
      * @name GetSubnetWhalesActivity
@@ -1474,23 +1760,36 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Whale transaction identifier. */
           id: string;
+          /** Block number containing the transaction. */
           blockHeight: number;
+          /** Extrinsic index within the block, when available. */
           extrinsicIndex: number | null;
+          /** Whale transaction type. */
           transactionType:
             | "StakeAdded"
             | "StakeRemoved"
             | "StakeMove"
             | "StakeTransfer"
             | "StakeSwapped";
+          /** Whale tier classification for the source wallet. */
           tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          /** Source coldkey address (SS58-encoded). */
           coldkey: string;
+          /** Source hotkey address (SS58-encoded). */
           hotkey: string;
+          /** Subnet identifier (netuid). */
           netuid: number;
+          /** Origin subnet for cross-subnet operations, when applicable. */
           originNetuid: number | null;
+          /** TAO amount as string-encoded integer in rao. */
           taoAmount: string;
+          /** Alpha amount as string-encoded integer in rao, when applicable. */
           alphaAmount: string | null;
+          /** Destination coldkey for transfers, when applicable. */
           destinationColdkey: string | null;
+          /** ISO timestamp of the whale transaction. */
           timestamp: string;
         }[],
         {
@@ -1508,7 +1807,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns aggregate whale inflow, outflow, and total flow for a subnet over the selected window. All amount fields are string-encoded integers in rao.
      *
      * @tags Bittensor
      * @name GetSubnetWhalesFlow
@@ -1530,8 +1829,11 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Sum of whale StakeAdded TAO amounts in rao, string-encoded integer. */
           inflow: string;
+          /** Sum of whale StakeRemoved TAO amounts in rao, string-encoded integer. */
           outflow: string;
+          /** Combined whale flow (inflow + outflow) in rao, string-encoded integer. */
           total: string;
         },
         {
@@ -1549,17 +1851,18 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Deprecated endpoint that combines tokenomics-derived economic score with social sentiment into a single composite score.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name GetSubnetCombinedScore
-     * @summary Combined tokenomics, economics, and sentiment score for a subnet
+     * @summary [To be deleted] Combined tokenomics, economics, and sentiment score for a subnet
      * @request GET:/v1/bittensor/subnets/{netuid}/combined-score
      */
     getSubnetCombinedScore: (
       netuid: string,
       query?: {
         /**
+         * Lookback window in days (1-365). Defaults to 30.
          * @min 1
          * @max 365
          * @default 30
@@ -1570,23 +1873,31 @@ export class Sn45Api<
     ) =>
       this.request<
         {
+          /** Net alpha flow over the window, string-encoded integer (in alpha rao units). */
           alphaFlow: string;
+          /** Latest EMA TAO flow, string-encoded integer (in rao). */
           emaTaoFlow: string;
+          /** Social sentiment score component. */
           socialsSentimentScore: number;
+          /** Label mapped from social sentiment score. */
           socialsSentiment:
             | "very_bearish"
             | "bearish"
             | "neutral"
             | "bullish"
             | "very_bullish";
+          /** Average of economic and social sentiment scores. */
           combinedScore: number;
+          /** Label mapped from combined score. */
           combinedSentiment:
             | "very_bearish"
             | "bearish"
             | "neutral"
             | "bullish"
             | "very_bullish";
+          /** Economics score component derived from tokenomics flow. */
           economicScore: number;
+          /** Label mapped from economics score. */
           economicSentiment:
             | "very_bearish"
             | "bearish"
@@ -1609,7 +1920,7 @@ export class Sn45Api<
       }),
 
     /**
-     * No description
+     * @description Returns holder-overview metrics for a subnet, including total holders, period-over-period change, top-decile concentration proxy, active-trader share, and TAO-value tier distribution.
      *
      * @tags Subnets
      * @name GetSubnetHolders

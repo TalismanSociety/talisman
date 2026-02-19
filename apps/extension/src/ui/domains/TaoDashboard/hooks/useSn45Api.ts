@@ -83,19 +83,6 @@ export const useSubnetLeaderboardEntry = (
   return { ...query, data }
 }
 
-// Hook to get sentiment summary
-export const useSentimentSummary = () => {
-  return useQuery({
-    queryKey: ["sn45", "sentimentSummary"],
-    queryFn: async () => {
-      const response = await sn45Api.v1.getSentimentSummary()
-      return response.data
-    },
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-  })
-}
-
 // Hook to get sentiment by subnet
 export const useSubnetSentimentList = () => {
   return useQuery({
@@ -106,22 +93,6 @@ export const useSubnetSentimentList = () => {
     },
     refetchInterval: 60_000,
     staleTime: 60_000,
-  })
-}
-
-// Hook to get whale movements
-export const useWhaleMovements = (minTao = 50, limit = 20) => {
-  return useQuery({
-    queryKey: ["sn45", "whaleMovements", minTao, limit],
-    queryFn: async () => {
-      const response = await sn45Api.v1.getWhaleMovements({
-        minTao: String(minTao),
-        limit: String(limit),
-      })
-      return response.data
-    },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
   })
 }
 
@@ -237,27 +208,6 @@ export const useSubnetPositions = (netuid: number | null | undefined) => {
   })
 }
 
-// Hook to get subnet holder history (for holder distribution charts)
-export const useSubnetHolderHistory = (netuid: number | null | undefined, days = 30) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetHolderHistory", netuid, days],
-    queryFn: async () => {
-      if (!netuid) return []
-      try {
-        const response = await sn45Api.v1.getSubnetHolderHistory(String(netuid), {
-          days: String(days),
-        })
-        return response.data ?? []
-      } catch {
-        return []
-      }
-    },
-    enabled: !!netuid,
-    refetchInterval: 300_000, // 5 minutes
-    staleTime: 300_000,
-  })
-}
-
 // Hook to get subnet holder metrics
 export const useSubnetHolders = (netuid: number | null | undefined, days = 30) => {
   return useQuery({
@@ -279,7 +229,6 @@ export const useSubnetHolders = (netuid: number | null | undefined, days = 30) =
   })
 }
 
-// Whale transaction types matching the GraphQL schema
 export type WhaleTransactionType =
   | "StakeAdded"
   | "StakeRemoved"
@@ -287,75 +236,20 @@ export type WhaleTransactionType =
   | "StakeTransfer"
   | "StakeSwapped"
 
-export type WhaleTier = "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale"
-
 export interface WhaleTransaction {
   id: string
   blockHeight: number
   extrinsicIndex: number | null
   transactionType: WhaleTransactionType
-  tier: WhaleTier
+  tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale"
   coldkey: string
   hotkey: string
   netuid: number
   originNetuid: number | null
-  taoAmount: string // BigInt as string (in rao)
-  alphaAmount: string | null // BigInt as string (in rao)
+  taoAmount: string
+  alphaAmount: string | null
   destinationColdkey: string | null
   timestamp: string
-}
-
-// Type for the new DailyHolderDistribution GraphQL model
-export interface DailyHolderDistribution {
-  id: string
-  netuid: number
-  snapshotDate: string
-  holdersUnder100: number // < 100 alpha
-  holders100To1k: number // >= 100 and < 1,000 alpha
-  holders1kTo10k: number // >= 1,000 and < 10,000 alpha
-  holders10kTo100k: number // >= 10,000 and < 100,000 alpha
-  holders100kTo1m: number // >= 100,000 and < 1,000,000 alpha
-  holders1mPlus: number // >= 1,000,000 alpha
-  totalHolders: number
-  totalAlpha: string // BigInt as string
-  blockHeight: number
-  timestamp: string
-}
-
-// Hook to get holder distribution from the new GraphQL-backed endpoint
-export const useHolderDistribution = (netuid: number | null | undefined, days = 30) => {
-  return useQuery({
-    queryKey: ["sn45", "holderDistribution", netuid, days],
-    queryFn: async (): Promise<DailyHolderDistribution[]> => {
-      if (!netuid) return []
-      try {
-        const response = await sn45Api.v1.getSubnetHolderDistribution(String(netuid), {
-          days: String(days),
-        })
-        return response.data ?? []
-      } catch {
-        return []
-      }
-    },
-    enabled: !!netuid,
-    refetchInterval: 300_000, // 5 minutes
-    staleTime: 300_000,
-  })
-}
-
-// Hook to get subnet events (for chart markers)
-export const useSubnetEvents = (netuid: number | null | undefined, limit = 250) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetEvents", netuid, limit],
-    queryFn: async () => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetEvents(String(netuid), { limit: String(limit) })
-      return response.data
-    },
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-  })
 }
 
 export const useSubnetSentiment = (netuid: number | null | undefined, days?: number) => {
@@ -415,56 +309,6 @@ export const useSubnetWhalesActivity = (netuid: number | null | undefined, days?
   })
 }
 
-export const useSubnetCombinedScore = (netuid: number | null | undefined, days?: number) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetCombinedScore", netuid, days],
-    queryFn: async () => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetCombinedScore(String(netuid), { days })
-      return response.data
-    },
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
-// Hook to get all whale transactions (not subnet specific)
-export const useAllWhaleTransactions = (options?: {
-  limit?: number
-  tier?: WhaleTier
-  transactionType?: WhaleTransactionType
-  minTaoAmount?: number
-  netuid?: number
-}) => {
-  const limit = options?.limit ?? 50
-  const tier = options?.tier
-  const transactionType = options?.transactionType
-  const minTaoAmount = options?.minTaoAmount
-  const netuid = options?.netuid
-
-  return useQuery({
-    queryKey: ["sn45", "allWhaleTransactions", limit, tier, transactionType, minTaoAmount, netuid],
-    queryFn: async (): Promise<WhaleTransaction[]> => {
-      try {
-        const response = await sn45Api.v1.getWhaleTransactions({
-          limit: String(limit),
-          tier,
-          transactionType,
-          minTaoAmount: minTaoAmount !== undefined ? String(minTaoAmount) : undefined,
-          netuid: netuid !== undefined ? String(netuid) : undefined,
-        })
-        // Convert hex addresses to SS58
-        return response.data
-      } catch {
-        return []
-      }
-    },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
 // Combined hook for subnet economics with sentiment data
 export const useSubnetEconomicsWithSentiment = () => {
   const {
@@ -510,20 +354,5 @@ export const useSubnetEconomicsWithSentiment = () => {
     data,
     isLoading: economicsLoading || sentimentLoading,
     isError: isEconomicsError || isSentimentError || isTaoPriceError,
-  }
-}
-
-// Hook to get sentiment for a single subnet (avoids fetching all subnet economics)
-export const useSingleSubnetSentiment = (netuid: number | null | undefined) => {
-  const { data: sentimentList, isLoading } = useSubnetSentimentList()
-
-  const sentiment = useMemo(() => {
-    if (!sentimentList || !netuid) return null
-    return sentimentList.find((s) => s.subnetId === netuid) ?? null
-  }, [sentimentList, netuid])
-
-  return {
-    data: sentiment,
-    isLoading,
   }
 }
