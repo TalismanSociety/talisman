@@ -97,7 +97,7 @@ const Separator = () => <div className="h-px shrink-0 bg-grey-800"></div>
 
 const SentimentSummaryBar: FC<{ sentiment: SubnetSentimentData }> = ({ sentiment }) => {
   const [bearishPercent, neutralPercent, bullishPercent] = useMemo(() => {
-    if (!sentiment?.count) return [false, 0, 100, 0]
+    if (!sentiment?.count) return [0, 100, 0]
     const bearish = Math.round(
       ((sentiment.bearish + sentiment.veryBearish) / sentiment.count) * 100
     )

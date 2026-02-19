@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next"
 import { createChartOptions } from "../chartOptions"
 import { FlowChartToolbar } from "./FlowChartToolbar"
 import type { FlowChartPoint } from "./types"
-import { useFlowGraphData } from "./useFlowChartData"
+import { type UseFlowGraphDataReturn, useFlowGraphData } from "./useFlowChartData"
 
 export const FlowChartGraph: FC<{
   netuid: number
@@ -21,12 +21,12 @@ export const FlowChartGraph: FC<{
   onPeriodChanged: (period: TimePeriod) => void
 }> = ({ netuid, period, onPeriodChanged }) => {
   const { t } = useTranslation()
-  const { isLoading, netData } = useFlowGraphData(netuid, period)
+  const flowData = useFlowGraphData(netuid, period)
 
   // skeleton at this level so we dont display toolbar while loading
-  if (isLoading) return <FlowChartGraphSkeleton />
+  if (flowData.isLoading) return <FlowChartGraphSkeleton />
 
-  if (netData.length === 0) {
+  if (flowData.netData.length === 0) {
     return (
       <div className="flex h-[400px] items-center justify-center text-body-secondary">
         {t("Failed to fetch data")}
@@ -38,16 +38,15 @@ export const FlowChartGraph: FC<{
     <div className="relative flex size-full flex-col overflow-hidden">
       <FlowChartToolbar period={period} onPeriodChanged={onPeriodChanged} className="my-5 px-12" />
       <div className="grow">
-        <FlowChartGraphContent netuid={netuid} period={period} />
+        <FlowChartGraphContent flowData={flowData} />
       </div>
     </div>
   )
 }
 
 const FlowChartGraphContent: FC<{
-  netuid: number
-  period: TimePeriod
-}> = ({ netuid, period }) => {
+  flowData: UseFlowGraphDataReturn
+}> = ({ flowData }) => {
   const { t } = useTranslation()
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -57,7 +56,7 @@ const FlowChartGraphContent: FC<{
     net: ISeriesApi<"Line"> | null
   }>({ taoIn: null, taoOut: null, net: null })
 
-  const { taoInData, taoOutData, netData, isLoading } = useFlowGraphData(netuid, period)
+  const { taoInData, taoOutData, netData, isLoading } = flowData
 
   // Effect 1: Create chart instance (only depends on container ref)
   useEffect(() => {

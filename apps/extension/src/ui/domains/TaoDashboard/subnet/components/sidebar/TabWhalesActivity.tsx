@@ -138,20 +138,21 @@ const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid
 
   const { alphaToken, taoToken } = useSubnetTokens(netuid)
 
-  if (!isLoading)
-    if (!transactions || transactions.length === 0) {
-      return (
-        <div className="py-8 text-center text-body-secondary text-sm">
-          {t("No whale activity found for this subnet")}
-        </div>
-      )
-    }
+  const tokensLoaded = !!taoToken && !!alphaToken
 
-  if (!taoToken || !alphaToken) return null
+  if (!isLoading && !tokensLoaded) return null
+
+  if (!isLoading && tokensLoaded && (!transactions || transactions.length === 0)) {
+    return (
+      <div className="py-8 text-center text-body-secondary text-sm">
+        {t("No whale activity found for this subnet")}
+      </div>
+    )
+  }
 
   return (
     <div className="flex grow flex-col overflow-y-auto">
-      {isLoading
+      {isLoading || !tokensLoaded
         ? // biome-ignore lint/suspicious/noArrayIndexKey: static list
           Array.from({ length: 5 }).map((_, i) => <WhaleActivityItemSkeleton key={i} />)
         : transactions.map((tx) => (
