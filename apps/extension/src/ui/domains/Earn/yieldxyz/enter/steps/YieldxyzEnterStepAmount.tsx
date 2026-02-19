@@ -6,17 +6,19 @@ import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/Yi
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useAppState } from "@ui/state"
 import { formatDuration, intervalToDuration } from "date-fns"
 import type { TimePeriodDto } from "extension-core"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, WizardModalDialog } from "talisman-ui"
+import { Button, useOpenClose, WizardModalDialog } from "talisman-ui"
 
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
 import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
+import { EarnDisclaimerDrawer } from "./EarnDisclaimerDrawer"
 
 export const YieldxyzEnterStepAmount = () => {
   const { t } = useTranslation()
@@ -24,8 +26,11 @@ export const YieldxyzEnterStepAmount = () => {
   const { address, goTo, canCreateAction, createAction, product } = useYieldxyzEnterWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [hideDisclaimer] = useAppState("hideEarnDisclaimer")
+  const [hasAckDisclaimer, setHasAckDisclaimer] = useState(hideDisclaimer || false)
+  const disclaimerDrawer = useOpenClose()
 
-  const handleSubmit = async () => {
+  const proceedToReview = useCallback(async () => {
     setProcessing(true)
     try {
       await createAction()
@@ -33,6 +38,14 @@ export const YieldxyzEnterStepAmount = () => {
     } finally {
       setProcessing(false)
     }
+  }, [createAction, goTo])
+
+  const handleSubmit = async () => {
+    if (!hasAckDisclaimer) {
+      disclaimerDrawer.open()
+      return
+    }
+    await proceedToReview()
   }
 
   if (!product) return null
@@ -105,6 +118,15 @@ export const YieldxyzEnterStepAmount = () => {
           {t("Review")}
         </Button>
       </div>
+      <EarnDisclaimerDrawer
+        isOpen={disclaimerDrawer.isOpen}
+        onAccept={() => {
+          setHasAckDisclaimer(true)
+          disclaimerDrawer.close()
+          proceedToReview()
+        }}
+        onCancel={disclaimerDrawer.close}
+      />
     </WizardModalDialog>
   )
 }
