@@ -108,7 +108,10 @@ export function useOhlcvData({
       initialPageParam: undefined as string | undefined,
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
       enabled: !!netuid,
-      refetchInterval: 60_000,
+      refetchInterval: (query) => {
+        const pageCount = query.state.data?.pages?.length ?? 0
+        return pageCount <= 1 ? 15_000 : false
+      },
       staleTime: 30_000,
       retry: shouldRetrySn45Error,
       refetchOnReconnect: true,
