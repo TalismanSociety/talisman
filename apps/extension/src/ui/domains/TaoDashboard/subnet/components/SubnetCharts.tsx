@@ -2,6 +2,7 @@ import { cn } from "@talismn/util"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { type NavTabConfig, TaoDashboardNavTabs } from "../../shared/TaoDashboardNavTabs"
+import { TaoDashboardSubnetBreadcrumb } from "../TaoDashboardSubnetBreadcrumb"
 import { SubnetTaoFlowChart } from "./flow-chart/SubnetTaoFlowChart"
 import { SubnetPriceChart } from "./price-chart/SubnetPriceChart"
 
@@ -26,7 +27,8 @@ export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) =>
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
-      <div>
+      <div className="flex items-center justify-between">
+        <TaoDashboardSubnetBreadcrumb netuid={netuid} />
         <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
 
