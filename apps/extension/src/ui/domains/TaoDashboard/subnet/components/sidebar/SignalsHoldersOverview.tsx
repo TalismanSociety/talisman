@@ -295,7 +295,7 @@ const TierLabel: FC<{ tier: TierKey }> = ({ tier }) => {
       case "dolphin":
         return t("Dolphins")
       case "fish":
-        return t("Fishes")
+        return t("Fish")
       case "shrimp":
         return t("Shrimps")
     }
