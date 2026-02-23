@@ -1,7 +1,12 @@
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useMemo } from "react"
 
-import { useSubnetTokenomics, useTaoPrice } from "../../../hooks/useSn45Api"
+import {
+  useSubnetLeaderboardEntry,
+  useSubnetTokenomics,
+  useTaoPrice,
+} from "../../../hooks/useSn45Api"
+import { ALPHA_MAX_SUPPLY } from "../../../shared/constants"
 import { raoToTao } from "../../../shared/util"
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 
@@ -13,12 +18,6 @@ export interface SubnetStatsData {
   volume24h: number | null
   fdv: number | null
   dailyEmissions: number | null
-}
-
-const parseRaoToTao = (value: string | number | null | undefined): number | null => {
-  if (value === null || value === undefined) return null
-  const result = raoToTao(typeof value === "number" ? String(value) : value)
-  return Number.isFinite(result) ? result : null
 }
 
 export function useSubnetStats(netuid: number) {
@@ -35,13 +34,16 @@ export function useSubnetStats(netuid: number) {
     error: tokenomicsError,
   } = useSubnetTokenomics(netuid)
   const {
-    subnetData,
-    isLoading: isSubnetDataLoading,
-    isError: isSubnetDataError,
-  } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
+    data: leaderboard,
+    isLoading: isLeaderboardLoading,
+    isError: isLeaderboardError,
+  } = useSubnetLeaderboardEntry(netuid, "1d")
+  // Still needed for daily emissions (emission + tempo)
+  const { subnetData, isLoading: isSubnetDataLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
-  const isLoading = isTaoPriceLoading || isTokenomicsLoading || isSubnetDataLoading
-  const isError = isTaoPriceError || isTokenomicsError || isSubnetDataError
+  const isLoading =
+    isTaoPriceLoading || isTokenomicsLoading || isLeaderboardLoading || isSubnetDataLoading
+  const isError = isTaoPriceError || isTokenomicsError || isLeaderboardError
   const error = taoPriceError ?? tokenomicsError ?? null
 
   const data = useMemo((): SubnetStatsData => {
@@ -51,20 +53,18 @@ export function useSubnetStats(netuid: number) {
     const taoUsdPrice = taoPrice?.price ? parseFloat(taoPrice.price) : null
     const tokenPriceUsd = tokenPrice && taoUsdPrice ? tokenPrice * taoUsdPrice : null
 
-    const priceChange24h = currentSubnet?.price_change_1_day
-      ? Number(currentSubnet.price_change_1_day)
-      : null
+    // Use leaderboard for price change, mcap, and volume (same source as subnets list)
+    const priceChange24h = leaderboard?.priceChange ?? null
 
-    const marketCapTao = parseRaoToTao(currentSubnet?.market_cap)
-    const marketCap =
-      marketCapTao !== null && taoUsdPrice !== null ? marketCapTao * taoUsdPrice : null
+    // Market cap from leaderboard squid proxy (price × circulating supply), converted to USD
+    const mcapTao = leaderboard?.mcap ? raoToTao(leaderboard.mcap) : null
+    const marketCap = mcapTao !== null && taoUsdPrice ? mcapTao * taoUsdPrice : null
 
-    const volume24hTao = parseRaoToTao(currentSubnet?.tao_volume_24_hr)
-    const volume24h =
-      volume24hTao !== null && taoUsdPrice !== null ? volume24hTao * taoUsdPrice : null
+    const volumeTao = raoToTao(leaderboard?.volume)
+    const volume24h = taoUsdPrice !== null ? volumeTao * taoUsdPrice : null
 
-    const totalAlpha = parseRaoToTao(currentSubnet?.total_alpha)
-    const fdv = totalAlpha && tokenPriceUsd ? totalAlpha * tokenPriceUsd : null
+    // FDV = token price × max supply (21M alpha per subnet)
+    const fdv = tokenPriceUsd ? tokenPriceUsd * ALPHA_MAX_SUPPLY : null
 
     const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
     const dailyEmissions = emissionRaw
@@ -80,7 +80,7 @@ export function useSubnetStats(netuid: number) {
       fdv,
       dailyEmissions,
     }
-  }, [netuid, subnetData, taoPrice, tokenomics])
+  }, [netuid, subnetData, leaderboard, taoPrice, tokenomics])
 
   return { data, isLoading, isError, error }
 }

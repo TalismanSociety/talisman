@@ -68,11 +68,13 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
 
         const priceChange = leaderboard?.priceChange ?? undefined
         const stakedAlpha = raoToTao(leaderboard?.stakedAlpha)
-        const mcap = raoToTao(leaderboard?.mcap)
         const volume = raoToTao(leaderboard?.volume)
 
         const emission = leaderboard?.emissionPct ?? 0
         const score = leaderboard?.score ?? 0
+
+        // Market cap from leaderboard squid proxy (price × circulating supply), converted to USD
+        const mcap = leaderboard?.mcap ? raoToTao(leaderboard.mcap) * taoUsdPrice : 0
 
         // Determine sentiment based on score
         const sentiment: SubnetSentiment = score >= 80 ? "bullish" : score <= 20 ? "bearish" : null
@@ -91,11 +93,13 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           score,
           sentiment,
           volume,
+          mcap,
           balance: balances?.sum.planck.transferable ?? null,
           balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
           stakedTao: priceTao ? stakedAlpha * priceTao : undefined,
           stakedAlpha,
-          mcap,
+          mcapUsd: mcap,
+          volumeUsd: volume * taoUsdPrice,
           emission,
           chartData: leaderboard?.priceHistory7d,
         }
