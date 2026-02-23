@@ -405,7 +405,14 @@ Key conventions: `bg-field`, `text-body-secondary`, `rounded`, generous `py-36`,
 
 ## Skeleton Loading States
 
-Use `animate-pulse` with `bg-grey-700` for loading placeholders. Match the dimensions of the real content:
+Use `animate-pulse` with a grey background for loading placeholders. Match the dimensions of the real content. The skeleton color should contrast with its container — pick a shade that's visible but subtle:
+
+- On `bg-black-secondary` (`#1B1B1B`): use `bg-grey-700` (`#3f3f3f`)
+- On `bg-grey-800` (`#262626`): use `bg-grey-700` (`#3f3f3f`)
+- On `bg-grey-900` (`#181818`): use `bg-grey-750` (`#2f2f2f`) or `bg-grey-700`
+- On `bg-black` (`#121212`): use `bg-grey-800` (`#262626`) or `bg-grey-850`
+
+The general rule: the skeleton block should be **1–2 grey shades lighter** than its container.
 
 ```tsx
 <div className="flex h-28 items-center gap-6 rounded-sm bg-black-secondary px-6">
