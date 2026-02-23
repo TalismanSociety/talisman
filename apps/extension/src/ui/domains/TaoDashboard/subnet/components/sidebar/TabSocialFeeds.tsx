@@ -4,6 +4,7 @@ import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/ho
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useSocialFeedsMountSignal } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import {
   type FC,
   Fragment,
@@ -19,6 +20,7 @@ import { SectionTitleBar } from "./SectionTitleBar"
 export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1w")
+  useSocialFeedsMountSignal()
 
   return (
     <div className="flex size-full flex-col overflow-hidden">

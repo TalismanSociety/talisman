@@ -1,4 +1,5 @@
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { useSocialFeedsMounted } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import {
   AreaSeries,
   CandlestickSeries,
@@ -34,6 +35,7 @@ import { useSubnetStats } from "./useSubnetStats"
 type ChartApi = IChartApi
 type SeriesApi = ISeriesApi<SeriesType>
 type PriceLine = ReturnType<SeriesApi["createPriceLine"]>
+type MarkersPlugin = { detach: () => void }
 
 // ────────────────────────────────────────────────────────────────────────────
 // Utility functions
@@ -240,6 +242,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   tokenPrice,
   indicators,
 }) => {
+  const showTweetMarkers = useSocialFeedsMounted()
   // ── Chart refs (cleaned up on unmount) ────────────────────────────────
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<ChartApi | null>(null)
@@ -248,6 +251,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   const rsiSeriesRef = useRef<SeriesApi | null>(null)
   const overlaySeriesRef = useRef<SeriesApi[]>([])
   const priceLineRef = useRef<PriceLine | null>(null)
+  const markersRef = useRef<MarkersPlugin | null>(null)
   const volumeLegendRef = useRef<HTMLDivElement | null>(null)
   const initialFitDoneRef = useRef(false)
 
@@ -332,6 +336,10 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       volumeSeriesRef.current = null
       overlaySeriesRef.current = []
       rsiSeriesRef.current = null
+      if (markersRef.current) {
+        markersRef.current.detach()
+        markersRef.current = null
+      }
       volumeLegendRef.current = null
       initialFitDoneRef.current = false
     }
@@ -593,7 +601,12 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
 
     // ── Tweet markers ───────────────────────────────────────────────────
-    if (tweets && tweets.length > 0 && candleData.length > 0) {
+    if (markersRef.current) {
+      markersRef.current.detach()
+      markersRef.current = null
+    }
+
+    if (showTweetMarkers && tweets && tweets.length > 0 && candleData.length > 0) {
       const minTime = candleData[0].time
       const maxTime = candleData[candleData.length - 1].time
 
@@ -617,7 +630,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
         .sort((a, b) => (a.time as number) - (b.time as number))
 
       if (markers.length > 0) {
-        createSeriesMarkers(candlestickSeries, markers)
+        markersRef.current = createSeriesMarkers(candlestickSeries, markers)
       }
     }
 
@@ -630,7 +643,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       })
       initialFitDoneRef.current = true
     }
-  }, [chartData, tweets, tokenPrice, indicators])
+  }, [chartData, tweets, showTweetMarkers, tokenPrice, indicators])
 
   return <div ref={chartContainerRef} className="size-full" />
 }
