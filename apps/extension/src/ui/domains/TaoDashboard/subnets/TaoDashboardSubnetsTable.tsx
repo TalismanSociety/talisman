@@ -36,15 +36,6 @@ const formatTaoPrice = (price: number | undefined) => {
   return price.toFixed(2)
 }
 
-// Format large TAO amounts
-const formatTaoAmount = (num: number) => {
-  if (num === 0) return "0 τ"
-  if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B τ`
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M τ`
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K τ`
-  return `${num.toFixed(0)} τ`
-}
-
 // Mini sparkline chart component
 const SparklineChart: FC<{ data: number[]; isPositive: boolean }> = ({ data, isPositive }) => {
   if (data.length <= 1) return null
@@ -451,7 +442,7 @@ const SubnetRow: FC<{
         {loading.volume ? (
           <SkeletonBar className="h-8 w-20" />
         ) : (
-          <span className="text-white">{formatTaoAmount(subnet.volume)}</span>
+          <FiatFromUsd amount={subnet.volumeUsd} className="text-white" noCountUp compact />
         )}
       </DataCell>
 
@@ -460,7 +451,7 @@ const SubnetRow: FC<{
         {loading.mcap ? (
           <SkeletonBar className="h-8 w-28" />
         ) : (
-          <span className="text-white">{formatTaoAmount(subnet.mcap)}</span>
+          <FiatFromUsd amount={subnet.mcapUsd} className="text-white" noCountUp compact />
         )}
       </DataCell>
 
