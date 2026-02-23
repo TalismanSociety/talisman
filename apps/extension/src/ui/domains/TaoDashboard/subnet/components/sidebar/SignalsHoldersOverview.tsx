@@ -117,7 +117,7 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         >
           {formatCompactNumber(data.top10Concentration)}
         </MetricsField>
-        <MetricsField label={t("Avg Trade")} tooltip={t("Average trade volume by holders")}>
+        <MetricsField label={t("Average Trade")} tooltip={t("Average trade volume by holders")}>
           {data.avgTradePercent.toFixed(1)}%
         </MetricsField>
       </div>
