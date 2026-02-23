@@ -6,7 +6,6 @@ import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
-import { SeekBenefitsBanner } from "../SeekBenefits/SeekBenefitsBanner"
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -104,7 +103,6 @@ export const DashboardAssetsTable = () => {
 
   return (
     <div key={location.key} className="min-w-[45rem] text-left text-base text-body-secondary">
-      <SeekBenefitsBanner className="mb-2" variant="large" />
       {!symbolBalances.length && !isInitialising && <NoAssetsFound />}
       {!!symbolBalances.length && <HeaderRow />}
       <VirtualizedRows symbolBalances={symbolBalances} />
