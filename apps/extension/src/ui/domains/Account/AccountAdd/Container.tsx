@@ -141,7 +141,7 @@ function NewAccountMethodButtons() {
         disabled={platform === "ethereum"}
         title={
           <SelectAccountTypeButtonHeader
-            title={t("New Polkadot Account")}
+            title={t("New Substrate Account")}
             tooltip={t(
               "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains."
             )}
@@ -252,7 +252,7 @@ function WatchedAccountMethodButtons() {
         disabled={!!platform && platform !== "polkadot"}
         title={
           <SelectAccountTypeButtonHeader
-            title={t("Watch Polkadot Account")}
+            title={t("Watch Substrate Account")}
             tooltip={t(
               "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains."
             )}
