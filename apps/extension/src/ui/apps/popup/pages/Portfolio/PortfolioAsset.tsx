@@ -1,19 +1,49 @@
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { ChevronLeftIcon } from "@talismn/icons"
+import { ChevronLeftIcon, SendIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { BittensorClaimSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimSettingsToolbarButton"
+import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorDashboardToolbarButton"
+import { BittensorStakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorStakeToolbarButton"
+import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeToolbarButton"
+import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances, usePortfolioBalances, useSelectedCurrency } from "@ui/state"
 import { uniq } from "lodash-es"
-import { useCallback, useEffect, useMemo } from "react"
+import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
-import { IconButton } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
+  const { t } = useTranslation()
+  const { selectedAccount: account } = usePortfolioNavigation()
+
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    account,
+    undefined,
+    symbol
+  )
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <PortfolioToolbarButton onClick={openSendFundsPopup} disabled={!canSendFunds}>
+          <SendIcon />
+        </PortfolioToolbarButton>
+      </TooltipTrigger>
+      <TooltipContent>
+        {canSendFunds ? t("Send {{symbol}}", { symbol }) : cannotSendFundsReason}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -49,6 +79,16 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
       <div className="py-4">
         <AssetPriceChart tokenIds={tokenIds} variant="small" className="mb-8" />
+        <div className="mb-8 flex items-center justify-between">
+          <div className="text-body-secondary text-sm">{t("All Tokens")}</div>
+          <div className="flex items-center gap-2">
+            <BittensorClaimSettingsToolbarButton balances={balancesToDisplay} />
+            <BittensorStakeToolbarButton balances={balancesToDisplay} />
+            <BittensorUnstakeToolbarButton balances={balancesToDisplay} />
+            <SendFundsButton symbol={symbol} />
+            <BittensorDashboardToolbarButton balances={balancesToDisplay} />
+          </div>
+        </div>
         <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
       </div>
     </>
