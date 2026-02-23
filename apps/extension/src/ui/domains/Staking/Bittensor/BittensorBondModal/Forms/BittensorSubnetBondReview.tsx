@@ -63,6 +63,7 @@ export const BittensorSubnetBondReview = () => {
     priceImpact,
     withMevShield,
     isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
     setIsMevProtectionEnabled,
     onSubmitted,
     setStep,
@@ -276,12 +277,26 @@ export const BittensorSubnetBondReview = () => {
               </button>
             </div>
             <div className="flex items-center gap-2 text-body text-xs">
-              <Toggle
-                variant="tiny"
-                checked={withMevShield}
-                disabled={isMevShieldDisabled}
-                onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
-              />
+              {isMevShieldFeatureDisabled ? (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Toggle
+                      variant="tiny"
+                      checked={withMevShield}
+                      disabled={isMevShieldDisabled}
+                      onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{t("MEV Shield is temporarily disabled")}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Toggle
+                  variant="tiny"
+                  checked={withMevShield}
+                  disabled={isMevShieldDisabled}
+                  onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
+                />
+              )}
             </div>
           </div>
         </div>

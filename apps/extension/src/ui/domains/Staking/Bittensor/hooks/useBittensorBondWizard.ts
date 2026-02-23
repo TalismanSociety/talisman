@@ -8,7 +8,13 @@ import {
 } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
+import {
+  useAccountByAddress,
+  useFeatureFlag,
+  usePortfolioBalances,
+  useToken,
+  useTokenRates,
+} from "@ui/state"
 import { type Address, isAccountOfType } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -146,11 +152,14 @@ const useBittensorBondWizardProvider = () => {
 
   const { data: sapi } = useScaleApi(nativeToken?.networkId)
 
+  const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
+
   const isMevShieldDisabled = useMemo(() => {
+    // disabled when feature flag is off
     // no need for root staking
     // supported only for hot wallets
-    return !netuid || !isAccountOfType(account, "keypair")
-  }, [netuid, account])
+    return !isMevShieldFeatureEnabled || !netuid || !isAccountOfType(account, "keypair")
+  }, [isMevShieldFeatureEnabled, netuid, account])
 
   const withMevShield = useMemo(
     () => !isMevShieldDisabled && isMevProtectionEnabled,
@@ -525,6 +534,7 @@ const useBittensorBondWizardProvider = () => {
     priceImpact,
     withMevShield,
     isMevShieldDisabled,
+    isMevShieldFeatureDisabled: !isMevShieldFeatureEnabled,
     setIsMevProtectionEnabled,
     setAddress,
     setNetuid,

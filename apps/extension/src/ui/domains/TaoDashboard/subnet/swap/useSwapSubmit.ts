@@ -1,4 +1,5 @@
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
+import { useFeatureFlag } from "@ui/state"
 import type { Account } from "extension-core"
 import { isAccountOfType } from "extension-core"
 import { log } from "extension-shared"
@@ -24,11 +25,13 @@ export function useSwapSubmit({
   const { t } = useTranslation()
   const { addTransaction } = useSwapTxWatcher()
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
+  const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
   const isMevShieldDisabled = useMemo(
     // supported only for hot wallets on non-root subnets
-    () => !netuid || !isAccountOfType(account, "keypair"),
-    [netuid, account]
+    // also disabled when feature flag is off
+    () => !isMevShieldFeatureEnabled || !netuid || !isAccountOfType(account, "keypair"),
+    [isMevShieldFeatureEnabled, netuid, account]
   )
 
   const withMevShield = useMemo(
@@ -64,6 +67,7 @@ export function useSwapSubmit({
     isMevProtectionEnabled,
     setIsMevProtectionEnabled,
     isMevShieldDisabled,
+    isMevShieldFeatureDisabled: !isMevShieldFeatureEnabled,
     withMevShield,
     txMode,
     onSubmit,

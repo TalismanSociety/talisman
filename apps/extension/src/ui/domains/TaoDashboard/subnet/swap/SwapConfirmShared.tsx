@@ -218,9 +218,17 @@ export const SwapConfirmMevShieldLabel: FC<{ containerId: string }> = ({ contain
 export const SwapConfirmMevShieldValue: FC<{
   withMevShield: boolean
   isMevShieldDisabled: boolean
+  isMevShieldFeatureDisabled: boolean
   setIsMevProtectionEnabled: (enabled: boolean) => void
-}> = ({ withMevShield, isMevShieldDisabled, setIsMevProtectionEnabled }) => {
-  return (
+}> = ({
+  withMevShield,
+  isMevShieldDisabled,
+  isMevShieldFeatureDisabled,
+  setIsMevProtectionEnabled,
+}) => {
+  const { t } = useTranslation()
+
+  const toggle = (
     <Toggle
       variant="tiny"
       checked={withMevShield}
@@ -228,6 +236,16 @@ export const SwapConfirmMevShieldValue: FC<{
       onChange={(e) => setIsMevProtectionEnabled(e.target.checked)}
     />
   )
+
+  if (isMevShieldFeatureDisabled)
+    return (
+      <Tooltip>
+        <TooltipTrigger>{toggle}</TooltipTrigger>
+        <TooltipContent>{t("MEV Shield is temporarily disabled")}</TooltipContent>
+      </Tooltip>
+    )
+
+  return toggle
 }
 
 export const SwapConfirmFeeEstimateValue: FC<{

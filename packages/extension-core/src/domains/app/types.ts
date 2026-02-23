@@ -100,6 +100,7 @@ export type FeatureFlags = Partial<{
   NFTS_V2: boolean
   SEEK_BENEFITS: boolean
   SEEK_TAO_DISCOUNT: boolean
+  BITTENSOR_MEV_SHIELD: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

@@ -118,8 +118,14 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
-  const { isMevShieldDisabled, withMevShield, setIsMevProtectionEnabled, txMode, onSubmit } =
-    useSwapSubmit({ netuid, account, direction: "buy", resetValueIn })
+  const {
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    withMevShield,
+    setIsMevProtectionEnabled,
+    txMode,
+    onSubmit,
+  } = useSwapSubmit({ netuid, account, direction: "buy", resetValueIn })
 
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
@@ -224,6 +230,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
 
     withMevShield,
     isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
     setIsMevProtectionEnabled,
 
     isLoading,

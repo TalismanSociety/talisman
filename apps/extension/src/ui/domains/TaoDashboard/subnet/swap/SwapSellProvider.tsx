@@ -105,8 +105,14 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
-  const { isMevShieldDisabled, withMevShield, setIsMevProtectionEnabled, txMode, onSubmit } =
-    useSwapSubmit({ netuid, account, direction: "sell", resetValueIn })
+  const {
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    withMevShield,
+    setIsMevProtectionEnabled,
+    txMode,
+    onSubmit,
+  } = useSwapSubmit({ netuid, account, direction: "sell", resetValueIn })
 
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
 
@@ -206,6 +212,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
     withMevShield,
     isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
     setIsMevProtectionEnabled,
 
     feeEstimate,

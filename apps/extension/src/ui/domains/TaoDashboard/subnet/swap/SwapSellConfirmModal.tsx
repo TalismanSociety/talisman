@@ -173,12 +173,18 @@ const MevShieldLabel = () => {
 }
 
 const MevShieldValue = () => {
-  const { withMevShield, isMevShieldDisabled, setIsMevProtectionEnabled } = useSwapSell()
+  const {
+    withMevShield,
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    setIsMevProtectionEnabled,
+  } = useSwapSell()
 
   return (
     <SwapConfirmMevShieldValue
       withMevShield={withMevShield}
       isMevShieldDisabled={isMevShieldDisabled}
+      isMevShieldFeatureDisabled={isMevShieldFeatureDisabled}
       setIsMevProtectionEnabled={setIsMevProtectionEnabled}
     />
   )
