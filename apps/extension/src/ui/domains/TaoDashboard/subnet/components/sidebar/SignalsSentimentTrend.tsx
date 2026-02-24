@@ -17,20 +17,20 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./SectionTitleBar"
 
-export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => {
+export const SignalsSentimentTrend: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1w")
   const { data, isLoading } = useSubnetLeaderboardEntry(netuid, period)
 
   return (
     <div>
-      <SectionTitleBar label={t("Trending sentiment")} period={period} onPeriodChange={setPeriod} />
+      <SectionTitleBar label={t("Sentiment Trend")} period={period} onPeriodChange={setPeriod} />
 
       <div className="rounded-lg bg-grey-900 px-12 py-8">
         {isLoading ? (
-          <TradingSentimentSkeleton />
+          <SentimentTrendSkeleton />
         ) : data ? (
-          <TrendingSentiment data={data} />
+          <SentimentTrend data={data} />
         ) : (
           <div className="flex h-[16.5rem] items-center justify-center text-body-secondary">
             {t("Failed to fetch data")}
@@ -41,7 +41,7 @@ export const SignalsTrendingSentiment: FC<{ netuid: number }> = ({ netuid }) => 
   )
 }
 
-const TrendingSentiment: FC<
+const SentimentTrend: FC<
   PropsWithChildren<{
     data: SubnetLeaderboardRow
   }>
@@ -169,7 +169,7 @@ const SentimentGauge: FC<{ score: number }> = ({ score }) => {
   )
 }
 
-const TradingSentimentSkeleton = () => (
+const SentimentTrendSkeleton = () => (
   <div className="flex h-[16.5rem] items-stretch gap-14">
     <div className="flex h-full w-[118px] flex-col items-center justify-between">
       <div className="mb-1 text-body-inactive text-xs">
