@@ -52,7 +52,7 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
           )}
         >
           <ZapOffIcon />
-          <span className="whitespace-nowrap text-base leading-paragraph">{t("Dashboard")}</span>
+          <span className="whitespace-nowrap text-sm leading-paragraph">{t("Dashboard")}</span>
         </button>
       </TooltipTrigger>
       <TooltipContent>{t("TAO Dashboard")}</TooltipContent>
