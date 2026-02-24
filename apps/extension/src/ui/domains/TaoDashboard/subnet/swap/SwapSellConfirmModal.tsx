@@ -19,8 +19,6 @@ import {
   SwapConfirmSlippageToleranceValue,
   SwapConfirmTalismanFeeLabel,
   SwapConfirmTalismanFeeValue,
-  SwapConfirmValidatorApyLabel,
-  SwapConfirmValidatorApyValue,
 } from "./SwapConfirmShared"
 import { useSwapSell } from "./SwapSellProvider"
 
@@ -60,9 +58,6 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                 </SwapConfirmFieldRow>
                 <SwapConfirmFieldRow label={t("Validator")}>
                   <ValidatorValue />
-                </SwapConfirmFieldRow>
-                <SwapConfirmFieldRow label={<SwapConfirmValidatorApyLabel />}>
-                  <ValidatorApyValue />
                 </SwapConfirmFieldRow>
               </div>
               <SwapConfirmFieldRow label={t("Estimated amount")}>
@@ -130,12 +125,6 @@ const ValidatorValue = () => {
   const { tokenIn } = useSwapSell()
 
   return <BittensorValidatorName hotkey={tokenIn?.hotkey} />
-}
-
-const ValidatorApyValue = () => {
-  const { tokenIn, netuid } = useSwapSell()
-
-  return <SwapConfirmValidatorApyValue hotkey={tokenIn?.hotkey} netuid={netuid} />
 }
 
 const EstimatedOutputValue: FC = () => {
