@@ -1,4 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
+import { SettingsIcon } from "@talismn/icons"
 import { cn, tokensToPlanck } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -40,60 +41,91 @@ export const SwapSellInput: FC = () => {
   }, [maxValueIn, onValueChange])
 
   return (
-    <div
-      className={cn(
-        "flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6",
-        "border border-transparent",
-        inputErrorMessage && "!border-alert-error/50"
-      )}
-    >
-      <div className="flex w-full items-center justify-between gap-6 overflow-hidden">
-        <AccountPickerButton
-          position={selectedPosition}
-          disabled={isPickerDisabled}
-          onClick={open}
-        />
-        <div className="flex items-center gap-2">
-          <BalanceDisplay />
-          <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
-        </div>
-      </div>
-      <div className="w-full overflow-hidden">
-        <div className="flex h-20 w-full gap-6 overflow-hidden">
-          <div className="grow">
-            <TokenInput
-              tokenDecimals={tokenIn?.decimals}
-              value={valueIn}
-              onValueChanged={onValueChange}
-              disabled={!tokenIn}
-            />
-          </div>
-          <div className="max-w-[40%]">
-            <TokenPickerButton
-              position={selectedPosition}
-              disabled={isPickerDisabled}
-              onClick={open}
-            />
+    <div className="flex w-full flex-col gap-5 overflow-hidden">
+      <div
+        className={cn(
+          "flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6",
+          "border border-transparent",
+          inputErrorMessage && "!border-alert-error/50"
+        )}
+      >
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden">
+          <AccountPickerButton
+            position={selectedPosition}
+            disabled={isPickerDisabled}
+            onClick={open}
+          />
+          <div className="flex items-center gap-2">
+            <BalanceDisplay />
+            <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
           </div>
         </div>
-        <div
-          className={cn(
-            "invisible w-full truncate text-alert-error text-sm",
-            inputErrorMessage && "visible"
-          )}
-        >
-          {inputErrorMessage || t("Error")}
+        <div className="w-full overflow-hidden">
+          <div className="flex h-20 w-full gap-6 overflow-hidden">
+            <div className="grow">
+              <TokenInput
+                tokenDecimals={tokenIn?.decimals}
+                value={valueIn}
+                onValueChanged={onValueChange}
+                disabled={!tokenIn}
+              />
+            </div>
+            <div className="max-w-[40%]">
+              <TokenPickerButton
+                position={selectedPosition}
+                disabled={isPickerDisabled}
+                onClick={open}
+              />
+            </div>
+          </div>
+          <div
+            className={cn(
+              "invisible w-full truncate text-alert-error text-sm",
+              inputErrorMessage && "visible"
+            )}
+          >
+            {inputErrorMessage || t("Error")}
+          </div>
         </div>
-      </div>
 
-      <SwapSellPositionPickerModal
-        isOpen={isOpen}
-        onClose={close}
-        positions={positions}
-        selectedId={selectedPosition?.id}
-        onSelect={(position) => handleSelectPosition(position.id)}
-      />
+        <SwapSellPositionPickerModal
+          isOpen={isOpen}
+          onClose={close}
+          positions={positions}
+          selectedId={selectedPosition?.id}
+          onSelect={(position) => handleSelectPosition(position.id)}
+        />
+      </div>
+      <div className="flex h-14 w-full shrink-0 items-center justify-end">
+        <PositionValidatorPill position={selectedPosition} onClick={open} />
+      </div>
     </div>
+  )
+}
+
+const PositionValidatorPill: FC<{
+  position: ReturnType<typeof useSwapSell>["selectedPosition"]
+  onClick: () => void
+}> = ({ position, onClick }) => {
+  const { t } = useTranslation()
+  if (!position) return null
+
+  return (
+    <PillButton
+      className={cn(
+        "flex h-14 items-center gap-2 overflow-hidden rounded bg-grey-800 px-4 font-medium text-body-secondary text-sm hover:bg-grey-700"
+      )}
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-2">
+        {position.token.hotkey ? (
+          <BittensorValidatorName hotkey={position.token.hotkey} />
+        ) : (
+          t("Select Validator")
+        )}
+        <SettingsIcon />
+      </div>
+    </PillButton>
   )
 }
 
@@ -130,7 +162,7 @@ const TokenPickerButton: FC<{
     <PillButton
       onClick={onClick}
       disabled={disabled}
-      className="h-20 w-full overflow-hidden bg-transparent px-2"
+      className="h-20 w-full overflow-hidden rounded-xs bg-transparent px-2"
     >
       {position ? (
         <div className="flex w-full items-center gap-4 overflow-hidden">
@@ -138,7 +170,8 @@ const TokenPickerButton: FC<{
           <div className="flex flex-col items-start gap-1 overflow-hidden">
             <div className="text-base text-body">SN{position.token.netuid}</div>
             <div className="max-w-full truncate text-body-secondary text-xs">
-              <BittensorValidatorName hotkey={position.token.hotkey} />
+              {position.token.subnetName ??
+                t("Subnet {{netuid}}", { netuid: position.token.netuid })}
             </div>
           </div>
         </div>

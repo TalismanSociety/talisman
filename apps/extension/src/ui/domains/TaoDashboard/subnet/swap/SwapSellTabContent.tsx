@@ -26,7 +26,7 @@ const TabContent: FC = () => {
 
   return (
     <div className="flex size-full flex-col overflow-hidden">
-      <div className="flex w-full grow flex-col gap-10 overflow-hidden p-8">
+      <div className="flex w-full grow flex-col gap-5 overflow-hidden p-8">
         <SwapInputsContainer label={t("Spend")}>
           <SwapSellInput />
         </SwapInputsContainer>
