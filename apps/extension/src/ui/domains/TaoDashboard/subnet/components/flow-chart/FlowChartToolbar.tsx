@@ -31,7 +31,7 @@ export const FlowChartToolbar: FC<FlowChartToolbarProps> = ({
           <span className="text-body-secondary">{t("Tao out")}</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-0.5 w-4 border-blue-500 border-t-2 border-dashed" />
+          <span className="h-0.5 w-4 border-[#3b82f6] border-t-2 border-dashed" />
           <span className="text-body-secondary">{t("Net")}</span>
         </span>
       </div>
