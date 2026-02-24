@@ -53,7 +53,7 @@ export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHe
   // Emissions (from on-chain subnet data)
   const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
 
-  const emissionPercent = emissionRaw ? (raoToTao(emissionRaw) / 1e9) * 100 : null
+  const emissionPercent = emissionRaw ? raoToTao(emissionRaw) * 100 : null
 
   const dailyEmissions = emissionRaw
     ? raoToTao(emissionRaw) * (7200 / (currentSubnet?.tempo ?? 360))
