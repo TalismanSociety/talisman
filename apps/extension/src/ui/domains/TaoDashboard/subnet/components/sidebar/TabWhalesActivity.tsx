@@ -89,7 +89,7 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
 
   return (
     <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
-      <div className="mb-3 font-medium text-white">{t("Total Flow")}</div>
+      <div className="mb-3 font-medium text-white">{t("Whale Trade Flow")}</div>
       {inflowPercent !== null ? (
         <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full">
           <div className="h-full bg-green transition-all" style={{ width: `${inflowPercent}%` }} />
