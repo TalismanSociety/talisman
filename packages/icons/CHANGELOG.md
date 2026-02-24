@@ -1,5 +1,15 @@
 # @talismn/icons
 
+## 0.1.6
+
+### Patch Changes
+
+- dd51038: apply biome lint suggestions
+- bd74d55: github url in package.json
+- 1977d5d: fix typescript config for tests
+- 250839f: migration from preconstruct to tsup
+- 250839f: migrate eslint+prettier to biome
+
 ## 0.1.5
 
 ### Patch Changes

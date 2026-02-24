@@ -1,5 +1,30 @@
 # @talismn/balances-react
 
+## 1.3.2
+
+### Patch Changes
+
+- dd51038: apply biome lint suggestions
+- bd74d55: github url in package.json
+- 1977d5d: fix typescript config for tests
+- 250839f: migration from preconstruct to tsup
+- 250839f: migrate eslint+prettier to biome
+- Updated dependencies [8faa23a]
+- Updated dependencies [d3a5a3a]
+- Updated dependencies [dd51038]
+- Updated dependencies [b1c3d0c]
+- Updated dependencies [f6210b4]
+- Updated dependencies [bd74d55]
+- Updated dependencies [1977d5d]
+- Updated dependencies [250839f]
+- Updated dependencies [250839f]
+  - @talismn/util@0.5.7
+  - @talismn/chaindata-provider@1.3.5
+  - @talismn/chain-connectors@0.0.14
+  - @talismn/connection-meta@0.2.34
+  - @talismn/token-rates@3.0.16
+  - @talismn/balances@1.3.2
+
 ## 1.3.1
 
 ### Patch Changes

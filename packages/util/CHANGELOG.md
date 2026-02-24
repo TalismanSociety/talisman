@@ -1,5 +1,16 @@
 # @talismn/util
 
+## 0.5.7
+
+### Patch Changes
+
+- 8faa23a: utilities for earn tab
+- dd51038: apply biome lint suggestions
+- bd74d55: github url in package.json
+- 1977d5d: fix typescript config for tests
+- 250839f: migration from preconstruct to tsup
+- 250839f: migrate eslint+prettier to biome
+
 ## 0.5.6
 
 ### Patch Changes

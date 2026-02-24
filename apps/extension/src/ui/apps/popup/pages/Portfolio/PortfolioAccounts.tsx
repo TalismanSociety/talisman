@@ -2,6 +2,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -378,10 +379,23 @@ export const PortfolioAccounts = () => {
             ? accounts.find((account) => account.address === item.address)
             : undefined
 
-        const getSearchContent = (account?: Account) =>
-          [account?.name, account?.address, account?.type?.replaceAll(/talisman/gi, "")]
+        const getSearchContent = (account?: Account) => {
+          const normalizedAddress = (() => {
+            try {
+              return account?.address ? normalizeAddress(account.address) : undefined
+            } catch {
+              return undefined
+            }
+          })()
+          return [
+            account?.name,
+            account?.address,
+            normalizedAddress,
+            account?.type?.replaceAll(/talisman/gi, ""),
+          ]
             .join(" ")
             .toLowerCase()
+        }
 
         return item.type === "account"
           ? {
@@ -421,7 +435,18 @@ export const PortfolioAccounts = () => {
     ]
   }, [folder, treeName, catalog.portfolio, catalog.watched, accounts, t, balanceTotals])
 
-  const ls = useMemo(() => search.toLowerCase(), [search])
+  const ls = useMemo(() => {
+    const lower = search.toLowerCase()
+    // if full search input is a valid SS58 address, normalize it for comparison
+    if (search && isSs58Address(search)) {
+      try {
+        return normalizeAddress(search).toLowerCase()
+      } catch {
+        return lower
+      }
+    }
+    return lower
+  }, [search])
 
   const searchFilter = useCallback(
     (option: AccountOption): boolean => {
