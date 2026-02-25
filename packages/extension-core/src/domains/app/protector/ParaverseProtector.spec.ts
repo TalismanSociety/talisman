@@ -44,10 +44,10 @@ function setDefaultFetchResponses() {
 
 setDefaultFetchResponses()
 
-import { addException, isPhishingSite, refreshPhishingLists } from "./ParaverseProtector"
+import { addException, dispose, isPhishingSite, refreshPhishingLists } from "./ParaverseProtector"
 
 // Explicitly trigger a refresh so both lists are loaded before assertions.
-// In production this happens 30 s after module load via setTimeout.
+// In production this happens 30 s after first use via lazy init + setTimeout.
 beforeAll(async () => {
   await refreshPhishingLists()
 })
@@ -124,5 +124,6 @@ it("Rejects invalid Polkadot list gracefully", async () => {
 })
 
 afterAll(() => {
+  dispose()
   vi.restoreAllMocks()
 })

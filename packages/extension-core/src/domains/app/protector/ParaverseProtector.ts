@@ -68,6 +68,9 @@ let polkadotList: HostList = { allow: [], deny: [] }
 const talismanAllow = new Set<string>(DEFAULT_ALLOW)
 const etags = { polkadot: "", metamask: "" }
 
+/** Controller for in-flight fetch requests; aborted on dispose or new refresh cycle. */
+let fetchController: AbortController | null = null
+
 // ─── Data fetching ──────────────────────────────────────────────────────────
 
 /**
@@ -77,12 +80,13 @@ const etags = { polkadot: "", metamask: "" }
  */
 async function fetchWithEtag(
   url: string,
-  currentEtag: string
+  currentEtag: string,
+  signal?: AbortSignal
 ): Promise<{ data: unknown; etag: string } | null> {
   const headers: HeadersInit = {}
   if (currentEtag) headers["If-None-Match"] = currentEtag
 
-  const response = await fetch(url, { headers })
+  const response = await fetch(url, { headers, signal })
   if (response.status === 304) return null
   if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${url}`)
 
@@ -102,9 +106,9 @@ function persistBlob<T>(store: ReturnType<typeof getBlobStore<T>>, data: T, labe
   })
 }
 
-async function refreshMetamaskList() {
+async function refreshMetamaskList(signal?: AbortSignal) {
   try {
-    const result = await fetchWithEtag(METAMASK_CONFIG_URL, etags.metamask)
+    const result = await fetchWithEtag(METAMASK_CONFIG_URL, etags.metamask, signal)
     if (!result) return
 
     if (!isValidMetamaskConfig(result.data)) {
@@ -119,13 +123,14 @@ async function refreshMetamaskList() {
       "MetaMask phishing list"
     )
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") return
     log.error("Error refreshing MetaMask phishing list", { error })
   }
 }
 
-async function refreshPolkadotList() {
+async function refreshPolkadotList(signal?: AbortSignal) {
   try {
-    const result = await fetchWithEtag(POLKADOT_CONFIG_URL, etags.polkadot)
+    const result = await fetchWithEtag(POLKADOT_CONFIG_URL, etags.polkadot, signal)
     if (!result) return
 
     if (!isValidPolkadotList(result.data)) {
@@ -140,15 +145,27 @@ async function refreshPolkadotList() {
       "Polkadot phishing list"
     )
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") return
     log.error("Error refreshing Polkadot phishing list", { error })
   }
 }
 
 // ─── Initialisation ─────────────────────────────────────────────────────────
 
-/** Restore cached phishing data from the blob store. Dexie auto-opens the DB on first query. */
-const initialised = restoreFromBlobStore()
+/** Lazy-init: DB restore + periodic refresh are started on first use, not at import time. */
+let initialised: Promise<void> | null = null
 
+function ensureInitialised(): Promise<void> {
+  if (!initialised) {
+    initialised = restoreFromBlobStore().then(() => {
+      // start periodic refresh 30 s after first use
+      refreshTimer = setTimeout(scheduleRefresh, 30_000)
+    })
+  }
+  return initialised
+}
+
+/** Restore cached phishing data from the blob store. Dexie auto-opens the DB on first query. */
 async function restoreFromBlobStore() {
   try {
     const [mmBlob, pdBlob] = await Promise.all([metamaskBlobStore.get(), polkadotBlobStore.get()])
@@ -168,22 +185,31 @@ async function restoreFromBlobStore() {
 }
 
 // Periodic refresh: recursive setTimeout naturally prevents overlapping fetches.
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
 async function scheduleRefresh() {
   await refreshPhishingLists()
-  setTimeout(scheduleRefresh, REFRESH_INTERVAL_MIN * 60 * 1000)
+  refreshTimer = setTimeout(scheduleRefresh, REFRESH_INTERVAL_MIN * 60 * 1000)
 }
-setTimeout(scheduleRefresh, 30_000)
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /** Force-refresh both phishing lists. Exposed for manual triggers and testing. */
 export async function refreshPhishingLists(): Promise<void> {
-  await Promise.all([refreshMetamaskList(), refreshPolkadotList()])
+  // Abort any in-flight fetches from a previous refresh cycle
+  fetchController?.abort()
+  const controller = new AbortController()
+  fetchController = controller
+
+  await Promise.all([
+    refreshMetamaskList(controller.signal),
+    refreshPolkadotList(controller.signal),
+  ])
 }
 
-/** Check whether a URL is on a known phishing list. Waits for DB initialisation on first call. */
+/** Check whether a URL is on a known phishing list. Lazily initialises on first call. */
 export async function isPhishingSite(url: string): Promise<boolean> {
-  await initialised
+  await ensureInitialised()
 
   const { val: host, ok } = getHostName(url)
   if (!ok) return false
@@ -214,4 +240,15 @@ export function addException(url: string): boolean {
 
   talismanAllow.add(host)
   return true
+}
+
+/** Tear down timers and abort in-flight fetches. Useful for clean shutdown and testing. */
+export function dispose(): void {
+  fetchController?.abort()
+  fetchController = null
+  if (refreshTimer) {
+    clearTimeout(refreshTimer)
+    refreshTimer = null
+  }
+  initialised = null
 }
