@@ -113,7 +113,7 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
           className={cn(metrics.momentum > 0 && "text-buy", metrics.momentum <= 0 && "text-sell")}
         >
           {metrics.momentum > 0 && "+"}
-          {metrics.momentum.toFixed(2)}%
+          {metrics.momentum.toFixed(1)}%
         </MetricField>
         <MetricField
           label={t("Accumulation")}
@@ -124,7 +124,7 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
           )}
         >
           {metrics.accumulation > 0 && "+"}
-          {metrics.accumulation.toFixed(2)}%
+          {metrics.accumulation.toFixed(1)}%
         </MetricField>
         <MetricField
           label={t("Trade Velocity")}
@@ -137,7 +137,7 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
           )}
         >
           {metrics.tradeVelocity > 0 && "+"}
-          {metrics.tradeVelocity.toFixed(2)}%
+          {metrics.tradeVelocity.toFixed(1)}%
         </MetricField>
       </div>
     </div>
