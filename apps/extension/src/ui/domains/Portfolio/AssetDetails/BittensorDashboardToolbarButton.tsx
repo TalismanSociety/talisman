@@ -1,6 +1,6 @@
 import type { Balances } from "@talismn/balances"
 import { isAddressEqual } from "@talismn/crypto"
-import { ZapOffIcon } from "@talismn/icons"
+import { GaugeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -51,7 +51,7 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
             className
           )}
         >
-          <ZapOffIcon />
+          <GaugeIcon />
           <span className="whitespace-nowrap text-sm leading-paragraph">{t("Dashboard")}</span>
         </button>
       </TooltipTrigger>
