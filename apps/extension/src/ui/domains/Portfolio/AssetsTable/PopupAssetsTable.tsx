@@ -150,7 +150,9 @@ const AssetRow: FC<{
               className={classNames(
                 "whitespace-nowrap font-bold text-sm",
                 locked ? "text-body-secondary" : "text-white",
-                selectedAccount?.type !== "watch-only" && "group-hover:hidden"
+                selectedAccount?.type !== "watch-only" &&
+                  (canEarn || showStakingButton) &&
+                  "group-hover:hidden"
               )}
             >
               <Tokens
@@ -168,7 +170,9 @@ const AssetRow: FC<{
             <div
               className={classNames(
                 "text-body-secondary text-xs leading-base",
-                selectedAccount?.type !== "watch-only" && "group-hover:hidden"
+                selectedAccount?.type !== "watch-only" &&
+                  (canEarn || showStakingButton) &&
+                  "group-hover:hidden"
               )}
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
