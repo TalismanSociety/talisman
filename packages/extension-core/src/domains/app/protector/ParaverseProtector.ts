@@ -16,7 +16,7 @@ const METAMASK_CONFIG_URL =
   "https://raw.githubusercontent.com/MetaMask/eth-phishing-detect/main/src/config.json"
 const POLKADOT_CONFIG_URL = "https://polkadot.js.org/phishing/all.json"
 
-const REFRESH_INTERVAL_MIN = 20
+const REFRESH_INTERVAL_MIN = 5
 
 const DEFAULT_ALLOW = [
   TALISMAN_WEB_APP_DOMAIN, // app.talisman.xyz
