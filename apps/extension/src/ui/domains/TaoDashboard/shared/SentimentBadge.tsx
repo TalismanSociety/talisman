@@ -35,7 +35,7 @@ export const SentimentBadge: FC<{ sentiment: Sentiment }> = ({ sentiment }) => {
   )
 }
 
-export const useSentimentLabel = (sentiment: Sentiment | null) => {
+const useSentimentLabel = (sentiment: Sentiment | null) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
@@ -58,7 +58,7 @@ export const useSentimentLabel = (sentiment: Sentiment | null) => {
   }, [sentiment, t])
 }
 
-export const useSentimentFromScore100 = (score: number | null): Sentiment | null => {
+const useSentimentFromScore100Pos = (score: number | null): Sentiment | null => {
   return useMemo(() => {
     if (score === null) return null
     if (score < 20) return "very_bearish"
@@ -69,7 +69,7 @@ export const useSentimentFromScore100 = (score: number | null): Sentiment | null
   }, [score])
 }
 
-export const useSentimentLabelFromScore100 = (score: number | null) => {
-  const sentiment = useSentimentFromScore100(score)
+export const useSentimentLabelFromScore100Pos = (score: number | null) => {
+  const sentiment = useSentimentFromScore100Pos(score)
   return useSentimentLabel(sentiment)
 }

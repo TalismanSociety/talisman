@@ -4,7 +4,7 @@ import {
   type SubnetLeaderboardRow,
   useSubnetLeaderboardEntry,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { useSentimentLabelFromScore100 } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
+import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
@@ -47,7 +47,7 @@ const SentimentTrend: FC<
   }>
 > = ({ data }) => {
   const { t } = useTranslation()
-  const scoreLabel = useSentimentLabelFromScore100(data.score)
+  const scoreLabel = useSentimentLabelFromScore100Pos(data.score)
 
   const flowChangeScore = useScore2To100Neg(data.taoFlowVelocity)
   const flowChangeColor = useColorFromScore100Neg(flowChangeScore)

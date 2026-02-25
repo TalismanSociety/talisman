@@ -169,21 +169,6 @@ export const useSubnetFlowChart = (
   })
 }
 
-// Hook to get subnet positions
-export const useSubnetPositions = (netuid: number | null | undefined) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetPositions", netuid],
-    queryFn: async ({ signal }) => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetPositions(String(netuid), { signal })
-      return response.data
-    },
-    enabled: !!netuid,
-    refetchInterval: 120_000,
-    staleTime: 120_000,
-  })
-}
-
 // Hook to get subnet holder metrics
 export const useSubnetHolders = (netuid: number | null | undefined, period: TimePeriod = "1m") => {
   return useQuery({
