@@ -169,10 +169,9 @@ export default class ParaverseProtector {
       this.#metamaskDetector = new MetamaskDetector(result.data)
       this.#etags.metamask = result.etag
       await metamaskBlobStore.set({ etag: result.etag, data: result.data }).catch((cause) => {
-        if (
-          !(cause instanceof Dexie.DatabaseClosedError) &&
-          !(cause.name !== Dexie.errnames.DatabaseClosed)
-        ) {
+        const isDbClosed =
+          cause instanceof Dexie.DatabaseClosedError || cause.name === Dexie.errnames.DatabaseClosed
+        if (!isDbClosed) {
           sentry.captureException(new Error("Failed to persist MetaMask phishing list", { cause }))
         }
       })
@@ -193,10 +192,9 @@ export default class ParaverseProtector {
       this.lists.polkadot = result.data
       this.#etags.polkadot = result.etag
       await polkadotBlobStore.set({ etag: result.etag, data: result.data }).catch((cause) => {
-        if (
-          !(cause instanceof Dexie.DatabaseClosedError) &&
-          !(cause.name !== Dexie.errnames.DatabaseClosed)
-        ) {
+        const isDbClosed =
+          cause instanceof Dexie.DatabaseClosedError || cause.name === Dexie.errnames.DatabaseClosed
+        if (!isDbClosed) {
           sentry.captureException(new Error("Failed to persist Polkadot phishing list", { cause }))
         }
       })

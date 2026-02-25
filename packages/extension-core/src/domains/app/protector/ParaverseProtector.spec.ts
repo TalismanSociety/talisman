@@ -82,11 +82,8 @@ it("Skips update when fetchWithEtag returns null (304)", async () => {
 })
 
 it("Rejects invalid MetaMask config gracefully", async () => {
-  mockFetchWithEtag.mockImplementation(async (url: string) => {
-    if (url.includes("MetaMask")) {
-      return { data: { broken: true }, etag: "bad-etag" }
-    }
-    return null
+  mockFetchWithEtag.mockImplementationOnce(async () => {
+    return { data: { broken: true }, etag: "bad-etag" }
   })
   // Should not throw — invalid data is logged and skipped
   await protector.refreshMetamaskList()
@@ -95,11 +92,8 @@ it("Rejects invalid MetaMask config gracefully", async () => {
 })
 
 it("Rejects invalid Polkadot list gracefully", async () => {
-  mockFetchWithEtag.mockImplementation(async (url: string) => {
-    if (url.includes("polkadot")) {
-      return { data: "not-an-object", etag: "bad-etag" }
-    }
-    return null
+  mockFetchWithEtag.mockImplementationOnce(async () => {
+    return { data: "not-an-object", etag: "bad-etag" }
   })
   await protector.refreshPolkadotList()
   expect(await protector.isPhishingSite("https://something.else")).toBeFalsy()
