@@ -92,8 +92,8 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
       <div className="mb-3 font-medium text-white">{t("Whale Trade Flow")}</div>
       {inflowPercent !== null ? (
         <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full">
-          <div className="h-full bg-green transition-all" style={{ width: `${inflowPercent}%` }} />
           <div className="h-full grow bg-red-500 transition-all" />
+          <div className="h-full bg-green transition-all" style={{ width: `${inflowPercent}%` }} />
         </div>
       ) : (
         <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full bg-grey-800"></div>
@@ -104,11 +104,11 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
           !data?.total && "invisible"
         )}
       >
-        <span className={hasActivity ? "text-green" : "text-body-inactive"}>
-          <TokensAndFiat planck={data?.inflow} tokenId={taoTokenId} noFiat noSymbol noCountUp /> τ
-        </span>
         <span className={hasActivity ? "text-red-500" : "text-body-inactive"}>
           <TokensAndFiat planck={data?.outflow} tokenId={taoTokenId} noFiat noSymbol noCountUp /> τ
+        </span>
+        <span className={hasActivity ? "text-green" : "text-body-inactive"}>
+          <TokensAndFiat planck={data?.inflow} tokenId={taoTokenId} noFiat noSymbol noCountUp /> τ
         </span>
       </div>
     </div>
