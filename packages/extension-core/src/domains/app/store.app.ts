@@ -40,6 +40,9 @@ export type AppStoreData = {
   hideBittensorSubnetStakeWarning?: boolean
   hideGetStarted?: boolean
 
+  // dismissed earn disclaimer
+  hideEarnDisclaimer?: boolean
+
   // dismissed banners
   hideUnifiedAddressBanner?: boolean
   hideAutonomysQuestBanner?: boolean
@@ -123,6 +126,7 @@ if (DEBUG) {
       hideManageAccountsWelcome: false,
       hideBittensorSubnetStakeWarning: false,
       hideGetStarted: false,
+      hideEarnDisclaimer: false,
       hideUnifiedAddressBanner: false,
       hideAutonomysQuestBanner: false,
       hideSeekBenefitsBanner: false,
