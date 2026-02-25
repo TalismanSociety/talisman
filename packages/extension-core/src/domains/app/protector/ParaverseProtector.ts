@@ -10,12 +10,12 @@ import { sentry } from "../../../config/sentry"
 import { db } from "../../../db"
 import { getHostName } from "../helpers"
 
-const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
-const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
-const POLKADOT_REPO = "https://api.github.com/repos/polkadot-js/phishing"
-const POLKADOT_CONTENT_URL = "https://polkadot.js.org/phishing/all.json"
-const METAMASK_COMMIT_PATH = "/commits/main"
-const POLKADOT_COMMIT_PATH = "/commits/master"
+// Fetch directly from CDN-backed raw URLs — no GitHub API rate limits (60 req/hr),
+// no base64 decoding, no branch-name fragility. ETag-based conditional requests
+// return 304 when the list hasn't changed, avoiding re-downloading ~7 MB every cycle.
+const METAMASK_CONFIG_URL =
+  "https://raw.githubusercontent.com/MetaMask/eth-phishing-detect/main/src/config.json"
+const POLKADOT_CONFIG_URL = "https://polkadot.js.org/phishing/all.json"
 
 const REFRESH_INTERVAL_MIN = 20
 
@@ -40,16 +40,37 @@ export type ProtectorData = Record<"talisman" | "polkadot", HostList>
 
 export type ProtectorSources = "polkadot" | "metamask" // don't persist Talisman
 
+// Note: the `commitSha` field is reused to store HTTP ETags for cache validation.
+// Keeping the field name avoids a Dexie schema migration for what is just a transient cache.
 export type ProtectorStorage = {
   source: ProtectorSources
-  commitSha: string
-  compressedHostList?: string
+  commitSha: string // stores ETag (or legacy commit SHA — both are opaque cache keys)
+  compressedHostList?: string // legacy compressed format, kept for migration
   hostList?: HostList | MetaMaskDetectorConfig
+}
+
+function isValidMetamaskConfig(data: unknown): data is MetaMaskDetectorConfig {
+  if (!data || typeof data !== "object") return false
+  const obj = data as Record<string, unknown>
+  return (
+    Array.isArray(obj.blacklist) &&
+    obj.blacklist.length > 0 &&
+    Array.isArray(obj.fuzzylist) &&
+    Array.isArray(obj.whitelist) &&
+    typeof obj.tolerance === "number" &&
+    typeof obj.version === "number"
+  )
+}
+
+function isValidPolkadotList(data: unknown): data is HostList {
+  if (!data || typeof data !== "object") return false
+  const obj = data as Record<string, unknown>
+  return Array.isArray(obj.deny) && Array.isArray(obj.allow)
 }
 
 export default class ParaverseProtector {
   #initialised: Promise<boolean>
-  #commits = {
+  #etags = {
     polkadot: "",
     metamask: "",
   }
@@ -81,17 +102,23 @@ export default class ParaverseProtector {
                 const fullData = hostList
                   ? hostList
                   : JSON.parse(
-                      // todo remove decompressFromUTF16 in next release
+                      // Legacy: decompress old format (safe to remove in a future release)
                       (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}"
                     )
 
                 if (!fullData) return
 
-                this.#commits[source] = commitSha
+                // Restore cached ETag (or legacy commit SHA — either works as a cache key,
+                // a mismatch just causes one extra full fetch which is harmless)
+                this.#etags[source] = commitSha
 
                 if (source === "metamask") {
-                  this.#metamaskDetector = new MetamaskDetector(fullData as MetaMaskDetectorConfig)
-                } else this.lists[source] = fullData
+                  if (isValidMetamaskConfig(fullData)) {
+                    this.#metamaskDetector = new MetamaskDetector(fullData)
+                  }
+                } else if (isValidPolkadotList(fullData)) {
+                  this.lists[source] = fullData
+                }
               }
             )
             resolve(true)
@@ -111,7 +138,7 @@ export default class ParaverseProtector {
   }
 
   async setRefreshTimer() {
-    await Promise.all([this.getMetamaskCommit(), this.getPolkadotCommit()])
+    await Promise.all([this.refreshMetamaskList(), this.refreshPolkadotList()])
     await this.persistAllData()
   }
 
@@ -135,68 +162,79 @@ export default class ParaverseProtector {
     }
   }
 
-  private persistData(source: "metamask", commitSha: string, data: MetaMaskDetectorConfig): void
-  private persistData(source: "polkadot", commitSha: string, data: HostList): void
+  private persistData(source: "metamask", etag: string, data: MetaMaskDetectorConfig): void
+  private persistData(source: "polkadot", etag: string, data: HostList): void
   private persistData(
     source: "polkadot" | "metamask",
-    commitSha: string,
+    etag: string,
     data: HostList | MetaMaskDetectorConfig
   ): void {
     if (!this.#persistQueue) this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
-    this.#persistQueue[source] = { source, commitSha, hostList: data }
+    // Store ETag in the commitSha field to avoid a Dexie schema migration
+    this.#persistQueue[source] = { source, commitSha: etag, hostList: data }
   }
 
-  async getCommitSha(url: string) {
-    const sha = await fetch(url, {
-      headers: [["Accept", "application/vnd.github.VERSION.sha"]],
-    })
-    return await sha.text()
+  /**
+   * Fetch a URL with ETag-based conditional caching.
+   * Returns parsed JSON + new ETag when data changed, or null on 304 Not Modified.
+   * Throws on network/HTTP errors so callers can keep existing data.
+   */
+  async fetchWithEtag(
+    url: string,
+    currentEtag: string
+  ): Promise<{ data: unknown; etag: string } | null> {
+    const headers: HeadersInit = {}
+    if (currentEtag) {
+      headers["If-None-Match"] = currentEtag
+    }
+
+    const response = await fetch(url, { headers })
+
+    // 304: content unchanged since last fetch — keep current data
+    if (response.status === 304) return null
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} fetching ${url}`)
+    }
+
+    const data: unknown = await response.json()
+    const etag = response.headers.get("etag") ?? ""
+
+    return { data, etag }
   }
 
-  async getMetamaskCommit() {
+  async refreshMetamaskList() {
     try {
-      const sha = await this.getCommitSha(`${METAMASK_REPO}${METAMASK_COMMIT_PATH}`)
-      if (sha !== this.#commits.metamask) {
-        const mmConfig = await this.getMetamaskData()
-        this.#metamaskDetector = new MetamaskDetector(mmConfig)
-        this.#commits.metamask = sha
-        this.persistData("metamask", sha, mmConfig)
+      const result = await this.fetchWithEtag(METAMASK_CONFIG_URL, this.#etags.metamask)
+      if (!result) return // 304 — no changes
+
+      if (!isValidMetamaskConfig(result.data)) {
+        throw new Error("Invalid MetaMask phishing config structure")
       }
+
+      this.#metamaskDetector = new MetamaskDetector(result.data)
+      this.#etags.metamask = result.etag
+      this.persistData("metamask", result.etag, result.data)
     } catch (error) {
-      log.error("Error getting metamask phishing commit and data", { error })
+      log.error("Error refreshing MetaMask phishing list", { error })
     }
   }
 
-  async getPolkadotCommit() {
+  async refreshPolkadotList() {
     try {
-      const sha = await this.getCommitSha(`${POLKADOT_REPO}${POLKADOT_COMMIT_PATH}`)
-      if (sha !== this.#commits.polkadot) {
-        this.lists.polkadot = await this.getPolkadotData()
-        this.#commits.polkadot = sha
-        this.persistData("polkadot", sha, this.lists.polkadot)
+      const result = await this.fetchWithEtag(POLKADOT_CONFIG_URL, this.#etags.polkadot)
+      if (!result) return // 304 — no changes
+
+      if (!isValidPolkadotList(result.data)) {
+        throw new Error("Invalid Polkadot phishing list structure")
       }
+
+      this.lists.polkadot = result.data
+      this.#etags.polkadot = result.etag
+      this.persistData("polkadot", result.etag, result.data)
     } catch (error) {
-      log.error("Error getting polkadot phishing commit and data", { error })
+      log.error("Error refreshing Polkadot phishing list", { error })
     }
-  }
-
-  async getPolkadotData() {
-    return await this.getData(POLKADOT_CONTENT_URL)
-  }
-
-  private async getData(url: string) {
-    const response = await fetch(url)
-    if (response.ok) {
-      return await response.json()
-    }
-    throw new Error(`Error fetching data from ${url}`)
-  }
-
-  async getMetamaskData(): Promise<MetaMaskDetectorConfig> {
-    const json = await this.getData(METAMASK_CONTENT_URL)
-    if (json.content === "" && json.download_url) return await this.getData(json.download_url)
-    if (!json.content) throw new Error("Unable to get content for Metamask phishing list")
-    return JSON.parse(Buffer.from(json.content, "base64").toString())
   }
 
   async isPhishingSite(url: string) {
@@ -208,7 +246,7 @@ export default class ParaverseProtector {
     if (this.lists.talisman.allow.includes(host)) return false
     if (this.lists.talisman.deny.includes(host)) return true
 
-    // then check polkadot, phishFort, and metamask lists
+    // then check polkadot and metamask lists
     const pdResult = checkHost(this.lists.polkadot.deny, host)
     if (pdResult) {
       log.warn(`Phishing site listed on Polkadot list: ${host}`)
