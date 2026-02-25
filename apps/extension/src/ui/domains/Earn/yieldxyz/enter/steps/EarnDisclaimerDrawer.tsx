@@ -21,11 +21,11 @@ export const EarnDisclaimerDrawer: FC<EarnDisclaimerDrawerProps> = ({
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId="earn-modal">
       <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
-        <div className="font-bold text-body">{t("Position Confirmation")}</div>
+        <div className="font-bold text-body">{t("Accept Terms to Continue")}</div>
         <p className="text-body-secondary text-sm">
           <Trans
             t={t}
-            defaults="You're about to open your first DeFi position with Talisman. All required information has been provided. Please accept the <Link>terms and conditions</Link>."
+            defaults="This is your first time entering a DeFi position through Talisman. By clicking Accept, you confirm that you understand the risks and agree to the <Link>Terms and Conditions</Link>."
             components={{
               Link: <TermsLink />,
             }}
