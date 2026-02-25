@@ -1,25 +1,18 @@
-import {
-  ArrowDownIcon,
-  CreditCardIcon,
-  EyeIcon,
-  EyeOffIcon,
-  RepeatIcon,
-  SeekEyeIcon,
-  SendIcon,
-} from "@talismn/icons"
+import { ArrowDownIcon, EyeIcon, EyeOffIcon, RepeatIcon, SendIcon } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
-import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
+import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import { useAccounts, useFeatureFlag, useSelectedCurrency, useSetting } from "@ui/state"
+import { useAccounts, useSelectedCurrency, useSetting } from "@ui/state"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -162,13 +155,11 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openRampsModal } = useRampsModal()
   const { open: openSwapTokensModal } = useSwapTokensModal()
   const ownedAccounts = useAccounts("owned")
-  const canBuy = useFeatureFlag("BUY_CRYPTO")
-  const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
+  const isBittensorEnabled = useIsBittensorEnabled()
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -206,26 +197,25 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           disabled: disableActions,
           disabledReason,
         },
-        canBuy
+        isBittensorEnabled
           ? {
               analyticsName: "Goto" as const,
-              analyticsAction: "open ramps",
-              label: t("Buy/Sell"),
-              icon: CreditCardIcon,
-              onClick: () => openRampsModal(),
+              analyticsAction: "open tao dashboard",
+              label: t("Stake TAO"),
+              icon: BittensorIcon,
+              onClick: () => api.dashboardOpen("/bittensor/subnets"),
               disabled: disableActions,
               disabledReason,
             }
           : null,
       ].filter(isNotNil),
     [
-      canBuy,
       disableActions,
       disabledReason,
       openCopyAddressModal,
-      openRampsModal,
       openSwapTokensModal,
       t,
+      isBittensorEnabled,
     ]
   )
 
@@ -237,32 +227,10 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           <Action key={index} {...action} />
         ))}
       </div>
-      {i18n.language === "en" && // not enough space in other languages
-        !!showSeekBenefits && <SeekBenefitsLink />}
     </div>
   )
 }
 
-const SeekBenefitsLink = () => {
-  const { open } = useSeekBenefitsModal()
-
-  const handleSeekClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "SEEK" })
-    open()
-  }, [open])
-
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "pointer-events-auto flex items-center gap-2.5 text-[1rem] text-primary-700 hover:text-primary"
-      )}
-      onClick={handleSeekClick}
-    >
-      <div className="flex flex-col justify-center text-sm">
-        <SeekEyeIcon />
-      </div>
-      <div>SEEK</div>
-    </button>
-  )
-}
+const BittensorIcon: FC<{ className?: string }> = ({ className }) => (
+  <TokenLogo tokenId={BITTENSOR_TOKEN_ID} className={className} />
+)

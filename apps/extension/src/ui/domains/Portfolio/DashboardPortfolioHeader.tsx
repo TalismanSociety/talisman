@@ -40,7 +40,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-
+import { TokenLogo } from "../Asset/TokenLogo"
+import { BITTENSOR_TOKEN_ID } from "../Staking/Bittensor/utils/constants"
+import { useIsBittensorEnabled } from "../TaoDashboard/hooks/useIsBittensorEnabled"
 import { useSeekBenefitsModal } from "./SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
@@ -238,6 +240,7 @@ const TopActions: FC = () => {
   const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
+  const isBittensorEnabled = useIsBittensorEnabled()
 
   const [disableActions, disabledReason] = useMemo(() => {
     if (!!selectedAccount && !isAccountOwned(selectedAccount))
@@ -302,6 +305,17 @@ const TopActions: FC = () => {
               disabledReason,
             }
           : null,
+        isBittensorEnabled
+          ? {
+              analyticsName: "Goto" as const,
+              analyticsAction: "open tao dashboard",
+              label: t("Stake TAO"),
+              icon: BittensorIcon,
+              onClick: () => api.dashboardOpen("/bittensor/subnets"),
+              disabled: disableActions,
+              disabledReason,
+            }
+          : null,
       ].filter(isNotNil),
     [
       t,
@@ -315,6 +329,7 @@ const TopActions: FC = () => {
       openCopyAddressModal,
       openSwapTokensModal,
       openRampsModal,
+      isBittensorEnabled,
     ]
   )
 
@@ -330,6 +345,10 @@ const TopActions: FC = () => {
     </div>
   )
 }
+
+const BittensorIcon: FC<{ className?: string }> = ({ className }) => (
+  <TokenLogo tokenId={BITTENSOR_TOKEN_ID} className={className} />
+)
 
 const SeekBenefitsLink = () => {
   const { open } = useSeekBenefitsModal()

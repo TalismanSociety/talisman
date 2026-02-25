@@ -2,6 +2,7 @@ import { Nav, NavItem } from "@talisman/components/Nav"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
+  CreditCardIcon,
   GlobeIcon,
   KeyIcon,
   LockIcon,
@@ -10,7 +11,6 @@ import {
   SeekEyeIcon,
   SendIcon,
   SettingsIcon,
-  StarsIcon,
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
@@ -19,13 +19,13 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
+import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Drawer, IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -124,16 +124,17 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const navigate = useNavigate()
-  const handleLatestFeaturesClick = useCallback(() => {
+  const showBuySell = useFeatureFlag("BUY_CRYPTO")
+  const { open: openRampsModal } = useRampsModal()
+  const handleBuySellClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Latest Features button",
+      action: "Buy/Sell button",
     })
-    navigate("/whats-new")
+    openRampsModal()
     close()
-  }, [close, navigate])
+  }, [openRampsModal, close])
 
   const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
   const { open: openSeekBenefitsModal } = useSeekBenefitsModal()
@@ -168,21 +169,22 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
               {t("Swap")}
             </NavItem>
+            {!!showBuySell && (
+              <NavItem icon={<CreditCardIcon />} onClick={handleBuySellClick}>
+                {t("Buy/Sell")}
+              </NavItem>
+            )}
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
               {t("Address Book")}
             </NavItem>
             <NavItem icon={<GlobeIcon />} onClick={handleManageNetworksClick}>
               {t("Manage Networks")}
             </NavItem>
-
             <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
                 {!allBackedUp && <AlertCircleIcon className="ml-2 inline text-primary text-sm" />}
               </span>
-            </NavItem>
-            <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
-              {t("Latest Features")}
             </NavItem>
             {!!showSeekBenefits && (
               <NavItem
