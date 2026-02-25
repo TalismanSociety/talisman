@@ -1,13 +1,12 @@
 import { checkHost } from "@polkadot/phishing"
-import { isNotNil } from "@talismn/util"
 import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
-import { decompressFromUTF16 } from "lz-string"
 
 import { sentry } from "../../../config/sentry"
 import { db } from "../../../db"
+import { getBlobStore } from "../../../db/blobs"
 import { getHostName } from "../helpers"
 
 // Fetch directly from CDN-backed raw URLs — no GitHub API rate limits (60 req/hr),
@@ -36,18 +35,13 @@ type MetaMaskDetectorConfig = {
   whitelist: string[]
 }
 
-export type ProtectorData = Record<"talisman" | "polkadot", HostList>
+type ProtectorData = Record<"talisman" | "polkadot", HostList>
 
-export type ProtectorSources = "polkadot" | "metamask" // don't persist Talisman
+/** Shape stored in the blob store: data + ETag for conditional fetching. */
+type PhishingBlob<T> = { etag: string; data: T }
 
-// Note: the `commitSha` field is reused to store HTTP ETags for cache validation.
-// Keeping the field name avoids a Dexie schema migration for what is just a transient cache.
-export type ProtectorStorage = {
-  source: ProtectorSources
-  commitSha: string // stores ETag (or legacy commit SHA — both are opaque cache keys)
-  compressedHostList?: string // legacy compressed format, kept for migration
-  hostList?: HostList | MetaMaskDetectorConfig
-}
+const metamaskBlobStore = getBlobStore<PhishingBlob<MetaMaskDetectorConfig>>("phishing-metamask")
+const polkadotBlobStore = getBlobStore<PhishingBlob<HostList>>("phishing-polkadot")
 
 function isValidMetamaskConfig(data: unknown): data is MetaMaskDetectorConfig {
   if (!data || typeof data !== "object") return false
@@ -80,7 +74,6 @@ export default class ParaverseProtector {
   }
   #refreshTimer?: ReturnType<typeof setInterval>
   #metamaskDetector = new MetamaskDetector(metamaskInitialData)
-  #persistQueue?: Record<ProtectorSources, ProtectorStorage>
 
   constructor() {
     this.setRefreshTimer = this.setRefreshTimer.bind(this)
@@ -91,38 +84,17 @@ export default class ParaverseProtector {
   }
 
   async initialise() {
-    // restore persisted data
+    // restore persisted data from blob store
     return new Promise<boolean>((resolve) => {
       db.on(
         "ready",
-        () => {
-          db.phishing.bulkGet(["polkadot", "metamask"]).then((persisted) => {
-            ;(persisted.filter(isNotNil) as ProtectorStorage[]).forEach(
-              ({ source, compressedHostList, hostList, commitSha }) => {
-                const fullData = hostList
-                  ? hostList
-                  : JSON.parse(
-                      // Legacy: decompress old format (safe to remove in a future release)
-                      (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}"
-                    )
-
-                if (!fullData) return
-
-                // Restore cached ETag (or legacy commit SHA — either works as a cache key,
-                // a mismatch just causes one extra full fetch which is harmless)
-                this.#etags[source] = commitSha
-
-                if (source === "metamask") {
-                  if (isValidMetamaskConfig(fullData)) {
-                    this.#metamaskDetector = new MetamaskDetector(fullData)
-                  }
-                } else if (isValidPolkadotList(fullData)) {
-                  this.lists[source] = fullData
-                }
-              }
-            )
-            resolve(true)
-          })
+        async () => {
+          try {
+            await this.restoreFromBlobStore()
+          } catch (err) {
+            log.error("Error restoring phishing data", { err })
+          }
+          resolve(true)
         },
         false
       )
@@ -133,45 +105,27 @@ export default class ParaverseProtector {
     })
   }
 
+  /** Restore cached phishing data from the compressed blob store. */
+  private async restoreFromBlobStore() {
+    const [mmBlob, pdBlob] = await Promise.all([metamaskBlobStore.get(), polkadotBlobStore.get()])
+
+    if (mmBlob && isValidMetamaskConfig(mmBlob.data)) {
+      this.#metamaskDetector = new MetamaskDetector(mmBlob.data)
+      this.#etags.metamask = mmBlob.etag
+    }
+
+    if (pdBlob && isValidPolkadotList(pdBlob.data)) {
+      this.lists.polkadot = pdBlob.data
+      this.#etags.polkadot = pdBlob.etag
+    }
+  }
+
   isInitialised() {
     return this.#initialised
   }
 
   async setRefreshTimer() {
     await Promise.all([this.refreshMetamaskList(), this.refreshPolkadotList()])
-    await this.persistAllData()
-  }
-
-  async persistAllData() {
-    if (this.#persistQueue && Object.values(this.#persistQueue).length > 0) {
-      const data = this.#persistQueue
-      this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
-
-      await db.phishing.bulkPut(Object.values(data)).catch((cause) => {
-        // put it back
-        this.#persistQueue = data
-        // we can't do much about DatabaseClosedError errors
-        if (
-          !(cause instanceof Dexie.DatabaseClosedError) &&
-          !(cause.name !== Dexie.errnames.DatabaseClosed)
-        ) {
-          const error = new Error("Failed to persist phishing list", { cause })
-          sentry.captureException(error)
-        }
-      })
-    }
-  }
-
-  private persistData(source: "metamask", etag: string, data: MetaMaskDetectorConfig): void
-  private persistData(source: "polkadot", etag: string, data: HostList): void
-  private persistData(
-    source: "polkadot" | "metamask",
-    etag: string,
-    data: HostList | MetaMaskDetectorConfig
-  ): void {
-    if (!this.#persistQueue) this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
-    // Store ETag in the commitSha field to avoid a Dexie schema migration
-    this.#persistQueue[source] = { source, commitSha: etag, hostList: data }
   }
 
   /**
@@ -214,7 +168,14 @@ export default class ParaverseProtector {
 
       this.#metamaskDetector = new MetamaskDetector(result.data)
       this.#etags.metamask = result.etag
-      this.persistData("metamask", result.etag, result.data)
+      await metamaskBlobStore.set({ etag: result.etag, data: result.data }).catch((cause) => {
+        if (
+          !(cause instanceof Dexie.DatabaseClosedError) &&
+          !(cause.name !== Dexie.errnames.DatabaseClosed)
+        ) {
+          sentry.captureException(new Error("Failed to persist MetaMask phishing list", { cause }))
+        }
+      })
     } catch (error) {
       log.error("Error refreshing MetaMask phishing list", { error })
     }
@@ -231,7 +192,14 @@ export default class ParaverseProtector {
 
       this.lists.polkadot = result.data
       this.#etags.polkadot = result.etag
-      this.persistData("polkadot", result.etag, result.data)
+      await polkadotBlobStore.set({ etag: result.etag, data: result.data }).catch((cause) => {
+        if (
+          !(cause instanceof Dexie.DatabaseClosedError) &&
+          !(cause.name !== Dexie.errnames.DatabaseClosed)
+        ) {
+          sentry.captureException(new Error("Failed to persist Polkadot phishing list", { cause }))
+        }
+      })
     } catch (error) {
       log.error("Error refreshing Polkadot phishing list", { error })
     }

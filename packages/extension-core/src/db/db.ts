@@ -1,9 +1,5 @@
 import { Dexie } from "dexie"
 
-import type {
-  ProtectorSources,
-  ProtectorStorage,
-} from "../domains/app/protector/ParaverseProtector"
 import type { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import type { TalismanMetadataDef } from "../domains/substrate/types"
 import type { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
@@ -15,7 +11,6 @@ export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 class TalismanDatabase extends Dexie {
   assetDiscovery!: Dexie.Table<DiscoveredBalance, string>
   metadata!: Dexie.Table<TalismanMetadataDef, string>
-  phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
   transactions!: Dexie.Table<LegacyWalletTransaction, string>
   transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
@@ -55,6 +50,11 @@ class TalismanDatabase extends Dexie {
       // migration is handled by the MigrationRunner, to ensure it's executed after other migrations
       transactionsV2: "id, status, timestamp",
       tokenRates: null,
+    })
+
+    // v12: migrate phishing data from dedicated table to compressed blob store
+    this.version(12).stores({
+      phishing: null,
     })
   }
 }

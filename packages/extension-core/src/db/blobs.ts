@@ -14,6 +14,8 @@ export type DbBlobId =
   | "yieldxyz-providers"
   | "dynamic-tokens"
   | "bittensor-validators"
+  | "phishing-metamask"
+  | "phishing-polkadot"
 
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 

@@ -5,6 +5,19 @@ import ParaverseProtector from "./ParaverseProtector"
 
 const mockMetamaskConfig = require("eth-phishing-detect/src/config.json")
 
+// Mock the blob store so no real IndexedDB is needed
+vi.mock("../../../db/blobs", () => {
+  const stores = new Map<string, unknown>()
+  return {
+    getBlobStore: vi.fn((id: string) => ({
+      set: vi.fn(async (data: unknown) => {
+        stores.set(id, data)
+      }),
+      get: vi.fn(async () => stores.get(id) ?? null),
+    })),
+  }
+})
+
 const mockFetchWithEtag = vi.fn(async (url: string) => {
   if (url.includes("MetaMask")) {
     return { data: mockMetamaskConfig, etag: "mm-etag-1" }
