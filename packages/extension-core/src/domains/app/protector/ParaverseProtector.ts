@@ -14,7 +14,8 @@ const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
 const POLKADOT_REPO = "https://api.github.com/repos/polkadot-js/phishing"
 const POLKADOT_CONTENT_URL = "https://polkadot.js.org/phishing/all.json"
-const COMMIT_PATH = "/commits/master"
+const METAMASK_COMMIT_PATH = "/commits/main"
+const POLKADOT_COMMIT_PATH = "/commits/master"
 
 const REFRESH_INTERVAL_MIN = 20
 
@@ -154,7 +155,7 @@ export default class ParaverseProtector {
 
   async getMetamaskCommit() {
     try {
-      const sha = await this.getCommitSha(`${METAMASK_REPO}${COMMIT_PATH}`)
+      const sha = await this.getCommitSha(`${METAMASK_REPO}${METAMASK_COMMIT_PATH}`)
       if (sha !== this.#commits.metamask) {
         const mmConfig = await this.getMetamaskData()
         this.#metamaskDetector = new MetamaskDetector(mmConfig)
@@ -168,7 +169,7 @@ export default class ParaverseProtector {
 
   async getPolkadotCommit() {
     try {
-      const sha = await this.getCommitSha(`${POLKADOT_REPO}${COMMIT_PATH}`)
+      const sha = await this.getCommitSha(`${POLKADOT_REPO}${POLKADOT_COMMIT_PATH}`)
       if (sha !== this.#commits.polkadot) {
         this.lists.polkadot = await this.getPolkadotData()
         this.#commits.polkadot = sha
