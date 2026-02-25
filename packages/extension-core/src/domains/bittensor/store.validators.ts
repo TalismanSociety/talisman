@@ -3,13 +3,14 @@ import { log } from "extension-shared"
 import { Observable, shareReplay, startWith } from "rxjs"
 
 import { getBlobStore } from "../../db"
+import { gandalfFetch } from "../gandalf/fetch"
 import { getTaoDataApi } from "./tao-data/exports"
 import type { BittensorValidator } from "./types"
 
 const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators:v2")
 
 const REFRESH_INTERVAL = 600_000 // 10 mins
-const taoDataApi = getTaoDataApi()
+const taoDataApi = getTaoDataApi(gandalfFetch)
 
 let lastUpdatedAt = 0
 

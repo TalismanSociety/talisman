@@ -1,6 +1,7 @@
+import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { getTaoDataApi } from "extension-core"
 
-export const taoDataApi = getTaoDataApi()
+export const taoDataApi = getTaoDataApi(gandalfFetch)
 
 type TaoDataApiErrorPayload = {
   error?: {
