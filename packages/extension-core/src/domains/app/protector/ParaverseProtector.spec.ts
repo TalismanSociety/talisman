@@ -44,14 +44,10 @@ function setDefaultFetchResponses() {
 
 setDefaultFetchResponses()
 
-import { db } from "../../../db"
 import { addException, isPhishingSite, refreshPhishingLists } from "./ParaverseProtector"
 
-// mock fire the ready event on the database
-db.on.ready.fire(db)
-
 // Explicitly trigger a refresh so both lists are loaded before assertions.
-// In production this happens 30 s after module load via timer().
+// In production this happens 30 s after module load via setTimeout.
 beforeAll(async () => {
   await refreshPhishingLists()
 })

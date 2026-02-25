@@ -3,10 +3,8 @@ import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
-import { catchError, exhaustMap, firstValueFrom, Observable, of, shareReplay, timer } from "rxjs"
 
 import { sentry } from "../../../config/sentry"
-import { db } from "../../../db"
 import { getBlobStore } from "../../../db/blobs"
 import { getHostName } from "../helpers"
 
@@ -146,50 +144,35 @@ async function refreshPolkadotList() {
   }
 }
 
-// ─── Initialisation observable ──────────────────────────────────────────────
+// ─── Initialisation ─────────────────────────────────────────────────────────
 
-/** Emits once when the DB is ready and cached phishing data has been restored. */
-const initialised$ = new Observable<true>((subscriber) => {
-  db.on(
-    "ready",
-    async () => {
-      try {
-        const [mmBlob, pdBlob] = await Promise.all([
-          metamaskBlobStore.get(),
-          polkadotBlobStore.get(),
-        ])
+/** Restore cached phishing data from the blob store. Dexie auto-opens the DB on first query. */
+const initialised = restoreFromBlobStore()
 
-        if (mmBlob && isValidMetamaskConfig(mmBlob.data)) {
-          metamaskDetector = new MetamaskDetector(mmBlob.data)
-          etags.metamask = mmBlob.etag
-        }
-        if (pdBlob && isValidPolkadotList(pdBlob.data)) {
-          polkadotList = pdBlob.data
-          etags.polkadot = pdBlob.etag
-        }
-      } catch (err) {
-        log.error("Error restoring phishing data", { err })
-      }
-      subscriber.next(true)
-      subscriber.complete()
-    },
-    false
-  )
-}).pipe(
-  catchError((err) => {
+async function restoreFromBlobStore() {
+  try {
+    const [mmBlob, pdBlob] = await Promise.all([metamaskBlobStore.get(), polkadotBlobStore.get()])
+
+    if (mmBlob && isValidMetamaskConfig(mmBlob.data)) {
+      metamaskDetector = new MetamaskDetector(mmBlob.data)
+      etags.metamask = mmBlob.etag
+    }
+    if (pdBlob && isValidPolkadotList(pdBlob.data)) {
+      polkadotList = pdBlob.data
+      etags.polkadot = pdBlob.etag
+    }
+  } catch (err) {
     // on any error the user is only unprotected until the first refresh (30 s)
-    log.error(err)
-    return of(true as const)
-  }),
-  shareReplay(1)
-)
+    log.error("Error restoring phishing data", { err })
+  }
+}
 
-// Kick off: register the DB-ready listener and start the periodic refresh timer.
-// exhaustMap prevents overlapping refreshes if a cycle takes longer than the interval.
-initialised$.subscribe()
-timer(30_000, REFRESH_INTERVAL_MIN * 60 * 1000)
-  .pipe(exhaustMap(() => refreshPhishingLists()))
-  .subscribe()
+// Periodic refresh: recursive setTimeout naturally prevents overlapping fetches.
+async function scheduleRefresh() {
+  await refreshPhishingLists()
+  setTimeout(scheduleRefresh, REFRESH_INTERVAL_MIN * 60 * 1000)
+}
+setTimeout(scheduleRefresh, 30_000)
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
@@ -200,7 +183,7 @@ export async function refreshPhishingLists(): Promise<void> {
 
 /** Check whether a URL is on a known phishing list. Waits for DB initialisation on first call. */
 export async function isPhishingSite(url: string): Promise<boolean> {
-  await firstValueFrom(initialised$)
+  await initialised
 
   const { val: host, ok } = getHostName(url)
   if (!ok) return false
