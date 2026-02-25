@@ -9,6 +9,7 @@ import type { DefiMessages } from "../domains/defi/types"
 import type { EarnMessages } from "../domains/earn/types"
 import type { EncryptMessages } from "../domains/encrypt/types"
 import type { EthMessages } from "../domains/ethereum/types"
+import type { GandalfMessages } from "../domains/gandalf/types"
 import type { MetadataMessages } from "../domains/metadata/types"
 import type { MnemonicMessages } from "../domains/mnemonics/types"
 import type { NftsMessages } from "../domains/nfts"
@@ -96,6 +97,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   PingMessages &
   ChaindataMessages &
   BittensorMessages &
+  GandalfMessages &
   SendFundsMessages &
   UnsubscribeMessages
 

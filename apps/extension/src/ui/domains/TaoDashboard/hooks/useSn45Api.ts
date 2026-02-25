@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
+import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { getSn45Api } from "extension-core"
 import { useMemo } from "react"
+
 import type { TimePeriod } from "../shared/types"
 
-// Create a singleton API instance
-export const sn45Api = getSn45Api()
+// Create a singleton API instance with Gandalf auth injected via customFetch
+export const sn45Api = getSn45Api(gandalfFetch)
 
 export type SubnetLeaderboardResponse = Awaited<
   ReturnType<typeof sn45Api.v1.getSubnetLeaderboard>

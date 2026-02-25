@@ -5,4 +5,5 @@ export const SN45_API_URL = "https://sn45api.talisman.xyz"
 
 export { Sn45Api }
 
-export const getSn45Api = () => new Sn45Api({ baseUrl: SN45_API_URL })
+export const getSn45Api = (customFetch?: typeof fetch) =>
+  new Sn45Api({ baseUrl: SN45_API_URL, customFetch })

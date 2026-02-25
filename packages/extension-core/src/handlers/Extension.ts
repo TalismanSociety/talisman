@@ -14,6 +14,7 @@ import { DefiHandler } from "../domains/defi/handler"
 import { EarnHandler } from "../domains/earn/handler"
 import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
+import { GandalfHandler } from "../domains/gandalf/handler"
 import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
@@ -61,6 +62,7 @@ export default class Extension extends ExtensionHandler {
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),
       bittensor: new BittensorHandler(stores),
+      gandalf: new GandalfHandler(stores),
       sendFunds: new SendFundsHandler(stores),
     }
 

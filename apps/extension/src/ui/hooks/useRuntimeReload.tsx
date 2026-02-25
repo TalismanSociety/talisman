@@ -20,6 +20,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
       talismanDb.blobs.clear(), // chaindata, balances, nfts etc
       tryDeleteDatabase("TalismanChaindata"), // old chaindata db
       tryDeleteDatabase("TalismanChaindataV4"), // current chaindata db, it will be recreated on next startup
+      chrome.storage.local.remove(["gandalf"]), // force re-registration on gandalf
     ])
 
     chrome.runtime.reload()
