@@ -26,29 +26,58 @@ export const raoToTao = (value: string | bigint | null | undefined): number => {
 }
 
 /** converts a [-2,2] score to a [0,100] score */
-export const convertScore2To100 = (score2: number | null | undefined): number => {
+export const convertScore2To100Pos = (score2: number | null | undefined): number => {
   if (score2 === null || score2 === undefined) return 50
   return Math.round(((score2 + 2) / 4) * 100)
 }
 
-export const useScore2To100 = (score2: number | null | undefined): number => {
-  return useMemo(() => convertScore2To100(score2), [score2])
+export const useScore2To100Pos = (score2: number | null | undefined): number => {
+  return useMemo(() => convertScore2To100Pos(score2), [score2])
+}
+
+/** converts a [-2,2] score to a [-100,100] score */
+export const convertScore2To100Neg = (score2: number | null | undefined): number => {
+  if (score2 === null || score2 === undefined) return 0
+  // Clamp to [-100,100] just in case of out-of-bounds input
+  return Math.min(100, Math.max(-100, Math.round((score2 / 2) * 100)))
+}
+
+export const useScore2To100Neg = (score2: number | null | undefined): number => {
+  return useMemo(() => convertScore2To100Neg(score2), [score2])
 }
 
 /** converts a [-1,1] score to a [0,100] score */
-export const convertScore1To100 = (score1: number | null | undefined): number => {
+export const convertScore1To100Pos = (score1: number | null | undefined): number => {
   if (score1 === null || score1 === undefined) return 50
   return Math.round(((score1 + 1) / 2) * 100)
 }
 
-export const useScore1To100 = (score1: number | null | undefined): number => {
-  return useMemo(() => convertScore1To100(score1), [score1])
+export const useScore1To100Pos = (score1: number | null | undefined): number => {
+  return useMemo(() => convertScore1To100Pos(score1), [score1])
 }
 
-export const useColorFromScore100 = (score: number | null | undefined): string | null => {
+/** converts a [-1,1] score to a [-100,100] score */
+export const convertScore1To100Neg = (score1: number | null | undefined): number => {
+  if (score1 === null || score1 === undefined) return 0
+  // Clamp to [-100,100] just in case of out-of-bounds input
+  return Math.min(100, Math.max(-100, Math.round(score1 * 100)))
+}
+
+export const useScore1To100Neg = (score1: number | null | undefined): number => {
+  return useMemo(() => convertScore1To100Neg(score1), [score1])
+}
+
+export const useColorFromScore100Pos = (score: number | null | undefined): string | null => {
   if (score === null || score === undefined) return null
   if (score > 50) return "text-buy"
   if (score < 50) return "text-sell"
+  return null
+}
+
+export const useColorFromScore100Neg = (score: number | null | undefined): string | null => {
+  if (!score) return null
+  if (score > 0) return "text-buy"
+  if (score < 0) return "text-sell"
   return null
 }
 

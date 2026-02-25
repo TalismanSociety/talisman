@@ -8,9 +8,9 @@ import { useSentimentLabelFromScore100 } from "@ui/domains/TaoDashboard/shared/S
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
-  useColorFromScore100,
-  useScore1To100,
-  useScore2To100,
+  useColorFromScore100Neg,
+  useScore1To100Neg,
+  useScore2To100Neg,
 } from "@ui/domains/TaoDashboard/shared/util"
 import { type FC, type PropsWithChildren, type ReactNode, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -49,14 +49,14 @@ const SentimentTrend: FC<
   const { t } = useTranslation()
   const scoreLabel = useSentimentLabelFromScore100(data.score)
 
-  const flowChangeScore = useScore2To100(data.taoFlowVelocity)
-  const flowChangeColor = useColorFromScore100(flowChangeScore)
+  const flowChangeScore = useScore2To100Neg(data.taoFlowVelocity)
+  const flowChangeColor = useColorFromScore100Neg(flowChangeScore)
 
-  const volChangeScore = useScore2To100(data.volMcapVelocity)
-  const volChangeColor = useColorFromScore100(volChangeScore)
+  const volChangeScore = useScore2To100Neg(data.volMcapVelocity)
+  const volChangeColor = useColorFromScore100Neg(volChangeScore)
 
-  const sentChangeScore = useScore1To100(data.sentimentVelocity)
-  const sentChangeColor = useColorFromScore100(sentChangeScore)
+  const sentChangeScore = useScore1To100Neg(data.sentimentVelocity)
+  const sentChangeColor = useColorFromScore100Neg(sentChangeScore)
 
   return (
     <div className="flex h-[16.5rem] items-stretch gap-14">
@@ -72,7 +72,7 @@ const SentimentTrend: FC<
         <SentimentField
           label={t("Flow Change")}
           tooltip={t(
-            "0-100 score based on acceleration or deceleration of Tao Flow compared to previous period"
+            "[-100,100] score based on acceleration or deceleration of Tao Flow compared to previous period"
           )}
           className={cn(flowChangeColor)}
         >
@@ -81,7 +81,7 @@ const SentimentTrend: FC<
         <SentimentField
           label={t("Volume Change")}
           tooltip={t(
-            "0-100 score based on volume expansion or contraction compared to previous period"
+            "[-100,100] score based on volume expansion or contraction compared to previous period"
           )}
           className={cn(volChangeColor)}
         >
@@ -89,7 +89,9 @@ const SentimentTrend: FC<
         </SentimentField>
         <SentimentField
           label={t("Sentiment Change")}
-          tooltip={t("0-100 score based on shift in social sentiment compared to previous period")}
+          tooltip={t(
+            "[-100,100] score based on shift in social sentiment compared to previous period"
+          )}
           className={cn(sentChangeColor)}
         >
           {sentChangeScore ?? t("N/A")}
