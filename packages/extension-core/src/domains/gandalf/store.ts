@@ -9,6 +9,7 @@ export type GandalfStoreData = {
    * This is NOT a wallet key — it is an anonymous, per-install credential
    * used solely to authorize and rate limit API requests to Talisman services.
    * It cannot access user funds and is revocable server-side.
+   * It must remain unencrypted in storage to be usable for API requests in the service worker.
    */
   privateKeyHex: string | null
 }

@@ -50,11 +50,9 @@ async function ensureRegistered(
  * Observable that emits a valid Gandalf access token (JWT string).
  *
  * - On first subscribe, registers if needed (inc. PoW solve).
- * - Refreshes the token every 4 minutes.
+ * - Refreshes the token every 4 minutes, but only if there are active subscribers.
  * - Returns the cached token immediately when it's still valid.
  * - Emits `Loadable<string>` with status loading/success/error.
- * - `shareReplay` with `refCount: false` keeps the pipeline alive in the
- *   service worker even when all UI subscribers disconnect (popup closes).
  */
 export const gandalfAccessToken$ = timer(0, REFRESH_INTERVAL_MS).pipe(
   switchMap(
