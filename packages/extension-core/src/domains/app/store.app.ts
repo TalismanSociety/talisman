@@ -40,6 +40,9 @@ export type AppStoreData = {
   hideBittensorSubnetStakeWarning?: boolean
   hideGetStarted?: boolean
 
+  // dismissed earn disclaimer
+  hideEarnDisclaimer?: boolean
+
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
 }
@@ -116,6 +119,7 @@ if (DEBUG) {
       hideManageAccountsWelcome: false,
       hideBittensorSubnetStakeWarning: false,
       hideGetStarted: false,
+      hideEarnDisclaimer: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

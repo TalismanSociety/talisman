@@ -21,7 +21,7 @@ import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import type { RequestAccountList } from "../domains/accounts/types"
-import { protector } from "../domains/app/protector"
+import { isPhishingSite } from "../domains/app/protector"
 import type { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
 import type {
@@ -295,7 +295,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = await protector.isPhishingSite(url)
+    const isInDenyList = await isPhishingSite(url)
 
     if (isInDenyList) {
       sentry.captureEvent({
