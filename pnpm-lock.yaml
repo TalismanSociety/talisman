@@ -1097,9 +1097,6 @@ importers:
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
-      lz-string:
-        specifier: ^1.5.0
-        version: 1.5.0
       p-queue:
         specifier: 8.1.0
         version: 8.1.0
@@ -3339,7 +3336,7 @@ packages:
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: '>=2.79.2'
+      rollup: '>=4.22.4'
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -11546,7 +11543,7 @@ snapshots:
       '@polkadot-api/metadata-compatibility': 0.2.4
       '@polkadot-api/observable-client': 0.11.2(@polkadot-api/substrate-client@0.4.0)(rxjs@7.8.2)
       '@polkadot-api/polkadot-sdk-compat': 2.3.2
-      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))
+      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@polkadot-api/smoldot': 0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@polkadot-api/substrate-bindings': 0.14.0
       '@polkadot-api/substrate-client': 0.4.0
@@ -11706,6 +11703,12 @@ snapshots:
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/substrate-bindings': 0.14.0
       '@polkadot-api/utils': 0.2.0
+
+  '@polkadot-api/sm-provider@0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+    dependencies:
+      '@polkadot-api/json-rpc-provider': 0.0.4
+      '@polkadot-api/json-rpc-provider-proxy': 0.2.4
+      '@polkadot-api/smoldot': 0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10)
 
   '@polkadot-api/sm-provider@0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))':
     dependencies:
@@ -17743,7 +17746,7 @@ snapshots:
       '@polkadot-api/polkadot-sdk-compat': 2.3.2
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/signer': 0.2.2
-      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))
+      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@polkadot-api/smoldot': 0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@polkadot-api/substrate-bindings': 0.14.0
       '@polkadot-api/substrate-client': 0.4.0

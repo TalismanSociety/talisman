@@ -11,7 +11,7 @@ import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
 import { keyringStore } from "../keyring/store"
-import { protector } from "./protector"
+import { addException } from "./protector"
 import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
@@ -296,9 +296,7 @@ export default class AppHandler extends ExtensionHandler {
       }
 
       case "pri(app.phishing.addException)": {
-        return protector.addException(
-          (request as RequestTypes["pri(app.phishing.addException)"]).url
-        )
+        return addException((request as RequestTypes["pri(app.phishing.addException)"]).url)
       }
 
       case "pri(app.resetWallet)":

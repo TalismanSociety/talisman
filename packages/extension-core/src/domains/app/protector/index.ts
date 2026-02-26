@@ -1,3 +1,1 @@
-import ParaverseProtector from "./ParaverseProtector"
-
-export const protector = new ParaverseProtector()
+export { addException, dispose, isPhishingSite } from "./ParaverseProtector"
