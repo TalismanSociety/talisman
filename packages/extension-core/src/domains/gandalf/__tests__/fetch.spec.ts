@@ -41,7 +41,7 @@ describe("gandalfFetch", () => {
 
     await gandalfFetch("https://api.example.com/data", { method: "GET" })
 
-    expect(fetchSpy).toHaveBeenCalledOnce()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
 
     const [url, init] = fetchSpy.mock.calls[0]
     expect(url).toBe("https://api.example.com/data")
@@ -61,7 +61,7 @@ describe("gandalfFetch", () => {
 
     await gandalfFetch("https://api.example.com/data")
 
-    expect(fetchSpy).toHaveBeenCalledOnce()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
 
     const [, init] = fetchSpy.mock.calls[0]
     // Should NOT have Authorization header

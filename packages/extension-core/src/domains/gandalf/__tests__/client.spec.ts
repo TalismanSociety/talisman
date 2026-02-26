@@ -1,4 +1,5 @@
 import { ed25519 } from "@noble/curves/ed25519"
+import { vi } from "vitest"
 
 import {
   base64urlEncode,

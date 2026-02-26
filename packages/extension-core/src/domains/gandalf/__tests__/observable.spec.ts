@@ -98,7 +98,7 @@ describe("gandalfAccessToken$", () => {
     await vi.advanceTimersByTimeAsync(0)
     const result = await resultPromise
 
-    expect(mockRegisterInstall).toHaveBeenCalledOnce()
+    expect(mockRegisterInstall).toHaveBeenCalledTimes(1)
     expect(mockGandalfStore.set).toHaveBeenCalledWith({
       installId: "new-inst",
       privateKeyHex: "ccdd",
