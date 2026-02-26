@@ -4,7 +4,6 @@ import { isAddressEqual } from "@talismn/crypto"
 import { SettingsIcon } from "@talismn/icons"
 import { useBittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal/hooks/useBittensorClaimSettingsModal"
 import type { BittensorClaimSettingsOpenOptions } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal/hooks/useBittensorClaimSettingsWizard"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
@@ -28,9 +27,7 @@ export const BittensorClaimSettingsToolbarButton: FC<{
     const balance = balances.each
       .filter(
         (b) =>
-          b.token?.type === "substrate-dtao" &&
-          b.token.netuid === ROOT_NETUID &&
-          bittensorNetworkIds.includes(b.token.networkId) &&
+          bittensorNetworkIds.includes(b.networkId) &&
           accounts.some((a) => isAddressEqual(a.address, b.address))
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
