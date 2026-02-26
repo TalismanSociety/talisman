@@ -1,17 +1,6 @@
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { useSocialFeedsMounted } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
-import {
-  AreaSeries,
-  CandlestickSeries,
-  createChart,
-  createSeriesMarkers,
-  HistogramSeries,
-  type IChartApi,
-  type ISeriesApi,
-  LineSeries,
-  type SeriesType,
-  type UTCTimestamp,
-} from "lightweight-charts"
+import type { IChartApi, ISeriesApi, SeriesType, UTCTimestamp } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
@@ -254,6 +243,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   const markersRef = useRef<MarkersPlugin | null>(null)
   const volumeLegendRef = useRef<HTMLDivElement | null>(null)
   const initialFitDoneRef = useRef(false)
+  const lcRef = useRef<typeof import("lightweight-charts") | null>(null)
+  const [chartReady, setChartReady] = useState(false)
 
   // Stable refs for scroll handler to avoid stale closures
   const hasMoreRef = useRef(hasMore)
@@ -261,76 +252,88 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   hasMoreRef.current = hasMore
   loadMoreRef.current = loadMore
 
-  // ── Effect 1: Create chart instance (mount-only) ──────────────────────
+  // ── Effect 1: Load library & create chart instance (mount-only) ───────
   useEffect(() => {
     const container = chartContainerRef.current
     if (!container) return
 
-    const chart = createChart(
-      container,
-      createChartOptions({
-        width: container.clientWidth,
-        height: container.clientHeight,
-        backgroundColor: CHART_COLORS.background,
-        textColor: CHART_COLORS.text,
-        gridLineColor: CHART_COLORS.gridLine,
-        crosshairColor: CHART_COLORS.crosshair,
-        rightPriceScaleMargins: { top: 0, bottom: 0.25 },
-        hideVerticalGridLines: true,
+    let cancelled = false
+    let resizeObserver: ResizeObserver | undefined
+
+    ;(async () => {
+      const lc = await import("lightweight-charts")
+      if (cancelled) return
+
+      lcRef.current = lc
+
+      const chart = lc.createChart(
+        container,
+        createChartOptions({
+          width: container.clientWidth,
+          height: container.clientHeight,
+          backgroundColor: CHART_COLORS.background,
+          textColor: CHART_COLORS.text,
+          gridLineColor: CHART_COLORS.gridLine,
+          crosshairColor: CHART_COLORS.crosshair,
+          rightPriceScaleMargins: { top: 0, bottom: 0.25 },
+          hideVerticalGridLines: true,
+        })
+      )
+      const candlestickSeries = chart.addSeries(lc.CandlestickSeries, CANDLESTICK_OPTIONS)
+      const volumeSeries = chart.addSeries(lc.HistogramSeries, VOLUME_OPTIONS)
+
+      chartRef.current = chart
+      candlestickSeriesRef.current = candlestickSeries
+      volumeSeriesRef.current = volumeSeries
+
+      // ── Volume legend (shows value on hover) ────────────────────────────
+      const volumeLegend = document.createElement("div")
+      Object.assign(volumeLegend.style, {
+        position: "absolute",
+        left: "8px",
+        zIndex: "10",
+        fontSize: "11px",
+        lineHeight: "16px",
+        color: CHART_COLORS.textSecondary,
+        pointerEvents: "none",
+        fontFamily: "monospace",
+      } satisfies Partial<CSSStyleDeclaration>)
+      container.appendChild(volumeLegend)
+      volumeLegendRef.current = volumeLegend
+
+      chart.subscribeCrosshairMove((param) => {
+        if (volumeSeriesRef.current && volumeLegendRef.current) {
+          const volData = param.seriesData?.get(volumeSeriesRef.current) as
+            | { value?: number }
+            | undefined
+          volumeLegendRef.current.textContent =
+            volData?.value != null ? `Vol ${formatVolume(volData.value)}` : ""
+        }
       })
-    )
-    const candlestickSeries = chart.addSeries(CandlestickSeries, CANDLESTICK_OPTIONS)
-    const volumeSeries = chart.addSeries(HistogramSeries, VOLUME_OPTIONS)
 
-    chartRef.current = chart
-    candlestickSeriesRef.current = candlestickSeries
-    volumeSeriesRef.current = volumeSeries
-
-    // ── Volume legend (shows value on hover) ────────────────────────────
-    const volumeLegend = document.createElement("div")
-    Object.assign(volumeLegend.style, {
-      position: "absolute",
-      left: "8px",
-      zIndex: "10",
-      fontSize: "11px",
-      lineHeight: "16px",
-      color: CHART_COLORS.textSecondary,
-      pointerEvents: "none",
-      fontFamily: "monospace",
-    } satisfies Partial<CSSStyleDeclaration>)
-    container.appendChild(volumeLegend)
-    volumeLegendRef.current = volumeLegend
-
-    chart.subscribeCrosshairMove((param) => {
-      if (volumeSeriesRef.current && volumeLegendRef.current) {
-        const volData = param.seriesData?.get(volumeSeriesRef.current) as
-          | { value?: number }
-          | undefined
-        volumeLegendRef.current.textContent =
-          volData?.value != null ? `Vol ${formatVolume(volData.value)}` : ""
+      // ── Lazy-load: fetch more when scrolling left ───────────────────────
+      const onVisibleRangeChange = (range: { from: number; to: number } | null) => {
+        if (range && range.from < 10 && hasMoreRef.current) {
+          loadMoreRef.current()
+        }
       }
-    })
+      chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange)
 
-    // ── Lazy-load: fetch more when scrolling left ───────────────────────
-    const onVisibleRangeChange = (range: { from: number; to: number } | null) => {
-      if (range && range.from < 10 && hasMoreRef.current) {
-        loadMoreRef.current()
-      }
-    }
-    chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange)
+      // ── Resize observer ──────────────────────────────────────────────────
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          chart.applyOptions({ width: entry.contentRect.width })
+        }
+      })
+      resizeObserver.observe(container)
 
-    // ── Resize observer ──────────────────────────────────────────────────
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        chart.applyOptions({ width: entry.contentRect.width })
-      }
-    })
-    resizeObserver.observe(container)
+      setChartReady(true)
+    })()
 
     return () => {
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onVisibleRangeChange)
-      resizeObserver.disconnect()
-      chart.remove()
+      cancelled = true
+      resizeObserver?.disconnect()
+      chartRef.current?.remove()
       chartRef.current = null
       candlestickSeriesRef.current = null
       volumeSeriesRef.current = null
@@ -342,6 +345,8 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       }
       volumeLegendRef.current = null
       initialFitDoneRef.current = false
+      lcRef.current = null
+      setChartReady(false)
     }
   }, []) // mount-only — chart lifecycle is independent of data
 
@@ -400,11 +405,14 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
 
   // ── Effect 2: update series data when bars / indicators change ────────
   useEffect(() => {
+    if (!chartReady) return
+    const lc = lcRef.current
     const chart = chartRef.current
     const candlestickSeries = candlestickSeriesRef.current
     const volumeSeries = volumeSeriesRef.current
-    if (!chart || !candlestickSeries || !volumeSeries || !chartData) return
+    if (!lc || !chart || !candlestickSeries || !volumeSeries || !chartData) return
 
+    const { LineSeries, AreaSeries, createSeriesMarkers } = lc
     const { candleData, volumeData, times } = chartData
 
     // ── Remove previous overlay series (indicators, price lines, etc.) ──
@@ -643,7 +651,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       })
       initialFitDoneRef.current = true
     }
-  }, [chartData, tweets, showTweetMarkers, tokenPrice, indicators])
+  }, [chartReady, chartData, tweets, showTweetMarkers, tokenPrice, indicators])
 
   return <div ref={chartContainerRef} className="size-full" />
 }
