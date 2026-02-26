@@ -192,29 +192,6 @@ export const useSubnetHolders = (netuid: number | null | undefined, period: Time
   })
 }
 
-export type WhaleTransactionType =
-  | "StakeAdded"
-  | "StakeRemoved"
-  | "StakeMove"
-  | "StakeTransfer"
-  | "StakeSwapped"
-
-export interface WhaleTransaction {
-  id: string
-  blockHeight: number
-  extrinsicIndex: number | null
-  transactionType: WhaleTransactionType
-  tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale"
-  coldkey: string
-  hotkey: string
-  netuid: number
-  originNetuid: number | null
-  taoAmount: string
-  alphaAmount: string | null
-  destinationColdkey: string | null
-  timestamp: string
-}
-
 export const useSubnetSentiment = (netuid: number | null | undefined, period?: TimePeriod) => {
   return useQuery({
     queryKey: ["sn45", "subnetSentiment", netuid, period],
@@ -275,3 +252,9 @@ export const useSubnetWhalesActivity = (netuid: number | null | undefined, perio
     staleTime: 30_000,
   })
 }
+
+export type WhaleTransaction = Awaited<
+  ReturnType<typeof sn45Api.v1.getSubnetWhalesActivity>
+>["data"][number]
+
+export type WhaleTransactionType = WhaleTransaction["transactionType"]
