@@ -26,12 +26,18 @@ export function bytesToHex(bytes: Uint8Array): string {
 
 // ── PoW solver ────────────────────────────────────────────────────────────────
 
-export async function solveProofOfWork(challenge: string, difficulty: number): Promise<string> {
+export async function solveProofOfWork(
+  challenge: string,
+  difficulty: number,
+  signal?: AbortSignal
+): Promise<string> {
   for (let i = 0; ; i++) {
+    signal?.throwIfAborted()
     const solution = i.toString()
     const input = new TextEncoder().encode(challenge + solution)
     const hash = await crypto.subtle.digest("SHA-256", input)
     const bytes = new Uint8Array(hash)
+    signal?.throwIfAborted()
 
     let zeroBits = 0
     for (const byte of bytes) {
@@ -79,7 +85,7 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
 
   // Fetch and solve PoW challenge
   const { challenge, difficulty } = await fetchChallenge(signal)
-  const solution = await solveProofOfWork(challenge, difficulty)
+  const solution = await solveProofOfWork(challenge, difficulty, signal)
 
   // Register
   const res = await fetch(`${GANDALF_URL}/v1/install/register`, {
