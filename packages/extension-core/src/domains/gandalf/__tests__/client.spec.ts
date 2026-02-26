@@ -1,6 +1,14 @@
 import { ed25519 } from "@noble/curves/ed25519"
 
-import { base64urlEncode, bytesToHex, hexToBytes, solveProofOfWork } from "../client"
+import {
+  base64urlEncode,
+  bytesToHex,
+  fetchChallenge,
+  hexToBytes,
+  registerInstall,
+  requestAccessToken,
+  solveProofOfWork,
+} from "../client"
 
 // ── base64urlEncode ─────────────────────────────────────────────────────
 
@@ -145,5 +153,195 @@ describe("Ed25519 signing roundtrip (used by requestAccessToken)", () => {
 
     const tampered = new TextEncoder().encode("token_request:id:123:TAMPERED")
     expect(ed25519.verify(sigBytes, tampered, pub)).toBe(false)
+  })
+})
+
+// ── fetchChallenge ──────────────────────────────────────────────────────────
+
+describe("fetchChallenge", () => {
+  const realFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = realFetch
+  })
+
+  it("returns challenge data on success", async () => {
+    const mockResponse = { challenge: "abc123", difficulty: 16, expiresAt: 9999999999 }
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(mockResponse), { status: 200 }))
+
+    const result = await fetchChallenge()
+
+    expect(result).toEqual(mockResponse)
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "https://gandalf.talisman.xyz/v1/challenge",
+      expect.objectContaining({ method: "POST" })
+    )
+  })
+
+  it("throws on non-ok response", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response("", { status: 500 }))
+
+    await expect(fetchChallenge()).rejects.toThrow("Gandalf challenge request failed (500)")
+  })
+
+  it("passes abort signal through", async () => {
+    const controller = new AbortController()
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ challenge: "x", difficulty: 1, expiresAt: 0 }), {
+        status: 200,
+      })
+    )
+
+    await fetchChallenge(controller.signal)
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ signal: controller.signal })
+    )
+  })
+})
+
+// ── registerInstall ─────────────────────────────────────────────────────────
+
+describe("registerInstall", () => {
+  const realFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = realFetch
+  })
+
+  it("generates keypair, solves PoW, and returns credentials", async () => {
+    // Mock fetch: first call = challenge, second call = register
+    const fetchMock = vi
+      .fn()
+      // challenge endpoint
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ challenge: "test-challenge", difficulty: 1, expiresAt: 9999999999 }),
+          { status: 200 }
+        )
+      )
+      // register endpoint
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ installId: "inst-xyz" }), { status: 200 })
+      )
+
+    globalThis.fetch = fetchMock
+
+    const result = await registerInstall()
+
+    expect(result.installId).toBe("inst-xyz")
+    expect(result.privateKeyHex).toHaveLength(64) // 32-byte private key = 64 hex chars
+
+    // Verify the register call sent the right shape
+    const registerCall = fetchMock.mock.calls[1]
+    expect(registerCall[0]).toBe("https://gandalf.talisman.xyz/v1/install/register")
+    const body = JSON.parse(registerCall[1]?.body as string)
+    expect(body).toHaveProperty("pubKey.kty", "OKP")
+    expect(body).toHaveProperty("pubKey.crv", "Ed25519")
+    expect(body).toHaveProperty("challenge", "test-challenge")
+    expect(body).toHaveProperty("solution")
+  })
+
+  it("throws with server message on registration failure", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ challenge: "c", difficulty: 1, expiresAt: 0 }), {
+          status: 200,
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "PoW expired" }), { status: 400 })
+      )
+
+    await expect(registerInstall()).rejects.toThrow(
+      "Gandalf registration failed (400): PoW expired"
+    )
+  })
+})
+
+// ── requestAccessToken ──────────────────────────────────────────────────────
+
+describe("requestAccessToken", () => {
+  const realFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = realFetch
+  })
+
+  it("sends a signed token request and returns JWT", async () => {
+    const priv = ed25519.utils.randomPrivateKey()
+    const privHex = bytesToHex(priv)
+
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ accessToken: "jwt-999", expiresIn: 300 }), { status: 200 })
+      )
+
+    const result = await requestAccessToken("inst-1", privHex)
+
+    expect(result).toEqual({ accessToken: "jwt-999", expiresIn: 300 })
+
+    // Verify the request body shape
+    const [url, init] = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(url).toBe("https://gandalf.talisman.xyz/v1/token")
+    const body = JSON.parse(init.body)
+    expect(body.installId).toBe("inst-1")
+    expect(body.timestamp).toBeDefined()
+    expect(body.nonce).toBeDefined()
+    expect(body.signature).toBeDefined()
+    // Signature should be valid base64url
+    expect(body.signature).toMatch(/^[A-Za-z0-9_-]+$/)
+  })
+
+  it("sends a verifiable Ed25519 signature", async () => {
+    const priv = ed25519.utils.randomPrivateKey()
+    const pub = ed25519.getPublicKey(priv)
+    const privHex = bytesToHex(priv)
+
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ accessToken: "jwt", expiresIn: 60 }), { status: 200 })
+      )
+
+    await requestAccessToken("inst-verify", privHex)
+
+    const body = JSON.parse(
+      ((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1] as RequestInit)
+        .body as string
+    )
+
+    // Reconstruct the canonical string
+    const canonical = `token_request:${body.installId}:${body.timestamp}:${body.nonce}`
+    const data = new TextEncoder().encode(canonical)
+
+    // Decode the base64url signature back to bytes
+    const sigBase64 = body.signature.replace(/-/g, "+").replace(/_/g, "/")
+    const sigBinary = atob(sigBase64)
+    const sigBytes = new Uint8Array(sigBinary.length)
+    for (let i = 0; i < sigBinary.length; i++) {
+      sigBytes[i] = sigBinary.charCodeAt(i)
+    }
+
+    expect(ed25519.verify(sigBytes, data, pub)).toBe(true)
+  })
+
+  it("throws with server message on failure", async () => {
+    const priv = ed25519.utils.randomPrivateKey()
+
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ message: "invalid signature" }), { status: 401 })
+      )
+
+    await expect(requestAccessToken("inst-1", bytesToHex(priv))).rejects.toThrow(
+      "Gandalf token request failed (401): invalid signature"
+    )
   })
 })
