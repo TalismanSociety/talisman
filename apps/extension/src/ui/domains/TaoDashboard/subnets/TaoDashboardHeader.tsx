@@ -1,6 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { cn } from "@talismn/util"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBalances, useIsBalanceInitializing, useToken } from "@ui/state"
 import { type FC, type ReactNode, useMemo } from "react"
@@ -9,14 +10,6 @@ import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import { Skeleton } from "../shared/Skeleton"
 import { raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
-
-// Format large USD values
-const formatStatsUsd = (num: number) => {
-  if (num >= 1000000000) return `$${(num / 1000000000).toFixed(2)}B`
-  if (num >= 1000000) return `$${(num / 1000000).toFixed(2)}M`
-  if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`
-  return `$${num.toFixed(2)}`
-}
 
 export const PoweredBySn45 = () => {
   const { t } = useTranslation()
@@ -99,7 +92,7 @@ export const TaoDashboardHeader = () => {
 
       <StatItem
         label={t("Total Market Cap")}
-        value={formatStatsUsd(stats.marketCap)}
+        value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
         change={stats.marketCapChange24h ?? undefined}
         isLoading={isStatsLoading}
         hasChange
@@ -107,13 +100,13 @@ export const TaoDashboardHeader = () => {
       />
       <StatItem
         label={t("24h Trading Volume")}
-        value={formatStatsUsd(stats.totalSubnetVolume)}
+        value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
         isLoading={isStatsLoading}
         className="w-[17rem]"
       />
       <StatItem
         label={t("TAO Price")}
-        value={formatStatsUsd(stats.taoUsd)}
+        value={<FiatFromUsd amount={stats.taoUsd} noCountUp />}
         change={stats.priceChange24h ?? undefined}
         isLoading={isStatsLoading}
         hasChange
