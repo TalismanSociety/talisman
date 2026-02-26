@@ -1,0 +1,2007 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+/*
+ * ---------------------------------------------------------------
+ * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
+ * ##                                                           ##
+ * ## AUTHOR: acacode                                           ##
+ * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
+ * ---------------------------------------------------------------
+ */
+
+export type QueryParamsType = Record<string | number, any>;
+export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
+
+export interface FullRequestParams extends Omit<RequestInit, "body"> {
+  /** set parameter to `true` for call `securityWorker` for this request */
+  secure?: boolean;
+  /** request path */
+  path: string;
+  /** content type of request body */
+  type?: ContentType;
+  /** query params */
+  query?: QueryParamsType;
+  /** format of response (i.e. response.json() -> format: "json") */
+  format?: ResponseFormat;
+  /** request body */
+  body?: unknown;
+  /** base url */
+  baseUrl?: string;
+  /** request cancellation token */
+  cancelToken?: CancelToken;
+}
+
+export type RequestParams = Omit<
+  FullRequestParams,
+  "body" | "method" | "query" | "path"
+>;
+
+export interface ApiConfig<SecurityDataType = unknown> {
+  baseUrl?: string;
+  baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
+  securityWorker?: (
+    securityData: SecurityDataType | null,
+  ) => Promise<RequestParams | void> | RequestParams | void;
+  customFetch?: typeof fetch;
+}
+
+export interface HttpResponse<D extends unknown, E extends unknown = unknown>
+  extends Response {
+  data: D;
+  error: E;
+}
+
+type CancelToken = Symbol | string | number;
+
+export enum ContentType {
+  Json = "application/json",
+  JsonApi = "application/vnd.api+json",
+  FormData = "multipart/form-data",
+  UrlEncoded = "application/x-www-form-urlencoded",
+  Text = "text/plain",
+}
+
+export class HttpClient<SecurityDataType = unknown> {
+  public baseUrl: string = "";
+  private securityData: SecurityDataType | null = null;
+  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
+  private abortControllers = new Map<CancelToken, AbortController>();
+  private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
+    fetch(...fetchParams);
+
+  private baseApiParams: RequestParams = {
+    credentials: "same-origin",
+    headers: {},
+    redirect: "follow",
+    referrerPolicy: "no-referrer",
+  };
+
+  constructor(apiConfig: ApiConfig<SecurityDataType> = {}) {
+    Object.assign(this, apiConfig);
+  }
+
+  public setSecurityData = (data: SecurityDataType | null) => {
+    this.securityData = data;
+  };
+
+  protected encodeQueryParam(key: string, value: any) {
+    const encodedKey = encodeURIComponent(key);
+    return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`;
+  }
+
+  protected addQueryParam(query: QueryParamsType, key: string) {
+    return this.encodeQueryParam(key, query[key]);
+  }
+
+  protected addArrayQueryParam(query: QueryParamsType, key: string) {
+    const value = query[key];
+    return value.map((v: any) => this.encodeQueryParam(key, v)).join("&");
+  }
+
+  protected toQueryString(rawQuery?: QueryParamsType): string {
+    const query = rawQuery || {};
+    const keys = Object.keys(query).filter(
+      (key) => "undefined" !== typeof query[key],
+    );
+    return keys
+      .map((key) =>
+        Array.isArray(query[key])
+          ? this.addArrayQueryParam(query, key)
+          : this.addQueryParam(query, key),
+      )
+      .join("&");
+  }
+
+  protected addQueryParams(rawQuery?: QueryParamsType): string {
+    const queryString = this.toQueryString(rawQuery);
+    return queryString ? `?${queryString}` : "";
+  }
+
+  private contentFormatters: Record<ContentType, (input: any) => any> = {
+    [ContentType.Json]: (input: any) =>
+      input !== null && (typeof input === "object" || typeof input === "string")
+        ? JSON.stringify(input)
+        : input,
+    [ContentType.JsonApi]: (input: any) =>
+      input !== null && (typeof input === "object" || typeof input === "string")
+        ? JSON.stringify(input)
+        : input,
+    [ContentType.Text]: (input: any) =>
+      input !== null && typeof input !== "string"
+        ? JSON.stringify(input)
+        : input,
+    [ContentType.FormData]: (input: any) => {
+      if (input instanceof FormData) {
+        return input;
+      }
+
+      return Object.keys(input || {}).reduce((formData, key) => {
+        const property = input[key];
+        formData.append(
+          key,
+          property instanceof Blob
+            ? property
+            : typeof property === "object" && property !== null
+              ? JSON.stringify(property)
+              : `${property}`,
+        );
+        return formData;
+      }, new FormData());
+    },
+    [ContentType.UrlEncoded]: (input: any) => this.toQueryString(input),
+  };
+
+  protected mergeRequestParams(
+    params1: RequestParams,
+    params2?: RequestParams,
+  ): RequestParams {
+    return {
+      ...this.baseApiParams,
+      ...params1,
+      ...(params2 || {}),
+      headers: {
+        ...(this.baseApiParams.headers || {}),
+        ...(params1.headers || {}),
+        ...((params2 && params2.headers) || {}),
+      },
+    };
+  }
+
+  protected createAbortSignal = (
+    cancelToken: CancelToken,
+  ): AbortSignal | undefined => {
+    if (this.abortControllers.has(cancelToken)) {
+      const abortController = this.abortControllers.get(cancelToken);
+      if (abortController) {
+        return abortController.signal;
+      }
+      return void 0;
+    }
+
+    const abortController = new AbortController();
+    this.abortControllers.set(cancelToken, abortController);
+    return abortController.signal;
+  };
+
+  public abortRequest = (cancelToken: CancelToken) => {
+    const abortController = this.abortControllers.get(cancelToken);
+
+    if (abortController) {
+      abortController.abort();
+      this.abortControllers.delete(cancelToken);
+    }
+  };
+
+  public request = async <T = any, E = any>({
+    body,
+    secure,
+    path,
+    type,
+    query,
+    format,
+    baseUrl,
+    cancelToken,
+    ...params
+  }: FullRequestParams): Promise<HttpResponse<T, E>> => {
+    const secureParams =
+      ((typeof secure === "boolean" ? secure : this.baseApiParams.secure) &&
+        this.securityWorker &&
+        (await this.securityWorker(this.securityData))) ||
+      {};
+    const requestParams = this.mergeRequestParams(params, secureParams);
+    const queryString = query && this.toQueryString(query);
+    const payloadFormatter = this.contentFormatters[type || ContentType.Json];
+    const responseFormat = format || requestParams.format;
+
+    return this.customFetch(
+      `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
+      {
+        ...requestParams,
+        headers: {
+          ...(requestParams.headers || {}),
+          ...(type && type !== ContentType.FormData
+            ? { "Content-Type": type }
+            : {}),
+        },
+        signal:
+          (cancelToken
+            ? this.createAbortSignal(cancelToken)
+            : requestParams.signal) || null,
+        body:
+          typeof body === "undefined" || body === null
+            ? null
+            : payloadFormatter(body),
+      },
+    ).then(async (response) => {
+      const r = response as HttpResponse<T, E>;
+      r.data = null as unknown as T;
+      r.error = null as unknown as E;
+
+      const responseToParse = responseFormat ? response.clone() : response;
+      const data = !responseFormat
+        ? r
+        : await responseToParse[responseFormat]()
+            .then((data) => {
+              if (r.ok) {
+                r.data = data;
+              } else {
+                r.error = data;
+              }
+              return r;
+            })
+            .catch((e) => {
+              r.error = e;
+              return r;
+            });
+
+      if (cancelToken) {
+        this.abortControllers.delete(cancelToken);
+      }
+
+      if (!response.ok) throw data;
+      return data;
+    });
+  };
+}
+
+/**
+ * @title OpenAPI
+ * @version 1.0.0
+ */
+export class Sn45Api<
+  SecurityDataType extends unknown,
+> extends HttpClient<SecurityDataType> {
+  v1 = {
+    /**
+     * @description Returns the most recent TAO market snapshot including spot price and common market metrics. Null values indicate that the upstream field is unavailable for the latest record.
+     *
+     * @tags Bittensor
+     * @name GetTaoPrice
+     * @summary Latest TAO USD price
+     * @request GET:/v1/bittensor/tao-price
+     */
+    getTaoPrice: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Latest TAO price in USD. Null when no recent snapshot exists. */
+          price: string | null;
+          /** ISO timestamp for the returned price snapshot. */
+          timestamp: string | null;
+          /** Market capitalization in USD. */
+          marketCap: number | null;
+          /** 24-hour trading volume in USD. */
+          volume24h: number | null;
+          /** TAO price change over 24 hours, as a percentage. */
+          priceChange24h: number | null;
+          /** TAO price change over 7 days, as a percentage. */
+          priceChange7d: number | null;
+          /** TAO price change over 30 days, as a percentage. */
+          priceChange30d: number | null;
+          /** Market cap change over 24 hours, as a percentage. */
+          marketCapChange24h: number | null;
+          /** Upstream data source identifier for the price snapshot. */
+          source: string | null;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/tao-price`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning large stake add/remove events filtered by minimum TAO amount.
+     *
+     * @tags Deprecated
+     * @name GetWhaleMovements
+     * @summary [To be deleted] Large stake transactions (whale movements)
+     * @request GET:/v1/bittensor/whales
+     */
+    getWhaleMovements: (
+      query?: {
+        /** Minimum TAO threshold (in TAO units). Defaults to 50. */
+        minTao?: string;
+        /** Maximum number of records to return (1-500, default 50). */
+        limit?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Stake event direction. */
+          method: "Adding" | "Removing";
+          /** Coldkey address (SS58-encoded). */
+          coldkey: string;
+          /** Truncated display representation of the coldkey. */
+          coldkeyShort: string;
+          /** Subnet identifier (netuid). */
+          netuid: number;
+          /** TAO amount in TAO units (converted from rao). */
+          taoAmount: number;
+          /** Alpha amount in alpha units (converted from rao). */
+          alphaAmount: number;
+          /** ISO timestamp of the event. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/whales`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns whale stake transactions across subnets with optional filtering by tier, type, amount, and subnet ID.
+     *
+     * @tags Bittensor, Deprecated
+     * @name GetWhaleTransactions
+     * @summary Get all whale stake transactions across all subnets
+     * @request GET:/v1/bittensor/whale-transactions
+     */
+    getWhaleTransactions: (
+      query?: {
+        /** Maximum number of transactions to return (1-500, default 50). */
+        limit?: string;
+        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale). */
+        tier?: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped). */
+        transactionType?:
+          | "StakeAdded"
+          | "StakeRemoved"
+          | "StakeMove"
+          | "StakeTransfer"
+          | "StakeSwapped";
+        /** Minimum TAO amount (in TAO, not rao). */
+        minTaoAmount?: string;
+        /** Filter by subnet ID. */
+        netuid?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Whale transaction identifier. */
+          id: string;
+          /** Block number containing the transaction. */
+          blockHeight: number;
+          /** Extrinsic index within the block, when available. */
+          extrinsicIndex: number | null;
+          /** Whale transaction type. */
+          transactionType:
+            | "StakeAdded"
+            | "StakeRemoved"
+            | "StakeMove"
+            | "StakeTransfer"
+            | "StakeSwapped";
+          /** Whale tier classification for the source wallet. */
+          tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          /** Source coldkey address (SS58-encoded). */
+          coldkey: string;
+          /** Source hotkey address (SS58-encoded). */
+          hotkey: string;
+          /** Subnet identifier (netuid). */
+          netuid: number;
+          /** Origin subnet for cross-subnet operations, when applicable. */
+          originNetuid: number | null;
+          /** TAO amount as string-encoded integer in rao. */
+          taoAmount: string;
+          /** Alpha amount as string-encoded integer in rao, when applicable. */
+          alphaAmount: string | null;
+          /** Destination coldkey for transfers, when applicable. */
+          destinationColdkey: string | null;
+          /** ISO timestamp of the whale transaction. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/whale-transactions`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns one latest economics row per subnet using recent tokenomics snapshots. Values are normalized for UI consumption and include derived flow direction and economics score.
+     *
+     * @tags Deprecated
+     * @name GetSubnetEconomicsList
+     * @summary [To be deleted] Economics data for subnets
+     * @request GET:/v1/bittensor/subnets/economics
+     */
+    getSubnetEconomicsList: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Subnet identifier (netuid). */
+          netuid: number;
+          /** Latest subnet moving price in TAO. */
+          price: number;
+          /** Latest total traded TAO volume, normalized to TAO units. */
+          volume: number;
+          /** Latest alpha-in flow amount, normalized to alpha units. */
+          alphaIn: number;
+          /** Latest alpha-out flow amount, normalized to alpha units. */
+          alphaOut: number;
+          /** Net alpha flow computed as alphaIn - alphaOut. */
+          netAlpha: number;
+          /** Latest EMA TAO flow value, normalized to TAO units. */
+          emaTaoFlow: number;
+          /** Derived economics score on a roughly -2 to +2 scale. */
+          economicScore: number;
+          /** Directional label derived from net alpha flow. */
+          flowDirection: "inflow" | "outflow" | "neutral";
+          /** ISO timestamp for the source tokenomics snapshot. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/economics`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns leaderboard rows for all subnets, combining trading activity, emission, sentiment, and derived velocity signals. Numeric amounts that can exceed safe JSON integer range are returned as string-encoded integers.
+     *
+     * @tags Subnets
+     * @name GetSubnetLeaderboard
+     * @summary Subnet leaderboard with model-enriched metrics
+     * @request GET:/v1/bittensor/subnets/leaderboard
+     */
+    getSubnetLeaderboard: (
+      query?: {
+        /**
+         * Leaderboard window. Accepted values: 1d (24h), 1w (7 days), 1m (30 days). Defaults to 1d.
+         * @default "1d"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Requested leaderboard window. Mirrors the `period` query parameter. */
+          period: "1d" | "1w" | "1m";
+          /** ISO timestamp indicating when leaderboard data was last refreshed. */
+          updatedAt: string;
+          /** Leaderboard rows for all subnets, sorted by descending composite score. */
+          subnets: {
+            /** Subnet identifier (netuid). */
+            netuid: number;
+            /** Latest subnet alpha price in TAO. Null when no recent price snapshot exists. */
+            currentPrice: number | null;
+            /** Percent price change over the requested period (e.g. 1d, 1w, 1m). */
+            priceChange: number | null;
+            /** Total TAO staked, in rao (1 TAO = 1e9 rao). String-encoded integer; may be null. */
+            stakedTao: string | null;
+            /** Total alpha staked for the subnet, in alpha rao units. String-encoded integer; may be null. */
+            stakedAlpha: string | null;
+            /** Total traded TAO volume during the requested period, in rao. String-encoded integer. */
+            volume: string;
+            /** Number of stake events (buy + sell) during the requested period. */
+            txCount: number;
+            /** Number of buy-side stake events during the requested period. */
+            buyCount: number;
+            /** Number of sell-side stake events during the requested period. */
+            sellCount: number;
+            /** Subnet market cap proxy, in rao-denominated units. String-encoded integer; may be null. */
+            mcap: string | null;
+            /** Alpha-out emission amount from latest emission snapshot, as string-encoded integer. */
+            alphaOutEmission: string | null;
+            /** Alpha-in emission amount from latest emission snapshot, as string-encoded integer. */
+            alphaInEmission: string | null;
+            /** TAO-in emission amount from latest emission snapshot, as string-encoded integer. */
+            taoInEmission: string | null;
+            /** Current number of unique holder wallets for the subnet. */
+            totalHolders: number;
+            /** Exponentially weighted moving average of TAO flow from leaderboard model output. String-encoded integer; may be null. */
+            emaTaoFlow: string | null;
+            /** EMA-based price ratio signal used by the ranking model. May be null. */
+            emaPriceRatio: number | null;
+            /** Emission percentage signal for the subnet, represented as percent value. */
+            emissionPct: number | null;
+            /** Seven-day price history series in TAO, ordered oldest to newest. Empty array when history is unavailable. */
+            priceHistory7d: number[];
+            /** Current subnet sentiment score merged into leaderboard model. May be null. */
+            sentimentScore: number | null;
+            /** Rate-of-change signal for sentiment used in leaderboard scoring. May be null. */
+            sentimentVelocity: number | null;
+            /** Rate-of-change signal for TAO flow used in leaderboard scoring. */
+            taoFlowVelocity: number;
+            /** Rate-of-change signal of volume-to-market-cap used in leaderboard scoring. */
+            volMcapVelocity: number;
+            /** Composite leaderboard score used to rank subnets (higher is better). */
+            score: number;
+          }[];
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/leaderboard`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns recent stake add/remove events for a subnet with associated extrinsic hashes. Amounts are string-encoded integers in rao.
+     *
+     * @tags Subnets
+     * @name GetSubnetStakeEvents
+     * @summary Stake events for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/stake-events
+     */
+    getSubnetStakeEvents: (netuid: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Stake event type. */
+          method: "Adding" | "Removing";
+          /** Alpha amount involved, string-encoded integer in rao. */
+          alphaAmount: string;
+          /** TAO amount involved, string-encoded integer in rao. */
+          taoAmount: string;
+          /** ISO timestamp of the stake event. */
+          timestamp: string;
+          /** Coldkey address (SS58-encoded). */
+          coldkey: string;
+          /** Hotkey address (SS58-encoded). */
+          hotkey: string;
+          /** Extrinsic hash associated with the event. */
+          hash: string;
+          /** Block number containing the stake event. */
+          blockHeight: number;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/stake-events`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns historical moving price samples for a subnet in ascending time order. Useful for charting simple price history series.
+     *
+     * @tags Subnets
+     * @name GetSubnetPrice
+     * @summary Price history for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/price
+     */
+    getSubnetPrice: (netuid: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Subnet moving price in TAO at the snapshot time. */
+          movingPrice: string;
+          /** ISO timestamp of the price sample. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/price`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns OHLCV (Open/High/Low/Close/Volume) candle data for a subnet's alpha token. Each candle is a 6-element array: `[time, open, high, low, close, volume]` - **time** – Unix epoch seconds (bucket start) - **open** – Opening price in TAO for the period - **high** – Highest price in TAO for the period - **low** – Lowest price in TAO for the period - **close** – Closing price in TAO for the period - **volume** – Total TAO volume (buys + sells) in the period Supported resolutions (in minutes): 15, 60 (default), 240, 1440 (1 day). OHLC values are derived from individual stake events (buys/sells). Each trade's price is computed as taoAmount/alphaAmount, providing accurate per-trade prices bucketed into standard OHLCV candles. Candles are sorted most-recent-first. Use `nextCursor` to paginate backwards.
+     *
+     * @tags Subnets
+     * @name GetSubnetOhlcv
+     * @summary OHLCV price chart for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/ohlcv
+     */
+    getSubnetOhlcv: (
+      netuid: string,
+      query?: {
+        /**
+         * Candle period in minutes: "15" (15m), "60" (1h, default), "240" (4h), "1440" (1d).
+         * @default "60"
+         */
+        resolution?: "15" | "60" | "240" | "1440";
+        /** Number of candles to return (1-500, default 100). Most recent first. */
+        limit?: string;
+        /** Opaque cursor from a previous response's nextCursor. When absent, returns the most recent candles. */
+        cursor?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Array of candles. Each candle is [time, open, high, low, close, volume]. */
+          candles: any[][];
+          /** Opaque cursor for backward pagination. Pass as `cursor` query param to fetch older candles. null when no more data. */
+          nextCursor: string | null;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/ohlcv`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns the latest tokenomics snapshot for a subnet, including price, volume, alpha flows, and EMA TAO flow. Amount-like fields are string-encoded integers in rao.
+     *
+     * @tags Subnets
+     * @name GetSubnetTokenomics
+     * @summary Latest tokenomics for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/tokenomics
+     */
+    getSubnetTokenomics: (netuid: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Latest moving price for the subnet, in TAO. */
+          movingPrice: string;
+          /** Latest traded TAO volume, string-encoded integer in rao. */
+          volume: string;
+          /** Latest alpha-in amount, string-encoded integer in rao. */
+          alphaIn: string;
+          /** Latest alpha-out amount, string-encoded integer in rao. */
+          alphaOut: string;
+          /** Latest EMA TAO flow value, string-encoded integer in rao. */
+          emaTaoFlow: string;
+          /** ISO timestamp of the tokenomics snapshot. */
+          timestamp: string;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/tokenomics`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns aggregated TAO flow totals (staked-in, unstaked-out, net) for the given time window, plus the latest Alpha flow snapshot from on-chain tokenomics. All amounts are string-encoded integers in rao (1 TAO = 1e9 rao). Designed to power the SubnetTaoFlowChart header in a single request.
+     *
+     * @tags Subnets
+     * @name GetSubnetFlowSummary
+     * @summary Pre-computed TAO + Alpha flow totals for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/flow-summary
+     */
+    getSubnetFlowSummary: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for TAO flow totals. Accepted values: 1d, 1w, 1m. Defaults to 1w.
+         * @default "1w"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** TAO flow totals scoped to the requested time window. */
+          taoFlow: {
+            /** Sum of TAO staked into the subnet within the requested window, in rao (1 TAO = 1e9 rao). String-encoded integer. */
+            taoIn: string;
+            /** Sum of TAO unstaked from the subnet within the requested window, in rao. String-encoded integer. */
+            taoOut: string;
+            /** Net TAO flow (taoIn − taoOut) within the requested window, in rao. Can be negative. String-encoded integer. */
+            net: string;
+          };
+          /** Alpha flow from the latest tokenomics snapshot. Not time-filtered — always reflects the most recent on-chain state. */
+          alphaFlow: {
+            /** Total Alpha flowing into the subnet from the latest tokenomics snapshot, in rao. String-encoded integer. */
+            alphaIn: string;
+            /** Total Alpha flowing out of the subnet from the latest tokenomics snapshot, in rao. String-encoded integer. */
+            alphaOut: string;
+          };
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/flow-summary`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns a compact time-series of cumulative TAO staking flows, bucketed into 1-hour intervals. Designed for TradingView Lightweight Charts — the response is a flat array of [time, taoIn, taoOut, net] tuples to minimise payload size. Values are float TAO (divided by 1e9). Cumulative sums start from zero at the beginning of the requested window.
+     *
+     * @tags Subnets
+     * @name GetSubnetFlowChart
+     * @summary Hourly-bucketed cumulative TAO flow time-series for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/flow-chart
+     */
+    getSubnetFlowChart: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for chart data. Accepted values: 1d, 1w, 1m. Defaults to 1w.
+         * @default "1w"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Array of hourly data points sorted ascending by time. Each element is [time, cumulativeTaoIn, cumulativeTaoOut, net]. */
+          data: any[][];
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/flow-chart`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns buy/sell counts, buy/sell volume in rao, unique participant counts, and derived momentum/activity metrics for a selected period. Momentum is computed from moving price change over the same window. Trade velocity compares current activity against the immediately preceding equal-length baseline window.
+     *
+     * @tags Subnets
+     * @name GetSubnetTradeFlow
+     * @summary Trade flow metrics for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/trade-flow
+     */
+    getSubnetTradeFlow: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for metrics. Accepted values: 1d (24h), 1w (7 days), 1m (30 days). Defaults to 1d.
+         * @default "1d"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Number of buy-side stake events (method=Adding) in the selected period. */
+          buys: number;
+          /** Number of sell-side stake events (method=Removing) in the selected period. */
+          sells: number;
+          /** Total buy-side TAO amount in rao for the selected period. String-encoded integer (1 TAO = 1e9 rao). */
+          buyVol: string;
+          /** Total sell-side TAO amount in rao for the selected period. String-encoded integer (1 TAO = 1e9 rao). */
+          sellVol: string;
+          /** Number of unique buyer addresses (distinct coldkeys with buy-side events). */
+          buyers: number;
+          /** Number of unique seller addresses (distinct coldkeys with sell-side events). */
+          sellers: number;
+          /** Percent change in subnet moving price over the selected period: ((endPrice - startPrice) / startPrice) * 100. */
+          momentum: number;
+          /** Buy-side activity share in percent, based on event counts: buys / (buys + sells) * 100. */
+          accumulation: number;
+          /** Trading activity versus baseline, in percent. Computed as percent change of total event count versus the immediately preceding equal-length window. */
+          tradeVelocity: number;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/trade-flow`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns top wallet positions for a subnet ordered by alpha balance. Numeric value fields are string-encoded integers in rao.
+     *
+     * @tags Subnets
+     * @name GetSubnetPositions
+     * @summary Wallet positions for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/positions
+     */
+    getSubnetPositions: (netuid: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Wallet coldkey address (SS58-encoded). */
+          coldkey: string;
+          /** Current alpha balance, string-encoded integer in rao. */
+          alphaBalance: string;
+          /** Accumulated TAO cost basis, string-encoded integer in rao. */
+          costBasisTao: string;
+          /** Cumulative realized profit in TAO terms, string-encoded integer in rao. */
+          cumulativeRealizedProfit: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/positions`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning categorized on-chain event overlays for a subnet, intended for chart marker rendering.
+     *
+     * @tags Deprecated
+     * @name GetSubnetEvents
+     * @summary [To be deleted] Recent on-chain event overlays for a subnet (for chart markers)
+     * @request GET:/v1/bittensor/subnets/{netuid}/events
+     */
+    getSubnetEvents: (
+      netuid: string,
+      query?: {
+        /** Maximum records per event category (1-1000, default 250). */
+        limit?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Liquidity events touching the subnet. */
+          liquidityEvents: {
+            /** Event identifier. */
+            id: string;
+            /** Liquidity event method name. */
+            method: string;
+            /** SS58 coldkey associated with the event. */
+            coldkey: string;
+            /** Subnet identifier (netuid). */
+            netuid: number;
+            /** TAO amount in event units. Null when unavailable. */
+            taoAmount: number | null;
+            /** Alpha amount in event units. Null when unavailable. */
+            alphaAmount: number | null;
+            /** ISO timestamp for the event. */
+            timestamp: string;
+          }[];
+          /** Stake swap events into the subnet. */
+          stakeSwapsIn: {
+            /** Stake swap event identifier. */
+            id: string;
+            /** SS58 coldkey initiating the swap. */
+            coldkey: string;
+            /** SS58 hotkey associated with the swap. */
+            hotkey: string;
+            /** Source subnet identifier. */
+            originNetuid: number;
+            /** Destination subnet identifier. */
+            destinationNetuid: number;
+            /** TAO amount swapped. */
+            taoAmount: number;
+            /** ISO timestamp for the swap event. */
+            timestamp: string;
+          }[];
+          /** Stake swap events out of the subnet. */
+          stakeSwapsOut: {
+            /** Stake swap event identifier. */
+            id: string;
+            /** SS58 coldkey initiating the swap. */
+            coldkey: string;
+            /** SS58 hotkey associated with the swap. */
+            hotkey: string;
+            /** Source subnet identifier. */
+            originNetuid: number;
+            /** Destination subnet identifier. */
+            destinationNetuid: number;
+            /** TAO amount swapped. */
+            taoAmount: number;
+            /** ISO timestamp for the swap event. */
+            timestamp: string;
+          }[];
+          /** Stake transfer events into the subnet. */
+          stakeTransfersIn: {
+            /** Stake transfer event identifier. */
+            id: string;
+            /** Source SS58 coldkey. */
+            originColdkey: string;
+            /** Destination SS58 coldkey. */
+            destinationColdkey: string;
+            /** SS58 hotkey associated with the transfer. */
+            hotkey: string;
+            /** Source subnet identifier. */
+            originNetuid: number;
+            /** Destination subnet identifier. */
+            destinationNetuid: number;
+            /** TAO amount transferred. */
+            taoAmount: number;
+            /** ISO timestamp for the transfer event. */
+            timestamp: string;
+          }[];
+          /** Stake transfer events out of the subnet. */
+          stakeTransfersOut: {
+            /** Stake transfer event identifier. */
+            id: string;
+            /** Source SS58 coldkey. */
+            originColdkey: string;
+            /** Destination SS58 coldkey. */
+            destinationColdkey: string;
+            /** SS58 hotkey associated with the transfer. */
+            hotkey: string;
+            /** Source subnet identifier. */
+            originNetuid: number;
+            /** Destination subnet identifier. */
+            destinationNetuid: number;
+            /** TAO amount transferred. */
+            taoAmount: number;
+            /** ISO timestamp for the transfer event. */
+            timestamp: string;
+          }[];
+          /** Stake move events into the subnet. */
+          stakeMovesIn: {
+            /** Stake move event identifier. */
+            id: string;
+            /** Source SS58 hotkey. */
+            sourceHotkey: string;
+            /** Source subnet identifier. */
+            sourceNetuid: number;
+            /** Destination SS58 hotkey. */
+            destHotkey: string;
+            /** Destination SS58 coldkey. */
+            destColdkey: string;
+            /** Destination subnet identifier. */
+            destNetuid: number;
+            /** TAO amount moved. */
+            taoAmount: number;
+            /** ISO timestamp for the move event. */
+            timestamp: string;
+          }[];
+          /** Stake move events out of the subnet. */
+          stakeMovesOut: {
+            /** Stake move event identifier. */
+            id: string;
+            /** Source SS58 hotkey. */
+            sourceHotkey: string;
+            /** Source subnet identifier. */
+            sourceNetuid: number;
+            /** Destination SS58 hotkey. */
+            destHotkey: string;
+            /** Destination SS58 coldkey. */
+            destColdkey: string;
+            /** Destination subnet identifier. */
+            destNetuid: number;
+            /** TAO amount moved. */
+            taoAmount: number;
+            /** ISO timestamp for the move event. */
+            timestamp: string;
+          }[];
+          /** Alpha burn events for the subnet. */
+          alphaBurns: {
+            /** Alpha burn/recycle event identifier. */
+            id: string;
+            /** SS58 coldkey associated with the event. */
+            coldkey: string;
+            /** SS58 hotkey associated with the event. */
+            hotkey: string;
+            /** Subnet identifier (netuid). */
+            netuid: number;
+            /** Alpha amount involved in the event. */
+            alphaCurrency: number;
+            /** ISO timestamp for the event. */
+            timestamp: string;
+          }[];
+          /** Alpha recycle events for the subnet. */
+          alphaRecycles: {
+            /** Alpha burn/recycle event identifier. */
+            id: string;
+            /** SS58 coldkey associated with the event. */
+            coldkey: string;
+            /** SS58 hotkey associated with the event. */
+            hotkey: string;
+            /** Subnet identifier (netuid). */
+            netuid: number;
+            /** Alpha amount involved in the event. */
+            alphaCurrency: number;
+            /** ISO timestamp for the event. */
+            timestamp: string;
+          }[];
+          /** Auto-stake-add events for the subnet. */
+          autoStakeAdds: {
+            /** Auto-stake-add event identifier. */
+            id: string;
+            /** SS58 coldkey associated with the event. */
+            coldkey: string;
+            /** SS58 hotkey associated with the event. */
+            hotkey: string;
+            /** Subnet identifier (netuid). */
+            netuid: number;
+            /** Auto-staked amount. */
+            amount: number;
+            /** ISO timestamp for the event. */
+            timestamp: string;
+          }[];
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/events`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning historical holder-tier breakdowns for a subnet based on tracked top wallets.
+     *
+     * @tags Deprecated
+     * @name GetSubnetHolderHistory
+     * @summary [To be deleted] Historical holder distribution for a specific subnet (top 500 wallets tracked)
+     * @request GET:/v1/bittensor/subnets/{netuid}/holder-history
+     */
+    getSubnetHolderHistory: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for holder history. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** UTC snapshot date (YYYY-MM-DD). */
+          date: string;
+          /** Number of tracked holders for the snapshot date. */
+          totalHolders: number;
+          /** Count of whale-tier holders on the snapshot date. */
+          whaleCount: number;
+          /** Count of dolphin-tier holders on the snapshot date. */
+          dolphinCount: number;
+          /** Count of fish-tier holders on the snapshot date. */
+          fishCount: number;
+          /** Count of shrimp-tier holders on the snapshot date. */
+          shrimpCount: number;
+          /** Total whale-held alpha in alpha units. */
+          whaleAlpha: number;
+          /** Total dolphin-held alpha in alpha units. */
+          dolphinAlpha: number;
+          /** Total fish-held alpha in alpha units. */
+          fishAlpha: number;
+          /** Total shrimp-held alpha in alpha units. */
+          shrimpAlpha: number;
+          /** Total alpha across all tracked holders in alpha units. */
+          totalAlpha: number;
+          /** Whale share of total alpha, as a percentage. */
+          whalePercent: number;
+          /** Dolphin share of total alpha, as a percentage. */
+          dolphinPercent: number;
+          /** Fish share of total alpha, as a percentage. */
+          fishPercent: number;
+          /** Shrimp share of total alpha, as a percentage. */
+          shrimpPercent: number;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/holder-history`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning daily holder distribution buckets for a subnet across predefined alpha balance tiers.
+     *
+     * @tags Deprecated
+     * @name GetSubnetHolderDistribution
+     * @summary [To be deleted] Daily holder distribution by alpha balance tiers for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/holder-distribution
+     */
+    getSubnetHolderDistribution: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for holder distribution. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Daily holder distribution record identifier. */
+          id: string;
+          /** Subnet identifier (netuid). */
+          netuid: number;
+          /** UTC snapshot date (ISO datetime). */
+          snapshotDate: string;
+          /** Holders with alpha balance under 100. */
+          holdersUnder100: number;
+          /** Holders with alpha balance between 100 and 1,000. */
+          holders100To1k: number;
+          /** Holders with alpha balance between 1,000 and 10,000. */
+          holders1kTo10k: number;
+          /** Holders with alpha balance between 10,000 and 100,000. */
+          holders10kTo100k: number;
+          /** Holders with alpha balance between 100,000 and 1,000,000. */
+          holders100kTo1m: number;
+          /** Holders with alpha balance at or above 1,000,000. */
+          holders1mPlus: number;
+          /** Total holder count for the snapshot date. */
+          totalHolders: number;
+          /** Total alpha amount, string-encoded integer. */
+          totalAlpha: string;
+          /** Block height for the snapshot. */
+          blockHeight: number;
+          /** ISO timestamp when the snapshot was indexed. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/holder-distribution`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning whale stake transactions scoped to a single subnet with optional filters.
+     *
+     * @tags Deprecated
+     * @name GetSubnetWhaleTransactionsLegacy
+     * @summary [To be deleted] Get whale stake transactions for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/whale-transactions
+     */
+    getSubnetWhaleTransactionsLegacy: (
+      netuid: string,
+      query?: {
+        /** Maximum number of transactions to return (1-500, default 50). */
+        limit?: string;
+        /** Filter by tier (Shrimp, Crab, Fish, Dolphin, Shark, Whale). */
+        tier?: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+        /** Filter by transaction type (StakeAdded, StakeRemoved, StakeMove, StakeTransfer, StakeSwapped). */
+        transactionType?:
+          | "StakeAdded"
+          | "StakeRemoved"
+          | "StakeMove"
+          | "StakeTransfer"
+          | "StakeSwapped";
+        /** Minimum TAO amount (in TAO, not rao). */
+        minTaoAmount?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Whale transaction identifier. */
+          id: string;
+          /** Block number containing the transaction. */
+          blockHeight: number;
+          /** Extrinsic index within the block, when available. */
+          extrinsicIndex: number | null;
+          /** Whale transaction type. */
+          transactionType:
+            | "StakeAdded"
+            | "StakeRemoved"
+            | "StakeMove"
+            | "StakeTransfer"
+            | "StakeSwapped";
+          /** Whale tier classification for the source wallet. */
+          tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          /** Source coldkey address (SS58-encoded). */
+          coldkey: string;
+          /** Source hotkey address (SS58-encoded). */
+          hotkey: string;
+          /** Subnet identifier (netuid). */
+          netuid: number;
+          /** Origin subnet for cross-subnet operations, when applicable. */
+          originNetuid: number | null;
+          /** TAO amount as string-encoded integer in rao. */
+          taoAmount: string;
+          /** Alpha amount as string-encoded integer in rao, when applicable. */
+          alphaAmount: string | null;
+          /** Destination coldkey for transfers, when applicable. */
+          destinationColdkey: string | null;
+          /** ISO timestamp of the whale transaction. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/whale-transactions`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning global sentiment aggregates across all subnets for the recent analysis window.
+     *
+     * @tags Deprecated
+     * @name GetSentimentSummary
+     * @summary [To be deleted] Sentiment summary for Bittensor subnets
+     * @request GET:/v1/bittensor/subnets/sentiment/summary
+     */
+    getSentimentSummary: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Total number of analyzed tweets in scope. */
+          total: number;
+          /** Count of very bullish tweets. */
+          veryBullish: number;
+          /** Count of bullish tweets. */
+          bullish: number;
+          /** Count of neutral tweets. */
+          neutral: number;
+          /** Count of bearish tweets. */
+          bearish: number;
+          /** Count of very bearish tweets. */
+          veryBearish: number;
+          /** Number of distinct subnets represented in the aggregate. */
+          subnetCount: number;
+          /** Weighted sentiment score derived from class counts. */
+          sentimentScore: number;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/sentiment/summary`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns per-subnet social sentiment aggregates over the last 30 days. Each row contains class counts and a derived weighted sentiment score.
+     *
+     * @tags Deprecated
+     * @name GetSubnetSentimentList
+     * @summary [To be deleted] Sentiment breakdown by subnet for the last 30 days
+     * @request GET:/v1/bittensor/subnets/sentiment
+     */
+    getSubnetSentimentList: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Subnet identifier (netuid). */
+          subnetId: number;
+          /** Total analyzed tweets included for this subnet. */
+          total: number;
+          /** Count of very bullish tweets. */
+          veryBullish: number;
+          /** Count of bullish tweets. */
+          bullish: number;
+          /** Count of neutral tweets. */
+          neutral: number;
+          /** Count of bearish tweets. */
+          bearish: number;
+          /** Count of very bearish tweets. */
+          veryBearish: number;
+          /** Weighted sentiment score derived from sentiment class counts. */
+          sentimentScore: number;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/sentiment`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning daily sentiment aggregates for a subnet over a bounded lookback window.
+     *
+     * @tags Deprecated
+     * @name GetSubnetDailyTrend
+     * @summary [To be deleted] Daily sentiment trend for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/sentiment/trend
+     */
+    getSubnetDailyTrend: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for daily trend aggregation. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** UTC date bucket (YYYY-MM-DD). */
+          date: string;
+          /** Total analyzed tweets for the day. */
+          total: number;
+          /** Count of very bullish tweets for the day. */
+          veryBullish: number;
+          /** Count of bullish tweets for the day. */
+          bullish: number;
+          /** Count of neutral tweets for the day. */
+          neutral: number;
+          /** Count of bearish tweets for the day. */
+          bearish: number;
+          /** Count of very bearish tweets for the day. */
+          veryBearish: number;
+          /** Weighted daily sentiment score. */
+          sentimentScore: number;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/sentiment/trend`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint returning recent analyzed tweets and sentiment metadata for a specific subnet.
+     *
+     * @tags Deprecated
+     * @name GetSubnetTweetsLegacy
+     * @summary [To be deleted] Recent analyzed tweets for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/sentiment/tweets
+     */
+    getSubnetTweetsLegacy: (
+      netuid: string,
+      query?: {
+        /** Maximum number of tweets to return (1-200, default 50). */
+        limit?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Tweet identifier. */
+          id: string;
+          /** Tweet text content. */
+          text: string;
+          /** Canonical tweet URL. */
+          url: string;
+          /** ISO timestamp when the tweet was created. */
+          createdAt: string;
+          /** Like count at ingestion time. */
+          likeCount: number;
+          /** Retweet count at ingestion time. */
+          retweetCount: number;
+          /** Reply count at ingestion time. */
+          replyCount: number;
+          /** View count at ingestion time, when available. */
+          viewCount: number;
+          /** Model-assigned sentiment label for the tweet. */
+          sentiment:
+            | "very_bullish"
+            | "bullish"
+            | "neutral"
+            | "bearish"
+            | "very_bearish";
+          contentType:
+            | "community"
+            | "opinion"
+            | "announcement"
+            | "hype"
+            | "market_discussion"
+            | "meme"
+            | "technical_insight"
+            | "other"
+            | "milestone"
+            | "partnership"
+            | "fud"
+            | "security"
+            | "tutorial"
+            | "hiring"
+            | "governance";
+          /** Model-assigned technical depth assessment. */
+          technicalQuality: "none" | "low" | "medium" | "high";
+          /** Model-assigned analysis category. */
+          marketAnalysis:
+            | "social"
+            | "other"
+            | "technical"
+            | "political"
+            | "economic";
+          /** Model-assigned potential market impact level. */
+          impactPotential: "none" | "low" | "medium" | "high";
+          /** Confidence level for subnet relevance classification. */
+          relevanceConfidence: "low" | "medium" | "high";
+          /** ISO timestamp when tweet analysis was produced. */
+          analyzedAt: string;
+          /** True when this item represents a retweet. */
+          isRetweet: boolean;
+          /** True when this item quotes another tweet. */
+          isQuote: boolean;
+          /** True when this item is a reply. */
+          isReply: boolean;
+          /** True when tweet is in a conversation thread. */
+          isPartOfThread: boolean;
+          /** True when tweet has one or more replies. */
+          hasReplies: boolean;
+          /** Screen name of retweeter when item is a retweet. */
+          retweetedBy: string | null;
+          /** Reply context for reply tweets. */
+          replyTo: {
+            /** Username being replied to. */
+            username: string;
+            /** Preview text of the replied tweet, when available. */
+            text?: string;
+          };
+          /** Quoted tweet context for quote tweets. */
+          quotedPost: {
+            /** Text content of the quoted tweet. */
+            text: string;
+            /** Author screen name of the quoted tweet. */
+            authorScreenName: string;
+          };
+          author: {
+            /** Display name of the tweet author. */
+            name: string;
+            /** Screen name (handle) of the tweet author. */
+            screenName: string;
+            /** Profile image URL of the tweet author. */
+            profileImage: string;
+            /** Whether the author is verified. */
+            verified: boolean;
+            /** Whether the author has blue verification status. */
+            blueVerified: boolean;
+          };
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/sentiment/tweets`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns aggregate social sentiment counts and a derived score for a single subnet. Sentiment is computed from analyzed tweets within the requested lookback window.
+     *
+     * @tags Subnets, Sentiment
+     * @name GetSubnetSentiment
+     * @summary Social sentiment for a specific subnet over a given period (default 30 days)
+     * @request GET:/v1/bittensor/subnets/{netuid}/sentiment
+     */
+    getSubnetSentiment: (
+      netuid: string,
+      query?: {
+        /**
+         * Lookback period. Accepted values: 1d, 1w, 1m. Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Total analyzed tweets in the selected window. */
+          count: number;
+          /** Count of very bullish tweets. */
+          veryBullish: number;
+          /** Count of bullish tweets. */
+          bullish: number;
+          /** Count of neutral tweets. */
+          neutral: number;
+          /** Count of bearish tweets. */
+          bearish: number;
+          /** Count of very bearish tweets. */
+          veryBearish: number;
+          /** Weighted sentiment score derived from class counts. */
+          score: number;
+          /** Label mapped from the weighted sentiment score. */
+          sentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/sentiment`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns recent analyzed tweets for a subnet with sentiment labels, classification metadata, and author context. Use this endpoint to render social feed cards and tweet-level sentiment details.
+     *
+     * @tags Subnets
+     * @name GetSubnetTweets
+     * @summary Recent analyzed tweets for a specific subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/tweets
+     */
+    getSubnetTweets: (
+      netuid: string,
+      query?: {
+        /**
+         * Lookback period. Accepted values: 1d, 1w, 1m. Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Tweet identifier. */
+          id: string;
+          /** Tweet text content. */
+          text: string;
+          /** Canonical tweet URL. */
+          url: string;
+          /** ISO timestamp when the tweet was created. */
+          createdAt: string;
+          /** Like count at ingestion time. */
+          likeCount: number;
+          /** Retweet count at ingestion time. */
+          retweetCount: number;
+          /** Reply count at ingestion time. */
+          replyCount: number;
+          /** View count at ingestion time, when available. */
+          viewCount: number;
+          /** Model-assigned sentiment label for the tweet. */
+          sentiment:
+            | "very_bullish"
+            | "bullish"
+            | "neutral"
+            | "bearish"
+            | "very_bearish";
+          contentType:
+            | "community"
+            | "opinion"
+            | "announcement"
+            | "hype"
+            | "market_discussion"
+            | "meme"
+            | "technical_insight"
+            | "other"
+            | "milestone"
+            | "partnership"
+            | "fud"
+            | "security"
+            | "tutorial"
+            | "hiring"
+            | "governance";
+          /** Model-assigned technical depth assessment. */
+          technicalQuality: "none" | "low" | "medium" | "high";
+          /** Model-assigned analysis category. */
+          marketAnalysis:
+            | "social"
+            | "other"
+            | "technical"
+            | "political"
+            | "economic";
+          /** Model-assigned potential market impact level. */
+          impactPotential: "none" | "low" | "medium" | "high";
+          /** Confidence level for subnet relevance classification. */
+          relevanceConfidence: "low" | "medium" | "high";
+          /** ISO timestamp when tweet analysis was produced. */
+          analyzedAt: string;
+          /** True when this item represents a retweet. */
+          isRetweet: boolean;
+          /** True when this item quotes another tweet. */
+          isQuote: boolean;
+          /** True when this item is a reply. */
+          isReply: boolean;
+          /** True when tweet is in a conversation thread. */
+          isPartOfThread: boolean;
+          /** True when tweet has one or more replies. */
+          hasReplies: boolean;
+          /** Screen name of retweeter when item is a retweet. */
+          retweetedBy: string | null;
+          /** Reply context for reply tweets. */
+          replyTo: {
+            /** Username being replied to. */
+            username: string;
+            /** Preview text of the replied tweet, when available. */
+            text?: string;
+          };
+          /** Quoted tweet context for quote tweets. */
+          quotedPost: {
+            /** Text content of the quoted tweet. */
+            text: string;
+            /** Author screen name of the quoted tweet. */
+            authorScreenName: string;
+          };
+          author: {
+            /** Display name of the tweet author. */
+            name: string;
+            /** Screen name (handle) of the tweet author. */
+            screenName: string;
+            /** Profile image URL of the tweet author. */
+            profileImage: string;
+            /** Whether the author is verified. */
+            verified: boolean;
+            /** Whether the author has blue verification status. */
+            blueVerified: boolean;
+          };
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/tweets`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns whale-tier stake transactions for a subnet within the selected lookback window. Amounts are string-encoded integers in rao and addresses are returned in SS58 format.
+     *
+     * @tags Bittensor
+     * @name GetSubnetWhalesActivity
+     * @summary Get whale staking events for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/whales-activity
+     */
+    getSubnetWhalesActivity: (
+      netuid: string,
+      query?: {
+        /**
+         * Lookback period for whale activity. Accepted values: 1d, 1w, 1m. Default: 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Whale transaction identifier. */
+          id: string;
+          /** Block number containing the transaction. */
+          blockHeight: number;
+          /** Extrinsic index within the block, when available. */
+          extrinsicIndex: number | null;
+          /** Whale transaction type. */
+          transactionType:
+            | "StakeAdded"
+            | "StakeRemoved"
+            | "StakeMove"
+            | "StakeTransfer"
+            | "StakeSwapped";
+          /** Whale tier classification for the source wallet. */
+          tier: "Shrimp" | "Crab" | "Fish" | "Dolphin" | "Shark" | "Whale";
+          /** Source coldkey address (SS58-encoded). */
+          coldkey: string;
+          /** Source hotkey address (SS58-encoded). */
+          hotkey: string;
+          /** Subnet identifier (netuid). */
+          netuid: number;
+          /** Origin subnet for cross-subnet operations, when applicable. */
+          originNetuid: number | null;
+          /** TAO amount as string-encoded integer in rao. */
+          taoAmount: string;
+          /** Alpha amount as string-encoded integer in rao, when applicable. */
+          alphaAmount: string | null;
+          /** Destination coldkey for transfers, when applicable. */
+          destinationColdkey: string | null;
+          /** ISO timestamp of the whale transaction. */
+          timestamp: string;
+        }[],
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/whales-activity`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns aggregate whale inflow, outflow, and total flow for a subnet over the selected window. All amount fields are string-encoded integers in rao.
+     *
+     * @tags Bittensor
+     * @name GetSubnetWhalesFlow
+     * @summary Get whale staking flow summary for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/whales-flow
+     */
+    getSubnetWhalesFlow: (
+      netuid: string,
+      query?: {
+        /**
+         * Lookback period for whale flow. Accepted values: 1d, 1w, 1m. Default: 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Sum of whale StakeAdded TAO amounts in rao, string-encoded integer. */
+          inflow: string;
+          /** Sum of whale StakeRemoved TAO amounts in rao, string-encoded integer. */
+          outflow: string;
+          /** Combined whale flow (inflow + outflow) in rao, string-encoded integer. */
+          total: string;
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/whales-flow`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Deprecated endpoint that combines tokenomics-derived economic score with social sentiment into a single composite score.
+     *
+     * @tags Deprecated
+     * @name GetSubnetCombinedScore
+     * @summary [To be deleted] Combined tokenomics, economics, and sentiment score for a subnet
+     * @request GET:/v1/bittensor/subnets/{netuid}/combined-score
+     */
+    getSubnetCombinedScore: (
+      netuid: string,
+      query?: {
+        /**
+         * Time window for score aggregation. Accepted values: 1d (24h), 1w (7d), 1m (30d). Defaults to 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Net alpha flow over the window, string-encoded integer (in alpha rao units). */
+          alphaFlow: string;
+          /** Latest EMA TAO flow, string-encoded integer (in rao). */
+          emaTaoFlow: string;
+          /** Social sentiment score component. */
+          socialsSentimentScore: number;
+          /** Label mapped from social sentiment score. */
+          socialsSentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+          /** Average of economic and social sentiment scores. */
+          combinedScore: number;
+          /** Label mapped from combined score. */
+          combinedSentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+          /** Economics score component derived from tokenomics flow. */
+          economicScore: number;
+          /** Label mapped from economics score. */
+          economicSentiment:
+            | "very_bearish"
+            | "bearish"
+            | "neutral"
+            | "bullish"
+            | "very_bullish";
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/combined-score`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns holder-overview metrics for a subnet, including total holders, period-over-period change, top-decile concentration proxy, active-trader share, and TAO-value tier distribution.
+     *
+     * @tags Subnets
+     * @name GetSubnetHolders
+     * @summary Aggregated holder metrics for a specific subnet (total, change, concentration, TAO-based tiers)
+     * @request GET:/v1/bittensor/subnets/{netuid}/holders
+     */
+    getSubnetHolders: (
+      netuid: string,
+      query?: {
+        /**
+         * Lookback period for holder-change and trader-activity calculations. Accepted values: 1d, 1w, 1m. Default: 1m.
+         * @default "1m"
+         */
+        period?: "1d" | "1w" | "1m";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** Current total number of unique wallet addresses holding alpha tokens on this subnet */
+          totalHolders: number;
+          /** Absolute change in holder count over the specified period (positive = growth, negative = decline) */
+          holderChange: number;
+          /** Number of wallet addresses that fall within the top 10% of holders by TAO value */
+          top10Concentration: number;
+          /** Percentage of holders who performed at least one staking event (add/remove stake) during the period */
+          avgTradePercent: number;
+          /** Distribution of holders across 4 tiers based on TAO value thresholds (consistent across subnets) */
+          breakdown: {
+            /** Holders with > 1,000 TAO value */
+            whale: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with > 100 and <= 1,000 TAO value */
+            dolphin: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with > 10 and <= 100 TAO value */
+            fish: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+            /** Holders with <= 10 TAO value */
+            shrimp: {
+              /** Number of holders in this tier */
+              count: number;
+              /** Percentage of total holders in this tier */
+              percent: number;
+            };
+          };
+        },
+        {
+          error: {
+            code: string;
+            message: string;
+          };
+        }
+      >({
+        path: `/v1/bittensor/subnets/${netuid}/holders`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+  };
+}

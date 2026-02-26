@@ -43,13 +43,6 @@ export type AppStoreData = {
   // dismissed earn disclaimer
   hideEarnDisclaimer?: boolean
 
-  // dismissed banners
-  hideUnifiedAddressBanner?: boolean
-  hideAutonomysQuestBanner?: boolean
-  hideSeekBenefitsBanner?: boolean
-  hideSeekPresaleBanner?: boolean
-  hideAssetHubMigrationBanner?: boolean
-
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
 }
@@ -127,11 +120,6 @@ if (DEBUG) {
       hideBittensorSubnetStakeWarning: false,
       hideGetStarted: false,
       hideEarnDisclaimer: false,
-      hideUnifiedAddressBanner: false,
-      hideAutonomysQuestBanner: false,
-      hideSeekBenefitsBanner: false,
-      hideSeekPresaleBanner: false,
-      hideAssetHubMigrationBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

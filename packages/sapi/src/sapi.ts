@@ -6,6 +6,7 @@ import { getCallDocs } from "./helpers/getCallDocs"
 import { getChainInfo } from "./helpers/getChainInfo"
 import { getConstantValue } from "./helpers/getConstantValue"
 import { getDecodedCall, getDecodedCallFromPayload } from "./helpers/getDecodedCall"
+import { getDecodedCallFromExtrinsic } from "./helpers/getDecodedCallFromExtrinsic"
 import { getDryRunCall } from "./helpers/getDryRunCall"
 import { getFeeEstimate } from "./helpers/getFeeEstimate"
 import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
@@ -14,9 +15,14 @@ import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
 import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { isApiAvailable } from "./helpers/isApiAvailable"
-import { type ScaleApiSubmitMode, submit } from "./helpers/submit"
+import { submit } from "./helpers/submit"
 import type { Chain } from "./helpers/types"
-import type { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
+import type {
+  DecodedCall,
+  PayloadSignerConfig,
+  SapiConnectorProps,
+  ScaleApiSubmitMode,
+} from "./types"
 
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 
@@ -71,6 +77,9 @@ export const getScaleApi = (
     getDecodedCallFromPayload: <Res extends DecodedCall>(payload: {
       method: SignerPayloadJSON["method"]
     }) => getDecodedCallFromPayload<Res>(chain, payload),
+
+    getDecodedCallFromExtrinsic: <Res extends DecodedCall>(extrinsicHex: `0x${string}`) =>
+      getDecodedCallFromExtrinsic<Res>(chain, extrinsicHex),
 
     getExtrinsicPayload: (
       pallet: string,

@@ -2,7 +2,7 @@ const PORT_SUFFIX =
   process.env.BUILD !== "production" ? `-${process.env.BUILD}-${process.env.RELEASE}` : ""
 export const PORT_EXTENSION = `talisman-extension${PORT_SUFFIX}`
 export const PORT_CONTENT = `talisman-content${PORT_SUFFIX}`
-export const DEBUG = process.env.DEBUG === "true"
+export const DEBUG = process.env.BUILD === "dev" || process.env.DEBUG === "true"
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
@@ -14,7 +14,6 @@ export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-config/config.toml"
 
 export const BLOCKAID_API_URL = "https://bap.talisman.xyz"
-export const TAOSTATS_BASE_PATH = process.env.TAOSTATS_BASE_PATH || "https://tsp.talisman.xyz"
 export const RAMPS_COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"
 export const RAMPS_COINBASE_PAY_URL = "https://pay.coinbase.com"
 export const RAMPS_RAMP_API_URL = "https://ramp-api.talisman.xyz"

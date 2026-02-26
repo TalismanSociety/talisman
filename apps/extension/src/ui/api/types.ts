@@ -261,7 +261,7 @@ export default interface MessageTypes {
   subSubmitWithBittensorMevShield: (
     payload: SignerPayloadJSON,
     txInfo?: WalletTransactionInfo
-  ) => Promise<{ hash: HexString }>
+  ) => Promise<{ hash: HexString; innerHash?: HexString }>
 
   solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
   solSubmit: (
@@ -299,6 +299,8 @@ export default interface MessageTypes {
   bittensorValidatorsSubscribe: (
     cb: (validators: Loadable<BittensorValidator[]>) => void
   ) => UnsubscribeFn
+
+  gandalfAccessTokenSubscribe: (cb: (data: Loadable<string>) => void) => UnsubscribeFn
 
   confirmedAddressesSubscribe: (cb: (data: ConfirmedExternalAddresses) => void) => UnsubscribeFn
   addConfirmedAddress: (tokenId: string, address: string) => Promise<boolean>

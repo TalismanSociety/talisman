@@ -1,8 +1,8 @@
-import { classNames } from "@talismn/util"
+import { classNames, cn } from "@talismn/util"
 import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, type ButtonProps } from "talisman-ui"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignApproveButton } from "./SignApproveButton"
@@ -13,6 +13,7 @@ export const SignLedgerBase: FC<{
   containerId?: string
   className?: string
   disabled?: boolean
+  color?: ButtonProps["color"]
   onSignClick: () => void
   onDismissErrorClick: () => void
   onCancel?: () => void
@@ -22,6 +23,7 @@ export const SignLedgerBase: FC<{
   containerId,
   className,
   disabled,
+  color,
   onSignClick,
   onDismissErrorClick,
   onCancel,
@@ -29,20 +31,15 @@ export const SignLedgerBase: FC<{
   const { t } = useTranslation()
 
   return (
-    <div
-      className={classNames(
-        "grid w-full gap-8",
-        onCancel ? "grid-cols-2" : "grid-cols-1",
-        className
-      )}
-    >
+    <div className={classNames("grid w-full gap-8", onCancel ? "grid-cols-2" : "grid-cols-1")}>
       {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
       <SignApproveButton
         primary
+        color={color}
         processing={isProcessing}
         disabled={disabled}
         onClick={onSignClick}
-        className="px-4"
+        className={cn("px-4", className)}
       >
         {t("Sign on Ledger")}
       </SignApproveButton>

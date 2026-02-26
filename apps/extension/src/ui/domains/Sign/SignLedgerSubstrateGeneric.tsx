@@ -23,6 +23,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   containerId,
   shortMetadata,
   registry,
+  color,
 }) => {
   const account = useAccountByAddress(payload?.address)
 
@@ -77,6 +78,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       isProcessing={isSigning}
       error={error}
       className={className}
+      color={color}
       onSignClick={signWithLedger}
       onDismissErrorClick={() => setError(null)}
       onCancel={onCancel}

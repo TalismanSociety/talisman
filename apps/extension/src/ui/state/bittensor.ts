@@ -30,7 +30,7 @@ export const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
   bittensorValidatorsRaw$.pipe(
     map((loadable) => ({
       status: loadable.status,
-      data: keyBy(loadable.data ?? [], (v) => v.hotkey.ss58),
+      data: keyBy(loadable.data ?? [], (v) => v.hotkey),
     }))
   ),
   { status: "loading", data: {} }

@@ -1,16 +1,17 @@
 import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
+import { useGetSubnetPools } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetSubnetPools"
 import { useTokens } from "@ui/state"
 import { assign, keyBy } from "lodash-es"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 
+import { useTranslation } from "react-i18next"
 import type { SubnetData } from "./types"
-import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
-import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
-import { useGetSubnets } from "./useGetInfiniteSubnets"
+import { useGetSubnets } from "./useGetSubnets"
 
 export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
 
 export const useCombinedSubnetData = (networkId: NetworkId) => {
+  const { t } = useTranslation()
   const allTokens = useTokens({ platform: "polkadot" })
 
   // these should load instantly
@@ -21,68 +22,32 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
         // exclude dynamic ones, so we get only one for each netuid
         .filter((token) => !token.hotkey && token.networkId === networkId)
         .map(
-          (t): SubnetData => ({
-            netuid: t.netuid,
-            name: t.subnetName,
-            subnet_name: t.subnetName,
-            symbol: t.symbol,
+          (s): SubnetData => ({
+            netuid: s.netuid,
+            name: s.subnetName || t("Subnet {{netuid}}", { netuid: s.netuid }),
+            symbol: s.symbol,
           })
         ),
-    [allTokens, networkId]
+    [allTokens, networkId, t]
   )
 
-  const { data: subnets, isLoading: isSubnetsLoading, isError: isSubnetsError } = useGetSubnets()
   const {
-    data: subnetDescriptionsData,
-    hasNextPage: hasSubnetDescriptionsNextPage,
-    isFetchingNextPage: isSubnetDescriptionsFetchingNextPage,
-    isError: isSubnetDescriptionsError,
-    isLoading: isSubnetDescriptionsLoading,
-    fetchNextPage: fetchSubnetDescriptionsNextPage,
-  } = useGetInfiniteSubnetIdentities()
+    data: subnets,
+    isLoading: isSubnetsLoading,
+    isError: isSubnetsError,
+    error: subnetsError,
+  } = useGetSubnets()
 
   const {
     data: subnetPoolsData,
-    hasNextPage: hasSubnetPoolsNextPage,
-    isFetchingNextPage: isSubnetPoolsFetchingNextPage,
     isError: isSubnetPoolsError,
-    fetchNextPage: fetchSubnetPoolsNextPage,
     isLoading: isSubnetPoolsLoading,
-  } = useGetInfiniteSubnetPools()
-
-  useEffect(() => {
-    if (hasSubnetDescriptionsNextPage && !isSubnetDescriptionsFetchingNextPage) {
-      fetchSubnetDescriptionsNextPage()
-    }
-  }, [
-    hasSubnetDescriptionsNextPage,
-    isSubnetDescriptionsFetchingNextPage,
-    fetchSubnetDescriptionsNextPage,
-  ])
-
-  useEffect(() => {
-    if (hasSubnetPoolsNextPage && !isSubnetPoolsFetchingNextPage) {
-      fetchSubnetPoolsNextPage()
-    }
-  }, [hasSubnetPoolsNextPage, isSubnetPoolsFetchingNextPage, fetchSubnetPoolsNextPage])
-
-  const descriptionsMap = useMemo(
-    () =>
-      keyBy(
-        subnetDescriptionsData?.pages
-          .flatMap((page) => page.data)
-          .map((desc) => ({ ...desc, descriptionName: desc.subnet_name })) ?? [],
-        (desc) => desc.netuid
-      ),
-    [subnetDescriptionsData?.pages]
-  )
+    error: subnetPoolsError,
+  } = useGetSubnetPools()
 
   const poolsMap = useMemo(
-    () =>
-      keyBy(subnetPoolsData?.pages.flatMap((page) => page.data) ?? [], (pool) =>
-        Number(pool.netuid)
-      ),
-    [subnetPoolsData?.pages]
+    () => keyBy(subnetPoolsData ?? [], (pool) => Number(pool.netuid)),
+    [subnetPoolsData]
   )
 
   const subnetsMap = useMemo(() => keyBy(subnets ?? [], (subnet) => subnet.netuid), [subnets])
@@ -94,19 +59,18 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
           assign(
             {},
             tokenSubnet,
-            descriptionsMap[Number(tokenSubnet.netuid)] || {},
             poolsMap[Number(tokenSubnet.netuid)] || {},
             subnetsMap[Number(tokenSubnet.netuid)] || {}
           )
       )
       .sort((a, b) => (Number(a.netuid) || 0) - (Number(b.netuid) || 0))
-  }, [alphaTokenSubnets, descriptionsMap, poolsMap, subnetsMap])
+  }, [alphaTokenSubnets, poolsMap, subnetsMap])
 
   return {
     subnetData,
-    isError: isSubnetDescriptionsError || isSubnetPoolsError,
-    isLoading: isSubnetDescriptionsLoading || isSubnetPoolsLoading,
-    isFetchingNextPage: isSubnetDescriptionsFetchingNextPage || isSubnetPoolsFetchingNextPage,
+    isError: isSubnetPoolsError || isSubnetsError,
+    isLoading: isSubnetPoolsLoading || isSubnetsLoading,
+    error: subnetPoolsError ?? subnetsError ?? null,
     isSubnetsLoading,
     isSubnetsError,
   }

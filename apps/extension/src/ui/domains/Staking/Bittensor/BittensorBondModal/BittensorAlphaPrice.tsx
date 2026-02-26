@@ -6,8 +6,8 @@ import { type FC, useMemo } from "react"
 
 export const BittensorAlphaPrice: FC<{
   taoTokenId: string
-  price: string | null | undefined
-  priceChange24h: string | null | undefined
+  price: string | number | null | undefined
+  priceChange24h: string | number | null | undefined
   className?: string
   noTooltip?: boolean
 }> = ({ taoTokenId, price, priceChange24h, className, noTooltip }) => {

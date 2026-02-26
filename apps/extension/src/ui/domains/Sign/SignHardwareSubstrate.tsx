@@ -4,7 +4,7 @@ import type { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/state"
 import type { Account } from "extension-core"
 import type { FC } from "react"
-
+import type { ButtonProps } from "talisman-ui"
 import { SignLedgerSubstrateGeneric } from "./SignLedgerSubstrateGeneric"
 import { SignLedgerSubstrateLegacy } from "./SignLedgerSubstrateLegacy"
 
@@ -18,6 +18,7 @@ export type SignHardwareSubstrateProps = {
   onSigned: (result: { signature: HexString; payload?: SignerPayloadJSON }) => Promise<void> | void
   shortMetadata?: string
   registry?: TypeRegistry
+  color?: ButtonProps["color"]
 }
 
 const getSignHardwareComponent = (account: Account | null) => {

@@ -93,6 +93,7 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         if (DEBUG) {
           config.featureFlags.SEEK_BENEFITS = true
           config.featureFlags.SEEK_TAO_DISCOUNT = true
+          config.featureFlags.BITTENSOR_MEV_SHIELD = false // TODO remove after testing
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated

@@ -1,6 +1,6 @@
 import { taoToAlpha } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useMemo } from "react"
 
@@ -312,5 +312,9 @@ const useBittensorAnyStakingPayload = ({
           })
       }
     },
+    // this makes useQuery return previous payload while fetching the new payload
+    // inputs change often as price changes on chain, causing our price limit to be updated
+    // without this, payload would be temporarily undefined, causing Ledger and Polkadot Vault signing UI to be unmounted while user is signing on their device
+    placeholderData: keepPreviousData,
   })
 }

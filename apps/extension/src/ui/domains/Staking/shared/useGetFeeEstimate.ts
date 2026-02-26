@@ -1,6 +1,6 @@
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import type { ScaleApi } from "@talismn/sapi"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 type GetNomPoolFeeEstimate = {
   sapi: ScaleApi | undefined | null
@@ -15,5 +15,6 @@ export const useGetFeeEstimate = ({ sapi, payload }: GetNomPoolFeeEstimate) => {
       return sapi.getFeeEstimate(payload)
     },
     enabled: !!sapi && !!payload,
+    placeholderData: keepPreviousData,
   })
 }

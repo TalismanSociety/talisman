@@ -83,6 +83,7 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
     "js-yaml": "4.1.0",
+    "lightweight-charts": "5.1.0",
     "lodash-es": "4.17.21",
     "loglevel": "^1.9.2",
     "lottie-react": "2.4.0",
@@ -110,6 +111,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-replace": "6.0.3",
+    "@sentry/vite-plugin": "^4.6.1",
     "@talismn/tsconfig": "workspace:*",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.0.1",
@@ -137,7 +139,6 @@
     "vite-plugin-node-polyfills": "0.24.0",
     "vite-plugin-svgr": "4.5.0",
     "webextension-polyfill": "0.12.0",
-    "@sentry/vite-plugin": "^4.6.1",
     "wxt": "0.20.13"
   },
   "scripts": {

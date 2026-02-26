@@ -1,7 +1,7 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
-import { classNames, isTruthy } from "@talismn/util"
+import { classNames, cn, isTruthy } from "@talismn/util"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { type FC, type ReactNode, Suspense, useCallback, useMemo } from "react"
@@ -16,32 +16,35 @@ import { DashboardNotificationsAndModals } from "./notifications/DashboardNotifi
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardLayout: FC<{
   children?: ReactNode
-  sidebar: "accounts" | "settings"
-}> = ({ children, sidebar }) => {
+  sidebar: "accounts" | "settings" | "none"
+  className?: string // designed to enforce a minimum width on the layout
+}> = ({ children, sidebar, className }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
-      <div className="relative mx-auto w-full max-w-[144rem]">
-        <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
+      <div className={cn("relative mx-auto w-full min-w-[90rem] max-w-[144rem]", className)}>
+        <div className={cn("flex w-full overflow-x-hidden", RESPONSIVE_FLEX_SPACING)}>
           {/* Sidebar */}
-          <div className="w-[29.6rem] shrink-0 pb-20">
-            <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
-              <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
-              <BuildVersionPill className="rounded-3xl bg-primary/5 text-primary hover:bg-primary/20" />
+          {sidebar !== "none" && (
+            <div className="w-[29.6rem] shrink-0 pb-20">
+              <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
+                <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
+                <BuildVersionPill className="rounded-3xl bg-primary/5 text-primary hover:bg-primary/20" />
+              </div>
+              <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
+                {sidebar === "accounts" && <DashboardAccountsSidebar />}
+                {sidebar === "settings" && <DashboardSettingsSidebar />}
+              </Suspense>
             </div>
-            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
-              {sidebar === "accounts" && <DashboardAccountsSidebar />}
-              {sidebar === "settings" && <DashboardSettingsSidebar />}
-            </Suspense>
-          </div>
+          )}
           {/* Main area */}
-          <div className="grow pb-20">
+          <div className="grow overflow-hidden pb-20">
             <div className="flex w-full flex-col items-center">
               <div className="flex h-48 w-full shrink-0 items-center justify-center">
                 <HorizontalNav />
               </div>
               <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
                 <div
-                  className={classNames(
+                  className={cn(
                     // minimum width is automatically set by the horizontal nav bar which never shrinks
                     "w-full grow animate-fade-in"
                   )}

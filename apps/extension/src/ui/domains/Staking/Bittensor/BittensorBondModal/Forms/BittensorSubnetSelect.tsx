@@ -78,8 +78,8 @@ export const BittensorSubnetSelect = () => {
   const displayedSubnets = useMemo(() => {
     const lowerSearch = deferredSearch.toLowerCase()
     return sortedSubnets.filter((subnet) => {
-      const { netuid, subnet_name, symbol } = subnet
-      const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
+      const { netuid, name, symbol } = subnet
+      const subnetName = `${netuid} ${name} ${symbol}`.toLowerCase()
       return subnetName.includes(lowerSearch)
     })
   }, [deferredSearch, sortedSubnets])
@@ -275,7 +275,7 @@ const SubnetRow: FC<{
     () => [subNativeTokenId(networkId), subDTaoTokenId(networkId, option.netuid!)] as const,
     [networkId, option.netuid]
   )
-  const tokanAlpha = useToken(dtaoTokenId, "substrate-dtao")
+  const tokenAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
   const emission = useMemo(
     () =>
@@ -286,7 +286,7 @@ const SubnetRow: FC<{
     [option.emission, t]
   )
 
-  if (!tokanAlpha) return null
+  if (!tokenAlpha) return null
 
   return (
     <button
@@ -299,11 +299,11 @@ const SubnetRow: FC<{
         isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
-      <TokenLogo tokenId={tokanAlpha.id} className="size-16 shrink-0" />
+      <TokenLogo tokenId={tokenAlpha.id} className="size-16 shrink-0" />
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden text-sm">
         <div className="flex w-full items-center justify-between gap-8 overflow-hidden text-white">
           <div className="truncate">
-            {tokanAlpha.netuid} | {tokanAlpha.subnetName} {tokanAlpha.symbol}
+            {tokenAlpha.netuid} | {tokenAlpha.subnetName} {tokenAlpha.symbol}
           </div>
           <div className={cn("shrink-0", isLoading && "animate-pulse")}>{emission}</div>
         </div>
@@ -318,15 +318,15 @@ const SubnetRow: FC<{
             <div className="flex grow items-center gap-2 overflow-hidden">
               <TokensAndFiat
                 tokenId={taoTokenId}
-                planck={option.total_tao}
+                planck={String(option.total_tao)}
                 noFiat
                 noCountUp
                 noTooltip
               />
               <div className="inline-block size-2 rounded-full bg-body-disabled" />
               <TokensAndFiat
-                tokenId={tokanAlpha.id}
-                planck={option.total_alpha}
+                tokenId={tokenAlpha.id}
+                planck={String(option.total_alpha)}
                 noFiat
                 noCountUp
                 noTooltip

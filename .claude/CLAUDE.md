@@ -14,6 +14,9 @@ pnpm install              # Install dependencies (requires Node >= 20, corepack 
 pnpm dev:extension        # Start Chrome extension dev server with hot reload
 pnpm dev:extension:firefox # Start Firefox extension dev server
 
+# Formatting / Linting
+pnpm check                # Biome check for the repo (must pass before finishing work)
+
 # Building
 pnpm build:extension      # Build for Chrome (QA/dev)
 pnpm build:extension:firefox # Build for Firefox
@@ -108,3 +111,5 @@ Balance modules in `packages/balances/src/modules/` follow a consistent structur
 - Jest for unit tests: `*.spec.ts` files in `__tests__` folders
 - Playwright for E2E: `playwright/e2e-tests/`
 - Follow patterns in `apps/extension/src/core/handlers/Extension.spec.ts`
+
+Before marking work as complete, ensure `pnpm check` passes.

@@ -57,7 +57,7 @@ export const formatDecimals = (
 
   return Intl.NumberFormat(locale, {
     // compact notation (K, M, B) if above 9999
-    notation: truncatedValue.gt(9999) ? "compact" : "standard",
+    notation: truncatedValue.abs().gt(9999) ? "compact" : "standard",
     // NOTE: possible values are from `0` to `21`
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#maximumsignificantdigits
     maximumSignificantDigits: Math.max(1, Math.min(digits + (truncatedValue.lt(1) ? 1 : 0), 21)),

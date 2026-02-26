@@ -310,6 +310,10 @@ export const api: MessageTypes = {
   bittensorValidatorsSubscribe: (cb) =>
     messageService.subscribe("pri(bittensor.validators.subscribe)", null, cb),
 
+  // gandalf
+  gandalfAccessTokenSubscribe: (cb) =>
+    messageService.subscribe("pri(gandalf.accessToken.subscribe)", null, cb),
+
   // sendFunds
   confirmedAddressesSubscribe: (cb) =>
     messageService.subscribe("pri(sendFunds.confirmedAddresses.subscribe)", null, cb),

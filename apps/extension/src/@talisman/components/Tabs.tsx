@@ -42,6 +42,12 @@ export const Tabs: FC<{
     }
 
     updateIndicator()
+
+    // Re-run on layout changes (e.g. font loading, surrounding elements shifting on page refresh)
+    const resizeObserver = new ResizeObserver(updateIndicator)
+    resizeObserver.observe(container)
+
+    return () => resizeObserver.disconnect()
   }, [selected])
 
   return (

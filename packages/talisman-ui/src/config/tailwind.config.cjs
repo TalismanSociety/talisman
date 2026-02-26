@@ -70,6 +70,12 @@ module.exports = {
         up: "#8AEB94", // rgba(138, 235, 148, 1)
         down: "#FF5C5F", // rgba(255, 92, 92, 1)
       },
+      buy: {
+        DEFAULT: "#6CFC69", // rgb(56, 212, 72)
+      },
+      sell: {
+        DEFAULT: "#FD4848", // rgb(210, 36, 36)
+      },
     },
     lineHeight: {
       3: "0.6rem",

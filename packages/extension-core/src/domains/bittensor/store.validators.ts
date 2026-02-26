@@ -1,60 +1,23 @@
 import { keepAlive, type Loadable } from "@talismn/util"
-import { log, TAOSTATS_BASE_PATH } from "extension-shared"
+import { log } from "extension-shared"
 import { Observable, shareReplay, startWith } from "rxjs"
 
 import { getBlobStore } from "../../db"
+import { gandalfFetch } from "../gandalf/fetch"
+import { getTaoDataApi } from "./tao-data/exports"
 import type { BittensorValidator } from "./types"
 
-const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators")
+const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators:v2")
 
-const MAX_PAGE_SIZE = 100
 const REFRESH_INTERVAL = 600_000 // 10 mins
+const taoDataApi = getTaoDataApi(gandalfFetch)
 
 let lastUpdatedAt = 0
 
-type Pagination = {
-  current_page: number
-  per_page: number
-  total_items: number
-  total_pages: number
-  next_page: number | null
-  prev_page: number | null
-}
-
-type BittensorValidatorsData = {
-  pagination: Pagination
-  data: BittensorValidator[]
-}
-
-const fetchBittensorValidatorsPage = async (
-  page: number = 1,
-  signal?: AbortSignal
-): Promise<BittensorValidatorsData> => {
-  const res = await fetch(
-    `${TAOSTATS_BASE_PATH}/api/dtao/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal,
-    }
-  )
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return await res.json()
-}
-
 const fetchAllBittensorValidators = async (signal?: AbortSignal): Promise<BittensorValidator[]> => {
-  const allValidators: BittensorValidator[] = []
-  let nextPage: number | null = 1
+  const response = await taoDataApi.validators.listValidators({ signal })
 
-  while (nextPage !== null) {
-    const pageData = await fetchBittensorValidatorsPage(nextPage, signal)
-    allValidators.push(...pageData.data)
-    nextPage = pageData.pagination.next_page
-  }
-
-  return allValidators
+  return response.data
 }
 
 export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
@@ -64,7 +27,9 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
   let timeout: ReturnType<typeof setTimeout> | null = null
   subscriber.add(() => timeout && clearTimeout(timeout))
 
-  let data: BittensorValidator[] = []
+  // Track the latest data we've emitted - don't emit loading states that would cause flicker
+  let latestData: BittensorValidator[] = []
+  let hasEmittedData = false
 
   const refresh = async () => {
     try {
@@ -73,31 +38,42 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
       if (controller.signal.aborted) return
 
       log.debug("Refreshing bittensor validators")
-      subscriber.next({ status: "loading", data })
-      data = await fetchAllBittensorValidators(controller.signal)
+
+      const newData = await fetchAllBittensorValidators(controller.signal)
 
       lastUpdatedAt = Date.now()
-      subscriber.next({ status: "success", data })
-      blobStore.set(data)
+      latestData = newData
+      hasEmittedData = true
+      subscriber.next({ status: "success", data: newData })
+      blobStore.set(newData)
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return
 
       log.error("Failed to fetch bittensor validators", error)
-      if (!subscriber.closed) subscriber.error(error)
+      // On error, keep showing existing data if we have it
+      if (hasEmittedData) {
+        subscriber.next({ status: "error", data: latestData } as Loadable<BittensorValidator[]>)
+      } else {
+        subscriber.error(error)
+      }
     } finally {
       if (!controller.signal.aborted) timeout = setTimeout(refresh, REFRESH_INTERVAL)
     }
   }
 
-  // init loop: fetch from github every 10 mins
-  refresh()
-
-  // init from storage
+  // Init from storage first (fast), then refresh from network
   blobStore.get().then((blob) => {
-    subscriber.next({ status: "success", data: blob || [] })
+    if (blob && blob.length > 0 && !hasEmittedData) {
+      latestData = blob
+      hasEmittedData = true
+      subscriber.next({ status: "success", data: blob })
+    }
   })
+
+  // Start the refresh loop
+  refresh()
 }).pipe(
-  startWith({ status: "loading", data: [] }),
+  startWith({ status: "loading", data: [] } as Loadable<BittensorValidator[]>),
   shareReplay({ bufferSize: 1, refCount: true }),
   keepAlive(2_000) // prevents rapid re-fetching on unsubscriptions
 )
