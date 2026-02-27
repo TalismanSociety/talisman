@@ -19,6 +19,7 @@ export const useSubnetTransactions = (
   }
 ) => {
   const accounts = useAccounts("owned")
+  const ownedAddresses = useMemo(() => accounts.map((acc) => acc.address), [accounts])
   const { data: events, isLoading, error } = useSubnetStakeEvents(netuid)
 
   const relevantEvents = useMemo(() => {
@@ -26,13 +27,10 @@ export const useSubnetTransactions = (
 
     return (
       events
-        ?.filter((event) => {
-          const ownedAddresses = accounts.map((acc) => acc.address)
-          return ownedAddresses.some((addr) => isAddressEqual(addr, event.coldkey))
-        })
+        ?.filter((event) => ownedAddresses.some((addr) => isAddressEqual(addr, event.coldkey)))
         .slice(0, limit) ?? []
     )
-  }, [events, ownedOnly, accounts, limit])
+  }, [events, ownedOnly, ownedAddresses, limit])
 
   const indexedTransactions = useMemo<TransactionEntry[]>(() => {
     if (!relevantEvents) return []
@@ -112,10 +110,9 @@ export const useSubnetTransactions = (
     if (!options?.realtimeEvents?.length) return []
 
     const filtered = ownedOnly
-      ? options.realtimeEvents.filter((evt) => {
-          const ownedAddresses = accounts.map((acc) => acc.address)
-          return ownedAddresses.some((addr) => isAddressEqual(addr, evt.coldkey))
-        })
+      ? options.realtimeEvents.filter((evt) =>
+          ownedAddresses.some((addr) => isAddressEqual(addr, evt.coldkey))
+        )
       : options.realtimeEvents
 
     return filtered.map((evt): TransactionEntry => {
@@ -139,7 +136,7 @@ export const useSubnetTransactions = (
         blockHeight: evt.blockHeight,
       }
     })
-  }, [options?.realtimeEvents, netuid, ownedOnly, accounts])
+  }, [options?.realtimeEvents, netuid, ownedOnly, ownedAddresses])
 
   // Consolidated list of most recent transactions (local + indexed + realtime, deduplicated)
   // Priority: indexed (API) > realtime (block watcher) > local (pending)

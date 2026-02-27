@@ -152,10 +152,11 @@ export type UseRealtimeStakeEventsReturn = {
  * StakeAdded/StakeRemoved events targeting a specific subnet.
  *
  * Events are accumulated in a sliding buffer keyed by block number.
- * Consumers call `pruneBelow(h)` when their indexed data source reports a
- * new `lastBlockHeight` — events at or below `h` are discarded.
+ * Consumers call `reportFloor(consumerId, h)` when their indexed data source
+ * reports a new `lastBlockHeight` — events at or below the minimum floor
+ * across all consumers are discarded.
  *
- * On the first `pruneBelow` call, a one-time backfill runs to capture any
+ * On the first `reportFloor` call, a one-time backfill runs to capture any
  * events between the indexer head and the first polled block.
  */
 export const useRealtimeStakeEventsProvider = ({
@@ -196,7 +197,15 @@ export const useRealtimeStakeEventsProvider = ({
     }
     // Sort by block height ascending, then by method (StakeAdded first for determinism)
     all.sort((a, b) => a.blockHeight - b.blockHeight || a.method.localeCompare(b.method))
-    setEvents(all)
+    // Avoid unnecessary re-renders when event list hasn't changed
+    setEvents((prev) => {
+      if (
+        prev.length === all.length &&
+        prev.every((e, i) => e.hash === all[i].hash && e.blockHeight === all[i].blockHeight)
+      )
+        return prev
+      return all
+    })
   }, [])
 
   // Reset all state when netuid changes
@@ -219,8 +228,11 @@ export const useRealtimeStakeEventsProvider = ({
 
     const controller = new AbortController()
     const { signal } = controller
+    let polling = false
 
     const poll = async () => {
+      if (polling) return
+      polling = true
       try {
         // Get best block header
         const header = await api.subSend<{ number: string }>(
@@ -302,6 +314,8 @@ export const useRealtimeStakeEventsProvider = ({
         if (!signal.aborted) {
           log.warn("[RealtimeStakeEvents] Poll error", err)
         }
+      } finally {
+        polling = false
       }
     }
 
@@ -343,11 +357,11 @@ export const useRealtimeStakeEventsProvider = ({
       deriveEvents()
 
       // Trigger backfill on first reportFloor call (we now know the indexer head)
-      if (!backfillDoneRef.current && watchStartBlockRef.current !== null) {
+      if (!backfillDoneRef.current && watchStartBlockRef.current !== null && sapi && netuid) {
         backfillDoneRef.current = true
         runBackfill(
-          sapi!,
-          netuid!,
+          sapi,
+          netuid,
           newFloor,
           watchStartBlockRef.current,
           bufferRef,
