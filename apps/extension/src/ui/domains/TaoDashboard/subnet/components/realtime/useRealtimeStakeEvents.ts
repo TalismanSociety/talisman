@@ -120,6 +120,12 @@ export type UseRealtimeStakeEventsReturn = {
   /** Real-time events currently in the buffer (blockHeight > floorBlockHeight) */
   events: RealtimeStakeEvent[]
   /**
+   * The latest best block number observed by the poller.
+   * Consumers can use this as a "heartbeat" to trigger refetches
+   * of on-chain state (e.g. runtime API calls) on every new block.
+   */
+  bestBlockNumber: number | null
+  /**
    * Report the highest block height that a consumer's indexed data covers.
    * Each consumer must provide a stable `consumerId` string.
    *
@@ -163,6 +169,8 @@ export const useRealtimeStakeEvents = (
 
   // Flattened event list exposed to consumers — triggers re-render
   const [events, setEvents] = useState<RealtimeStakeEvent[]>([])
+  // Best block number — exposed as a heartbeat for consumers
+  const [bestBlockNumber, setBestBlockNumber] = useState<number | null>(null)
 
   // Derive the flat sorted event list from the buffer
   const deriveEvents = useCallback(() => {
@@ -187,6 +195,7 @@ export const useRealtimeStakeEvents = (
     backfillDoneRef.current = false
     lastProcessedBlockRef.current = 0
     setEvents([])
+    setBestBlockNumber(null)
   }, [netuid])
 
   // --- Polling loop: watch best blocks ---
@@ -244,6 +253,7 @@ export const useRealtimeStakeEvents = (
         }
 
         lastProcessedBlockRef.current = Math.max(lastProcessedBlockRef.current, to)
+        setBestBlockNumber(to)
         deriveEvents()
       } catch (err) {
         if (!signal.aborted) {
@@ -307,7 +317,7 @@ export const useRealtimeStakeEvents = (
     [sapi, netuid, deriveEvents]
   )
 
-  return { events, reportFloor }
+  return { events, bestBlockNumber, reportFloor }
 }
 
 // ---------------------------------------------------------------------------
