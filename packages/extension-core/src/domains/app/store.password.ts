@@ -57,6 +57,11 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   }
 
   public async resetAutolockTimer(minutes?: number) {
+    // Don't modify the alarm while login status is still being determined.
+    // This prevents clearing a valid alarm from a previous session during startup,
+    // when the settings subscription fires before hasPassword() has resolved.
+    if (this.isLoggedIn.value === UNKNOWN) return
+
     const alarm = await chrome.alarms.get(ALARM_NAME)
     if (alarm) await chrome.alarms.clear(ALARM_NAME)
 
