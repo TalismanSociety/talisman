@@ -142,11 +142,11 @@ export const ConnectedAccounts: FC = () => {
       )}
       {site?.addresses && (
         <ConnectAccountsContainer
-          label={t("Polkadot")}
+          label={t("Substrate")}
           status={site.addresses.length ? "connected" : "disconnected"}
           connectedAddresses={site.addresses}
           isSingleProvider={!site.ethAddresses}
-          infoText={t("Accounts connected via the Polkadot provider")}
+          infoText={t("Accounts connected via the Substrate provider")}
         >
           <SubAccounts site={site} />
         </ConnectAccountsContainer>

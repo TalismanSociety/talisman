@@ -143,7 +143,7 @@ function NewAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("New Substrate Account")}
             tooltip={t(
-              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains."
+              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Substrate chains."
             )}
           />
         }
@@ -173,7 +173,7 @@ function ImportAccountMethodButtons() {
     <>
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
-        subtitle={t("Ethereum, Polkadot, and Solana accounts")}
+        subtitle={t("Ethereum, Substrate, and Solana accounts")}
         networks={["ethereum", "polkadot", "solana"]}
         to={`/accounts/add/mnemonic`}
       />
@@ -203,7 +203,7 @@ function ConnectAccountMethodButtons() {
         title={t("Connect Ledger")}
         subtitle={
           isLedgerCapable
-            ? t("Ethereum, Polkadot or Ethereum accounts")
+            ? t("Ethereum, Substrate or Solana accounts")
             : t("Not supported on this browser")
         }
         networks={isLedgerCapable ? ["ethereum", "polkadot", "solana"] : []}
@@ -254,7 +254,7 @@ function WatchedAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("Watch Substrate Account")}
             tooltip={t(
-              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains."
+              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Substrate chains."
             )}
           />
         }

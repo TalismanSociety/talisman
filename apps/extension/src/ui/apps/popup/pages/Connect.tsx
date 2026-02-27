@@ -180,8 +180,8 @@ export const ConnectPolkadot: ConnectComponent = ({
         <ConnectAccountsContainer
           status="disabled"
           connectedAddresses={connected}
-          label={t("Polkadot")}
-          infoText={t(`Accounts will be connected via the Polkadot provider`)}
+          label={t("Substrate")}
+          infoText={t(`Accounts will be connected via the Substrate provider`)}
           isSingleProvider
         >
           <ConnectedAccountsPolkadot
