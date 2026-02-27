@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { sn45Api } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import type { OhlcvBar, OhlcvResolution } from "./types"
 
 // ---------------------------------------------------------------------------
@@ -79,14 +79,22 @@ const shouldRetrySn45Error = (failureCount: number, error: unknown): boolean => 
  * Bars are returned sorted ascending by time so they can be passed directly
  * to `lightweight-charts` `CandlestickSeries.setData()`.
  */
+type OhlcvPage = Awaited<ReturnType<typeof sn45Api.v1.getSubnetOhlcv>>["data"]
+
 export function useOhlcvData({
   netuid,
   resolution = "60",
   pageSize = 100,
 }: UseOhlcvDataOptions): UseOhlcvDataReturn {
+  const queryClient = useQueryClient()
+  const queryKey = useMemo(
+    () => ["sn45", "subnetOhlcv", netuid, resolution, pageSize] as const,
+    [netuid, resolution, pageSize]
+  )
+
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, isError } =
     useInfiniteQuery({
-      queryKey: ["sn45", "subnetOhlcv", netuid, resolution, pageSize],
+      queryKey,
       queryFn: async ({
         pageParam,
         signal,
@@ -108,14 +116,45 @@ export function useOhlcvData({
       initialPageParam: undefined as string | undefined,
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
       enabled: !!netuid,
-      refetchInterval: (query) => {
-        const pageCount = query.state.data?.pages?.length ?? 0
-        return pageCount <= 1 ? 15_000 : false
-      },
       staleTime: 30_000,
       retry: shouldRetrySn45Error,
       refetchOnReconnect: true,
     })
+
+  // Poll only the first page (latest candles, no cursor) every 15s.
+  // Historical cursor-based pages are immutable and never re-fetched.
+  const abortRef = useRef<AbortController | null>(null)
+  useEffect(() => {
+    if (!netuid) return
+
+    const interval = setInterval(async () => {
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+      try {
+        const response = await sn45Api.v1.getSubnetOhlcv(
+          String(netuid),
+          { resolution, limit: String(pageSize) },
+          { signal: controller.signal }
+        )
+        queryClient.setQueryData<InfiniteData<OhlcvPage>>(queryKey, (old) => {
+          if (!old?.pages?.length) return old
+          return {
+            ...old,
+            pages: [response.data, ...old.pages.slice(1)],
+            pageParams: [undefined, ...old.pageParams.slice(1)],
+          }
+        })
+      } catch {
+        // silent — non-critical background refresh
+      }
+    }, 15_000)
+
+    return () => {
+      clearInterval(interval)
+      abortRef.current?.abort()
+    }
+  }, [netuid, resolution, pageSize, queryClient, queryKey])
 
   // Flatten all pages into a single sorted array of OhlcvBar
   const bars = useMemo<OhlcvBar[]>(() => {
