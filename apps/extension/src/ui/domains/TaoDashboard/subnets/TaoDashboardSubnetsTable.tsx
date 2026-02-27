@@ -255,8 +255,8 @@ const HeaderRow: FC<{
         {t("Subnet")}
       </HeaderCell>
       <HeaderCell
-        sortOrder={getSortOrder("priceTao")}
-        onSortOrderToggle={handleSortToggle("priceTao", "desc")}
+        sortOrder={getSortOrder("priceChange")}
+        onSortOrderToggle={handleSortToggle("priceChange", "desc")}
       >
         {t("Price")}
       </HeaderCell>
