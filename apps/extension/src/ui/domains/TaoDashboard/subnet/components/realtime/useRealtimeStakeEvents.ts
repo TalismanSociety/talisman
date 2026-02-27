@@ -120,11 +120,13 @@ export type UseRealtimeStakeEventsReturn = {
   /** Real-time events currently in the buffer (blockHeight > floorBlockHeight) */
   events: RealtimeStakeEvent[]
   /**
-   * Call when a data source provides a new `lastBlockHeight`.
-   * Events at or below this height will be pruned from the buffer
-   * since the indexed data now covers them.
+   * Report the highest block height that a consumer's indexed data covers.
+   * Each consumer must provide a stable `consumerId` string.
+   *
+   * The buffer is pruned only below the **minimum** of all reported floors,
+   * ensuring no consumer loses data it still needs.
    */
-  pruneBelow: (blockHeight: number) => void
+  reportFloor: (consumerId: string, blockHeight: number) => void
 }
 
 /**
@@ -150,7 +152,9 @@ export const useRealtimeStakeEvents = (
   const processedRef = useRef(new Set<number>())
   // The first block we ever polled (used as upper bound for backfill)
   const watchStartBlockRef = useRef<number | null>(null)
-  // Highest block height reported by any consumer via pruneBelow
+  // Per-consumer floor heights — prune only below the minimum
+  const consumerFloorsRef = useRef(new Map<string, number>())
+  // Effective floor = min of all consumer floors (0 if no consumers yet)
   const floorRef = useRef<number>(0)
   // Whether backfill has been performed
   const backfillDoneRef = useRef(false)
@@ -178,6 +182,7 @@ export const useRealtimeStakeEvents = (
     bufferRef.current = new Map()
     processedRef.current = new Set()
     watchStartBlockRef.current = null
+    consumerFloorsRef.current = new Map()
     floorRef.current = 0
     backfillDoneRef.current = false
     lastProcessedBlockRef.current = 0
@@ -257,17 +262,26 @@ export const useRealtimeStakeEvents = (
     }
   }, [sapi, netuid, deriveEvents])
 
-  // --- pruneBelow: discard events the indexer now covers ---
-  const pruneBelow = useCallback(
-    (blockHeight: number) => {
+  // --- reportFloor: per-consumer floor tracking ---
+  const reportFloor = useCallback(
+    (consumerId: string, blockHeight: number) => {
       if (!blockHeight || !Number.isFinite(blockHeight)) return
-      if (blockHeight <= floorRef.current) return // already pruned at or above this
 
-      floorRef.current = blockHeight
+      const floors = consumerFloorsRef.current
+      const prev = floors.get(consumerId) ?? 0
+      if (blockHeight <= prev) return // consumer already reported at or above this
 
-      // Delete buffer entries at or below the new floor
+      floors.set(consumerId, blockHeight)
+
+      // Effective floor = minimum across all consumers
+      const newFloor = Math.min(...floors.values())
+      if (newFloor <= floorRef.current) return // effective floor hasn't advanced
+
+      floorRef.current = newFloor
+
+      // Delete buffer entries at or below the new effective floor
       for (const key of bufferRef.current.keys()) {
-        if (key <= blockHeight) {
+        if (key <= newFloor) {
           bufferRef.current.delete(key)
           processedRef.current.delete(key)
         }
@@ -275,13 +289,13 @@ export const useRealtimeStakeEvents = (
 
       deriveEvents()
 
-      // Trigger backfill on first pruneBelow call (we now know the indexer head)
+      // Trigger backfill on first reportFloor call (we now know the indexer head)
       if (!backfillDoneRef.current && watchStartBlockRef.current !== null) {
         backfillDoneRef.current = true
         runBackfill(
           sapi!,
           netuid!,
-          blockHeight,
+          newFloor,
           watchStartBlockRef.current,
           bufferRef,
           processedRef,
@@ -293,7 +307,7 @@ export const useRealtimeStakeEvents = (
     [sapi, netuid, deriveEvents]
   )
 
-  return { events, pruneBelow }
+  return { events, reportFloor }
 }
 
 // ---------------------------------------------------------------------------

@@ -46,12 +46,12 @@ export const SubnetTransactions: FC<{
 const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
   const { t } = useTranslation()
   const refScrollContainer = useRef<HTMLDivElement>(null)
-  const { events: realtimeEvents, pruneBelow } = useRealtimeStakeEventsContext()
+  const { events: realtimeEvents, reportFloor } = useRealtimeStakeEventsContext()
   const { data: transactions, isLoading } = useSubnetTransactions(
     netuid,
     activeTab === "my",
     MAX_ITEMS_PER_TAB,
-    { realtimeEvents, onIndexerBlockHeight: pruneBelow }
+    { realtimeEvents, onIndexerBlockHeight: reportFloor }
   )
   const { alphaToken, taoToken } = useSubnetTokens(netuid)
 

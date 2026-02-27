@@ -15,7 +15,7 @@ export const useSubnetTransactions = (
   limit = 20,
   options?: {
     realtimeEvents?: RealtimeStakeEvent[]
-    onIndexerBlockHeight?: (blockHeight: number) => void
+    onIndexerBlockHeight?: (consumerId: string, blockHeight: number) => void
   }
 ) => {
   const accounts = useAccounts("owned")
@@ -103,7 +103,7 @@ export const useSubnetTransactions = (
 
   useEffect(() => {
     if (indexerBlockHeight && onIndexerBlockHeightRef.current) {
-      onIndexerBlockHeightRef.current(indexerBlockHeight)
+      onIndexerBlockHeightRef.current("transactions", indexerBlockHeight)
     }
   }, [indexerBlockHeight])
 

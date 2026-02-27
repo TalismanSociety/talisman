@@ -30,10 +30,10 @@ export interface UseOhlcvDataOptions {
   realtimeEvents?: RealtimeStakeEvent[]
   /**
    * Called whenever the indexer's `lastBlockHeight` changes (from the latest
-   * non-cursor API response). Consumers should use this to prune the
-   * real-time event buffer.
+   * non-cursor API response). The consumer should report this to the
+   * real-time event buffer so it can prune covered blocks.
    */
-  onIndexerBlockHeight?: (blockHeight: number) => void
+  onIndexerBlockHeight?: (consumerId: string, blockHeight: number) => void
 }
 
 export interface OhlcvMeta {
@@ -213,7 +213,7 @@ export function useOhlcvData({
 
   useEffect(() => {
     if (lastBlockHeight && onIndexerBlockHeightRef.current) {
-      onIndexerBlockHeightRef.current(lastBlockHeight)
+      onIndexerBlockHeightRef.current("ohlcv", lastBlockHeight)
     }
   }, [lastBlockHeight])
 

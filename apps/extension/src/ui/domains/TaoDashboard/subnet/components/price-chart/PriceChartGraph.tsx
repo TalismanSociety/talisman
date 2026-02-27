@@ -76,13 +76,13 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const { t } = useTranslation()
   const [resolution, setResolution] = useState<OhlcvResolution>("60")
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
-  const { events: realtimeEvents, pruneBelow } = useRealtimeStakeEventsContext()
+  const { events: realtimeEvents, reportFloor } = useRealtimeStakeEventsContext()
 
   const { bars, isLoading, isError, hasMore, loadMore } = useOhlcvData({
     netuid,
     resolution,
     realtimeEvents,
-    onIndexerBlockHeight: pruneBelow,
+    onIndexerBlockHeight: reportFloor,
   })
   const { data: tweets } = useSubnetTweets(netuid, "1m") // TODO implement cursor and pull as needed
   const {
