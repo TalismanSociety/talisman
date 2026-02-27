@@ -123,6 +123,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
       />
       <div className="grow">
         <PriceChartGraphContent
+          key={`${netuid}-${resolution}`}
           bars={bars}
           hasMore={hasMore}
           loadMore={loadMore}
