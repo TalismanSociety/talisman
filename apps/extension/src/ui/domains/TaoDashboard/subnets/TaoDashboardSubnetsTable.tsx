@@ -133,6 +133,11 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod 
       const valA = a[sortSetting.key]
       const valB = b[sortSetting.key]
 
+      // Push undefined values to the end regardless of sort order
+      if (valA === undefined && valB === undefined) return 0
+      if (valA === undefined) return 1
+      if (valB === undefined) return -1
+
       switch (typeof valA) {
         case "number":
           return sortSetting.order === "asc" ? valA - (valB as number) : (valB as number) - valA
