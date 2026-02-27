@@ -1,6 +1,8 @@
 import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { sn45Api } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useCallback, useEffect, useMemo, useRef } from "react"
+
+import type { RealtimeStakeEvent } from "../realtime/types"
 import type { OhlcvBar, OhlcvResolution } from "./types"
 
 // ---------------------------------------------------------------------------
@@ -20,6 +22,18 @@ export interface UseOhlcvDataOptions {
    * @default 500
    */
   pageSize?: number
+  /**
+   * Real-time stake events from the block watcher.
+   * These are consolidated on top of indexed candles to fill
+   * the gap between the indexer head and the chain tip.
+   */
+  realtimeEvents?: RealtimeStakeEvent[]
+  /**
+   * Called whenever the indexer's `lastBlockHeight` changes (from the latest
+   * non-cursor API response). Consumers should use this to prune the
+   * real-time event buffer.
+   */
+  onIndexerBlockHeight?: (blockHeight: number) => void
 }
 
 export interface OhlcvMeta {
@@ -85,6 +99,8 @@ export function useOhlcvData({
   netuid,
   resolution = "60",
   pageSize = 100,
+  realtimeEvents,
+  onIndexerBlockHeight,
 }: UseOhlcvDataOptions): UseOhlcvDataReturn {
   const queryClient = useQueryClient()
   const queryKey = useMemo(
@@ -157,7 +173,7 @@ export function useOhlcvData({
   }, [netuid, resolution, pageSize, queryClient, queryKey])
 
   // Flatten all pages into a single sorted array of OhlcvBar
-  const bars = useMemo<OhlcvBar[]>(() => {
+  const indexedBars = useMemo<OhlcvBar[]>(() => {
     if (!data?.pages) return []
 
     const allBars: OhlcvBar[] = []
@@ -190,6 +206,24 @@ export function useOhlcvData({
     return unique
   }, [data])
 
+  // Extract lastBlockHeight from the first (latest) page and notify consumer
+  const lastBlockHeight = data?.pages?.[0]?.lastBlockHeight ?? null
+  const onIndexerBlockHeightRef = useRef(onIndexerBlockHeight)
+  onIndexerBlockHeightRef.current = onIndexerBlockHeight
+
+  useEffect(() => {
+    if (lastBlockHeight && onIndexerBlockHeightRef.current) {
+      onIndexerBlockHeightRef.current(lastBlockHeight)
+    }
+  }, [lastBlockHeight])
+
+  // Consolidate real-time events on top of indexed candles
+  const bars = useMemo<OhlcvBar[]>(() => {
+    if (!realtimeEvents?.length) return indexedBars
+
+    return consolidateRealtimeBars(indexedBars, realtimeEvents, resolution)
+  }, [indexedBars, realtimeEvents, resolution])
+
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage()
@@ -215,4 +249,121 @@ export function useOhlcvData({
     error: error as Error | null,
     isError,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Candle consolidation: merge real-time events on top of indexed candles
+// ---------------------------------------------------------------------------
+
+const RAO = 1e9
+
+/** Resolution string → bucket size in seconds */
+const resolutionSeconds = (res: OhlcvResolution): number => Number(res) * 60
+
+/**
+ * Compute the bucket start time (UTC seconds) for a given timestamp and resolution.
+ * Matches the sn45-data-api bucketing: `floor(ts / bucketSize) * bucketSize`
+ */
+const bucketTime = (timestampMs: number, bucketSec: number): number =>
+  Math.floor(timestampMs / 1000 / bucketSec) * bucketSec
+
+/**
+ * Consolidate real-time events on top of indexed candles.
+ *
+ * - For the last indexed candle's time bucket: extend it (update close, adjust high/low, add volume)
+ * - For subsequent buckets: create new candles with open carried forward from previous close
+ * - Gap-fill empty buckets between the last indexed candle and the first real-time bucket
+ *
+ * This is a pure function suitable for unit testing.
+ */
+export function consolidateRealtimeBars(
+  indexedBars: OhlcvBar[],
+  realtimeEvents: RealtimeStakeEvent[],
+  resolution: OhlcvResolution
+): OhlcvBar[] {
+  if (!realtimeEvents.length) return indexedBars
+
+  const bucketSec = resolutionSeconds(resolution)
+
+  // Compute price and volume per event, group by bucket
+  const bucketMap = new Map<number, { prices: number[]; volumes: number[] }>()
+
+  for (const evt of realtimeEvents) {
+    const price = Number(evt.taoAmount) / RAO / (Number(evt.alphaAmount) / RAO)
+    if (!Number.isFinite(price) || price === 0) continue
+
+    const volume = Number(evt.taoAmount) / RAO
+    const bucket = bucketTime(evt.timestamp, bucketSec)
+
+    let entry = bucketMap.get(bucket)
+    if (!entry) {
+      entry = { prices: [], volumes: [] }
+      bucketMap.set(bucket, entry)
+    }
+    entry.prices.push(price)
+    entry.volumes.push(volume)
+  }
+
+  if (bucketMap.size === 0) return indexedBars
+
+  // Start from a copy of indexed bars
+  const result = indexedBars.map((b) => ({ ...b }))
+
+  // Determine the carry-forward close price
+  const lastIndexed = result.length > 0 ? result[result.length - 1] : null
+  let prevClose = lastIndexed?.close ?? 0
+
+  // Get sorted bucket times
+  const sortedBuckets = [...bucketMap.keys()].sort((a, b) => a - b)
+
+  // Determine the boundary: only include real-time data for buckets at or after the last indexed candle's bucket
+  const lastIndexedBucket = lastIndexed ? lastIndexed.time : 0
+
+  for (const bucket of sortedBuckets) {
+    if (bucket < lastIndexedBucket) continue // skip: already covered by indexed data
+
+    const { prices, volumes } = bucketMap.get(bucket)!
+    const open = prices[0]
+    const close = prices[prices.length - 1]
+    const high = Math.max(...prices)
+    const low = Math.min(...prices)
+    const volume = volumes.reduce((a, b) => a + b, 0)
+
+    if (bucket === lastIndexedBucket && lastIndexed) {
+      // Consolidate into the existing last candle: extend it with real-time data
+      lastIndexed.close = close
+      lastIndexed.high = Math.max(lastIndexed.high, high)
+      lastIndexed.low = Math.min(lastIndexed.low, low)
+      lastIndexed.volume += volume
+      prevClose = lastIndexed.close
+    } else {
+      // Gap-fill: create empty carry-forward candles for any skipped buckets
+      const expectedNextBucket =
+        (result.length > 0 ? result[result.length - 1].time : 0) + bucketSec
+      for (let gap = expectedNextBucket; gap < bucket; gap += bucketSec) {
+        result.push({
+          time: gap,
+          open: prevClose,
+          high: prevClose,
+          low: prevClose,
+          close: prevClose,
+          volume: 0,
+        })
+      }
+
+      // Adjust open to carry forward from previous close (chart continuity)
+      const adjustedOpen = prevClose || open
+      result.push({
+        time: bucket,
+        open: adjustedOpen,
+        high: Math.max(adjustedOpen, high),
+        low: Math.min(adjustedOpen, low),
+        close,
+        volume,
+      })
+      prevClose = close
+    }
+  }
+
+  return result
 }

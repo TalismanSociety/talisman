@@ -2,13 +2,22 @@ import { parseTokenId, subDTaoTokenId, subNativeTokenId } from "@talismn/chainda
 import { isAddressEqual } from "@talismn/crypto"
 import { useAccounts, useTransactions } from "@ui/state"
 import type { WalletTransactionDot, WalletTransactionInfo } from "extension-core"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
 import type { LocalTransactionEntry, TransactionEntry } from "../../shared/types"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import type { RealtimeStakeEvent } from "./realtime/types"
 
-export const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit = 20) => {
+export const useSubnetTransactions = (
+  netuid: number,
+  ownedOnly: boolean,
+  limit = 20,
+  options?: {
+    realtimeEvents?: RealtimeStakeEvent[]
+    onIndexerBlockHeight?: (blockHeight: number) => void
+  }
+) => {
   const accounts = useAccounts("owned")
   const { data: events, isLoading, error } = useSubnetStakeEvents(netuid)
 
@@ -83,14 +92,69 @@ export const useSubnetTransactions = (netuid: number, ownedOnly: boolean, limit 
       .slice(0, limit)
   }, [netuid, localTransactions, limit])
 
-  // Consolidated list of most recent transactions (local + indexed, deduplicated)
+  // Derive the highest indexed block height and notify the consumer for pruning
+  const indexerBlockHeight = useMemo(() => {
+    if (!events?.length) return null
+    return Math.max(...events.map((e) => e.blockHeight))
+  }, [events])
+
+  const onIndexerBlockHeightRef = useRef(options?.onIndexerBlockHeight)
+  onIndexerBlockHeightRef.current = options?.onIndexerBlockHeight
+
+  useEffect(() => {
+    if (indexerBlockHeight && onIndexerBlockHeightRef.current) {
+      onIndexerBlockHeightRef.current(indexerBlockHeight)
+    }
+  }, [indexerBlockHeight])
+
+  // Convert real-time events to TransactionEntry format
+  const realtimeTransactions = useMemo<TransactionEntry[]>(() => {
+    if (!options?.realtimeEvents?.length) return []
+
+    return options.realtimeEvents.map((evt): TransactionEntry => {
+      const isBuy = evt.method === "Adding"
+
+      return {
+        hash: evt.hash,
+        account: evt.coldkey,
+        direction: isBuy ? "buy" : "sell",
+        hotkey: evt.hotkey,
+        tokenIdIn: isBuy
+          ? subNativeTokenId(BITTENSOR_NETWORK_ID)
+          : subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid),
+        tokenIdOut: isBuy
+          ? subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)
+          : subNativeTokenId(BITTENSOR_NETWORK_ID),
+        tokenValueIn: isBuy ? evt.taoAmount : evt.alphaAmount,
+        tokenValueOut: isBuy ? evt.alphaAmount : evt.taoAmount,
+        status: "indexed" as const,
+        timestamp: new Date(evt.timestamp).toISOString(),
+        blockHeight: evt.blockHeight,
+      }
+    })
+  }, [options?.realtimeEvents, netuid])
+
+  // Consolidated list of most recent transactions (local + indexed + realtime, deduplicated)
+  // Priority: indexed (API) > realtime (block watcher) > local (pending)
   const data = useMemo<TransactionEntry[]>(() => {
     const indexedByHash = new Map(indexedTransactions.map((tx) => [tx.hash, tx]))
-    // Exclude local txs that are already indexed (indexed has authoritative data)
-    const localNotYetIndexed = localStakingTransactions.filter((tx) => !indexedByHash.has(tx.hash))
 
-    return [...localNotYetIndexed, ...indexedTransactions].sort(compareTransactions).slice(0, limit)
-  }, [indexedTransactions, localStakingTransactions, limit])
+    // Exclude realtime txs already covered by indexed data
+    const realtimeNotIndexed = realtimeTransactions.filter((tx) => !indexedByHash.has(tx.hash))
+    const allIndexedAndRealtime = new Map([
+      ...indexedByHash,
+      ...realtimeNotIndexed.map((tx) => [tx.hash, tx] as const),
+    ])
+
+    // Exclude local txs that are already covered by indexed or realtime data
+    const localNotYetCovered = localStakingTransactions.filter(
+      (tx) => !allIndexedAndRealtime.has(tx.hash)
+    )
+
+    return [...localNotYetCovered, ...allIndexedAndRealtime.values()]
+      .sort(compareTransactions)
+      .slice(0, limit)
+  }, [indexedTransactions, realtimeTransactions, localStakingTransactions, limit])
 
   return { data, isLoading, error }
 }

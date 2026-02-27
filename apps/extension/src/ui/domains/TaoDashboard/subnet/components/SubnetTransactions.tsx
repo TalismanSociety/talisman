@@ -10,6 +10,7 @@ import { AccountNameOrAddress } from "../../shared/AccountNameOrAddress"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { TransactionAvatar } from "../../shared/TransactionAvatar"
 import type { TransactionEntry } from "../../shared/types"
+import { useRealtimeStakeEventsContext } from "./realtime/RealtimeStakeEventsProvider"
 import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
@@ -45,10 +46,12 @@ export const SubnetTransactions: FC<{
 const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, activeTab }) => {
   const { t } = useTranslation()
   const refScrollContainer = useRef<HTMLDivElement>(null)
+  const { events: realtimeEvents, pruneBelow } = useRealtimeStakeEventsContext()
   const { data: transactions, isLoading } = useSubnetTransactions(
     netuid,
     activeTab === "my",
-    MAX_ITEMS_PER_TAB
+    MAX_ITEMS_PER_TAB,
+    { realtimeEvents, onIndexerBlockHeight: pruneBelow }
   )
   const { alphaToken, taoToken } = useSubnetTokens(netuid)
 
