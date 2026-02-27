@@ -107,11 +107,18 @@ export const useSubnetTransactions = (
     }
   }, [indexerBlockHeight])
 
-  // Convert real-time events to TransactionEntry format
+  // Convert real-time events to TransactionEntry format, respecting ownedOnly filter
   const realtimeTransactions = useMemo<TransactionEntry[]>(() => {
     if (!options?.realtimeEvents?.length) return []
 
-    return options.realtimeEvents.map((evt): TransactionEntry => {
+    const filtered = ownedOnly
+      ? options.realtimeEvents.filter((evt) => {
+          const ownedAddresses = accounts.map((acc) => acc.address)
+          return ownedAddresses.some((addr) => isAddressEqual(addr, evt.coldkey))
+        })
+      : options.realtimeEvents
+
+    return filtered.map((evt): TransactionEntry => {
       const isBuy = evt.method === "Adding"
 
       return {
@@ -132,7 +139,7 @@ export const useSubnetTransactions = (
         blockHeight: evt.blockHeight,
       }
     })
-  }, [options?.realtimeEvents, netuid])
+  }, [options?.realtimeEvents, netuid, ownedOnly, accounts])
 
   // Consolidated list of most recent transactions (local + indexed + realtime, deduplicated)
   // Priority: indexed (API) > realtime (block watcher) > local (pending)
