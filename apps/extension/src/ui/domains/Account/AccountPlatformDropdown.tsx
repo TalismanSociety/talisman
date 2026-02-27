@@ -21,7 +21,7 @@ const ACCOUNT_PLATFORMS: AccountPlatformOption[] = [
   {
     value: "polkadot",
     icon: <PolkadotCircleLogo className="text-lg" />,
-    title: "Polkadot",
+    title: "Substrate",
   },
   {
     value: "solana",

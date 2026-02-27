@@ -302,18 +302,14 @@ export class TaoDataApi<
           /** TAO trading volume over the last 24 hours. */
           tao_volume_24_hr: number | string;
         }[],
-        | {
-            error: {
-              /** Error code. */
-              code: "rate_limited";
-              /** Human-readable message. */
-              message: string;
-            };
-          }
-        | {
-            /** Machine-readable error reason. */
-            error: string;
-          }
+        {
+          error: {
+            /** Machine-readable error code. */
+            code: string;
+            /** Human-readable error message. */
+            message: string;
+          };
+        }
       >({
         path: `/pools`,
         method: "GET",
@@ -340,18 +336,14 @@ export class TaoDataApi<
           /** Subnet tempo (epoch cadence parameter). */
           tempo: number;
         }[],
-        | {
-            error: {
-              /** Error code. */
-              code: "rate_limited";
-              /** Human-readable message. */
-              message: string;
-            };
-          }
-        | {
-            /** Machine-readable error reason. */
-            error: string;
-          }
+        {
+          error: {
+            /** Machine-readable error code. */
+            code: string;
+            /** Human-readable error message. */
+            message: string;
+          };
+        }
       >({
         path: `/subnets`,
         method: "GET",
@@ -377,18 +369,14 @@ export class TaoDataApi<
           /** Validator 30-day APY value when available. */
           thirty_day_apy: number | null;
         }[],
-        | {
-            error: {
-              /** Error code. */
-              code: "rate_limited";
-              /** Human-readable message. */
-              message: string;
-            };
-          }
-        | {
-            /** Machine-readable error reason. */
-            error: string;
-          }
+        {
+          error: {
+            /** Machine-readable error code. */
+            code: string;
+            /** Human-readable error message. */
+            message: string;
+          };
+        }
       >({
         path: `/subnets/${netuid}/validators`,
         method: "GET",
@@ -421,18 +409,14 @@ export class TaoDataApi<
           /** Current validator rank. */
           rank: number;
         }[],
-        | {
-            error: {
-              /** Error code. */
-              code: "rate_limited";
-              /** Human-readable message. */
-              message: string;
-            };
-          }
-        | {
-            /** Machine-readable error reason. */
-            error: string;
-          }
+        {
+          error: {
+            /** Machine-readable error code. */
+            code: string;
+            /** Human-readable error message. */
+            message: string;
+          };
+        }
       >({
         path: `/validators`,
         method: "GET",

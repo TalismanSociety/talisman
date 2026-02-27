@@ -3,7 +3,7 @@ import { test } from "./fixtures"
 
 test("Import accounts & add new ones", async ({ addNewAccount, importAccount }) => {
   await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
-  await importAccount({ type: "polkadot", name: DOT_ACC_NAME })
+  await importAccount({ type: "substrate", name: DOT_ACC_NAME })
   await addNewAccount({ type: "ethereum" })
-  await addNewAccount({ type: "polkadot" })
+  await addNewAccount({ type: "substrate" })
 })

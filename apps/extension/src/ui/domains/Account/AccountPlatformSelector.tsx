@@ -75,10 +75,10 @@ export const AccountPlatformSelector = ({
           "border"
         )}
         icon={<PolkadotCircleLogo />}
-        title={t("Polkadot")}
+        title={t("Substrate")}
         subtitle={
-          <div className="line-clamp-2" data-testid="account-platform-selector-polkadot">
-            {t("Relay Chain, Asset Hub, Bittensor, and most Polkadot chains")}
+          <div className="line-clamp-2" data-testid="account-platform-selector-substrate">
+            {t("Polkadot, Bittensor, and other Substrate chains")}
           </div>
         }
         onClick={handleClick("polkadot")}

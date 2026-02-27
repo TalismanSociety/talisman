@@ -72,6 +72,18 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutolockTimer(autoLockMinutes)
     })
 
+    // Re-set the autolock timer when login status becomes known.
+    // On service worker startup there is a race between the settings subscription above
+    // (which fires when settings load from storage) and PasswordStore.hasPassword()
+    // (which determines isLoggedIn from session storage). If settings fire first,
+    // resetAutolockTimer skips because isLoggedIn is still UNKNOWN. This subscription
+    // ensures the alarm is properly created once isLoggedIn resolves to TRUE.
+    stores.password.isLoggedIn.subscribe((loggedIn) => {
+      if (loggedIn === "TRUE" && this.#autoLockMinutes > 0) {
+        stores.password.resetAutolockTimer(this.#autoLockMinutes)
+      }
+    })
+
     // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
     this.stores.errors.set({ databaseUnavailable: false, databaseQuotaExceeded: false })
 

@@ -5,7 +5,7 @@ import { xxhashAsHex } from "@polkadot/util-crypto"
 
 import * as constants from "./constants"
 
-type AccountType = "ethereum" | "polkadot"
+type AccountType = "ethereum" | "substrate"
 
 export const test = base.extend<{
   context: BrowserContext
@@ -80,7 +80,7 @@ export const test = base.extend<{
       name,
       mnemonic,
     }: {
-      type: "ethereum" | "polkadot"
+      type: "ethereum" | "substrate"
       name?: string
       mnemonic?: string
     }) => {
@@ -111,7 +111,7 @@ export const test = base.extend<{
       type,
       name,
     }: {
-      type: "ethereum" | "polkadot"
+      type: "ethereum" | "substrate"
       name?: string
     }) => {
       // randomize the name of the account if not provided
@@ -123,8 +123,10 @@ export const test = base.extend<{
       )
       const accName = name || `${constants.NEW_ACC_NAME} (${getRandomChars})`
 
+      const convertedType = type === "substrate" ? "polkadot" : "ethereum"
+
       await onboardedPage.goto(
-        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${type}`
+        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${convertedType}`
       )
       await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
 

@@ -1,6 +1,6 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import type { KeypairCurve } from "@talismn/crypto"
+import type { AccountPlatform } from "@talismn/crypto"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
@@ -13,12 +13,13 @@ export const Content = () => {
   const { t } = useTranslation()
   // get type paramter from url
   const [params] = useSearchParams()
-  const urlParamPlatform = (params.get("platform") ?? undefined) as KeypairCurve | undefined
+  const urlParamPlatform = (params.get("platform") ?? undefined) as AccountPlatform | undefined
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const accountTypeString = useCallback(() => {
+    if (urlParamPlatform === "polkadot") return ` ${t("Substrate")}`
     return urlParamPlatform ? ` ${capitalize(urlParamPlatform)}` : ""
-  }, [urlParamPlatform])
+  }, [urlParamPlatform, t])
 
   return (
     <>

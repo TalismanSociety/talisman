@@ -45,6 +45,7 @@ const NetworkItem: FC<{ logo: string; label: string }> = ({ logo, label }) => {
 }
 
 const SupportedNetworks = () => {
+  const { t } = useTranslation()
   return (
     <div className={classNames("my-10 flex h-20 shrink-0 content-center pl-[1rem]")}>
       <NetworkItem logo={logoMainnet} label="Ethereum Mainnet" />
@@ -54,10 +55,12 @@ const SupportedNetworks = () => {
       <NetworkItem logo={logoPolkadot} label="Polkadot" />
       <div className="ml-[-1rem] flex h-full w-auto p-1">
         <div className="relative flex w-auto flex-col justify-center rounded-full bg-grey-750 px-3 text-center text-grey-200 ring-1 ring-body-secondary">
-          <div className="font-bold">800+</div>
+          <div className="font-bold">1000+</div>
         </div>
       </div>
-      <div className="ml-2 content-center text-body-secondary text-sm">Networks supported</div>
+      <div className="ml-2 content-center text-body-secondary text-sm">
+        {t("Networks supported")}
+      </div>
     </div>
   )
 }
@@ -103,7 +106,7 @@ export const WelcomePage = () => {
           </div>
           <div className="welcome-subtitle text-[2rem] lg:text-[2.8rem]">
             {t(
-              "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic"
+              "Talisman supports all Ethereum and Substrate networks, including chains like Base, Bittensor, Polkadot, and Sonic"
             )}
           </div>
           <SupportedNetworks />

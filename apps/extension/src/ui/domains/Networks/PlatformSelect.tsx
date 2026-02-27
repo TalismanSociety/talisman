@@ -9,7 +9,7 @@ type NetworkPlatformOption = {
 }
 
 const OPTIONS: NetworkPlatformOption[] = [
-  { value: "polkadot", label: "Polkadot" },
+  { value: "polkadot", label: "Substrate" },
   { value: "ethereum", label: "Ethereum" },
 ]
 

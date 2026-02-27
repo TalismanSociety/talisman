@@ -5,20 +5,17 @@
 - We ship a multi-chain crypto wallet where **security, privacy, and user trust outweigh convenience**.
 - Work respectfully (Contributor Covenant) and keep PRs scoped, well-tested, and well-explained (CONTRIBUTING.md).
 - Everything in this monorepo is **TypeScript**; no plain JS or other languages unless explicitly required.
+- Do not use dependencies that are incompatible with our license (GPL-3).
 
 ## Coding & Tooling Standards
 
 - Use **Node >= 20**, `corepack enable`, and **pnpm** commands from `package.json`.
-- Formatting & linting: **[Biome](https://biomejs.dev/)** handles both. Commands:
-  - `pnpm lint` (check linting on changed files)
-  - `pnpm chore:format` (format changed files)
-  - Pre-commit hook runs `biome check --staged` automatically
-- Keep `_`-prefixed unused vars if needed (configured in `biome.json`).
+- Run pnpm check before completing a task.
 - Write/maintain unit tests (Vitest) and E2E tests (Playwright). Commands:
   - `pnpm test` (workspace-wide Vitest)
   - `pnpm exec playwright test` (E2E) and variants in `package.json`
 - Use `pnpm changeset` for versioned packages; respect CI expectations in `.github/workflows/ci.yml`.
-- I18n: wrap UI strings with `t()`/`Trans` and run `pnpm chore:update-translations` when keys change.
+- I18n: UI strings should be wrapped with `t()`/`Trans`.
 - **No barrel files (`index.ts` that only re-export).**  Import directly from the source module (e.g., `./flow-chart/SubnetTaoFlowChart`) instead of creating an `index.ts` barrel. Barrels hurt tree-shaking, slow down TypeScript, and obscure dependency graphs.
 
 ## Dependency & API Guidance
@@ -40,6 +37,7 @@
 ## Architecture & Reuse
 
 - Favor **RxJS (+ @react-rxjs/core)** for state/logic that must run in both UI and service-worker contexts so we can reuse the same streams across backend and frontend; React local state is fine for purely local UI concerns.
+- Use provideContext when a react context is needed (for sharing data within wizards or component sub-trees)
 - Reuse existing packages/modules (`@talismn/balances`, `chaindata-provider`, shared stores, UI components) before inventing new abstractions.
 - Keep modules composable and documented (see `BalancesModules.md` for expectations on APIs, storage, hydration).
 - Encourage `lodash-es` helpers when they keep code clear/concise.
@@ -69,7 +67,6 @@
 ## Error Handling & Observability
 
 - Bubble actionable errors to users via established patterns (inline messaging, notifications) while keeping sensitive details out of the UI/logs.
-- Use shared logging/telemetry utilities sparingly and only for anonymized diagnostics.
 - Prefer existing retry/backoff helpers (chain connectors, fetch utilities) and avoid tight retry loops that could spam RPC providers.
 
 ## Testing & Verification Checklist
@@ -83,10 +80,5 @@
 ## Commenting & Documentation
 
 - Code should be self-explanatory; add **succinct comments** only when context is non-obvious (security rationale, tricky RxJS flows, chain-specific quirks).
-- Update relevant READMEs/CHANGELOGs when behavior or public APIs change; run `pnpm changeset` when packages ship new features/fixes.
+- Update relevant READMEs when behavior or public APIs change; run `pnpm changeset` when public packages ship new features/fixes.
 - If a PR affects onboarding instructions, contribution rules, security policies, or other documented workflows, update the corresponding markdown files (README, CONTRIBUTING, CODE_OF_CONDUCT, package docs) in the same PR so they never fall out of date.
-
-## Maintaining This Prompt
-
-- Revisit whenever `README.md`, `CONTRIBUTING.md`, security policies, or build tooling change.
-- Keep a running list of privacy/security decisions; future prompt edits should reflect lessons learned from audits, incidents, or new upstream guidance.
