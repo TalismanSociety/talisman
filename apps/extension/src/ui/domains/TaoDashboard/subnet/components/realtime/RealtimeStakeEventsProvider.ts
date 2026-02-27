@@ -1,11 +1,11 @@
 import { fromHex, toHex } from "@polkadot-api/utils"
+import { provideContext } from "@talisman/util/provideContext"
 import { blake2b256 } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useRef, useState } from "react"
-
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import type { RealtimeStakeEvent } from "./types"
 
@@ -13,7 +13,7 @@ import type { RealtimeStakeEvent } from "./types"
 const SYSTEM_EVENTS_KEY = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
 
 /** How often we poll for the best block header (ms) */
-const POLL_INTERVAL_MS = 6_000
+const POLL_INTERVAL_MS = 2_000
 
 /** Max blocks to process concurrently during backfill */
 const BACKFILL_CONCURRENCY = 5
@@ -28,21 +28,30 @@ type DecodedEvent = {
   topics: unknown[]
 }
 
+type ExtractionResult = {
+  blockHash: string
+  events: RealtimeStakeEvent[]
+}
+
 /**
  * Fetch and decode SubtensorModule stake events for a given block.
- * Returns matching events and the extrinsics array (needed for hash computation).
+ * Accepts an optional pre-fetched `blockHash` to avoid a redundant RPC call
+ * when the caller has already resolved the hash (e.g. for reorg detection).
  */
 const extractStakeEventsFromBlock = async (
   sapi: ScaleApi,
   blockNumber: number,
   netuid: number,
-  signal: AbortSignal
-): Promise<RealtimeStakeEvent[]> => {
-  // 1. Get block hash
-  const blockHash = await api.subSend<`0x${string}`>(BITTENSOR_NETWORK_ID, "chain_getBlockHash", [
-    blockNumber,
-  ])
-  if (!blockHash || signal.aborted) return []
+  signal: AbortSignal,
+  preBlockHash?: string
+): Promise<ExtractionResult> => {
+  const EMPTY: ExtractionResult = { blockHash: "", events: [] }
+
+  // 1. Get block hash (use pre-fetched if available)
+  const blockHash =
+    preBlockHash ??
+    (await api.subSend<`0x${string}`>(BITTENSOR_NETWORK_ID, "chain_getBlockHash", [blockNumber]))
+  if (!blockHash || signal.aborted) return EMPTY
 
   // 2. Fetch System.Events at this block
   const eventsHex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_getStorage", [
@@ -91,7 +100,7 @@ const extractStakeEventsFromBlock = async (
     })
   }
 
-  if (matches.length === 0 || signal.aborted) return []
+  if (matches.length === 0 || signal.aborted) return { blockHash, events: [] }
 
   // 5. Fetch the block to compute extrinsic hashes
   const block = await api.subSend<{ block: { extrinsics: string[] } }>(
@@ -99,7 +108,7 @@ const extractStakeEventsFromBlock = async (
     "chain_getBlock",
     [blockHash]
   )
-  if (!block?.block?.extrinsics || signal.aborted) return []
+  if (!block?.block?.extrinsics || signal.aborted) return EMPTY
 
   for (const match of matches) {
     const extHex = block.block.extrinsics[match.extrinsicIndex]
@@ -109,7 +118,10 @@ const extractStakeEventsFromBlock = async (
     }
   }
 
-  return matches.filter((m) => m.event.hash).map((m) => m.event)
+  return {
+    blockHash,
+    events: matches.filter((m) => m.event.hash).map((m) => m.event),
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -146,16 +158,19 @@ export type UseRealtimeStakeEventsReturn = {
  * On the first `pruneBelow` call, a one-time backfill runs to capture any
  * events between the indexer head and the first polled block.
  */
-export const useRealtimeStakeEvents = (
+export const useRealtimeStakeEventsProvider = ({
+  netuid,
+}: {
   netuid: number | null | undefined
-): UseRealtimeStakeEventsReturn => {
+}): UseRealtimeStakeEventsReturn => {
   const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
 
   // --- Buffer state ---
   // Map<blockNumber, events[]> — the sliding buffer source of truth
   const bufferRef = useRef(new Map<number, RealtimeStakeEvent[]>())
-  // Set of already-processed block numbers (avoids reprocessing)
-  const processedRef = useRef(new Set<number>())
+  // Map<blockNumber, blockHash> — tracks which hash we processed per height
+  // so we can detect when the best block changes (reorg at the tip)
+  const processedRef = useRef(new Map<number, string>())
   // The first block we ever polled (used as upper bound for backfill)
   const watchStartBlockRef = useRef<number | null>(null)
   // Per-consumer floor heights — prune only below the minimum
@@ -188,7 +203,7 @@ export const useRealtimeStakeEvents = (
   // biome-ignore lint/correctness/useExhaustiveDependencies: netuid is intentionally a dependency so all refs + state reset when the user switches subnet
   useEffect(() => {
     bufferRef.current = new Map()
-    processedRef.current = new Set()
+    processedRef.current = new Map()
     watchStartBlockRef.current = null
     consumerFloorsRef.current = new Map()
     floorRef.current = 0
@@ -224,26 +239,54 @@ export const useRealtimeStakeEvents = (
           lastProcessedBlockRef.current = bestBlock - 1 // will process bestBlock
         }
 
-        // Process all blocks from (lastProcessed + 1) to bestBlock
-        const from = lastProcessedBlockRef.current + 1
+        // Handle reorgs: if best block went backwards, invalidate orphaned blocks
+        if (bestBlock < lastProcessedBlockRef.current) {
+          for (const blockNum of [...processedRef.current.keys()]) {
+            if (blockNum > bestBlock) {
+              processedRef.current.delete(blockNum)
+              bufferRef.current.delete(blockNum)
+            }
+          }
+        }
+
+        // Always re-check at least the current tip — its hash may have
+        // changed since last poll (consensus hasn't finalised it yet).
+        const from = Math.min(lastProcessedBlockRef.current + 1, bestBlock)
         const to = bestBlock
 
         for (let blockNum = from; blockNum <= to; blockNum++) {
           if (signal.aborted) return
-          if (processedRef.current.has(blockNum)) continue
           // Skip blocks below the floor (indexer already covers them)
           if (blockNum <= floorRef.current) {
-            processedRef.current.add(blockNum)
+            processedRef.current.set(blockNum, "floor")
             continue
           }
 
+          // Cheaply fetch the block hash to detect tip changes
+          const blockHash = await api.subSend<string>(BITTENSOR_NETWORK_ID, "chain_getBlockHash", [
+            blockNum,
+          ])
+          if (!blockHash || signal.aborted) continue
+
+          // Skip if we already processed this exact block hash
+          if (processedRef.current.get(blockNum) === blockHash) continue
+
           try {
-            const newEvents = await extractStakeEventsFromBlock(sapi, blockNum, netuid, signal)
+            const { events: newEvents } = await extractStakeEventsFromBlock(
+              sapi,
+              blockNum,
+              netuid,
+              signal,
+              blockHash
+            )
             if (signal.aborted) return
 
-            processedRef.current.add(blockNum)
+            processedRef.current.set(blockNum, blockHash)
             if (newEvents.length > 0) {
               bufferRef.current.set(blockNum, newEvents)
+            } else {
+              // Reorged block may no longer contain matching events
+              bufferRef.current.delete(blockNum)
             }
           } catch (err) {
             // Non-fatal — we'll try this block again on next poll cycle
@@ -334,7 +377,7 @@ async function runBackfill(
   fromBlock: number,
   toBlock: number,
   bufferRef: React.MutableRefObject<Map<number, RealtimeStakeEvent[]>>,
-  processedRef: React.MutableRefObject<Set<number>>,
+  processedRef: React.MutableRefObject<Map<number, string>>,
   floorRef: React.MutableRefObject<number>,
   deriveEvents: () => void
 ) {
@@ -368,12 +411,12 @@ async function runBackfill(
     for (let j = 0; j < batch.length; j++) {
       const blockNum = batch[j]
       const result = results[j]
-      processedRef.current.add(blockNum)
 
-      if (result.status === "fulfilled" && result.value.length > 0) {
+      if (result.status === "fulfilled") {
+        processedRef.current.set(blockNum, result.value.blockHash)
         // Only add if block is still above the floor (might have been pruned during backfill)
-        if (blockNum > floorRef.current) {
-          bufferRef.current.set(blockNum, result.value)
+        if (result.value.events.length > 0 && blockNum > floorRef.current) {
+          bufferRef.current.set(blockNum, result.value.events)
         }
       }
     }
@@ -383,3 +426,7 @@ async function runBackfill(
 
   log.debug("[RealtimeStakeEvents] Backfill complete")
 }
+
+export const [RealtimeStakeEventsProvider, useRealtimeStakeEventsContext] = provideContext(
+  useRealtimeStakeEventsProvider
+)
