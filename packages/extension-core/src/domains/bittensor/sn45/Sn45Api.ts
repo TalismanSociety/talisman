@@ -582,6 +582,8 @@ export class Sn45Api<
           candles: any[][];
           /** Opaque cursor for backward pagination. Pass as `cursor` query param to fetch older candles. null when no more data. */
           nextCursor: string | null;
+          /** Block height of the most recent indexed event used to build the current candles. Only present for latest (non-cursor) requests; null otherwise. Clients can use this as the starting block for real-time subscriptions. */
+          lastBlockHeight: number | null;
         },
         {
           error: {
