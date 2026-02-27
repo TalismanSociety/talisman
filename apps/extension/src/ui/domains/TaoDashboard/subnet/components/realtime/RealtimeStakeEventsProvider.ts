@@ -58,7 +58,7 @@ const extractStakeEventsFromBlock = async (
     SYSTEM_EVENTS_KEY,
     blockHash,
   ])
-  if (!eventsHex || signal.aborted) return []
+  if (!eventsHex || signal.aborted) return EMPTY
 
   // 3. Decode events
   const eventsCodec = sapi.chain.builder.buildStorage("System", "Events")
