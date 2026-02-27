@@ -77,7 +77,7 @@ export const AccountPlatformSelector = ({
         icon={<PolkadotCircleLogo />}
         title={t("Substrate")}
         subtitle={
-          <div className="line-clamp-2" data-testid="account-platform-selector-polkadot">
+          <div className="line-clamp-2" data-testid="account-platform-selector-substrate">
             {t("Polkadot, Bittensor, and other Substrate chains")}
           </div>
         }
