@@ -338,8 +338,9 @@ export function consolidateRealtimeBars(
       prevClose = lastIndexed.close
     } else {
       // Gap-fill: create empty carry-forward candles for any skipped buckets
-      const expectedNextBucket =
-        (result.length > 0 ? result[result.length - 1].time : 0) + bucketSec
+      // When there are no indexed or prior result bars, start from this bucket (no gap-fill needed)
+      const lastResultTime = result.length > 0 ? result[result.length - 1].time : bucket
+      const expectedNextBucket = lastResultTime + bucketSec
       for (let gap = expectedNextBucket; gap < bucket; gap += bucketSec) {
         result.push({
           time: gap,

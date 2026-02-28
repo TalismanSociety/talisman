@@ -12,6 +12,8 @@ export type RealtimeStakeEvent = {
   hash: string
   /** Block number where this event was included */
   blockHeight: number
+  /** Extrinsic index within the block — preserves on-chain ordering */
+  extrinsicIndex: number
   /** Unix timestamp in milliseconds (approximated from Date.now() at decode time) */
   timestamp: number
 }

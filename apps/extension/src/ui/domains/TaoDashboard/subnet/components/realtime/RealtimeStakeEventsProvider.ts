@@ -95,6 +95,7 @@ const extractStakeEventsFromBlock = async (
         hotkey,
         hash: "", // will fill below
         blockHeight: blockNumber,
+        extrinsicIndex: phase.value,
         timestamp: now,
       },
     })
@@ -180,6 +181,8 @@ export const useRealtimeStakeEventsProvider = ({
   const floorRef = useRef<number>(0)
   // Whether backfill has been performed
   const backfillDoneRef = useRef(false)
+  // AbortController for the backfill task — aborted on netuid change / unmount
+  const backfillAbortRef = useRef<AbortController | null>(null)
   // The last block number we advanced to (for sequential processing)
   const lastProcessedBlockRef = useRef<number>(0)
 
@@ -195,8 +198,8 @@ export const useRealtimeStakeEventsProvider = ({
     for (const [blockNum, evts] of bufferRef.current) {
       if (blockNum > floor) all.push(...evts)
     }
-    // Sort by block height ascending, then by method (StakeAdded first for determinism)
-    all.sort((a, b) => a.blockHeight - b.blockHeight || a.method.localeCompare(b.method))
+    // Sort by block height ascending, then by extrinsic index (preserves on-chain order)
+    all.sort((a, b) => a.blockHeight - b.blockHeight || a.extrinsicIndex - b.extrinsicIndex)
     // Avoid unnecessary re-renders when event list hasn't changed
     setEvents((prev) => {
       if (
@@ -217,6 +220,8 @@ export const useRealtimeStakeEventsProvider = ({
     consumerFloorsRef.current = new Map()
     floorRef.current = 0
     backfillDoneRef.current = false
+    backfillAbortRef.current?.abort()
+    backfillAbortRef.current = null
     lastProcessedBlockRef.current = 0
     setEvents([])
     setBestBlockNumber(null)
@@ -265,12 +270,14 @@ export const useRealtimeStakeEventsProvider = ({
         // changed since last poll (consensus hasn't finalised it yet).
         const from = Math.min(lastProcessedBlockRef.current + 1, bestBlock)
         const to = bestBlock
+        let lastSuccessBlock = lastProcessedBlockRef.current
 
         for (let blockNum = from; blockNum <= to; blockNum++) {
           if (signal.aborted) return
           // Skip blocks below the floor (indexer already covers them)
           if (blockNum <= floorRef.current) {
             processedRef.current.set(blockNum, "floor")
+            lastSuccessBlock = blockNum
             continue
           }
 
@@ -281,7 +288,10 @@ export const useRealtimeStakeEventsProvider = ({
           if (!blockHash || signal.aborted) continue
 
           // Skip if we already processed this exact block hash
-          if (processedRef.current.get(blockNum) === blockHash) continue
+          if (processedRef.current.get(blockNum) === blockHash) {
+            lastSuccessBlock = blockNum
+            continue
+          }
 
           try {
             const { events: newEvents } = await extractStakeEventsFromBlock(
@@ -300,6 +310,7 @@ export const useRealtimeStakeEventsProvider = ({
               // Reorged block may no longer contain matching events
               bufferRef.current.delete(blockNum)
             }
+            lastSuccessBlock = blockNum
           } catch (err) {
             // Non-fatal — we'll try this block again on next poll cycle
             log.warn("[RealtimeStakeEvents] Failed to process block", blockNum, err)
@@ -307,7 +318,7 @@ export const useRealtimeStakeEventsProvider = ({
           }
         }
 
-        lastProcessedBlockRef.current = Math.max(lastProcessedBlockRef.current, to)
+        lastProcessedBlockRef.current = lastSuccessBlock
         setBestBlockNumber(to)
         deriveEvents()
       } catch (err) {
@@ -325,6 +336,7 @@ export const useRealtimeStakeEventsProvider = ({
 
     return () => {
       controller.abort()
+      backfillAbortRef.current?.abort()
       clearInterval(interval)
     }
   }, [sapi, netuid, deriveEvents])
@@ -359,6 +371,8 @@ export const useRealtimeStakeEventsProvider = ({
       // Trigger backfill on first reportFloor call (we now know the indexer head)
       if (!backfillDoneRef.current && watchStartBlockRef.current !== null && sapi && netuid) {
         backfillDoneRef.current = true
+        const backfillController = new AbortController()
+        backfillAbortRef.current = backfillController
         runBackfill(
           sapi,
           netuid,
@@ -367,7 +381,8 @@ export const useRealtimeStakeEventsProvider = ({
           bufferRef,
           processedRef,
           floorRef,
-          deriveEvents
+          deriveEvents,
+          backfillController.signal
         )
       }
     },
@@ -393,7 +408,8 @@ async function runBackfill(
   bufferRef: React.MutableRefObject<Map<number, RealtimeStakeEvent[]>>,
   processedRef: React.MutableRefObject<Map<number, string>>,
   floorRef: React.MutableRefObject<number>,
-  deriveEvents: () => void
+  deriveEvents: () => void,
+  signal: AbortSignal
 ) {
   const start = fromBlock + 1
   const end = toBlock - 1
@@ -401,10 +417,6 @@ async function runBackfill(
   if (start > end) return
 
   log.debug(`[RealtimeStakeEvents] Backfilling blocks ${start}–${end}`)
-
-  // Internal abort controller for backfill
-  const controller = new AbortController()
-  const { signal } = controller
 
   // Process in batches
   const blockNumbers: number[] = []
