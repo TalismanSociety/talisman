@@ -4,6 +4,8 @@ import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { useRealtimeStakeEventsContext } from "../realtime/RealtimeStakeEventsProvider"
+import { useRealtimeAlphaPrice } from "../realtime/useRealtimeAlphaPrice"
 import { useSubnetStats } from "./useSubnetStats"
 
 interface PriceChartHeaderProps {
@@ -13,10 +15,27 @@ interface PriceChartHeaderProps {
 export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   const { t } = useTranslation()
   const {
-    data: { tokenPrice, tokenPriceUsd, priceChange24h, marketCap, volume24h, fdv, dailyEmissions },
+    data: {
+      tokenPrice: indexedPrice,
+      tokenPriceUsd: indexedPriceUsd,
+      taoUsdPrice,
+      priceChange24h,
+      marketCap,
+      volume24h,
+      fdv,
+      dailyEmissions,
+    },
     isLoading,
     isError,
   } = useSubnetStats(netuid)
+
+  // Real-time price from SwapRuntimeApi.current_alpha_price, refreshed on each block
+  const { bestBlockNumber } = useRealtimeStakeEventsContext()
+  const { data: realtimePrice } = useRealtimeAlphaPrice(netuid, bestBlockNumber)
+
+  // Prefer the on-chain real-time price when available
+  const tokenPrice = realtimePrice ?? indexedPrice
+  const tokenPriceUsd = realtimePrice && taoUsdPrice ? realtimePrice * taoUsdPrice : indexedPriceUsd
 
   if (isLoading) {
     return <PriceChartHeaderSkeleton />
@@ -33,7 +52,7 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
           </div>
           <div className="mt-1 flex items-center gap-2">
             <span className="text-body-secondary text-md">
-              ${tokenPriceUsd?.toFixed(6) ?? "0.00"}
+              <FiatFromUsd amount={tokenPriceUsd} noCountUp />
             </span>
             {priceChange24h !== null && (
               <span

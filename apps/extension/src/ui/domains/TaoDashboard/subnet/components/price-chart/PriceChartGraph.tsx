@@ -5,6 +5,7 @@ import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "reac
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
 import { createChartOptions } from "../chartOptions"
+import { useRealtimeStakeEventsContext } from "../realtime/RealtimeStakeEventsProvider"
 import { CHART_COLORS, CHART_LAYOUT, INDICATOR_CONFIG } from "./chartConfig"
 import {
   calculateBollingerBands,
@@ -75,8 +76,14 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const { t } = useTranslation()
   const [resolution, setResolution] = useState<OhlcvResolution>("60")
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
+  const { events: realtimeEvents, reportFloor } = useRealtimeStakeEventsContext()
 
-  const { bars, isLoading, isError, hasMore, loadMore } = useOhlcvData({ netuid, resolution })
+  const { bars, isLoading, isError, hasMore, loadMore } = useOhlcvData({
+    netuid,
+    resolution,
+    realtimeEvents,
+    onIndexerBlockHeight: reportFloor,
+  })
   const { data: tweets } = useSubnetTweets(netuid, "1m") // TODO implement cursor and pull as needed
   const {
     data: { tokenPrice },
@@ -116,6 +123,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
       />
       <div className="grow">
         <PriceChartGraphContent
+          key={`${netuid}-${resolution}`}
           bars={bars}
           hasMore={hasMore}
           loadMore={loadMore}
