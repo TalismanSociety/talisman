@@ -1,5 +1,5 @@
 ---
-name: fima-integration
+name: figma-integration
 description: Integrate UI from Figma
 ---
 
