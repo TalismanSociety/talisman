@@ -99,7 +99,7 @@ export const TryTalismanContent: FC<{
         if (resultAddress) IS_POPUP ? navigate("/portfolio") : close()
       } catch {
         setPending(false)
-        setError(t("Please enter a valid Polkadot or Ethereum address"))
+        setError(t("Please enter a valid account address"))
       }
     },
     [analytics, address, isNsLookup, searchAddress, navigate, close, t]

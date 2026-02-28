@@ -488,7 +488,7 @@ const getDotNetworkInfo = async (
       },
     }
   } catch (err) {
-    log.error("Failed to fetch Polkadot chain info", { err })
+    log.error("Failed to fetch Substrate chain info", { rpcUrl, err })
   }
 
   return t("Failed to fetch network information network")

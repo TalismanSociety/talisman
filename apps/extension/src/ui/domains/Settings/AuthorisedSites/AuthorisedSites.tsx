@@ -4,9 +4,8 @@ import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { useAuthorisedSites } from "@ui/state"
 import type { ProviderType } from "extension-core"
-import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 
 import { AuthorizedSite } from "./AuthorisedSite"
 import { AuthorisedSitesBatchActions } from "./AuthorisedSiteBatchActions"
@@ -63,7 +62,7 @@ export const AuthorisedSites = () => {
           <OptionSwitch
             options={[
               ["ethereum", t("Ethereum")],
-              ["polkadot", t("Polkadot")],
+              ["polkadot", t("Substrate")],
               ["solana", t("Solana")],
             ]}
             className="text-xs [&>div]:h-full"
@@ -80,19 +79,7 @@ export const AuthorisedSites = () => {
         ))}
         {providerType === "polkadot" && !hasPolkadotSites && (
           <div className="w-full rounded bg-grey-850 p-8 text-body-secondary">
-            <Trans
-              t={t}
-              components={{
-                Link: (
-                  <a
-                    href={TALISMAN_WEB_APP_URL}
-                    target="_blank"
-                    className="text-grey-200 hover:text-body"
-                  ></a>
-                ),
-              }}
-              defaults="You haven't connected to any Polkadot sites yet. Why not start with <Link>Talisman Portal</Link>?"
-            ></Trans>
+            {t("You haven't connected to any Substrate sites yet.")}
           </div>
         )}
         {sites && !hasEthereumSites && providerType === "ethereum" && (

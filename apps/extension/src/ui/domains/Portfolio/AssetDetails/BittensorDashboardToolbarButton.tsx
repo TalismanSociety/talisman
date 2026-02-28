@@ -23,8 +23,7 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
   const hasBittensorBalances = useMemo(() => {
     return balances.each.some(
       (b) =>
-        b.token?.type === "substrate-dtao" &&
-        bittensorNetworkIds.includes(b.token.networkId) &&
+        bittensorNetworkIds.includes(b.networkId) &&
         accounts.some((a) => isAddressEqual(a.address, b.address))
     )
   }, [accounts, balances, bittensorNetworkIds])

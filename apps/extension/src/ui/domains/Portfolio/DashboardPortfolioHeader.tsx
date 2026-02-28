@@ -312,8 +312,7 @@ const TopActions: FC = () => {
               label: t("Stake TAO"),
               icon: BittensorIcon,
               onClick: () => api.dashboardOpen("/bittensor/subnets"),
-              disabled: disableActions,
-              disabledReason,
+              disabled: false,
             }
           : null,
       ].filter(isNotNil),

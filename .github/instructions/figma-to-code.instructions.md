@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.tsx,**/*.ts,**/*.css"
+applyTo: "**/*.tsx,**/*.css"
 ---
 
 # Figma-to-Code Conversion Rules for Talisman Extension

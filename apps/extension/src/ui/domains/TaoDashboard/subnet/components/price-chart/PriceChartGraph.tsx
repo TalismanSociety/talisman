@@ -5,6 +5,7 @@ import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "reac
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
 import { createChartOptions } from "../chartOptions"
+import { useRealtimeStakeEventsContext } from "../realtime/RealtimeStakeEventsProvider"
 import { CHART_COLORS, CHART_LAYOUT, INDICATOR_CONFIG } from "./chartConfig"
 import {
   calculateBollingerBands,
@@ -75,8 +76,14 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   const { t } = useTranslation()
   const [resolution, setResolution] = useState<OhlcvResolution>("60")
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS)
+  const { events: realtimeEvents, reportFloor } = useRealtimeStakeEventsContext()
 
-  const { bars, isLoading, isError, hasMore, loadMore } = useOhlcvData({ netuid, resolution })
+  const { bars, isLoading, isError, hasMore, loadMore } = useOhlcvData({
+    netuid,
+    resolution,
+    realtimeEvents,
+    onIndexerBlockHeight: reportFloor,
+  })
   const { data: tweets } = useSubnetTweets(netuid, "1m") // TODO implement cursor and pull as needed
   const {
     data: { tokenPrice },
@@ -87,7 +94,14 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   }, [])
 
   if (isLoading) {
-    return <PriceChartGraphSkeleton />
+    return (
+      <PriceChartGraphSkeleton
+        indicators={indicators}
+        toggleIndicator={toggleIndicator}
+        resolution={resolution}
+        setResolution={setResolution}
+      />
+    )
   }
 
   if (isError || bars.length === 0) {
@@ -109,6 +123,7 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
       />
       <div className="grow">
         <PriceChartGraphContent
+          key={`${netuid}-${resolution}`}
           bars={bars}
           hasMore={hasMore}
           loadMore={loadMore}
@@ -121,8 +136,22 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
   )
 }
 
-const PriceChartGraphSkeleton = () => (
-  <div className="relative size-full bg-[#181818]">
+const PriceChartGraphSkeleton: FC<{
+  indicators: IndicatorConfig
+  toggleIndicator: (key: keyof IndicatorConfig) => void
+  resolution: OhlcvResolution
+  setResolution: (resolution: OhlcvResolution) => void
+}> = ({ indicators, toggleIndicator, resolution, setResolution }) => (
+  <div className="relative size-full overflow-hidden bg-[#181818]">
+    <div className="absolute inset-x-12 top-5 z-10">
+      <PriceChartToolbar
+        indicators={indicators}
+        toggleIndicator={toggleIndicator}
+        resolution={resolution}
+        setResolution={setResolution}
+        // className="absolute inset-x-12 top-5 z-10"
+      />
+    </div>
     {/* Grid lines */}
     <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
     <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />

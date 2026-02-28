@@ -4,7 +4,7 @@ import { testAssets } from "./transfers"
 
 test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, extensionId }) => {
   test.setTimeout(120_000)
-  await importAccount({ type: "polkadot", name: DOT_ACC_NAME })
+  await importAccount({ type: "substrate", name: DOT_ACC_NAME })
   await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
   await onboardedPage.goto(
     `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks`
@@ -32,7 +32,7 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
   // starts transfering assets
   for (const data of testAssets) {
     await test.step(`Transferring ${data.assetName} on ${data.chain}`, async () => {
-      if (data.chainType === "polkadot") {
+      if (data.chainType === "substrate") {
         await onboardedPage.getByTestId("sidebar-account-list").getByText(DOT_ACC_NAME).click()
       } else {
         await onboardedPage.getByTestId("sidebar-account-list").getByText(ETH_ACC_NAME).click()

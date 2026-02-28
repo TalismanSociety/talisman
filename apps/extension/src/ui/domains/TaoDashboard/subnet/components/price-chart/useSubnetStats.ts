@@ -13,6 +13,7 @@ import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 export interface SubnetStatsData {
   tokenPrice: number | null
   tokenPriceUsd: number | null
+  taoUsdPrice: number | null
   priceChange24h: number | null
   marketCap: number | null
   volume24h: number | null
@@ -74,6 +75,7 @@ export function useSubnetStats(netuid: number) {
     return {
       tokenPrice,
       tokenPriceUsd,
+      taoUsdPrice,
       priceChange24h,
       marketCap,
       volume24h,

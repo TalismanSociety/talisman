@@ -25,8 +25,7 @@ export const BittensorStakeToolbarButton: FC<{ balances: Balances; className?: s
     const balance = balances.each
       .filter(
         (b) =>
-          b.token?.type === "substrate-dtao" &&
-          bittensorNetworkIds.includes(b.token.networkId) &&
+          bittensorNetworkIds.includes(b.networkId) &&
           accounts.some((a) => isAddressEqual(a.address, b.address))
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
