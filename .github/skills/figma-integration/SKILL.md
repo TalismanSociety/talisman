@@ -1,5 +1,6 @@
 ---
-applyTo: "**/*.tsx,**/*.css"
+name: figma-integration
+description: Integrate UI from Figma
 ---
 
 # Figma-to-Code Conversion Rules for Talisman Extension
