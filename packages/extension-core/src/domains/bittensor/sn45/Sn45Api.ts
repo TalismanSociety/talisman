@@ -554,7 +554,7 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns OHLCV (Open/High/Low/Close/Volume) candle data for a subnet's alpha token. Each candle is a 6-element array: `[time, open, high, low, close, volume]` - **time** – Unix epoch seconds (bucket start) - **open** – Opening price in TAO for the period - **high** – Highest price in TAO for the period - **low** – Lowest price in TAO for the period - **close** – Closing price in TAO for the period - **volume** – Total TAO volume (buys + sells) in the period Supported resolutions (in minutes): 15, 60 (default), 240, 1440 (1 day). OHLC values are derived from individual stake events (buys/sells). Each trade's price is computed as taoAmount/alphaAmount, providing accurate per-trade prices bucketed into standard OHLCV candles. Candles are sorted most-recent-first. Use `nextCursor` to paginate backwards.
+     * @description Returns OHLCV (Open/High/Low/Close/Volume) candle data for a subnet's alpha token. Each candle is a 6-element array: `[time, open, high, low, close, volume]` - **time** – Unix epoch seconds (bucket start) - **open** – Opening price in TAO for the period - **high** – Highest price in TAO for the period - **low** – Lowest price in TAO for the period - **close** – Closing price in TAO for the period - **volume** – Total TAO volume (buys + sells) in the period Supported resolutions (in minutes): 5, 15, 60 (default), 240, 1440 (1 day). OHLC values are derived from individual stake events (buys/sells). Each trade's price is computed as taoAmount/alphaAmount, providing accurate per-trade prices bucketed into standard OHLCV candles. Candles are sorted most-recent-first. Use `nextCursor` to paginate backwards.
      *
      * @tags Subnets
      * @name GetSubnetOhlcv
@@ -565,10 +565,10 @@ export class Sn45Api<
       netuid: string,
       query?: {
         /**
-         * Candle period in minutes: "15" (15m), "60" (1h, default), "240" (4h), "1440" (1d).
+         * Candle period in minutes: "5" (5m), "15" (15m), "60" (1h, default), "240" (4h), "1440" (1d).
          * @default "60"
          */
-        resolution?: "15" | "60" | "240" | "1440";
+        resolution?: "5" | "15" | "60" | "240" | "1440";
         /** Number of candles to return (1-100, default 100). Most recent first. */
         limit?: string;
         /** Opaque cursor from a previous response's nextCursor. When absent, returns the most recent candles. */
@@ -582,7 +582,7 @@ export class Sn45Api<
           candles: any[][];
           /** Opaque cursor for backward pagination. Pass as `cursor` query param to fetch older candles. null when no more data. */
           nextCursor: string | null;
-          /** Block height of the most recent indexed event used to build the current candles. Only present for latest (non-cursor) requests; null otherwise. Clients can use this as the starting block for real-time subscriptions. */
+          /** Block height of the most recent indexed event used to build the current candles. Only present for latest (non-cursor) requests; null otherwise. */
           lastBlockHeight: number | null;
         },
         {
