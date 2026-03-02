@@ -14,7 +14,7 @@ export type SharedChartOptionsParams = {
   }
   hideVerticalGridLines?: boolean
   handleScroll?: boolean
-  handleScale?: boolean
+  handleScale?: TimeChartOptions["handleScale"]
 }
 
 export const createChartOptions = ({
