@@ -3,7 +3,7 @@ import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { UTCTimestamp } from "lightweight-charts"
 import { useMemo } from "react"
 
-import { useSubnetFlowChart, useSubnetFlowSummary } from "../../../hooks/useSn45Api"
+import { useSubnetTaoFlow } from "../../../hooks/useSn45Api"
 import { raoToTao } from "../../../shared/util"
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import type { AlphaFlow, FlowChartPoint, FlowTotals } from "./types"
@@ -22,7 +22,7 @@ export interface UseFlowHeaderDataReturn {
 }
 
 export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHeaderDataReturn {
-  const { data: flowSummary, isLoading: summaryLoading } = useSubnetFlowSummary(netuid, period)
+  const { data: taoFlow, isLoading } = useSubnetTaoFlow(netuid, period)
   const { subnetData } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   // Current subnet entry
@@ -31,24 +31,24 @@ export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHe
     [subnetData, netuid]
   )
 
-  // TAO flow totals from the flow-summary endpoint (rao strings → float TAO)
+  // TAO flow totals (already float TAO from the tao-flow endpoint)
   const totals = useMemo<FlowTotals>(() => {
-    if (!flowSummary) return { taoIn: 0, taoOut: 0, net: 0 }
+    if (!taoFlow) return { taoIn: 0, taoOut: 0, net: 0 }
     return {
-      taoIn: raoToTao(flowSummary.taoFlow.taoIn),
-      taoOut: raoToTao(flowSummary.taoFlow.taoOut),
-      net: raoToTao(flowSummary.taoFlow.net),
+      taoIn: taoFlow.totals.taoIn,
+      taoOut: taoFlow.totals.taoOut,
+      net: taoFlow.totals.taoIn - taoFlow.totals.taoOut,
     }
-  }, [flowSummary])
+  }, [taoFlow])
 
-  // Alpha flow from the flow-summary endpoint (rao strings → float alpha)
+  // Alpha flow (already float ALPHA from the tao-flow endpoint)
   const alphaFlow = useMemo<AlphaFlow>(() => {
-    if (!flowSummary) return { alphaIn: 0, alphaOut: 0 }
+    if (!taoFlow) return { alphaIn: 0, alphaOut: 0 }
     return {
-      alphaIn: raoToTao(flowSummary.alphaFlow.alphaIn),
-      alphaOut: raoToTao(flowSummary.alphaFlow.alphaOut),
+      alphaIn: taoFlow.totals.alphaIn,
+      alphaOut: taoFlow.totals.alphaOut,
     }
-  }, [flowSummary])
+  }, [taoFlow])
 
   // Emissions (from on-chain subnet data)
   const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
@@ -69,12 +69,12 @@ export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHe
     emissionPercent,
     dailyEmissions,
     distributionTrend,
-    isLoading: summaryLoading,
+    isLoading,
   }
 }
 
 // ---------------------------------------------------------------------------
-// Hook – Graph data (flow time-series from flow-chart endpoint)
+// Hook – Graph data (flow time-series from tao-flow endpoint)
 // ---------------------------------------------------------------------------
 
 export interface UseFlowGraphDataReturn {
@@ -85,10 +85,10 @@ export interface UseFlowGraphDataReturn {
 }
 
 export function useFlowGraphData(netuid: number, period: TimePeriod): UseFlowGraphDataReturn {
-  const { data: flowChart, isLoading } = useSubnetFlowChart(netuid, period)
+  const { data: taoFlow, isLoading } = useSubnetTaoFlow(netuid, period)
 
   const { taoInData, taoOutData, netData } = useMemo(() => {
-    if (!flowChart?.data?.length)
+    if (!taoFlow?.series?.length)
       return {
         taoInData: [] as FlowChartPoint[],
         taoOutData: [] as FlowChartPoint[],
@@ -99,7 +99,7 @@ export function useFlowGraphData(netuid: number, period: TimePeriod): UseFlowGra
     const taoOut: FlowChartPoint[] = []
     const net: FlowChartPoint[] = []
 
-    for (const [time, cumulativeTaoIn, cumulativeTaoOut, netValue] of flowChart.data) {
+    for (const [time, cumulativeTaoIn, cumulativeTaoOut, netValue] of taoFlow.series) {
       const t = time as UTCTimestamp
       taoIn.push({ time: t, value: cumulativeTaoIn as number })
       taoOut.push({ time: t, value: cumulativeTaoOut as number })
@@ -107,7 +107,7 @@ export function useFlowGraphData(netuid: number, period: TimePeriod): UseFlowGra
     }
 
     return { taoInData: taoIn, taoOutData: taoOut, netData: net }
-  }, [flowChart])
+  }, [taoFlow])
 
   return { taoInData, taoOutData, netData, isLoading }
 }

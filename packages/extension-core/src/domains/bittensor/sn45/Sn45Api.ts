@@ -561,66 +561,14 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns aggregated TAO flow totals (staked-in, unstaked-out, net) for the given time window, plus the latest Alpha flow snapshot from on-chain tokenomics. All amounts are string-encoded integers in rao (1 TAO = 1e9 rao). Designed to power the SubnetTaoFlowChart header in a single request.
+     * @description Returns a compact time-series of cumulative TAO staking flows plus period totals, bucketed into 1-hour intervals. The `series` array contains [time, taoIn, taoOut, net] tuples designed for TradingView Lightweight Charts. Values are float TAO (divided by 1e9). Cumulative sums are window-relative (start from zero). The `totals` object provides aggregate TAO and ALPHA flow amounts for the period.
      *
      * @tags Subnets
-     * @name GetSubnetFlowSummary
-     * @summary Pre-computed TAO + Alpha flow totals for a subnet
-     * @request GET:/v1/bittensor/subnets/{netuid}/flow-summary
-     */
-    getSubnetFlowSummary: (
-      netuid: string,
-      query?: {
-        /**
-         * Time window for TAO flow totals. Accepted values: 1d, 1w, 1m. Defaults to 1w.
-         * @default "1w"
-         */
-        period?: "1d" | "1w" | "1m";
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /** TAO flow totals scoped to the requested time window. */
-          taoFlow: {
-            /** Sum of TAO staked into the subnet within the requested window, in rao (1 TAO = 1e9 rao). String-encoded integer. */
-            taoIn: string;
-            /** Sum of TAO unstaked from the subnet within the requested window, in rao. String-encoded integer. */
-            taoOut: string;
-            /** Net TAO flow (taoIn − taoOut) within the requested window, in rao. Can be negative. String-encoded integer. */
-            net: string;
-          };
-          /** Alpha flow from the latest tokenomics snapshot. Not time-filtered — always reflects the most recent on-chain state. */
-          alphaFlow: {
-            /** Total Alpha flowing into the subnet from the latest tokenomics snapshot, in rao. String-encoded integer. */
-            alphaIn: string;
-            /** Total Alpha flowing out of the subnet from the latest tokenomics snapshot, in rao. String-encoded integer. */
-            alphaOut: string;
-          };
-        },
-        {
-          error: {
-            code: string;
-            message: string;
-          };
-        }
-      >({
-        path: `/v1/bittensor/subnets/${netuid}/flow-summary`,
-        method: "GET",
-        query: query,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Returns a compact time-series of cumulative TAO staking flows, bucketed into 1-hour intervals. Designed for TradingView Lightweight Charts — the response is a flat array of [time, taoIn, taoOut, net] tuples to minimise payload size. Values are float TAO (divided by 1e9). Cumulative sums start from zero at the beginning of the requested window.
-     *
-     * @tags Subnets
-     * @name GetSubnetFlowChart
+     * @name GetSubnetTaoFlow
      * @summary Hourly-bucketed cumulative TAO flow time-series for a subnet
-     * @request GET:/v1/bittensor/subnets/{netuid}/flow-chart
+     * @request GET:/v1/bittensor/subnets/{netuid}/tao-flow
      */
-    getSubnetFlowChart: (
+    getSubnetTaoFlow: (
       netuid: string,
       query?: {
         /**
@@ -633,8 +581,19 @@ export class Sn45Api<
     ) =>
       this.request<
         {
-          /** Array of hourly data points sorted ascending by time. Each element is [time, cumulativeTaoIn, cumulativeTaoOut, net]. */
-          data: any[][];
+          /** Array of hourly data points sorted ascending by time. Each element is [time, cumulativeTaoIn, cumulativeTaoOut, net]. Cumulative sums are window-relative (start from zero at the beginning of the requested period). */
+          series: any[][];
+          /** Aggregated flow totals for the requested time window. */
+          totals: {
+            /** Total TAO staked in during the period (float TAO). */
+            taoIn: number;
+            /** Total TAO unstaked out during the period (float TAO). */
+            taoOut: number;
+            /** Total ALPHA staked in during the period (float ALPHA). */
+            alphaIn: number;
+            /** Total ALPHA unstaked out during the period (float ALPHA). */
+            alphaOut: number;
+          };
         },
         {
           error: {
@@ -643,7 +602,7 @@ export class Sn45Api<
           };
         }
       >({
-        path: `/v1/bittensor/subnets/${netuid}/flow-chart`,
+        path: `/v1/bittensor/subnets/${netuid}/tao-flow`,
         method: "GET",
         query: query,
         format: "json",
