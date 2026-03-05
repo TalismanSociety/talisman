@@ -1,4 +1,4 @@
-import { formatLocalChartTime } from "@ui/domains/TaoDashboard/shared/util"
+import { formatLocalChartTime, formatLocalTickMark } from "@ui/domains/TaoDashboard/shared/util"
 import type { DeepPartial, TimeChartOptions } from "lightweight-charts"
 
 export type SharedChartOptionsParams = {
@@ -47,6 +47,7 @@ export const createChartOptions = ({
     borderVisible: false,
     timeVisible: true,
     secondsVisible: false,
+    tickMarkFormatter: formatLocalTickMark,
   },
   crosshair: {
     mode: 1 as const,
