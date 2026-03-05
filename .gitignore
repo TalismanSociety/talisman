@@ -52,3 +52,4 @@ review
 .i18next-parser/
 
 /.verify-build/
+/.firefox-build-temp/
