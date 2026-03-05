@@ -1,5 +1,20 @@
 # @talismn/balances-react
 
+## 1.3.3
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+- Updated dependencies [e70d6e6]
+- Updated dependencies [2dd2339]
+- Updated dependencies [e70d6e6]
+  - @talismn/util@0.5.8
+  - @talismn/chaindata-provider@1.3.6
+  - @talismn/chain-connectors@0.0.15
+  - @talismn/connection-meta@0.2.35
+  - @talismn/token-rates@3.0.17
+  - @talismn/balances@1.3.3
+
 ## 1.3.2
 
 ### Patch Changes

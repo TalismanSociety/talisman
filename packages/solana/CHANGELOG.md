@@ -1,5 +1,13 @@
 # @talismn/solana
 
+## 0.0.7
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+- Updated dependencies [e70d6e6]
+  - @talismn/crypto@0.3.2
+
 ## 0.0.6
 
 ### Patch Changes

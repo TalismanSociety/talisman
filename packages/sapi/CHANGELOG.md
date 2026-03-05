@@ -1,5 +1,15 @@
 # @talismn/sapi
 
+## 0.1.2
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+- e70d6e6: fix log trace
+- e70d6e6: feat: export ScaleApiSubmitMode type
+- Updated dependencies [e70d6e6]
+  - @talismn/scale@0.3.2
+
 ## 0.1.1
 
 ### Patch Changes

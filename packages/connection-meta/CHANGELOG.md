@@ -1,5 +1,14 @@
 # @talismn/connection-meta
 
+## 0.2.35
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+- Updated dependencies [2dd2339]
+- Updated dependencies [e70d6e6]
+  - @talismn/chaindata-provider@1.3.6
+
 ## 0.2.34
 
 ### Patch Changes

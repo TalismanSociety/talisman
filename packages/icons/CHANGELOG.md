@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.7
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+
 ## 0.1.6
 
 ### Patch Changes

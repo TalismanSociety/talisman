@@ -1,5 +1,16 @@
 # @talismn/on-chain-id
 
+## 0.2.6
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+- Updated dependencies [e70d6e6]
+- Updated dependencies [e70d6e6]
+  - @talismn/util@0.5.8
+  - @talismn/chain-connectors@0.0.15
+  - @talismn/crypto@0.3.2
+
 ## 0.2.5
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @talismn/chaindata-provider
 
+## 1.3.6
+
+### Patch Changes
+
+- 2dd2339: generate init data
+- e70d6e6: fix: github url
+- Updated dependencies [e70d6e6]
+- Updated dependencies [e70d6e6]
+  - @talismn/util@0.5.8
+
 ## 1.3.5
 
 ### Patch Changes
