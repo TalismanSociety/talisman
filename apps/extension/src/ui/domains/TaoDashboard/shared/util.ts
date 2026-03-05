@@ -105,7 +105,14 @@ export const formatCompactNumber = (num: number, decimals = 1): string => {
 
 /** Format alpha token amounts with Ka / Ma suffix */
 export const formatCompactAlpha = (num: number, symbol = "a"): string => {
-  return `${formatCompactNumber(num)}${symbol}`
+  if (num === 0) return `0${symbol}`
+
+  const formatted = new Intl.NumberFormat(undefined, {
+    notation: "compact",
+    compactDisplay: "short",
+    maximumSignificantDigits: 4,
+  }).format(num)
+  return `${formatted}${symbol}`
 }
 
 const chartTimeToDate = (time: Time): Date => {
