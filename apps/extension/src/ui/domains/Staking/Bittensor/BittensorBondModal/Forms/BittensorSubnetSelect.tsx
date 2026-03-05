@@ -279,8 +279,10 @@ const SubnetRow: FC<{
 
   const emission = useMemo(
     () =>
+      // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
+      // so we multiply by 2 to get the total emission rate.
       option.emission
-        ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
+        ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
           "%"
         : t("N/A"),
     [option.emission, t]

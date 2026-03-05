@@ -2,6 +2,7 @@ import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { formatCompactAlpha } from "@ui/domains/TaoDashboard/shared/util"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useRealtimeStakeEventsContext } from "../realtime/RealtimeStakeEventsProvider"
@@ -87,8 +88,8 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
           <Metric label={t("FDV")}>
             {isError || fdv === null ? t("N/A") : <FiatFromUsd amount={fdv} compact noCountUp />}
           </Metric>
-          <Metric label={t("Emissions")}>
-            {isError || dailyEmissions === null ? t("N/A") : `τ${dailyEmissions.toFixed(3)}/d`}
+          <Metric label={t("Em/Day")}>
+            {isError ? t("N/A") : formatCompactAlpha(dailyEmissions ?? 0, "τ")}
           </Metric>
         </div>
       </div>

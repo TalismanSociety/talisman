@@ -207,7 +207,7 @@ describe("formatCompactNumber", () => {
 describe("formatCompactAlpha", () => {
   it("uses the default 'a' suffix", () => {
     const result = formatCompactAlpha(1500)
-    expect(result).toMatch(/2K.*a/i) // 1500 rounds to 2K with 0 decimals
+    expect(result).toMatch(/1\.5K.*a/i)
   })
 
   it("uses a custom symbol suffix", () => {

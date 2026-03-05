@@ -84,8 +84,7 @@ export const TaoDashboardHeader = () => {
             {" τ"}
           </span>
         }
-        isLoading={isBalanceLoading}
-        className="w-[17rem]"
+        className={cn("w-[17rem]", isBalanceLoading && "animate-pulse")}
       />
 
       <div className="h-44 w-px shrink-0 bg-grey-800" />

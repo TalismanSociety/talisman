@@ -31,6 +31,7 @@ export const PriceChartToolbar: FC<PriceChartToolbarProps> = ({
 
   const timeRanges = useMemo<ResolutionOption[]>(() => {
     return [
+      { label: t("5m"), value: "5" },
       { label: t("15m"), value: "15" },
       { label: t("1H"), value: "60" },
       { label: t("4H"), value: "240" },

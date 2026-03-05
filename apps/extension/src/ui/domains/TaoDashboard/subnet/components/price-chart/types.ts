@@ -2,7 +2,7 @@
 // OHLCV types — TradingView / lightweight-charts compatible
 // ---------------------------------------------------------------------------
 
-export type OhlcvResolution = "15" | "60" | "240" | "1440"
+export type OhlcvResolution = "5" | "15" | "60" | "240" | "1440"
 
 /**
  * A single OHLCV candle bar.

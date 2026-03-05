@@ -105,7 +105,14 @@ export const formatCompactNumber = (num: number, decimals = 1): string => {
 
 /** Format alpha token amounts with Ka / Ma suffix */
 export const formatCompactAlpha = (num: number, symbol = "a"): string => {
-  return `${formatCompactNumber(num, 0)}${symbol}`
+  if (num === 0) return `0${symbol}`
+
+  const formatted = new Intl.NumberFormat(undefined, {
+    notation: "compact",
+    compactDisplay: "short",
+    maximumSignificantDigits: 4,
+  }).format(num)
+  return `${formatted}${symbol}`
 }
 
 const chartTimeToDate = (time: Time): Date => {
@@ -123,4 +130,33 @@ export const formatLocalChartTime = (time: Time): string => {
     hour: "2-digit",
     minute: "2-digit",
   })
+}
+
+/**
+ * Tick-mark formatter for x-axis labels.
+ * Converts UTC timestamps to local time so axis labels match the tooltip.
+ *
+ * tickMarkType values from lightweight-charts:
+ *   0 = Year, 1 = Month, 2 = DayOfMonth, 3 = Time, 4 = TimeWithSeconds
+ */
+export const formatLocalTickMark = (time: Time, tickMarkType: number): string => {
+  const date = chartTimeToDate(time)
+  switch (tickMarkType) {
+    case 0: // Year
+      return date.toLocaleString(undefined, { year: "numeric" })
+    case 1: // Month
+      return date.toLocaleString(undefined, { month: "short", year: "numeric" })
+    case 2: // DayOfMonth
+      return date.toLocaleString(undefined, { month: "short", day: "2-digit" })
+    case 3: // Time
+      return date.toLocaleString(undefined, { hour: "2-digit", minute: "2-digit" })
+    case 4: // TimeWithSeconds
+      return date.toLocaleString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    default:
+      return date.toLocaleString(undefined, { month: "short", day: "2-digit" })
+  }
 }

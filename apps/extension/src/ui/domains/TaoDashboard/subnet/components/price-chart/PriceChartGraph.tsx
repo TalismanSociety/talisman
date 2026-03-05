@@ -278,8 +278,10 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   // Stable refs for scroll handler to avoid stale closures
   const hasMoreRef = useRef(hasMore)
   const loadMoreRef = useRef(loadMore)
+  const barsCountRef = useRef(bars.length)
   hasMoreRef.current = hasMore
   loadMoreRef.current = loadMore
+  barsCountRef.current = bars.length
 
   // ── Effect 1: Load library & create chart instance (mount-only) ───────
   useEffect(() => {
@@ -288,6 +290,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
 
     let cancelled = false
     let resizeObserver: ResizeObserver | undefined
+    let onWheel: ((event: WheelEvent) => void) | undefined
 
     ;(async () => {
       const lc = await import("lightweight-charts")
@@ -306,6 +309,12 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
           crosshairColor: CHART_COLORS.crosshair,
           rightPriceScaleMargins: { top: 0, bottom: 0.25 },
           hideVerticalGridLines: true,
+          handleScale: {
+            mouseWheel: false,
+            pinch: true,
+            axisPressedMouseMove: true,
+            axisDoubleClickReset: true,
+          },
         })
       )
       const candlestickSeries = chart.addSeries(lc.CandlestickSeries, CANDLESTICK_OPTIONS)
@@ -348,6 +357,31 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       }
       chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange)
 
+      onWheel = (event: WheelEvent) => {
+        if (!event.deltaY) return
+
+        const visibleRange = chart.timeScale().getVisibleLogicalRange()
+        if (!visibleRange) return
+
+        event.preventDefault()
+
+        const currentSpan = visibleRange.to - visibleRange.from
+        if (!Number.isFinite(currentSpan) || currentSpan <= 0) return
+
+        const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9
+        const minSpan = 10
+        const maxSpan = Math.max(barsCountRef.current, minSpan)
+
+        const nextSpan = Math.min(maxSpan, Math.max(minSpan, currentSpan * zoomFactor))
+        const rightEdge = visibleRange.to
+
+        chart.timeScale().setVisibleLogicalRange({
+          from: rightEdge - nextSpan,
+          to: rightEdge,
+        })
+      }
+      container.addEventListener("wheel", onWheel, { passive: false })
+
       // ── Resize observer ──────────────────────────────────────────────────
       resizeObserver = new ResizeObserver((entries) => {
         for (const entry of entries) {
@@ -362,6 +396,9 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     return () => {
       cancelled = true
       resizeObserver?.disconnect()
+      if (onWheel) {
+        container.removeEventListener("wheel", onWheel)
+      }
       chartRef.current?.remove()
       chartRef.current = null
       candlestickSeriesRef.current = null

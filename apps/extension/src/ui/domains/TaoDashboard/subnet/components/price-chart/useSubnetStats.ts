@@ -39,7 +39,7 @@ export function useSubnetStats(netuid: number) {
     isLoading: isLeaderboardLoading,
     isError: isLeaderboardError,
   } = useSubnetLeaderboardEntry(netuid, "1d")
-  // Still needed for daily emissions (emission + tempo)
+  // Still needed for daily emissions (per-block emission rate)
   const { subnetData, isLoading: isSubnetDataLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   const isLoading =
@@ -67,10 +67,10 @@ export function useSubnetStats(netuid: number) {
     // FDV = token price × max supply (21M alpha per subnet)
     const fdv = tokenPriceUsd ? tokenPriceUsd * ALPHA_MAX_SUPPLY : null
 
+    // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
+    // so we multiply by 2 to get the total emission rate.
     const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
-    const dailyEmissions = emissionRaw
-      ? raoToTao(emissionRaw) * (7200 / (currentSubnet?.tempo ?? 360))
-      : null
+    const dailyEmissions = emissionRaw ? raoToTao(emissionRaw) * 2 * 7200 : null
 
     return {
       tokenPrice,

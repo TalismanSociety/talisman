@@ -187,7 +187,7 @@ const SubnetRow: FC<{
   const emission = useMemo(
     () =>
       option.emission
-        ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
+        ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
           "%"
         : t("N/A"),
     [option.emission, t]

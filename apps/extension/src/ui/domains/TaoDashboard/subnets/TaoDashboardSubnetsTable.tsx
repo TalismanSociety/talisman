@@ -386,23 +386,23 @@ const SubnetRow: FC<{
 
       {/* My Balance */}
       <DataCell error={errors.balance}>
-        {loading.balance ? (
+        {subnet.balance !== null ? (
           <>
-            <SkeletonBar className="h-8 w-24" />
-            <SkeletonBar className="h-6 w-20" />
-          </>
-        ) : subnet.balance ? (
-          <>
-            <div className="">
+            <div className={cn(loading.balance && "animate-pulse")}>
               <TokensAndFiat tokenId={subnet.token.id} planck={subnet.balance} noFiat isBalance />
             </div>
             {subnet.balanceUsd && (
               <FiatFromUsd
                 amount={subnet.balanceUsd}
-                className="text-body-secondary text-xs"
+                className={cn("text-body-secondary text-xs", loading.balance && "animate-pulse")}
                 isBalance
               />
             )}
+          </>
+        ) : loading.balance ? (
+          <>
+            <SkeletonBar className="h-8 w-24" />
+            <SkeletonBar className="h-6 w-20" />
           </>
         ) : (
           <span className="text-body-inactive">0 {subnet.token.symbol}</span>

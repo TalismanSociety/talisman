@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "chore:generate-clients:sn45": "pnpm dlx swagger-typescript-api generate -p https://sn45api.talisman.xyz/openapi.json -o ./src/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api",
     "chore:generate-clients:tda": "pnpm dlx swagger-typescript-api generate -p https://tda.talisman.xyz/openapi.json -o ./src/domains/bittensor/tao-data -n TaoDataApi --api-class-name TaoDataApi",
-    "chore:generate-clients:sn45:local": "pnpm dlx swagger-typescript-api generate -p http://localhost:8787/openapi.json -o ./src/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api",
+    "chore:generate-clients:sn45:local": "pnpm dlx swagger-typescript-api@13.2.18 generate -p http://localhost:8787/openapi.json -o ./src/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api",
     "chore:generate-clients:tda:local": "pnpm dlx swagger-typescript-api generate -p http://localhost:8787/openapi.json -o ./src/domains/bittensor/tao-data -n TaoDataApi --api-class-name TaoDataApi",
     "chore:generate-clients": "pnpm chore:generate-clients:sn45 && pnpm chore:generate-clients:tda"
   },

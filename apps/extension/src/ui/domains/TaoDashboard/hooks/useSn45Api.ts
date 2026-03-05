@@ -123,46 +123,13 @@ export const useSubnetTradeFlow = (
   })
 }
 
-// Hook to get subnet flow summary (pre-computed header data)
-export const useSubnetFlowSummary = (
-  netuid: number | null | undefined,
-  period: TimePeriod = "1w"
-) => {
+// Hook to get subnet TAO flow (time-series + totals in one request)
+export const useSubnetTaoFlow = (netuid: number | null | undefined, period: TimePeriod = "1w") => {
   return useQuery({
-    queryKey: ["sn45", "subnetFlowSummary", netuid, period],
+    queryKey: ["sn45", "subnetTaoFlow", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetFlowSummary(
-        String(netuid),
-        {
-          period,
-        },
-        { signal }
-      )
-      return response.data
-    },
-    enabled: !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
-// Hook to get subnet flow chart time-series (pre-bucketed for TradingView)
-export const useSubnetFlowChart = (
-  netuid: number | null | undefined,
-  period: TimePeriod = "1w"
-) => {
-  return useQuery({
-    queryKey: ["sn45", "subnetFlowChart", netuid, period],
-    queryFn: async ({ signal }) => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetFlowChart(
-        String(netuid),
-        {
-          period,
-        },
-        { signal }
-      )
+      const response = await sn45Api.v1.getSubnetTaoFlow(String(netuid), { period }, { signal })
       return response.data
     },
     enabled: !!netuid,
