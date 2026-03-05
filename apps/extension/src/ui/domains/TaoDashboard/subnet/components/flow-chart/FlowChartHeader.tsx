@@ -53,11 +53,11 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, period }) =>
           <Metric label={t("TAO Flow")}>
             <div className="flex flex-col">
               <span className="font-medium text-buy">
-                {formatCompactNumber(totals.taoIn)}τ{" "}
+                {formatCompactAlpha(totals.taoIn, "τ")}{" "}
                 <span className="text-body-disabled text-xs">{t("In")}</span>
               </span>
               <span className="font-medium text-sell">
-                {formatCompactNumber(totals.taoOut)}τ{" "}
+                {formatCompactAlpha(totals.taoOut, "τ")}{" "}
                 <span className="text-body-disabled text-xs">{t("Out")}</span>
               </span>
             </div>
@@ -77,12 +77,10 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, period }) =>
           </Metric>
 
           <Metric label={t("Emissions")}>
-            {emissionPercent !== null ? `${emissionPercent.toFixed(2)}%` : "—"}
+            {emissionPercent !== null ? `${emissionPercent.toFixed(2)}%` : "0.00%"}
           </Metric>
 
-          <Metric label={t("Em/Day")}>
-            {dailyEmissions !== null ? `τ${dailyEmissions.toFixed(2)}` : "—"}
-          </Metric>
+          <Metric label={t("Em/Day")}>{formatCompactAlpha(dailyEmissions ?? 0, "τ")}</Metric>
         </div>
       </div>
     </div>

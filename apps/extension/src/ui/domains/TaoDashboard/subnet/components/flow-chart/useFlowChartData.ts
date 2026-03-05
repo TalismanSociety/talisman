@@ -51,13 +51,13 @@ export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHe
   }, [taoFlow])
 
   // Emissions (from on-chain subnet data)
+  // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
+  // so we multiply by 2 to get the total emission rate.
   const emissionRaw = currentSubnet?.emission ? BigInt(currentSubnet.emission) : null
 
-  const emissionPercent = emissionRaw ? raoToTao(emissionRaw) * 100 : null
+  const emissionPercent = emissionRaw ? raoToTao(emissionRaw) * 2 * 100 : null
 
-  const dailyEmissions = emissionRaw
-    ? raoToTao(emissionRaw) * (7200 / (currentSubnet?.tempo ?? 360))
-    : null
+  const dailyEmissions = emissionRaw ? raoToTao(emissionRaw) * 2 * 7200 : null
 
   // Trend direction
   const distributionTrend: "accumulating" | "distributing" =
