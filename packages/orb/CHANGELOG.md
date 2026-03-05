@@ -1,5 +1,17 @@
 # @talismn/orb
 
+## 0.4.0
+
+### Minor Changes
+
+- e70d6e6: remove polkadot logo from polkaodt account orbs
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+- Updated dependencies [e70d6e6]
+  - @talismn/crypto@0.3.2
+
 ## 0.3.6
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @talismn/util
 
+## 0.5.8
+
+### Patch Changes
+
+- e70d6e6: fix: negative values in formatDecimals
+- e70d6e6: fix: github url
+
 ## 0.5.7
 
 ### Patch Changes

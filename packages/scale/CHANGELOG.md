@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 0.3.2
+
+### Patch Changes
+
+- e70d6e6: fix: github url
+
 ## 0.3.1
 
 ### Patch Changes
