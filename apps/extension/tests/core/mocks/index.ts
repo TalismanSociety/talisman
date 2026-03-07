@@ -14,12 +14,6 @@ vi.mock("webextension-polyfill", async () => {
   }
 })
 
-vi.mock("@polkadot/apps-config/api", () => {
-  return {
-    typesBundle: {},
-  }
-})
-
 vi.mock("@core/util/isBackgroundPage", () => ({
   isBackgroundPage: vi.fn().mockImplementation(() => true),
 }))

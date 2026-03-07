@@ -23,7 +23,6 @@
     "@metamask/eth-sig-util": "8.0.0",
     "@polkadot-api/descriptors": "workspace:*",
     "@polkadot-api/merkleize-metadata": "1.1.18",
-    "@polkadot/apps-config": "0.158.1",
     "@polkadot/extension-base": "0.59.2",
     "@polkadot/extension-inject": "0.59.2",
     "@polkadot/keyring": "13.5.3",

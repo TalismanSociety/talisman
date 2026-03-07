@@ -95,7 +95,6 @@
       "@polkadot/api-base": "16.1.2",
       "@polkadot/api-contract": "16.1.2",
       "@polkadot/api-derive": "16.1.2",
-      "@polkadot/apps-config": "0.158.1",
       "@polkadot/extension": "0.59.2",
       "@polkadot/extension-base": "0.59.2",
       "@polkadot/extension-chains": "0.59.2",

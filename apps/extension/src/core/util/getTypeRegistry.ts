@@ -1,7 +1,4 @@
-import { log } from "@common/log"
-import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
 
 import { getMetadataFromDef, getMetadataRpcFromDef } from "../domains/metadata/helpers"
@@ -30,31 +27,6 @@ export const getTypeRegistry = async (
   const chain = await (isHex(chainIdOrHash)
     ? chaindataProvider.getNetworkByGenesisHash(chainIdOrHash)
     : chaindataProvider.getNetworkById(chainIdOrHash, "polkadot"))
-
-  // register typesBundle in registry for legacy (pre metadata v14) chains
-  if (typesBundle.spec && chain?.specName && typesBundle.spec[chain.specName]) {
-    const chainBundle =
-      chain.chainName && typesBundle.chain?.[chain.chainName]
-        ? { chain: { [chain.chainName]: typesBundle.chain[chain.chainName] } }
-        : {}
-    const specBundle =
-      chain.specName && typesBundle.spec?.[chain.specName]
-        ? { spec: { [chain.specName]: typesBundle.spec[chain.specName] } }
-        : {}
-    const legacyTypesBundle = { ...chainBundle, ...specBundle }
-
-    if (legacyTypesBundle) {
-      log.debug(`Setting known types for chain ${chain.id}`)
-      registry.clearCache()
-      registry.setKnownTypes({ typesBundle: legacyTypesBundle })
-      if (chain.chainName) {
-        registry.register(
-          getSpecTypes(registry, chain.chainName, chain.specName, chain.specVersion)
-        )
-        registry.knownTypes.typesAlias = getSpecAlias(registry, chain.chainName, chain.specName)
-      }
-    }
-  }
 
   if (chain?.registryTypes) registry.register(chain.registryTypes)
 
