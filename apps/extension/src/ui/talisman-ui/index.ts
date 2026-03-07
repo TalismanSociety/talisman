@@ -24,8 +24,6 @@ export * from "./components/Tooltip"
 export * from "./components/UnsafeImage"
 export * from "./components/WizardModalDialog"
 export * from "./utils/preloadFonts"
-export * from "./utils/provideContext"
-export * from "./utils/useOpenClose"
 export * from "./utils/useOpenCloseStatus"
 export * from "./utils/useOpenCloseWithData"
 

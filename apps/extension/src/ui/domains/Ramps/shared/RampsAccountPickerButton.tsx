@@ -1,4 +1,5 @@
 import { type Account, getAccountGenesisHash, isAccountOwned } from "@core"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronRightIcon } from "@talismn/icons"
 import type { TokenRatesList } from "@talismn/token-rates"
@@ -8,10 +9,9 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworkById, useToken } from "@ui/state"
-import { Drawer, useOpenClose } from "@ui/talisman-ui"
+import { Drawer } from "@ui/talisman-ui"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { type RampAccountPickerBalancesDisplayMode, RampsAccountPicker } from "./RampsAccountPicker"
 
 export const RampsAccountPickerButton: FC<{

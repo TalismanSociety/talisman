@@ -1,5 +1,6 @@
 import type { Account, AccountsCatalogTree } from "@core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
@@ -13,11 +14,9 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
   IconButton,
-  useOpenClose,
 } from "@ui/talisman-ui"
 import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"
 import { TreeItemAccount } from "./TreeItemAccount"
 import type { UiTreeFolder, UiTreeItem } from "./types"

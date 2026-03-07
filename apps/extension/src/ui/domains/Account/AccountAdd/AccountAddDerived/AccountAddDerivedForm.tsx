@@ -8,6 +8,7 @@ import {
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { type AccountPlatform, isValidDerivationPath, type KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -29,14 +30,12 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenClose,
 } from "@ui/talisman-ui"
 import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import * as yup from "yup"
-
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"

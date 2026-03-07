@@ -1,6 +1,5 @@
-import { useOpenClose } from "@ui/talisman-ui"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useEffect, useMemo, useRef, useState } from "react"
-
 import type { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
 
 const getValidationResultType = (

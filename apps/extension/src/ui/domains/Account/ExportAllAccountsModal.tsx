@@ -1,22 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
 import { useAccounts } from "@ui/state"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  Modal,
-  ModalDialog,
-  useOpenClose,
-} from "@ui/talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "@ui/talisman-ui"
 import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import * as yup from "yup"
-
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }> = ({

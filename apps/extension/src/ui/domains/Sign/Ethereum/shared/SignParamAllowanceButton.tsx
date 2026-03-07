@@ -2,6 +2,7 @@ import { log } from "@common/extension-shared"
 import { abiErc20, type EvmAddress } from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { type Address, BalanceFormatter } from "@talismn/balances"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
@@ -23,7 +24,6 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenClose,
 } from "@ui/talisman-ui"
 import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"

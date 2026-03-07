@@ -3,6 +3,7 @@ import type { Nft, NftCollection } from "@core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -19,7 +20,6 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenClose,
 } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
@@ -37,7 +37,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
 import { NetworkAddress } from "../Account/AddressLinkOrCopy"

@@ -1,7 +1,8 @@
 import type { ProviderType } from "@core"
 import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
-import { Button, Modal, ModalDialog, useOpenClose } from "@ui/talisman-ui"
+import { Button, Modal, ModalDialog } from "@ui/talisman-ui"
 import { type FC, type ReactNode, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

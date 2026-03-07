@@ -9,7 +9,6 @@ import { useOpenCloseStatus } from "@ui/talisman-ui"
 import { range } from "lodash-es"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { RAMPS_CURRENCIES, type RampsCurrency } from "./currencies"
 import { RampsPickerLayout } from "./RampsPickerLayout"
 

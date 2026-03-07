@@ -2,6 +2,7 @@
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
@@ -32,14 +33,12 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenClose,
 } from "@ui/talisman-ui"
 import { t } from "i18next"
 import { type FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import { z } from "zod/v4"
-
 import { NetworkFormProvider, useNetworkForm } from "./context"
 import { NetworkRpcsField } from "./NetworkRpcsField"
 

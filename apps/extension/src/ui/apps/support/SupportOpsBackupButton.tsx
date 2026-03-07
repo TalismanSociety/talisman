@@ -1,8 +1,8 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { SaveIcon } from "@talismn/icons"
-import { Button, Modal, ModalDialog, useOpenClose } from "@ui/talisman-ui"
+import { Button, Modal, ModalDialog } from "@ui/talisman-ui"
 import { type FC, useCallback } from "react"
-
 import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
 import type { TalismanJsonBackup } from "./shared/types"
 

@@ -26,7 +26,6 @@ import {
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"

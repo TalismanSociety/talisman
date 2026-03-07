@@ -5,6 +5,7 @@ import {
 } from "@core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   type DotNetwork,
   getNetworkGenesisHash,
@@ -23,10 +24,9 @@ import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts, useNetworkById, useToken } from "@ui/state"
-import { Button, Drawer, useOpenClose } from "@ui/talisman-ui"
+import { Button, Drawer } from "@ui/talisman-ui"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { useSendFunds } from "./useSendFunds"

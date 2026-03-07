@@ -1,3 +1,4 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { cn } from "@talismn/util"
@@ -16,7 +17,7 @@ import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDi
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useFeatureFlag } from "@ui/state"
-import { Toggle, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "@ui/talisman-ui"
+import { Toggle, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import {
   type ComponentProps,
   type FC,

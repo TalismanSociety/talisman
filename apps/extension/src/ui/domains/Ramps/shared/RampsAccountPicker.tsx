@@ -18,7 +18,6 @@ import { useSelectedCurrency } from "@ui/state"
 import { useOpenCloseStatus } from "@ui/talisman-ui"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
 export type RampAccountPickerBalancesDisplayMode = "transferable" | "total"

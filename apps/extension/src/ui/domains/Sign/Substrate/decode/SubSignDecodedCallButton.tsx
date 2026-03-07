@@ -1,7 +1,6 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useOpenClose } from "@ui/talisman-ui"
-
 import type { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { SubSignDecodedCallButtonContent } from "./SubSignDecodedCallButtonContent"
 import { SubSignDecodedCallDrawer } from "./SubSignDecodedCallDrawer"

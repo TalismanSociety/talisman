@@ -1,3 +1,4 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ChevronDownIcon, GlobeIcon } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -6,7 +7,6 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHistory"
 import { useTxHistory } from "@ui/domains/Transactions/TxHistory/TxHistoryContext"
 import { TxHistoryNetworkPicker } from "@ui/domains/Transactions/TxHistory/TxHistoryNetworkPicker"
-import { useOpenClose } from "@ui/talisman-ui"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 

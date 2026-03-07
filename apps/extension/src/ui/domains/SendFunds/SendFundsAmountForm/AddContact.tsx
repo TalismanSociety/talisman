@@ -1,11 +1,11 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { isAddressEqual } from "@talismn/crypto"
 import { UserPlusIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
 import { useAccountByAddress, useContacts } from "@ui/state"
-import { PillButton, useOpenClose } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"
 

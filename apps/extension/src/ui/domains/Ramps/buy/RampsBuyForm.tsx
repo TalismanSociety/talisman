@@ -13,7 +13,6 @@ import { Button, useOpenCloseStatus } from "@ui/talisman-ui"
 import { capitalize } from "lodash-es"
 import { type FC, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
-
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"

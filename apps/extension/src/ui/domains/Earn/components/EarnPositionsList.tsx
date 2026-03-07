@@ -1,3 +1,4 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
@@ -15,12 +16,10 @@ import {
   useYieldxyzPositionsEnhanced,
   type YieldxyzPositionEnhanced,
 } from "@ui/state"
-import { useOpenClose } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { isNil, toPairs, uniq } from "lodash-es"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { AccountDisplay } from "../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"

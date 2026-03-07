@@ -1,11 +1,11 @@
 import { Transition, TransitionChild } from "@headlessui/react"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSetting } from "@ui/state"
-import { Button, Drawer, useOpenClose } from "@ui/talisman-ui"
+import { Button, Drawer } from "@ui/talisman-ui"
 import { type FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-
 import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"

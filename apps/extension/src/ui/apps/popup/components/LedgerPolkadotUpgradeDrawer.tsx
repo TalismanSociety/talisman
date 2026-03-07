@@ -1,5 +1,6 @@
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useAppState } from "@ui/state"
-import { Button, Drawer, useOpenClose } from "@ui/talisman-ui"
+import { Button, Drawer } from "@ui/talisman-ui"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 

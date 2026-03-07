@@ -1,14 +1,13 @@
 import type { Address } from "@core"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import type { RootClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useAccountByAddress, useToken } from "@ui/state"
-import { useOpenClose } from "@ui/talisman-ui"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
-
 import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_NETWORK_ID } from "../constants"
 

@@ -1,4 +1,5 @@
 import { type ActiveNetworks, activeNetworksStore, isNetworkActive } from "@core"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -14,20 +15,11 @@ import {
   useNetworks,
   useRemoteConfig,
 } from "@ui/state"
-import {
-  Button,
-  ListButton,
-  Modal,
-  ModalDialog,
-  Radio,
-  Toggle,
-  useOpenClose,
-} from "@ui/talisman-ui"
+import { Button, ListButton, Modal, ModalDialog, Radio, Toggle } from "@ui/talisman-ui"
 import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
 import type { PlatformOption } from "./usePlatformOptions"

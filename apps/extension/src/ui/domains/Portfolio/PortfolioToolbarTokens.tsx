@@ -1,4 +1,5 @@
 import { SearchInput } from "@talisman/components/SearchInput"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
@@ -19,13 +20,11 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenClose,
 } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"

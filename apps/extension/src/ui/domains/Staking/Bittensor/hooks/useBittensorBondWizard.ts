@@ -1,4 +1,5 @@
 import { type Address, isAccountOfType } from "@core"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
 import {
@@ -16,12 +17,10 @@ import {
   useToken,
   useTokenRates,
 } from "@ui/state"
-import { useOpenClose } from "@ui/talisman-ui"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
-
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
