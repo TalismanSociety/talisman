@@ -82,3 +82,8 @@
 - Code should be self-explanatory; add **succinct comments** only when context is non-obvious (security rationale, tricky RxJS flows, chain-specific quirks).
 - Update relevant READMEs when behavior or public APIs change; run `pnpm changeset` when public packages ship new features/fixes.
 - If a PR affects onboarding instructions, contribution rules, security policies, or other documented workflows, update the corresponding markdown files (README, CONTRIBUTING, CODE_OF_CONDUCT, package docs) in the same PR so they never fall out of date.
+
+## Code quality
+
+- Add relevant tests along with any new development.
+- Before completing work, ensure `pnpm check --fix` passes, and verify that typescript code can compile using typecheck scripts.

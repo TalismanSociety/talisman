@@ -6,42 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Talisman is a multi-chain crypto wallet browser extension supporting Ethereum, Polkadot/Substrate, and Solana networks. Security and privacy are paramount - the codebase handles mnemonics, private keys, and sensitive user data.
 
-## Common Commands
-
-```bash
-# Development
-pnpm install              # Install dependencies (requires Node >= 20, corepack enable)
-pnpm dev:extension        # Start Chrome extension dev server with hot reload
-pnpm dev:extension:firefox # Start Firefox extension dev server
-
-# Formatting / Linting
-pnpm check                # Biome check for the repo (must pass before finishing work)
-
-# Building
-pnpm build:extension      # Build for Chrome (QA/dev)
-pnpm build:extension:firefox # Build for Firefox
-pnpm build:extension:prod # Production build (requires Sentry keys)
-
-# Testing
-pnpm test                 # Run Jest tests (workspace-wide)
-pnpm test:e2e             # Run Playwright E2E tests
-pnpm test:e2e:ui          # Run E2E tests with UI
-pnpm lint                 # Run ESLint (--max-warnings 0)
-
-# I18n
-pnpm chore:update-translations  # Update translation files after adding new i18n keys
-
-# Versioning
-pnpm changeset            # Create a changeset for modified packages
-```
-
 ## Architecture
 
 ### Monorepo Structure
 
+- **apps/balances-bench**: Developer utility CLI to help with balance modules development
+- **apps/balances-demo**: Developer utility website to help with balance modules development
 - **apps/extension**: Main browser extension (popup, dashboard, onboarding, background service worker)
-- **packages/extension-core**: Backend logic running in service worker - handles accounts, signing, keyring, transactions
-- **packages/extension-shared**: Shared types/utilities between extension and core
+- **apps/extension**: Main browser extension (popup, dashboard, onboarding, background service worker)
 - **packages/balances**: Multi-chain balance fetching with pluggable modules (EVM, Substrate, Solana)
 - **packages/chaindata-provider**: Chain metadata and configuration
 - **packages/keyring**: Key management and encryption
@@ -59,16 +31,6 @@ pnpm changeset            # Create a changeset for modified packages
 - **RxJS + @react-rxjs/core**: Primary state management for logic that runs in both UI and service worker
 - **Dexie**: IndexedDB wrapper for persistent storage
 - React local state for purely local UI concerns
-
-### Balance Modules Pattern
-
-Balance modules in `packages/balances/src/modules/` follow a consistent structure:
-
-- `config.ts`, `types.ts` - Configuration and type definitions
-- `fetchTokens.ts` - Token discovery
-- `fetchBalances.ts`, `subscribeBalances.ts` - Balance retrieval
-- `getMiniMetadata.ts` - Metadata extraction
-- `getTransferCallData.ts` - Transfer transaction building
 
 ## Key Technical Guidelines
 
@@ -112,4 +74,4 @@ Balance modules in `packages/balances/src/modules/` follow a consistent structur
 - Playwright for E2E: `playwright/e2e-tests/`
 - Follow patterns in `apps/extension/src/core/handlers/Extension.spec.ts`
 
-Before marking work as complete, ensure `pnpm check` passes.
+Before completing work, ensure `pnpm check --fix` passes, and verify that typescript code can compile using typecheck scripts.
