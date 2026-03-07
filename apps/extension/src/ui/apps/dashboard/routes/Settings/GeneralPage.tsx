@@ -138,7 +138,7 @@ const Content = () => {
 
 type LedgerTransportStatusCheck = { ok: true } | { ok: false; error: string }
 
-export const LedgerTransportTypeSelect = () => {
+const LedgerTransportTypeSelect = () => {
   const { t } = useTranslation()
   const [ledgerTransportType, setLedgerTransportType] = useSetting("ledgerTransportType")
   const refTransport = useRef<Transport | null>(null)

@@ -6,8 +6,6 @@ import { provideContext } from "@ui/util/provideContext"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
-
 export type OnboardingWizardData = {
   password?: string
   passwordConfirm?: string

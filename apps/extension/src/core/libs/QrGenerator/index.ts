@@ -28,7 +28,7 @@ const getEncryptionForChain = (chain: DotNetwork) => {
   }
 }
 
-export const getVerifierMnemonic = async () => {
+const getVerifierMnemonic = async () => {
   const pw = await passwordStore.getPassword()
   assert(pw, "Unauthorised")
 

@@ -28,7 +28,7 @@ export declare type RequestTypes = {
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
 }
 
-export declare type RequestTypesArray = {
+declare type RequestTypesArray = {
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
 }[MessageTypes]
 
@@ -40,7 +40,7 @@ export declare type SubscriptionMessageTypes = NoUndefinedValues<{
   [MessageType in MessageTypes]: AllMessages[MessageType][2]
 }>
 
-export declare type KnownSubscriptionMessageTypes<T extends MessageTypes> = NoUndefinedValues<{
+declare type KnownSubscriptionMessageTypes<T extends MessageTypes> = NoUndefinedValues<{
   [K in T]: AllMessages[K][2]
 }>
 
@@ -153,12 +153,6 @@ export type TabMessageHandler<
   Res = ResponseType<TMessageType>,
 > = (req: Req, url: string, port: Port) => Res | Promise<Res>
 
-export type SubscriptionHandler<
-  TMessageType extends MessageTypesWithSubscriptions,
-  Req = RequestType<TMessageType>,
-  Res = ResponseType<TMessageType>,
-> = (id: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
-
 export type TabSubscriptionHandler<
   TMessageType extends MessageTypesWithSubscriptions,
   Req = RequestType<TMessageType>,
@@ -191,15 +185,6 @@ export declare type RequestType<TMessageType extends MessageTypes> = AllMessages
 export declare type ResponseType<TMessageType extends MessageTypes> = AllMessages[TMessageType][1]
 
 /**
- * A callback with either an error or a result.
- */
-export interface SubscriptionCallback<Result> {
-  (error: null, result: Result): void
-  // biome-ignore lint/suspicious/noExplicitAny: legacy
-  (error: any, result?: never): void
-}
-
-/**
  * A function which cancels a subscription when called.
  */
 export type UnsubscribeFn = () => void
@@ -219,4 +204,4 @@ export interface SendRequest {
   ): Promise<ResponseTypes[TMessageType]>
 }
 
-export declare type CachedUnlocks = Record<string, number>
+declare type CachedUnlocks = Record<string, number>

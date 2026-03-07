@@ -30,7 +30,7 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const [useFiatFromUsd, getFiatFromUsd$] = bind(
+const [useFiatFromUsd, _getFiatFromUsd$] = bind(
   (usd: number | null | undefined) =>
     combineLatest([refTokenRates$, selectedCurrency$]).pipe(
       map(([refTokenRates, selectedCurrency]) => {
@@ -46,7 +46,7 @@ export const [useFiatFromUsd, getFiatFromUsd$] = bind(
   null
 )
 
-export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
+const [useTokenRatesFromUsd, _getTokenRatesFromUsd$] = bind(
   (usd: number | null | undefined) =>
     refTokenRates$.pipe(
       map((refTokenRates): TokenRates | null => {
@@ -70,3 +70,5 @@ export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
     ),
   null
 )
+
+export { useFiatFromUsd, useTokenRatesFromUsd }

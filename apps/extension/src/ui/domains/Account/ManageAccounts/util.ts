@@ -4,14 +4,14 @@ import type { Tree, TreeAccount, TreeFolder } from "@core/domains/accounts/helpe
 import type { UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem, UiTreePosition } from "./types"
 
 // Add an id to a TreeAccount
-export const accountWithId = (item: TreeAccount): UiTreeAccount => ({
+const accountWithId = (item: TreeAccount): UiTreeAccount => ({
   ...item,
   id: `account-${item.address}`,
   isVisible: true,
 })
 
 // Add an id to a TreeFolder's TreeAccount decendents
-export const folderWithId = (item: TreeFolder): UiTreeFolder => ({
+const folderWithId = (item: TreeFolder): UiTreeFolder => ({
   ...item,
   tree: item.tree.map(accountWithId),
   isVisible: true,

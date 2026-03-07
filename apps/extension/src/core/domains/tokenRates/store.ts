@@ -60,6 +60,7 @@ const REFRESH_INTERVAL = 2 * 60_000
 type TokenRatesSubscriptionCallback = (rates: TokenRatesStorage) => void
 
 // TODO: Refactor this class to remove all the manual subscription handling, and instead just leverage the wonderful ReplaySubject to magically manage it all for us.
+/** @knipignore exported for typeof usage in stores.ts */
 export class TokenRatesStore {
   #storage$: ReplaySubject<TokenRatesStorage>
 

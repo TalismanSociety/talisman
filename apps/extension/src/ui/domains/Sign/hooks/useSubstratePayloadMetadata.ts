@@ -10,7 +10,7 @@ import { api } from "@ui/api"
 import { useNetworkByGenesisHash, useToken } from "@ui/state/chaindata"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 
-export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
+const _useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const network = useNetworkByGenesisHash(payload?.genesisHash)
   const token = useToken(network?.nativeTokenId)
 

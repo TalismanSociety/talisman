@@ -8,8 +8,6 @@ import { useTranslation } from "react-i18next"
 import type { SubnetData } from "./types"
 import { useGetSubnets } from "./useGetSubnets"
 
-export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
-
 export const useCombinedSubnetData = (networkId: NetworkId) => {
   const { t } = useTranslation()
   const allTokens = useTokens({ platform: "polkadot" })

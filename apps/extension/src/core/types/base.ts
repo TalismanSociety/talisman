@@ -37,11 +37,5 @@ export interface BaseRequest<T extends string> {
 }
 
 export type BaseRequestId<T extends string> = `${T}.${string}`
-export interface Resolver<T> {
-  reject: (error: Error) => void
-  resolve: (result: T) => void
-}
 
 export type Address = string
-
-export type AddressList = Address[]

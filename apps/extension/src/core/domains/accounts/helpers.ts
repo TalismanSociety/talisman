@@ -63,7 +63,7 @@ const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
   throw new Error("Unsupported account type")
 }
 
-export const getPjsInjectedAccount = (
+const getPjsInjectedAccount = (
   account: Account,
   options = { includePortalOnlyInfo: false }
 ): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => {
@@ -156,7 +156,7 @@ const getSolDerivationPath = (accountIndex: number) => {
   return `m/44'/501'/${accountIndex}'/0'`
 }
 
-export const isCurveCompatibleWithChain = (
+const _isCurveCompatibleWithChain = (
   chain: DotNetwork,
   curve: KeypairCurve,
   genesisHash: `0x${string}` | null | undefined

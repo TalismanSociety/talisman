@@ -13,9 +13,9 @@ export interface ErrorsStoreData {
   DexieQuotaExceededLog: number[]
 }
 
-export class ErrorsStore extends StorageProvider<ErrorsStoreData> {}
+class ErrorsStore extends StorageProvider<ErrorsStoreData> {}
 
-export const ERRORS_STORE_INITIAL_DATA: ErrorsStoreData = {
+const ERRORS_STORE_INITIAL_DATA: ErrorsStoreData = {
   databaseUnavailable: false,
   databaseQuotaExceeded: false,
   StartupLog: [],
@@ -85,7 +85,7 @@ export const trackIndexedDbErrorExtras = async (event: ErrorEvent, hint: EventHi
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: legacy
-export const findDexieErrors = (rootError: any) => {
+const findDexieErrors = (rootError: any) => {
   // recursively extract each child `error.cause` into this array
   const errorChain = []
   for (let error = rootError; error !== undefined; error = error?.cause) {
@@ -102,7 +102,7 @@ export const findDexieErrors = (rootError: any) => {
   return [switchDexieErrorType(dexieError), dexieError] as const
 }
 
-export const switchDexieErrorType = (dexieError: DexieError) => {
+const switchDexieErrorType = (dexieError: DexieError) => {
   // find Abort errors
   if (
     dexieError.name === Dexie.errnames.Abort &&

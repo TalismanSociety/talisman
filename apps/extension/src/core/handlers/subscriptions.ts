@@ -142,5 +142,5 @@ export function unsubscribe(id: string): void {
  *         ...
  *       })
  */
-export const portDisconnected = (port: Port) =>
+const _portDisconnected = (port: Port) =>
   new Promise<void>((resolve) => port.onDisconnect.addListener(() => resolve()))

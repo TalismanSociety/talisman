@@ -36,7 +36,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
   )
 }
 
-export const RiskAnalysisPromptAutoRiskScan: FC = () => {
+const RiskAnalysisPromptAutoRiskScan: FC = () => {
   const [, setAutoRiskScan] = useSetting("autoRiskScan")
   const { t } = useTranslation()
 

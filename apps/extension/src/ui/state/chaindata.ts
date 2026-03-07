@@ -115,7 +115,7 @@ export const [useNetworkById, getNetworkById$] = bind(
   ) => StateObservable<R | null>,
 ]
 
-export const [useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
+const [_useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
   (options?: Omit<ChaindataQueryOptions, "platform">) => {
     return getSharedObservable("getNetworksMapByGenesisHash$", options, (opts) => {
       return getNetworks$({ platform: "polkadot", ...opts }).pipe(

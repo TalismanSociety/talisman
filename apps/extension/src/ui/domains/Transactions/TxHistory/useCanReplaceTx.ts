@@ -5,7 +5,7 @@ import { useMemo } from "react"
 
 import { useTxHistory } from "./TxHistoryContext"
 
-export const useCanReplaceTx = (tx: WalletTransaction) => {
+const _useCanReplaceTx = (tx: WalletTransaction) => {
   const { transactions } = useTxHistory()
 
   return useMemo(() => {

@@ -23,14 +23,6 @@ import {
   useBittensorStakingPositions,
 } from "../../hooks/useBittensorStakingPositions"
 
-type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
-
-export type SortMethod = {
-  label: string
-  value: SortValue
-  isDisabled?: boolean
-}
-
 export const BittensorStakingPositionSelect = () => {
   const { t } = useTranslation()
   const [searchSync, setSearch] = useState<string>("")

@@ -99,7 +99,7 @@ export type SortableRpcItemProps = {
   placeholder: string
 }
 
-export const SortableRpcField: FC<SortableRpcItemProps> = ({
+const SortableRpcField: FC<SortableRpcItemProps> = ({
   rpc,
   index,
   canDelete,

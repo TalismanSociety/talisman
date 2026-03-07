@@ -1,7 +1,7 @@
 import { filter, firstValueFrom, timeout } from "rxjs"
 import { gandalfAccessToken$ } from "../state/gandalf"
 
-export const getGandalfAccessToken = () =>
+const getGandalfAccessToken = () =>
   firstValueFrom(
     gandalfAccessToken$.pipe(
       filter((loadable) => loadable.status !== "loading"),

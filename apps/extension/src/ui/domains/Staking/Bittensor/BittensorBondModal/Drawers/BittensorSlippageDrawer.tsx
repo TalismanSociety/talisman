@@ -17,10 +17,7 @@ export const BittensorSlippageDrawer: FC<{
   )
 }
 
-export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
-  netuid,
-  onClose,
-}) => {
+const Content: FC<{ netuid: number | null; onClose: () => void }> = ({ netuid, onClose }) => {
   const { t } = useTranslation()
 
   return (

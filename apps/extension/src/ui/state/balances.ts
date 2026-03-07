@@ -105,7 +105,7 @@ const getBalancesByCategory$ = (category: AccountCategory = "all") =>
     })
   )
 
-export const [useBalance, getBalance$] = bind(
+const [useBalance, _getBalance$] = bind(
   (address: Address | null | undefined, tokenId: TokenId | null | undefined) =>
     getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
   null
@@ -122,7 +122,7 @@ export const [useBalancesByAddress] = bind(
 )
 
 // used to force suspense, as useBalances() doesn't
-export const [usePreloadBalances, preloadBalances$] = bind(
+const [_usePreloadBalances, preloadBalances$] = bind(
   new Observable<void>((subscriber) => {
     // Trigger the initial fetch of balances
     firstValueFrom(rawBalances$)
@@ -134,3 +134,5 @@ export const [usePreloadBalances, preloadBalances$] = bind(
       })
   })
 )
+
+export { useBalance, preloadBalances$ }

@@ -112,6 +112,6 @@ export const migrateSeedStoreToMultiple: Migration = {
   // no way back
 }
 
-export const migrations = {
+const _migrations = {
   0: migrateSeedStoreToMultiple,
 }

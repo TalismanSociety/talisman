@@ -63,7 +63,7 @@ type Action =
       mnemonicConfirmed?: boolean
     }
 
-export const reducer = (state: AddQrState, action: Action): AddQrState => {
+const reducer = (state: AddQrState, action: Action): AddQrState => {
   if (state.type === "SCAN") {
     if (action.method === "enableScan") return { type: "SCAN", enable: true }
     if (action.method === "setScanError")

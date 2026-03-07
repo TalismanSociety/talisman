@@ -26,5 +26,5 @@ const nompoolAccountId = (palletId: string, poolId: string | number, index: numb
 export const nompoolStashAccountId = (palletId: string, poolId: string | number) =>
   nompoolAccountId(palletId, poolId, 0)
 /** The rewards account for the nomination pool */
-export const nompoolRewardAccountId = (palletId: string, poolId: string | number) =>
+const _nompoolRewardAccountId = (palletId: string, poolId: string | number) =>
   nompoolAccountId(palletId, poolId, 1)

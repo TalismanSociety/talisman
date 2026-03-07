@@ -35,7 +35,7 @@ type AccountJsonHardwareSubstrateOwnProperties = {
 }
 
 /** @deprecated */
-export type AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
+type _AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
 
 /** @deprecated */
 type AccountJsonHardwareEthereumOwnProperties = {
@@ -44,7 +44,7 @@ type AccountJsonHardwareEthereumOwnProperties = {
 }
 
 /** @deprecated */
-export type AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
+type _AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
 
 /** @deprecated */
 type AccountJsonHardwarePolkadotOwnProperties = {
@@ -52,14 +52,14 @@ type AccountJsonHardwarePolkadotOwnProperties = {
   path: string
 }
 /** @deprecated */
-export type AccountJsonHardwarePolkadot = AccountJson & AccountJsonHardwarePolkadotOwnProperties
+type _AccountJsonHardwarePolkadot = AccountJson & AccountJsonHardwarePolkadotOwnProperties
 
 /** @deprecated */
 type AccountJsonQrOwnProperties = {
   isQr: true
 }
 /** @deprecated */
-export type AccountJsonQr = AccountJson & AccountJsonQrOwnProperties
+type _AccountJsonQr = AccountJson & AccountJsonQrOwnProperties
 
 /** @deprecated */
 type AccountJsonWatchedOwnProperties = {
@@ -67,7 +67,7 @@ type AccountJsonWatchedOwnProperties = {
 }
 
 /** @deprecated */
-export type AccountJsonWatched = AccountJson & AccountJsonWatchedOwnProperties
+type _AccountJsonWatched = AccountJson & AccountJsonWatchedOwnProperties
 
 /** @deprecated */
 type AccountJsonDcentOwnProperties = {
@@ -76,7 +76,7 @@ type AccountJsonDcentOwnProperties = {
 }
 
 /** @deprecated */
-export type AccountJsonDcent = AccountJson & AccountJsonDcentOwnProperties
+type _AccountJsonDcent = AccountJson & AccountJsonDcentOwnProperties
 
 /** @deprecated */
 type AccountJsonSignetOwnProperties = {
@@ -84,11 +84,11 @@ type AccountJsonSignetOwnProperties = {
 }
 
 /** @deprecated */
-export type AccountJsonSignet = AccountJson & AccountJsonSignetOwnProperties
+type _AccountJsonSignet = AccountJson & AccountJsonSignetOwnProperties
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
-export const AccountImportSources = {
+const AccountImportSources = {
   JSON: "json",
   PK: "pk",
 } as const
@@ -123,7 +123,7 @@ export interface LegacyAccount {
 }
 
 /** @deprecated */
-export type AccountsList = LegacyAccount[]
+type _AccountsList = LegacyAccount[]
 
 // TODO migrate
 /**

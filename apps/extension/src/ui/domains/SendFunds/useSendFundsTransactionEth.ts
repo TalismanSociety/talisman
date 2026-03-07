@@ -98,5 +98,3 @@ export const useSendFundsTransactionEth = ({
     setIsLocked,
   }
 }
-
-export type SendFundsTransactionEth = ReturnType<typeof useSendFundsTransactionEth>

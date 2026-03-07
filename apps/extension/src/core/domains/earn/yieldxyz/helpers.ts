@@ -24,6 +24,6 @@ export const getTalismanNetworkIdToYieldxyzNetworkIdMap = (
   )
 }
 
-export const isYieldxyzNetworkId = (id: string): id is Networks => {
+const isYieldxyzNetworkId = (id: string): id is Networks => {
   return !!Networks[id as Networks]
 }

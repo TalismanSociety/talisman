@@ -1,1 +1,1 @@
-export { addException, dispose, isPhishingSite } from "./ParaverseProtector"
+export { addException, isPhishingSite } from "./ParaverseProtector"

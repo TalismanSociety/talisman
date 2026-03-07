@@ -160,7 +160,7 @@ export type UseRealtimeStakeEventsReturn = {
  * On the first `reportFloor` call, a one-time backfill runs to capture any
  * events between the indexer head and the first polled block.
  */
-export const useRealtimeStakeEventsProvider = ({
+const useRealtimeStakeEventsProvider = ({
   netuid,
 }: {
   netuid: number | null | undefined

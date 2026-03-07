@@ -15,7 +15,7 @@ export type FormFieldInputContainerProps = DetailedHTMLProps<
   small?: boolean
 }
 
-export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
+const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
   small,
   className,
   ...props

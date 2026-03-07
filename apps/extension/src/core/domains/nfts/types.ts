@@ -1,11 +1,5 @@
 import type { RequestIdOnly } from "../../types/base"
 
-export type RefreshNftMetadataRequestBody = {
-  evmNetworkId: string
-  contractAddress: string
-  tokenId: string
-}
-
 /**
  * Types in this section should be kept in sync with the ones from asset-discovery-api
  */

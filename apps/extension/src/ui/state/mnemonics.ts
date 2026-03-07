@@ -5,7 +5,7 @@ import { map, Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
-export const mnemonics$ = new Observable<Mnemonic[]>((subscriber) => {
+const mnemonics$ = new Observable<Mnemonic[]>((subscriber) => {
   const unsubscribe = api.mnemonicsSubscribe((mnemonics) => {
     subscriber.next(mnemonics)
   })
@@ -14,7 +14,7 @@ export const mnemonics$ = new Observable<Mnemonic[]>((subscriber) => {
 
 export const [useMnemonics] = bind(mnemonics$)
 
-export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) =>
+const [useMnemonic, _getMnemonic$] = bind((id: string | null | undefined) =>
   mnemonics$.pipe(
     map((mnemonics) => {
       if (!id) return null
@@ -22,3 +22,5 @@ export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) 
     })
   )
 )
+
+export { useMnemonic }

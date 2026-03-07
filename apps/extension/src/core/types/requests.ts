@@ -13,7 +13,7 @@ export const isEthereumRequest = (
   )
 }
 
-export const isSigningType = <T extends keyof SigningRequests>(
+const _isSigningType = <T extends keyof SigningRequests>(
   signingRequest: SigningRequests[T][0],
   type: T
 ) => {

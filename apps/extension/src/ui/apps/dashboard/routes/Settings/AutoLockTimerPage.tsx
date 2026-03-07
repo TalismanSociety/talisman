@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 
 type Option = { value: number; label: string }
 
-export const Content = () => {
+const Content = () => {
   const { t } = useTranslation()
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockMinutes")
 

@@ -110,7 +110,6 @@ type UNKNOWN = "UNKNOWN"
 
 type StringTernary = FALSE | TRUE | UNKNOWN
 
-export type OnboardedType = StringTernary
 export type LoggedinType = StringTernary
 
 export type ChangePasswordRequest = {

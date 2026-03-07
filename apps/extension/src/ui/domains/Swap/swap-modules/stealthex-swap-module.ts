@@ -71,8 +71,8 @@ import type {
 import stealthexLogo from "./stealthex-logo.svg?url"
 
 const apiUrl = "https://stealthex.talisman.xyz"
-export const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
-export const PROTOCOL_NAME = "StealthEX"
+const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
+const PROTOCOL_NAME = "StealthEX"
 const DECENTRALISATION_SCORE = 1.5
 type FeeProps = { fromAsset: SwappableAssetBaseType; toAsset: SwappableAssetBaseType }
 const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {

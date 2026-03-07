@@ -29,7 +29,7 @@ export const migrateConnectAllSubstrate = async (previousVersion: string) => {
   }
 }
 
-export const migratePolkadotVaultVerifierCertificate = async (previousVersion: string) => {
+const _migratePolkadotVaultVerifierCertificate = async (previousVersion: string) => {
   if (!lt(previousVersion, "1.17.0")) return
   // once off migration to add a Polkadot Vault verifier certificate seed store
   const hasVaultAccounts = await hasQrCodeAccounts()

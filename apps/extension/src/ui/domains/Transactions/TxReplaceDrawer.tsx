@@ -40,7 +40,7 @@ type TxReplaceDrawerProps = {
   onClose?: (newTxHash?: HexString) => void
 }
 
-export const EvmEstimatedFeeTooltip: FC<{
+const EvmEstimatedFeeTooltip: FC<{
   account: string
   feeTokenId?: TokenId
   txDetails?: EthTransactionDetails

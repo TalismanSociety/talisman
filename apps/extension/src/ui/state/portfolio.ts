@@ -67,7 +67,7 @@ const subjectPortfolioNetworkOptionId$ = new BehaviorSubject<NetworkOption["id"]
   undefined
 )
 
-export const [usePortfolioNetworkOptionId, portfolioNetworkOptionId$] = bind(
+const [_usePortfolioNetworkOptionId, portfolioNetworkOptionId$] = bind(
   subjectPortfolioNetworkOptionId$
 )
 

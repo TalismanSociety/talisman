@@ -1,6 +1,6 @@
 import type { Mnemonic } from "@talismn/keyring"
 
-export declare type MnemonicSubscriptionResult = {
+declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
 }
 

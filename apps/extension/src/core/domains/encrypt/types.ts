@@ -99,10 +99,8 @@ export type ResponseEncryptDecrypt = {
   result: string | null
 }
 
-export type ResponseEncrypt = ResponseEncryptEncrypt | ResponseEncryptDecrypt
-
 // might remove - just inheriting pattern from RequestSigningSubscribe from "@polkadot/extension-base/background/types"
-export declare type RequestEncryptSubscribe = null
+declare type RequestEncryptSubscribe = null
 
 export type AnyEncryptRequestIdOnly = EncryptRequestIdOnly | DecryptRequestIdOnly
 export type RequestEncryptCancel = AnyEncryptRequestIdOnly

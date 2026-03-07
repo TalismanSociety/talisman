@@ -120,8 +120,8 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
     )
 })
 
-export const fromAssetsSelector = atom(async (get) => await get(assetsSelector))
-export const toAssetsSelector = atom(async (get) => await get(assetsSelector))
+const fromAssetsSelector = atom(async (get) => await get(assetsSelector))
+const toAssetsSelector = atom(async (get) => await get(assetsSelector))
 
 const routesAtom = atom(async (get) => {
   try {

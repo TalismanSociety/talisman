@@ -15,6 +15,7 @@ const storageKey = "mnemonics"
  */
 export enum MnemonicSource {
   Imported = "imported",
+  /** @knipignore */
   Generated = "generated",
   Legacy = "legacy",
 }
@@ -43,6 +44,7 @@ export enum MnemonicErrors {
   InvalidMnemonic = "Invalid mnemonic",
   UnableToDecrypt = "Unable to decrypt mnemonic",
   UnableToEncrypt = "Unable to encrypt mnemonic",
+  /** @knipignore */
   NoMnemonicPresent = "No mnemonic present",
   MnemonicNotFound = "Mnemonic not found",
   AlreadyExists = "Mnemonic already exists in MnemonicsStore",
@@ -85,7 +87,7 @@ type MnemonicId = string
 /**
  * @deprecated
  */
-export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
+class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   public async add(
     name: string,
     mnemonic: string,

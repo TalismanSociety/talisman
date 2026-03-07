@@ -47,7 +47,7 @@ export type UsePopoverReturnType = ReturnType<typeof useInteractions> &
     setDescriptionId: Dispatch<SetStateAction<string | undefined>>
   }
 
-export function usePopover({
+function usePopover({
   initialOpen = false,
   placement = "bottom",
   modal,

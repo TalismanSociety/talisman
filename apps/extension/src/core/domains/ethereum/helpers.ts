@@ -106,7 +106,7 @@ export const serializeTransactionRequest = (
   return serialized
 }
 
-export const serializeTransactionRequestBase = (
+const _serializeTransactionRequestBase = (
   txb: TransactionRequestBase
 ): TransactionRequestBase<string> => {
   const serialized: TransactionRequestBase<string> = {
@@ -122,7 +122,7 @@ export const serializeTransactionRequestBase = (
   return serialized
 }
 
-export const parseGasSettings = (gasSettings: EthGasSettings<string>): EthGasSettings<bigint> => {
+const _parseGasSettings = (gasSettings: EthGasSettings<string>): EthGasSettings<bigint> => {
   return gasSettings.type === "eip1559"
     ? {
         type: "eip1559",
@@ -137,9 +137,7 @@ export const parseGasSettings = (gasSettings: EthGasSettings<string>): EthGasSet
       }
 }
 
-export const serializeGasSettings = (
-  gasSettings: EthGasSettings<bigint>
-): EthGasSettings<string> => {
+const _serializeGasSettings = (gasSettings: EthGasSettings<bigint>): EthGasSettings<string> => {
   return gasSettings.type === "eip1559"
     ? {
         type: "eip1559",
@@ -401,6 +399,7 @@ export const isValidAddEthereumRequestParam = (obj: unknown) =>
 // For example, only the HTTPS protocol scheme should be used.
 // Furthermore, private IP ranges and hostnames should be forbidden.
 // Finally, only specific whitelisted image extensions should be allowed.
+/** @knipignore used in __tests__ */
 export const isSafeImageUrl = (url?: string) => {
   if (!url) return true
   try {

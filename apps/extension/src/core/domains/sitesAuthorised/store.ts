@@ -9,6 +9,7 @@ import type { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
 const OLD_AUTH_URLS_KEY = "authUrls"
 
 // exported only for test purposes
+/** @knipignore exported for test mocks */
 export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   AuthorizedSites,
   "pri(sites.subscribe)",

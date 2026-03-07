@@ -22,9 +22,9 @@ export const YIELD_API_BASE_URL = "https://yap.talisman.xyz"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
-export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
+const _TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
-export const TALISMAN_WEB_APP_STAKING_POSITIONS_URL = "https://app.talisman.xyz/staking/positions"
+const _TALISMAN_WEB_APP_STAKING_POSITIONS_URL = "https://app.talisman.xyz/staking/positions"
 
 export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
@@ -36,7 +36,7 @@ export const DISCORD_TALISMAN_URL = "https://discord.gg/EF3Zf4R5bD"
 export const TALISMAN_DOCS_URL_PREFIX = "https://docs.talisman.xyz/talisman"
 export const POLKADOT_VAULT_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/importing-external-wallets/import-from-polkadot-vault`
 export const RELEASE_NOTES_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/wallet-release-notes`
-export const SECURITY_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/security`
+const _SECURITY_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/security`
 export const MNEMONIC_BACKUP_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/installing-talisman/back-up-your-secret-phrase`
 export const PRIVACY_POLICY_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/privacy-policy`
 export const TERMS_OF_USE_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/terms-of-use`
@@ -48,4 +48,4 @@ export const CONNECT_LEDGER_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/import
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
 export const UNKNOWN_NETWORK_URL = "/images/unknown-network.svg"
 
-export const LEDGER_ETHEREUM_MIN_VERSION = "1.9.19"
+const _LEDGER_ETHEREUM_MIN_VERSION = "1.9.19"

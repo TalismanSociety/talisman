@@ -51,31 +51,30 @@ export const runActionsOnTrees = (trees: Partial<Trees>, actions: RequestAccount
 /**
  * Given some trees and an action, will run the action against the trees
  */
-export const runActionOnTrees =
-  (trees: Partial<Trees>) => (action: RequestAccountsCatalogAction) => {
-    const { type, tree: treeName } = action
+const runActionOnTrees = (trees: Partial<Trees>) => (action: RequestAccountsCatalogAction) => {
+  const { type, tree: treeName } = action
 
-    const tree = trees[treeName]
-    if (!tree) return
+  const tree = trees[treeName]
+  if (!tree) return
 
-    // reordering overrides override the whole trees data
-    if (type === "reorder") return reorderTree(trees, action)
+  // reordering overrides override the whole trees data
+  if (type === "reorder") return reorderTree(trees, action)
 
-    // account actions
-    if (type === "moveAccount") return moveAccount(tree, action) // TODO remove?
+  // account actions
+  if (type === "moveAccount") return moveAccount(tree, action) // TODO remove?
 
-    // folder actions
-    if (type === "addFolder") return addFolder(tree, action)
-    if (type === "renameFolder") return renameFolder(tree, action)
-    if (type === "moveFolder") return moveFolder(tree, action) // TODO remove?
-    if (type === "removeFolder") return removeFolder(tree, action)
+  // folder actions
+  if (type === "addFolder") return addFolder(tree, action)
+  if (type === "renameFolder") return renameFolder(tree, action)
+  if (type === "moveFolder") return moveFolder(tree, action) // TODO remove?
+  if (type === "removeFolder") return removeFolder(tree, action)
 
-    // force compilation error if any action types don't have a case
-    const exhaustiveCheck: never = type
-    // biome-ignore lint/suspicious/noConsole: legacy
-    DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
-    return
-  }
+  // force compilation error if any action types don't have a case
+  const exhaustiveCheck: never = type
+  // biome-ignore lint/suspicious/noConsole: legacy
+  DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
+  return
+}
 
 type MoveAccountAction = Extract<RequestAccountsCatalogAction, { type: "moveAccount" }>
 const moveAccount = (tree: Tree, { address, folderId, beforeItem }: MoveAccountAction) => {
@@ -184,7 +183,7 @@ const removeFolder = (tree: Tree, { id }: RemoveFolderAction) => {
 }
 
 /** Filters an array of `TreeItem` (accounts and folders) into an array of just `TreeAccount` */
-export const accountFilter = (item: TreeItem): item is TreeAccount => item.type === "account"
+const _accountFilter = (item: TreeItem): item is TreeAccount => item.type === "account"
 
 /** Filters an array of `TreeItem` (accounts and folders) into an array of just `TreeFolder` */
 export const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "folder"
@@ -222,7 +221,7 @@ const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undef
 }
 
 /** Sorts a list of items which have a `sortOrder` property */
-export const bySortOrder = <T extends { sortOrder?: number }>(a: T, b: T) =>
+const _bySortOrder = <T extends { sortOrder?: number }>(a: T, b: T) =>
   (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER)
 
 /** Adds an account (by address) to a tree */

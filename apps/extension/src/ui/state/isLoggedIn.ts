@@ -11,4 +11,4 @@ export const isLoggedIn$ = new Observable<boolean>((subscriber) => {
   return () => unsubscribe()
 }).pipe(debugObservable("isLoggedIn$"), shareReplay(1))
 
-export const [useIsLoggedIn] = bind(isLoggedIn$)
+const [_useIsLoggedIn] = bind(isLoggedIn$)

@@ -238,11 +238,6 @@ const TokenDisplay: FC<{ symbol: string; decimals: number; value: bigint | null 
   )
 }
 
-export type AmountEditErrorProps = {
-  message: string
-  details?: string
-}
-
 export const GenericAmountEdit: FC<{
   value: bigint | null
   decimals: number

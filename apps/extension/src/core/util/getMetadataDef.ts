@@ -222,7 +222,7 @@ if (DEBUG) {
   }
 }
 
-export const getLatestMetadataRpc = (chainId: DotNetworkId) =>
+const getLatestMetadataRpc = (chainId: DotNetworkId) =>
   fetchBestMetadata((method, params, isCacheable) =>
     chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true })
   )

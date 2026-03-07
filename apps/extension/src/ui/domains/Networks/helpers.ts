@@ -18,8 +18,8 @@ import { z } from "zod/v4"
 const rpcInfoCache = new Map<string, Promise<SubstrateRpcInfo | null>>()
 const genesisHashCache = new Map<string, Promise<string | null>>()
 
-export const wsRegEx = /^wss?:\/\/.+$/
-export const httpRegEx = /^https?:\/\/.+$/
+const wsRegEx = /^wss?:\/\/.+$/
+const httpRegEx = /^https?:\/\/.+$/
 
 export const getDotGenesisHashFromRpc = (rpcUrl: string): Promise<`0x${string}` | null> => {
   // check if valid url

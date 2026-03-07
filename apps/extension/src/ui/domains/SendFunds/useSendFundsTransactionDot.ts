@@ -118,8 +118,6 @@ export const useSendFundsTransactionDot = ({
   }
 }
 
-export type SendFundsTransactionDot = ReturnType<typeof useSendFundsTransactionDot>
-
 const usePayload = ({
   sapi,
   token,

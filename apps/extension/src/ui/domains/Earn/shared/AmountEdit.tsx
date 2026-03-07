@@ -240,11 +240,6 @@ const TokenDisplay: FC<{ token: Token; value: bigint | null }> = ({ token, value
   )
 }
 
-export type AmountEditErrorProps = {
-  message: string
-  details?: string
-}
-
 export const AmountEdit: FC<{
   value: bigint | null
   tokenId: string

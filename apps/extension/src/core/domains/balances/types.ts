@@ -1,6 +1,5 @@
 import type { BalancesResult, IBalance } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import type { TokenRateCurrency } from "@talismn/token-rates"
 
 import type { Address } from "../../types/base"
 
@@ -17,12 +16,6 @@ export type AddressesAndTokens = {
 }
 export interface RequestBalancesByParamsSubscribe {
   addressesAndTokens: AddressesAndTokens
-}
-
-export type BalanceTotal = {
-  address: Address
-  total: number
-  currency: TokenRateCurrency
 }
 
 export interface BalancesMessages {

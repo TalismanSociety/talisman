@@ -71,7 +71,7 @@ const networks$ = getNetworks$({
   includeTestnets: true,
 })
 
-export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
+const [_useNftNetworkOptions, nftNetworkOptions$] = bind(
   combineLatest([networks$, nftData$]).pipe(
     map(([networksetworks, { nfts }]) => {
       const networkIdsWithNfts = [...new Set(nfts.map((nft) => nft.networkId))]
@@ -270,7 +270,7 @@ export const [useNfts, nfts$] = bind(
   } as NftData
 )
 
-export const [useNft, nft$] = bind(
+const [useNft, _nft$] = bind(
   (id: string | null) =>
     nftData$.pipe(
       map(({ nfts, collections }) => {
@@ -288,17 +288,17 @@ export const [useNft, nft$] = bind(
   null
 )
 
-export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind(
+const [useIsHiddenNftCollection, _getIsHiddenNftCollection$] = bind(
   (id: string) => nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
   false
 )
 
-export const [useIsFavoriteNft, getIsFavoriteNft$] = bind(
+const [useIsFavoriteNft, _getIsFavoriteNft$] = bind(
   (id: string) => nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
   false
 )
 
-export const [useNftCollection, getNftCollection$] = bind(
+const [useNftCollection, _getNftCollection$] = bind(
   (collectionId: string | null | undefined) =>
     nfts$.pipe(
       map(({ collections, nfts: allNfts }) => ({
@@ -308,3 +308,5 @@ export const [useNftCollection, getNftCollection$] = bind(
     ),
   { collection: null, nfts: [] }
 )
+
+export { useNft, useIsHiddenNftCollection, useIsFavoriteNft, useNftCollection }

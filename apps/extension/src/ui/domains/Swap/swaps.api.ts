@@ -234,7 +234,7 @@ export const getTokenTabs = ({
 ]
 
 export const tokenTabAtom = atom<string>("all")
-export const coingeckoAssetPlatformsAtom = atom(async (get) => {
+const coingeckoAssetPlatformsAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
   const response = await fetch(`${apiUrl}/api/v3/asset_platforms`, {
@@ -250,7 +250,7 @@ export const coingeckoAssetPlatformsAtom = atom(async (get) => {
   }[]
 })
 
-export const coingeckoListAtom = atom(async (get) => {
+const coingeckoListAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
   const response = await fetch(`${apiUrl}/api/v3/coins/list?include_platform=true`, {
@@ -260,7 +260,7 @@ export const coingeckoListAtom = atom(async (get) => {
   return (await response.json()) as { id: string; platforms: Record<string, string> }[]
 })
 
-export const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
+const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
   atom(async (get) => {
     const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
@@ -324,8 +324,8 @@ const coingeckoCoinByAddressAtom = atomFamily((addressPlatform: string) =>
   })
 )
 
-export const swapFromSearchAtom = atom<string>("")
-export const swapToSearchAtom = atom<string>("")
+const swapFromSearchAtom = atom<string>("")
+const swapToSearchAtom = atom<string>("")
 
 const erc20Atom = atomFamily((addressChainId: string) =>
   atom(async (get): Promise<SwappableAssetWithDecimals | null> => {
@@ -619,7 +619,7 @@ export const selectedSwapModuleAtom = atom(async (get) => {
 })
 
 export const approvalCounterAtom = atom(0)
-export const approvalAtom = atom(async (get) => {
+const approvalAtom = atom(async (get) => {
   const module = await get(selectedSwapModuleAtom)
 
   if (!module?.approvalAtom) return null
@@ -691,7 +691,7 @@ export const useReverse = () => {
   }, [fromAsset, setFromAmount, setFromAsset, setToAsset, toAmount, toAsset])
 }
 
-export const useAssetToken = (assetAtom: PrimitiveAtom<SwappableAssetBaseType | null>) => {
+const _useAssetToken = (assetAtom: PrimitiveAtom<SwappableAssetBaseType | null>) => {
   const asset = useAtomValue(assetAtom)
   const tokens = useTokensMap()
 
@@ -842,7 +842,7 @@ export const useSetToAddress = () => {
   ])
 }
 
-export const categoriesAtom = atom(async (get) => {
+const _categoriesAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
   const response = await fetch(`${apiUrl}/api/v3//coins/markets?vs_currency=usd&category=wallets`, {

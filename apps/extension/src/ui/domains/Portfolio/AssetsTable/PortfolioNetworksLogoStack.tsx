@@ -7,7 +7,7 @@ import { useMemo } from "react"
 
 import { type PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
-export const PortfolioNetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
+const PortfolioNetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
   if (!network) return null
 
   return (
@@ -35,7 +35,7 @@ const MoreNetworksTooltip = ({ networks }: { networks: PortfolioNetwork[] }) => 
   )
 }
 
-export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork[] }) => {
+const PortfolioNetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork[] }) => {
   if (!networks.length) return null
 
   return (

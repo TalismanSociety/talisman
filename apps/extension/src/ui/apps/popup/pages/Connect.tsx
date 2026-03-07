@@ -159,7 +159,7 @@ const getConnectComponent = (provider: ProviderType): ConnectComponent => {
   }
 }
 
-export const ConnectPolkadot: ConnectComponent = ({
+const ConnectPolkadot: ConnectComponent = ({
   siteUrl,
   connected,
   setConnected,
@@ -204,12 +204,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   )
 }
 
-export const ConnectEth: ConnectComponent = ({
-  siteUrl,
-  connected,
-  setConnected,
-  onNoAccountClose,
-}) => {
+const ConnectEth: ConnectComponent = ({ siteUrl, connected, setConnected, onNoAccountClose }) => {
   const { t } = useTranslation()
 
   const accounts = useInjectableAccounts(siteUrl, "ethereum")
@@ -248,7 +243,7 @@ export const ConnectEth: ConnectComponent = ({
   )
 }
 
-export const ConnectSolana: ConnectComponent = ({
+const ConnectSolana: ConnectComponent = ({
   siteUrl,
   connected,
   setConnected,

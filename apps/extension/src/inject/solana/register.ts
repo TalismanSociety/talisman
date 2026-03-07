@@ -63,7 +63,7 @@ class RegisterWalletEvent extends Event implements WindowRegisterWalletEvent {
 }
 
 /** @deprecated */
-export function DEPRECATED_registerWallet(wallet: Wallet): void {
+function _DEPRECATED_registerWallet(wallet: Wallet): void {
   registerWallet(wallet)
   try {
     // biome-ignore lint/suspicious/noAssignInExpressions: legacy

@@ -149,9 +149,6 @@ export interface Web3WalletPermission {
   // more to come...
 }
 
-// from https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
-export type RequestedPermissions = Record<Web3WalletPermissionTarget, unknown>
-
 export interface EthMessages {
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, unknown]

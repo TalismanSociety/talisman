@@ -24,7 +24,7 @@ export type LegacyAccountType = {
   [K in keyof typeof LegacyAccountTypes]: (typeof LegacyAccountTypes)[K]
 }[keyof typeof LegacyAccountTypes]
 
-export const NewAccountTypes = {
+const NewAccountTypes = {
   TALISMAN: "TALISMAN", // all accounts with locally stored private key
   QR: "QR",
   LEDGER: "LEDGER",

@@ -4,7 +4,7 @@ import { githubChaindataDistUrl } from "../constants"
 import log from "../log"
 import { ChaindataFileSchema } from "./schema"
 
-export const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
+const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
 const getFallbackUrl = (url: string) => {
   // if githack fails, try statically

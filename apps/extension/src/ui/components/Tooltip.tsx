@@ -40,7 +40,7 @@ export type UseTooltipReturnType = ReturnType<typeof useInteractions> &
     setOpen: (open: boolean) => void
   }
 
-export function useTooltip({
+function useTooltip({
   initialOpen = false,
   placement = "bottom",
   open: controlledOpen,
@@ -99,7 +99,7 @@ type ContextType = ReturnType<typeof useTooltip> | null
 
 const TooltipContext = createContext<ContextType>(null)
 
-export const useTooltipContext = (): NonNullable<ContextType> => {
+const useTooltipContext = (): NonNullable<ContextType> => {
   const context = useContext(TooltipContext)
 
   if (context == null) {

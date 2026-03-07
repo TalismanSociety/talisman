@@ -31,12 +31,12 @@ class ConfirmedAddressesStore extends SubscribableStorageProvider<
 
 export const confirmedAddressesStore = new ConfirmedAddressesStore()
 
-export const confirmedAddresses$ = confirmedAddressesStore.observable
+const _confirmedAddresses$ = confirmedAddressesStore.observable
 
 export const addConfirmedAddress = (tokenId: string, address: string): Promise<void> =>
   confirmedAddressesStore.addConfirmedAddress(tokenId, address)
 
-export const isAddressConfirmedForToken = (
+const _isAddressConfirmedForToken = (
   data: ConfirmedExternalAddresses,
   tokenId: string,
   address: string

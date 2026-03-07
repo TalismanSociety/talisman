@@ -29,9 +29,9 @@ export interface SettingsStoreData {
   dtaoSlippage?: number
 }
 
-export class SettingsStore extends StorageProvider<SettingsStoreData> {}
+class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
-export const DEFAULT_SETTINGS: SettingsStoreData = {
+const DEFAULT_SETTINGS: SettingsStoreData = {
   useErrorTracking: !IS_FIREFOX,
   identiconType: "talisman-orb",
   useAnalyticsTracking: undefined, // undefined for onboarding

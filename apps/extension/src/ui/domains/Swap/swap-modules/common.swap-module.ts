@@ -108,7 +108,7 @@ export type SwapActivity<TData> = {
   }
 }
 
-export type EstimateGasTx =
+type _EstimateGasTx =
   | {
       type: "evm"
       chainId: number
@@ -123,7 +123,7 @@ export type EstimateGasTx =
 export type QuoteFunction<TData = any> = Atom<
   Loadable<Promise<BaseQuote<TData> | Loadable<Promise<BaseQuote<TData> | null>>[] | null>>
 >
-export type SwapFunction<TData> = (
+type _SwapFunction<TData> = (
   get: Getter,
   set: Setter,
   props: SwapProps
@@ -219,7 +219,7 @@ export const toAddressAtom = atom((get) => {
   }
 })
 
-export const swappingAtom = atom(false)
+const _swappingAtom = atom(false)
 export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
   "bestRate"
 )
@@ -270,7 +270,7 @@ const swapsStorage: typeof _swapsStorage = {
 
 const swapsStorageAtom = atomWithStorage("@talisman/swaps", [], swapsStorage)
 
-export const swapsAtom = atom(
+const _swapsAtom = atom(
   (get) => filterAndSortStoredSwaps(get(swapsStorageAtom)),
   (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps)
 )

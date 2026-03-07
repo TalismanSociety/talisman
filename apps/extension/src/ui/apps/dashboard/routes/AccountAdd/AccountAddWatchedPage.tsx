@@ -9,7 +9,7 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 
-export const Content = () => {
+const Content = () => {
   const { t } = useTranslation()
   // get type paramter from url
   const [params] = useSearchParams()

@@ -4,7 +4,7 @@ import { base64Decode, base64Encode } from "@polkadot/util-crypto"
 import type { TalismanMetadataDef } from "../substrate/types"
 
 // these are stored as base64 for lower storage size
-export const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
+const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
 
 // these are stored as base64 for lower storage size
 export const decodeMetadataRpc = (encoded: string) => u8aToHex(base64Decode(encoded))

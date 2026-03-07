@@ -10,11 +10,6 @@ export type LegacySeedObj = {
   seed: `${LEGACY_SEED_PREFIX}${string}`
 }
 
-export type SeedPhraseData = {
-  cipher?: string
-  confirmed: boolean
-}
-
 export const decryptLegacyMnemonicObject = ({
   seed,
 }: LegacySeedObj): Result<string, "Unable to decrypt seed"> => {
@@ -25,7 +20,7 @@ export const decryptLegacyMnemonicObject = ({
 
 type DecryptedMnemonic = LegacySeedObj | string
 
-export enum MnemonicErrors {
+enum MnemonicErrors {
   IncorrectPassword = "Incorrect password",
   UnableToDecrypt = "Unable to decrypt mnemonic",
   UnableToEncrypt = "Unable to encrypt mnemonic",

@@ -19,8 +19,6 @@ export type KnownRequests = SigningRequests &
 export type KnownRequestTypes = Prettify<keyof KnownRequests>
 
 export type KnownRequestId<T extends KnownRequestTypes> = `${T}.${string}`
-export type AnyRequestID = KnownRequestId<KnownRequestTypes>
-export type AnyRequestIdOnly = { id: KnownRequestId<KnownRequestTypes> }
 
 export type KnownRequestIdOnly<T extends KnownRequestTypes> = {
   id: KnownRequestId<T>
@@ -30,7 +28,6 @@ export type KnownRequest<T extends KnownRequestTypes> = KnownRequests[T][0]
 export type KnownResponse<T extends KnownRequestTypes> = KnownRequests[T][1]
 
 export type ValidRequests = KnownRequest<KnownRequestTypes>
-export type ValidResponses = KnownResponse<KnownRequestTypes>
 
 export interface Resolver<T> {
   reject: (error: Error) => void

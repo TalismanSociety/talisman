@@ -41,7 +41,7 @@ class RequestCounts {
   }
 }
 
-export class RequestStore {
+class RequestStore {
   // `requests` is the primary list of items that need responding to by the user
   protected readonly requests: Record<
     string,

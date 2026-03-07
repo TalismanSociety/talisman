@@ -2,7 +2,7 @@ import type BigNumber from "bignumber.js"
 
 const sortAscending = (v1: BigNumber, v2: BigNumber) => (v1.lt(v2) ? -1 : v1.gt(v2) ? 1 : 0)
 
-export const sortBig = (desc?: boolean) => (a: BigNumber, b: BigNumber) =>
+const sortBig = (desc?: boolean) => (a: BigNumber, b: BigNumber) =>
   desc ? sortAscending(b, a) : sortAscending(a, b)
 
 export const sortBigBy =

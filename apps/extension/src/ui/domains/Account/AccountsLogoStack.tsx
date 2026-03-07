@@ -32,7 +32,7 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
   )
 }
 
-export const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
+const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
   if (!account) return null
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">
@@ -43,7 +43,7 @@ export const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
   )
 }
 
-export const AccountsLogoStackMore = ({ accounts }: { accounts: Account[] }) => {
+const AccountsLogoStackMore = ({ accounts }: { accounts: Account[] }) => {
   if (!accounts.length) return null
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">

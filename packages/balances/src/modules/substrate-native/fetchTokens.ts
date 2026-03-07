@@ -69,7 +69,7 @@ const DotNetworkPropertiesSchema = z
     tokenSymbol: Array.isArray(val.tokenSymbol) ? val.tokenSymbol[0] : val.tokenSymbol,
   }))
 
-export const getChainProperties = async (connector: IChainConnectorDot, networkId: string) => {
+const getChainProperties = async (connector: IChainConnectorDot, networkId: string) => {
   const properties = await connector.send(networkId, "system_properties", [], true)
   return DotNetworkPropertiesSchema.parse(properties)
 }

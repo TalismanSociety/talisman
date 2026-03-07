@@ -7,7 +7,7 @@ import { StorageProvider } from "../../libs/Store"
 import { fetchRemoteConfig } from "../../util/fetchRemoteConfig"
 import type { RemoteConfigStoreData } from "./types"
 
-export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
+const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
   ramps: {
     coinbaseProjectId: "63080e24-dc8e-45d0-9618-467b8c222f9e",
@@ -75,7 +75,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 
-export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
+class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
   // call this only once, and only from background script
   async init() {
     const updateConfig = async () => {
@@ -114,7 +114,7 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 
 export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)
 
-export const isFeatureFlagEnabled = async (flag: keyof RemoteConfigStoreData["featureFlags"]) => {
+const _isFeatureFlagEnabled = async (flag: keyof RemoteConfigStoreData["featureFlags"]) => {
   try {
     const featureFlags = await remoteConfigStore.get("featureFlags")
     return !!featureFlags[flag]

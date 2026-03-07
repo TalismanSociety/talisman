@@ -12,7 +12,7 @@ import { Skeleton } from "../shared/Skeleton"
 import { raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
-export const PoweredBySn45 = () => {
+const _PoweredBySn45 = () => {
   const { t } = useTranslation()
   return (
     <a

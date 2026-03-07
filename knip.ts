@@ -1,41 +1,50 @@
 import type { KnipConfig } from "knip"
 
 const config: KnipConfig = {
-  // Ignore generated polkadot-api descriptors workspace
-  ignoreWorkspaces: [".papi/descriptors"],
+  // Exclude exports tagged with @knipignore from unused reports
+  tags: ["-knipignore"],
 
-  // Global ignore patterns for build artifacts and generated files
-  ignore: ["**/dist/**", "**/.wxt/**", "**/coverage/**", "test-results/**", "playwright-report/**"],
-
-  // Dependencies that are used but Knip can't detect (re-exports, dynamic imports, types, etc.)
-  ignoreDependencies: [
-    // Used by apps/extension (re-exported through Solana inject code)
-    "@solana/wallet-standard-util",
-    // Type definitions - used by TypeScript but not detected by Knip
-    "@types/pako",
+  ignoreWorkspaces: [
+    ".papi/descriptors", // Generated polkadot-api descriptors
+    "apps/balances-demo", // Test project — unused artefacts expected
+    "apps/balances-bench", // Test project — unused artefacts expected
   ],
 
-  // Treat interface/type exports as used if file is used (common pattern in TS)
+  ignore: ["**/dist/**", "**/.wxt/**", "**/coverage/**", "test-results/**", "playwright-report/**"],
+
+  ignoreDependencies: [
+    // Generated workspace package — imported via type-only paths by packages/balances and packages/sapi
+    "@polkadot-api/descriptors",
+  ],
+
+  // Shell utilities used in package.json scripts — not npm binaries
+  ignoreBinaries: ["lsof", "wait"],
+
   ignoreExportsUsedInFile: {
     interface: true,
     type: true,
   },
 
-  // Workspace-specific configurations
+  // Spec-defined constant sets and generated API clients — all exports are intentional
+  ignoreIssues: {
+    "**/EthProviderRpcError.ts": ["exports"],
+    "**/Sign/Qr/constants.ts": ["exports"],
+    "**/inject/solana/solana.ts": ["exports"],
+    // Generated API clients export everything by design
+    "**/bittensor/sn45/Sn45Api.ts": ["exports", "types"],
+    "**/bittensor/tao-data/TaoDataApi.ts": ["exports", "types"],
+  },
+
   workspaces: {
-    // Root workspace - only shell scripts exist
     ".": {},
 
-    // Browser extension app (WXT - no native Knip plugin, needs manual entry config)
+    // Browser extension app (WXT — no native Knip plugin, needs manual entry config)
     "apps/extension": {
-      // WXT entrypoints - must be configured manually
       entry: [
-        // Main WXT entrypoints
         "entrypoints/background.ts",
         "entrypoints/content.ts",
         "entrypoints/page.ts",
 
-        // HTML entrypoints for UI pages
         "entrypoints/popup/index.html",
         "entrypoints/popup/main.tsx",
         "entrypoints/dashboard/index.html",
@@ -45,34 +54,19 @@ const config: KnipConfig = {
         "entrypoints/support/index.html",
         "entrypoints/support/main.tsx",
 
-        // Config files
         "wxt.config.ts",
         "i18next-parser.config.cjs",
       ],
       project: ["src/**/*.{ts,tsx}", "entrypoints/**/*.{ts,tsx}"],
-      ignore: ["**/*.test.ts", "**/*.spec.ts", "tests/**"],
+      ignore: ["**/*.test.ts", "**/*.spec.ts", "**/__tests__/**", "tests/**"],
     },
 
-    // Balances demo app
-    "apps/balances-demo": {
-      entry: ["src/main.tsx"],
-      project: ["src/**/*.{ts,tsx}"],
-    },
-
-    // Balances bench app - multiple entry scripts, no single index
-    "apps/balances-bench": {
-      entry: ["src/*.ts"],
-      project: ["src/**/*.ts"],
-    },
-
-    // TSConfig package - JSON files, not really code
     "config/tsconfig": {
       entry: ["*.json"],
       project: ["**/*.json"],
     },
   },
 
-  // Plugin configurations
   playwright: {
     entry: ["playwright/e2e-tests/**/*.spec.ts"],
   },

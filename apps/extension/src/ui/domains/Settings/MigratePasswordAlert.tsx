@@ -15,7 +15,7 @@ type Props = {
   onAccept: () => void
 }
 
-export const AlertCard = ({ className, onAccept }: Props) => {
+const AlertCard = ({ className, onAccept }: Props) => {
   const { t } = useTranslation()
   return (
     <Card

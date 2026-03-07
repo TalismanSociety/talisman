@@ -18,4 +18,6 @@ const confirmedAddressesRaw$ = new Observable<ConfirmedExternalAddresses>((subsc
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const [useConfirmedAddresses, confirmedAddresses$] = bind(confirmedAddressesRaw$, {})
+const [useConfirmedAddresses, _confirmedAddresses$] = bind(confirmedAddressesRaw$, {})
+
+export { useConfirmedAddresses }

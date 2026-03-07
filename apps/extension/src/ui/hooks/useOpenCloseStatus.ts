@@ -2,7 +2,7 @@ import { provideContext } from "@ui/util/provideContext"
 
 export type OpenCloseStatus = "closed" | "opening" | "open" | "closing"
 
-export const useOpenCloseStatusProvider = ({ status }: { status: OpenCloseStatus }) => {
+const useOpenCloseStatusProvider = ({ status }: { status: OpenCloseStatus }) => {
   return status
 }
 

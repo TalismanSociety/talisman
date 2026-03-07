@@ -4,8 +4,6 @@ import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
 import { StorageProvider } from "../../libs/Store"
 import type { AssetDiscoveryScanScope } from "./types"
 
-export type AssetDiscoveryScanType = "manual" // | "automatic"
-
 export type AssetDiscoveryScanState = {
   currentScanScope: AssetDiscoveryScanScope | null // a non-null value means that a scan is currently running
   currentScanProgressPercent: number
@@ -25,7 +23,7 @@ export type AssetDiscoveryScanState = {
   queue?: AssetDiscoveryScanScope[] // may be undefined for older installs : TODO migration ?
 }
 
-export const DEFAULT_STATE: AssetDiscoveryScanState = {
+const DEFAULT_STATE: AssetDiscoveryScanState = {
   currentScanScope: null,
   currentScanProgressPercent: 0,
   currentScanTokensCount: 0,

@@ -10,7 +10,7 @@ import { Trans, useTranslation } from "react-i18next"
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
-export const BatchActionButton: FC<{
+const BatchActionButton: FC<{
   confirmTitle: ReactNode
   confirmDescription: ReactNode
   confirmBtnText: ReactNode

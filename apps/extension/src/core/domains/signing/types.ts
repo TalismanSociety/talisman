@@ -21,11 +21,6 @@ export type {
 } from "@polkadot/extension-base/background/types"
 
 export type SigningRequestID<T extends keyof SigningRequests> = BaseRequestId<T>
-export type AnySigningRequestID = `${keyof SigningRequests}.${string}`
-
-export type AnySigningRequestIdOnly = {
-  id: AnySigningRequestID
-}
 
 export type KnownSigningRequestIdOnly<T extends keyof SigningRequests> = {
   id: SigningRequestID<T>
@@ -134,8 +129,6 @@ export type SigningRequests = {
   "sol-sign": [SolSigningRequest, SolSignResult]
 }
 
-export type EthResponseSign = string
-
 export type TransactionMethod = {
   section: string
   method: string
@@ -162,7 +155,7 @@ export type TransactionPayload = {
   transactionVersion?: string
 }
 
-export type TransactionDetails = {
+type _TransactionDetails = {
   payload?: TransactionPayload
   method?: TransactionMethod
   partialFee?: string

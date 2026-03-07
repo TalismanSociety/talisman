@@ -7,7 +7,6 @@ export {
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountBitcoin,
-  isAccountExternal,
   isAccountInTypes,
   isAccountLedgerPolkadotGeneric,
   isAccountLedgerPolkadotLegacy,

@@ -30,7 +30,7 @@ const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
   subNativeTokenId("bittensor"),
 ]
 
-export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
+const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (

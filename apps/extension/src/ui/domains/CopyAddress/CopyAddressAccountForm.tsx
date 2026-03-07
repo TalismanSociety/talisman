@@ -137,7 +137,7 @@ type AccountsListProps = {
   header?: ReactNode
 }
 
-export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSelect, header }) => {
+const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSelect, header }) => {
   const { t } = useTranslation()
   const handleAccountClick = useCallback(
     (address: string) => () => {

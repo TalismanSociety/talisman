@@ -9,9 +9,11 @@ export const [useRemoteConfig, remoteConfig$] = bind(
   remoteConfigStore.observable.pipe(debugObservable("remoteConfig$"))
 )
 
-export const [useFeatureFlag, getFeatureFlag$] = bind((feature: FeatureFlag) =>
+const [useFeatureFlag, _getFeatureFlag$] = bind((feature: FeatureFlag) =>
   remoteConfig$.pipe(
     map((remoteConfig) => !!remoteConfig.featureFlags[feature]),
     distinctUntilChanged()
   )
 )
+
+export { useFeatureFlag }

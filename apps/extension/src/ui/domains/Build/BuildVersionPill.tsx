@@ -2,10 +2,6 @@ import { RELEASE_NOTES_URL } from "@common/constants"
 import { PillButton } from "@ui/components/PillButton"
 import { type FC, useCallback } from "react"
 
-export interface BuildVersioProps {
-  className?: string
-}
-
 export const BuildVersionPill: FC<{ className?: string }> = ({ className }) => {
   const handleClick = useCallback(() => {
     window.open(RELEASE_NOTES_URL, "_blank")

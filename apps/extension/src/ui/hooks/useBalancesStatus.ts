@@ -28,5 +28,5 @@ export const useBalancesStatus = (balances: Balances) =>
     return { status: "live" }
   }, [balances])
 
-export const getStaleChains = (balances: Balances): string[] =>
+const getStaleChains = (balances: Balances): string[] =>
   uniq(balances.each.filter((b) => b.status === "stale").map((b) => b.networkId))

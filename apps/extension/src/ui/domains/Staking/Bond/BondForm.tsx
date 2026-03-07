@@ -256,7 +256,7 @@ const FiatInput = () => {
   )
 }
 
-export const AmountEdit = () => {
+const AmountEdit = () => {
   const { t } = useTranslation()
   const {
     token,

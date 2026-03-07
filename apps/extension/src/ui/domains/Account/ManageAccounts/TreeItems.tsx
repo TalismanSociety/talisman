@@ -124,7 +124,7 @@ const SeparatorDropZone: FC<{
   )
 }
 
-export const TreeItemFolder: FC<{
+const TreeItemFolder: FC<{
   folder: UiTreeFolder
   balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree

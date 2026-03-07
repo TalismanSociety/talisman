@@ -36,8 +36,6 @@ export interface Handler {
 
 export type Handlers = Record<string, Handler>
 
-export class PortMessageError extends Error {}
-
 async function wakeupBackground(): Promise<Error | null> {
   try {
     await chrome.runtime.sendMessage({ type: "wakeup" })

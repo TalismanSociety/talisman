@@ -116,7 +116,7 @@ const getQrLogo = async (
   }
 }
 
-export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
+const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
   const { open, close } = useCopyAddressModal()
 
   const [state, setState] = useState<CopyAddressWizardState>(() => ({

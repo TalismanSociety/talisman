@@ -88,8 +88,6 @@ export const useSendFundsTransactionSol = ({
   }
 }
 
-export type SendFundsTransactionSol = ReturnType<typeof useSendFundsTransactionSol>
-
 const useSolPayload = ({
   token,
   from,

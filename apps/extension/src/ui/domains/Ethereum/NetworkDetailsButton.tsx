@@ -64,7 +64,7 @@ export const NetworkDetailsButton: FC<{
   )
 }
 
-export const NetworkDetailsLink: FC<{
+const _NetworkDetailsLink: FC<{
   network: Network
   label?: string
   className?: string

@@ -104,7 +104,7 @@ const TotalAmountRow = () => {
   )
 }
 
-export const ExternalRecipientWarning = () => {
+const ExternalRecipientWarning = () => {
   const { t } = useTranslation()
   const {
     warningType,

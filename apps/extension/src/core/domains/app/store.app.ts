@@ -59,7 +59,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   showLedgerPolkadotGenericMigrationAlert: false,
 }
 
-export class AppStore extends StorageProvider<AppStoreData> {
+class AppStore extends StorageProvider<AppStoreData> {
   constructor() {
     super("app", DEFAULT_APP_STATE)
 

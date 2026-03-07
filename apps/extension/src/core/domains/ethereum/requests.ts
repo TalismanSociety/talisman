@@ -38,7 +38,7 @@ export const requestAddNetwork = async (
 
 class WatchAssetError extends Error {}
 
-export const ignoreRequest = ({ id }: WatchAssetRequestIdOnly) => {
+const _ignoreRequest = ({ id }: WatchAssetRequestIdOnly) => {
   requestStore.deleteRequest(id)
   return true
 }

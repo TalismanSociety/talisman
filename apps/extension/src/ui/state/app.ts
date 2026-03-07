@@ -36,6 +36,8 @@ export const [useIsOnboarded, isOnboarded$] = bind(
   getAppStateValue$("onboarded").pipe(map((onboarded) => onboarded === "TRUE"))
 )
 
-export const [useCurrentMigration, currentMigration$] = bind(
+const [_useCurrentMigration, currentMigration$] = bind(
   getAppStateValue$("currentMigration").pipe(map((migration) => migration ?? null))
 )
+
+export { currentMigration$ }

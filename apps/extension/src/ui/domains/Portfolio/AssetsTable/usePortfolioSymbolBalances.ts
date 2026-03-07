@@ -115,7 +115,7 @@ const sortSymbolBalancesBy =
     return aSymbol.localeCompare(bSymbol)
   }
 
-export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFilter$] = bind(
+const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$] = bind(
   (filter: "all" | "network" | "search") =>
     combineLatest([
       selectedCurrency$,
@@ -183,7 +183,9 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
   }
 )
 
-export const usePortfolioSymbolBalances = (balances: Balances) => {
+export { usePortfolioSymbolBalancesByFilter }
+
+const _usePortfolioSymbolBalances = (balances: Balances) => {
   const currency = useSelectedCurrency()
   const [hideDust] = useSetting("hideDust")
 

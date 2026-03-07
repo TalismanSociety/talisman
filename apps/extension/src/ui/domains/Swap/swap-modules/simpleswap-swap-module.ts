@@ -67,8 +67,8 @@ import {
 import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
-export const PROTOCOL: SupportedSwapProtocol = "simpleswap"
-export const PROTOCOL_NAME = "SimpleSwap"
+const PROTOCOL: SupportedSwapProtocol = "simpleswap"
+const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 const TALISMAN_FEE = 0.015
 const TALISMAN_FEE_DISCOUNTED = 0.004

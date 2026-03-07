@@ -13,7 +13,7 @@ export type SeedPhraseData = {
   confirmed: boolean
 }
 
-export const encryptMnemonic = async (seed: string, password: string) => {
+const encryptMnemonic = async (seed: string, password: string) => {
   const cipher = await encrypt(password, seed)
 
   const checkedSeed = await decrypt(password, cipher)
@@ -22,7 +22,7 @@ export const encryptMnemonic = async (seed: string, password: string) => {
   return cipher
 }
 
-export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
+class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
   public async add(
     seed: string,
     password: string,
