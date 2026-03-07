@@ -4,6 +4,7 @@ import { useSubnetTradeFlow } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber, raoToTao } from "@ui/domains/TaoDashboard/shared/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import {
   type CSSProperties,
   type FC,
@@ -13,7 +14,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsTradeFlow: FC<{ netuid: number }> = ({ netuid }) => {

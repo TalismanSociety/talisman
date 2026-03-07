@@ -1,8 +1,8 @@
+import { log } from "@common/extension-shared"
 import { type AccountLedgerPolkadot, isJsonPayload } from "@core"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/state"
-import { log } from "extension-shared"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

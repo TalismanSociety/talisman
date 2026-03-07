@@ -10,11 +10,11 @@ import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSele
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
+import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "@ui/talisman-ui"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
 import { BackToAddAccountButton } from "./BackToAddAccountButton"

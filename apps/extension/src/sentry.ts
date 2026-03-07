@@ -1,7 +1,7 @@
+import { DEBUG, IS_FIREFOX, log } from "@common/extension-shared"
 import { settingsStore, trackIndexedDbErrorExtras, triggerIndexedDbUnavailablePopup } from "@core"
 import * as SentryReact from "@sentry/react"
 import type { Event } from "@sentry/types"
-import { DEBUG, IS_FIREFOX, log } from "extension-shared"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 const normalizeUrl = (url: string) => {

@@ -1,6 +1,6 @@
+import { log } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
 import { captureException } from "@sentry/browser"
-import { log } from "extension-shared"
 import { BehaviorSubject } from "rxjs"
 
 import { StorageProvider } from "../Store"

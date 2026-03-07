@@ -3,10 +3,10 @@ import { ChevronDownIcon } from "@talismn/icons"
 import { classNames, isHexString } from "@talismn/util"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/talisman-ui"
 import { startCase } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
 

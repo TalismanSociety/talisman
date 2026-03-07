@@ -12,6 +12,13 @@ import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useToken } from "@ui/state"
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+  useOpenCloseStatus,
+} from "@ui/talisman-ui"
+import {
   type FC,
   useDeferredValue,
   useEffect,
@@ -21,13 +28,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-  useOpenCloseStatus,
-} from "talisman-ui"
 
 export const SubnetPicker: React.FC<{
   networkId: NetworkId

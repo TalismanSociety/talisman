@@ -1,9 +1,9 @@
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { XIcon } from "@talismn/icons"
 import { useSelectedCurrency } from "@ui/state"
+import { IconButton } from "@ui/talisman-ui"
 import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton } from "talisman-ui"
 
 import { RampsBuyForm } from "./buy/RampsBuyForm"
 import { useRampsBuyTokens } from "./buy/useRampsBuyTokens"

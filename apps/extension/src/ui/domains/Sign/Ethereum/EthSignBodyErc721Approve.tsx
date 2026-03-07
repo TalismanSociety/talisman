@@ -1,10 +1,10 @@
+import { TOKEN_APPROVALS_URL } from "@common/extension-shared"
 import { useQuery } from "@tanstack/react-query"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { UnsafeImage } from "@ui/talisman-ui"
 import { getNftMetadata } from "@ui/util/getNftMetadata"
-import { TOKEN_APPROVALS_URL } from "extension-shared"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"

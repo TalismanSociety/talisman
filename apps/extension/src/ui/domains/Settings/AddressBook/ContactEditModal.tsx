@@ -9,10 +9,6 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworks } from "@ui/state"
-import { keyBy } from "lodash-es"
-import { type FC, useCallback, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 import {
   Button,
   FormFieldContainer,
@@ -20,7 +16,11 @@ import {
   IconButton,
   Modal,
   ModalDialog,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { keyBy } from "lodash-es"
+import { type FC, useCallback, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
 import { ContactNetworkPickerButton } from "./ContactNetworkModal"

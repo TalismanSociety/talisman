@@ -5,10 +5,10 @@ import { api } from "@ui/api"
 import { NetworkDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
+import { Button } from "@ui/talisman-ui"
 import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

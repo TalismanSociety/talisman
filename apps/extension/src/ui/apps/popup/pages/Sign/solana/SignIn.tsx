@@ -10,11 +10,11 @@ import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/typ
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import { useAccounts, useRequest } from "@ui/state"
+import { Button, Drawer } from "@ui/talisman-ui"
 import { capitalize } from "lodash-es"
 import { type FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
 

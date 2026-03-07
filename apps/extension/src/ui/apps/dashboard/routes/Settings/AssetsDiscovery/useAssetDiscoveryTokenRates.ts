@@ -1,9 +1,9 @@
+import { log } from "@common/extension-shared"
 import { remoteConfigStore, settingsStore } from "@core"
 import { bind } from "@react-rxjs/core"
 import type { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, TokenRatesError, type TokenRatesList } from "@talismn/token-rates"
 import { assetDiscoveryScanProgress$, getTokens$ } from "@ui/state"
-import { log } from "extension-shared"
 import { type SetStateAction, useEffect, useState } from "react"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
 

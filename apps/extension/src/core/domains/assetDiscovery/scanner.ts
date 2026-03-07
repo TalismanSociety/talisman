@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import PromisePool from "@supercharge/promise-pool"
 import { abiMulticall, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
@@ -11,7 +12,6 @@ import {
 import { isEthereumAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isTruthy, sleep, throwAfter } from "@talismn/util"
-import { log } from "extension-shared"
 import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {
   combineLatest,

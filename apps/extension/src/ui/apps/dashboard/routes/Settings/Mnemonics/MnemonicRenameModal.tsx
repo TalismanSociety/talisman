@@ -4,10 +4,10 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useMnemonic, useMnemonics } from "@ui/state"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "@ui/talisman-ui"
 import { type FC, type RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = {

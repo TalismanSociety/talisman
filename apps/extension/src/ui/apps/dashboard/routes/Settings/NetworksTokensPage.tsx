@@ -8,8 +8,8 @@ import {
   PolkadotVaultIcon,
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { CtaButton } from "@ui/talisman-ui"
 import { useTranslation } from "react-i18next"
-import { CtaButton } from "talisman-ui"
 
 const Content = () => {
   const { t } = useTranslation()

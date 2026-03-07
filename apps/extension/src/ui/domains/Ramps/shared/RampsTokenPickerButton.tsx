@@ -4,9 +4,9 @@ import type { TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useNetworkById } from "@ui/state"
+import { Drawer, useOpenClose } from "@ui/talisman-ui"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, useOpenClose } from "talisman-ui"
 
 import { RampsTokenPicker } from "./RampsTokenPicker"
 

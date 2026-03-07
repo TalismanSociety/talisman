@@ -8,9 +8,9 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { IconButton, Modal } from "@ui/talisman-ui"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 export const TxHistoryAccountPicker: FC<{
   isOpen?: boolean

@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import { type BalanceJson, type BalancesStorage, getBalanceId } from "@talismn/balances"
 import { isAccountNotContact } from "@talismn/keyring"
 import { splitSubject } from "@talismn/util"
-import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
 

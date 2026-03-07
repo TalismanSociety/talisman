@@ -4,11 +4,11 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+import { Button } from "@ui/talisman-ui"
 import { startCase } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { useAccountAddMnemonic } from "./context"
 

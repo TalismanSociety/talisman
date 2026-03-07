@@ -1,6 +1,6 @@
+import { IPFS_GATEWAY } from "@common/extension-shared"
 import { ImageIcon, QuestionCircleIcon } from "@talismn/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { IPFS_GATEWAY } from "extension-shared"
 import type React from "react"
 import { type CSSProperties, memo, useCallback, useMemo, useState } from "react"
 

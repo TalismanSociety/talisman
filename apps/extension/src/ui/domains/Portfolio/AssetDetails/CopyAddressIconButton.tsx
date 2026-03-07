@@ -3,9 +3,9 @@ import type { NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { type FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 

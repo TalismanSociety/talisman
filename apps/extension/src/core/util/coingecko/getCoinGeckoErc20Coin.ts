@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import { isTruthy } from "@talismn/util"
-import { log } from "extension-shared"
 
 import { fetchFromCoingecko } from "./fetchFromCoingecko"
 

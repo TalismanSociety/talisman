@@ -1,9 +1,9 @@
 import { InfoIcon } from "@talismn/icons"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
+import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"

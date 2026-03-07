@@ -59,6 +59,17 @@ import {
   useTokensMap,
 } from "@ui/state"
 import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@ui/talisman-ui"
+import {
   type ChangeEventHandler,
   type FC,
   type ReactNode,
@@ -70,17 +81,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 import { BehaviorSubject } from "rxjs"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 import urlJoin from "url-join"
 
 import {

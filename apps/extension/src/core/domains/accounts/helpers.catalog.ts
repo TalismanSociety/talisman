@@ -1,5 +1,5 @@
+import { DEBUG } from "@common/extension-shared"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
-import { DEBUG } from "extension-shared"
 import { v4 as uuidV4 } from "uuid"
 
 // Defines the `Trees` structure

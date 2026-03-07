@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { Modal } from "talisman-ui"
+import { Modal } from "@ui/talisman-ui"
 
 import { RampsFormRouter } from "./RampsFormRouter"
 import { useRampsModal } from "./useRampsModal"

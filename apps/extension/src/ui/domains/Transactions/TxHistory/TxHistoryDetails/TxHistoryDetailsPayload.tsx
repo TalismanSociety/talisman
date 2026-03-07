@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { WalletTransaction } from "@core"
 import { bind } from "@react-rxjs/core"
 import { CodeBlock } from "@talisman/components/CodeBlock"
@@ -5,7 +6,6 @@ import { CopyToClipboardLinkButton } from "@talisman/components/CopyToClipboardL
 import { base58 } from "@talismn/crypto"
 import { deserializeTransaction, txToHumanJSON } from "@talismn/solana"
 import { cn } from "@talismn/util"
-import { log } from "extension-shared"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"

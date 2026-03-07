@@ -3,6 +3,7 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
+import { log } from "@common/extension-shared"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,
@@ -16,7 +17,6 @@ import type {
   TransportResponseMessage,
   UnsubscribeFn,
 } from "@core"
-import { log } from "extension-shared"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,

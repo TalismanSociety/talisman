@@ -1,8 +1,8 @@
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { cn } from "@talismn/util"
 import { useBittensorValidator } from "@ui/state/bittensor"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import type { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const BittensorValidatorName: FC<{
   hotkey: string | null | undefined

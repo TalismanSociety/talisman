@@ -1,7 +1,7 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import type { AnalyticsPage } from "@ui/api/analytics"
+import { Modal, ModalDialog } from "@ui/talisman-ui"
 import { Trans, useTranslation } from "react-i18next"
-import { Modal, ModalDialog } from "talisman-ui"
 
 import { TryTalismanContent } from "./TryTalismanContent"
 import { useTryTalismanModal } from "./useTryTalismanModal"

@@ -1,5 +1,5 @@
+import { IS_FIREFOX, isTalismanHostname } from "@common/extension-shared"
 import { isAccountOwned } from "@talismn/keyring"
-import { IS_FIREFOX, isTalismanHostname } from "extension-shared"
 
 import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"

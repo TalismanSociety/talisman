@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import { lt } from "semver"
 
 import { passwordStore } from "../../domains/app/store.password"

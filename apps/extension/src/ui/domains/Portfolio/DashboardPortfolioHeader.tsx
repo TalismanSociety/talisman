@@ -25,16 +25,16 @@ import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
-import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useMatch } from "react-router-dom"
 import {
   ContextMenuTrigger,
   IconButton,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useMatch } from "react-router-dom"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { BITTENSOR_TOKEN_ID } from "../Staking/Bittensor/utils/constants"
 import { useIsBittensorEnabled } from "../TaoDashboard/hooks/useIsBittensorEnabled"

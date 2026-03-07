@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
@@ -13,7 +14,6 @@ import {
   type KeypairCurve,
 } from "@talismn/crypto"
 import type { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
-import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"

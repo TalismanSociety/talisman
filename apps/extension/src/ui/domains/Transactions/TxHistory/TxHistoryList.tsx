@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@common/extension-shared"
 import {
   isTxInfoApproval,
   isTxInfoSwap,
@@ -28,8 +29,8 @@ import {
   useToken,
   useTokenRates,
 } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
-import { IS_FIREFOX } from "extension-shared"
 import {
   type FC,
   type ReactNode,
@@ -41,7 +42,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import type { ReplacementCallbackArgs } from "../TxProgress"
 import { useTxHistory } from "./TxHistoryContext"
 import { TxHistoryModal } from "./TxHistoryModal"

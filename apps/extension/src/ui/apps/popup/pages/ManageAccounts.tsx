@@ -9,10 +9,10 @@ import {
 } from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
+import { IconButton } from "@ui/talisman-ui"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
 
 import { PopupContent, PopupLayout } from "../Layout/PopupLayout"
 

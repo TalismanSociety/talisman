@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
+import { log } from "@common/extension-shared"
 import { activeTokensStore, getErc20TokenInfo, getUniswapV2TokenInfo } from "@core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -22,13 +23,12 @@ import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
-import { log } from "extension-shared"
+import { Button, FormFieldContainer, FormFieldInputText } from "@ui/talisman-ui"
 import { range } from "lodash-es"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
 
 const ANALYTICS_PAGE: AnalyticsPage = {

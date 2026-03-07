@@ -199,9 +199,6 @@ importers:
       '@talismn/scale':
         specifier: workspace:^
         version: link:../../packages/scale
-      extension-shared:
-        specifier: workspace:^
-        version: link:../../packages/extension-shared
     devDependencies:
       tsx:
         specifier: ^4.20.3
@@ -521,9 +518,6 @@ importers:
       eth-phishing-detect:
         specifier: latest
         version: 1.2.0
-      extension-shared:
-        specifier: workspace:*
-        version: link:../../packages/extension-shared
       framer-motion:
         specifier: 11.11.9
         version: 11.11.9(@emotion/is-prop-valid@1.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -611,9 +605,6 @@ importers:
       semver:
         specifier: 7.6.3
         version: 7.6.3
-      talisman-ui:
-        specifier: workspace:*
-        version: link:../../packages/talisman-ui
       toml:
         specifier: ^3.0.0
         version: 3.0.0
@@ -632,6 +623,9 @@ importers:
       viem:
         specifier: ^2.27.3
         version: 2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      webfontloader:
+        specifier: ^1.6.28
+        version: 1.6.28
       yup:
         specifier: 1.4.0
         version: 1.4.0
@@ -687,6 +681,9 @@ importers:
       '@types/webextension-polyfill':
         specifier: 0.12.1
         version: 0.12.1
+      '@types/webfontloader':
+        specifier: ^1.6.38
+        version: 1.6.38
       '@vitejs/plugin-react':
         specifier: ^4.5.2
         version: 4.7.0(vite@7.3.0(@types/node@24.5.1)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0))
@@ -1026,15 +1023,6 @@ importers:
         specifier: ^5.6.3
         version: 5.8.3
 
-  packages/extension-shared:
-    devDependencies:
-      '@talismn/tsconfig':
-        specifier: workspace:*
-        version: link:../../config/tsconfig
-      typescript:
-        specifier: ^5.6.3
-        version: 5.8.3
-
   packages/icons:
     dependencies:
       react-icons:
@@ -1200,76 +1188,6 @@ importers:
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
-      typescript:
-        specifier: ^5.6.3
-        version: 5.8.3
-
-  packages/talisman-ui:
-    dependencies:
-      '@tailwindcss/container-queries':
-        specifier: '>=0.1.1'
-        version: 0.1.1(tailwindcss@3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@24.5.1)(typescript@5.8.3)))
-      '@talismn/icons':
-        specifier: workspace:*
-        version: link:../icons
-      autoprefixer:
-        specifier: '>=10.4.12'
-        version: 10.4.20(postcss@8.5.6)
-      postcss:
-        specifier: '*'
-        version: 8.5.6
-      webfontloader:
-        specifier: ^1.6.28
-        version: 1.6.28
-    devDependencies:
-      '@floating-ui/react':
-        specifier: 0.26.25
-        version: 0.26.25(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@headlessui/react':
-        specifier: 2.1.10
-        version: 2.1.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tailwindcss/forms':
-        specifier: ^0.5.9
-        version: 0.5.9(tailwindcss@3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@24.5.1)(typescript@5.8.3)))
-      '@talismn/tsconfig':
-        specifier: workspace:*
-        version: link:../../config/tsconfig
-      '@talismn/util':
-        specifier: workspace:*
-        version: link:../util
-      '@types/react':
-        specifier: 18.3.12
-        version: 18.3.12
-      '@types/react-dom':
-        specifier: 18.3.1
-        version: 18.3.1
-      '@types/webfontloader':
-        specifier: ^1.6.38
-        version: 1.6.38
-      color:
-        specifier: 4.2.3
-        version: 4.2.3
-      framer-motion:
-        specifier: 11.11.9
-        version: 11.11.9(@emotion/is-prop-valid@1.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      lottie-react:
-        specifier: 2.4.0
-        version: 2.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: 18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: 18.3.1
-        version: 18.3.1(react@18.3.1)
-      react-router-dom:
-        specifier: 6.27.0
-        version: 6.27.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-use:
-        specifier: 17.5.1
-        version: 17.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwindcss:
-        specifier: ^3.4.14
-        version: 3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@24.5.1)(typescript@5.8.3))
       typescript:
         specifier: ^5.6.3
         version: 5.8.3

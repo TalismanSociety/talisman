@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import { type BalanceDto, isAccountOwned, type YieldDto } from "@core"
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
@@ -16,10 +17,6 @@ import {
   useYieldxyzProduct,
   type YieldxyzPositionEnhanced,
 } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-import { log } from "extension-shared"
-import { type FC, useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import {
   Button,
   ContextMenu,
@@ -27,7 +24,10 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
   IconButton,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { IS_POPUP } from "@ui/util/constants"
+import { type FC, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"

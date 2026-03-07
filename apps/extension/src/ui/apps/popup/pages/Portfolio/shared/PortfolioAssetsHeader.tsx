@@ -19,16 +19,16 @@ import {
   usePortfolioBalances,
   useSelectedCurrency,
 } from "@ui/state"
-import { type FC, Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
 import {
   ContextMenuTrigger,
   IconButton,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type FC, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()

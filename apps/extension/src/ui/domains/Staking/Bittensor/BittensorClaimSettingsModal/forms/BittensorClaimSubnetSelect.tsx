@@ -12,6 +12,13 @@ import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bitte
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state"
 import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/talisman-ui"
+import {
   type FC,
   useCallback,
   useDeferredValue,
@@ -22,13 +29,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-} from "talisman-ui"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"

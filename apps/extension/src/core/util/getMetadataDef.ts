@@ -1,9 +1,9 @@
+import { DEBUG, log } from "@common/extension-shared"
 import { assert, isHex } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata, MAX_SUPPORTED_METADATA_VERSION } from "@talismn/sapi"
 import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale"
-import { DEBUG, log } from "extension-shared"
 import { withRetry } from "viem"
 
 import { sentry } from "../config/sentry"

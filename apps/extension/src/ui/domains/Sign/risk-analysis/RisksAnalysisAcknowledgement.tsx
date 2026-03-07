@@ -1,6 +1,6 @@
+import { Checkbox } from "@ui/talisman-ui"
 import { t } from "i18next"
 import { type ChangeEventHandler, type FC, useCallback } from "react"
-import { Checkbox } from "talisman-ui"
 
 import type { RiskAnalysis } from "./types"
 

@@ -1,8 +1,8 @@
+import { log } from "@common/extension-shared"
 import { getTransactionSerializable } from "@core"
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useNetworkById } from "@ui/state"
-import { log } from "extension-shared"
 import { useMemo } from "react"
 import {
   getContract,

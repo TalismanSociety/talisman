@@ -1,7 +1,7 @@
+import { log, RAMPS_RAMP_API_URL } from "@common/extension-shared"
 import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { type UseQueryResult, useQuery } from "@tanstack/react-query"
 import { useToken } from "@ui/state"
-import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { t } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"

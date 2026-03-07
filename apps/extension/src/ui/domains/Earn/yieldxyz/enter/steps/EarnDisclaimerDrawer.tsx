@@ -1,8 +1,8 @@
+import { TERMS_OF_USE_URL } from "@common/extension-shared"
 import { useAppState } from "@ui/state"
-import { TERMS_OF_USE_URL } from "extension-shared"
+import { Button, Drawer } from "@ui/talisman-ui"
 import type { FC, PropsWithChildren } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 type EarnDisclaimerDrawerProps = {
   isOpen: boolean

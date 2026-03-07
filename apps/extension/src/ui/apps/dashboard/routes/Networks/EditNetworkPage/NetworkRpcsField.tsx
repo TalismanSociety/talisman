@@ -17,10 +17,10 @@ import {
   getDotGenesisHashFromRpc,
   getSolGenesisHashFromRpc,
 } from "@ui/domains/Networks/helpers"
+import { FormFieldContainer, FormFieldInputText } from "@ui/talisman-ui"
 import type { TFunction } from "i18next"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
 
 import { type RpcFormData, useNetworkForm } from "./context"

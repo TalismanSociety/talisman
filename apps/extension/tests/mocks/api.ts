@@ -1,3 +1,4 @@
+import { log, TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import type {
   Account,
   AuthorizedSite,
@@ -15,7 +16,6 @@ import {
   type Token,
 } from "@talismn/chaindata-provider"
 import type { TokenRatesStorage } from "@talismn/token-rates"
-import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { vi } from "vitest"
 
 import { ADDRESSES } from "../constants"

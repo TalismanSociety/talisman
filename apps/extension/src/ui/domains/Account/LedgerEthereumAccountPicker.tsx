@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import { type Account, getEthLedgerDerivationPath, type LedgerEthDerivationPathType } from "@core"
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
@@ -6,7 +7,6 @@ import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworks } from "@ui/state"
-import { log } from "extension-shared"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

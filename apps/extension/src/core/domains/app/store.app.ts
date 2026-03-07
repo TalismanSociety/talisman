@@ -1,4 +1,4 @@
-import { DEBUG, IS_FIREFOX } from "extension-shared"
+import { DEBUG, IS_FIREFOX } from "@common/extension-shared"
 import { gt } from "semver"
 
 import type { GeneralReport } from "../../libs/GeneralReport"

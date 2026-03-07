@@ -9,10 +9,10 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworksMapById, useRemoteConfig, useSelectedCurrency } from "@ui/state"
+import { useOpenCloseStatus } from "@ui/talisman-ui"
 import { range } from "lodash-es"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useOpenCloseStatus } from "talisman-ui"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
 

@@ -22,12 +22,12 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { usePortfolioBalances } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { t } from "i18next"
 import { uniq } from "lodash-es"
 import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const HeaderRow: FC<{
   token: Token | undefined

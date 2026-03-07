@@ -2,10 +2,10 @@ import { ChevronLeftIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { LearnMoreContent } from "@ui/domains/Portfolio/GetStarted/LearnMore/LearnMoreContent"
+import { IconButton } from "@ui/talisman-ui"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
 
 import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 

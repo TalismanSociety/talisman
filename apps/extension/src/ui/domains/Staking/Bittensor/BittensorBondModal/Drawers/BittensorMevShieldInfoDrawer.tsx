@@ -1,6 +1,6 @@
+import { Button, Drawer } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 export const MevShieldInfoDrawer: FC<{
   isOpen: boolean

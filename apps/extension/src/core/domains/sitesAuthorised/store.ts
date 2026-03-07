@@ -1,6 +1,6 @@
+import { isTalismanHostname } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
-import { isTalismanHostname } from "extension-shared"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
 import { urlToDomain } from "../../util/urlToDomain"

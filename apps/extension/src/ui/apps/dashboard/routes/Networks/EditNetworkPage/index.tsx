@@ -20,10 +20,6 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork } from "@ui/state"
-import { t } from "i18next"
-import { type FC, useCallback, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
 import {
   Button,
   Checkbox,
@@ -37,7 +33,11 @@ import {
   TooltipContent,
   TooltipTrigger,
   useOpenClose,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { t } from "i18next"
+import { type FC, useCallback, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
 import { z } from "zod/v4"
 
 import { NetworkFormProvider, useNetworkForm } from "./context"

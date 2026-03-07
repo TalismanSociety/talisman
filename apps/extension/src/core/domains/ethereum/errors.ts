@@ -1,4 +1,4 @@
-import { log } from "extension-shared"
+import { log } from "@common/extension-shared"
 
 import type { AnyEvmError } from "./types"
 

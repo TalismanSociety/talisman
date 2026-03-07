@@ -2,10 +2,15 @@ import type { AccountsCatalogTree, TreeFolder, TreeItem } from "@core"
 import type { Placement } from "@floating-ui/react"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useAccountsCatalog } from "@ui/state"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/talisman-ui"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { useDeleteFolderModal } from "./DeleteFolderModal"
 import { useRenameFolderModal } from "./RenameFolderModal"

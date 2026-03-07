@@ -1,7 +1,7 @@
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import type { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const AccountNameOrAddress: FC<{ address: string }> = ({ address }) => {
   const account = useAccountByAddress(address)

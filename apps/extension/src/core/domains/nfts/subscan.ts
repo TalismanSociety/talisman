@@ -1,6 +1,6 @@
+import { log } from "@common/extension-shared"
 import type { Account } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
-import { log } from "extension-shared"
 import { fromPairs, toPairs } from "lodash-es"
 import PQueue from "p-queue"
 

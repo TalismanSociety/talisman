@@ -8,9 +8,9 @@ import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 // Tier configuration with colors matching the design

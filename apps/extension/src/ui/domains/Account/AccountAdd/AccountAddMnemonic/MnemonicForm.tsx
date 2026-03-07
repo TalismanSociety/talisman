@@ -1,3 +1,4 @@
+import { DEBUG } from "@common/extension-shared"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
@@ -14,11 +15,6 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts } from "@ui/state"
-import { DEBUG } from "extension-shared"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
-import { type UseFormSetValue, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import {
   Button,
   FormFieldContainer,
@@ -27,7 +23,11 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type UseFormSetValue, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import * as yup from "yup"
 
 import { BackToAddAccountButton } from "../BackToAddAccountButton"

@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import type { SendRequest } from "@core"
 // biome-ignore lint/style/useNodejsImportProtocol: runs in browser context
 import EventEmitter from "events"
-import { log } from "extension-shared"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,

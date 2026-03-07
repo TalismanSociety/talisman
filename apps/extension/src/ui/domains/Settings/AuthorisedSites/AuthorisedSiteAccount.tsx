@@ -3,8 +3,8 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state"
+import { Toggle } from "@ui/talisman-ui"
 import { type ChangeEventHandler, type FC, useCallback } from "react"
-import { Toggle } from "talisman-ui"
 
 export const AuthorisedSiteAccount: FC<{
   address: string

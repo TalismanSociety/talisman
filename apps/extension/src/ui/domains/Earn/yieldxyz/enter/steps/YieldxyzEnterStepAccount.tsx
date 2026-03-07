@@ -1,6 +1,6 @@
+import { WizardModalDialog } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { WizardModalDialog } from "talisman-ui"
 
 import { SenderAccountPicker } from "../../../shared/SenderAccountPicker"
 import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"

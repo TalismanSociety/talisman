@@ -1,8 +1,8 @@
+import { log, TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import { checkHost } from "@polkadot/phishing"
 import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
-import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { sentry } from "../../../config/sentry"
 import { getBlobStore } from "../../../db/blobs"

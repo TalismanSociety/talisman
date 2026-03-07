@@ -1,8 +1,8 @@
 // WXT Content Script Entry Point
 // Handles communication between injected page script and extension background
 
+import { PORT_CONTENT } from "@common/extension-shared"
 import type { Message } from "@polkadot/extension-base/types"
-import { PORT_CONTENT } from "extension-shared"
 import { browser } from "wxt/browser"
 import { defineContentScript } from "wxt/utils/define-content-script"
 

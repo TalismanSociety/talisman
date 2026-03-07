@@ -6,9 +6,9 @@ import { isTokenEth, type Token } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useAccounts, useNetworkById } from "@ui/state"
+import { IconButton, Modal } from "@ui/talisman-ui"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 import { BondAccountsList } from "./BondAccountsList"
 

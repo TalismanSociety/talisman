@@ -15,11 +15,11 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances, usePortfolioBalances, useSelectedCurrency } from "@ui/state"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { uniq } from "lodash-es"
 import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
   const { t } = useTranslation()

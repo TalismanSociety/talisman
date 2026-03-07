@@ -3,9 +3,9 @@ import { cn } from "@talismn/util"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { SenderAccountPicker } from "@ui/domains/Earn/shared/SenderAccountPicker"
 import { useAccountByAddress } from "@ui/state"
+import { Modal, useOpenClose, WizardModalDialog } from "@ui/talisman-ui"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, useOpenClose, WizardModalDialog } from "talisman-ui"
 
 export const SelectSenderAccountPill: FC<{
   address: string | null

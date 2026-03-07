@@ -1,6 +1,6 @@
+import { TEST } from "@common/extension-shared"
 import { bind } from "@react-rxjs/core"
 import { BrowserCodeReader } from "@zxing/browser"
-import { TEST } from "extension-shared"
 import { BehaviorSubject, combineLatest, from, map } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"

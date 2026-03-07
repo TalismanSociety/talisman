@@ -2,9 +2,9 @@ import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalCont
 import { SettingsIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { Modal, PillButton, useOpenClose, WizardModalDialog } from "@ui/talisman-ui"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, PillButton, useOpenClose, WizardModalDialog } from "talisman-ui"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { BittensorValidatorPicker } from "./BittensorValidatorPicker"
 

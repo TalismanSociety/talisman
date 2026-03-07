@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import {
   type KnownSigningRequestIdOnly,
   parseRpcTransactionRequestBase,
@@ -12,7 +13,6 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
-import { log } from "extension-shared"
 import { useCallback, useMemo, useRef, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"

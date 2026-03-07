@@ -7,9 +7,16 @@ import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDis
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState, useFeatureFlag } from "@ui/state"
+import {
+  Button,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "@ui/talisman-ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Toggle, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"

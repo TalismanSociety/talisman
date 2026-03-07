@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import { captureException } from "@sentry/browser"
-import { log } from "extension-shared"
 
 /**
  * MigrationContext

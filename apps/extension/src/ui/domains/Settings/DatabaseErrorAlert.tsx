@@ -1,13 +1,13 @@
+import { DISCORD_TALISMAN_URL } from "@common/extension-shared"
 import { errorsStore } from "@core"
 import { Card } from "@talisman/components/Card"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useErrorsStoreValue } from "@ui/state"
-import { DISCORD_TALISMAN_URL } from "extension-shared"
+import { Button } from "@ui/talisman-ui"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 const ANALYTICS_PAGES: Record<"popup" | "fullscreen", AnalyticsPage> = {
   popup: {

@@ -1,8 +1,8 @@
+import { log } from "@common/extension-shared"
 import legacyKeyring from "@polkadot/ui-keyring"
 import { isValidDerivationPath } from "@talismn/crypto"
 import type { AddAccountExternalOptions } from "@talismn/keyring"
 import type { HexString } from "@talismn/util"
-import { log } from "extension-shared"
 import { capitalize } from "lodash-es"
 
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"

@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import { isSolanaAddress } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
 import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"
-import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { distinctUntilChanged, map, of, switchMap } from "rxjs"
 

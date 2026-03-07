@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@common/extension-shared"
 import { isAccountPlatformCompatibleWithNetwork } from "@core"
 import {
   EthereumCircleBorderedLogo,
@@ -11,8 +12,8 @@ import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetwork
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
-import { IS_FIREFOX } from "extension-shared"
 import {
   cloneElement,
   type ReactElement,
@@ -23,7 +24,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { type MethodType, useAccountCreateContext } from "./context"
 

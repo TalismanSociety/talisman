@@ -1,4 +1,4 @@
-import { DEBUG, log } from "extension-shared"
+import { DEBUG, log } from "@common/extension-shared"
 import { t } from "i18next"
 import { capitalize } from "lodash-es"
 

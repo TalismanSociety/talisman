@@ -1,3 +1,4 @@
+import { isTalismanUrl } from "@common/extension-shared"
 import {
   type Account,
   isAccountInTypes,
@@ -8,7 +9,6 @@ import {
   type ProviderType,
 } from "@core"
 import { useAccounts, useSettingValue } from "@ui/state"
-import { isTalismanUrl } from "extension-shared"
 import { useMemo } from "react"
 
 export const useInjectableAccounts = (siteUrl: string, provider: ProviderType) => {

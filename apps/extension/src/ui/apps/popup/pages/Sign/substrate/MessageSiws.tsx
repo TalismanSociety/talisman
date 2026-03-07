@@ -7,9 +7,9 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { ViewDetailsAddress } from "@ui/domains/Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "@ui/domains/Sign/ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "@ui/domains/Sign/ViewDetails/ViewDetailsField"
+import { Button, Drawer, useOpenClose } from "@ui/talisman-ui"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 export type Props = {
   account: Account

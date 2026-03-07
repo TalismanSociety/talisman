@@ -1,6 +1,6 @@
+import { log, YIELD_API_BASE_URL } from "@common/extension-shared"
 import type { ActionArgumentsDto, ActionDto, TransactionDto } from "@core"
 import { notify } from "@talisman/components/Notifications"
-import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 
 type YieldxyzActionType = "enter" | "exit"

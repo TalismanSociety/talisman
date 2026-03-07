@@ -7,8 +7,6 @@ import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { type FC, Fragment, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -16,7 +14,9 @@ import {
   ContextMenuTrigger,
   IconButton,
   useOpenClose,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type FC, Fragment, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"
 import { TreeItemAccount } from "./TreeItemAccount"

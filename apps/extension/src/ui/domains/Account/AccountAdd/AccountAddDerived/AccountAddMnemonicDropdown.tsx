@@ -1,9 +1,9 @@
 import { type Account, isAccountOfType } from "@core"
 import { PlusIcon, SecretIcon } from "@talismn/icons"
 import { useAccounts, useMnemonics } from "@ui/state"
+import { Dropdown } from "@ui/talisman-ui"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Dropdown } from "talisman-ui"
 
 export type MnemonicOption = {
   value: string

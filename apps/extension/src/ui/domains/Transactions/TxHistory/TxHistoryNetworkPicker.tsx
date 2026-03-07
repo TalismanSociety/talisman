@@ -11,10 +11,10 @@ import {
 import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
+import { IconButton, Modal } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 export const TxHistoryNetworkPicker: FC<{
   isOpen?: boolean

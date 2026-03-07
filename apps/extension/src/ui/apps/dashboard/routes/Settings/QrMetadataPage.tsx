@@ -1,4 +1,6 @@
 // biome-ignore-all lint/a11y/useAnchorContent: legacy
+
+import { log, POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -16,11 +18,10 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState, useBalancesHydrate, useMnemonic, useNetworks } from "@ui/state"
-import { log, POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { Button, Dropdown } from "@ui/talisman-ui"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, Dropdown } from "talisman-ui"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation()

@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import type { DotNetwork, Token } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import type { Enum } from "polkadot-api"
 

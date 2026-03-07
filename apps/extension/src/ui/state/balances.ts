@@ -1,9 +1,9 @@
+import { log } from "@common/extension-shared"
 import { type BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "@core"
 import { bind } from "@react-rxjs/core"
 import { type Address, Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
-import { log } from "extension-shared"
 import {
   combineLatest,
   distinctUntilChanged,

@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import type { DotNetwork } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"

@@ -7,6 +7,7 @@ import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
+import { PillButton } from "@ui/talisman-ui"
 import {
   type ChangeEventHandler,
   type FC,
@@ -18,7 +19,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"

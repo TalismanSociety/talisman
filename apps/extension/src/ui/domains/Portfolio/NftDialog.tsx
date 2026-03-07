@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { Nft, NftCollection } from "@core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -8,9 +9,20 @@ import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  IconButton,
+  Modal,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
-import { log } from "extension-shared"
 import { toPairs } from "lodash"
 import {
   type CSSProperties,
@@ -25,18 +37,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  IconButton,
-  Modal,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"

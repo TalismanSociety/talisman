@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
 import { getBlockExplorerUrls, type SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo } from "@talismn/solana"
-import { log } from "extension-shared"
 
 import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"

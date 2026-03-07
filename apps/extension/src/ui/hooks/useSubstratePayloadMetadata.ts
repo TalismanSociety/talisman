@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { SignerPayloadJSON } from "@core"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
@@ -8,7 +9,6 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useNetworkByGenesisHash, useToken } from "@ui/state"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
-import { log } from "extension-shared"
 
 export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const network = useNetworkByGenesisHash(payload?.genesisHash)

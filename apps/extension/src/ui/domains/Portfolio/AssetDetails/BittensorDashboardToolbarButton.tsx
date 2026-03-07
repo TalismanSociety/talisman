@@ -6,10 +6,10 @@ import { api } from "@ui/api"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className?: string }> = ({
   balances,

@@ -4,6 +4,7 @@ import { classNames, cn, tokensToPlanck } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
+import { PillButton } from "@ui/talisman-ui"
 import {
   type ChangeEventHandler,
   type FC,
@@ -15,7 +16,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"

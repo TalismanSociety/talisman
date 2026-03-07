@@ -3,9 +3,9 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { useSetting } from "@ui/state"
+import { Drawer, IconButton } from "@ui/talisman-ui"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
 
 export const useAutoLockDrawerOpenClose = () => useGlobalOpenClose("auto-lock-drawer")
 

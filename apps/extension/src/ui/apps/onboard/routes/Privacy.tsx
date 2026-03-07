@@ -1,11 +1,11 @@
+import { PRIVACY_POLICY_URL } from "@common/extension-shared"
 import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { PRIVACY_POLICY_URL } from "extension-shared"
+import { Button } from "@ui/talisman-ui"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"

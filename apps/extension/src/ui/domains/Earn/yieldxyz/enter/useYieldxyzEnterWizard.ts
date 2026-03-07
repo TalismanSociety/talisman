@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import { isAccountOwned } from "@core"
 import { provideContext } from "@talisman/util/provideContext"
 import type { Balance } from "@talismn/balances"
@@ -7,7 +8,6 @@ import { api } from "@ui/api"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
 import { useAccountByAddress, useNetworkById, useYieldxyzProduct } from "@ui/state"
-import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
 import type { KeypairCurve } from "@talismn/crypto"
 import {
@@ -12,7 +13,6 @@ import {
   type UpdateAccountOptions,
   type UpdateMnemonicOptions,
 } from "@talismn/keyring"
-import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import {
   distinctUntilChanged,

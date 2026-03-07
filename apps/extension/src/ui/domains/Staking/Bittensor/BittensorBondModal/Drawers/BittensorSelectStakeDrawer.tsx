@@ -1,5 +1,5 @@
+import { Button, Drawer } from "@ui/talisman-ui"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 

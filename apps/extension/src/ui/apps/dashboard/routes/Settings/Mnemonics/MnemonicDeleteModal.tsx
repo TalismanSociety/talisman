@@ -4,9 +4,9 @@ import { provideContext } from "@talisman/util/provideContext"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useMnemonic, useMnemonics } from "@ui/state"
+import { Button, FormFieldInputText, Modal, ModalDialog } from "@ui/talisman-ui"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 
 const useMnemonicDeleteModalProvider = () => {
   const mnemonics = useMnemonics()

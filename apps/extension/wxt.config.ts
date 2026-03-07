@@ -6,13 +6,13 @@ import replace from "@rollup/plugin-replace"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
-import { log } from "extension-shared"
 import JSZip from "jszip"
 import type { Alias, Plugin } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
+import { log } from "./src/common/extension-shared/log"
 
 const pkg = require("./package.json")
 
@@ -349,12 +349,7 @@ const packagesDir = resolve(__dirname, "../../packages")
 // This enables hot reload in dev mode - changes to package source are reflected immediately
 function createPackageSourceAliases(): Alias[] {
   return [
-    // Internal packages - exact matches for main entry (subpath patterns are in baseAliases)
-    { find: /^talisman-ui$/, replacement: resolve(packagesDir, "talisman-ui/src") },
-
     // Map workspace packages to source for hot reload in dev (exact matches)
-    { find: "extension-shared", replacement: resolve(packagesDir, "extension-shared/src") },
-
     { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
     {
       find: "@talismn/balances-react",
@@ -632,16 +627,6 @@ export default defineConfig({
       { find: "@tests", replacement: resolve(__dirname, "src/tests") },
       // Base-relative imports from src/
       { find: /^inject\/(.*)$/, replacement: resolve(__dirname, "src/inject/$1") },
-      // Internal packages subpath imports (needed in both dev and production)
-      // These packages don't have proper exports in package.json for subpaths
-      {
-        find: /^extension-shared\/(.*)$/,
-        replacement: resolve(packagesDir, "extension-shared/src/$1"),
-      },
-      {
-        find: /^talisman-ui\/src\/(.*)$/,
-        replacement: resolve(packagesDir, "talisman-ui/src/$1"),
-      },
     ]
 
     // Always use package source aliases for both dev and production builds

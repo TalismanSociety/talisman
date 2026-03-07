@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import { keepAlive, type Loadable } from "@talismn/util"
-import { log } from "extension-shared"
 import { Observable, shareReplay, startWith } from "rxjs"
 
 import { getBlobStore } from "../../db"

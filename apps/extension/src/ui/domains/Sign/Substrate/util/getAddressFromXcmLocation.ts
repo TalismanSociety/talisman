@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import type { Address } from "@core"
 import type { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { encodeAddressEthereum, encodeAddressSs58 } from "@talismn/crypto"
-import { log } from "extension-shared"
 import type { FixedSizeBinary } from "polkadot-api"
 
 export const getAddressFromXcmLocation = (

@@ -1,7 +1,7 @@
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { Button } from "@ui/talisman-ui"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { ReactComponent as ImgSuccess } from "../assets/success.svg"
 import { useOnboard } from "../context"

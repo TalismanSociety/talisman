@@ -12,13 +12,13 @@ import {
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
+import { Button, Dropdown, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 import { t } from "i18next"
 import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, Dropdown, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"

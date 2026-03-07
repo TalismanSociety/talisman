@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
@@ -19,7 +20,6 @@ import {
 } from "@talismn/chaindata-provider"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
-import { log } from "extension-shared"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 

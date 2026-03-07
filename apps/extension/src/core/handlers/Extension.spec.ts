@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 import { TypeRegistry } from "@polkadot/types"
@@ -6,7 +7,6 @@ import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
 import type { Account } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../../tests/core/util"

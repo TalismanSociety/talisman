@@ -20,16 +20,6 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
 import {
-  type ButtonHTMLAttributes,
-  type DetailedHTMLProps,
-  forwardRef,
-  Suspense,
-  useCallback,
-  useMemo,
-  useState,
-} from "react"
-import { useTranslation } from "react-i18next"
-import {
   Button,
   ContextMenu,
   ContextMenuContent,
@@ -39,7 +29,17 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import {
+  type ButtonHTMLAttributes,
+  type DetailedHTMLProps,
+  forwardRef,
+  Suspense,
+  useCallback,
+  useMemo,
+  useState,
+} from "react"
+import { useTranslation } from "react-i18next"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

@@ -1,7 +1,7 @@
+import { log } from "@common/extension-shared"
 import { Balances, type IBalance } from "@talismn/balances"
 import { normalizeAddress } from "@talismn/crypto"
 import { isAccountOwned } from "@talismn/keyring"
-import { log } from "extension-shared"
 import { combineLatest, map, throttleTime } from "rxjs"
 
 import { chaindataProvider } from "../../rpcs/chaindata"

@@ -1,6 +1,6 @@
+import { DEBUG, log, PORT_CONTENT, PORT_EXTENSION } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { DEBUG, log, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 
 import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"

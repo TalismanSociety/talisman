@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import { normalizeAddress } from "@talismn/crypto"
-import { log } from "extension-shared"
 
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"

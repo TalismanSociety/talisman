@@ -5,10 +5,6 @@ import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
-import { IS_POPUP } from "@ui/util/constants"
-import { type FC, type ReactNode, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -17,7 +13,11 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { IS_POPUP } from "@ui/util/constants"
+import { type FC, type ReactNode, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import { ExportAllAccountsModal, useExportAllAccountsModal } from "../ExportAllAccountsModal"
 import { useManageAccounts } from "./ManageAccountsProvider"

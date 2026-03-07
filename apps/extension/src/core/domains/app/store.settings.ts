@@ -1,5 +1,5 @@
+import { DEBUG, IS_FIREFOX } from "@common/extension-shared"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
 import type { IdenticonType } from "../accounts/types"

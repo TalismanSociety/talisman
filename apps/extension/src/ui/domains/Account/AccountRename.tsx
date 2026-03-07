@@ -1,10 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
 import { useAccountByAddress, useAccounts } from "@ui/state"
+import { Button, FormFieldContainer, FormFieldInputText } from "@ui/talisman-ui"
 import { type FC, type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = {

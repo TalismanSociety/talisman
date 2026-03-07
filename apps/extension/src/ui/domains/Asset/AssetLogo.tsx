@@ -1,6 +1,6 @@
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/extension-shared"
 import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
 import { type CSSProperties, type FC, useId, useMemo } from "react"
 
 const isTalismanLogo = (url?: string | null) => {

@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { TypeRegistry } from "@polkadot/types"
 import type { IU8a } from "@polkadot/types/types"
 import { assert } from "@polkadot/util"
@@ -9,7 +10,6 @@ import {
   type DotNetworkId,
   getBlockExplorerUrls,
 } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"

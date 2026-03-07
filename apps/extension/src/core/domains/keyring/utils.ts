@@ -1,6 +1,6 @@
+import { log } from "@common/extension-shared"
 import { captureException } from "@sentry/browser"
 import type { KeypairCurve } from "@talismn/crypto"
-import { log } from "extension-shared"
 import { Err, Ok, type Result } from "ts-results"
 
 import { getDerivationPathForCurve } from "../accounts/helpers"

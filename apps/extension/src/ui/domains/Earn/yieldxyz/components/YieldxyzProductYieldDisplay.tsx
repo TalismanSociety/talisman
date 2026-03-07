@@ -3,8 +3,8 @@ import { InfoIcon } from "@talismn/icons"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { type FC, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 

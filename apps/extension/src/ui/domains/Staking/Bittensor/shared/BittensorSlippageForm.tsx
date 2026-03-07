@@ -1,8 +1,6 @@
+import { log } from "@common/extension-shared"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { log } from "extension-shared"
-import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import {
   Button,
   FormFieldInputText,
@@ -10,7 +8,9 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   SUBNET_SLIPPAGE_SCHEMA,

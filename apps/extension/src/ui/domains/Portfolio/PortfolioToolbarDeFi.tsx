@@ -14,11 +14,11 @@ import {
   usePortfolioNetworkFilter,
   usePortfolioSearch,
 } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { AssetLogo } from "../Asset/AssetLogo"
 import { NetworkLogo } from "../Networks/NetworkLogo"

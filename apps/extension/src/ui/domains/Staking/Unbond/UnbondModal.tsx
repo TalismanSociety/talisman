@@ -1,10 +1,10 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IconButton, Modal } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 import { UnbondFollowUp } from "./UnbondFollowUp"
 import { UnbondReview } from "./UnbondReview"

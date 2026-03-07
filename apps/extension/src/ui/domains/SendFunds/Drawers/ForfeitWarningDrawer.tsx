@@ -1,11 +1,11 @@
+import { log } from "@common/extension-shared"
 import { isTokenNeedExistentialDeposit } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useToken } from "@ui/state"
-import { log } from "extension-shared"
+import { Button, Drawer } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 import { Tokens } from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"

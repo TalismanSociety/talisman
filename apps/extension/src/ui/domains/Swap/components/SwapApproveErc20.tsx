@@ -10,10 +10,10 @@ import { fromAddressAtom, fromAssetAtom } from "@ui/domains/Swap/swap-modules/co
 import { approvalCounterAtom, useSwapErc20Approval } from "@ui/domains/Swap/swaps.api"
 import { swapViewAtom } from "@ui/domains/Swap/swaps-port/swapViewAtom"
 import { useAccountByAddress } from "@ui/state"
+import { Button } from "@ui/talisman-ui"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const SwapApproveErc20 = () => {
   const { t } = useTranslation()

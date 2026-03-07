@@ -15,17 +15,17 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
-import { sortBy } from "lodash-es"
-import { type FC, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
   Toggle,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { sortBy } from "lodash-es"
+import { type FC, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import urlJoin from "url-join"
 
 import type { PlatformOption } from "../Networks/usePlatformOptions"

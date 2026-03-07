@@ -1,4 +1,4 @@
-import { RAMPS_RAMP_API_URL } from "extension-shared"
+import { RAMPS_RAMP_API_URL } from "@common/extension-shared"
 
 export const getRampBuyUrl = async (
   currencyCode: string,

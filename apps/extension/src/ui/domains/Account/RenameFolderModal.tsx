@@ -3,11 +3,11 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "@ui/talisman-ui"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 type FolderProps = {

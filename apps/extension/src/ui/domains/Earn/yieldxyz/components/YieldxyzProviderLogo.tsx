@@ -1,8 +1,8 @@
 import { cn } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useYieldxyzProvider } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import type { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const YieldxyzProviderLogo: FC<{
   providerId: string | null | undefined

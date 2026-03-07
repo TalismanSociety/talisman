@@ -1,9 +1,9 @@
+import { log } from "@common/extension-shared"
 import { type AccountLedgerPolkadot, isAccountLedgerPolkadotGeneric, isAccountOfType } from "@core"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useAccountByAddress } from "@ui/state"
-import { log } from "extension-shared"
 import { type FC, useCallback, useMemo } from "react"
 
 import type { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"

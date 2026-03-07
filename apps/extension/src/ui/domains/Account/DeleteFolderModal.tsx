@@ -2,10 +2,10 @@ import type { AccountsCatalogTree } from "@core"
 import { bind } from "@react-rxjs/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
+import { Button, Modal, ModalDialog } from "@ui/talisman-ui"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
-import { Button, Modal, ModalDialog } from "talisman-ui"
 
 type FolderProps = {
   id: string | null

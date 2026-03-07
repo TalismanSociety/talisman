@@ -1,4 +1,4 @@
-import { log } from "extension-shared"
+import { log } from "@common/extension-shared"
 import { createContext, type FC, type ReactNode, useContext } from "react"
 
 const UNSET_CONTEXT = Symbol("UNSET_CONTEXT")

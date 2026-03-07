@@ -15,9 +15,9 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
+import { useOpenCloseStatus } from "@ui/talisman-ui"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useOpenCloseStatus } from "talisman-ui"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
 

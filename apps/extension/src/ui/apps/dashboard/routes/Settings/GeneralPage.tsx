@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { LedgerTransportType } from "@core"
 import type Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
@@ -24,11 +25,10 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state"
+import { Button, CtaButton, Dropdown, Modal, ModalDialog, Toggle } from "@ui/talisman-ui"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
-import { log } from "extension-shared"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, CtaButton, Dropdown, Modal, ModalDialog, Toggle } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

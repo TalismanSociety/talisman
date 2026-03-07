@@ -3,9 +3,9 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveIcon } from "@talismn/icons"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useAppState } from "@ui/state"
+import { Modal, ModalDialog } from "@ui/talisman-ui"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, ModalDialog } from "talisman-ui"
 
 import { DashboardNotification } from "./DashboardNotification"
 

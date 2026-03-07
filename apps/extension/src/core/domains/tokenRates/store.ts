@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { TokenList } from "@talismn/chaindata-provider"
 import {
   fetchTokenRates,
@@ -5,7 +6,6 @@ import {
   type TokenRatesStorage,
 } from "@talismn/token-rates"
 import type { Subscription } from "dexie"
-import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
 import debounce from "lodash-es/debounce"
 import {

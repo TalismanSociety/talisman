@@ -1,7 +1,7 @@
+import { DEFAULT_ETH_CHAIN_ID } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
 import { base58 } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
-import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { requestStore } from "../../libs/requests/store"
 import type { KnownRequestIdOnly } from "../../libs/requests/types"
 import type { Port } from "../../types/base"

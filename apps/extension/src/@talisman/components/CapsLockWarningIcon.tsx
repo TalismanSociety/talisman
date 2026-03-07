@@ -1,9 +1,9 @@
 import { CapsLockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useIsCapsLockOn } from "@ui/hooks/useIsCapsLockOn"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const CapsLockWarningIcon: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()

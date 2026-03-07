@@ -9,11 +9,11 @@ import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPol
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useRequest } from "@ui/state"
+import { Button, Drawer } from "@ui/talisman-ui"
 import capitalize from "lodash-es/capitalize"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

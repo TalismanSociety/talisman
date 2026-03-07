@@ -24,9 +24,9 @@ import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
+import { Drawer, IconButton } from "@ui/talisman-ui"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

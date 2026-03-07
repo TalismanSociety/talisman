@@ -3,9 +3,9 @@ import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
+import { Button, Drawer } from "@ui/talisman-ui"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 import { useMigratePasswordModal } from "../Settings/MigratePassword/useMigratePasswordModal"
 

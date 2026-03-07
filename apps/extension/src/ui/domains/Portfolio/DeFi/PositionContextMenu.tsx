@@ -3,9 +3,14 @@ import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useNetworkById } from "@ui/state"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/talisman-ui"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 export const PositionContextMenu: FC<{ position: DefiPosition; className?: string }> = ({
   position,

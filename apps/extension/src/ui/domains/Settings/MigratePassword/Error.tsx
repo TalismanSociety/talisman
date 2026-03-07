@@ -1,7 +1,7 @@
+import { DISCORD_TALISMAN_URL } from "@common/extension-shared"
 import { useSetting } from "@ui/state"
-import { DISCORD_TALISMAN_URL } from "extension-shared"
+import { Button, Checkbox, ModalDialog } from "@ui/talisman-ui"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, ModalDialog } from "talisman-ui"
 
 import { useMigratePassword } from "./context"
 

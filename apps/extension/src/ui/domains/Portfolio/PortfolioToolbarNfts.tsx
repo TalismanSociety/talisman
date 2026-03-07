@@ -20,10 +20,6 @@ import {
   usePortfolioSearch,
   useSetting,
 } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-import { t } from "i18next"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -33,7 +29,11 @@ import {
   TooltipContent,
   TooltipTrigger,
   useOpenClose,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { IS_POPUP } from "@ui/util/constants"
+import { t } from "i18next"
+import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkOptionsModal } from "./NetworkOptionsModal"

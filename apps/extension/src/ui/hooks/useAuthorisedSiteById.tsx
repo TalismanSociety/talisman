@@ -1,8 +1,8 @@
+import { DEFAULT_ETH_CHAIN_ID } from "@common/extension-shared"
 import type { AuthorizedSite, AuthorizedSiteAddresses, AuthorizedSiteId, ProviderType } from "@core"
 import { isAddressEqual } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAuthorisedSites } from "@ui/state"
-import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useInjectableAccounts } from "./useInjectableAccounts"

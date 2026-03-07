@@ -9,6 +9,7 @@ import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common
 import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken, useTokenRates } from "@ui/state"
+import { Button, Drawer } from "@ui/talisman-ui"
 import {
   type FC,
   type PropsWithChildren,
@@ -18,7 +19,6 @@ import {
   useMemo,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 import { formatEther, formatGwei } from "viem"
 
 import { Message } from "../Message"

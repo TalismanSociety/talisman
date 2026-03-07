@@ -1,9 +1,9 @@
 import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { Modal, WizardModalDialog } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, WizardModalDialog } from "talisman-ui"
 import {
   SwapConfirmAlphaPriceValue,
   SwapConfirmAmountInValue,

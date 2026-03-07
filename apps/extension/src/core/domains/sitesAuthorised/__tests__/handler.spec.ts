@@ -1,7 +1,7 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { getMessageSenderFn } from "../../../../../tests/core/util"
 import Extension from "../../../handlers/Extension"

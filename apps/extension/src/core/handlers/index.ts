@@ -1,5 +1,5 @@
+import { log, PORT_EXTENSION } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
-import { log, PORT_EXTENSION } from "extension-shared"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import type { MessageTypes, TransportRequestMessage } from "../types"

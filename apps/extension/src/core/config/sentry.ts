@@ -1,3 +1,4 @@
+import { DEBUG, log } from "@common/extension-shared"
 import {
   BrowserClient,
   type captureEvent,
@@ -9,7 +10,6 @@ import {
   Scope,
 } from "@sentry/browser"
 import type { Event } from "@sentry/types"
-import { DEBUG, log } from "extension-shared"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"

@@ -6,9 +6,9 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHistory"
 import { useTxHistory } from "@ui/domains/Transactions/TxHistory/TxHistoryContext"
 import { TxHistoryNetworkPicker } from "@ui/domains/Transactions/TxHistory/TxHistoryNetworkPicker"
+import { useOpenClose } from "@ui/talisman-ui"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { useOpenClose } from "talisman-ui"
 
 const NetworkFilterButton = () => {
   const { t } = useTranslation()

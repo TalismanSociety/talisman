@@ -1,6 +1,6 @@
 import { XIcon } from "@talismn/icons"
+import { IconButton } from "@ui/talisman-ui"
 import type { FC, PropsWithChildren } from "react"
-import { IconButton } from "talisman-ui"
 
 import { useCopyAddressModal } from "./useCopyAddressModal"
 

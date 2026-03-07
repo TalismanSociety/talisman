@@ -1,6 +1,6 @@
+import { log } from "@common/extension-shared"
 import type { EthBaseFeeTrend } from "@core"
 import * as Sentry from "@sentry/browser"
-import { log } from "extension-shared"
 import { formatGwei, type PublicClient, parseGwei } from "viem"
 
 const BLOCKS_HISTORY_LENGTH = 5

@@ -4,11 +4,11 @@ import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { IconButton } from "@ui/talisman-ui"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { IconButton } from "talisman-ui"
 
 export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
   const navigate = useNavigate()

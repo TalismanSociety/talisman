@@ -4,10 +4,10 @@ import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { Button, FormFieldContainer, FormFieldInputText, useOpenCloseStatus } from "@ui/talisman-ui"
 import { type ReactNode, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText, useOpenCloseStatus } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = {

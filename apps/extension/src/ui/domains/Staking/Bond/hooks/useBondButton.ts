@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_URL } from "@common/extension-shared"
 import type { Address, RemoteConfigStoreData } from "@core"
 import type { Balance, Balances } from "@talismn/balances"
 import { type NetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
@@ -5,7 +6,6 @@ import { isNotNil } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts, useBalances, useRemoteConfig } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
-import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { type MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"

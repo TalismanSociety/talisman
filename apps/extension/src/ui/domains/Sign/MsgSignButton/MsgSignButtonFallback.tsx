@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Button } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const MsgSignButtonFallback: FC<{ label?: string; className?: string }> = ({
   label,

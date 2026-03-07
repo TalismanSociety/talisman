@@ -6,9 +6,9 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
+import { PillButton } from "@ui/talisman-ui"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { MonadAnimation } from "./animations/monad/MonadAnimation"
 import { SeekAnimation } from "./animations/seek/SeekAnimation"

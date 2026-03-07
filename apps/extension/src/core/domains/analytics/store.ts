@@ -1,5 +1,5 @@
+import { DEBUG, IS_FIREFOX, log } from "@common/extension-shared"
 import * as Sentry from "@sentry/browser"
-import { DEBUG, IS_FIREFOX, log } from "extension-shared"
 import { v4 } from "uuid"
 
 import { StorageProvider } from "../../libs/Store"

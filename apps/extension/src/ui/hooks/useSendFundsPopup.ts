@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { Account } from "@core"
 import { type Address, Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -5,7 +6,6 @@ import { detectAddressEncoding } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccounts, useBalances, useToken } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { log } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

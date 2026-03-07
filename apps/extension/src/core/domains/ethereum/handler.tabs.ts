@@ -1,3 +1,4 @@
+import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
@@ -9,7 +10,6 @@ import {
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { throwAfter } from "@talismn/util"
-import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
 import {
   createClient,

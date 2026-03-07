@@ -28,11 +28,6 @@ export default defineConfig({
       "@talismn/icons": path.join(packagesDir, "icons/src"),
       // Map @core alias to local source
       "@core": path.resolve(__dirname, "src/core"),
-      // Map internal packages (extension-shared, talisman-ui)
-      "extension-shared/src/": path.join(packagesDir, "extension-shared/src/"),
-      "extension-shared": path.join(packagesDir, "extension-shared/src"),
-      "talisman-ui/src/": path.join(packagesDir, "talisman-ui/src/"),
-      "talisman-ui": path.join(packagesDir, "talisman-ui/src"),
       // Path aliases from tsconfig (baseUrl is src/)
       "@ui": path.resolve(__dirname, "src/ui"),
       "@common": path.resolve(__dirname, "src/common"),

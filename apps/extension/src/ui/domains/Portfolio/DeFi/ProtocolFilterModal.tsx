@@ -6,10 +6,10 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { type ProtocolOption, useDefiPositions } from "@ui/state"
+import { IconButton, Modal } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 const isAllProtocolsOption = (option: ProtocolOption) =>
   "id" in option && option.id === "ALL_PROTOCOLS"

@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { TransactionDto } from "@core"
 import { isEthereumAddress } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
@@ -5,7 +6,6 @@ import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useNetworkById } from "@ui/state"
-import { log } from "extension-shared"
 import { useMemo } from "react"
 import type { TransactionRequest } from "viem"
 

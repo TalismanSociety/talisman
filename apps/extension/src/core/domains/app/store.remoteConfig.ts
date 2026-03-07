@@ -1,5 +1,5 @@
+import { DEBUG, log, TEST } from "@common/extension-shared"
 import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { DEBUG, log, TEST } from "extension-shared"
 import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"

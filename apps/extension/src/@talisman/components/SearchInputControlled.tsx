@@ -1,8 +1,8 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FormFieldInputText, IconButton } from "@ui/talisman-ui"
 import { useCallback, useRef } from "react"
 import { useEffectOnce } from "react-use"
-import { FormFieldInputText, IconButton } from "talisman-ui"
 
 type SearchInputControlledProps = {
   className?: string

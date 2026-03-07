@@ -1,8 +1,8 @@
 import { ChangePasswordStatusUpdateStatus, type ChangePasswordStatusUpdateType } from "@core"
 import { AlertTriangleIcon } from "@talismn/icons"
+import { Modal, ModalDialog, ProcessAnimation } from "@ui/talisman-ui"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, ModalDialog, ProcessAnimation } from "talisman-ui"
 
 export const ChangePasswordModal = ({
   isOpen,

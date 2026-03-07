@@ -9,9 +9,9 @@ import {
   useMnemonics,
   useSessionState,
 } from "@ui/state"
+import { Button, IconButton } from "@ui/talisman-ui"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, IconButton } from "talisman-ui"
 
 export const BackupReminderBanner = () => {
   const { t } = useTranslation()

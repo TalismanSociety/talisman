@@ -1,10 +1,11 @@
 /** biome-ignore-all lint/a11y/useAnchorContent: legacy */
+
+import { CONNECT_LEDGER_DOCS_URL } from "@common/extension-shared"
 import { XCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { CONNECT_LEDGER_DOCS_URL } from "extension-shared"
+import { Button, Drawer } from "@ui/talisman-ui"
 import { type FC, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 export const ErrorMessageDrawer: FC<{
   message: string | undefined

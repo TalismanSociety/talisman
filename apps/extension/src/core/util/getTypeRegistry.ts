@@ -1,8 +1,8 @@
+import { log } from "@common/extension-shared"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
-import { log } from "extension-shared"
 
 import { getMetadataFromDef, getMetadataRpcFromDef } from "../domains/metadata/helpers"
 import { chaindataProvider } from "../rpcs/chaindata"

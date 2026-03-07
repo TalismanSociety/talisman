@@ -12,9 +12,9 @@ import {
   useScore1To100Neg,
   useScore2To100Neg,
 } from "@ui/domains/TaoDashboard/shared/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { type FC, type PropsWithChildren, type ReactNode, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsSentimentTrend: FC<{ netuid: number }> = ({ netuid }) => {

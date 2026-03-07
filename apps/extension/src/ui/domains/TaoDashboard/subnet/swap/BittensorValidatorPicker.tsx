@@ -11,6 +11,15 @@ import type { BondOption as BondOptionType } from "@ui/domains/Staking/hooks/bit
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useToken } from "@ui/state"
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@ui/talisman-ui"
+import {
   type FC,
   useDeferredValue,
   useEffect,
@@ -20,15 +29,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 

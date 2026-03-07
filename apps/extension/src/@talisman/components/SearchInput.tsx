@@ -1,5 +1,6 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { type FormFieldInputContainerProps, FormFieldInputText, IconButton } from "@ui/talisman-ui"
 import {
   type ChangeEventHandler,
   forwardRef,
@@ -13,7 +14,6 @@ import {
   useRef,
   useState,
 } from "react"
-import { type FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   small: true,

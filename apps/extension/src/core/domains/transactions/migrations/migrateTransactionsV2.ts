@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import { isNotNil } from "@talismn/util"
-import { log } from "extension-shared"
 
 import { db } from "../../../db"
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"

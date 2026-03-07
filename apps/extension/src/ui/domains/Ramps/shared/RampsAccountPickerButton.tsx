@@ -8,9 +8,9 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworkById, useToken } from "@ui/state"
+import { Drawer, useOpenClose } from "@ui/talisman-ui"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, useOpenClose } from "talisman-ui"
 
 import { type RampAccountPickerBalancesDisplayMode, RampsAccountPicker } from "./RampsAccountPicker"
 

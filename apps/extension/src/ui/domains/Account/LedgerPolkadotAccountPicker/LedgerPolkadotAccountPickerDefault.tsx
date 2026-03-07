@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { Account, LedgerPolkadotCurve } from "@core"
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
@@ -5,7 +6,6 @@ import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById, useNetworks } from "@ui/state"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { log } from "extension-shared"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

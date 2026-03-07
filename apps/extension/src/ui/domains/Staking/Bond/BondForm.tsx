@@ -5,6 +5,7 @@ import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
+import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import {
   type ChangeEventHandler,
   type FC,
@@ -18,7 +19,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"

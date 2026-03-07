@@ -1,6 +1,6 @@
+import { log, YIELD_API_BASE_URL } from "@common/extension-shared"
 import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { getLoadableQuery$, isNotNil, keepAlive, type Loadable } from "@talismn/util"
-import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
 import {
   combineLatest,

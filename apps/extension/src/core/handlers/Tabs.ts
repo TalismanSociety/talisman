@@ -1,3 +1,4 @@
+import { isTalismanUrl, log } from "@common/extension-shared"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import type {
@@ -15,7 +16,6 @@ import type {
 } from "@polkadot/extension-inject/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { assert, isNumber } from "@polkadot/util"
-import { isTalismanUrl, log } from "extension-shared"
 import { combineLatest } from "rxjs"
 import { sentry } from "../config/sentry"
 import { db } from "../db"

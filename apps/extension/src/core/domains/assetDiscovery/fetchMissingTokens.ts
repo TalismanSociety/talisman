@@ -1,3 +1,4 @@
+import { ASSET_DISCOVERY_API_URL, log } from "@common/extension-shared"
 import {
   type EthNetworkId,
   evmErc20TokenId,
@@ -5,7 +6,6 @@ import {
   type TokenId,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import { ASSET_DISCOVERY_API_URL, log } from "extension-shared"
 import urlJoin from "url-join"
 
 import { chaindataProvider } from "../../rpcs/chaindata"

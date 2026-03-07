@@ -8,10 +8,10 @@ import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundar
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import { type KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
+import { type FontFamily, preloadFonts } from "@ui/talisman-ui"
 import { type ReactNode, StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
-import { type FontFamily, preloadFonts } from "talisman-ui"
 
 import { initSentryFrontend } from "../sentry"
 

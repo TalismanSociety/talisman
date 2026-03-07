@@ -1,4 +1,4 @@
-import { IS_FIREFOX, log } from "extension-shared"
+import { IS_FIREFOX, log } from "@common/extension-shared"
 
 /**
  * Used to check if the current page is a background page.

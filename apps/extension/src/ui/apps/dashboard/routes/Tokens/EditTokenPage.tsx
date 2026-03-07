@@ -1,4 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
+
+import { log } from "@common/extension-shared"
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -25,11 +27,6 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork, useToken } from "@ui/state"
-import { log } from "extension-shared"
-import { dump as convertToYaml } from "js-yaml"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
 import {
   Button,
   FormFieldContainer,
@@ -42,7 +39,11 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { dump as convertToYaml } from "js-yaml"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

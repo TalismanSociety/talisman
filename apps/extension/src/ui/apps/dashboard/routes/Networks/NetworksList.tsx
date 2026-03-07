@@ -14,11 +14,19 @@ import {
   useNetworks,
   useRemoteConfig,
 } from "@ui/state"
+import {
+  Button,
+  ListButton,
+  Modal,
+  ModalDialog,
+  Radio,
+  Toggle,
+  useOpenClose,
+} from "@ui/talisman-ui"
 import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"

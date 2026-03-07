@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
+import { type CtaButtonSize, getContainerClassName } from "@ui/talisman-ui"
 import { type FC, type ReactNode, type SVGProps, useMemo } from "react"
-import { type CtaButtonSize, getContainerClassName } from "talisman-ui"
 
 export const Setting: FC<{
   iconLeft?: FC<SVGProps<SVGSVGElement>>

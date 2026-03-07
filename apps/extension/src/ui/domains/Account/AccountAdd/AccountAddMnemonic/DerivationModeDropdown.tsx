@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Dropdown } from "@ui/talisman-ui"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Dropdown } from "talisman-ui"
 
 import type { AccountAddDerivationMode } from "./context"
 

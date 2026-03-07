@@ -11,9 +11,9 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import type { BittensorStakingPosition } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useAccountByAddress, useSelectedCurrency } from "@ui/state"
+import { Modal, WizardModalDialog } from "@ui/talisman-ui"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, WizardModalDialog } from "talisman-ui"
 
 type Props = {
   isOpen: boolean

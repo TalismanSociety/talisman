@@ -1,10 +1,10 @@
+import { log } from "@common/extension-shared"
 import type { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
-import { log } from "extension-shared"
 import merge from "lodash-es/merge"
 import type { Hex, TransactionRequest } from "viem"
 

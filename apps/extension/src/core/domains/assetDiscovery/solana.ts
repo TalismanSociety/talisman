@@ -1,8 +1,8 @@
+import { log } from "@common/extension-shared"
 import { type Connection, PublicKey } from "@solana/web3.js"
 import { networkIdFromTokenId, solSplTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
-import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
 import { combineLatest, distinctUntilChanged, filter, first, map, pairwise, switchMap } from "rxjs"
 

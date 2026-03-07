@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import {
   type AnySigningRequest,
   isEthereumRequest,
@@ -5,7 +6,6 @@ import {
   type SigningRequests,
 } from "@core"
 import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
-import { log } from "extension-shared"
 import { useCallback } from "react"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {

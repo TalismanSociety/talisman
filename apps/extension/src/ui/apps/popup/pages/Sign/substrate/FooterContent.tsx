@@ -11,10 +11,10 @@ import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { getMultiLocationTokenId } from "@ui/domains/Sign/Substrate/util/getMultiLocationTokenId"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useTokensMap } from "@ui/state"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { uniq } from "lodash-es"
 import { type FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const FooterContent = ({ isTransaction = false }: { isTransaction?: boolean }) => {
   const { t } = useTranslation()

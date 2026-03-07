@@ -13,9 +13,9 @@ import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
 import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { Button } from "@ui/talisman-ui"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const SolSignMessageRequest: FC<{
   request: SolSigningRequest

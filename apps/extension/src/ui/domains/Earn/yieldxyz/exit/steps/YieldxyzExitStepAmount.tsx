@@ -7,11 +7,11 @@ import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/Yi
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { Button, WizardModalDialog } from "@ui/talisman-ui"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, WizardModalDialog } from "talisman-ui"
 
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"

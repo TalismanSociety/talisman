@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Balances } from "@talismn/balances"
@@ -9,7 +10,6 @@ import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hoo
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSelectedCurrency } from "@ui/state"
-import { log } from "extension-shared"
 import {
   type FC,
   type PropsWithChildren,

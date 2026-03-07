@@ -1,4 +1,4 @@
-import { isTalismanUrl } from "extension-shared"
+import { isTalismanUrl } from "@common/extension-shared"
 import type { TabStore } from "../../../handlers/stores"
 import { TabsHandler } from "../../../libs/Handler"
 import { windowManager } from "../../../libs/WindowManager"

@@ -16,6 +16,7 @@ import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDi
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useFeatureFlag } from "@ui/state"
+import { Toggle, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "@ui/talisman-ui"
 import {
   type ComponentProps,
   type FC,
@@ -25,7 +26,6 @@ import {
   useMemo,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Toggle, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 export const SwapConfirmContainer: FC<PropsWithChildren<{ className?: string }>> = ({
   children,

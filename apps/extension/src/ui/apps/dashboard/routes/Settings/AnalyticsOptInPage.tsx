@@ -2,8 +2,8 @@ import { Setting } from "@talisman/components/Setting"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/state"
+import { Toggle } from "@ui/talisman-ui"
 import { useTranslation } from "react-i18next"
-import { Toggle } from "talisman-ui"
 
 const Content = () => {
   const { t } = useTranslation()

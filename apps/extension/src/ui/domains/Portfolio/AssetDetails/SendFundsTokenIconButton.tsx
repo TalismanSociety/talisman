@@ -2,9 +2,9 @@ import type { TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useToken } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 

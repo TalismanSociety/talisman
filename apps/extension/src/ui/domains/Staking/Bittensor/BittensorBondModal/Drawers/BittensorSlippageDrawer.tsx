@@ -1,6 +1,6 @@
+import { Drawer } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
 
 import { BittensorSlippageForm } from "../../shared/BittensorSlippageForm"
 

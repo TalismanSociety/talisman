@@ -6,9 +6,9 @@ import { classNames } from "@talismn/util"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
+import { Drawer, IconButton } from "@ui/talisman-ui"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
 
 export const useCurrenciesDrawerOpenClose = () => useGlobalOpenClose("currencies-drawer")
 

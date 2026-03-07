@@ -1,5 +1,5 @@
+import { log } from "@common/extension-shared"
 import { assert } from "@polkadot/util"
-import { log } from "extension-shared"
 import { db } from "../../db"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"

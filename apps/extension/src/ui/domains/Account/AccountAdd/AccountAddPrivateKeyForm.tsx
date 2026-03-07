@@ -16,8 +16,6 @@ import { useField, useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
-import { useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import {
   Button,
   FormFieldContainer,
@@ -25,7 +23,9 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { AccountPlatformDropdown } from "../AccountPlatformDropdown"

@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import {
   type Account,
   type Address,
@@ -27,7 +28,6 @@ import {
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { CopyAddressWizardInputs } from "./types"

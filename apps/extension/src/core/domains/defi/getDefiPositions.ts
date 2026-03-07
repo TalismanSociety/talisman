@@ -1,7 +1,7 @@
+import { ASSET_DISCOVERY_API_URL, log } from "@common/extension-shared"
 import { isAddressEqual } from "@talismn/crypto"
 import { isAccountNotContact } from "@talismn/keyring"
 import { getLoadable$, getSharedObservable, keepAlive, type Loadable } from "@talismn/util"
-import { ASSET_DISCOVERY_API_URL, log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { distinctUntilChanged, map, shareReplay, switchMap, take, tap } from "rxjs"
 import urlJoin from "url-join"

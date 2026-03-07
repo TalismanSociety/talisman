@@ -1,8 +1,7 @@
 import "./common/polyfills"
 
-import { log } from "extension-shared"
-
 import { testNetworkSol } from "./common/testNetworkSol"
+import { log } from "./log"
 
 const NETWORK_CONFIG = {
   id: "solana-mainnet",

@@ -1,3 +1,4 @@
+import { POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared"
 import {
   type AccountPolkadotVault,
   isJsonPayload,
@@ -11,9 +12,6 @@ import { classNames, cn } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
-import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
-import { type ReactElement, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
 import {
   Button,
   type ButtonProps,
@@ -22,7 +20,9 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type ReactElement, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"

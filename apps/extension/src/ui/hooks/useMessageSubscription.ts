@@ -1,6 +1,6 @@
+import { DEBUG } from "@common/extension-shared"
 import type { UnsubscribeFn } from "@core"
 import { isFunction } from "@polkadot/util"
-import { DEBUG } from "extension-shared"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
 

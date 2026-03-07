@@ -29,12 +29,12 @@ import {
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
 import { isVersionedTransaction } from "inject/solana/solana"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 

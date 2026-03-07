@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import { type Account, isAccountLedgerPolkadotGeneric, type LedgerPolkadotCurve } from "@core"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
@@ -6,8 +7,8 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById } from "@ui/state"
+import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "@ui/talisman-ui"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { log } from "extension-shared"
 import {
   type ChangeEventHandler,
   type FC,
@@ -18,7 +19,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../AccountIcon"
 import { Address } from "../Address"

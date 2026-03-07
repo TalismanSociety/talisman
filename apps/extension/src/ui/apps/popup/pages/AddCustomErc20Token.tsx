@@ -1,3 +1,4 @@
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/extension-shared"
 import type { WatchAssetRequestIdOnly } from "@core"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
@@ -5,11 +6,10 @@ import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
+import { Button } from "@ui/talisman-ui"
 import { type FC, type PropsWithChildren, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

@@ -1,6 +1,6 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import type { AuthorizedSiteId, ProviderType } from "@core"
 import { act, renderHook, waitFor } from "@testing-library/react"
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"

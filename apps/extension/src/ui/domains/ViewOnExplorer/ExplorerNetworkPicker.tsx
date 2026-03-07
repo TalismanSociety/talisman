@@ -9,9 +9,9 @@ import {
   useNetworks,
   useSelectedCurrency,
 } from "@ui/state"
+import { IconButton } from "@ui/talisman-ui"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 

@@ -1,13 +1,13 @@
+import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@common/extension-shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
+import { Button, FormFieldContainer, FormFieldInputText } from "@ui/talisman-ui"
 import { signet } from "@ui/util/signet"
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "extension-shared"
 import { type FC, type ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { useSignetConnect } from "./context"
 

@@ -1,5 +1,5 @@
+import { useOpenClose } from "@ui/talisman-ui"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useOpenClose } from "talisman-ui"
 
 import type { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
 

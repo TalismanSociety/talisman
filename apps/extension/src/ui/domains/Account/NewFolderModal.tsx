@@ -3,9 +3,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 import { useAccountsCatalog } from "@ui/state"
-import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 import {
   Button,
   Checkbox,
@@ -13,7 +10,10 @@ import {
   FormFieldInputText,
   Modal,
   ModalDialog,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
 export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")

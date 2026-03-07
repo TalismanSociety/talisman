@@ -1,8 +1,8 @@
 import type { Balances } from "@talismn/balances"
 import { ZapIcon, ZapPlusIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useBondButton } from "./hooks/useBondButton"
 

@@ -1,8 +1,8 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { cn } from "@talismn/util"
+import { Modal } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
-import { Modal } from "talisman-ui"
 
 import { BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "./constants"
 import { BittensorClaimSettingsModalRouter } from "./forms"

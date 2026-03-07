@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import {
   type EthGasSettingsEip1559,
   type EthTransactionDetails,
@@ -13,7 +14,15 @@ import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { log } from "extension-shared"
+import {
+  Button,
+  FormFieldContainer,
+  FormFieldInputText,
+  IconButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@ui/talisman-ui"
 import {
   type FC,
   type FormEventHandler,
@@ -26,15 +35,6 @@ import {
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 import { formatGwei, parseGwei, type TransactionRequest } from "viem"
 import * as yup from "yup"
 

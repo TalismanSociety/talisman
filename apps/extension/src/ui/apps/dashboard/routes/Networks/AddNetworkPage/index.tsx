@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
+import { log } from "@common/extension-shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { getGithubTokenLogoUrlByCoingeckoId, NetworkBaseSchema } from "@talismn/chaindata-provider"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
@@ -11,12 +12,11 @@ import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/he
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkByGenesisHash$, getNetworkById$ } from "@ui/state"
-import { log } from "extension-shared"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "@ui/talisman-ui"
 import type { TFunction } from "i18next"
 import { type FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { firstValueFrom } from "rxjs"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
 
 import {

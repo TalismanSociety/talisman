@@ -14,9 +14,6 @@ import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-import { type FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 import {
   Button,
   Drawer,
@@ -25,7 +22,10 @@ import {
   TooltipContent,
   TooltipTrigger,
   useOpenCloseWithData,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { IS_POPUP } from "@ui/util/constants"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"

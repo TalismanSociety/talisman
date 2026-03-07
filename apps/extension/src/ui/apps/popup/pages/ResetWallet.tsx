@@ -2,9 +2,9 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { Button, Drawer, FormFieldInputText } from "@ui/talisman-ui"
 import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, FormFieldInputText } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 

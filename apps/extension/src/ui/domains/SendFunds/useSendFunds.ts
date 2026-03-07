@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import type { WalletTransactionInfo } from "@core"
 import { provideContext } from "@talisman/util/provideContext"
 import {
@@ -28,7 +29,6 @@ import {
   useTokensMap,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

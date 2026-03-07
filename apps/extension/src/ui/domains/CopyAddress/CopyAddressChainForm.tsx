@@ -6,9 +6,9 @@ import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/
 import { CopyIcon, QrIcon } from "@talismn/icons"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "@ui/talisman-ui"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { NetworkLogo } from "../Networks/NetworkLogo"

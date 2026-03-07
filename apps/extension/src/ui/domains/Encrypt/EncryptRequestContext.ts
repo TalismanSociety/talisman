@@ -1,7 +1,7 @@
+import { DEBUG } from "@common/extension-shared"
 import { type AnyEncryptRequest, isDecryptRequest } from "@core"
 import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
-import { DEBUG } from "extension-shared"
 import { useCallback } from "react"
 
 export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {

@@ -1,5 +1,5 @@
+import { Button, ModalDialog, ProcessAnimation } from "@ui/talisman-ui"
 import { useTranslation } from "react-i18next"
-import { Button, ModalDialog, ProcessAnimation } from "talisman-ui"
 
 import { useMigratePassword } from "./context"
 

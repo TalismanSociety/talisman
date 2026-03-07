@@ -1,9 +1,9 @@
+import { DEBUG, DISCORD_TALISMAN_URL } from "@common/extension-shared"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import { TalismanDeadHandIcon } from "@talismn/icons"
+import { Button } from "@ui/talisman-ui"
 import type { DexieError } from "dexie"
-import { DEBUG, DISCORD_TALISMAN_URL } from "extension-shared"
 import { type ReactNode, useCallback } from "react"
-import { Button } from "talisman-ui"
 
 export const TalismanErrorBoundary = ({ children }: { children?: ReactNode }) => (
   <SentryErrorBoundary fallback={ErrorMessage}>{children}</SentryErrorBoundary>

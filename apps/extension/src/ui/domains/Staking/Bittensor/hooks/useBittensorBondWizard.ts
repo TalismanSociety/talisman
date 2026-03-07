@@ -16,10 +16,10 @@ import {
   useToken,
   useTokenRates,
 } from "@ui/state"
+import { useOpenClose } from "@ui/talisman-ui"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
-import { useOpenClose } from "talisman-ui"
 import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"

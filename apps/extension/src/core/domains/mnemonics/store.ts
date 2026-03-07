@@ -1,8 +1,8 @@
+import { log } from "@common/extension-shared"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"
 import md5 from "blueimp-md5"
-import { log } from "extension-shared"
 import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../libs/Store"

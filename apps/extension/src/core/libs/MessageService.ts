@@ -3,7 +3,7 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
-import { log } from "extension-shared"
+import { log } from "@common/extension-shared"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   WrappedEthProviderRpcError,

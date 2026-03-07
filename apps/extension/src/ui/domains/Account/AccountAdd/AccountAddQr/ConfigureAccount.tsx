@@ -9,9 +9,15 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 import { useActiveTokensState, useNetworkByGenesisHash, useNetworks, useTokens } from "@ui/state"
+import {
+  Button,
+  FormFieldInputText,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@ui/talisman-ui"
 import { type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"

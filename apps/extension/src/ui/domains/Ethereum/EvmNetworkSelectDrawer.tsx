@@ -9,10 +9,10 @@ import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useActiveNetworksState, useAuthorisedSites, useNetworkById, useNetworks } from "@ui/state"
+import { Drawer, IconButton } from "@ui/talisman-ui"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
-import { Drawer, IconButton } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 

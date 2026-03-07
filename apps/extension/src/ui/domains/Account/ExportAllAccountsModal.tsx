@@ -4,9 +4,6 @@ import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
 import { useAccounts } from "@ui/state"
-import { type FC, useCallback, useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
 import {
   Button,
   FormFieldContainer,
@@ -14,7 +11,10 @@ import {
   Modal,
   ModalDialog,
   useOpenClose,
-} from "talisman-ui"
+} from "@ui/talisman-ui"
+import { type FC, useCallback, useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import * as yup from "yup"
 
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"

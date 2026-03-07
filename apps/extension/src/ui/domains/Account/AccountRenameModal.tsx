@@ -1,10 +1,10 @@
 import type { Account } from "@core"
 import { bind } from "@react-rxjs/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { Modal, ModalDialog } from "@ui/talisman-ui"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
-import { Modal, ModalDialog } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountRename } from "./AccountRename"

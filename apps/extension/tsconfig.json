@@ -22,6 +22,7 @@
     ".wxt/wxt.d.ts",
     "i18next-parser.config.cjs",
     "src",
+    "src/**/*.json",
     "entrypoints",
     "wxt.config.ts",
     "tests"

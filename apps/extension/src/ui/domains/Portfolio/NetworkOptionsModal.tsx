@@ -4,10 +4,10 @@ import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import type { NetworkOption } from "@ui/state"
+import { IconButton, Modal } from "@ui/talisman-ui"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 

@@ -1,5 +1,5 @@
+import { log, YIELD_API_BASE_URL } from "@common/extension-shared"
 import { getLoadableQuery$, keepAlive, type Loadable } from "@talismn/util"
-import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { isEqual } from "lodash-es"
 import {
   concatMap,

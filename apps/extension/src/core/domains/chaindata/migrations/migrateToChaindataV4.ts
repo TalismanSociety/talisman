@@ -1,3 +1,4 @@
+import { log } from "@common/extension-shared"
 import {
   type DotNetwork,
   type EthNetwork,
@@ -11,7 +12,6 @@ import {
   subForeignAssetTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { assign, fromPairs, keyBy, toPairs } from "lodash-es"
 import { filter, firstValueFrom } from "rxjs"
 

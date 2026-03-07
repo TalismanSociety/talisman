@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
 import type { RootClaimType } from "../../../hooks/bittensor/dTao/types"
