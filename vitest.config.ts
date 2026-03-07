@@ -12,6 +12,7 @@ export default defineConfig({
       "packages/sapi",
       "packages/solana",
       "packages/icons",
+      "packages/orb",
 
       // Crypto packages (node environment)
       "packages/crypto",
