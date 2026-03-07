@@ -1,4 +1,4 @@
-import type { SigningRequestID } from "@core/types/domains"
+import type { SigningRequestID } from "@core/domains/signing/types"
 import { useRequest } from "@ui/state/requests"
 import { Suspense, useEffect } from "react"
 import { useParams } from "react-router-dom"

@@ -90,4 +90,4 @@
 
 ## Temporary scripts
 
-- If you need to write a temporary script for testing or refactoring, place it in the .tmp folder that is not tracked by git, and delete it when done. Do not leave temporary scripts in the repo after they have served their purpose.
+- Temporary scripts and data can be stored in the `.tmp` folder that is not tracked by git. Delete them once they are no longer needed.

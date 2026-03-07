@@ -6,17 +6,17 @@ import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
 import {
+  type ChangePasswordRequest,
+  ChangePasswordStatusUpdateStatus,
+  type ChangePasswordStatusUpdateType,
+} from "../../domains/app/types"
+import {
   decryptMnemonic,
   encryptMnemonic,
   MnemonicErrors,
   type MnemonicsStoreData,
   mnemonicsStore,
 } from "../../domains/mnemonics/store"
-import {
-  type ChangePasswordRequest,
-  ChangePasswordStatusUpdateStatus,
-  type ChangePasswordStatusUpdateType,
-} from "../../types/domains"
 
 const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
 

@@ -1,4 +1,4 @@
-import type { WalletTransactionDot, WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionDot, WalletTransactionInfo } from "@core/domains/transactions/types"
 import { parseTokenId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { useAccounts } from "@ui/state/accounts"

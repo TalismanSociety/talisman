@@ -1,6 +1,6 @@
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { atom, useAtomValue, useSetAtom } from "jotai"

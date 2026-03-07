@@ -1,7 +1,7 @@
 import { log } from "@common/extension-shared"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
+import type { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import type { Account } from "@core/domains/keyring/exports"
-import type { LedgerEthDerivationPathType } from "@core/types/domains"
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
 import type { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"

@@ -1,5 +1,5 @@
 import { getMaxTransactionCost, serializeTransactionRequest } from "@core/domains/ethereum/helpers"
-import type { EthPriorityOptionName } from "@core/types/domains"
+import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useEffect, useState } from "react"

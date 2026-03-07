@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { WalletTransaction } from "@core/types/domains"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import { bind } from "@react-rxjs/core"
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { CopyToClipboardLinkButton } from "@talisman/components/CopyToClipboardLinkButton"

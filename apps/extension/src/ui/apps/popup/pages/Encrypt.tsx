@@ -1,5 +1,5 @@
+import type { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@core/domains/encrypt/types"
 import type { Account } from "@core/domains/keyring/exports"
-import type { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@core/types/domains"
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"

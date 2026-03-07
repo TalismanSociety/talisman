@@ -1,11 +1,11 @@
 import { log } from "@common/extension-shared"
 import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
+import type { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
 import type {
-  EthGasSettingsEip1559,
   EthTransactionDetails,
   GasSettingsByPriorityEip1559,
-} from "@core/types/domains"
+} from "@core/domains/signing/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"

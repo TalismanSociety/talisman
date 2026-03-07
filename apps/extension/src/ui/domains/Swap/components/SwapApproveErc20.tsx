@@ -1,5 +1,5 @@
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { notify } from "@talisman/components/Notifications"
 import { LoaderIcon, UsbIcon } from "@talismn/icons"
 import { formatDecimals, planckToTokens } from "@talismn/util"

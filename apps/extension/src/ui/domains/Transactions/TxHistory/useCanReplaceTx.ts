@@ -1,5 +1,5 @@
 import { filterIsSameNetworkAndAddressTx } from "@core/domains/transactions/exports"
-import type { WalletTransaction } from "@core/types/domains"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import { isNotNil } from "@talismn/util"
 import { useMemo } from "react"
 

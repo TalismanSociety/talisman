@@ -1,5 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
-import type { AuthorizedSite } from "@core/types/domains"
+import type { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
 import { isAddressEqual } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"

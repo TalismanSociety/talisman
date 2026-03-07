@@ -1,4 +1,4 @@
-import type { EvmAddress } from "@core/types/domains"
+import type { EvmAddress } from "@core/domains/ethereum/types"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { getUniswapV2TokenInfo } from "@core/util/getUniswapV2TokenInfo"
 import type { EthNetworkId } from "@talismn/chaindata-provider"

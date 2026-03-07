@@ -1,9 +1,9 @@
+import type { EthGasSettings } from "@core/domains/ethereum/types"
 import type {
-  EthGasSettings,
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core/types/domains"
+} from "@core/domains/signing/types"
 import { InfoIcon } from "@talismn/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"

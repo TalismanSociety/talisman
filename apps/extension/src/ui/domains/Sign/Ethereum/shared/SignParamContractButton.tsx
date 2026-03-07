@@ -1,4 +1,4 @@
-import type { EvmAddress } from "@core/types/domains"
+import type { EvmAddress } from "@core/domains/ethereum/types"
 import type { EthNetwork } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { Address } from "@ui/domains/Account/Address"

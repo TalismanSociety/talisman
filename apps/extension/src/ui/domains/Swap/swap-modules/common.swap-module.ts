@@ -7,7 +7,7 @@ import {
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
-import type { SignerPayloadJSON } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import {
   evmErc20TokenId,

@@ -1,6 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import type { KnownRequestIdOnly } from "@core/libs/requests/types"
-import type { ProviderType } from "@core/types/domains"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"

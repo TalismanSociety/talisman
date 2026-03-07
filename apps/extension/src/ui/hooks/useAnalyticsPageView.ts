@@ -1,4 +1,4 @@
-import type { PostHogCaptureProperties } from "@core/types/domains"
+import type { PostHogCaptureProperties } from "@core/domains/analytics/types"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useEffect, useRef } from "react"
 

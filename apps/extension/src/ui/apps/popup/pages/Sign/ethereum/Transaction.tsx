@@ -1,4 +1,5 @@
-import type { EthPriorityOptionName, EvmAddress } from "@core/types/domains"
+import type { EvmAddress } from "@core/domains/ethereum/types"
+import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import type { EthNetworkId } from "@talismn/chaindata-provider"

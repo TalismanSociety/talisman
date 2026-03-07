@@ -1,6 +1,6 @@
 import { log } from "@common/extension-shared"
 import type { Account } from "@core/domains/keyring/exports"
-import type { EthSignRequest } from "@core/types/domains"
+import type { EthSignRequest } from "@core/domains/signing/types"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import { hexToString } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"

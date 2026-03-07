@@ -1,4 +1,4 @@
-import type { EvmAddress } from "@core/types/domains"
+import type { EvmAddress } from "@core/domains/ethereum/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"

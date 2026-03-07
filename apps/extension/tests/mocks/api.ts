@@ -1,14 +1,14 @@
 import { log, TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import type { Trees } from "@core/domains/accounts/helpers.catalog"
 import type { AnalyticsCaptureRequest } from "@core/domains/app/types"
+import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import type { Account } from "@core/domains/keyring/exports"
 import { SitesAuthorizedStore } from "@core/domains/sitesAuthorised/store"
 import type {
   AuthorizedSite,
   AuthorizedSites,
-  BalanceSubscriptionResponse,
   ProviderType,
-} from "@core/types/domains"
+} from "@core/domains/sitesAuthorised/types"
 import {
   evmErc20TokenId,
   evmNativeTokenId,

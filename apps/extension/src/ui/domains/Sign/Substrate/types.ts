@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { PolkadotCalls } from "@polkadot-api/descriptors"
 import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import type { FC } from "react"

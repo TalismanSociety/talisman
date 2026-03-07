@@ -1,4 +1,4 @@
-import type { WalletTransaction } from "@core/types/domains"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import { notifyUpdate } from "@talisman/components/Notifications"
 import type { NotificationProps } from "@talisman/components/Notifications/Notification"
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"

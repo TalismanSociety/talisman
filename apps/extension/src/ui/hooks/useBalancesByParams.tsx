@@ -1,4 +1,4 @@
-import type { AddressesAndTokens, BalanceSubscriptionResponse } from "@core/types/domains"
+import type { AddressesAndTokens, BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"

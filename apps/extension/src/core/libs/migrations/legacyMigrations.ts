@@ -1,11 +1,10 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
 import { lt } from "semver"
-
+import { type LegacyAccount, LegacyAccountOrigin } from "../../domains/accounts/types"
 import { passwordStore } from "../../domains/app/store.password"
 import { createLegacyVerifierCertificateMnemonicStore } from "../../domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "../../domains/mnemonics/store"
 import sitesAuthorisedStore from "../../domains/sitesAuthorised/store"
-import { type LegacyAccount, LegacyAccountOrigin } from "../../types/domains"
 import { changePassword } from "./legacyHelpers"
 
 export const migrateConnectAllSubstrate = async (previousVersion: string) => {

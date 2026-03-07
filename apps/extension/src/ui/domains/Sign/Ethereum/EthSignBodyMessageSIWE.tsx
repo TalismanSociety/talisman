@@ -1,6 +1,6 @@
 import { log } from "@common/extension-shared"
 import type { Account } from "@core/domains/keyring/exports"
-import type { EthSignRequest } from "@core/types/domains"
+import type { EthSignRequest } from "@core/domains/signing/types"
 import { hexToString } from "@polkadot/util"
 import type { ParsedMessage } from "@spruceid/siwe-parser"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

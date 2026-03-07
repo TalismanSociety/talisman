@@ -1,6 +1,6 @@
 import { isAccountPlatformSolana } from "@core/domains/keyring/exports"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import type { KnownRequestIdOnly } from "@core/libs/requests/types"
-import type { ProviderType } from "@core/types/domains"
 import { createSignInMessageText } from "@solana/wallet-standard-util"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"

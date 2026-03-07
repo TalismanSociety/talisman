@@ -1,6 +1,6 @@
 import { getTransactionSerializable } from "@core/domains/ethereum/helpers"
 import type { AccountLedgerEthereum } from "@core/domains/keyring/exports"
-import type { EthSignMessageMethod } from "@core/types/domains"
+import type { EthSignMessageMethod } from "@core/domains/signing/types"
 import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"

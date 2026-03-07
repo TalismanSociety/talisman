@@ -7,7 +7,7 @@ import {
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
-import type { ProviderType } from "@core/types/domains"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { useAccounts } from "@ui/state/accounts"
 import { useSettingValue } from "@ui/state/settings"
 import { useMemo } from "react"

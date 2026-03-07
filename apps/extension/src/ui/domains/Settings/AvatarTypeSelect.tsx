@@ -1,5 +1,5 @@
+import type { IdenticonType } from "@core/domains/accounts/types"
 import type { Address } from "@core/types/base"
-import type { IdenticonType } from "@core/types/domains"
 import { classNames } from "@talismn/util"
 import { useAccounts } from "@ui/state/accounts"
 import { type FC, useCallback, useMemo } from "react"

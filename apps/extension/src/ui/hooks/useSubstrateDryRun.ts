@@ -1,5 +1,5 @@
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
-import type { SignerPayloadJSON } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
 import { getScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"

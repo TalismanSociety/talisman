@@ -1,13 +1,8 @@
-import {
-  AUTH_PREFIX,
-  AUTH_SOL_SIGN_IN_PREFIX,
-  ENCRYPT_DECRYPT_PREFIX,
-  ENCRYPT_ENCRYPT_PREFIX,
-  ETH_NETWORK_ADD_PREFIX,
-  METADATA_PREFIX,
-  SIGNING_TYPES,
-  WATCH_ASSET_PREFIX,
-} from "@core/types/domains"
+import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "@core/domains/encrypt/types"
+import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
+import { METADATA_PREFIX } from "@core/domains/metadata/types"
+import { SIGNING_TYPES } from "@core/domains/signing/types"
+import { AUTH_PREFIX, AUTH_SOL_SIGN_IN_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"

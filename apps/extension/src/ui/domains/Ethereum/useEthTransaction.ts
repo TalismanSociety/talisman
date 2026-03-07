@@ -10,12 +10,14 @@ import type {
   EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
+} from "@core/domains/ethereum/types"
+import type {
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core/types/domains"
+} from "@core/domains/signing/types"
 import { bigIntMax } from "@ethereumjs/util"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isBigInt, isNotNil } from "@talismn/util"

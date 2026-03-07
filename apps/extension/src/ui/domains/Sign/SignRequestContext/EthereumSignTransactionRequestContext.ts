@@ -3,7 +3,7 @@ import {
   parseRpcTransactionRequestBase,
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
-import type { KnownSigningRequestIdOnly } from "@core/types/domains"
+import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"

@@ -1,4 +1,4 @@
-import type { KnownSigningRequestIdOnly } from "@core/types/domains"
+import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PolkadotSigningRequestProvider } from "@ui/domains/Sign/SignRequestContext"

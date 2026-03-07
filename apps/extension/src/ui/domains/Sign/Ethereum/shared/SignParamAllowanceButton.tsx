@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { EvmAddress } from "@core/types/domains"
+import type { EvmAddress } from "@core/domains/ethereum/types"
 import { abiErc20 } from "@core/util/abi"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify } from "@talisman/components/Notifications"

@@ -4,7 +4,7 @@ import type {
   AuthorizedSiteAddresses,
   AuthorizedSiteId,
   ProviderType,
-} from "@core/types/domains"
+} from "@core/domains/sitesAuthorised/types"
 import { isAddressEqual } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"

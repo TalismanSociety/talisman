@@ -1,10 +1,11 @@
 import PortMessageService from "@common/PortMessageService"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type {
   ResponseSolanaSubmit,
   SolRpcRequest,
   SolRpcResponse,
 } from "@core/domains/solana/exports"
-import type { SignerPayloadJSON, WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { HexString } from "@polkadot/util/types"
 
 import type MessageTypes from "./types"

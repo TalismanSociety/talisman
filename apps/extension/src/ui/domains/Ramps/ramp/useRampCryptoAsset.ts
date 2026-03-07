@@ -1,4 +1,4 @@
-import type { RemoteConfigStoreData } from "@core/types/domains"
+import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Token } from "@talismn/chaindata-provider"
 import { useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"

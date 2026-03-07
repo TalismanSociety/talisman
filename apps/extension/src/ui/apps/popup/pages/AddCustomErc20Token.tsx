@@ -1,5 +1,5 @@
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/extension-shared"
-import type { WatchAssetRequestIdOnly } from "@core/types/domains"
+import type { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"

@@ -1,4 +1,4 @@
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"

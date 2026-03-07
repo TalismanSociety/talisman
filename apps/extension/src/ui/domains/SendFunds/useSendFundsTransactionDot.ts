@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { SignerPayloadJSON } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { BALANCE_MODULES, type BalanceTransferType } from "@talismn/balances"
 import type { ChainConnectorDot } from "@talismn/chain-connectors"
 import { type DotNetwork, isTokenDot, type Token } from "@talismn/chaindata-provider"

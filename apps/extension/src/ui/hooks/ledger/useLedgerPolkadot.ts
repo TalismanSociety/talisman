@@ -1,5 +1,5 @@
 import type { AccountLedgerPolkadot, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/domains"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"

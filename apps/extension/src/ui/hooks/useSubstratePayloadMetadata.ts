@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { SignerPayloadJSON } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { type DotNetwork, isNetworkDot, type Token } from "@talismn/chaindata-provider"

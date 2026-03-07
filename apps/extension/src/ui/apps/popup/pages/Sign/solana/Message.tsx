@@ -1,5 +1,5 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
-import type { SolSigningRequest } from "@core/types/domains"
+import type { SolSigningRequest } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { base58 } from "@talismn/crypto"
 import { api } from "@ui/api"

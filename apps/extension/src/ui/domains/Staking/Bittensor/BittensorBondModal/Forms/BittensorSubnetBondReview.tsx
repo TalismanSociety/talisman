@@ -1,4 +1,4 @@
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

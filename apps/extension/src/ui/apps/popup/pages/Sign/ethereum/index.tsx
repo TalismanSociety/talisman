@@ -1,4 +1,4 @@
-import type { SigningRequestID } from "@core/types/domains"
+import type { SigningRequestID } from "@core/domains/signing/types"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   EthSignMessageRequestProvider,

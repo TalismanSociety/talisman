@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import type { UseQueryResult } from "@tanstack/react-query"

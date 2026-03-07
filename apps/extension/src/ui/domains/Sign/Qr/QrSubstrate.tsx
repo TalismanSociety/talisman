@@ -1,6 +1,6 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared"
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/domains"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"

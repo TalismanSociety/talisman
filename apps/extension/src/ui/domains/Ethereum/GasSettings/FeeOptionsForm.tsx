@@ -5,7 +5,7 @@ import type {
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core/types/domains"
+} from "@core/domains/signing/types"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"

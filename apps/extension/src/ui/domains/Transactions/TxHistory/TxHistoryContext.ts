@@ -1,4 +1,4 @@
-import type { WalletTransaction } from "@core/types/domains"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import type { EthNetworkId, Network } from "@talismn/chaindata-provider"

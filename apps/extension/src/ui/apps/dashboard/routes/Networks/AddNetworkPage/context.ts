@@ -1,7 +1,7 @@
 import { log } from "@common/extension-shared"
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
-import type { RequestNetworkUpsert } from "@core/types/domains"
+import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
 import { notify } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import {

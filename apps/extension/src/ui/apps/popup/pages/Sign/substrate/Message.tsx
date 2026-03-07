@@ -1,4 +1,4 @@
-import type { SignerPayloadRaw } from "@core/types/domains"
+import type { SignerPayloadRaw } from "@core/domains/signing/types"
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { normalizeAddress } from "@talismn/crypto"

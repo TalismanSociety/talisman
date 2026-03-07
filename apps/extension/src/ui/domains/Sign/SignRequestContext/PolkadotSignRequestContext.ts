@@ -1,6 +1,6 @@
 import { log } from "@common/extension-shared"
+import type { SubstrateSigningRequest } from "@core/domains/signing/types"
 import type { Address } from "@core/types/base"
-import type { SubstrateSigningRequest } from "@core/types/domains"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { GenericExtrinsic } from "@polkadot/types"
 import type {

@@ -1,6 +1,6 @@
 import { log } from "@common/extension-shared"
+import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Account } from "@core/domains/keyring/exports"
-import type { LegacyAccountOrigin } from "@core/types/domains"
 import { createPair } from "@polkadot/keyring"
 import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"

@@ -1,6 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
-import type { SolSigningRequest } from "@core/types/domains"
+import type { SolSigningRequest } from "@core/domains/signing/types"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { AppPill } from "@talisman/components/AppPill"
 import { solNativeTokenId } from "@talismn/chaindata-provider"

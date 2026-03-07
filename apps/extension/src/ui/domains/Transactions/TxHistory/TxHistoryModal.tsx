@@ -1,6 +1,6 @@
 import { log } from "@common/extension-shared"
 import { isTxInfoSwap } from "@core/domains/transactions/exports"
-import type { WalletTransaction } from "@core/types/domains"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"

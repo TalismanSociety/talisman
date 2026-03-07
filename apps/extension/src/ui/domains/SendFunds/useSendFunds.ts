@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { provideContext } from "@talisman/util/provideContext"
 import {
   type Address,

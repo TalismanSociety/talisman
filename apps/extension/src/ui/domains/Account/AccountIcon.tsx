@@ -1,5 +1,5 @@
+import type { IdenticonType } from "@core/domains/accounts/types"
 import type { Address } from "@core/types/base"
-import type { IdenticonType } from "@core/types/domains"
 import type { IconTheme } from "@polkadot/react-identicon/types"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { detectAddressEncoding } from "@talismn/crypto"

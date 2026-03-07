@@ -4,7 +4,7 @@ import {
   getDerivationPathForCurve,
   SUPPORTED_ACCOUNT_PLATFORMS,
 } from "@core/domains/accounts/helpers"
-import type { RequestAddAccountDerive } from "@core/types/domains"
+import type { RequestAddAccountDerive } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"

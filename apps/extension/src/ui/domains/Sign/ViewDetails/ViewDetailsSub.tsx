@@ -1,4 +1,8 @@
-import type { SignerPayloadJSON, SignerPayloadRaw, TransactionMethod } from "@core/types/domains"
+import type {
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+  TransactionMethod,
+} from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

@@ -1,4 +1,4 @@
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"

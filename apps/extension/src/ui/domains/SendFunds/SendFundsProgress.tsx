@@ -3,7 +3,7 @@ import type {
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
-} from "@core/types/domains"
+} from "@core/domains/transactions/types"
 import type { HexString } from "@polkadot/util/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"

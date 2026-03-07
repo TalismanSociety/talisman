@@ -10,7 +10,7 @@ import type {
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
-} from "@core/types/domains"
+} from "@core/domains/transactions/types"
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"

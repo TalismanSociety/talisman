@@ -1,4 +1,4 @@
-import type { LegacyAccountOrigin } from "@core/types/domains"
+import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Balance } from "@talismn/balances"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"

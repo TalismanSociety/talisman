@@ -1,5 +1,5 @@
-import type { ChangePasswordStatusUpdateType } from "@core/types/domains"
-import { ChangePasswordStatusUpdateStatus } from "@core/types/domains"
+import type { ChangePasswordStatusUpdateType } from "@core/domains/app/types"
+import { ChangePasswordStatusUpdateStatus } from "@core/domains/app/types"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { Modal } from "@ui/talisman-ui/components/Modal"
 import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"

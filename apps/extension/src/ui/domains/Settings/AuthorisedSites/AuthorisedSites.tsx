@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/a11y/useAnchorContent: legacy */
 
-import type { ProviderType } from "@core/types/domains"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"

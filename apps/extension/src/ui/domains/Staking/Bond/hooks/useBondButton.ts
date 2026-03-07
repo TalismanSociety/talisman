@@ -1,6 +1,6 @@
 import { TALISMAN_WEB_APP_URL } from "@common/extension-shared"
+import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
-import type { RemoteConfigStoreData } from "@core/types/domains"
 import type { Balance, Balances } from "@talismn/balances"
 import { type NetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"

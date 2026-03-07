@@ -1,9 +1,9 @@
+import type { EthGasSettings } from "@core/domains/ethereum/types"
 import type {
-  EthGasSettings,
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core/types/domains"
+} from "@core/domains/signing/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"

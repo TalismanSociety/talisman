@@ -1,5 +1,25 @@
 import type { RequestAccountsCatalogAction, Trees } from "@core/domains/accounts/helpers.catalog"
+import type {
+  RequestAccountContactUpdate,
+  RequestAddAccountDerive,
+  RequestAddAccountExternal,
+  RequestAddAccountKeypair,
+  RequestAddressLookup,
+} from "@core/domains/accounts/types"
+import type {
+  AnalyticsCaptureRequest,
+  ChangePasswordStatusUpdate,
+  LoggedinType,
+  SendFundsOpenRequest,
+} from "@core/domains/app/types"
+import type { AssetDiscoveryScanScope } from "@core/domains/assetDiscovery/types"
+import type {
+  AddressesAndTokens,
+  BalanceSubscriptionResponse,
+  RequestBalance,
+} from "@core/domains/balances/types"
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
+import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
 import type { DefiPosition } from "@core/domains/defi/exports"
 import type {
   YieldDto,
@@ -7,53 +27,41 @@ import type {
   YieldxyzPositionRefreshRequest,
   YieldxyzProvider,
 } from "@core/domains/earn/exports"
-import type { Account, Mnemonic } from "@core/domains/keyring/exports"
-import type { NftData } from "@core/domains/nfts/exports"
-import type {
-  RequestSolanaSignApprove,
-  ResponseSolanaSubmit,
-  SolRpcRequest,
-  SolRpcResponse,
-} from "@core/domains/solana/exports"
-import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
-import type { UnsubscribeFn } from "@core/types"
+import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
 import type {
   AddEthereumChainRequestId,
-  AddressesAndTokens,
-  AnalyticsCaptureRequest,
   AnyEthRequestChainId,
-  AssetDiscoveryScanScope,
+  EvmAddress,
+  WatchAssetRequestId,
+} from "@core/domains/ethereum/types"
+import type { Account, Mnemonic } from "@core/domains/keyring/exports"
+import type { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import type { RequestSetVerifierCertificateMnemonic } from "@core/domains/mnemonics/types"
+import type { NftData } from "@core/domains/nfts/exports"
+import type { ConfirmedExternalAddresses } from "@core/domains/sendFunds/types"
+import type {
+  SignerPayloadGenesisHash,
+  SignerPayloadJSON,
+  SigningRequestID,
+} from "@core/domains/signing/types"
+import type {
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
   AuthRequestAddresses,
   AuthRequestId,
   AuthSolanaSignInApprove,
-  BalanceSubscriptionResponse,
-  ChangePasswordStatusUpdate,
-  ConfirmedExternalAddresses,
-  DecryptRequestId,
-  EncryptRequestId,
-  EvmAddress,
-  LoggedinType,
-  MetadataUpdateStatus,
   ProviderType,
-  RequestAccountContactUpdate,
-  RequestAddAccountDerive,
-  RequestAddAccountExternal,
-  RequestAddAccountKeypair,
-  RequestAddressLookup,
-  RequestBalance,
-  RequestMetadataId,
-  RequestNetworkUpsert,
-  RequestSetVerifierCertificateMnemonic,
-  SendFundsOpenRequest,
-  SignerPayloadGenesisHash,
-  SignerPayloadJSON,
-  SigningRequestID,
-  WalletTransactionInfo,
-  WatchAssetRequestId,
-} from "@core/types/domains"
+} from "@core/domains/sitesAuthorised/types"
+import type {
+  RequestSolanaSignApprove,
+  ResponseSolanaSubmit,
+  SolRpcRequest,
+  SolRpcResponse,
+} from "@core/domains/solana/exports"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
+import type { UnsubscribeFn } from "@core/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"

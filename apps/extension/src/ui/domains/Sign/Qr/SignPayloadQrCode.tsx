@@ -1,5 +1,5 @@
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/domains"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isRawPayload } from "@core/util/isJsonPayload"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"

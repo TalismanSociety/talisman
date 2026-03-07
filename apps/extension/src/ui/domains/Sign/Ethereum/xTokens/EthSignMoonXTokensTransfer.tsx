@@ -1,4 +1,4 @@
-import type { EvmAddress } from "@core/types/domains"
+import type { EvmAddress } from "@core/domains/ethereum/types"
 import { hexToU8a } from "@polkadot/util"
 import type { Address } from "@talismn/balances"
 import { encodeAddressSs58, encodeAnyAddress } from "@talismn/crypto"

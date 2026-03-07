@@ -1,10 +1,10 @@
 // biome-ignore-all lint/a11y/useAnchorContent: legacy
 
+import type { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import type { DiscoveredBalance } from "@core/types/domains"
 import { bind } from "@react-rxjs/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"

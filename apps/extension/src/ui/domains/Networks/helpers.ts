@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { SignerPayloadGenesisHash } from "@core/types/domains"
+import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { Connection } from "@solana/web3.js"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"

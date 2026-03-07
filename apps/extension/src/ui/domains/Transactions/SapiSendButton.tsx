@@ -1,6 +1,7 @@
 import { log } from "@common/extension-shared"
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
-import type { SignerPayloadJSON, WalletTransactionInfo } from "@core/types/domains"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"

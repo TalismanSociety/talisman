@@ -1,5 +1,5 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
-import type { WalletTransactionInfo } from "@core/types/domains"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { bind } from "@react-rxjs/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { getBalanceId } from "@talismn/balances"

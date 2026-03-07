@@ -1,10 +1,7 @@
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountOfType } from "@core/domains/keyring/exports"
-import type {
-  EthTransactionDetails,
-  WalletTransaction,
-  WalletTransactionEth,
-} from "@core/types/domains"
+import type { EthTransactionDetails } from "@core/domains/signing/types"
+import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
 import type { HexString } from "@polkadot/util/types"
 import { notify } from "@talisman/components/Notifications"
 import type { TokenId } from "@talismn/chaindata-provider"
