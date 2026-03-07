@@ -1,4 +1,4 @@
-import "@talisman/theme/styles.css"
+import "@ui/styles/styles.css"
 
 import { Subscribe } from "@react-rxjs/core"
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
