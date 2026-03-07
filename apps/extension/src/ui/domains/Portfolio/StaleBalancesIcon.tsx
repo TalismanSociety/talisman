@@ -1,5 +1,5 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertTriangleIcon } from "@talismn/icons"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { useTranslation } from "react-i18next"
 
 export type Props = { className?: string; staleChains?: string[] }

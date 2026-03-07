@@ -1,8 +1,8 @@
 import { DEBUG } from "@common/constants"
 import type { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
-import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
+import useStatus from "@ui/hooks/useStatus"
 import { useCallback } from "react"
 
 export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {

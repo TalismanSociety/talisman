@@ -1,12 +1,12 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: tanstack form */
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRatesList } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
 import { Button } from "@ui/components/Button"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"

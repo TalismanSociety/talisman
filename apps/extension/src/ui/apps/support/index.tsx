@@ -1,5 +1,5 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Suspense } from "react"
 
 import { SupportOpsBackup } from "./SupportOpsBackupButton"

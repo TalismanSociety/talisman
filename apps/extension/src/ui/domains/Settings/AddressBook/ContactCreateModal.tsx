@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify } from "@talisman/components/Notifications"
 import {
   getAccountPlatformFromAddress,
   isAddressEqual,
@@ -14,6 +13,7 @@ import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"

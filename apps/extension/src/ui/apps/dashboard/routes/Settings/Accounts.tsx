@@ -1,8 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import {
   ManageAccountsLists,

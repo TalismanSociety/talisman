@@ -1,6 +1,6 @@
 import type { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@core/domains/encrypt/types"
 import type { Account } from "@core/domains/keyring/exports"
-import { AppPill } from "@talisman/components/AppPill"
+import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"

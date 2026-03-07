@@ -4,12 +4,12 @@ import type {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { Drawer } from "@ui/components/Drawer"
 import { PillButton } from "@ui/components/PillButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback, useEffect, useState } from "react"
 import type { TransactionRequest } from "viem"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"

@@ -1,4 +1,4 @@
-import { Favicon } from "@talisman/components/Favicon"
+import { Favicon } from "@ui/components/Favicon"
 import { type FC, useMemo } from "react"
 
 export const TxHistoryDetailsUrl: FC<{

@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
+import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { ModalDialog } from "@ui/components/ModalDialog"

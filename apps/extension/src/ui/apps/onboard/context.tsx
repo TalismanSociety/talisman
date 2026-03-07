@@ -1,8 +1,8 @@
 import { passwordStore } from "@core/domains/app/store.password"
 import { settingsStore } from "@core/domains/app/store.settings"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState, useIsOnboarded } from "@ui/state/app"
+import { provideContext } from "@ui/util/provideContext"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 

@@ -11,13 +11,13 @@ import type {
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
-import { DistanceToNow } from "@talisman/components/DistanceToNow"
-import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, LoaderIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { DistanceToNow } from "@ui/components/DistanceToNow"
+import { useScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"

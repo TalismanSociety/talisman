@@ -1,5 +1,4 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
@@ -10,6 +9,7 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useEffect, useMemo, useState } from "react"

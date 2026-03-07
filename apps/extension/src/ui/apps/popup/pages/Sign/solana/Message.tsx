@@ -1,6 +1,5 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
-import { AppPill } from "@talisman/components/AppPill"
 import { base58 } from "@talismn/crypto"
 import { api } from "@ui/api"
 import {
@@ -9,6 +8,7 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"

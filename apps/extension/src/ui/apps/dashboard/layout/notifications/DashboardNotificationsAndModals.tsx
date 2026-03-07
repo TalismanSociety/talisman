@@ -1,4 +1,4 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"

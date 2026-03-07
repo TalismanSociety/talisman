@@ -1,5 +1,3 @@
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   GlobeIcon,
   ToolbarFilterIcon,
@@ -14,7 +12,9 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import {
   NftVisibilityFilter,
   setNftsVisibilityFilter,

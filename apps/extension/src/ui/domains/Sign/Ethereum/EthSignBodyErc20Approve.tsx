@@ -1,7 +1,7 @@
 import { TOKEN_APPROVALS_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { EvmAddress } from "@core/domains/ethereum/types"
-import { notify } from "@talisman/components/Notifications"
+import { notify } from "@ui/components/Notifications"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

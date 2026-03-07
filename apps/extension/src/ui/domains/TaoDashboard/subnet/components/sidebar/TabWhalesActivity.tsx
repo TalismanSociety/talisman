@@ -1,8 +1,8 @@
-import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { BalanceFormatter } from "@talismn/balances"
 import type { SubDTaoToken, SubNativeToken } from "@talismn/chaindata-provider"
 import type { TokenRates } from "@talismn/token-rates"
 import { cn } from "@talismn/util"
+import { DistanceToNow } from "@ui/components/DistanceToNow"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import {

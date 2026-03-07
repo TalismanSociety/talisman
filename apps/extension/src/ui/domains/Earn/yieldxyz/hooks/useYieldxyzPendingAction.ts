@@ -1,7 +1,7 @@
 import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { ActionDto, PendingActionDto, TransactionDto } from "@core/domains/earn/exports"
-import { notify } from "@talisman/components/Notifications"
+import { notify } from "@ui/components/Notifications"
 import { useCallback, useMemo, useState } from "react"
 
 type UseYieldxyzPendingActionProps = {

@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useCallback } from "react"
 
 import type { BittensorStakingWizardOpenOptions } from "./useBittensorBondWizard"

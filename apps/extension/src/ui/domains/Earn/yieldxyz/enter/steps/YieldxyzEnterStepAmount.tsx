@@ -1,5 +1,4 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { cn } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
@@ -10,6 +9,7 @@ import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/Yi
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { useCallback, useMemo, useState } from "react"

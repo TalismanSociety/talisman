@@ -1,5 +1,5 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useTranslation } from "react-i18next"

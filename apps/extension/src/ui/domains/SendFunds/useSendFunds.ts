@@ -1,6 +1,5 @@
 import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { provideContext } from "@talisman/util/provideContext"
 import {
   type Address,
   Balance,
@@ -22,6 +21,7 @@ import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useTokenRates, useTokenRatesMap } from "@ui/state/tokenRates"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

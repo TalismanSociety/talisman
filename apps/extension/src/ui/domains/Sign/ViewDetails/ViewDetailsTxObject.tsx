@@ -1,5 +1,5 @@
-import { CodeBlock } from "@talisman/components/CodeBlock"
 import { classNames } from "@talismn/util"
+import { CodeBlock } from "@ui/components/CodeBlock"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

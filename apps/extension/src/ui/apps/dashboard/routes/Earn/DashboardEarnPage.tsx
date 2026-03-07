@@ -1,6 +1,6 @@
-import { SearchInput } from "@talisman/components/SearchInput"
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"

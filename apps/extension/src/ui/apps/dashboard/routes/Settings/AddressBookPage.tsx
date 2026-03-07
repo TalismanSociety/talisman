@@ -1,7 +1,3 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -14,7 +10,10 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { PillButton } from "@ui/components/PillButton"
+import { Spacer } from "@ui/components/Spacer"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -26,6 +25,7 @@ import type { ExistingContactComponentProps } from "@ui/domains/Settings/Address
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useContacts } from "@ui/state/addressBook"
 import { useBalances } from "@ui/state/balances"

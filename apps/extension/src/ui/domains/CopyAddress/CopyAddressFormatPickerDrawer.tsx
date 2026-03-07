@@ -1,11 +1,11 @@
 import { log } from "@common/log"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,7 +1,6 @@
 import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, isAccountOwned } from "@core/domains/keyring/exports"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   ArrowDownIcon,
   CreditCardIcon,
@@ -32,6 +31,7 @@ import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"

@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useCallback } from "react"
 import { BehaviorSubject } from "rxjs"
 

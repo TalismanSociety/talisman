@@ -1,4 +1,3 @@
-import { SearchInput } from "@talisman/components/SearchInput"
 import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -9,6 +8,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"

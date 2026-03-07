@@ -1,5 +1,5 @@
-import { Breadcrumb, type BreadcrumbItem } from "@talisman/components/Breadcrumb"
 import { ChevronDownIcon } from "@talismn/icons"
+import { Breadcrumb, type BreadcrumbItem } from "@ui/components/Breadcrumb"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { type FC, useMemo } from "react"

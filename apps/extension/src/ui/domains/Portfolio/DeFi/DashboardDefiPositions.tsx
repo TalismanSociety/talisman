@@ -1,7 +1,7 @@
 import type { DefiPosition } from "@core/domains/defi/exports"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames, type Loadable, type LoadableStatus } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { FadeIn } from "@ui/components/FadeIn"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"

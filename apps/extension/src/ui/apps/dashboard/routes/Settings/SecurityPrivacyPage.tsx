@@ -1,7 +1,4 @@
 import { IS_FIREFOX } from "@common/constants"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
-import { Spacer } from "@talisman/components/Spacer"
 import {
   ActivityIcon,
   AlertCircleIcon,
@@ -13,6 +10,9 @@ import {
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { CtaButton } from "@ui/components/CtaButton"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Setting } from "@ui/components/Setting"
+import { Spacer } from "@ui/components/Spacer"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"

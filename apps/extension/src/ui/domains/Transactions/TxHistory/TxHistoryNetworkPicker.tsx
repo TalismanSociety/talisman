@@ -1,5 +1,3 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import type { Network } from "@talismn/chaindata-provider"
 import {
   CheckCircleIcon,
@@ -11,6 +9,8 @@ import {
 import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { IS_POPUP } from "@ui/util/constants"

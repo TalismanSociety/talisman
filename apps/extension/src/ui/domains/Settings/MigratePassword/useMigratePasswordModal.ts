@@ -1,6 +1,6 @@
 import { passwordStore } from "@core/domains/app/store.password"
 import { bind } from "@react-rxjs/core"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { BehaviorSubject, map } from "rxjs"

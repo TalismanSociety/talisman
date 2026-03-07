@@ -1,5 +1,5 @@
-import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioToolbarDeFi } from "@ui/domains/Portfolio/PortfolioToolbarDeFi"

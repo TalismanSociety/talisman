@@ -1,5 +1,3 @@
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { type NetworkId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
@@ -11,6 +9,8 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/BittensorBondModal/BittensorAlphaPrice"

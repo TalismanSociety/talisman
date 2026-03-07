@@ -1,7 +1,7 @@
 import type { WalletTransaction } from "@core/domains/transactions/types"
-import { CodeBlock } from "@talisman/components/CodeBlock"
 import { type NetworkId, parseTokenId } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
+import { CodeBlock } from "@ui/components/CodeBlock"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import type { FC, ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"

@@ -7,9 +7,6 @@ import {
   isAccountPlatformEthereum,
 } from "@core/domains/keyring/exports"
 import { isValidAddress } from "@ethereumjs/util"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   detectAddressEncoding,
   encodeAnyAddress,
@@ -18,10 +15,13 @@ import {
   normalizeAddress,
 } from "@talismn/crypto"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

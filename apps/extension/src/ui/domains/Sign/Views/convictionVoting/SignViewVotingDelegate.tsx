@@ -1,4 +1,3 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -7,6 +6,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { copyAddress } from "@ui/util/copyAddress"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

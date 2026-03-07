@@ -1,5 +1,5 @@
-import { provideContext } from "@talisman/util/provideContext"
 import type { DecodedCall } from "@talismn/sapi"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { DecodedBatchCall } from "../types"

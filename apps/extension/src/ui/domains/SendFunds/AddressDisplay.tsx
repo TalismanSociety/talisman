@@ -1,5 +1,4 @@
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import type { Address as TAddress } from "@talismn/balances"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
@@ -10,6 +9,7 @@ import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useAnyNetwork, useNetworkById } from "@ui/state/chaindata"
 import { copyAddress } from "@ui/util/copyAddress"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

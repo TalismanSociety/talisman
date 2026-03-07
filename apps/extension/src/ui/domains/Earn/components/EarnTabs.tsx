@@ -1,4 +1,4 @@
-import { Tabs } from "@talisman/components/Tabs"
+import { Tabs } from "@ui/components/Tabs"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

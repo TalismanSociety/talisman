@@ -7,7 +7,7 @@ description: Integrate UI from Figma
 
 When converting Figma designs to React/Tailwind code in this project, you MUST apply the following conversion rules. The project uses a non-standard root font size and a fully custom Tailwind theme — raw Figma pixel values must be translated.
 
-Before writing any new UI component, **always check existing components** in `apps/extension/src/@talisman` and `apps/extension/src/ui` first. Reuse what already exists rather than hand-coding equivalents from Figma.
+Before writing any new UI component, **always check existing components** in `apps/extension/src/ui` first. Reuse what already exists rather than hand-coding equivalents from Figma.
 
 ## Root Font Size
 
@@ -168,47 +168,47 @@ For semi-transparent backgrounds, use Tailwind's slash notation: `bg-grey-900/50
 
 ## Existing Component Library
 
-**Always prefer these components over hand-coding equivalents from Figma.** Import from `@talisman/` (alias for `apps/extension/src/@talisman`) unless noted otherwise.
+**Always prefer these components over hand-coding equivalents from Figma.** Import from `@ui/components` (alias for `apps/extension/src/ui/components`).
 
 ### Buttons
 
 | Component | Import | Description |
 |-----------|--------|-------------|
-| `Button` | `@talisman/components` | Primary action button. Props: `primary` (lime bg), `icon`/`iconLeft`, `processing` (spinner), `small` (compact). Default variant is dark. |
-| `IconButton` | `@talisman/components` | Icon-only button. `text-body-secondary text-lg`, hovers to `text-body`. |
-| `CtaButton` | `@talisman/components` | Call-to-action list button. `title` + `subtitle`, `iconLeft`/`iconRight`. Supports `to` prop for navigation. |
-| `PillButton` | `@talisman/components` | Tag/filter pill. Sizes: `tiny`, `xs`, `sm`, `base`. `bg-grey-800 rounded-[1em]`. |
-| `ListButton` | `@talisman/components` | List row button. `h-28` (56px), `bg-grey-800`, `rounded-sm`. |
+| `Button` | `@ui/components` | Primary action button. Props: `primary` (lime bg), `icon`/`iconLeft`, `processing` (spinner), `small` (compact). Default variant is dark. |
+| `IconButton` | `@ui/components` | Icon-only button. `text-body-secondary text-lg`, hovers to `text-body`. |
+| `CtaButton` | `@ui/components` | Call-to-action list button. `title` + `subtitle`, `iconLeft`/`iconRight`. Supports `to` prop for navigation. |
+| `PillButton` | `@ui/components` | Tag/filter pill. Sizes: `tiny`, `xs`, `sm`, `base`. `bg-grey-800 rounded-[1em]`. |
+| `ListButton` | `@ui/components` | List row button. `h-28` (56px), `bg-grey-800`, `rounded-sm`. |
 | `PortfolioToolbarButton` | Extension UI | Toolbar icon button. `size-16` (32px), `bg-grey-900`, `rounded-sm`, `text-body-secondary`. |
 
 ### Form Controls
 
 | Component | Import | Description |
 |-----------|--------|-------------|
-| `FormFieldInputText` | `@talisman/components` | Text input. `bg-field`, `rounded`, `border-transparent`, `focus-within:border-grey-600`. |
-| `FormFieldTextarea` | `@talisman/components` | Textarea with same styling as text input. |
-| `FormFieldContainer` | `@talisman/components` | Wrapper with label, description, and error message slots. |
-| `Checkbox` | `@talisman/components` | Styled checkbox. |
-| `Radio` | `@talisman/components` | Styled radio button. |
-| `Toggle` | `@talisman/components` | Toggle switch. Variants: default, `sm`, `tiny`. Uses primary color when checked. |
+| `FormFieldInputText` | `@ui/components` | Text input. `bg-field`, `rounded`, `border-transparent`, `focus-within:border-grey-600`. |
+| `FormFieldTextarea` | `@ui/components` | Textarea with same styling as text input. |
+| `FormFieldContainer` | `@ui/components` | Wrapper with label, description, and error message slots. |
+| `Checkbox` | `@ui/components` | Styled checkbox. |
+| `Radio` | `@ui/components` | Styled radio button. |
+| `Toggle` | `@ui/components` | Toggle switch. Variants: default, `sm`, `tiny`. Uses primary color when checked. |
 
 ### Overlays & Popovers
 
 | Component | Import | Description |
 |-----------|--------|-------------|
-| `Modal` | `@talisman/components` | Full-screen overlay. `bg-grey-900/50 backdrop-blur-sm`. Anchors: `center`, `bottom`. |
-| `ModalDialog` | `@talisman/components` | Modal content box. `w-[42rem]`, `rounded border-grey-850 bg-black`. Has title and close button. |
-| `Drawer` | `@talisman/components` | Slide-in panel. Anchors: `top`, `right`, `bottom`, `left`. |
-| `Dropdown` | `@talisman/components` | Dropdown menu. |
-| `ContextMenu` | `@talisman/components` | Right-click menu. `rounded-sm border-grey-800 bg-black shadow-lg`. |
-| `Popover` | `@talisman/components` | Floating popover (built on `@floating-ui/react`). |
-| `Tooltip` | `@talisman/components` | Tooltip with `TooltipTrigger` + `TooltipContent`. No provider needed. |
+| `Modal` | `@ui/components` | Full-screen overlay. `bg-grey-900/50 backdrop-blur-sm`. Anchors: `center`, `bottom`. |
+| `ModalDialog` | `@ui/components` | Modal content box. `w-[42rem]`, `rounded border-grey-850 bg-black`. Has title and close button. |
+| `Drawer` | `@ui/components` | Slide-in panel. Anchors: `top`, `right`, `bottom`, `left`. |
+| `Dropdown` | `@ui/components` | Dropdown menu. |
+| `ContextMenu` | `@ui/components` | Right-click menu. `rounded-sm border-grey-800 bg-black shadow-lg`. |
+| `Popover` | `@ui/components` | Floating popover (built on `@floating-ui/react`). |
+| `Tooltip` | `@ui/components` | Tooltip with `TooltipTrigger` + `TooltipContent`. No provider needed. |
 
 ### Utility Hooks
 
 | Hook | Import | Description |
 |------|--------|-------------|
-| `useOpenClose` | `@talisman/components` | Standard open/close state for modals and drawers. Returns `{ isOpen, open, close, toggle }`. |
+| `useOpenClose` | `@ui/hooks` | Standard open/close state for modals and drawers. Returns `{ isOpen, open, close, toggle }`. |
 
 ## Layout Structure
 
@@ -258,7 +258,7 @@ Always wrap icon-only buttons in a tooltip:
   <TooltipContent>Label text</TooltipContent>
 </Tooltip>
 ```
-Import `{ Tooltip, TooltipTrigger, TooltipContent }` from `@talisman/components`. No `TooltipProvider` wrapper is needed.
+Import `{ Tooltip, TooltipTrigger, TooltipContent }` from `@ui/components/Tooltip`. No `TooltipProvider` wrapper is needed.
 
 ## Transitions & Animations
 
@@ -354,7 +354,7 @@ All logo components render at `w-[1em]` and are sized via the parent's `text-*` 
 Use `shortenAddress` to truncate wallet addresses:
 
 ```tsx
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { shortenAddress } from "@ui/util/shortenAddress"
 
 shortenAddress(address)          // "0x1234…5678" (4+4 default)
 shortenAddress(address, 6, 6)    // "0x123456…345678" (custom lengths)
@@ -380,7 +380,7 @@ navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
 Use `ScrollContainer` for scrollable content areas. It adds gradient fade indicators when content overflows:
 
 ```tsx
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 
 <ScrollContainer className="size-full overflow-hidden px-8">
   {children}

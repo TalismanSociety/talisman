@@ -3,9 +3,6 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   type DotNetwork,
   getNetworkGenesisHash,
@@ -24,6 +21,9 @@ import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"

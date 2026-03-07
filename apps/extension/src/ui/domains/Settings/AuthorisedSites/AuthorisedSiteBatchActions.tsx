@@ -1,10 +1,10 @@
 import type { ProviderType } from "@core/domains/sitesAuthorised/types"
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, type ReactNode, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

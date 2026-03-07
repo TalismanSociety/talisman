@@ -1,6 +1,6 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import type { Balances } from "@talismn/balances"
 import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
+import { FadeIn } from "@ui/components/FadeIn"
 import { PillButton } from "@ui/components/PillButton"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"

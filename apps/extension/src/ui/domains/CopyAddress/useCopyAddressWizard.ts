@@ -4,7 +4,6 @@ import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { provideContext } from "@talisman/util/provideContext"
 import {
   type DotNetwork,
   type DotNetworkId,
@@ -25,6 +24,7 @@ import {
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { CopyAddressWizardInputs } from "./types"

@@ -1,7 +1,7 @@
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/constants"
 import type { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
-import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
+import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"

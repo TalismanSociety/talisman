@@ -1,6 +1,6 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useMnemonic, useMnemonics } from "@ui/state/mnemonics"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useState } from "react"
 
 export enum Stages {

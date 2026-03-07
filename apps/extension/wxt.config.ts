@@ -622,7 +622,6 @@ export default defineConfig({
       { find: "@common", replacement: resolve(__dirname, "src/common") },
       { find: "@core", replacement: resolve(__dirname, "src/core") },
       { find: /^@core\/(.*)$/, replacement: resolve(__dirname, "src/core/$1") },
-      { find: "@talisman", replacement: resolve(__dirname, "src/@talisman") },
       { find: "@ui", replacement: resolve(__dirname, "src/ui") },
       { find: "@tests", replacement: resolve(__dirname, "src/tests") },
       // Base-relative imports from src/

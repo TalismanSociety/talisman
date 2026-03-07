@@ -1,7 +1,7 @@
-import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
+import { notify } from "@ui/components/Notifications"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useMnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
 import { useMnemonic } from "@ui/state/mnemonics"

@@ -1,4 +1,4 @@
-import { provideContext } from "@talisman/util/provideContext"
+import { provideContext } from "@ui/util/provideContext"
 
 export type OpenCloseStatus = "closed" | "opening" | "open" | "closing"
 

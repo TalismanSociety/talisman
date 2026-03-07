@@ -1,5 +1,4 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { UserRightIcon } from "@talismn/icons"
 import type { SiwsMessage } from "@talismn/siws"
@@ -10,6 +9,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { ViewDetailsAddress } from "@ui/domains/Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "@ui/domains/Sign/ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "@ui/domains/Sign/ViewDetails/ViewDetailsField"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

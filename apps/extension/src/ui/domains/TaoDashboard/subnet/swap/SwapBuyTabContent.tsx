@@ -1,5 +1,5 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Button } from "@ui/components/Button"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"

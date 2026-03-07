@@ -1,4 +1,4 @@
-import { notify } from "@talisman/components/Notifications"
+import { notify } from "@ui/components/Notifications"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

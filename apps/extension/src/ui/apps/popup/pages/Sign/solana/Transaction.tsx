@@ -2,7 +2,6 @@ import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
-import { AppPill } from "@talisman/components/AppPill"
 import { solNativeTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { deserializeTransaction, serializeTransaction } from "@talismn/solana"
@@ -15,6 +14,7 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountPill } from "@ui/domains/Account/AccountPill"

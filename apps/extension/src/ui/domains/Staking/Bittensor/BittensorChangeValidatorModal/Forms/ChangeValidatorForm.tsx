@@ -1,4 +1,3 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
@@ -7,6 +6,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

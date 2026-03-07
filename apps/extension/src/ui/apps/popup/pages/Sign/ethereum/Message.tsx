@@ -1,11 +1,11 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
-import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,
   PopupFooter,
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"

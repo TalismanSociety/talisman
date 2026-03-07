@@ -1,4 +1,3 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -10,6 +9,7 @@ import {
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
 import type { PopoverOptions } from "@ui/components/Popover"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"

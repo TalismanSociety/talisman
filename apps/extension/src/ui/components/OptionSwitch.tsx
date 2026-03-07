@@ -1,5 +1,5 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
+import { FadeIn } from "@ui/components/FadeIn"
 import {
   type CSSProperties,
   type ReactNode,

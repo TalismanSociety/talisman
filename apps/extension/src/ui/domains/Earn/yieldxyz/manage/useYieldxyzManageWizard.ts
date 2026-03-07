@@ -1,10 +1,10 @@
 import type { BalanceDto, PendingActionDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"

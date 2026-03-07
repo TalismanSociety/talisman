@@ -1,5 +1,5 @@
 import type { DefiPosition, DefiPositionItem } from "@core/domains/defi/exports"
-import { Breadcrumb } from "@talisman/components/Breadcrumb"
+import { Breadcrumb } from "@ui/components/Breadcrumb"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"

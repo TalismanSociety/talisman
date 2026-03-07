@@ -1,7 +1,5 @@
 import type { EvmAddress } from "@core/domains/ethereum/types"
 import type { EthPriorityOptionName } from "@core/domains/signing/types"
-import { AppPill } from "@talisman/components/AppPill"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -11,8 +9,10 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"

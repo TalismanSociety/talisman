@@ -1,5 +1,5 @@
-import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { ArrowRightIcon } from "@talismn/icons"
+import { DistanceToNow } from "@ui/components/DistanceToNow"
 import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"

@@ -1,7 +1,7 @@
 import type { Address } from "@core/types/base"
-import { provideContext } from "@talisman/util/provideContext"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useTokensMap } from "@ui/state/chaindata"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 

@@ -1,5 +1,3 @@
-import { Nav, NavItem } from "@talisman/components/Nav"
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
   CreditCardIcon,
@@ -19,6 +17,7 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
+import { Nav, NavItem } from "@ui/components/Nav"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
@@ -27,6 +26,7 @@ import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

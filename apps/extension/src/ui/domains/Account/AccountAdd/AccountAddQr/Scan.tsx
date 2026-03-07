@@ -1,6 +1,6 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ExternalLinkIcon } from "@talismn/icons"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useTranslation } from "react-i18next"
 

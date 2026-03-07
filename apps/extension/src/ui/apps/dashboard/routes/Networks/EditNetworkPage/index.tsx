@@ -1,8 +1,5 @@
 // biome-ignore-all lint/correctness/noChildrenProp: legacy
 import * as Sentry from "@sentry/browser"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
@@ -20,15 +17,18 @@ import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { t } from "i18next"
 import { type FC, useCallback, useState } from "react"

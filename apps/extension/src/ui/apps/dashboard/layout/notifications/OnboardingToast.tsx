@@ -1,6 +1,6 @@
 import { IS_FIREFOX } from "@common/constants"
-import { notifyCustom } from "@talisman/components/Notifications"
 import { ExtensionButtonIcon, PinIcon } from "@talismn/icons"
+import { notifyCustom } from "@ui/components/Notifications"
 import { useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"

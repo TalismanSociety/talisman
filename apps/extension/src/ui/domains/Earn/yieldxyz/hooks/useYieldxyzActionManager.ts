@@ -1,8 +1,8 @@
 import { log } from "@common/log"
 import type { ActionDto } from "@core/domains/earn/exports"
-import { notify } from "@talisman/components/Notifications"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
+import { notify } from "@ui/components/Notifications"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

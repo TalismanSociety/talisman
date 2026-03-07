@@ -1,6 +1,6 @@
-import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Modal } from "@ui/components/Modal"
+import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { type FC, Suspense } from "react"
 
 import { useYieldxyzManageModal } from "./useYieldxyzManageModal"

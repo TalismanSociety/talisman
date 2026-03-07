@@ -1,5 +1,3 @@
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
@@ -8,7 +6,9 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import type { NetworkOption } from "@ui/state/portfolio"
 import {
   setPortfolioNetworkFilter,

@@ -1,4 +1,3 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   AlertCircleIcon,
   GlobeIcon,
@@ -13,6 +12,7 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"

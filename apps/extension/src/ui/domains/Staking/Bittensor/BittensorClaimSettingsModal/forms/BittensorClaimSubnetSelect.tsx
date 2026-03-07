@@ -1,5 +1,3 @@
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
@@ -12,6 +10,8 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"

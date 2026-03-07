@@ -1,9 +1,9 @@
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import {
   type SendFundsWizardPage,
   useSendFundsWizard,
 } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { type FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -11,8 +11,6 @@ import {
 } from "@core/domains/keyring/exports"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import {
   ChevronLeftIcon,
@@ -27,6 +25,8 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { IconButton } from "@ui/components/IconButton"
+import { SearchInput } from "@ui/components/SearchInput"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"

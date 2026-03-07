@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
 import { log } from "@common/log"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { getGithubTokenLogoUrlByCoingeckoId, NetworkBaseSchema } from "@talismn/chaindata-provider"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { useField } from "@tanstack/react-form"
@@ -11,6 +10,7 @@ import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/helpers"
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"

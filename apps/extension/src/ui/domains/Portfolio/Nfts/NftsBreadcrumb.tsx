@@ -1,4 +1,4 @@
-import { Breadcrumb } from "@talisman/components/Breadcrumb"
+import { Breadcrumb } from "@ui/components/Breadcrumb"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useNfts } from "@ui/state/nfts"
 import { useMemo } from "react"

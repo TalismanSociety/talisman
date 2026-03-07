@@ -1,8 +1,8 @@
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { FilterIcon, GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import type { ProtocolOption } from "@ui/state/defi"
 import {
   setDefiProtocolFilter,

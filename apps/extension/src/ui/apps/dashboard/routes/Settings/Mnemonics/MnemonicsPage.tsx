@@ -1,9 +1,5 @@
 import type { AccountOfType, Mnemonic } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, isAccountOfType } from "@core/domains/keyring/exports"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -14,15 +10,19 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useMnemonics } from "@ui/state/mnemonics"

@@ -2,8 +2,6 @@ import { log } from "@common/log"
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
-import { notify } from "@talisman/components/Notifications"
-import { provideContext } from "@talisman/util/provideContext"
 import {
   type DotNetwork,
   DotNetworkSchema,
@@ -19,7 +17,9 @@ import {
 import { sleep } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
+import { notify } from "@ui/components/Notifications"
 import { getNetworkById$ } from "@ui/state/chaindata"
+import { provideContext } from "@ui/util/provideContext"
 import { range } from "lodash-es"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"

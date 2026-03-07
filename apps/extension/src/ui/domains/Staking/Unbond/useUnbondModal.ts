@@ -1,6 +1,6 @@
 import type { Address } from "@core/types/base"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import type { TokenId } from "@talismn/chaindata-provider"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useCallback } from "react"
 
 import { useResetNomPoolUnbondWizard } from "./useUnbondWizard"

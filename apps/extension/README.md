@@ -149,10 +149,10 @@ apps/extension/
 │   └── support.html       # Support page
 ├── public/                # Static assets (icons, fonts, etc.)
 ├── src/                   # Application source code
-│   ├── @talisman/         # Talisman-specific utilities
 │   ├── common/            # Shared utilities
+│   ├── core/              # Service worker / backend logic
 │   ├── inject/            # Page injection scripts
-│   └── ui/                # React UI components
+│   └── ui/                # React UI (components, hooks, state, domains)
 ├── wxt.config.ts          # WXT/Vite configuration
 └── dist/                  # Build outputs (gitignored)
 ```

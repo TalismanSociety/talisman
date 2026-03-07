@@ -1,7 +1,7 @@
-import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { BalanceFormatter } from "@talismn/balances"
 import type { SubDTaoToken, SubNativeToken } from "@talismn/chaindata-provider"
 import { cn, formatDecimals } from "@talismn/util"
+import { DistanceToNow } from "@ui/components/DistanceToNow"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"

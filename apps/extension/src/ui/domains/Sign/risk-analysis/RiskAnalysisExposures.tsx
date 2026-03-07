@@ -4,9 +4,9 @@ import type {
   Erc1155Exposure,
   TransactionScanResponse,
 } from "@blockaid/client/resources/index.mjs"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkById } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { toPairs, values } from "lodash-es"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"

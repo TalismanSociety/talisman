@@ -1,7 +1,7 @@
 import type { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
+import { notify } from "@ui/components/Notifications"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/state/requests"
 import { type FC, useCallback, useEffect, useMemo } from "react"

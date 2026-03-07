@@ -1,9 +1,9 @@
 /** biome-ignore-all lint/a11y/useAnchorContent: legacy */
 
 import type { ProviderType } from "@core/domains/sitesAuthorised/types"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { OptionSwitch } from "@talisman/components/OptionSwitch"
-import { Spacer } from "@talisman/components/Spacer"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { OptionSwitch } from "@ui/components/OptionSwitch"
+import { Spacer } from "@ui/components/Spacer"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

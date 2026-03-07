@@ -1,9 +1,9 @@
 import type { AddAccountExternalOptions } from "@core/domains/keyring/exports"
 import { assert } from "@polkadot/util"
-import { provideContext } from "@talisman/util/provideContext"
 import type { AccountPlatform } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useNetworkById } from "@ui/state/chaindata"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 

@@ -1,4 +1,3 @@
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import {
   ArrowRightIcon,
@@ -15,6 +14,7 @@ import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"

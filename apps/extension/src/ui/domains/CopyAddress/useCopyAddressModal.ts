@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { detectAddressEncoding, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback } from "react"

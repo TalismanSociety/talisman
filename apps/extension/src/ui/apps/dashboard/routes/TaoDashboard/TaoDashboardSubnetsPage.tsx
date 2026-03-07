@@ -1,4 +1,4 @@
-import { SearchInput } from "@talisman/components/SearchInput"
+import { SearchInput } from "@ui/components/SearchInput"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
 import { TaoDashboardPeriodTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"

@@ -1,8 +1,8 @@
-import { provideContext } from "@talisman/util/provideContext"
 import { isAddressEqual } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccounts } from "@ui/state/accounts"
 import { useConfirmedAddresses } from "@ui/state/confirmedAddresses"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useSendFunds } from "./useSendFunds"

@@ -1,6 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -11,6 +10,7 @@ import {
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
 import type { PopoverOptions } from "@ui/components/Popover"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"

@@ -5,7 +5,6 @@ import {
   TALISMAN_DOCS_URL_PREFIX,
   TERMS_OF_USE_URL,
 } from "@common/constants"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   CodeIcon,
   ExternalLinkIcon,
@@ -16,6 +15,7 @@ import {
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { CtaButton } from "@ui/components/CtaButton"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Trans, useTranslation } from "react-i18next"
 
 const Content = () => {

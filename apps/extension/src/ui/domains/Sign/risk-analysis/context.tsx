@@ -1,4 +1,4 @@
-import { provideContext } from "@talisman/util/provideContext"
+import { provideContext } from "@ui/util/provideContext"
 import type { FC, ReactNode } from "react"
 
 import { RiskAnalysisDrawers } from "./RiskAnalysisDrawers"

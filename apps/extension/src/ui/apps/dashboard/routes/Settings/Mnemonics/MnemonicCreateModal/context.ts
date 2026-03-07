@@ -1,5 +1,5 @@
-import { provideContext } from "@talisman/util/provideContext"
 import { generateMnemonic as mnemonicGenerate } from "@talismn/crypto"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 
 type BackupCreateResult = { mnemonic: string; confirmed: boolean } | null

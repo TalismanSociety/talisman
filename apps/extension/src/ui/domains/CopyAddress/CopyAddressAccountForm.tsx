@@ -1,16 +1,16 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, isAccountAddressSs58 } from "@core/domains/keyring/exports"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type FC,
   type PropsWithChildren,

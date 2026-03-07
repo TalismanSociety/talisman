@@ -1,6 +1,6 @@
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { StarIcon } from "@talismn/icons"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useNftCollection } from "@ui/state/nfts"
 import { useSetting } from "@ui/state/settings"

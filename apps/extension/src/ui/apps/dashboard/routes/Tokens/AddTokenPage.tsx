@@ -4,8 +4,6 @@ import { log } from "@common/log"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { getUniswapV2TokenInfo } from "@core/util/getUniswapV2TokenInfo"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
 import {
   EthereumAddressSchema,
   type EthNetwork,
@@ -23,6 +21,8 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"

@@ -1,4 +1,4 @@
-import { Spacer } from "@talisman/components/Spacer"
+import { Spacer } from "@ui/components/Spacer"
 import { useBalancesHydrate } from "@ui/state/balances"
 
 import type { AccountAddPageProps } from "../types"

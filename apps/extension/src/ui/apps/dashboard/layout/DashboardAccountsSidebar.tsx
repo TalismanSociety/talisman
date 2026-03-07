@@ -5,7 +5,6 @@ import {
   getAccountSignetUrl,
   isAccountPortfolio,
 } from "@core/domains/keyring/exports"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
@@ -20,6 +19,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, Fragment, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"

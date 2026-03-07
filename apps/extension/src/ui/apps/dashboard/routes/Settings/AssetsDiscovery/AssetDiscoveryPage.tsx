@@ -6,9 +6,6 @@ import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.a
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { type Address, BalanceFormatter } from "@talismn/balances"
 import {
   type EthNetworkId,
@@ -38,6 +35,8 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -62,6 +61,7 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type ChangeEventHandler,
   type FC,

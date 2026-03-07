@@ -1,5 +1,5 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import { ArrowUpRightIcon, ExternalLinkIcon } from "@talismn/icons"
+import { FadeIn } from "@ui/components/FadeIn"
 import type { FC, MouseEventHandler, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 

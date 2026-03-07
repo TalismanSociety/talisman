@@ -5,9 +5,9 @@ import type {
   TreeItem,
 } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
-import { provideContext } from "@talisman/util/provideContext"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 

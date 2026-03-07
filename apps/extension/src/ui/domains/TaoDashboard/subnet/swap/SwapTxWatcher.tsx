@@ -1,4 +1,4 @@
-import { provideContext } from "@talisman/util/provideContext"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useState } from "react"
 
 type SwapTxInfo = {

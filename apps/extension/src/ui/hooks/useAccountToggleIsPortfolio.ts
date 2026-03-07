@@ -1,7 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountPortfolio } from "@core/domains/keyring/exports"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

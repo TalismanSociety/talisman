@@ -1,5 +1,5 @@
-import { provideContext } from "@talisman/util/provideContext"
 import { classNames } from "@talismn/util"
+import { provideContext } from "@ui/util/provideContext"
 import { forwardRef, type RefObject, useEffect, useMemo, useRef, useState } from "react"
 
 type ScrollContainerProps = {
