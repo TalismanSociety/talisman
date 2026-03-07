@@ -1,4 +1,4 @@
-import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import type { ReactNode } from "react"
 
 import { useMnemonicCreateModal } from "./context"

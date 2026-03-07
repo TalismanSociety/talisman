@@ -1,4 +1,4 @@
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { PillButton } from "@ui/components/PillButton"
 import { type FC, type ReactNode, useCallback, useEffect, useState } from "react"
 
 const Checked = () => (

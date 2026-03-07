@@ -5,6 +5,12 @@ import { type NetworkId, subDTaoTokenId, subNativeTokenId } from "@talismn/chain
 import { ToolbarSortIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/BittensorBondModal/BittensorAlphaPrice"
@@ -12,12 +18,6 @@ import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useToken } from "@ui/state/chaindata"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
 import {
   type FC,
   useDeferredValue,

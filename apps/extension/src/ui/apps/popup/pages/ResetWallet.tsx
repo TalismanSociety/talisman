@@ -1,10 +1,10 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Drawer } from "@ui/talisman-ui/components/Drawer"
-import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
 import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

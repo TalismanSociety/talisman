@@ -4,11 +4,11 @@
 
 import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SectionTitleBar } from "./SectionTitleBar"

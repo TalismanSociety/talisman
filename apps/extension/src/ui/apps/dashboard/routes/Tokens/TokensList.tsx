@@ -9,6 +9,13 @@ import {
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { Toggle } from "@ui/components/Toggle"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
@@ -20,13 +27,6 @@ import {
   useNetworksMapById,
   useTokens,
 } from "@ui/state/chaindata"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { sortBy } from "lodash-es"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

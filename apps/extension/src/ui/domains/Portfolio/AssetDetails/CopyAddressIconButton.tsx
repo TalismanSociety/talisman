@@ -1,9 +1,9 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

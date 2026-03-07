@@ -3,6 +3,8 @@ import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalCont
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { classNames, cn } from "@talismn/util"
+import { Modal } from "@ui/components/Modal"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -12,8 +14,6 @@ import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/Dashb
 import type { BittensorStakingPosition } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { Modal } from "@ui/talisman-ui/components/Modal"
-import { WizardModalDialog } from "@ui/talisman-ui/components/WizardModalDialog"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,12 +1,12 @@
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Toggle } from "@ui/components/Toggle"
 import {
   setSelectedVideoInput,
   useSelectedVideoInput,
   useVideoInputDevices,
 } from "@ui/state/browser"
-import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { BrowserQRCodeReader } from "@zxing/browser"
 import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"

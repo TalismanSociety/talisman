@@ -1,9 +1,9 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import { PlusIcon, SecretIcon } from "@talismn/icons"
+import { Dropdown } from "@ui/components/Dropdown"
 import { useAccounts } from "@ui/state/accounts"
 import { useMnemonics } from "@ui/state/mnemonics"
-import { Dropdown } from "@ui/talisman-ui/components/Dropdown"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

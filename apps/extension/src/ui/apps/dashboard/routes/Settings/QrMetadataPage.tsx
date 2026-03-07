@@ -14,6 +14,8 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { Button } from "@ui/components/Button"
+import { Dropdown } from "@ui/components/Dropdown"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
@@ -22,8 +24,6 @@ import { useAppState } from "@ui/state/app"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useNetworks } from "@ui/state/chaindata"
 import { useMnemonic } from "@ui/state/mnemonics"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Dropdown } from "@ui/talisman-ui/components/Dropdown"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

@@ -10,21 +10,21 @@ import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
 import { formatDecimals, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import {
+  type FormFieldInputContainerProps,
+  FormFieldInputText,
+} from "@ui/components/FormFieldInputText"
+import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Drawer } from "@ui/talisman-ui/components/Drawer"
-import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
-import {
-  type FormFieldInputContainerProps,
-  FormFieldInputText,
-} from "@ui/talisman-ui/components/FormFieldInputText"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"

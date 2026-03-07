@@ -1,6 +1,6 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { FC } from "react"
 
 export const AccountNameOrAddress: FC<{ address: string }> = ({ address }) => {

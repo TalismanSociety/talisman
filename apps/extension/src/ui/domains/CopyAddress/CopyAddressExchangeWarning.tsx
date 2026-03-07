@@ -1,6 +1,6 @@
 import { AlertCircleIcon } from "@talismn/icons"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
 import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

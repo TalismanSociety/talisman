@@ -1,8 +1,8 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
-import { Modal } from "@ui/talisman-ui/components/Modal"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
 import { Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,8 +1,8 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { getAccountGenesisHash } from "@talismn/keyring"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { FC } from "react"
 
 export const SignAccountAvatar: FC<{ account?: Account; ss58Format?: number }> = ({

@@ -9,13 +9,13 @@ import {
   UnlockIcon,
 } from "@talismn/icons"
 import { classNames, sleep } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

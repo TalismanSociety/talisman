@@ -15,6 +15,8 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { Button } from "@ui/components/Button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
@@ -31,8 +33,6 @@ import {
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state/chaindata"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
 import { isVersionedTransaction } from "inject/solana/solana"

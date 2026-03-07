@@ -9,6 +9,13 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import {
   NftVisibilityFilter,
   setNftsVisibilityFilter,
   useNftData,
@@ -23,13 +30,6 @@ import {
   usePortfolioSearch,
 } from "@ui/state/portfolio"
 import { useSetting } from "@ui/state/settings"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"

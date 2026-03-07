@@ -3,6 +3,8 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import { CopyIcon, FileSearchIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
@@ -10,8 +12,6 @@ import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import {
   type FC,
   type PropsWithChildren,

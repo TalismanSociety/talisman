@@ -1,12 +1,12 @@
 import { FadeIn } from "@talisman/components/FadeIn"
 import type { Balances } from "@talismn/balances"
 import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
+import { PillButton } from "@ui/components/PillButton"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -3,6 +3,14 @@ import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -15,14 +23,6 @@ import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useAccountByAddress } from "@ui/state/accounts"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { useYieldNetworkIdToTalismanNetworkIdMap, useYieldxyzProduct } from "@ui/state/yieldxyz"
-import { Button } from "@ui/talisman-ui/components/Button"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"

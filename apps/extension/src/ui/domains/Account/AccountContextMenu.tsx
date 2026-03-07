@@ -4,6 +4,13 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import type { PopoverOptions } from "@ui/components/Popover"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -15,13 +22,6 @@ import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetwork
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import type { PopoverOptions } from "@ui/talisman-ui/components/Popover"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"

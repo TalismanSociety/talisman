@@ -3,12 +3,12 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { Token } from "@talismn/chaindata-provider"
 import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type ChangeEventHandler,
   type FC,

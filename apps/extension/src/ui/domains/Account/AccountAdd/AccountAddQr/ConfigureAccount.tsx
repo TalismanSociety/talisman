@@ -2,6 +2,9 @@ import { isTokenActive } from "@core/domains/balances/store.activeTokens"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
+import { Button } from "@ui/components/Button"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -14,9 +17,6 @@ import {
   useNetworks,
   useTokens,
 } from "@ui/state/chaindata"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

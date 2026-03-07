@@ -1,7 +1,7 @@
 import { DEBUG, DISCORD_TALISMAN_URL } from "@common/constants"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import { TalismanDeadHandIcon } from "@talismn/icons"
-import { Button } from "@ui/talisman-ui/components/Button"
+import { Button } from "@ui/components/Button"
 import type { DexieError } from "dexie"
 import { type ReactNode, useCallback } from "react"
 

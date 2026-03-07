@@ -1,6 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

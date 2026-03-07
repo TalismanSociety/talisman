@@ -1,7 +1,7 @@
 import { CopyIcon, CreditCardIcon } from "@talismn/icons"
+import { PillButton } from "@ui/components/PillButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

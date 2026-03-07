@@ -2,6 +2,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { FilterIcon, GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import type { ProtocolOption } from "@ui/state/defi"
 import {
   setDefiProtocolFilter,
@@ -17,7 +18,6 @@ import {
   usePortfolioNetworkFilter,
   usePortfolioSearch,
 } from "@ui/state/portfolio"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"

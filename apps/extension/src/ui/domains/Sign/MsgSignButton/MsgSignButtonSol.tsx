@@ -1,8 +1,8 @@
 import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { base58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
+import { Button } from "@ui/components/Button"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

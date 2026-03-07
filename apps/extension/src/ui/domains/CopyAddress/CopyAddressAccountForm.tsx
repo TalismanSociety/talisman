@@ -7,10 +7,10 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IconButton } from "@ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type FC,
   type PropsWithChildren,

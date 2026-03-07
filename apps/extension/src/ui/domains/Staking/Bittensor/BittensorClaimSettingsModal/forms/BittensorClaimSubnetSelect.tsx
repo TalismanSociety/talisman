@@ -5,19 +5,19 @@ import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { Button } from "@ui/components/Button"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state/chaindata"
-import { Button } from "@ui/talisman-ui/components/Button"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
 import {
   type FC,
   useCallback,

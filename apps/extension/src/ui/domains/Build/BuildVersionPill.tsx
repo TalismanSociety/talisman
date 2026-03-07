@@ -1,5 +1,5 @@
 import { RELEASE_NOTES_URL } from "@common/constants"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { PillButton } from "@ui/components/PillButton"
 import { type FC, useCallback } from "react"
 
 export interface BuildVersioProps {

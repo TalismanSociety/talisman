@@ -1,6 +1,6 @@
 import { cn, planckToTokens } from "@talismn/util"
+import { PillButton } from "@ui/components/PillButton"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useTaoDashboardSubnetPickerModal } from "../TaoDashboardSubnetPickerModal"

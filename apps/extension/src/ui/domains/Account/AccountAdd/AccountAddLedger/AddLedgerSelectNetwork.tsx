@@ -5,6 +5,9 @@ import type { DotNetwork } from "@talismn/chaindata-provider"
 import type { AccountPlatform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { Dropdown } from "@ui/components/Dropdown"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import {
@@ -12,9 +15,6 @@ import {
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Dropdown } from "@ui/talisman-ui/components/Dropdown"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 import { t } from "i18next"
 import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"

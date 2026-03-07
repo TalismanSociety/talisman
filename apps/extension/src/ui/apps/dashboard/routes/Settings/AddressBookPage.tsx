@@ -7,6 +7,15 @@ import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "
 import { classNames } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Button } from "@ui/components/Button"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -21,15 +30,6 @@ import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useContacts } from "@ui/state/addressBook"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { Button } from "@ui/talisman-ui/components/Button"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type ButtonHTMLAttributes,
   type DetailedHTMLProps,

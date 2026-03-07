@@ -12,12 +12,12 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { CtaButton } from "@ui/components/CtaButton"
+import { Toggle } from "@ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useSetting } from "@ui/state/settings"
-import { CtaButton } from "@ui/talisman-ui/components/CtaButton"
-import { Toggle } from "@ui/talisman-ui/components/Toggle"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 

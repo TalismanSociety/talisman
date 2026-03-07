@@ -3,8 +3,8 @@
 import { CONNECT_LEDGER_DOCS_URL } from "@common/constants"
 import { XCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
 import { type FC, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

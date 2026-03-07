@@ -1,9 +1,9 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { CheckCircleIcon, LoaderIcon } from "@talismn/icons"
 import type { NsLookupType } from "@talismn/on-chain-id"
+import { PillButton } from "@ui/components/PillButton"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
 
 export const AddressFieldNsBadge = ({
   nsLookup,

@@ -9,12 +9,12 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { Button } from "@ui/components/Button"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
 import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

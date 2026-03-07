@@ -9,10 +9,10 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
-import { Modal } from "@ui/talisman-ui/components/Modal"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

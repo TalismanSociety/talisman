@@ -5,17 +5,17 @@ import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
+} from "@ui/components/ContextMenu"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useToken } from "@ui/state/chaindata"
 import {
   type FC,
   useCallback,

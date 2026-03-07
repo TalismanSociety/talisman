@@ -7,19 +7,19 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useNetworkById } from "@ui/state/chaindata"
-import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nfts"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
-import { Modal } from "@ui/talisman-ui/components/Modal"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
+} from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useNetworkById } from "@ui/state/chaindata"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nfts"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
 import { toPairs } from "lodash"

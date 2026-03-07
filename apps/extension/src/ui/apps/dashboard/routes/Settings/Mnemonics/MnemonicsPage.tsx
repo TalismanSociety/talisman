@@ -14,18 +14,18 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useMnemonics } from "@ui/state/mnemonics"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"

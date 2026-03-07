@@ -1,11 +1,11 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { PillButton } from "@ui/components/PillButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import {
   type ChangeEventHandler,
   type FC,

@@ -1,5 +1,6 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { classNames } from "@talismn/util"
+import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
 import {
   type FC,
   type MouseEventHandler,
@@ -9,8 +10,6 @@ import {
   useState,
 } from "react"
 import { createPortal } from "react-dom"
-
-import { type OpenCloseStatus, OpenCloseStatusProvider } from "../../hooks/useOpenCloseStatus"
 
 type ModalProps = {
   children: ReactNode

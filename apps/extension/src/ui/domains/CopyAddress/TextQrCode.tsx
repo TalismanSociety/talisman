@@ -1,5 +1,5 @@
 import QrCodeStyling from "@solana/qr-code-styling"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

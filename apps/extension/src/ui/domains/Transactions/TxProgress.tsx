@@ -7,14 +7,14 @@ import type {
 import type { HexString } from "@polkadot/util/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { useAnyNetwork, useNetworkById } from "@ui/state/chaindata"
-import { useTransaction } from "@ui/state/transactions"
-import { Button } from "@ui/talisman-ui/components/Button"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { Button } from "@ui/components/Button"
+import { PillButton } from "@ui/components/PillButton"
 import {
   ProcessAnimation,
   type ProcessAnimationStatus,
-} from "@ui/talisman-ui/components/ProcessAnimation/ProcessAnimation"
+} from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { useAnyNetwork, useNetworkById } from "@ui/state/chaindata"
+import { useTransaction } from "@ui/state/transactions"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

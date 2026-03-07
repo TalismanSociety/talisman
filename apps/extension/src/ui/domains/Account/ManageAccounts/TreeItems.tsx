@@ -4,18 +4,18 @@ import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
-import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
-import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
-import { Fiat } from "@ui/domains/Asset/Fiat"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
+} from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
+import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
+import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
+import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
+import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"

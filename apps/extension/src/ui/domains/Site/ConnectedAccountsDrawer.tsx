@@ -1,9 +1,9 @@
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { XIcon } from "@talismn/icons"
+import { Drawer } from "@ui/components/Drawer"
+import { IconButton } from "@ui/components/IconButton"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { Drawer } from "@ui/talisman-ui/components/Drawer"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import type { FC } from "react"
 
 import { ConnectedAccounts } from "./ConnectedAccounts"

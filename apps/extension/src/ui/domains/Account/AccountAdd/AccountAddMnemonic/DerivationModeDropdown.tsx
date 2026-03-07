@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { Dropdown } from "@ui/talisman-ui/components/Dropdown"
+import { Dropdown } from "@ui/components/Dropdown"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

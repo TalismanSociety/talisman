@@ -1,4 +1,4 @@
-import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
+import { Checkbox } from "@ui/components/Checkbox"
 import { t } from "i18next"
 import { type ChangeEventHandler, type FC, useCallback } from "react"
 

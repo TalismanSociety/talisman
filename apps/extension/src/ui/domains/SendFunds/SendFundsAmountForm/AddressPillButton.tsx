@@ -1,9 +1,9 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
+import { PillButton } from "@ui/components/PillButton"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { type FC, useMemo } from "react"
 
 import { AccountIcon } from "../../Account/AccountIcon"

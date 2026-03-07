@@ -1,5 +1,6 @@
 import { ChevronLeftIcon } from "@talismn/icons"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { IconButton } from "@ui/components/IconButton"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import {
   ManageAccountsLists,
@@ -9,7 +10,6 @@ import {
 } from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
-import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

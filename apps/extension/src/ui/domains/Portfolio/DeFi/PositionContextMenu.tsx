@@ -2,13 +2,13 @@ import type { DefiPosition } from "@core/domains/defi/exports"
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useNetworkById } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
+} from "@ui/components/ContextMenu"
+import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

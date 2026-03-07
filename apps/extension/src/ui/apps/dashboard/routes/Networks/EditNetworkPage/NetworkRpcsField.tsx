@@ -12,13 +12,13 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-
 import { CSS } from "@dnd-kit/utilities"
 import { DotNetworkSchema, isNetworkDot, SolNetworkSchema } from "@talismn/chaindata-provider"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import {
   fetchEthChainId,
   getDotGenesisHashFromRpc,
   getSolGenesisHashFromRpc,
 } from "@ui/domains/Networks/helpers"
-import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
-import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
 import type { TFunction } from "i18next"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"

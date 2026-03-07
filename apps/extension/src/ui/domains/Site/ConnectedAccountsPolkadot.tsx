@@ -1,8 +1,8 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { InfoIcon } from "@talismn/icons"
-import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
+import { Checkbox } from "@ui/components/Checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

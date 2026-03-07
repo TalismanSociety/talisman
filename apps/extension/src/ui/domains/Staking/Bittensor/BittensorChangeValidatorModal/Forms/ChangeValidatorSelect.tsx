@@ -4,17 +4,17 @@ import type { TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
 import { classNames, cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui/components/ContextMenu"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
+} from "@ui/components/ContextMenu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useToken } from "@ui/state/chaindata"
 import {
   type FC,
   useCallback,
