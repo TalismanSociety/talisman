@@ -1,4 +1,6 @@
-import { type EvmAddress, getErc20TokenInfo, getUniswapV2TokenInfo } from "@core"
+import type { EvmAddress } from "@core/types/domains"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { getUniswapV2TokenInfo } from "@core/util/getUniswapV2TokenInfo"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isAbortError } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"

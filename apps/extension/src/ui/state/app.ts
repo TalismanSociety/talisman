@@ -1,4 +1,5 @@
-import { type AppStoreData, appStore } from "@core"
+import type { AppStoreData } from "@core/domains/app/store.app"
+import { appStore } from "@core/domains/app/store.app"
 import { bind } from "@react-rxjs/core"
 import { type SetStateAction, useCallback } from "react"
 import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"

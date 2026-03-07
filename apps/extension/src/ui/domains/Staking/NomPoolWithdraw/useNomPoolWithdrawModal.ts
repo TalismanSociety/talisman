@@ -1,4 +1,4 @@
-import type { Address } from "@core"
+import type { Address } from "@core/types/base"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useCallback } from "react"

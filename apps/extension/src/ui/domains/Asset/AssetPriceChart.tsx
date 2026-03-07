@@ -1,11 +1,13 @@
 import { log } from "@common/extension-shared"
-import { fetchFromCoingecko } from "@core"
+import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames, formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates, useTokenRatesMap } from "@ui/state/tokenRates"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import {
   Popover,

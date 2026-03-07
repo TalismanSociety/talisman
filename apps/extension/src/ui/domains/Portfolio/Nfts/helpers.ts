@@ -1,4 +1,4 @@
-import type { Nft, NftCollection } from "@core"
+import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { isNotNil } from "@talismn/util"
 
 export const getPortfolioNftCollectionPreviewUrl = (collection: NftCollection, nfts: Nft[]) => {

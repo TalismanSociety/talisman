@@ -1,4 +1,4 @@
-import type { EthPriorityOptionName } from "@core"
+import type { EthPriorityOptionName } from "@core/types/domains"
 import imgFeePriorityCustom from "@talisman/theme/images/fee-priority-custom.png"
 import imgFeePriorityHigh from "@talisman/theme/images/fee-priority-high.png"
 import imgFeePriorityLow from "@talisman/theme/images/fee-priority-low.png"

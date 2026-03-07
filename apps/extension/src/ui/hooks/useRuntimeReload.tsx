@@ -1,4 +1,5 @@
-import { assetDiscoveryStore, db as talismanDb } from "@core"
+import { db as talismanDb } from "@core/db"
+import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useState } from "react"

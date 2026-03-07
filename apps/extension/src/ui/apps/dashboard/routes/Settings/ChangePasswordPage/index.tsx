@@ -1,4 +1,5 @@
-import { ChangePasswordStatusUpdateStatus, type ChangePasswordStatusUpdateType } from "@core"
+import type { ChangePasswordStatusUpdateType } from "@core/types/domains"
+import { ChangePasswordStatusUpdateStatus } from "@core/types/domains"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"

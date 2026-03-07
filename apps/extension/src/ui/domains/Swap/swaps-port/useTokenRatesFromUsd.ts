@@ -1,5 +1,5 @@
 import type { TokenRates } from "@talismn/token-rates"
-import { useTokenRatesMap } from "@ui/state"
+import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
 /**

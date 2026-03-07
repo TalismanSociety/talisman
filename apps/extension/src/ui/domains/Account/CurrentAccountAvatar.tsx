@@ -1,4 +1,6 @@
-import { type Account, getAccountGenesisHash, type TreeFolder } from "@core"
+import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"

@@ -1,14 +1,15 @@
-import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "@core"
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
-import {
-  useAccountByAddress,
-  useBalancesByAddress,
-  useNetworks,
-  useSelectedCurrency,
-} from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalancesByAddress } from "@ui/state/balances"
+import { useNetworks } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

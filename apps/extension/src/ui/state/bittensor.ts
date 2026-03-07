@@ -1,4 +1,4 @@
-import type { BittensorValidator } from "@core"
+import type { BittensorValidator } from "@core/domains/bittensor/exports"
 import { bind } from "@react-rxjs/core"
 import type { Loadable } from "@talismn/util"
 import { api } from "@ui/api"

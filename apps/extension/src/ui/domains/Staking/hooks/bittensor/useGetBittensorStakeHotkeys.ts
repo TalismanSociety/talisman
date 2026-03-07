@@ -1,6 +1,6 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useBalances } from "@ui/state"
+import { useBalances } from "@ui/state/balances"
 import { useMemo } from "react"
 
 type UseBittensorDefaultHotkey = {

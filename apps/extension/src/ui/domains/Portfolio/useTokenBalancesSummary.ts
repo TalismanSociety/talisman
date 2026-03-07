@@ -1,12 +1,10 @@
 import type { Balances } from "@talismn/balances"
 import { isNetworkDot, type Network, type Token } from "@talismn/chaindata-provider"
 import type { TokenRatesList } from "@talismn/token-rates"
-import BigNumber from "bignumber.js"
-
-import "@core"
-
 import { isNotNil } from "@talismn/util"
-import { useNetworksMapById, useSelectedCurrency, useTokensMap } from "@ui/state"
+import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import BigNumber from "bignumber.js"
 import { uniq } from "lodash-es"
 import { useMemo } from "react"
 

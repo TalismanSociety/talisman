@@ -1,10 +1,10 @@
+import type { SendRequest } from "@core/types"
 import type {
   DecryptPayload,
   DecryptResult,
   EncryptPayload,
   EncryptResult,
-  SendRequest,
-} from "@core"
+} from "@core/types/domains"
 import PolkadotInjected from "@polkadot/extension-base/page/Injected"
 import Signer from "@polkadot/extension-base/page/Signer"
 

@@ -1,4 +1,4 @@
-import type { Account } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { Balances, type HydrateDb } from "@talismn/balances"
 import { isNetworkEth, type Network, type Token } from "@talismn/chaindata-provider"

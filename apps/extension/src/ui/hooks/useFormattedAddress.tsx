@@ -1,6 +1,7 @@
-import { type Account, getAccountGenesisHash } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { useNetworkByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 export const useFormattedAddress = (

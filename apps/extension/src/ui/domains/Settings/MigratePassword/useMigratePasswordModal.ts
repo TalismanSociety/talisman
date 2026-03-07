@@ -1,4 +1,4 @@
-import { passwordStore } from "@core"
+import { passwordStore } from "@core/domains/app/store.password"
 import { bind } from "@react-rxjs/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useEffect } from "react"

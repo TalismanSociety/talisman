@@ -1,4 +1,4 @@
-import type { LedgerTransportType } from "@core"
+import type { LedgerTransportType } from "@core/domains/app/store.settings"
 
 export const getIsLedgerCapable = (type?: LedgerTransportType) => {
   const ledgerWindow = window as unknown as { USB?: unknown; HID?: unknown }

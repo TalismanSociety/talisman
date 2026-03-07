@@ -1,5 +1,5 @@
 import type { PolkadotCalls, VotingConviction } from "@polkadot-api/descriptors"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

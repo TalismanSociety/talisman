@@ -1,4 +1,4 @@
-import type { TaoDataApi } from "@core"
+import type { TaoDataApi } from "@core/domains/bittensor/exports"
 import type { Enum } from "@polkadot-api/substrate-bindings"
 
 type TaoDataClient = TaoDataApi<unknown>

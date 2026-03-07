@@ -1,5 +1,5 @@
 import { UNKNOWN_TOKEN_URL } from "@common/extension-shared"
-import { remoteConfigStore } from "@core"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -10,7 +10,8 @@ import {
 } from "@talismn/balances-react"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
-import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
+import { accounts$ } from "@ui/state/accounts"
+import { getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"

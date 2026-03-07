@@ -1,4 +1,4 @@
-import type { AccountLedgerSolana } from "@core"
+import type { AccountLedgerSolana } from "@core/domains/keyring/exports"
 import LedgerSolanaApp from "@ledgerhq/hw-app-solana"
 import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
 import { t } from "i18next"

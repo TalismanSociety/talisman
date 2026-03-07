@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import type { FC } from "react"
 

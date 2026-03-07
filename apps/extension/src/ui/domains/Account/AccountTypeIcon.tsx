@@ -1,4 +1,4 @@
-import type { AccountType } from "@core"
+import type { AccountType } from "@core/domains/keyring/exports"
 import {
   EyeIcon,
   LinkIcon,

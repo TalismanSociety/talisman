@@ -1,4 +1,4 @@
-import type { IdenticonType } from "@core"
+import type { IdenticonType } from "@core/types/domains"
 import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
 import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon"

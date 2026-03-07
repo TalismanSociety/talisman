@@ -1,4 +1,5 @@
-import type { LedgerEthDerivationPathType, LedgerSolDerivationPathType } from "@core"
+import type { LedgerSolDerivationPathType } from "@core/domains/solana/exports"
+import type { LedgerEthDerivationPathType } from "@core/types/domains"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"

@@ -21,7 +21,7 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { usePortfolioBalances } from "@ui/state"
+import { usePortfolioBalances } from "@ui/state/portfolio"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { t } from "i18next"
 import { uniq } from "lodash-es"

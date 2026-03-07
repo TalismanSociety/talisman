@@ -1,4 +1,6 @@
-import { type Account, getAccountGenesisHash, isAccountOwned, type TreeFolder } from "@core"
+import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountOwned } from "@core/domains/keyring/exports"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   ArrowDownIcon,
@@ -24,7 +26,9 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
+import { useBalanceTotals } from "@ui/state/balanceTotals"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { ContextMenuTrigger } from "@ui/talisman-ui/components/ContextMenu"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"

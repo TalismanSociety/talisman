@@ -6,7 +6,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { type ReactNode, Suspense } from "react"
 
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"

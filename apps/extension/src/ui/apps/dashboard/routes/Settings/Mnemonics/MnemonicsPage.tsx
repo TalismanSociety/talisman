@@ -1,4 +1,5 @@
-import { type AccountOfType, getAccountGenesisHash, isAccountOfType, type Mnemonic } from "@core"
+import type { AccountOfType, Mnemonic } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountOfType } from "@core/domains/keyring/exports"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -16,7 +17,9 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccounts, useAppState, useMnemonics } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
+import { useMnemonics } from "@ui/state/mnemonics"
 import {
   ContextMenu,
   ContextMenuContent,

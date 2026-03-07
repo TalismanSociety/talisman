@@ -1,4 +1,5 @@
-import { assetDiscoveryStore, db } from "@core"
+import { db } from "@core/db"
+import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
 import groupBy from "lodash-es/groupBy"

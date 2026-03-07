@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@core"
+import type { SignerPayloadJSON } from "@core/types/domains"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ChevronLeftIcon, ChevronRightIcon } from "@talismn/icons"
 import type { ScaleApi } from "@talismn/sapi"

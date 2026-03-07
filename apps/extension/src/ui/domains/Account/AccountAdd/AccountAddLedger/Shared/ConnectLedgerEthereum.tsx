@@ -1,4 +1,4 @@
-import { getEthLedgerDerivationPath } from "@core"
+import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { type FC, useCallback } from "react"
 

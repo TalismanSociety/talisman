@@ -1,5 +1,5 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
-import { useNetworksMapById } from "@ui/state"
+import { useNetworksMapById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 /**

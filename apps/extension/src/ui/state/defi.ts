@@ -1,4 +1,4 @@
-import type { DefiPosition } from "@core"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { bind } from "@react-rxjs/core"
 import { normalizeAddress } from "@talismn/crypto"
 import type { Loadable } from "@talismn/util"

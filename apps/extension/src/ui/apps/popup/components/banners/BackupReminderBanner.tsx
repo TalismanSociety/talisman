@@ -1,14 +1,12 @@
-import { appStore } from "@core"
+import { appStore } from "@core/domains/app/store.app"
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import {
-  useAccounts,
-  useAppState,
-  useBalanceTotals,
-  useMnemonics,
-  useSessionState,
-} from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
+import { useBalanceTotals } from "@ui/state/balanceTotals"
+import { useMnemonics } from "@ui/state/mnemonics"
+import { useSessionState } from "@ui/state/session"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { useCallback, useMemo } from "react"

@@ -1,8 +1,8 @@
-import type { DefiPosition } from "@core"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

@@ -1,6 +1,6 @@
 import { Balances } from "@talismn/balances"
 import { isBooleanTrue } from "@talismn/util"
-import { useNetworksMapById, useTokensMap } from "@ui/state"
+import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { TooltipContent } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"

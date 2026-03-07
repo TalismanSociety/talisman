@@ -1,5 +1,5 @@
 import { log, TOKEN_APPROVALS_URL } from "@common/extension-shared"
-import type { EvmAddress } from "@core"
+import type { EvmAddress } from "@core/types/domains"
 import { notify } from "@talisman/components/Notifications"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"

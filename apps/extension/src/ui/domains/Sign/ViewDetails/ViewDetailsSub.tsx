@@ -1,16 +1,13 @@
-import {
-  isJsonPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-  type TransactionMethod,
-} from "@core"
+import type { SignerPayloadJSON, SignerPayloadRaw, TransactionMethod } from "@core/types/domains"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useToken, useTokenRates } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import { type FC, useEffect, useMemo } from "react"

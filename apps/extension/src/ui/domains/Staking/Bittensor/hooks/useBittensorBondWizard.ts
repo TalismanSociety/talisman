@@ -1,4 +1,5 @@
-import { type Address, isAccountOfType } from "@core"
+import { isAccountOfType } from "@core/domains/keyring/exports"
+import type { Address } from "@core/types/base"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
@@ -10,13 +11,11 @@ import {
 } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import {
-  useAccountByAddress,
-  useFeatureFlag,
-  usePortfolioBalances,
-  useToken,
-  useTokenRates,
-} from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useToken } from "@ui/state/chaindata"
+import { usePortfolioBalances } from "@ui/state/portfolio"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"

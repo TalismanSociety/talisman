@@ -1,5 +1,5 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { useAppState } from "@ui/state"
+import { useAppState } from "@ui/state/app"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import { useCallback, useEffect } from "react"

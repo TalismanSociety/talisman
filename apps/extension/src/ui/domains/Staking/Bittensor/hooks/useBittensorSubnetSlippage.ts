@@ -1,4 +1,4 @@
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
 import { useCallback, useMemo } from "react"
 import z from "zod/v4"
 

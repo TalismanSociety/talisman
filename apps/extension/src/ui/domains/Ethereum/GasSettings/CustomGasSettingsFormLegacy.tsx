@@ -1,10 +1,10 @@
 import { log } from "@common/extension-shared"
-import {
-  type EthGasSettingsLegacy,
-  type EthTransactionDetails,
-  type GasSettingsByPriorityLegacy,
-  getHumanReadableErrorMessage,
-} from "@core"
+import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
+import type {
+  EthGasSettingsLegacy,
+  EthTransactionDetails,
+  GasSettingsByPriorityLegacy,
+} from "@core/types/domains"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"

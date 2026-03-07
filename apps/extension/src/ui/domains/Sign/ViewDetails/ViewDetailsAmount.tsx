@@ -2,7 +2,7 @@ import type { BalanceFormatter } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

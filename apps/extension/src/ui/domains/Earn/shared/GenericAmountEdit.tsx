@@ -3,7 +3,8 @@ import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, cn, tokensToPlanck } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
+import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import {
   type ChangeEventHandler,

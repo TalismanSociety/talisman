@@ -1,4 +1,4 @@
-import { getMetadataFromDef, getMetadataRpcFromDef } from "@core"
+import { getMetadataFromDef, getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"

@@ -1,4 +1,7 @@
-import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "@core"
+import {
+  getAccountGenesisHash,
+  isAccountLedgerPolkadotGeneric,
+} from "@core/domains/keyring/exports"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -6,7 +9,9 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, QrIcon } from "@talismn/icons"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalancesByAddress } from "@ui/state/balances"
+import { useNetworks } from "@ui/state/chaindata"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { useCallback, useMemo, useState } from "react"

@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
-import { useAccountByAddress, useAccounts } from "@ui/state"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"

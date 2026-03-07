@@ -1,14 +1,10 @@
 // biome-ignore-all lint/a11y/useAnchorContent: legacy
 
-import {
-  type Account,
-  activeNetworksStore,
-  activeTokensStore,
-  type DiscoveredBalance,
-  getAccountGenesisHash,
-  isNetworkActive,
-  isTokenActive,
-} from "@core"
+import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
+import type { DiscoveredBalance } from "@core/types/domains"
 import { bind } from "@react-rxjs/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -44,20 +40,19 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAccounts } from "@ui/state/accounts"
+import { useAssetDiscoveryScan, useAssetDiscoveryScanProgress } from "@ui/state/assetDiscovery"
+import { useBalancesHydrate } from "@ui/state/balances"
 import {
-  useAccounts,
   useActiveNetworksState,
   useActiveTokensState,
-  useAssetDiscoveryScan,
-  useAssetDiscoveryScanProgress,
-  useBalancesHydrate,
   useNetworkById,
   useNetworks,
   useNetworksMapById,
   useToken,
   useTokens,
   useTokensMap,
-} from "@ui/state"
+} from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import {
   ContextMenu,

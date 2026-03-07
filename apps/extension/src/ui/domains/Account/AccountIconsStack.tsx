@@ -1,4 +1,4 @@
-import type { Account } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import type { FC } from "react"

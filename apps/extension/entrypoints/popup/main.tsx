@@ -4,7 +4,7 @@ import "@common/i18nConfig"
 import "@common/zodConfig"
 
 import { IS_FIREFOX, log } from "@common/extension-shared"
-import { appStore } from "@core"
+import { appStore } from "@core/domains/app/store.app"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
 

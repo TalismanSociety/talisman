@@ -1,4 +1,4 @@
-import type { EvmAddress } from "@core"
+import type { EvmAddress } from "@core/types/domains"
 import type { EthNetwork } from "@talismn/chaindata-provider"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"

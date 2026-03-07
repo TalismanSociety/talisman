@@ -1,5 +1,7 @@
 import { log } from "@common/extension-shared"
-import { activeNetworksStore, activeTokensStore, type RequestNetworkUpsert } from "@core"
+import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
+import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import type { RequestNetworkUpsert } from "@core/types/domains"
 import { notify } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import {
@@ -17,7 +19,7 @@ import {
 import { sleep } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
-import { getNetworkById$ } from "@ui/state"
+import { getNetworkById$ } from "@ui/state/chaindata"
 import { range } from "lodash-es"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"

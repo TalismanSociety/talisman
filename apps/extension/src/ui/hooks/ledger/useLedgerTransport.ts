@@ -1,10 +1,10 @@
 import { log } from "@common/extension-shared"
-import type { LedgerTransportType } from "@core"
+import type { LedgerTransportType } from "@core/domains/app/store.settings"
 import type Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { sleep } from "@talismn/util"
-import { useSettingValue } from "@ui/state"
+import { useSettingValue } from "@ui/state/settings"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { useCallback, useEffect, useRef } from "react"
 

@@ -1,4 +1,4 @@
-import type { RemoteConfigStoreData } from "@core"
+import type { RemoteConfigStoreData } from "@core/types/domains"
 import {
   evmErc20TokenId,
   evmNativeTokenId,

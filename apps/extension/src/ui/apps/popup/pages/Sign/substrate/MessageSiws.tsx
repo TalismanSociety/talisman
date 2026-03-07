@@ -1,4 +1,4 @@
-import type { Account } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { UserRightIcon } from "@talismn/icons"

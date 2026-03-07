@@ -1,4 +1,5 @@
-import { type Address, isAccountCompatibleWithNetwork } from "@core"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { Address } from "@core/types/base"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -7,15 +8,11 @@ import { subNativeTokenId, type Token, type TokenId } from "@talismn/chaindata-p
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import {
-  useAccountByAddress,
-  useBalances,
-  useIsBalanceInitializing,
-  useNetworksMapById,
-  useSelectedCurrency,
-  useTokenRatesMap,
-  useTokens,
-} from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
+import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash-es/sortBy"
 import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"

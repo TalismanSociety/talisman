@@ -1,6 +1,6 @@
 import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
 import { useGetSubnetPools } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetSubnetPools"
-import { useTokens } from "@ui/state"
+import { useTokens } from "@ui/state/chaindata"
 import { assign, keyBy } from "lodash-es"
 import { useMemo } from "react"
 

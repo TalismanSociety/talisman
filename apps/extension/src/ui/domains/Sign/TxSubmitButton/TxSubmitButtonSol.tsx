@@ -1,10 +1,10 @@
 import { log } from "@common/extension-shared"
-import { isAccountOwned, isAccountPlatformSolana } from "@core"
+import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { notify } from "@talisman/components/Notifications"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

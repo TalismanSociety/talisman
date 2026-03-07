@@ -1,4 +1,4 @@
-import type { Account } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
 import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

@@ -1,5 +1,6 @@
 import { DEBUG } from "@common/extension-shared"
-import { type AnyEncryptRequest, isDecryptRequest } from "@core"
+import type { AnyEncryptRequest } from "@core/types/domains"
+import { isDecryptRequest } from "@core/util/isDecryptRequest"
 import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
 import { useCallback } from "react"

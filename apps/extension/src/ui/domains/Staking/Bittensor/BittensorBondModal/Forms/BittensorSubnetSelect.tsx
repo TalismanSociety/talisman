@@ -9,7 +9,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

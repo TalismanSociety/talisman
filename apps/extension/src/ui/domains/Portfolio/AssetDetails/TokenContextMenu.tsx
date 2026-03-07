@@ -9,8 +9,8 @@ import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useToken } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

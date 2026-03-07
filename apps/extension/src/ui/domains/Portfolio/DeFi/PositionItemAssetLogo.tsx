@@ -1,4 +1,4 @@
-import type { DefiPositionItem } from "@core"
+import type { DefiPositionItem } from "@core/domains/defi/exports"
 import { evmErc20TokenId, useTokensById } from "@talismn/balances-react"
 import { evmNativeTokenId, solNativeTokenId, solSplTokenId } from "@talismn/chaindata-provider"
 import { isHexString } from "@talismn/util"

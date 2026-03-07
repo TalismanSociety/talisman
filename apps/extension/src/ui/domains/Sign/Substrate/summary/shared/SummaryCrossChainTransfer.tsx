@@ -1,4 +1,4 @@
-import type { Address } from "@core"
+import type { Address } from "@core/types/base"
 import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import type { FC } from "react"

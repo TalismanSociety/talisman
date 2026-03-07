@@ -1,4 +1,4 @@
-import type { SendRequest } from "@core"
+import type { SendRequest } from "@core/types"
 import type { SolanaSignInOutput } from "@solana/wallet-standard-features"
 import { PublicKey } from "@solana/web3.js"
 import bs58 from "bs58"

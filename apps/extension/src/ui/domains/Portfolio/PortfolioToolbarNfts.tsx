@@ -9,18 +9,20 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
-  type NetworkOption,
   NftVisibilityFilter,
   setNftsVisibilityFilter,
+  useNftData,
+  useNftsVisibilityFilter,
+} from "@ui/state/nfts"
+import type { NetworkOption } from "@ui/state/portfolio"
+import {
   setPortfolioNetworkFilter,
   setPortfolioSearch,
   useAllNetworkOptions,
-  useNftData,
-  useNftsVisibilityFilter,
   usePortfolioNetworkFilter,
   usePortfolioSearch,
-  useSetting,
-} from "@ui/state"
+} from "@ui/state/portfolio"
+import { useSetting } from "@ui/state/settings"
 import {
   ContextMenu,
   ContextMenuContent,

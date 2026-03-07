@@ -1,9 +1,9 @@
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountOfType,
   isAccountPlatformEthereum,
   isAccountPlatformSolana,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { notify } from "@talisman/components/Notifications"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"

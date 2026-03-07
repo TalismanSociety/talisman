@@ -1,4 +1,5 @@
-import { useAppState, useMnemonic } from "@ui/state"
+import { useAppState } from "@ui/state/app"
+import { useMnemonic } from "@ui/state/mnemonics"
 
 export const useHasVerifierCertificateMnemonic = () => {
   const [verifierCertificateMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")

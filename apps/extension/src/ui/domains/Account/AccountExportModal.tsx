@@ -1,9 +1,9 @@
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountOfType,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"

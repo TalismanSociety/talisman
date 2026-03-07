@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useRemoteConfig } from "@ui/state"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 
 import { abiSeekStaking } from "./abiSeekStaking"
 

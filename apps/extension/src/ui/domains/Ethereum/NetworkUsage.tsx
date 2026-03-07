@@ -1,4 +1,4 @@
-import type { EthBaseFeeTrend } from "@core"
+import type { EthBaseFeeTrend } from "@core/types/domains"
 import {
   NetworkUsageDecreasingIcon,
   NetworkUsageHighIcon,

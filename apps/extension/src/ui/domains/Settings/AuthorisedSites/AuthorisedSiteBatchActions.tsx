@@ -1,4 +1,4 @@
-import type { ProviderType } from "@core"
+import type { ProviderType } from "@core/types/domains"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"

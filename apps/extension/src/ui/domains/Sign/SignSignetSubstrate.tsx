@@ -1,4 +1,5 @@
-import type { AccountSignet, SignerPayloadRaw } from "@core"
+import type { AccountSignet } from "@core/domains/keyring/exports"
+import type { SignerPayloadRaw } from "@core/types/domains"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/talisman-ui/components/Button"

@@ -1,13 +1,14 @@
+import type {
+  AccountsCatalogTree,
+  TreeFolder,
+  TreeItem,
+} from "@core/domains/accounts/helpers.catalog"
+import type { Account, AccountType } from "@core/domains/keyring/exports"
 import {
-  type Account,
-  type AccountsCatalogTree,
-  type AccountType,
   getAccountGenesisHash,
   getAccountSignetUrl,
   isAccountPortfolio,
-  type TreeFolder,
-  type TreeItem,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -37,7 +38,7 @@ import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarBu
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useBalances } from "@ui/state"
+import { useBalances } from "@ui/state/balances"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"

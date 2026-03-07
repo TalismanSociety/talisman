@@ -1,6 +1,6 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,4 +1,9 @@
-import type { KnownRequest, KnownRequestId, KnownRequestTypes, ValidRequests } from "@core"
+import type {
+  KnownRequest,
+  KnownRequestId,
+  KnownRequestTypes,
+  ValidRequests,
+} from "@core/libs/requests/types"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { map, Observable } from "rxjs"

@@ -1,7 +1,7 @@
 import { InfoIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworkByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import { Trans, useTranslation } from "react-i18next"

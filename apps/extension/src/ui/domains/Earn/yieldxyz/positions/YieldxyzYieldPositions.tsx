@@ -1,5 +1,6 @@
 import { log } from "@common/extension-shared"
-import { type BalanceDto, isAccountOwned, type YieldDto } from "@core"
+import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -11,12 +12,9 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import {
-  useAccountByAddress,
-  useYieldNetworkIdToTalismanNetworkIdMap,
-  useYieldxyzProduct,
-  type YieldxyzPositionEnhanced,
-} from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
+import { useYieldNetworkIdToTalismanNetworkIdMap, useYieldxyzProduct } from "@ui/state/yieldxyz"
 import { Button } from "@ui/talisman-ui/components/Button"
 import {
   ContextMenu,

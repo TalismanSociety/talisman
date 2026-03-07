@@ -11,7 +11,7 @@ import { BittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/BittensorBond
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

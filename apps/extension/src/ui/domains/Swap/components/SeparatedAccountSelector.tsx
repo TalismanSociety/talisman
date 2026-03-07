@@ -1,11 +1,11 @@
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountBitcoin,
-  isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { isValidAddress } from "@ethereumjs/util"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -20,7 +20,8 @@ import {
 import { ChevronLeftIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

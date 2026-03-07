@@ -1,4 +1,4 @@
-import { fetchFromCoingecko } from "@core"
+import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { newTokenRates, type TokenRates } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"

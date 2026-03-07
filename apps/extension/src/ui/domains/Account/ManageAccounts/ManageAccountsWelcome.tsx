@@ -1,6 +1,7 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { XIcon } from "@talismn/icons"
-import { useAccountsCatalog, useAppState } from "@ui/state"
+import { useAccountsCatalog } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"

@@ -1,5 +1,9 @@
 import { DEBUG, IS_FIREFOX, log } from "@common/extension-shared"
-import { settingsStore, trackIndexedDbErrorExtras, triggerIndexedDbUnavailablePopup } from "@core"
+import {
+  trackIndexedDbErrorExtras,
+  triggerIndexedDbUnavailablePopup,
+} from "@core/domains/app/store.errors"
+import { settingsStore } from "@core/domains/app/store.settings"
 import * as SentryReact from "@sentry/react"
 import type { Event } from "@sentry/types"
 import { firstValueFrom, ReplaySubject } from "rxjs"

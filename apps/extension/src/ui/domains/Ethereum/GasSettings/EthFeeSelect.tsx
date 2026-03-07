@@ -3,7 +3,7 @@ import type {
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core"
+} from "@core/types/domains"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"

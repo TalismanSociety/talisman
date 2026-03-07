@@ -1,10 +1,7 @@
 import { log } from "@common/extension-shared"
-import {
-  type AnySigningRequest,
-  isEthereumRequest,
-  type KnownRespondableRequest,
-  type SigningRequests,
-} from "@core"
+import type { KnownRespondableRequest } from "@core/libs/requests/types"
+import type { AnySigningRequest, SigningRequests } from "@core/types/domains"
+import { isEthereumRequest } from "@core/types/requests"
 import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
 import { useCallback } from "react"
 

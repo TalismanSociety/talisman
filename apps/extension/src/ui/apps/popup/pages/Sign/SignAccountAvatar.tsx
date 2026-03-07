@@ -1,4 +1,4 @@
-import type { Account } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { getAccountGenesisHash } from "@talismn/keyring"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"

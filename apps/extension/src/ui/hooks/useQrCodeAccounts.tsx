@@ -1,5 +1,5 @@
-import { isAccountOfType } from "@core"
-import { useAccounts } from "@ui/state"
+import { isAccountOfType } from "@core/domains/keyring/exports"
+import { useAccounts } from "@ui/state/accounts"
 import { useMemo } from "react"
 
 export const useQrCodeAccounts = () => {

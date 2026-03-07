@@ -1,4 +1,4 @@
-import { MIGRATION_ERROR_MSG } from "@core"
+import { MIGRATION_ERROR_MSG } from "@core/db"
 import { ProcessAnimation } from "@ui/talisman-ui/components/ProcessAnimation/ProcessAnimation"
 import { Component, type ErrorInfo, type ReactNode } from "react"
 

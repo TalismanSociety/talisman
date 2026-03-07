@@ -2,9 +2,9 @@ import { log } from "@common/extension-shared"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
-  type RequestAddAccountDerive,
   SUPPORTED_ACCOUNT_PLATFORMS,
-} from "@core"
+} from "@core/domains/accounts/helpers"
+import type { RequestAddAccountDerive } from "@core/types/domains"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -21,7 +21,8 @@ import {
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts, useMnemonics } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useMnemonics } from "@ui/state/mnemonics"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"

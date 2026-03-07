@@ -1,5 +1,5 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useTokens } from "@ui/state"
+import { useTokens } from "@ui/state/chaindata"
 import { Suspense, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
 

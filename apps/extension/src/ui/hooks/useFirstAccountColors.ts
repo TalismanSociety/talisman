@@ -1,4 +1,4 @@
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 
 import { useAccountColors } from "./useAccountColors"
 

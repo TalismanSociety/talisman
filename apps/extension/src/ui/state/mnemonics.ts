@@ -1,4 +1,4 @@
-import type { Mnemonic } from "@core"
+import type { Mnemonic } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { map, Observable, shareReplay } from "rxjs"

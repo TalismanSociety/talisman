@@ -1,4 +1,4 @@
-import type { NftData } from "@core"
+import type { NftData } from "@core/domains/nfts/exports"
 import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"

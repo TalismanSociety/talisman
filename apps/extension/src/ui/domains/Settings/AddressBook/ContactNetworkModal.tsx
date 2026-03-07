@@ -4,7 +4,7 @@ import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkOptionsModal } from "@ui/domains/Portfolio/NetworkOptionsModal"
-import type { NetworkOption } from "@ui/state"
+import type { NetworkOption } from "@ui/state/portfolio"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

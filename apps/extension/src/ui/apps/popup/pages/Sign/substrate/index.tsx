@@ -1,7 +1,8 @@
-import { isJsonPayload, type KnownSigningRequestIdOnly } from "@core"
+import type { KnownSigningRequestIdOnly } from "@core/types/domains"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PolkadotSigningRequestProvider } from "@ui/domains/Sign/SignRequestContext"
-import { useRequest } from "@ui/state"
+import { useRequest } from "@ui/state/requests"
 import { Suspense, useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 

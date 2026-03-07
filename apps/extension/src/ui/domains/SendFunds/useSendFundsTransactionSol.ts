@@ -1,10 +1,12 @@
-import { isAccountOwned } from "@core"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import { type Connection, PublicKey, Transaction } from "@solana/web3.js"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { isTokenSol, type Token } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
-import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalance } from "@ui/state/balances"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import {
   getFrontEndSolanaConnector,
   useSolanaConnection,

@@ -1,4 +1,5 @@
-import { type FeatureFlag, remoteConfigStore } from "@core"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import type { FeatureFlag } from "@core/types/domains"
 import { bind } from "@react-rxjs/core"
 import { distinctUntilChanged, map } from "rxjs"
 

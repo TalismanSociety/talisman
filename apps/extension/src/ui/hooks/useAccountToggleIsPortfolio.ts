@@ -1,4 +1,5 @@
-import { type Account, isAccountPortfolio } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
+import { isAccountPortfolio } from "@core/domains/keyring/exports"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"

@@ -1,4 +1,4 @@
-import { getAccountGenesisHash } from "@core"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ChevronDownIcon, GlobeIcon } from "@talismn/icons"

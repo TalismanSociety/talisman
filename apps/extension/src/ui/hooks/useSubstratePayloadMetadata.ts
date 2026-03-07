@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { SignerPayloadJSON } from "@core"
+import type { SignerPayloadJSON } from "@core/types/domains"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { type DotNetwork, isNetworkDot, type Token } from "@talismn/chaindata-provider"
@@ -7,7 +7,7 @@ import { getScaleApi } from "@talismn/sapi"
 import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useNetworkByGenesisHash, useToken } from "@ui/state"
+import { useNetworkByGenesisHash, useToken } from "@ui/state/chaindata"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 
 export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {

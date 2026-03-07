@@ -1,4 +1,4 @@
-import type { TokenDto } from "@core"
+import type { TokenDto } from "@core/domains/earn/exports"
 import { GenericTokensAndFiat } from "@ui/domains/Asset/GenericTokensAndFiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { type FC, useMemo } from "react"

@@ -1,4 +1,4 @@
-import { isNetworkActive } from "@core"
+import { isNetworkActive } from "@core/domains/balances/store.activeNetworks"
 import {
   Combobox,
   ComboboxButton,
@@ -11,7 +11,12 @@ import type { AccountPlatform } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
+import {
+  useActiveNetworksState,
+  useNetworks,
+  useNetworksMapById,
+  useTokensMap,
+} from "@ui/state/chaindata"
 import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
 import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"

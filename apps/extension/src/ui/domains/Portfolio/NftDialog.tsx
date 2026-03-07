@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { Nft, NftCollection } from "@core"
+import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
@@ -9,7 +9,8 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nfts"
 import {
   ContextMenu,
   ContextMenuContent,

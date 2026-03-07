@@ -1,6 +1,7 @@
-import type { RemoteConfigStoreData } from "@core"
+import type { RemoteConfigStoreData } from "@core/types/domains"
 import type { Token } from "@talismn/chaindata-provider"
-import { useRemoteConfig, useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
 
 import type { RampsMode } from "../shared/types"

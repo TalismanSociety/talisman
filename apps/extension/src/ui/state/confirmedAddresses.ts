@@ -1,4 +1,4 @@
-import type { ConfirmedExternalAddresses } from "@core"
+import type { ConfirmedExternalAddresses } from "@core/types/domains"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { Observable, shareReplay } from "rxjs"

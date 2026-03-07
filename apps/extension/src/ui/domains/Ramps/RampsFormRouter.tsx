@@ -1,6 +1,6 @@
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { XIcon } from "@talismn/icons"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"

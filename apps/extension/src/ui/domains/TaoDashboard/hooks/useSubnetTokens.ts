@@ -1,5 +1,5 @@
 import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 

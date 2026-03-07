@@ -1,4 +1,4 @@
-import type { YieldDto } from "@core"
+import type { YieldDto } from "@core/domains/earn/exports"
 import { InfoIcon } from "@talismn/icons"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"

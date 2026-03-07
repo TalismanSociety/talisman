@@ -1,5 +1,5 @@
-import type { Account } from "@core"
-import { useAccountByAddress } from "@ui/state"
+import type { Account } from "@core/domains/keyring/exports"
+import { useAccountByAddress } from "@ui/state/accounts"
 
 type KnownAddress = {
   type: "account" | "contact"

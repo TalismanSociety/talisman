@@ -1,4 +1,4 @@
-import type { AccountsCatalogTree } from "@core"
+import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { bind } from "@react-rxjs/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"

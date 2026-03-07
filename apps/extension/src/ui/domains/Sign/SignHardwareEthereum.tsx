@@ -1,4 +1,5 @@
-import type { Account, AccountOfType, EthSignMessageMethod } from "@core"
+import type { Account, AccountOfType } from "@core/domains/keyring/exports"
+import type { EthSignMessageMethod } from "@core/types/domains"
 import type { HexString } from "@polkadot/util/types"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { EthNetworkId } from "@talismn/chaindata-provider"

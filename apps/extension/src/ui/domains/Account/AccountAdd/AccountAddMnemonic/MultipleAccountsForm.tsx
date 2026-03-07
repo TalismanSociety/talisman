@@ -1,4 +1,4 @@
-import type { AddAccountDeriveOptions } from "@core"
+import type { AddAccountDeriveOptions } from "@core/domains/keyring/exports"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"

@@ -1,6 +1,6 @@
 import { cn } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { useYieldxyzProvider } from "@ui/state"
+import { useYieldxyzProvider } from "@ui/state/yieldxyz"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { FC } from "react"
 

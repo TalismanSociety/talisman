@@ -1,4 +1,5 @@
-import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { type Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
@@ -13,12 +14,10 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import {
-  useBalances,
-  useNetworkByGenesisHash,
-  usePortfolioBalances,
-  useSelectedCurrency,
-} from "@ui/state"
+import { useBalances } from "@ui/state/balances"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { usePortfolioBalances } from "@ui/state/portfolio"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { ContextMenuTrigger } from "@ui/talisman-ui/components/ContextMenu"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"

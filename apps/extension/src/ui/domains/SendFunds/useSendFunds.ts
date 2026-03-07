@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { WalletTransactionInfo } from "@core"
+import type { WalletTransactionInfo } from "@core/types/domains"
 import { provideContext } from "@talisman/util/provideContext"
 import {
   type Address,
@@ -17,17 +17,10 @@ import { formatDecimals, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import {
-  useAccountByAddress,
-  useBalance,
-  useBalancesByAddress,
-  useBalancesHydrate,
-  useNetworkById,
-  useToken,
-  useTokenRates,
-  useTokenRatesMap,
-  useTokensMap,
-} from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
+import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
+import { useTokenRates, useTokenRatesMap } from "@ui/state/tokenRates"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

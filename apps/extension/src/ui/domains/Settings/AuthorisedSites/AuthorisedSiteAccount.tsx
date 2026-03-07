@@ -1,8 +1,8 @@
-import { getAccountGenesisHash } from "@core"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { type ChangeEventHandler, type FC, useCallback } from "react"
 

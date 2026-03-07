@@ -1,4 +1,4 @@
-import type { ActionDto } from "@core"
+import type { ActionDto } from "@core/domains/earn/exports"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"

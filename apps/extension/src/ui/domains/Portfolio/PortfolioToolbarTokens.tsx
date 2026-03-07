@@ -2,16 +2,16 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import type { NetworkOption } from "@ui/state/portfolio"
 import {
-  type NetworkOption,
   setPortfolioNetworkFilter,
   setPortfolioSearch,
   useAllNetworkOptions,
   usePortfolioBalances,
   usePortfolioNetworkFilter,
   usePortfolioSearch,
-  useSetting,
-} from "@ui/state"
+} from "@ui/state/portfolio"
+import { useSetting } from "@ui/state/settings"
 import {
   ContextMenu,
   ContextMenuContent,

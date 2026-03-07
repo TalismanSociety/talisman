@@ -15,7 +15,7 @@ import {
 import { useField, useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"

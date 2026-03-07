@@ -1,11 +1,11 @@
-import { isAccountAddressEthereum, isAccountAddressSs58 } from "@core"
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { usePortfolioGlobalData } from "@ui/state"
+import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { Button } from "@ui/talisman-ui/components/Button"
 import {
   type FC,

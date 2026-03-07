@@ -1,7 +1,7 @@
 import { log } from "@common/extension-shared"
 import type { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
 import { groupBy } from "lodash-es"
 import { useMemo } from "react"
 

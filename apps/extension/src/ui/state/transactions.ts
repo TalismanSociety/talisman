@@ -1,4 +1,4 @@
-import { db } from "@core"
+import { db } from "@core/db"
 import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
 import { from, map } from "rxjs"

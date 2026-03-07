@@ -2,7 +2,7 @@ import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@common/extension-shared"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, Suspense, useId } from "react"
 
 type NetworkLogoBaseProps = {

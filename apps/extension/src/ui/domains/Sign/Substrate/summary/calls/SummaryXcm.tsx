@@ -1,6 +1,6 @@
 import type { PolkadotAssetHubCalls, PolkadotCalls } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { useNetworkById, useNetworks, useTokensMap } from "@ui/state"
+import { useNetworkById, useNetworks, useTokensMap } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"

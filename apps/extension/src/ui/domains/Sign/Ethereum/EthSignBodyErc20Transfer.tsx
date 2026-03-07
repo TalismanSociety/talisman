@@ -1,8 +1,10 @@
-import type { EvmAddress } from "@core"
+import type { EvmAddress } from "@core/types/domains"
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

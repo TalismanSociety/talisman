@@ -1,13 +1,15 @@
 import { log } from "@common/extension-shared"
+import type {
+  Networks,
+  TokenDto,
+  YieldDto,
+  YieldxyzPosition,
+  YieldxyzProvider,
+} from "@core/domains/earn/exports"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
-  type Networks,
-  type TokenDto,
-  type YieldDto,
-  type YieldxyzPosition,
-  type YieldxyzProvider,
-} from "@core"
+} from "@core/domains/earn/exports"
 import { bind } from "@react-rxjs/core"
 import {
   evmErc20TokenId,

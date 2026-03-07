@@ -1,4 +1,4 @@
-import { appStore } from "@core"
+import { appStore } from "@core/domains/app/store.app"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"

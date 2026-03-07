@@ -1,4 +1,4 @@
-import type { DefiPositionItemType } from "@core"
+import type { DefiPositionItemType } from "@core/domains/defi/exports"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

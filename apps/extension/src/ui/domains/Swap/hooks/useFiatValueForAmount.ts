@@ -1,4 +1,6 @@
-import { useSelectedCurrency, useTokenRatesMap, useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"

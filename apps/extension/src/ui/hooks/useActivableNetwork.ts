@@ -1,6 +1,6 @@
-import { activeNetworksStore, isNetworkActive } from "@core"
+import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
 import type { Network } from "@talismn/chaindata-provider"
-import { useActiveNetworksState } from "@ui/state"
+import { useActiveNetworksState } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"
 
 export const useActivableNetwork = (network: Network | undefined) => {

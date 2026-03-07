@@ -1,4 +1,5 @@
-import { type Account, isAccountAddressEthereum } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
+import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { InfoIcon } from "@talismn/icons"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"

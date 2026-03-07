@@ -18,7 +18,9 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
+import { useContacts } from "@ui/state/addressBook"
+import { useBalances } from "@ui/state/balances"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import {
   ContextMenu,

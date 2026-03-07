@@ -16,7 +16,7 @@ import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDis
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useFeatureFlag } from "@ui/state"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {

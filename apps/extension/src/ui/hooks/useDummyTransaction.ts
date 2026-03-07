@@ -2,7 +2,7 @@ import type { SendFundsTransactionProps } from "@ui/domains/SendFunds/types"
 import { useSendFundsTransactionDot } from "@ui/domains/SendFunds/useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "@ui/domains/SendFunds/useSendFundsTransactionEth"
 import { useSendFundsTransactionSol } from "@ui/domains/SendFunds/useSendFundsTransactionSol"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 type UseDummyTransactionProps = {

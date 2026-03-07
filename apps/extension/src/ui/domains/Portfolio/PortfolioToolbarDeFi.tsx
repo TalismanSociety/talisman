@@ -2,19 +2,21 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { FilterIcon, GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import type { ProtocolOption } from "@ui/state/defi"
 import {
-  type NetworkOption,
-  type ProtocolOption,
   setDefiProtocolFilter,
-  setPortfolioNetworkFilter,
-  setPortfolioSearch,
-  useAllNetworkOptions,
   useDefiPositions,
   useDefiProtocolFilterOption,
   useDefiProtocolFilterOptions,
+} from "@ui/state/defi"
+import type { NetworkOption } from "@ui/state/portfolio"
+import {
+  setPortfolioNetworkFilter,
+  setPortfolioSearch,
+  useAllNetworkOptions,
   usePortfolioNetworkFilter,
   usePortfolioSearch,
-} from "@ui/state"
+} from "@ui/state/portfolio"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"

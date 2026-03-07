@@ -1,8 +1,8 @@
-import type { Account } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { useMemo } from "react"
 
 type Props = { addresses?: string[]; className?: string; max?: number }

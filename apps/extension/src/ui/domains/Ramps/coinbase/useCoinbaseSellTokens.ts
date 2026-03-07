@@ -1,6 +1,6 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 import { getTokenFromCoinbaseAsset } from "../shared/helpers"

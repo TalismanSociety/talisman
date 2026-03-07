@@ -1,10 +1,7 @@
 import { bind } from "@react-rxjs/core"
-import {
-  accountsCatalog$,
-  balanceTotals$,
-  getAccountsByCategory$,
-  getSettingValue$,
-} from "@ui/state"
+import { accountsCatalog$, getAccountsByCategory$ } from "@ui/state/accounts"
+import { balanceTotals$ } from "@ui/state/balanceTotals"
+import { getSettingValue$ } from "@ui/state/settings"
 import { combineLatest, map } from "rxjs"
 
 export const [usePortfolioAccounts, portfolioAccounts$] = bind(

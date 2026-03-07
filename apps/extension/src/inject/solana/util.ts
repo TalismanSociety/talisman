@@ -1,4 +1,4 @@
-import type { SolSerializedWalletAccount } from "@core"
+import type { SolSerializedWalletAccount } from "@core/domains/solana/exports"
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import bs58 from "bs58"
 

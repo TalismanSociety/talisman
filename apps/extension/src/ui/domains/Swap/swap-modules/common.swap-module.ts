@@ -1,13 +1,13 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import {
-  type Account,
   isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
   isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-  type SignerPayloadJSON,
-} from "@core"
+} from "@core/domains/accounts/helpers"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import type { Account } from "@core/domains/keyring/exports"
+import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
+import type { SignerPayloadJSON } from "@core/types/domains"
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import {
   evmErc20TokenId,

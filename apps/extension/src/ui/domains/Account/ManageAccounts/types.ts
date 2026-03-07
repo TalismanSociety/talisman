@@ -1,4 +1,4 @@
-import type { TreeAccount, TreeFolder } from "@core"
+import type { TreeAccount, TreeFolder } from "@core/domains/accounts/helpers.catalog"
 
 export type UiTree = UiTreeItem[]
 export type UiTreeItem = UiTreeAccount | UiTreeFolder

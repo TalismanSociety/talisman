@@ -1,16 +1,14 @@
-import {
-  type Account,
-  getAccountGenesisHash,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-} from "@core"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useAccounts, useNetworkByGenesisHash } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {

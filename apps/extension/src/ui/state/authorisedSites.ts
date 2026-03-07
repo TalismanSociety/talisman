@@ -1,4 +1,4 @@
-import type { AuthorizedSites } from "@core"
+import type { AuthorizedSites } from "@core/types/domains"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { Observable } from "rxjs"

@@ -1,6 +1,6 @@
-import type { EvmAddress } from "@core"
+import type { EvmAddress } from "@core/types/domains"
 import { type EthNetworkId, isTokenEvmErc20 } from "@talismn/chaindata-provider"
-import { useTokens } from "@ui/state"
+import { useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 export const useErc20Token = (

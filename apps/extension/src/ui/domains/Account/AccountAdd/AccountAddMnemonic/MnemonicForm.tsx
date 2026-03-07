@@ -2,9 +2,9 @@ import { DEBUG } from "@common/extension-shared"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
-  getEthDerivationPath,
   SUPPORTED_ACCOUNT_PLATFORMS,
-} from "@core"
+} from "@core/domains/accounts/helpers"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -14,7 +14,7 @@ import { classNames, isTruthy } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"

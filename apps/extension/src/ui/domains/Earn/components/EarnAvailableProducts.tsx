@@ -1,4 +1,4 @@
-import type { YieldDto } from "@core"
+import type { YieldDto } from "@core/domains/earn/exports"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -10,13 +10,8 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import {
-  useNetworkById,
-  useNetworksMapById,
-  useToken,
-  useTokensMap,
-  useYieldxyzProviders,
-} from "@ui/state"
+import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state/chaindata"
+import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"

@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { SignerPayloadJSON } from "@core"
+import type { SignerPayloadJSON } from "@core/types/domains"
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 import { encodeAddressSs58 } from "@talismn/crypto"

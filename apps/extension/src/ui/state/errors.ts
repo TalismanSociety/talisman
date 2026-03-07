@@ -1,4 +1,5 @@
-import { type ErrorsStoreData, errorsStore } from "@core"
+import type { ErrorsStoreData } from "@core/domains/app/store.errors"
+import { errorsStore } from "@core/domains/app/store.errors"
 import { bind } from "@react-rxjs/core"
 import { map, shareReplay } from "rxjs"
 

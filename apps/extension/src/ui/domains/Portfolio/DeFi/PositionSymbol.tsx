@@ -1,4 +1,4 @@
-import type { DefiPosition } from "@core"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { uniq } from "lodash-es"
 import { type FC, useMemo } from "react"
 

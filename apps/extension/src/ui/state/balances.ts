@@ -1,5 +1,6 @@
 import { log } from "@common/extension-shared"
-import { type BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "@core"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { BalanceSubscriptionResponse } from "@core/types/domains"
 import { bind } from "@react-rxjs/core"
 import { type Address, Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"

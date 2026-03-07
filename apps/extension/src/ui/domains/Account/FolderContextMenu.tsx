@@ -1,7 +1,11 @@
-import type { AccountsCatalogTree, TreeFolder, TreeItem } from "@core"
+import type {
+  AccountsCatalogTree,
+  TreeFolder,
+  TreeItem,
+} from "@core/domains/accounts/helpers.catalog"
 import type { Placement } from "@floating-ui/react"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { useAccountsCatalog } from "@ui/state"
+import { useAccountsCatalog } from "@ui/state/accounts"
 import {
   ContextMenu,
   ContextMenuContent,

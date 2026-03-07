@@ -1,5 +1,5 @@
 import type { Balances } from "@talismn/balances"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { fromPairs, uniq } from "lodash-es"
 import { useMemo } from "react"
 

@@ -4,7 +4,7 @@ import { StarIcon } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
 import { useTranslation } from "react-i18next"
 
 const Content = () => {

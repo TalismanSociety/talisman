@@ -1,11 +1,11 @@
+import type { Trees } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountNotContact,
   isAccountOfType,
   isAccountOwned,
   isAccountPortfolio,
-  type Trees,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { normalizeAddress } from "@talismn/crypto"
 import { api } from "@ui/api"

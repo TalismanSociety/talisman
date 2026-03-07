@@ -10,14 +10,14 @@ import type {
   MessageTypesWithNullRequest,
   MessageTypesWithSubscriptions,
   OriginTypes,
-  Port,
   RequestTypes,
   ResponseTypes,
   SubscriptionMessageTypes,
   TransportRequestMessage,
   TransportResponseMessage,
   UnsubscribeFn,
-} from "@core"
+} from "@core/types"
+import type { Port } from "@core/types/base"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,

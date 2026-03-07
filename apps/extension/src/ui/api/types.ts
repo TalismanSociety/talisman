@@ -1,5 +1,23 @@
+import type { RequestAccountsCatalogAction, Trees } from "@core/domains/accounts/helpers.catalog"
+import type { BittensorValidator } from "@core/domains/bittensor/exports"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import type {
-  Account,
+  YieldDto,
+  YieldxyzPosition,
+  YieldxyzPositionRefreshRequest,
+  YieldxyzProvider,
+} from "@core/domains/earn/exports"
+import type { Account, Mnemonic } from "@core/domains/keyring/exports"
+import type { NftData } from "@core/domains/nfts/exports"
+import type {
+  RequestSolanaSignApprove,
+  ResponseSolanaSubmit,
+  SolRpcRequest,
+  SolRpcResponse,
+} from "@core/domains/solana/exports"
+import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
+import type { UnsubscribeFn } from "@core/types"
+import type {
   AddEthereumChainRequestId,
   AddressesAndTokens,
   AnalyticsCaptureRequest,
@@ -12,21 +30,15 @@ import type {
   AuthRequestId,
   AuthSolanaSignInApprove,
   BalanceSubscriptionResponse,
-  BittensorValidator,
   ChangePasswordStatusUpdate,
   ConfirmedExternalAddresses,
   DecryptRequestId,
-  DefiPosition,
   EncryptRequestId,
   EvmAddress,
-  KnownRequestId,
   LoggedinType,
   MetadataUpdateStatus,
-  Mnemonic,
-  NftData,
   ProviderType,
   RequestAccountContactUpdate,
-  RequestAccountsCatalogAction,
   RequestAddAccountDerive,
   RequestAddAccountExternal,
   RequestAddAccountKeypair,
@@ -35,24 +47,13 @@ import type {
   RequestMetadataId,
   RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
-  RequestSolanaSignApprove,
-  ResponseSolanaSubmit,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
-  SolRpcRequest,
-  SolRpcResponse,
-  Trees,
-  UnsubscribeFn,
-  ValidRequests,
   WalletTransactionInfo,
   WatchAssetRequestId,
-  YieldDto,
-  YieldxyzPosition,
-  YieldxyzPositionRefreshRequest,
-  YieldxyzProvider,
-} from "@core"
+} from "@core/types/domains"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"

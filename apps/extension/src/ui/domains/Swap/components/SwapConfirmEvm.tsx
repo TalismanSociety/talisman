@@ -1,17 +1,14 @@
-import {
-  activeNetworksStore,
-  activeTokensStore,
-  type EthPriorityOptionName,
-  serializeTransactionRequest,
-  type WalletTransactionInfo,
-} from "@core"
+import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
+import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
+import type { EthPriorityOptionName, WalletTransactionInfo } from "@core/types/domains"
 import { notify } from "@talisman/components/Notifications"
 import { LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
-import { useNetworkById, useToken } from "@ui/state"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"

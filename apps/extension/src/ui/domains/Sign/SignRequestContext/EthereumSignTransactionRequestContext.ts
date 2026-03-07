@@ -1,9 +1,9 @@
 import { log } from "@common/extension-shared"
 import {
-  type KnownSigningRequestIdOnly,
   parseRpcTransactionRequestBase,
   serializeTransactionRequest,
-} from "@core"
+} from "@core/domains/ethereum/helpers"
+import type { KnownSigningRequestIdOnly } from "@core/types/domains"
 import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -12,7 +12,9 @@ import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/et
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
-import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
+import { useBalancesHydrate } from "@ui/state/balances"
+import { useNetworkById } from "@ui/state/chaindata"
+import { useRequest } from "@ui/state/requests"
 import { useCallback, useMemo, useRef, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"

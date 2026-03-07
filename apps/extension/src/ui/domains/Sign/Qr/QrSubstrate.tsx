@@ -1,17 +1,15 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared"
-import {
-  type AccountPolkadotVault,
-  isJsonPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-} from "@core"
+import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/domains"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useNetworkByGenesisHash, useSetting } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { useSetting } from "@ui/state/settings"
 import { Button, type ButtonProps } from "@ui/talisman-ui/components/Button"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"

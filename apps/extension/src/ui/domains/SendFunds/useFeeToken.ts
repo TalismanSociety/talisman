@@ -1,4 +1,4 @@
-import { useNetworkById, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 
 export const useFeeToken = (tokenId?: string | null) => {
   const token = useToken(tokenId)

@@ -1,4 +1,5 @@
-import type { Account, AccountsCatalogTree } from "@core"
+import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { MoreHorizontalIcon } from "@talismn/icons"

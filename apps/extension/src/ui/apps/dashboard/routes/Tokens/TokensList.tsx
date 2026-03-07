@@ -1,4 +1,4 @@
-import { activeTokensStore, isTokenActive } from "@core"
+import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
 import {
   isTokenCustom,
   isTokenEvmUniswapV2,
@@ -14,7 +14,12 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
-import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
+import {
+  useActiveTokensState,
+  useAnyNetwork,
+  useNetworksMapById,
+  useTokens,
+} from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

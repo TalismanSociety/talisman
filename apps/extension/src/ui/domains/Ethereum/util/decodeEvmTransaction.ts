@@ -5,8 +5,8 @@ import {
   abiMoonConvictionVoting,
   abiMoonStaking,
   abiMoonXTokens,
-  isContractAddress,
-} from "@core"
+} from "@core/util/abi"
+import { isContractAddress } from "@core/util/isContractAddress"
 import {
   decodeFunctionData,
   getAbiItem,

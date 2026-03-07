@@ -1,4 +1,4 @@
-import { useMnemonics } from "@ui/state"
+import { useMnemonics } from "@ui/state/mnemonics"
 import { useMemo } from "react"
 
 export const useMnemonicsAllBackedUp = () => {

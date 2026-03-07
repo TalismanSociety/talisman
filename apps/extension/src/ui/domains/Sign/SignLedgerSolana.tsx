@@ -1,5 +1,5 @@
 import { log } from "@common/extension-shared"
-import type { AccountOfType } from "@core"
+import type { AccountOfType } from "@core/domains/keyring/exports"
 import { PublicKey, type Transaction, type VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction } from "@talismn/solana"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"

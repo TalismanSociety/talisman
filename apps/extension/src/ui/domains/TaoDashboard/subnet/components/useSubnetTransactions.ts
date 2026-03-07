@@ -1,7 +1,8 @@
-import type { WalletTransactionDot, WalletTransactionInfo } from "@core"
+import type { WalletTransactionDot, WalletTransactionInfo } from "@core/types/domains"
 import { parseTokenId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { useAccounts, useTransactions } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useTransactions } from "@ui/state/transactions"
 import { useEffect, useMemo, useRef } from "react"
 
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"

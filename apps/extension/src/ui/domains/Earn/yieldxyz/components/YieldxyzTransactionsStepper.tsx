@@ -1,4 +1,4 @@
-import type { TransactionDto } from "@core"
+import type { TransactionDto } from "@core/domains/earn/exports"
 import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import type { FC } from "react"

@@ -1,25 +1,22 @@
 import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
-import {
-  getNetworks$,
-  getTokensMap$,
-  tokenRatesMap$,
-  useAccounts,
-  useNetworkById,
-  useTokensMap,
-} from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { getNetworks$, getTokensMap$, useNetworkById, useTokensMap } from "@ui/state/chaindata"
 import { t$ } from "@ui/state/i18n"
+import { tokenRatesMap$ } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
 import type { TFunction } from "i18next"
 import type { PrimitiveAtom } from "jotai"

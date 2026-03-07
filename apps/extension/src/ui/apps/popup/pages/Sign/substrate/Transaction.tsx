@@ -1,4 +1,4 @@
-import { isJsonPayload } from "@core"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { hexToNumber } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { validateHexString } from "@talismn/util"

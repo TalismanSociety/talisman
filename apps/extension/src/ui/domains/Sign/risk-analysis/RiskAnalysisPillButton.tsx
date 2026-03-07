@@ -6,7 +6,7 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { useFeatureFlag } from "@ui/state"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useMemo } from "react"

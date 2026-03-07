@@ -1,4 +1,4 @@
-import type { LedgerPolkadotCurve } from "@core"
+import type { LedgerPolkadotCurve } from "@core/domains/keyring/exports"
 import { normalizeAddress } from "@talismn/crypto"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"

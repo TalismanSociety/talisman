@@ -4,7 +4,7 @@ import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAc
 import { PopupDefiPosition } from "@ui/domains/Portfolio/DeFi/PopupDefiPosition"
 import { PositionTotal } from "@ui/domains/Portfolio/DeFi/PositionTotal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useDefiPosition } from "@ui/state"
+import { useDefiPosition } from "@ui/state/defi"
 import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { type FC, useEffect } from "react"
 import { useTranslation } from "react-i18next"

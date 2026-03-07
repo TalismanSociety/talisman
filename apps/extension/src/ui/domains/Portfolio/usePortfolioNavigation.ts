@@ -1,4 +1,10 @@
-import type { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "@core"
+import type {
+  Tree,
+  TreeAccount,
+  TreeFolder,
+  TreeItem,
+} from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
 import { provideContext } from "@talisman/util/provideContext"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"

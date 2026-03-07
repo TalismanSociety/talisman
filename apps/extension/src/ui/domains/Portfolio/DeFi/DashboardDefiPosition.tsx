@@ -1,11 +1,11 @@
-import type { DefiPosition, DefiPositionItem } from "@core"
+import type { DefiPosition, DefiPositionItem } from "@core/domains/defi/exports"
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useDefiPosition } from "@ui/state"
+import { useDefiPosition } from "@ui/state/defi"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

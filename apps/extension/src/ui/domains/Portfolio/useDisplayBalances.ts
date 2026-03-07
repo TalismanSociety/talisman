@@ -1,10 +1,10 @@
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { type Balance, Balances } from "@talismn/balances"
 import {
@@ -15,13 +15,12 @@ import {
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
+import { getNetworksMapById$, useNetworksMapById } from "@ui/state/chaindata"
 import {
-  getNetworksMapById$,
   portfolioBalances$,
   portfolioSelectedAccounts$,
-  useNetworksMapById,
   usePortfolioSelectedAccounts,
-} from "@ui/state"
+} from "@ui/state/portfolio"
 import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 

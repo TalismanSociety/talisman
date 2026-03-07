@@ -1,9 +1,11 @@
 import { log } from "@common/extension-shared"
-import { remoteConfigStore, settingsStore } from "@core"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { bind } from "@react-rxjs/core"
 import type { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, TokenRatesError, type TokenRatesList } from "@talismn/token-rates"
-import { assetDiscoveryScanProgress$, getTokens$ } from "@ui/state"
+import { assetDiscoveryScanProgress$ } from "@ui/state/assetDiscovery"
+import { getTokens$ } from "@ui/state/chaindata"
 import { type SetStateAction, useEffect, useState } from "react"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
 

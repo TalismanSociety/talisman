@@ -10,7 +10,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
-import { getToken$ } from "@ui/state"
+import { getToken$ } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

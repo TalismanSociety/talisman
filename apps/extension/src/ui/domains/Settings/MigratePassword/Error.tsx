@@ -1,5 +1,5 @@
 import { DISCORD_TALISMAN_URL } from "@common/extension-shared"
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"

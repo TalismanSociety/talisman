@@ -1,9 +1,11 @@
-import type { WalletTransaction } from "@core"
+import type { WalletTransaction } from "@core/types/domains"
 import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import type { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { useAccountByAddress, useAccounts, useNetworks, useTransactions } from "@ui/state"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
+import { useNetworks } from "@ui/state/chaindata"
+import { useTransactions } from "@ui/state/transactions"
 import uniq from "lodash-es/uniq"
 import { useCallback, useMemo, useState } from "react"
 

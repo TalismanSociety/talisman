@@ -3,7 +3,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useNetworkByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 
 type AddressProps = {

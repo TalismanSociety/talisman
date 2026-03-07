@@ -2,7 +2,7 @@ import type { AccountSummary, TransactionSimulation } from "@blockaid/client/res
 import { log } from "@common/extension-shared"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import { isEqual } from "lodash-es"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"

@@ -1,4 +1,4 @@
-import type { PostHogCaptureProperties } from "@core"
+import type { PostHogCaptureProperties } from "@core/types/domains"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 

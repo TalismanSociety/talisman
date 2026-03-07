@@ -1,10 +1,10 @@
-import {
-  type EthTransactionDetails,
-  isAccountOfType,
-  serializeTransactionRequest,
-  type WalletTransaction,
-  type WalletTransactionEth,
-} from "@core"
+import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
+import { isAccountOfType } from "@core/domains/keyring/exports"
+import type {
+  EthTransactionDetails,
+  WalletTransaction,
+  WalletTransactionEth,
+} from "@core/types/domains"
 import type { HexString } from "@polkadot/util/types"
 import { notify } from "@talisman/components/Notifications"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -14,7 +14,9 @@ import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
-import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalance } from "@ui/state/balances"
+import { useNetworkById } from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import { Modal } from "@ui/talisman-ui/components/Modal"

@@ -7,7 +7,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

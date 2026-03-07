@@ -1,5 +1,5 @@
 import { IS_FIREFOX } from "@common/extension-shared"
-import { isAccountPlatformCompatibleWithNetwork } from "@core"
+import { isAccountPlatformCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import {
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
@@ -11,7 +11,7 @@ import { classNames } from "@talismn/util"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworks } from "@ui/state"
+import { useNetworks } from "@ui/state/chaindata"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import {

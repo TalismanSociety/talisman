@@ -1,6 +1,7 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
+import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, Suspense, useMemo } from "react"
 
 import { AssetLogo } from "./AssetLogo"

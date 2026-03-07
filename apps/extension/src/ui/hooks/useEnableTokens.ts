@@ -1,7 +1,8 @@
 import { log } from "@common/extension-shared"
-import { type ActiveTokens, activeTokensStore, isTokenActive } from "@core"
+import type { ActiveTokens } from "@core/domains/balances/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { useActiveTokensState, useTokensMap } from "@ui/state"
+import { useActiveTokensState, useTokensMap } from "@ui/state/chaindata"
 import { useCallback } from "react"
 
 export const useEnableTokens = () => {

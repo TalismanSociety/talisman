@@ -1,10 +1,8 @@
 import { log } from "@common/extension-shared"
-import {
-  type Account,
-  type Address,
-  getAccountGenesisHash,
-  isAccountCompatibleWithNetwork,
-} from "@core"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
+import type { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { provideContext } from "@talisman/util/provideContext"
 import {
@@ -17,14 +15,13 @@ import {
   type Token,
 } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, isAddressEqual, isSs58Address, normalizeAddress } from "@talismn/crypto"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import {
-  useAccountByAddress,
-  useAccounts,
   useNetworkByGenesisHash,
   useNetworkById,
   useNetworksMapById,
   useToken,
-} from "@ui/state"
+} from "@ui/state/chaindata"
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"

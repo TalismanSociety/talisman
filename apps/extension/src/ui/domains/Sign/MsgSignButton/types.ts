@@ -1,4 +1,4 @@
-import type { SignerPayloadRaw } from "@core"
+import type { SignerPayloadRaw } from "@core/types/domains"
 
 export type MsgSignButtonPayloadDot = {
   platform: "polkadot"

@@ -1,7 +1,7 @@
 import { DashboardNfts } from "@ui/domains/Portfolio/Nfts/DashboardNfts"
 import { NftsUnavailable } from "@ui/domains/Portfolio/Nfts/NftsUnavailable"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useFeatureFlag } from "@ui/state"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useEffect } from "react"
 
 export const PortfolioNfts = () => {

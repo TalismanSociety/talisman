@@ -1,5 +1,5 @@
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useCallback } from "react"
 
 import { ConnectLedgerBase } from "./ConnectLedgerBase"

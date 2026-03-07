@@ -1,4 +1,4 @@
-import type { YieldDto } from "@core"
+import type { YieldDto } from "@core/domains/earn/exports"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import type { TokenId } from "@talismn/chaindata-provider"

@@ -1,10 +1,11 @@
-import { isAccountCompatibleWithNetwork } from "@core"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

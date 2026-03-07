@@ -1,11 +1,10 @@
+import type { AccountsCatalogTree, TreeItem } from "@core/domains/accounts/helpers.catalog"
+import type { AccountType } from "@core/domains/keyring/exports"
 import {
-  type AccountsCatalogTree,
-  type AccountType,
   getAccountGenesisHash,
   getAccountSignetUrl,
   isAccountPortfolio,
-  type TreeItem,
-} from "@core"
+} from "@core/domains/keyring/exports"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

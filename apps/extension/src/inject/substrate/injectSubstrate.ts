@@ -1,4 +1,4 @@
-import type { ResponseType, SendRequest } from "@core"
+import type { ResponseType, SendRequest } from "@core/types"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"

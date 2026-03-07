@@ -1,4 +1,4 @@
-import { getSn45Api } from "@core"
+import { getSn45Api } from "@core/domains/bittensor/exports"
 import { useQuery } from "@tanstack/react-query"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { useMemo } from "react"

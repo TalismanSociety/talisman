@@ -1,4 +1,4 @@
-import type { WalletTransaction } from "@core"
+import type { WalletTransaction } from "@core/types/domains"
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { CopyToClipboardLinkButton } from "@talisman/components/CopyToClipboardLinkButton"
 import { type FC, useMemo } from "react"

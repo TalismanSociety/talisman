@@ -1,4 +1,4 @@
-import { isAccountOfType } from "@core"
+import { isAccountOfType } from "@core/domains/keyring/exports"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,

@@ -1,7 +1,8 @@
 import { log } from "@common/extension-shared"
 import type { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useRemoteConfig, useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { groupBy } from "lodash-es"
 import { useMemo } from "react"
 

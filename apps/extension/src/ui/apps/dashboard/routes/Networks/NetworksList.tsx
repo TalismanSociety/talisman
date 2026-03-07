@@ -1,4 +1,5 @@
-import { type ActiveNetworks, activeNetworksStore, isNetworkActive } from "@core"
+import type { ActiveNetworks } from "@core/domains/balances/store.activeNetworks"
+import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
@@ -8,13 +9,9 @@ import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
-import {
-  useActiveNetworksState,
-  useBalances,
-  useIsBalanceInitializing,
-  useNetworks,
-  useRemoteConfig,
-} from "@ui/state"
+import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
+import { useActiveNetworksState, useNetworks } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { ListButton } from "@ui/talisman-ui/components/ListButton"
 import { Modal } from "@ui/talisman-ui/components/Modal"

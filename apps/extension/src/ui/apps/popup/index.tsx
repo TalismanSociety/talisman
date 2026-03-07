@@ -7,7 +7,7 @@ import {
   METADATA_PREFIX,
   SIGNING_TYPES,
   WATCH_ASSET_PREFIX,
-} from "@core"
+} from "@core/types/domains"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"

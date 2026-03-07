@@ -1,4 +1,4 @@
-import type { EvmAddress } from "@core"
+import type { EvmAddress } from "@core/types/domains"
 import { isEthereumAddress } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import type { PublicClient } from "viem"

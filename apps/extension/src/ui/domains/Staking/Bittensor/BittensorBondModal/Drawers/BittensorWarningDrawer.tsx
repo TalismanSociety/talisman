@@ -1,5 +1,5 @@
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
-import { useAppState } from "@ui/state"
+import { useAppState } from "@ui/state/app"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"

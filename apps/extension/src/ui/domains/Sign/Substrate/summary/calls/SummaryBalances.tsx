@@ -1,8 +1,8 @@
-import type { Address } from "@core"
+import type { Address } from "@core/types/base"
 import type { HydrationCalls, PolkadotCalls } from "@polkadot-api/descriptors"
 import type { ScaleApi } from "@talismn/sapi"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { useNetworkById, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

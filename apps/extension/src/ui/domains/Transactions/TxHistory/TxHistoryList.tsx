@@ -3,12 +3,14 @@ import {
   isTxInfoApproval,
   isTxInfoSwap,
   isTxInfoTransfer,
-  type TransactionStatus,
-  type WalletTransaction,
-  type WalletTransactionDot,
-  type WalletTransactionEth,
-  type WalletTransactionSol,
-} from "@core"
+} from "@core/domains/transactions/exports"
+import type {
+  TransactionStatus,
+  WalletTransaction,
+  WalletTransactionDot,
+  WalletTransactionEth,
+  WalletTransactionSol,
+} from "@core/types/domains"
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
@@ -22,13 +24,9 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import {
-  useNetworkByGenesisHash,
-  useNetworkById,
-  useSelectedCurrency,
-  useToken,
-  useTokenRates,
-} from "@ui/state"
+import { useNetworkByGenesisHash, useNetworkById, useToken } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import {

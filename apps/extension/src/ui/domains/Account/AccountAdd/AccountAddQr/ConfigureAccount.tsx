@@ -1,4 +1,4 @@
-import { isTokenActive } from "@core"
+import { isTokenActive } from "@core/domains/balances/store.activeTokens"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
@@ -8,7 +8,12 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { useActiveTokensState, useNetworkByGenesisHash, useNetworks, useTokens } from "@ui/state"
+import {
+  useActiveTokensState,
+  useNetworkByGenesisHash,
+  useNetworks,
+  useTokens,
+} from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"

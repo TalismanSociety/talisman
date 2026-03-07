@@ -1,4 +1,5 @@
-import { type Account, getAccountGenesisHash } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
@@ -12,7 +13,8 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, useNetworkByGenesisHash } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

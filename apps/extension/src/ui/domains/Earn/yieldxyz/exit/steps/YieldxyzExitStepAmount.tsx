@@ -1,4 +1,4 @@
-import type { TimePeriodDto } from "@core"
+import type { TimePeriodDto } from "@core/domains/earn/exports"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"

@@ -1,4 +1,4 @@
-import type { Address } from "@core"
+import type { Address } from "@core/types/base"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import {
   type Balance,
@@ -11,7 +11,8 @@ import {
 import type { TokenId } from "@talismn/chaindata-provider"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"

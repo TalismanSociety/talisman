@@ -1,5 +1,6 @@
 import { log } from "@common/extension-shared"
-import type { Account, LegacyAccountOrigin } from "@core"
+import type { Account } from "@core/domains/keyring/exports"
+import type { LegacyAccountOrigin } from "@core/types/domains"
 import { createPair } from "@polkadot/keyring"
 import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
@@ -11,7 +12,8 @@ import { type Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useNetworks } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworks } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type JsonImportAccount = {

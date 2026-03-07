@@ -13,7 +13,8 @@ import {
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { accounts$, accountsCatalog$, balancesHydrate$ } from "@ui/state"
+import { accounts$, accountsCatalog$ } from "@ui/state/accounts"
+import { balancesHydrate$ } from "@ui/state/balances"
 import { useTranslation } from "react-i18next"
 import { combineLatest } from "rxjs"
 

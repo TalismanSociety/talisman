@@ -16,7 +16,7 @@ import type {
   TransportRequestMessage,
   TransportResponseMessage,
   UnsubscribeFn,
-} from "@core"
+} from "@core/types"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,

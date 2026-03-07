@@ -1,10 +1,10 @@
-import type { EvmAddress } from "@core"
+import type { EvmAddress } from "@core/types/domains"
 import { hexToU8a } from "@polkadot/util"
 import type { Address } from "@talismn/balances"
 import { encodeAddressSs58, encodeAnyAddress } from "@talismn/crypto"
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
-import { useNetworkById, useNetworks, useToken, useTokens } from "@ui/state"
+import { useNetworkById, useNetworks, useToken, useTokens } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -9,7 +9,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BondOption as BondOptionType } from "@ui/domains/Staking/hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import {
   ContextMenu,
   ContextMenuContent,

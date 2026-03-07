@@ -1,8 +1,8 @@
 import {
   isAccountCompatibleWithNetwork,
-  isAccountOwned,
   isAddressCompatibleWithNetwork,
-} from "@core"
+} from "@core/domains/accounts/helpers"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -23,7 +23,8 @@ import {
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import { useCallback, useMemo, useState } from "react"

@@ -1,14 +1,15 @@
 import { isTalismanUrl } from "@common/extension-shared"
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountInTypes,
   isAccountNotContact,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,
-  type ProviderType,
-} from "@core"
-import { useAccounts, useSettingValue } from "@ui/state"
+} from "@core/domains/keyring/exports"
+import type { ProviderType } from "@core/types/domains"
+import { useAccounts } from "@ui/state/accounts"
+import { useSettingValue } from "@ui/state/settings"
 import { useMemo } from "react"
 
 export const useInjectableAccounts = (siteUrl: string, provider: ProviderType) => {

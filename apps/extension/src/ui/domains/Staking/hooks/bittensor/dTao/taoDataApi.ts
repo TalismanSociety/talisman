@@ -1,4 +1,4 @@
-import { getTaoDataApi } from "@core"
+import { getTaoDataApi } from "@core/domains/bittensor/exports"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 
 export const taoDataApi = getTaoDataApi(gandalfFetch)
