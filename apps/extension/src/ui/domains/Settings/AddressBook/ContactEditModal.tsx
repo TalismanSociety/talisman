@@ -9,14 +9,12 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworks } from "@ui/state"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  IconButton,
-  Modal,
-  ModalDialog,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"
 import { keyBy } from "lodash-es"
 import { type FC, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"

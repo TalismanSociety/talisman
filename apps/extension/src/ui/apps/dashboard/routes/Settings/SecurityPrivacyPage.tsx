@@ -14,7 +14,9 @@ import {
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useFeatureFlag, useSetting } from "@ui/state"
-import { CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { CtaButton } from "@ui/talisman-ui/components/CtaButton"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 

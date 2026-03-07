@@ -9,7 +9,8 @@ import {
   useMnemonics,
   useSessionState,
 } from "@ui/state"
-import { Button, IconButton } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

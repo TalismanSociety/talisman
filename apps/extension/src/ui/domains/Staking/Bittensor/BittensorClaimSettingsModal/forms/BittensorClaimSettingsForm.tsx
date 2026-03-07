@@ -1,5 +1,6 @@
 import { classNames } from "@talismn/util"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"

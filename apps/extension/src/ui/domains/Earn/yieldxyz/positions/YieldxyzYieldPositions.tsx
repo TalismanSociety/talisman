@@ -17,14 +17,14 @@ import {
   useYieldxyzProduct,
   type YieldxyzPositionEnhanced,
 } from "@ui/state"
+import { Button } from "@ui/talisman-ui/components/Button"
 import {
-  Button,
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  IconButton,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"

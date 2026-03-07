@@ -1,5 +1,5 @@
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { format, formatDistanceToNowStrict, type Locale } from "date-fns"
 import type { TFunction } from "i18next"
 import { type FC, useEffect, useMemo, useState } from "react"

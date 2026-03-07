@@ -1,4 +1,5 @@
-import { Button, type ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Button, type ButtonProps } from "@ui/talisman-ui/components/Button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

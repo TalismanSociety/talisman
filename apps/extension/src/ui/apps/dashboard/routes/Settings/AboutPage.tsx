@@ -15,7 +15,7 @@ import {
   TalismanHandIcon,
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { CtaButton } from "@ui/talisman-ui"
+import { CtaButton } from "@ui/talisman-ui/components/CtaButton"
 import { Trans, useTranslation } from "react-i18next"
 
 const Content = () => {

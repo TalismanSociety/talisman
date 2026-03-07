@@ -15,7 +15,7 @@ import {
   usePortfolioNetworkFilter,
   usePortfolioSearch,
 } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"

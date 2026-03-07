@@ -9,7 +9,8 @@ import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common
 import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken, useTokenRates } from "@ui/state"
-import { Button, Drawer } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import {
   type FC,
   type PropsWithChildren,

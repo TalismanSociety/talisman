@@ -1,5 +1,5 @@
 import { MIGRATION_ERROR_MSG } from "@core"
-import { ProcessAnimation } from "@ui/talisman-ui"
+import { ProcessAnimation } from "@ui/talisman-ui/components/ProcessAnimation/ProcessAnimation"
 import { Component, type ErrorInfo, type ReactNode } from "react"
 
 const ErrorMessage = () => (

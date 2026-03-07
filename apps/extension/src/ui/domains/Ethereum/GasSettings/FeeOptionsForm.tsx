@@ -12,7 +12,7 @@ import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useNetworkById, useToken } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

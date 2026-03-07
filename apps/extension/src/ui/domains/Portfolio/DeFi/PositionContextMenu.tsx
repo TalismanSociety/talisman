@@ -8,7 +8,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

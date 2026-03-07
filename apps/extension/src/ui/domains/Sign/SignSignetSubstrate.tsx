@@ -1,7 +1,7 @@
 import type { AccountSignet, SignerPayloadRaw } from "@core"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

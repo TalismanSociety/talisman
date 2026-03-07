@@ -6,7 +6,7 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { useMnemonics } from "@ui/state"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

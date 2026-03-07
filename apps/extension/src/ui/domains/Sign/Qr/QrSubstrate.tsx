@@ -12,15 +12,10 @@ import { classNames, cn } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
-import {
-  Button,
-  type ButtonProps,
-  Checkbox,
-  Drawer,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { Button, type ButtonProps } from "@ui/talisman-ui/components/Button"
+import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type ReactElement, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

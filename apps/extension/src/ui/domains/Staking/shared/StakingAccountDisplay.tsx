@@ -6,7 +6,7 @@ import { encodeAnyAddress } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress, useNetworkById } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

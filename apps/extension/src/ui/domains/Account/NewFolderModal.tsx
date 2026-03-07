@@ -3,14 +3,12 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 import { useAccountsCatalog } from "@ui/state"
-import {
-  Button,
-  Checkbox,
-  FormFieldContainer,
-  FormFieldInputText,
-  Modal,
-  ModalDialog,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"

@@ -16,14 +16,10 @@ import { useField, useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"

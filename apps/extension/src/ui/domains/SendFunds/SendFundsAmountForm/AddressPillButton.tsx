@@ -3,7 +3,7 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
-import { PillButton } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { type FC, useMemo } from "react"
 
 import { AccountIcon } from "../../Account/AccountIcon"

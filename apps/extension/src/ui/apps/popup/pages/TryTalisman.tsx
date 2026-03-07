@@ -1,7 +1,7 @@
 import { ChevronLeftIcon } from "@talismn/icons"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TryTalismanContent } from "@ui/domains/Portfolio/GetStarted/TryTalisman/TryTalismanContent"
-import { IconButton } from "@ui/talisman-ui"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

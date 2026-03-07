@@ -15,7 +15,7 @@ import {
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
 import {
   type FC,
   useCallback,

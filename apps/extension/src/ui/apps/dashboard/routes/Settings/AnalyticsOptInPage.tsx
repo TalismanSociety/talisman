@@ -2,7 +2,7 @@ import { Setting } from "@talisman/components/Setting"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/state"
-import { Toggle } from "@ui/talisman-ui"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { useTranslation } from "react-i18next"
 
 const Content = () => {

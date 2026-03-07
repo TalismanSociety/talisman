@@ -4,7 +4,7 @@ import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { PortfolioAccount } from "../PortfolioAccount"

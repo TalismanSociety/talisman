@@ -2,7 +2,8 @@ import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalCont
 import { createGlobalOpenClose } from "@talisman/hooks/createGlobalOpenClose"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { Modal, WizardModalDialog } from "@ui/talisman-ui"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { WizardModalDialog } from "@ui/talisman-ui/components/WizardModalDialog"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

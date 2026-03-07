@@ -9,7 +9,12 @@ import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
-import { Button, PillButton, ProcessAnimation, type ProcessAnimationStatus } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import {
+  ProcessAnimation,
+  type ProcessAnimationStatus,
+} from "@ui/talisman-ui/components/ProcessAnimation/ProcessAnimation"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

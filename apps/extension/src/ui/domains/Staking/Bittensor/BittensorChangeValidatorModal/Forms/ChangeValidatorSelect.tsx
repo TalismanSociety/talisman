@@ -13,10 +13,8 @@ import {
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type FC,
   useCallback,

@@ -1,5 +1,5 @@
 import type { Address } from "@core"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 
 import { PortfolioAccount } from "../PortfolioAccount"
 

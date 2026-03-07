@@ -7,7 +7,7 @@ import type { BittensorClaimSettingsOpenOptions } from "@ui/domains/Staking/Bitt
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

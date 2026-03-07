@@ -1,7 +1,7 @@
 import { wordlist } from "@scure/bip39/wordlists/english"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

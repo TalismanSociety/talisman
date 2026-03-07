@@ -6,13 +6,13 @@ import type { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames, formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import {
-  IconButton,
   Popover,
   PopoverContent,
   PopoverTrigger,
   usePopoverContext,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/Popover"
 import ChartJs, {
   type ActiveElement,
   type ChartComponentLike,

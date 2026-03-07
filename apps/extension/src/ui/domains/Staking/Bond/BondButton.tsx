@@ -1,6 +1,6 @@
 import type { Balances } from "@talismn/balances"
 import { ZapIcon, ZapPlusIcon } from "@talismn/icons"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

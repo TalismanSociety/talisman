@@ -12,7 +12,9 @@ import {
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
-import { Button, Dropdown, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Dropdown } from "@ui/talisman-ui/components/Dropdown"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 import { t } from "i18next"
 import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"

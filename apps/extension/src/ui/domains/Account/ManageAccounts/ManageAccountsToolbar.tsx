@@ -10,10 +10,8 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"

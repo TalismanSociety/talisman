@@ -3,7 +3,7 @@ import {
   type SendFundsWizardPage,
   useSendFundsWizard,
 } from "@ui/apps/popup/pages/SendFunds/context"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

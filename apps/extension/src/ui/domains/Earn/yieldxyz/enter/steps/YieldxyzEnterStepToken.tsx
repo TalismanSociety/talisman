@@ -1,6 +1,6 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
-import { WizardModalDialog } from "@ui/talisman-ui"
+import { WizardModalDialog } from "@ui/talisman-ui/components/WizardModalDialog"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

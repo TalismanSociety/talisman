@@ -27,19 +27,15 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork, useToken } from "@ui/state"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  FormFieldTextarea,
-  IconButton,
-  Modal,
-  ModalDialog,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { FormFieldTextarea } from "@ui/talisman-ui/components/FormFieldTextarea"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

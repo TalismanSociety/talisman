@@ -4,7 +4,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import type { PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { useNetworksMapById } from "@ui/state"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { useMemo } from "react"
 
 type Props = { ids?: NetworkId[]; className?: string; max?: number }

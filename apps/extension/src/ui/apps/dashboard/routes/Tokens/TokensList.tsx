@@ -20,8 +20,8 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  Toggle,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { sortBy } from "lodash-es"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

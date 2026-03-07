@@ -87,3 +87,7 @@
 
 - Add relevant tests along with any new development.
 - Before completing work, ensure `pnpm check --fix` passes, and verify that typescript code can compile using typecheck scripts.
+
+## Temporary scripts
+
+- If you need to write a temporary script for testing or refactoring, place it in the .tmp folder that is not tracked by git, and delete it when done. Do not leave temporary scripts in the repo after they have served their purpose.

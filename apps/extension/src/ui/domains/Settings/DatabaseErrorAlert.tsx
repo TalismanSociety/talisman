@@ -5,7 +5,7 @@ import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useErrorsStoreValue } from "@ui/state"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

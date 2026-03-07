@@ -18,8 +18,8 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  type PopoverOptions,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import type { PopoverOptions } from "@ui/talisman-ui/components/Popover"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"

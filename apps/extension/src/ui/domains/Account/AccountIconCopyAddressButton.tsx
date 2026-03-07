@@ -2,7 +2,7 @@ import type { Placement } from "@floating-ui/react"
 import { CopyIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useNetworkByGenesisHash } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

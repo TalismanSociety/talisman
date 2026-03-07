@@ -7,7 +7,7 @@ import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
-import { Toggle } from "@ui/talisman-ui"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

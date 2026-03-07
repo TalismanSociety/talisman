@@ -3,7 +3,7 @@ import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

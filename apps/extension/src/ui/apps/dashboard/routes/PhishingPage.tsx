@@ -2,7 +2,7 @@ import { TALISMAN_WEB_APP_URL } from "@common/extension-shared"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

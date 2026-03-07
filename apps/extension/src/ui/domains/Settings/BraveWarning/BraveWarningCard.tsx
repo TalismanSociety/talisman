@@ -1,7 +1,7 @@
 import { Card } from "@talisman/components/Card"
 import { BraveIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { useTranslation } from "react-i18next"
 
 type Props = {

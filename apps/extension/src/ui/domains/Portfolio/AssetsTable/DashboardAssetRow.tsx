@@ -11,7 +11,7 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById } from "@ui/state"
-import { PillButton } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

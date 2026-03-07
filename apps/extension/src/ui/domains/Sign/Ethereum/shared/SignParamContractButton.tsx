@@ -5,7 +5,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useToken } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useMemo } from "react"
 
 import { SignParamButton } from "./SignParamButton"

@@ -12,7 +12,7 @@ import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetwork
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import {
   cloneElement,

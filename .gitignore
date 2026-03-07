@@ -53,3 +53,6 @@ review
 
 /.verify-build/
 /.firefox-build-temp/
+
+# for ai temp scripts
+.tmp

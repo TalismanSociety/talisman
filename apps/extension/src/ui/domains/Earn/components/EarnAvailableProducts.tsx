@@ -17,7 +17,7 @@ import {
   useTokensMap,
   useYieldxyzProviders,
 } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"

@@ -5,7 +5,9 @@ import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
-import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type ChangeEventHandler,
   type FC,

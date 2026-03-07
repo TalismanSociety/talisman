@@ -1,6 +1,7 @@
 import { TERMS_OF_USE_URL } from "@common/extension-shared"
 import { useAppState } from "@ui/state"
-import { Button, Drawer } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import type { FC, PropsWithChildren } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

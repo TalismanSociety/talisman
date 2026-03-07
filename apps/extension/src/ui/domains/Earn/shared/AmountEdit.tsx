@@ -7,7 +7,7 @@ import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
-import { PillButton } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import {
   type ChangeEventHandler,
   type FC,

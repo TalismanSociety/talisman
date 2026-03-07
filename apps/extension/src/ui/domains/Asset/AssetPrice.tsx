@@ -3,7 +3,7 @@ import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { classNames, formatPrice } from "@talismn/util"
 import { getTokenRates$, selectedCurrency$ } from "@ui/state"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { FC } from "react"
 import { combineLatest, map } from "rxjs"
 

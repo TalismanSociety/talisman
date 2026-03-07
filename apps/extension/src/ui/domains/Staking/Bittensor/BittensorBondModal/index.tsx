@@ -1,6 +1,6 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { cn } from "@talismn/util"
-import { Modal } from "@ui/talisman-ui"
+import { Modal } from "@ui/talisman-ui/components/Modal"
 import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
 

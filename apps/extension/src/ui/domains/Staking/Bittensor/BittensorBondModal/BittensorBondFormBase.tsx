@@ -4,7 +4,8 @@ import { SwapIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
-import { Button, PillButton } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import {
   type ChangeEventHandler,
   type FC,

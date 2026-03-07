@@ -1,7 +1,7 @@
 import { type Account, isAccountOfType } from "@core"
 import { PlusIcon, SecretIcon } from "@talismn/icons"
 import { useAccounts, useMnemonics } from "@ui/state"
-import { Dropdown } from "@ui/talisman-ui"
+import { Dropdown } from "@ui/talisman-ui/components/Dropdown"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

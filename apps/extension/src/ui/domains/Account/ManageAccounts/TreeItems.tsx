@@ -13,8 +13,8 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  IconButton,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
 import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"

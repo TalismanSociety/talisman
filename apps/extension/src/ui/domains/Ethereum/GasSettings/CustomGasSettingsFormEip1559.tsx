@@ -14,15 +14,11 @@ import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type FC,
   type FormEventHandler,

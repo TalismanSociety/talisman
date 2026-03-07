@@ -6,7 +6,7 @@ import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBi
 import type { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

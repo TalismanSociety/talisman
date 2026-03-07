@@ -1,7 +1,9 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { Network } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { Button, Drawer, PillButton } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

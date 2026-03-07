@@ -1,7 +1,9 @@
 import { appStore } from "@core"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { Drawer, Modal, ModalDialog } from "@ui/talisman-ui"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -58,17 +58,15 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state"
+import { Button } from "@ui/talisman-ui/components/Button"
 import {
-  Button,
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type ChangeEventHandler,
   type FC,

@@ -15,15 +15,11 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts } from "@ui/state"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  FormFieldTextarea,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { FormFieldTextarea } from "@ui/talisman-ui/components/FormFieldTextarea"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { type UseFormSetValue, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"

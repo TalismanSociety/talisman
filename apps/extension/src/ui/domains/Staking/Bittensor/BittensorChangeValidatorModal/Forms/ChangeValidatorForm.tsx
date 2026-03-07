@@ -6,7 +6,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

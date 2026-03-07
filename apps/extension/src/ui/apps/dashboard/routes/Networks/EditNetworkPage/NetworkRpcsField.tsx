@@ -17,7 +17,8 @@ import {
   getDotGenesisHashFromRpc,
   getSolGenesisHashFromRpc,
 } from "@ui/domains/Networks/helpers"
-import { FormFieldContainer, FormFieldInputText } from "@ui/talisman-ui"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
 import type { TFunction } from "i18next"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"

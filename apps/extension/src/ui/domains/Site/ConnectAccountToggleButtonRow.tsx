@@ -1,6 +1,6 @@
 import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "@core"
 import { classNames } from "@talismn/util"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { FC } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"

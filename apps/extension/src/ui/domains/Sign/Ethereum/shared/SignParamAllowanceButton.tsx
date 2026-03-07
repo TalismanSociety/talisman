@@ -14,17 +14,15 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
 import {
-  Button,
-  Drawer,
-  FormFieldContainer,
   type FormFieldInputContainerProps,
   FormFieldInputText,
-  PillButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/FormFieldInputText"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"

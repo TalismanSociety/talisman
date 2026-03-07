@@ -15,7 +15,12 @@ import {
   useNetworks,
   useRemoteConfig,
 } from "@ui/state"
-import { Button, ListButton, Modal, ModalDialog, Radio, Toggle } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { ListButton } from "@ui/talisman-ui/components/ListButton"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { ModalDialog } from "@ui/talisman-ui/components/ModalDialog"
+import { Radio } from "@ui/talisman-ui/components/Radio"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

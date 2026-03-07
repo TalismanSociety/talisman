@@ -1,6 +1,7 @@
 import { type Account, isAccountAddressEthereum } from "@core"
 import { InfoIcon } from "@talismn/icons"
-import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

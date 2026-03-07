@@ -6,7 +6,7 @@ import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, type PropsWithChildren, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"

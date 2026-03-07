@@ -15,12 +15,10 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  IconButton,
-  Modal,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
 import { toPairs } from "lodash"

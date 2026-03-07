@@ -19,17 +19,15 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
+import { Button } from "@ui/talisman-ui/components/Button"
 import {
-  Button,
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  PillButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type ButtonHTMLAttributes,
   type DetailedHTMLProps,

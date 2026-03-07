@@ -1,7 +1,8 @@
 import { BRAVE_BALANCES_URL } from "@common/extension-shared"
 import { appStore } from "@core"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
-import { Button, Toggle } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Toggle } from "@ui/talisman-ui/components/Toggle"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

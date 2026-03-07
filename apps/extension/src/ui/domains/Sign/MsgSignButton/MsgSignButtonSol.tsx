@@ -2,7 +2,7 @@ import { isAccountOwned, isAccountPlatformSolana } from "@core"
 import { base58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/state"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

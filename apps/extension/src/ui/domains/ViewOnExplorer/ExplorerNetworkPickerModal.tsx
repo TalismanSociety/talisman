@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { Modal } from "@ui/talisman-ui"
+import { Modal } from "@ui/talisman-ui/components/Modal"
 import type { FC } from "react"
 
 import { ExplorerNetworkPicker } from "./ExplorerNetworkPicker"

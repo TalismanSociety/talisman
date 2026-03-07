@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { type CtaButtonSize, getContainerClassName } from "@ui/talisman-ui"
+import { type CtaButtonSize, getContainerClassName } from "@ui/talisman-ui/components/CtaButton"
 import { type FC, type ReactNode, type SVGProps, useMemo } from "react"
 
 export const Setting: FC<{

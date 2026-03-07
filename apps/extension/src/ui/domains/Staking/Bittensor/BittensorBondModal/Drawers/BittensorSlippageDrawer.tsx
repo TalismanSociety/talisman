@@ -1,4 +1,4 @@
-import { Drawer } from "@ui/talisman-ui"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

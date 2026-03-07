@@ -10,14 +10,14 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/BittensorBondModal/BittensorAlphaPrice"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useToken } from "@ui/state"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
-  useOpenCloseStatus,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
 import {
   type FC,
   useDeferredValue,

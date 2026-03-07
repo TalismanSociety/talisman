@@ -11,7 +11,8 @@ import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAccounts, useNetworkByGenesisHash } from "@ui/state"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import {
   type FC,
   type PropsWithChildren,

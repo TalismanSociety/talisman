@@ -13,16 +13,12 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
 import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
-import {
-  Button,
-  Drawer,
-  Modal,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenCloseWithData,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { Drawer } from "@ui/talisman-ui/components/Drawer"
+import { Modal } from "@ui/talisman-ui/components/Modal"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

@@ -1,5 +1,5 @@
 import { ArrowLeftIcon } from "@talismn/icons"
-import { Button } from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
 import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
 

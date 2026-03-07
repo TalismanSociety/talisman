@@ -5,7 +5,7 @@ import { classNames, tokensToPlanck } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state"
-import { PillButton } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import BigNumber from "bignumber.js"
 import {
   type ChangeEventHandler,

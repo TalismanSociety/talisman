@@ -1,4 +1,4 @@
-import { WizardModalDialog } from "@ui/talisman-ui"
+import { WizardModalDialog } from "@ui/talisman-ui/components/WizardModalDialog"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

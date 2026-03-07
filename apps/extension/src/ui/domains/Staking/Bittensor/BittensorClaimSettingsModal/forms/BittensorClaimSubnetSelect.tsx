@@ -11,13 +11,13 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state"
+import { Button } from "@ui/talisman-ui/components/Button"
 import {
-  Button,
   ContextMenu,
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
-} from "@ui/talisman-ui"
+} from "@ui/talisman-ui/components/ContextMenu"
 import {
   type FC,
   useCallback,

@@ -4,7 +4,7 @@ import { UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
-import { PillButton } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

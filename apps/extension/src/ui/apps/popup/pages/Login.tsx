@@ -9,13 +9,9 @@ import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSetting } from "@ui/state"
-import {
-  Button,
-  FormFieldInputText,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { Button } from "@ui/talisman-ui/components/Button"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,

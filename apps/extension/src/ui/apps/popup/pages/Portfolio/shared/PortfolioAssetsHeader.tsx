@@ -19,13 +19,9 @@ import {
   usePortfolioBalances,
   useSelectedCurrency,
 } from "@ui/state"
-import {
-  ContextMenuTrigger,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ui/talisman-ui"
+import { ContextMenuTrigger } from "@ui/talisman-ui/components/ContextMenu"
+import { IconButton } from "@ui/talisman-ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"

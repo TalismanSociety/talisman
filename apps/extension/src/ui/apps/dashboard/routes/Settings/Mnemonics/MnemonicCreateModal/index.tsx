@@ -1,4 +1,4 @@
-import { Modal } from "@ui/talisman-ui"
+import { Modal } from "@ui/talisman-ui/components/Modal"
 
 import { Acknowledgement } from "./Acknowledgement"
 import { Complete } from "./Complete"

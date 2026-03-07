@@ -7,7 +7,9 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById } from "@ui/state"
-import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "@ui/talisman-ui"
+import { FormFieldContainer } from "@ui/talisman-ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/talisman-ui/components/FormFieldInputText"
+import { Tooltip, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   type ChangeEventHandler,

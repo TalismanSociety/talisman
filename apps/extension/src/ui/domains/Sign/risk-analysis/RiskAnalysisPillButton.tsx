@@ -7,7 +7,8 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { useFeatureFlag } from "@ui/state"
-import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui"
+import { PillButton } from "@ui/talisman-ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/talisman-ui/components/Tooltip"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

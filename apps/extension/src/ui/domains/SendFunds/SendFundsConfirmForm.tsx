@@ -5,7 +5,7 @@ import { isTokenEth } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/state"
-import { Checkbox } from "@ui/talisman-ui"
+import { Checkbox } from "@ui/talisman-ui/components/Checkbox"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
