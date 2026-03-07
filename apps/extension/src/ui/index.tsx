@@ -8,12 +8,12 @@ import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundar
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import { type KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
-import { type FontFamily, preloadFonts } from "@ui/talisman-ui"
 import { type ReactNode, StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
 import { initSentryFrontend } from "../sentry"
+import { type FontFamily, preloadFonts } from "./util/preloadFonts"
 
 const FONT_FAMILIES_DEFAULT: FontFamily[] = ["Surt", "SurtExpanded", "Inter"]
 const FONT_FAMILIES_ONBOARDING: FontFamily[] = ["Surt", "SurtExpanded", "WhyteInktrapMedium"]

@@ -1,5 +1,7 @@
 import { MysticalBackgroundV3 } from "./components/MysticalBackgroundV3"
 
+export * from "../hooks/useOpenCloseStatus"
+export * from "../hooks/useOpenCloseWithData"
 export * from "./components/Button"
 export * from "./components/Checkbox"
 export * from "./components/ContextMenu"
@@ -23,8 +25,5 @@ export * from "./components/Toggle"
 export * from "./components/Tooltip"
 export * from "./components/UnsafeImage"
 export * from "./components/WizardModalDialog"
-export * from "./utils/preloadFonts"
-export * from "./utils/useOpenCloseStatus"
-export * from "./utils/useOpenCloseWithData"
 
 export const MysticalBackground = MysticalBackgroundV3
