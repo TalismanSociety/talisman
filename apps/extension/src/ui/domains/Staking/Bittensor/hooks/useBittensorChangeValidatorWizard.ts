@@ -1,9 +1,9 @@
+import type { Address } from "@core"
 import { provideContext } from "@talisman/util/provideContext"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useToken } from "@ui/state"
-import type { Address } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
 

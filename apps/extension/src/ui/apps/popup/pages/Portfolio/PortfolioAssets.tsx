@@ -1,3 +1,4 @@
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "@core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
@@ -11,7 +12,6 @@ import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTo
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag, usePortfolioGlobalData } from "@ui/state"
-import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
 import { type FC, Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"

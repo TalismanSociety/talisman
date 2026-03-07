@@ -1,5 +1,13 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
+import {
+  type Account,
+  isAccountCompatibleWithNetwork,
+  isAccountPlatformEthereum,
+  isAddressCompatibleWithNetwork,
+  remoteConfigStore,
+  type SignerPayloadJSON,
+} from "@core"
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import {
   evmErc20TokenId,
@@ -10,14 +18,6 @@ import {
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
-import {
-  type Account,
-  isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-  type SignerPayloadJSON,
-} from "extension-core"
 import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import { atom } from "jotai"
 import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"

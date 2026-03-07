@@ -1,6 +1,3 @@
-import { bind } from "@react-rxjs/core"
-import { normalizeAddress } from "@talismn/crypto"
-import { api } from "@ui/api"
 import {
   type Account,
   isAccountNotContact,
@@ -8,7 +5,10 @@ import {
   isAccountOwned,
   isAccountPortfolio,
   type Trees,
-} from "extension-core"
+} from "@core"
+import { bind } from "@react-rxjs/core"
+import { normalizeAddress } from "@talismn/crypto"
+import { api } from "@ui/api"
 import { map, Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"

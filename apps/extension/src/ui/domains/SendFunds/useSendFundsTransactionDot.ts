@@ -1,3 +1,4 @@
+import type { SignerPayloadJSON } from "@core"
 import { BALANCE_MODULES, type BalanceTransferType } from "@talismn/balances"
 import type { ChainConnectorDot } from "@talismn/chain-connectors"
 import { type DotNetwork, isTokenDot, type Token } from "@talismn/chaindata-provider"
@@ -8,7 +9,6 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSubstrateDryRun } from "@ui/hooks/useSubstrateDryRun"
 import { useTip } from "@ui/hooks/useTip"
 import { useBalance, useNetworkById, useToken } from "@ui/state"
-import type { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useState } from "react"
 

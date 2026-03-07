@@ -1,6 +1,6 @@
+import type { AuthorizedSites } from "@core"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
-import type { AuthorizedSites } from "extension-core"
 import { Observable } from "rxjs"
 
 export const [useAuthorisedSites, authorisedSites$] = bind(

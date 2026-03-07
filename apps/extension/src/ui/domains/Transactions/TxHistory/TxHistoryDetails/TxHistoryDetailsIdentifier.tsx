@@ -1,6 +1,6 @@
+import type { WalletTransaction } from "@core"
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { CopyToClipboardLinkButton } from "@talisman/components/CopyToClipboardLinkButton"
-import type { WalletTransaction } from "extension-core"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,7 +1,7 @@
+import type { AccountsCatalogTree } from "@core"
 import { bind } from "@react-rxjs/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import type { AccountsCatalogTree } from "extension-core"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"

@@ -1,10 +1,3 @@
-import { bigIntMax } from "@ethereumjs/util"
-import type { EthNetworkId } from "@talismn/chaindata-provider"
-import { isBigInt, isNotNil } from "@talismn/util"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useNetworkById } from "@ui/state"
 import {
   type EthGasSettings,
   type EthGasSettingsEip1559,
@@ -20,7 +13,14 @@ import {
   getTotalFeesFromGasSettings,
   prepareTransaction,
   serializeTransactionRequest,
-} from "extension-core"
+} from "@core"
+import { bigIntMax } from "@ethereumjs/util"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
+import { isBigInt, isNotNil } from "@talismn/util"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { api } from "@ui/api"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useNetworkById } from "@ui/state"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type PublicClient, type TransactionRequest } from "viem"

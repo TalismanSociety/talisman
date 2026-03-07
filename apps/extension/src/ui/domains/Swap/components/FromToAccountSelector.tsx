@@ -1,6 +1,6 @@
+import { isAccountOwned, isAccountPlatformEthereum } from "@core"
 import { isAddressEqual, isBitcoinAddress, isEthereumAddress } from "@talismn/crypto"
 import { useAccounts } from "@ui/state"
-import { isAccountOwned, isAccountPlatformEthereum } from "extension-core"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"

@@ -1,5 +1,5 @@
+import type { EthBaseFeeTrend } from "@core"
 import * as Sentry from "@sentry/browser"
-import type { EthBaseFeeTrend } from "extension-core"
 import { log } from "extension-shared"
 import { formatGwei, type PublicClient, parseGwei } from "viem"
 

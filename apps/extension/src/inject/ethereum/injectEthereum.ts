@@ -1,4 +1,4 @@
-import type { SendRequest } from "extension-core"
+import type { SendRequest } from "@core"
 import { log } from "extension-shared"
 
 import { announceProvider } from "./eip6963"

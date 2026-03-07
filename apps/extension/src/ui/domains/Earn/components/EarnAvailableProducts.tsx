@@ -1,3 +1,4 @@
+import type { YieldDto } from "@core"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
@@ -16,7 +17,6 @@ import {
   useYieldxyzProviders,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
-import type { YieldDto } from "extension-core"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"

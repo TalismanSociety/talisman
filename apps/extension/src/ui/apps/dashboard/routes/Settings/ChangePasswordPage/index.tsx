@@ -1,3 +1,4 @@
+import { ChangePasswordStatusUpdateStatus, type ChangePasswordStatusUpdateType } from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -6,10 +7,6 @@ import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
-import {
-  ChangePasswordStatusUpdateStatus,
-  type ChangePasswordStatusUpdateType,
-} from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"

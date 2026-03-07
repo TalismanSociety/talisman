@@ -1,3 +1,4 @@
+import type { KnownSigningRequestIdOnly } from "@core"
 import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -5,7 +6,6 @@ import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethere
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById, useRequest } from "@ui/state"
-import type { KnownSigningRequestIdOnly } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useMemo, useRef } from "react"
 

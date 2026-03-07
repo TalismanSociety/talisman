@@ -1,4 +1,4 @@
-import type { ActionArgumentsDto, ArgumentSchemaDto } from "extension-core"
+import type { ActionArgumentsDto, ArgumentSchemaDto } from "@core"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 

@@ -1,8 +1,8 @@
+import { appStore } from "@core"
 import { TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAppState } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
-import { appStore } from "extension-core"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 

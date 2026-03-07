@@ -1,13 +1,13 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import type {
   EthGasSettings,
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "extension-core"
+} from "@core"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { Drawer, PillButton } from "talisman-ui"
 import type { TransactionRequest } from "viem"

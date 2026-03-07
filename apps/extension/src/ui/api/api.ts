@@ -1,12 +1,12 @@
 import PortMessageService from "@common/PortMessageService"
-import type { HexString } from "@polkadot/util/types"
 import type {
   ResponseSolanaSubmit,
   SignerPayloadJSON,
   SolRpcRequest,
   SolRpcResponse,
   WalletTransactionInfo,
-} from "extension-core"
+} from "@core"
+import type { HexString } from "@polkadot/util/types"
 
 import type MessageTypes from "./types"
 

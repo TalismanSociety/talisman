@@ -1,7 +1,7 @@
+import { passwordStore, settingsStore } from "@core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState, useIsOnboarded } from "@ui/state"
-import { passwordStore, settingsStore } from "extension-core"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 

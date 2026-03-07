@@ -1,3 +1,4 @@
+import { isAccountPlatformCompatibleWithNetwork } from "@core"
 import {
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
@@ -11,7 +12,6 @@ import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
-import { isAccountPlatformCompatibleWithNetwork } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import {
   cloneElement,

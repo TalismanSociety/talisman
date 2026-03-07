@@ -1,8 +1,8 @@
+import { getAccountGenesisHash, getAccountSignetUrl } from "@core"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { useAccountByAddress } from "@ui/state"
-import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { useTranslation } from "react-i18next"
 
 export const PortfolioAccount = ({

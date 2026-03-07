@@ -1,3 +1,4 @@
+import { type ActiveNetworks, activeNetworksStore, isNetworkActive } from "@core"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -13,7 +14,6 @@ import {
   useNetworks,
   useRemoteConfig,
 } from "@ui/state"
-import { type ActiveNetworks, activeNetworksStore, isNetworkActive } from "extension-core"
 import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

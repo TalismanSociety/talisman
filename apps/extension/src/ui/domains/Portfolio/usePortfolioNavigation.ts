@@ -1,7 +1,7 @@
+import type { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "@core"
 import { provideContext } from "@talisman/util/provideContext"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import type { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 

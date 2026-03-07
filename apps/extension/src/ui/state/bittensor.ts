@@ -1,7 +1,7 @@
+import type { BittensorValidator } from "@core"
 import { bind } from "@react-rxjs/core"
 import type { Loadable } from "@talismn/util"
 import { api } from "@ui/api"
-import type { BittensorValidator } from "extension-core"
 import { keyBy, uniq } from "lodash-es"
 import { map, Observable, shareReplay } from "rxjs"
 

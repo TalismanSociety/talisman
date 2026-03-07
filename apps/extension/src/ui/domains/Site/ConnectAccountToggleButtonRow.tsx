@@ -1,5 +1,5 @@
+import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "@core"
 import { classNames } from "@talismn/util"
-import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import type { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

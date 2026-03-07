@@ -1,5 +1,5 @@
+import { isAccountOfType } from "@core"
 import { useAccounts } from "@ui/state"
-import { isAccountOfType } from "extension-core"
 import { useMemo } from "react"
 
 export const useQrCodeAccounts = () => {

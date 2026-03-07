@@ -1,4 +1,14 @@
 // biome-ignore-all lint/a11y/useAnchorContent: legacy
+
+import {
+  type Account,
+  activeNetworksStore,
+  activeTokensStore,
+  type DiscoveredBalance,
+  getAccountGenesisHash,
+  isNetworkActive,
+  isTokenActive,
+} from "@core"
 import { bind } from "@react-rxjs/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -48,15 +58,6 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state"
-import {
-  type Account,
-  activeNetworksStore,
-  activeTokensStore,
-  type DiscoveredBalance,
-  getAccountGenesisHash,
-  isNetworkActive,
-  isTokenActive,
-} from "extension-core"
 import {
   type ChangeEventHandler,
   type FC,

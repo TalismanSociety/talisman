@@ -1,4 +1,4 @@
-import type { Tree, TreeAccount, TreeFolder } from "extension-core"
+import type { Tree, TreeAccount, TreeFolder } from "@core"
 import { log } from "extension-shared"
 
 import type { UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem, UiTreePosition } from "./types"

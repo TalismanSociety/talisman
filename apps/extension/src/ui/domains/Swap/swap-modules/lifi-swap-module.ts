@@ -1,9 +1,9 @@
+import { remoteConfigStore } from "@core"
 import * as lifiSdk from "@lifi/sdk"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
 import { getNetworksMapById$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
-import { remoteConfigStore } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import {

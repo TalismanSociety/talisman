@@ -1,3 +1,9 @@
+import {
+  type Account,
+  isAccountOfType,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+} from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
@@ -5,12 +11,6 @@ import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
-import {
-  type Account,
-  isAccountOfType,
-  isAccountPlatformEthereum,
-  isAccountPlatformPolkadot,
-} from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"

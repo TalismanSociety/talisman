@@ -353,7 +353,6 @@ function createPackageSourceAliases(): Alias[] {
     { find: /^talisman-ui$/, replacement: resolve(packagesDir, "talisman-ui/src") },
 
     // Map workspace packages to source for hot reload in dev (exact matches)
-    { find: "extension-core", replacement: resolve(packagesDir, "extension-core/src") },
     { find: "extension-shared", replacement: resolve(packagesDir, "extension-shared/src") },
 
     { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
@@ -626,6 +625,8 @@ export default defineConfig({
     const baseAliases: Alias[] = [
       // Internal path aliases (from tsconfig.json with baseUrl: "src")
       { find: "@common", replacement: resolve(__dirname, "src/common") },
+      { find: "@core", replacement: resolve(__dirname, "src/core") },
+      { find: /^@core\/(.*)$/, replacement: resolve(__dirname, "src/core/$1") },
       { find: "@talisman", replacement: resolve(__dirname, "src/@talisman") },
       { find: "@ui", replacement: resolve(__dirname, "src/ui") },
       { find: "@tests", replacement: resolve(__dirname, "src/tests") },
@@ -633,10 +634,6 @@ export default defineConfig({
       { find: /^inject\/(.*)$/, replacement: resolve(__dirname, "src/inject/$1") },
       // Internal packages subpath imports (needed in both dev and production)
       // These packages don't have proper exports in package.json for subpaths
-      {
-        find: /^extension-core\/(.*)$/,
-        replacement: resolve(packagesDir, "extension-core/src/$1"),
-      },
       {
         find: /^extension-shared\/(.*)$/,
         replacement: resolve(packagesDir, "extension-shared/src/$1"),

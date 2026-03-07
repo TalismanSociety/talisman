@@ -1,3 +1,4 @@
+import { getMetadataRpcFromDef } from "@core"
 import { assert } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
@@ -5,7 +6,6 @@ import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useDotNetwork, useToken } from "@ui/state"
-import { getMetadataRpcFromDef } from "extension-core"
 
 /**
  * useScaleApi instantiates a ScaleApi object for a given chainIdOrHash, specVersion, and blockHash.

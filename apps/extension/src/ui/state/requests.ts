@@ -1,6 +1,6 @@
+import type { KnownRequest, KnownRequestId, KnownRequestTypes, ValidRequests } from "@core"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
-import type { KnownRequest, KnownRequestId, KnownRequestTypes, ValidRequests } from "extension-core"
 import { map, Observable } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"

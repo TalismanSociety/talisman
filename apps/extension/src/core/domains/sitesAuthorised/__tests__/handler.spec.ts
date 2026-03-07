@@ -3,7 +3,7 @@ import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
-import { getMessageSenderFn } from "../../../../tests/util"
+import { getMessageSenderFn } from "../../../../../tests/core/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"

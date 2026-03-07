@@ -1,7 +1,7 @@
+import type { SignerPayloadJSON } from "@core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ChevronLeftIcon, ChevronRightIcon } from "@talismn/icons"
 import type { ScaleApi } from "@talismn/sapi"
-import type { SignerPayloadJSON } from "extension-core"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"

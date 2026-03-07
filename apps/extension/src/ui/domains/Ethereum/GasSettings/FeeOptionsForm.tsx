@@ -1,9 +1,3 @@
-import { BalanceFormatter } from "@talismn/balances"
-import type { TokenId } from "@talismn/chaindata-provider"
-import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useNetworkById, useToken } from "@ui/state"
 import {
   type EthPriorityOptionName,
   type EthPriorityOptionNameEip1559,
@@ -11,7 +5,13 @@ import {
   type EthTransactionDetails,
   type GasSettingsByPriority,
   getTotalFeesFromGasSettings,
-} from "extension-core"
+} from "@core"
+import { BalanceFormatter } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { ChevronRightIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useNetworkById, useToken } from "@ui/state"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"

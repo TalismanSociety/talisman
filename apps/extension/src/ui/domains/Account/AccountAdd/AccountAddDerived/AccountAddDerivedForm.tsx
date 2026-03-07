@@ -1,3 +1,9 @@
+import {
+  getDefaultCurveForAccountPlatform,
+  getDerivationPathForCurve,
+  type RequestAddAccountDerive,
+  SUPPORTED_ACCOUNT_PLATFORMS,
+} from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -14,12 +20,6 @@ import {
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts, useMnemonics } from "@ui/state"
-import {
-  getDefaultCurveForAccountPlatform,
-  getDerivationPathForCurve,
-  type RequestAddAccountDerive,
-  SUPPORTED_ACCOUNT_PLATFORMS,
-} from "extension-core"
 import { log } from "extension-shared"
 import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"

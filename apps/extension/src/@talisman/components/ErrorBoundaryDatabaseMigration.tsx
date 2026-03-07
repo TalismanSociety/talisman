@@ -1,4 +1,4 @@
-import { MIGRATION_ERROR_MSG } from "extension-core"
+import { MIGRATION_ERROR_MSG } from "@core"
 import { Component, type ErrorInfo, type ReactNode } from "react"
 import { ProcessAnimation } from "talisman-ui"
 

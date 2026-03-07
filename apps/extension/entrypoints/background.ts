@@ -5,7 +5,7 @@ import { defineBackground } from "wxt/utils/define-background"
 
 // Import the background module - this is a side-effect module that initializes the extension
 // The import must happen at the top level, not inside defineBackground callback
-import "extension-core/background"
+import "@core/background"
 import { log } from "extension-shared"
 
 export default defineBackground({

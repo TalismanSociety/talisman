@@ -1,3 +1,9 @@
+import {
+  type Account,
+  getAccountGenesisHash,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+} from "@core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -5,12 +11,6 @@ import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAccounts, useNetworkByGenesisHash } from "@ui/state"
-import {
-  type Account,
-  getAccountGenesisHash,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
 import {
   type FC,
   type PropsWithChildren,

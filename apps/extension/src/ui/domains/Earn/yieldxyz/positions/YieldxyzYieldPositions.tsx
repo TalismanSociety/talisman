@@ -1,3 +1,4 @@
+import { type BalanceDto, isAccountOwned, type YieldDto } from "@core"
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -16,7 +17,6 @@ import {
   type YieldxyzPositionEnhanced,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
-import { type BalanceDto, isAccountOwned, type YieldDto } from "extension-core"
 import { log } from "extension-shared"
 import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"

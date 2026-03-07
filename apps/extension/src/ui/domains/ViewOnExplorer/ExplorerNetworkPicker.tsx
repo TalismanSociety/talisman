@@ -1,3 +1,4 @@
+import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "@core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
@@ -8,7 +9,6 @@ import {
   useNetworks,
   useSelectedCurrency,
 } from "@ui/state"
-import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "extension-core"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"

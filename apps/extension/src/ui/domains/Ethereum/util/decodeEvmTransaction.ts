@@ -6,7 +6,7 @@ import {
   abiMoonStaking,
   abiMoonXTokens,
   isContractAddress,
-} from "extension-core"
+} from "@core"
 import {
   decodeFunctionData,
   getAbiItem,

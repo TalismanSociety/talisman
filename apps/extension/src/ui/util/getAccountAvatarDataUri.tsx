@@ -1,7 +1,7 @@
+import type { IdenticonType } from "@core"
 import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
 import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon"
-import type { IdenticonType } from "extension-core"
 import { renderToString } from "react-dom/server"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {

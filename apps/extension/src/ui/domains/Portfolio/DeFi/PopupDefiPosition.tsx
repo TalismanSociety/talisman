@@ -1,9 +1,9 @@
+import type { DefiPosition, DefiPositionItem } from "@core"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDefiPosition } from "@ui/state"
-import type { DefiPosition, DefiPositionItem } from "extension-core"
 import { type FC, useMemo } from "react"
 
 import { PositionContextMenu } from "./PositionContextMenu"

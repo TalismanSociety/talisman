@@ -7,6 +7,8 @@
     "paths": {
       "@common": ["./src/common"],
       "@common/*": ["./src/common/*"],
+      "@core": ["./src/core"],
+      "@core/*": ["./src/core/*"],
       "@talisman": ["./src/@talisman"],
       "@talisman/*": ["./src/@talisman/*"],
       "@ui": ["./src/ui"],

@@ -1,3 +1,4 @@
+import { type Address, isAccountCompatibleWithNetwork } from "@core"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -16,7 +17,6 @@ import {
   useTokens,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { type Address, isAccountCompatibleWithNetwork } from "extension-core"
 import sortBy from "lodash-es/sortBy"
 import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"

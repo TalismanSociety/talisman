@@ -1,3 +1,4 @@
+import type { DefiPosition } from "@core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames, type Loadable, type LoadableStatus } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -12,7 +13,6 @@ import {
   usePortfolioSelectedAccounts,
   useSelectedCurrency,
 } from "@ui/state"
-import type { DefiPosition } from "extension-core"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

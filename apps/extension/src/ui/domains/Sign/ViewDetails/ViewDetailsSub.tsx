@@ -1,3 +1,9 @@
+import {
+  isJsonPayload,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
+  type TransactionMethod,
+} from "@core"
 import { TypeRegistry } from "@polkadot/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
@@ -5,12 +11,6 @@ import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken, useTokenRates } from "@ui/state"
-import {
-  isJsonPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-  type TransactionMethod,
-} from "extension-core"
 import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"

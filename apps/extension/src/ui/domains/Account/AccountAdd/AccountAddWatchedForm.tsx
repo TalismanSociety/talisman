@@ -1,3 +1,4 @@
+import { SUPPORTED_ACCOUNT_PLATFORMS } from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { type AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
@@ -9,7 +10,6 @@ import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSele
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
-import { SUPPORTED_ACCOUNT_PLATFORMS } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"

@@ -1,3 +1,4 @@
+import { remoteConfigStore } from "@core"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -10,7 +11,6 @@ import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/cr
 import type { ScaleApi } from "@talismn/sapi"
 import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
-import { remoteConfigStore } from "extension-core"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"

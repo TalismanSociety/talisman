@@ -1,3 +1,9 @@
+import {
+  type AccountPolkadotVault,
+  isRawPayload,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
+} from "@core"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
 import { u8aConcat, u8aToU8a } from "@polkadot/util"
@@ -5,12 +11,6 @@ import { decodeAddress } from "@polkadot/util-crypto"
 import { fromHex } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { useSetting } from "@ui/state"
-import {
-  type AccountPolkadotVault,
-  isRawPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-} from "extension-core"
 import { type FC, useMemo } from "react"
 
 import {

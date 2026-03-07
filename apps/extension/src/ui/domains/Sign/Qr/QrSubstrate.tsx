@@ -1,3 +1,9 @@
+import {
+  type AccountPolkadotVault,
+  isJsonPayload,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
+} from "@core"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
@@ -5,12 +11,6 @@ import { classNames, cn } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
-import {
-  type AccountPolkadotVault,
-  isJsonPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-} from "extension-core"
 import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { type ReactElement, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

@@ -1,3 +1,10 @@
+import {
+  type EthTransactionDetails,
+  isAccountOfType,
+  serializeTransactionRequest,
+  type WalletTransaction,
+  type WalletTransactionEth,
+} from "@core"
 import type { HexString } from "@polkadot/util/types"
 import { notify } from "@talisman/components/Notifications"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -8,13 +15,6 @@ import type { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
-import {
-  type EthTransactionDetails,
-  isAccountOfType,
-  serializeTransactionRequest,
-  type WalletTransaction,
-  type WalletTransactionEth,
-} from "extension-core"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {

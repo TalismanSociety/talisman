@@ -1,9 +1,9 @@
+import type { SignerPayloadGenesisHash } from "@core"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 import { useNetworkByGenesisHash } from "@ui/state"
-import type { SignerPayloadGenesisHash } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 
 import { QrCode, QrCodeError } from "./QrCode"

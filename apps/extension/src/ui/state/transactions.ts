@@ -1,6 +1,6 @@
+import { db } from "@core"
 import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
-import { db } from "extension-core"
 import { from, map } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"

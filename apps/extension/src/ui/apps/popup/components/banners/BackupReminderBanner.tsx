@@ -1,3 +1,4 @@
+import { appStore } from "@core"
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -8,7 +9,6 @@ import {
   useMnemonics,
   useSessionState,
 } from "@ui/state"
-import { appStore } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, IconButton } from "talisman-ui"

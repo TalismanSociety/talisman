@@ -1,5 +1,5 @@
+import { isNetworkActive } from "@core"
 import { useActiveNetworksState, useNetworkById } from "@ui/state"
-import { isNetworkActive } from "extension-core"
 import { useMemo } from "react"
 import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 

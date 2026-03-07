@@ -1,3 +1,9 @@
+import {
+  type Account,
+  type Address,
+  getAccountGenesisHash,
+  isAccountCompatibleWithNetwork,
+} from "@core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { provideContext } from "@talisman/util/provideContext"
 import {
@@ -21,12 +27,6 @@ import {
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
-import {
-  type Account,
-  type Address,
-  getAccountGenesisHash,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 

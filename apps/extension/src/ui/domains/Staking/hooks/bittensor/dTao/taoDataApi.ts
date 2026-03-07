@@ -1,5 +1,5 @@
+import { getTaoDataApi } from "@core"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
-import { getTaoDataApi } from "extension-core"
 
 export const taoDataApi = getTaoDataApi(gandalfFetch)
 

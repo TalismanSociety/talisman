@@ -1,10 +1,10 @@
+import type { Account } from "@core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { Token } from "@talismn/chaindata-provider"
 import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
-import type { Account } from "extension-core"
 import {
   type ChangeEventHandler,
   type FC,

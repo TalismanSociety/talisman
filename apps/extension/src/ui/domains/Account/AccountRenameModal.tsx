@@ -1,6 +1,6 @@
+import type { Account } from "@core"
 import { bind } from "@react-rxjs/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import type { Account } from "extension-core"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"

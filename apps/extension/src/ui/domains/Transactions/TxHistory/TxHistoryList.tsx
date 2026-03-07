@@ -1,3 +1,13 @@
+import {
+  isTxInfoApproval,
+  isTxInfoSwap,
+  isTxInfoTransfer,
+  type TransactionStatus,
+  type WalletTransaction,
+  type WalletTransactionDot,
+  type WalletTransactionEth,
+  type WalletTransactionSol,
+} from "@core"
 import { DistanceToNow } from "@talisman/components/DistanceToNow"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
@@ -19,16 +29,6 @@ import {
   useTokenRates,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
-import {
-  isTxInfoApproval,
-  isTxInfoSwap,
-  isTxInfoTransfer,
-  type TransactionStatus,
-  type WalletTransaction,
-  type WalletTransactionDot,
-  type WalletTransactionEth,
-  type WalletTransactionSol,
-} from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import {
   type FC,

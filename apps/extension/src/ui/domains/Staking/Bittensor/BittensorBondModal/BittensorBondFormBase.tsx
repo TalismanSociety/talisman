@@ -1,9 +1,9 @@
+import type { Account } from "@core"
 import type { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
-import type { Account } from "extension-core"
 import {
   type ChangeEventHandler,
   type FC,

@@ -1,7 +1,6 @@
+import type { ExtensionHandler } from "@core/libs/Handler"
+import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { v4 } from "uuid"
-
-import type { ExtensionHandler } from "../src/libs/Handler"
-import type { MessageTypes, RequestType, ResponseType } from "../src/types"
 
 export const getMessageSenderFn =
   (extension: ExtensionHandler, port: chrome.runtime.Port = {} as chrome.runtime.Port) =>

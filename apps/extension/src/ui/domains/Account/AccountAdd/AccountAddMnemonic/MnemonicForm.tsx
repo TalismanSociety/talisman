@@ -1,3 +1,9 @@
+import {
+  getDefaultCurveForAccountPlatform,
+  getDerivationPathForCurve,
+  getEthDerivationPath,
+  SUPPORTED_ACCOUNT_PLATFORMS,
+} from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -8,12 +14,6 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts } from "@ui/state"
-import {
-  getDefaultCurveForAccountPlatform,
-  getDerivationPathForCurve,
-  getEthDerivationPath,
-  SUPPORTED_ACCOUNT_PLATFORMS,
-} from "extension-core"
 import { DEBUG } from "extension-shared"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { type UseFormSetValue, useForm } from "react-hook-form"

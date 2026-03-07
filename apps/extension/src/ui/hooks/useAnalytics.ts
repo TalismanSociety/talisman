@@ -1,5 +1,5 @@
+import type { PostHogCaptureProperties } from "@core"
 import { api } from "@ui/api"
-import type { PostHogCaptureProperties } from "extension-core"
 import { useCallback } from "react"
 
 export const useAnalytics = () => {

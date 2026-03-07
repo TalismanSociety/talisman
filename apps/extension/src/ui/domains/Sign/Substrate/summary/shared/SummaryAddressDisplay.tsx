@@ -1,3 +1,4 @@
+import { getAccountGenesisHash } from "@core"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
@@ -5,7 +6,6 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress, useNetworkById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
-import { getAccountGenesisHash } from "extension-core"
 import { type FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

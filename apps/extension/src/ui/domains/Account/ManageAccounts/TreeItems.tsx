@@ -1,3 +1,4 @@
+import type { Account, AccountsCatalogTree } from "@core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -6,7 +7,6 @@ import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import type { Account, AccountsCatalogTree } from "extension-core"
 import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {

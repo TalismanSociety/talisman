@@ -1,3 +1,4 @@
+import { fetchFromCoingecko } from "@core"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
@@ -9,7 +10,6 @@ import ChartJs, {
   type ChartComponentLike,
   type ChartEvent,
 } from "chart.js/auto"
-import { fetchFromCoingecko } from "extension-core"
 import { log } from "extension-shared"
 import { uniq } from "lodash-es"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"

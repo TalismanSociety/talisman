@@ -1,3 +1,4 @@
+import type { SignerPayloadGenesisHash } from "@core"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { Connection } from "@solana/web3.js"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"
@@ -9,7 +10,6 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
-import type { SignerPayloadGenesisHash } from "extension-core"
 import { log } from "extension-shared"
 import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"

@@ -1,10 +1,10 @@
-import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
 import {
   type AnySigningRequest,
   isEthereumRequest,
   type KnownRespondableRequest,
   type SigningRequests,
-} from "extension-core"
+} from "@core"
+import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
 import { log } from "extension-shared"
 import { useCallback } from "react"
 

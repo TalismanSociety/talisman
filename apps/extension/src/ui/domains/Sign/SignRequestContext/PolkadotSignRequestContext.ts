@@ -1,3 +1,4 @@
+import { type Address, isJsonPayload, type SubstrateSigningRequest } from "@core"
 import type { GenericExtrinsic } from "@polkadot/types"
 import type {
   IRuntimeVersionBase,
@@ -13,7 +14,6 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useBalancesHydrate, useNetworkByGenesisHash } from "@ui/state"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
-import { type Address, isJsonPayload, type SubstrateSigningRequest } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
 

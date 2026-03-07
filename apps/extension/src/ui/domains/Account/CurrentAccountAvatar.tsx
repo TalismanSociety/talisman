@@ -1,7 +1,7 @@
+import { type Account, getAccountGenesisHash, type TreeFolder } from "@core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import { type Account, getAccountGenesisHash, type TreeFolder } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

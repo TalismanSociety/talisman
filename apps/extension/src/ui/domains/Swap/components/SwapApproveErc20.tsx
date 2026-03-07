@@ -1,3 +1,4 @@
+import { serializeTransactionRequest, type WalletTransactionInfo } from "@core"
 import { notify } from "@talisman/components/Notifications"
 import { LoaderIcon, UsbIcon } from "@talismn/icons"
 import { formatDecimals, planckToTokens } from "@talismn/util"
@@ -9,7 +10,6 @@ import { fromAddressAtom, fromAssetAtom } from "@ui/domains/Swap/swap-modules/co
 import { approvalCounterAtom, useSwapErc20Approval } from "@ui/domains/Swap/swaps.api"
 import { swapViewAtom } from "@ui/domains/Swap/swaps-port/swapViewAtom"
 import { useAccountByAddress } from "@ui/state"
-import { serializeTransactionRequest, type WalletTransactionInfo } from "extension-core"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"

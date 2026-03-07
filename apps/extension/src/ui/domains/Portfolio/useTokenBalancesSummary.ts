@@ -3,7 +3,7 @@ import { isNetworkDot, type Network, type Token } from "@talismn/chaindata-provi
 import type { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 
-import "extension-core"
+import "@core"
 
 import { isNotNil } from "@talismn/util"
 import { useNetworksMapById, useSelectedCurrency, useTokensMap } from "@ui/state"

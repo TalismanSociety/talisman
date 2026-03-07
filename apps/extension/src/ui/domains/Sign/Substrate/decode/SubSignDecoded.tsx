@@ -1,4 +1,4 @@
-import { isJsonPayload } from "extension-core"
+import { isJsonPayload } from "@core"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotSigningRequest } from "../../SignRequestContext"

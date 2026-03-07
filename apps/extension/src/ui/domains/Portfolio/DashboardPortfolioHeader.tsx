@@ -1,3 +1,4 @@
+import { type Account, getAccountGenesisHash, isAccountOwned, type TreeFolder } from "@core"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   ArrowDownIcon,
@@ -24,12 +25,6 @@ import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
-import {
-  type Account,
-  getAccountGenesisHash,
-  isAccountOwned,
-  type TreeFolder,
-} from "extension-core"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"

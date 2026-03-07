@@ -1,3 +1,4 @@
+import type { Nft, NftCollection } from "@core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
@@ -9,7 +10,6 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
-import type { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import { toPairs } from "lodash"
 import {

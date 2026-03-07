@@ -1,3 +1,4 @@
+import type { RemoteConfigStoreData } from "@core"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -5,7 +6,6 @@ import {
   subNativeTokenId,
   type TokenList,
 } from "@talismn/chaindata-provider"
-import type { RemoteConfigStoreData } from "extension-core"
 
 import type { CoinbaseTokenNetwork } from "../coinbase/types"
 import type { RampAssetInfo } from "../ramp/types"

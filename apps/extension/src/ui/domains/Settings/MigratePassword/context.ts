@@ -1,3 +1,4 @@
+import { passwordStore } from "@core"
 import * as Sentry from "@sentry/react"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
@@ -5,7 +6,6 @@ import { api } from "@ui/api"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useMnemonics, useSetting } from "@ui/state"
-import { passwordStore } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { dismissMigratePasswordModal } from "./useMigratePasswordModal"

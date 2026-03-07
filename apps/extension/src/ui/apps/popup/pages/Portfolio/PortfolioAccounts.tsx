@@ -1,3 +1,13 @@
+import {
+  type Account,
+  type AccountsCatalogTree,
+  type AccountType,
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+  isAccountPortfolio,
+  type TreeFolder,
+  type TreeItem,
+} from "@core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -28,16 +38,6 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
-import {
-  type Account,
-  type AccountsCatalogTree,
-  type AccountType,
-  getAccountGenesisHash,
-  getAccountSignetUrl,
-  isAccountPortfolio,
-  type TreeFolder,
-  type TreeItem,
-} from "extension-core"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

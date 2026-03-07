@@ -39,7 +39,7 @@ vi.mock("react-i18next", () => ({
   },
 }))
 
-vi.mock("extension-core/src/util/fetchRemoteConfig", () => ({
+vi.mock("@core/util/fetchRemoteConfig", () => ({
   fetchRemoteConfig: vi.fn(() =>
     Promise.resolve({
       featureFlags: {

@@ -3,9 +3,9 @@ import "@common/enableAnyloggerLogsInDevelopment"
 import "@common/i18nConfig"
 import "@common/zodConfig"
 
+import { appStore } from "@core"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
-import { appStore } from "extension-core"
 import { IS_FIREFOX, log } from "extension-shared"
 
 const adjustPopupSize = async () => {

@@ -1,3 +1,13 @@
+import {
+  AUTH_PREFIX,
+  AUTH_SOL_SIGN_IN_PREFIX,
+  ENCRYPT_DECRYPT_PREFIX,
+  ENCRYPT_ENCRYPT_PREFIX,
+  ETH_NETWORK_ADD_PREFIX,
+  METADATA_PREFIX,
+  SIGNING_TYPES,
+  WATCH_ASSET_PREFIX,
+} from "@core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
@@ -22,16 +32,6 @@ import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
-import {
-  AUTH_PREFIX,
-  AUTH_SOL_SIGN_IN_PREFIX,
-  ENCRYPT_DECRYPT_PREFIX,
-  ENCRYPT_ENCRYPT_PREFIX,
-  ETH_NETWORK_ADD_PREFIX,
-  METADATA_PREFIX,
-  SIGNING_TYPES,
-  WATCH_ASSET_PREFIX,
-} from "extension-core"
 import { Suspense, useEffect } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 

@@ -1,14 +1,10 @@
+import { activeNetworksStore, activeTokensStore, isAccountCompatibleWithNetwork } from "@core"
 import { notify } from "@talisman/components/Notifications"
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
 import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
-import {
-  activeNetworksStore,
-  activeTokensStore,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"

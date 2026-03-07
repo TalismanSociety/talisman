@@ -1,3 +1,4 @@
+import type { NftCollection, NftData } from "@core"
 import { StarIcon } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -9,7 +10,6 @@ import {
   useNfts,
   useSetting,
 } from "@ui/state"
-import type { NftCollection, NftData } from "extension-core"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"

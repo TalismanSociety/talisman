@@ -1,3 +1,4 @@
+import { activeNetworksStore, activeTokensStore, type RequestNetworkUpsert } from "@core"
 import { notify } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import {
@@ -16,7 +17,6 @@ import { sleep } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { getNetworkById$ } from "@ui/state"
-import { activeNetworksStore, activeTokensStore, type RequestNetworkUpsert } from "extension-core"
 import { log } from "extension-shared"
 import { range } from "lodash-es"
 import { useTranslation } from "react-i18next"

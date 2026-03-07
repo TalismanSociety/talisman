@@ -1,10 +1,10 @@
+import type { AccountType } from "@core"
 import type { Balance } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useBalances, useSelectedCurrency, useToken } from "@ui/state"
-import type { AccountType } from "extension-core"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

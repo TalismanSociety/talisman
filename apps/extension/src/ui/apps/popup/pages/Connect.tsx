@@ -1,3 +1,4 @@
+import type { Account, KnownRequestIdOnly, ProviderType } from "@core"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"
@@ -8,7 +9,6 @@ import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPol
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useRequest } from "@ui/state"
-import type { Account, KnownRequestIdOnly, ProviderType } from "extension-core"
 import capitalize from "lodash-es/capitalize"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

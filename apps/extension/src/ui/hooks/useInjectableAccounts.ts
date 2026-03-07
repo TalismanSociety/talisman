@@ -1,4 +1,3 @@
-import { useAccounts, useSettingValue } from "@ui/state"
 import {
   type Account,
   isAccountInTypes,
@@ -7,7 +6,8 @@ import {
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,
   type ProviderType,
-} from "extension-core"
+} from "@core"
+import { useAccounts, useSettingValue } from "@ui/state"
 import { isTalismanUrl } from "extension-shared"
 import { useMemo } from "react"
 

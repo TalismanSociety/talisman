@@ -1,5 +1,5 @@
+import { DEFAULT_APP_STATE } from "@core"
 import { renderHook, waitFor } from "@testing-library/react"
-import { DEFAULT_APP_STATE } from "extension-core"
 import { beforeEach } from "vitest"
 
 import { TestWrapper } from "../../../../tests/TestWrapper"

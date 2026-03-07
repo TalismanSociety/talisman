@@ -1,3 +1,4 @@
+import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "@core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { type Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
@@ -18,7 +19,6 @@ import {
   usePortfolioBalances,
   useSelectedCurrency,
 } from "@ui/state"
-import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { type FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"

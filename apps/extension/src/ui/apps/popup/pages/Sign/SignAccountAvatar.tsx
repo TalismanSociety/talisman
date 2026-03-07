@@ -1,7 +1,7 @@
+import type { Account } from "@core"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { getAccountGenesisHash } from "@talismn/keyring"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import type { Account } from "extension-core"
 import type { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

@@ -1,5 +1,5 @@
+import { parseTransactionRequest } from "@core"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
-import { parseTransactionRequest } from "extension-core"
 import { useMemo } from "react"
 import type { TransactionRequest } from "viem"
 

@@ -23,9 +23,6 @@ export default defineConfig({
       "packages/balances",
       "packages/balances-react",
 
-      // Extension packages (jsdom environment with custom setup)
-      "packages/extension-core",
-
       // Extension app (jsdom environment with custom setup)
       "apps/extension",
     ],

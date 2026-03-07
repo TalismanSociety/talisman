@@ -1,6 +1,6 @@
+import type { LegacyAccountOrigin } from "@core"
 import type { Balance } from "@talismn/balances"
 import { useBalances, useToken } from "@ui/state"
-import type { LegacyAccountOrigin } from "extension-core"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

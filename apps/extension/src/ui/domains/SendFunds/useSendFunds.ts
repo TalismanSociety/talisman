@@ -1,3 +1,4 @@
+import type { WalletTransactionInfo } from "@core"
 import { provideContext } from "@talisman/util/provideContext"
 import {
   type Address,
@@ -27,7 +28,6 @@ import {
   useTokensMap,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import type { WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

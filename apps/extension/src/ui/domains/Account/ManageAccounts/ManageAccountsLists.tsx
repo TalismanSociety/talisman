@@ -1,8 +1,8 @@
+import type { Account } from "@core"
 import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import type { Account } from "extension-core"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

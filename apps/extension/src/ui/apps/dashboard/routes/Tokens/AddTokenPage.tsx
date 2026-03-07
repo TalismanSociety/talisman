@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
+import { activeTokensStore, getErc20TokenInfo, getUniswapV2TokenInfo } from "@core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import {
@@ -21,7 +22,6 @@ import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
-import { activeTokensStore, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
 import { log } from "extension-shared"
 import { range } from "lodash-es"
 import { useMemo } from "react"

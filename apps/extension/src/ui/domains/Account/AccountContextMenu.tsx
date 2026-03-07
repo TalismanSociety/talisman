@@ -1,3 +1,4 @@
+import { type Account, getAccountGenesisHash } from "@core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
@@ -13,7 +14,6 @@ import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetwork
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useNetworkByGenesisHash } from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
-import { type Account, getAccountGenesisHash } from "extension-core"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"

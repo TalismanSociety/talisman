@@ -1,7 +1,7 @@
+import { getEthTransferTransactionBase, isAccountOwned } from "@core"
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
-import { getEthTransferTransactionBase, isAccountOwned } from "extension-core"
 import { useMemo, useState } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"

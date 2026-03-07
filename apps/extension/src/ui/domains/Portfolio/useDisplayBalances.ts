@@ -1,3 +1,10 @@
+import {
+  type Account,
+  getAccountGenesisHash,
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+} from "@core"
 import { bind } from "@react-rxjs/core"
 import { type Balance, Balances } from "@talismn/balances"
 import {
@@ -15,13 +22,6 @@ import {
   useNetworksMapById,
   usePortfolioSelectedAccounts,
 } from "@ui/state"
-import {
-  type Account,
-  getAccountGenesisHash,
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
 import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 

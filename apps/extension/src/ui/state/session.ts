@@ -1,5 +1,5 @@
+import { type SessionStoreData, sessionStore } from "@core"
 import { bind } from "@react-rxjs/core"
-import { type SessionStoreData, sessionStore } from "extension-core"
 import { type SetStateAction, useCallback } from "react"
 import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"
 

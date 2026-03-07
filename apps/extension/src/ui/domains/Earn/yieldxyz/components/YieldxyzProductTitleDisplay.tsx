@@ -1,4 +1,4 @@
-import type { YieldDto } from "extension-core"
+import type { YieldDto } from "@core"
 import type { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

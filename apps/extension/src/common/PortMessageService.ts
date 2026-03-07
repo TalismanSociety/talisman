@@ -16,7 +16,7 @@ import type {
   TransportRequestMessage,
   TransportResponseMessage,
   UnsubscribeFn,
-} from "extension-core"
+} from "@core"
 import { log, PORT_EXTENSION } from "extension-shared"
 
 import {

@@ -1,14 +1,14 @@
-import type { HexString } from "@polkadot/util/types"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
-import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 import type {
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
-} from "extension-core"
+} from "@core"
+import type { HexString } from "@polkadot/util/types"
+import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
+import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, type ProcessAnimationStatus } from "talisman-ui"

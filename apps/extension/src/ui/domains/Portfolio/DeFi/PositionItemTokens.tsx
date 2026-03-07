@@ -1,5 +1,5 @@
+import type { DefiPositionItem } from "@core"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import type { DefiPositionItem } from "extension-core"
 import { log } from "extension-shared"
 import { type FC, useMemo } from "react"
 import { formatUnits } from "viem"

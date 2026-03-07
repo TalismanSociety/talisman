@@ -1,3 +1,9 @@
+import {
+  type EthGasSettingsLegacy,
+  type EthTransactionDetails,
+  type GasSettingsByPriorityLegacy,
+  getHumanReadableErrorMessage,
+} from "@core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -6,12 +12,6 @@ import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import {
-  type EthGasSettingsLegacy,
-  type EthTransactionDetails,
-  type GasSettingsByPriorityLegacy,
-  getHumanReadableErrorMessage,
-} from "extension-core"
 import { log } from "extension-shared"
 import {
   type FC,

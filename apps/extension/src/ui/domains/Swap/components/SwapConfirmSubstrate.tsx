@@ -1,6 +1,6 @@
+import { activeNetworksStore, activeTokensStore, type WalletTransactionInfo } from "@core"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { activeNetworksStore, activeTokensStore, type WalletTransactionInfo } from "extension-core"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"

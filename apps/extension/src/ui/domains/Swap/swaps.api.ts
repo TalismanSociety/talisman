@@ -1,3 +1,12 @@
+import {
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+  isAddressCompatibleWithNetwork,
+  remoteConfigStore,
+} from "@core"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
@@ -12,15 +21,6 @@ import {
 } from "@ui/state"
 import { t$ } from "@ui/state/i18n"
 import BigNumber from "bignumber.js"
-import {
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAccountPlatformPolkadot,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-} from "extension-core"
 import type { TFunction } from "i18next"
 import type { PrimitiveAtom } from "jotai"
 import { type Atom, atom, type Getter, useAtom, useAtomValue, useSetAtom } from "jotai"

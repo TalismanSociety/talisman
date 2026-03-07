@@ -1,3 +1,4 @@
+import { type Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "@core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import type { Balance, Balances } from "@talismn/balances"
@@ -11,7 +12,6 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccounts, useBalances, useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
-import { type Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "extension-core"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

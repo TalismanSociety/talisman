@@ -1,3 +1,12 @@
+import {
+  getTalismanNetworkIdToYieldxyzNetworkIdMap,
+  getYieldxyzNetworkIdToTalismanNetworkIdMap,
+  type Networks,
+  type TokenDto,
+  type YieldDto,
+  type YieldxyzPosition,
+  type YieldxyzProvider,
+} from "@core"
 import { bind } from "@react-rxjs/core"
 import {
   evmErc20TokenId,
@@ -10,15 +19,6 @@ import {
 } from "@talismn/chaindata-provider"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
-import {
-  getTalismanNetworkIdToYieldxyzNetworkIdMap,
-  getYieldxyzNetworkIdToTalismanNetworkIdMap,
-  type Networks,
-  type TokenDto,
-  type YieldDto,
-  type YieldxyzPosition,
-  type YieldxyzProvider,
-} from "extension-core"
 import { log } from "extension-shared"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"

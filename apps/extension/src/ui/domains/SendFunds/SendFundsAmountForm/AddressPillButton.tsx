@@ -1,8 +1,8 @@
+import { getAccountGenesisHash } from "@core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
-import { getAccountGenesisHash } from "extension-core"
 import { type FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
 

@@ -1,3 +1,4 @@
+import type { Account, LegacyAccountOrigin } from "@core"
 import { createPair } from "@polkadot/keyring"
 import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
@@ -10,7 +11,6 @@ import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/cry
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworks } from "@ui/state"
-import type { Account, LegacyAccountOrigin } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 

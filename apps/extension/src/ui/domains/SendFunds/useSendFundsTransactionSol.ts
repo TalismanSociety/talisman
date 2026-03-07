@@ -1,3 +1,4 @@
+import { isAccountOwned } from "@core"
 import { type Connection, PublicKey, Transaction } from "@solana/web3.js"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { isTokenSol, type Token } from "@talismn/chaindata-provider"
@@ -8,7 +9,6 @@ import {
   getFrontEndSolanaConnector,
   useSolanaConnection,
 } from "@ui/util/solana/useSolanaConnection"
-import { isAccountOwned } from "extension-core"
 import { useMemo, useState } from "react"
 
 import { useSolTransactionRiskAnalysis } from "../Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"

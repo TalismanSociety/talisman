@@ -1,3 +1,11 @@
+import type {
+  Account,
+  AuthorizedSite,
+  AuthorizedSites,
+  BalanceSubscriptionResponse,
+  ProviderType,
+} from "@core"
+import { type AnalyticsCaptureRequest, SitesAuthorizedStore, type Trees } from "@core"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -7,14 +15,6 @@ import {
   type Token,
 } from "@talismn/chaindata-provider"
 import type { TokenRatesStorage } from "@talismn/token-rates"
-import type {
-  Account,
-  AuthorizedSite,
-  AuthorizedSites,
-  BalanceSubscriptionResponse,
-  ProviderType,
-} from "extension-core"
-import { type AnalyticsCaptureRequest, SitesAuthorizedStore, type Trees } from "extension-core"
 import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { vi } from "vitest"
 

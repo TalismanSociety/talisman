@@ -9,7 +9,7 @@ import { waitFor } from "@testing-library/dom"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
-import { getMessageSenderFn } from "../../tests/util"
+import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"

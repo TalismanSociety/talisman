@@ -1,5 +1,5 @@
+import { appStore } from "@core"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
-import { appStore } from "extension-core"
 import { BRAVE_BALANCES_URL } from "extension-shared"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

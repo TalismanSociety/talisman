@@ -1,3 +1,4 @@
+import type { AccountType } from "@core"
 import {
   EyeIcon,
   LinkIcon,
@@ -7,7 +8,6 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import type { AccountType } from "extension-core"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"

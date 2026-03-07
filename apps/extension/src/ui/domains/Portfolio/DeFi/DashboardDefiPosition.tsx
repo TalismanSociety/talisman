@@ -1,3 +1,4 @@
+import type { DefiPosition, DefiPositionItem } from "@core"
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -5,7 +6,6 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useDefiPosition } from "@ui/state"
-import type { DefiPosition, DefiPositionItem } from "extension-core"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

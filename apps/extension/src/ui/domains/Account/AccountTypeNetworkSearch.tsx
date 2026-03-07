@@ -1,3 +1,4 @@
+import { isNetworkActive } from "@core"
 import {
   Combobox,
   ComboboxButton,
@@ -12,7 +13,6 @@ import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
 import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
-import { isNetworkActive } from "extension-core"
 import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

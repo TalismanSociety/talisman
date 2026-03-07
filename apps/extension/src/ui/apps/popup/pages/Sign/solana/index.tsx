@@ -1,5 +1,5 @@
+import type { SigningRequestID } from "@core"
 import { useRequest } from "@ui/state"
-import type { SigningRequestID } from "extension-core"
 import { Suspense, useEffect } from "react"
 import { useParams } from "react-router-dom"
 

@@ -1,3 +1,8 @@
+import {
+  isAccountCompatibleWithNetwork,
+  isAccountOwned,
+  isAddressCompatibleWithNetwork,
+} from "@core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
@@ -18,11 +23,6 @@ import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts, useNetworkById, useToken } from "@ui/state"
-import {
-  isAccountCompatibleWithNetwork,
-  isAccountOwned,
-  isAddressCompatibleWithNetwork,
-} from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"

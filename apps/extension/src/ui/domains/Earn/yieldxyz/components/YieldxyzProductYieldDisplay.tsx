@@ -1,8 +1,8 @@
+import type { YieldDto } from "@core"
 import { InfoIcon } from "@talismn/icons"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import type { YieldDto } from "extension-core"
 import { type FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

@@ -1,12 +1,12 @@
-import { stripHexPrefix } from "@ethereumjs/util"
-import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
-import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
-import { isAddressEqual } from "@talismn/crypto"
 import {
   type AccountLedgerEthereum,
   type EthSignMessageMethod,
   getTransactionSerializable,
-} from "extension-core"
+} from "@core"
+import { stripHexPrefix } from "@ethereumjs/util"
+import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
+import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
+import { isAddressEqual } from "@talismn/crypto"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"

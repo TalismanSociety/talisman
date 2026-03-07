@@ -1,9 +1,9 @@
+import type { SendRequest } from "@core"
 import type { SolanaSignInOutput } from "@solana/wallet-standard-features"
 import { PublicKey } from "@solana/web3.js"
 import bs58 from "bs58"
 // biome-ignore lint/style/useNodejsImportProtocol: legacy
 import EventEmitter from "events"
-import type { SendRequest } from "extension-core"
 
 import { isVersionedTransaction } from "./solana"
 import { deserializeTransaction, serializeTransaction } from "./util"

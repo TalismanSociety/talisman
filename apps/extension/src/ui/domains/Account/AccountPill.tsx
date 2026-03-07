@@ -1,7 +1,7 @@
+import type { Account } from "@core"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { copyAddress } from "@ui/util/copyAddress"
-import type { Account } from "extension-core"
 import { type FC, useCallback, useMemo } from "react"
 
 import { FormattedAddress } from "./FormattedAddress"

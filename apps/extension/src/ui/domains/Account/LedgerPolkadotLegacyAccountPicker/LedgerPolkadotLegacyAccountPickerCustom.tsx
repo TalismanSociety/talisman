@@ -1,3 +1,4 @@
+import { type Account, isAccountLedgerPolkadotLegacy, type LedgerPolkadotCurve } from "@core"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
@@ -8,11 +9,6 @@ import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrat
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById } from "@ui/state"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import {
-  type Account,
-  isAccountLedgerPolkadotLegacy,
-  type LedgerPolkadotCurve,
-} from "extension-core"
 import { log } from "extension-shared"
 import {
   type ChangeEventHandler,

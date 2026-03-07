@@ -1,7 +1,7 @@
+import type { AccountsCatalogTree, TreeFolder, TreeItem } from "@core"
 import type { Placement } from "@floating-ui/react"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useAccountsCatalog } from "@ui/state"
-import type { AccountsCatalogTree, TreeFolder, TreeItem } from "extension-core"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

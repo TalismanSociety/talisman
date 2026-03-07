@@ -1,3 +1,4 @@
+import { isAccountPlatformSolana, type KnownRequestIdOnly, type ProviderType } from "@core"
 import { createSignInMessageText } from "@solana/wallet-standard-util"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
@@ -9,7 +10,6 @@ import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/typ
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import { useAccounts, useRequest } from "@ui/state"
-import { isAccountPlatformSolana, type KnownRequestIdOnly, type ProviderType } from "extension-core"
 import { capitalize } from "lodash-es"
 import { type FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

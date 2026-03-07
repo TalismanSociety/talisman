@@ -1,7 +1,6 @@
-// biome-ignore lint/style/useNodejsImportProtocol: legacy
+import type { SendRequest } from "@core"
+// biome-ignore lint/style/useNodejsImportProtocol: runs in browser context
 import EventEmitter from "events"
-
-import type { SendRequest } from "extension-core"
 import { log } from "extension-shared"
 
 import {

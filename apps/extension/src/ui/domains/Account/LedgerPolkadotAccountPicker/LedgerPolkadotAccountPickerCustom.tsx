@@ -1,3 +1,4 @@
+import { type Account, isAccountLedgerPolkadotGeneric, type LedgerPolkadotCurve } from "@core"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -6,11 +7,6 @@ import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/er
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById } from "@ui/state"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import {
-  type Account,
-  isAccountLedgerPolkadotGeneric,
-  type LedgerPolkadotCurve,
-} from "extension-core"
 import { log } from "extension-shared"
 import {
   type ChangeEventHandler,

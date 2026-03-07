@@ -1,7 +1,7 @@
+import type { SignerPayloadJSON } from "@core"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import type { UseQueryResult } from "@tanstack/react-query"
-import type { SignerPayloadJSON } from "extension-core"
 import { useMemo } from "react"
 
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"

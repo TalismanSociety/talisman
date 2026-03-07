@@ -1,10 +1,10 @@
+import type { Address, IdenticonType } from "@core"
 import type { IconTheme } from "@polkadot/react-identicon/types"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { detectAddressEncoding } from "@talismn/crypto"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
-import type { Address, IdenticonType } from "extension-core"
 import { type CSSProperties, type FC, lazy, Suspense, useMemo } from "react"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"

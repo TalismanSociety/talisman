@@ -1,5 +1,5 @@
+import { type SettingsStoreData, settingsStore } from "@core"
 import { bind } from "@react-rxjs/core"
-import { type SettingsStoreData, settingsStore } from "extension-core"
 import { type SetStateAction, useCallback } from "react"
 import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"
 

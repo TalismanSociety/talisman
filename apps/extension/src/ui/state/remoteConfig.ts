@@ -1,5 +1,5 @@
+import { type FeatureFlag, remoteConfigStore } from "@core"
 import { bind } from "@react-rxjs/core"
-import { type FeatureFlag, remoteConfigStore } from "extension-core"
 import { distinctUntilChanged, map } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"

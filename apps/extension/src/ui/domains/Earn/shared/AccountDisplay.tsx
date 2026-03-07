@@ -1,10 +1,10 @@
+import { getAccountGenesisHash } from "@core"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { cn } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state"
-import { getAccountGenesisHash } from "extension-core"
 import { type FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

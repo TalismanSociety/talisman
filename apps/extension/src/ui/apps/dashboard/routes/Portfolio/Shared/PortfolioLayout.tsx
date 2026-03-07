@@ -1,3 +1,4 @@
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "@core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
@@ -5,7 +6,6 @@ import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioGlobalData } from "@ui/state"
-import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
 import {
   type FC,
   type PropsWithChildren,

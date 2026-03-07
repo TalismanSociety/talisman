@@ -1,6 +1,6 @@
+import type { TokenDto } from "@core"
 import { GenericTokensAndFiat } from "@ui/domains/Asset/GenericTokensAndFiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import type { TokenDto } from "extension-core"
 import { type FC, useMemo } from "react"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
