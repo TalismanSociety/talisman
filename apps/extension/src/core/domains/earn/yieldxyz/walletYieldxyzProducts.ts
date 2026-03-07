@@ -1,5 +1,5 @@
-import { YIELD_API_BASE_URL } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { YIELD_API_BASE_URL } from "@common/constants"
+import { log } from "@common/log"
 import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { getLoadableQuery$, isNotNil, keepAlive, type Loadable } from "@talismn/util"
 import { isEqual, uniq } from "lodash-es"

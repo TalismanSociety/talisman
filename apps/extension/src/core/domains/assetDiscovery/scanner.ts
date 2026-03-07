@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import PromisePool from "@supercharge/promise-pool"
 import { abiMulticall, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {

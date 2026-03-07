@@ -1,7 +1,7 @@
 // biome-ignore-all lint/a11y/useAnchorContent: legacy
 
-import { POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
+import { log } from "@common/log"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"

@@ -1,5 +1,5 @@
-import { PORT_EXTENSION } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { PORT_EXTENSION } from "@common/constants"
+import { log } from "@common/log"
 import { assert } from "@polkadot/util"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"

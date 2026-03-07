@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { isSolanaAddress } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
 import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"

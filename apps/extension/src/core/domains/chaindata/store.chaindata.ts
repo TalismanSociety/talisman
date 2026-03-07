@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { ChaindataStorage } from "@talismn/chaindata-provider"
 import { isEqual } from "lodash-es"
 import { debounceTime, distinctUntilChanged, type Observable } from "rxjs"

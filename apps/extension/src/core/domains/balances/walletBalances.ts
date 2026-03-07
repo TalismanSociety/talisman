@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { Address } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { isAccountNotContact } from "@talismn/keyring"

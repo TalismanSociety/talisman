@@ -4,7 +4,7 @@ import {
   RELEASE_NOTES_URL,
   TALISMAN_DOCS_URL_PREFIX,
   TERMS_OF_USE_URL,
-} from "@common/extension-shared/constants"
+} from "@common/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   CodeIcon,

@@ -1,5 +1,5 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
+import { log } from "@common/log"
 import type { Trees } from "@core/domains/accounts/helpers.catalog"
 import type { AnalyticsCaptureRequest } from "@core/domains/app/types"
 import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"

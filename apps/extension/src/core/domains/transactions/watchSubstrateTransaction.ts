@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { TypeRegistry } from "@polkadot/types"
 import type { IU8a } from "@polkadot/types/types"
 import { assert } from "@polkadot/util"

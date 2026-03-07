@@ -1,4 +1,4 @@
-import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/extension-shared/constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/constants"
 import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import { BehaviorSubject } from "rxjs"

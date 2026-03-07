@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/a11y/useAnchorContent: legacy */
 
-import { CONNECT_LEDGER_DOCS_URL } from "@common/extension-shared/constants"
+import { CONNECT_LEDGER_DOCS_URL } from "@common/constants"
 import { XCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/talisman-ui/components/Button"

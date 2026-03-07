@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"

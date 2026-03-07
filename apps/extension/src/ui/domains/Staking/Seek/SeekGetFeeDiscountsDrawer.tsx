@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_URL } from "@common/extension-shared/constants"
+import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"

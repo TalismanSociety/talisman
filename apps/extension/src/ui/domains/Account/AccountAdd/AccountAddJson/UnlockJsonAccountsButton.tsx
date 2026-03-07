@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

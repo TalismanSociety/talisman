@@ -1,4 +1,4 @@
-import { PRIVACY_POLICY_URL } from "@common/extension-shared/constants"
+import { PRIVACY_POLICY_URL } from "@common/constants"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import type { FC, ReactNode } from "react"

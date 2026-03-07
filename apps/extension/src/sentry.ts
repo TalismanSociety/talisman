@@ -1,5 +1,5 @@
-import { DEBUG, IS_FIREFOX } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { DEBUG, IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 import {
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,

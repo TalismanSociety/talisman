@@ -1,4 +1,4 @@
-import { IS_FIREFOX } from "@common/extension-shared/constants"
+import { IS_FIREFOX } from "@common/constants"
 import { isAccountPlatformCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import {
   EthereumCircleBorderedLogo,

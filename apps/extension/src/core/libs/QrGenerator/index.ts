@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import type { DotNetwork } from "@talismn/chaindata-provider"

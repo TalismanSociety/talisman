@@ -1,5 +1,5 @@
-import { TOKEN_APPROVALS_URL } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { TOKEN_APPROVALS_URL } from "@common/constants"
+import { log } from "@common/log"
 import type { EvmAddress } from "@core/domains/ethereum/types"
 import { notify } from "@talisman/components/Notifications"
 import { type FC, useCallback, useMemo } from "react"

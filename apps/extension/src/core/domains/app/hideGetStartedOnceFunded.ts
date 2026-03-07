@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { Balances, type IBalance } from "@talismn/balances"
 import { normalizeAddress } from "@talismn/crypto"
 import { isAccountOwned } from "@talismn/keyring"

@@ -1,5 +1,5 @@
-import { DEBUG } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import { assert, isHex } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"

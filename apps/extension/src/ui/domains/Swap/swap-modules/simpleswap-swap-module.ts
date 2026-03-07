@@ -1,4 +1,4 @@
-import { UNKNOWN_TOKEN_URL } from "@common/extension-shared/constants"
+import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {

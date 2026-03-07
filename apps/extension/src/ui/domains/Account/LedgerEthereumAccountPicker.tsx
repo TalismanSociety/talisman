@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import type { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import type { Account } from "@core/domains/keyring/exports"

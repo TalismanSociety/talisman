@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"

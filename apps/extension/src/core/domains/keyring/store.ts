@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { assert } from "@polkadot/util"
 import type { KeypairCurve } from "@talismn/crypto"
 import {

@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"

@@ -1,4 +1,4 @@
-import { DISCORD_TALISMAN_URL } from "@common/extension-shared/constants"
+import { DISCORD_TALISMAN_URL } from "@common/constants"
 import { errorsStore } from "@core/domains/app/store.errors"
 import { Card } from "@talisman/components/Card"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"

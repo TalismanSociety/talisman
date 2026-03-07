@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared/constants"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"

@@ -1,4 +1,4 @@
-import { RAMPS_COINBASE_API_BASE_PATH } from "@common/extension-shared/constants"
+import { RAMPS_COINBASE_API_BASE_PATH } from "@common/constants"
 import { useQuery } from "@tanstack/react-query"
 import urlJoin from "url-join"
 

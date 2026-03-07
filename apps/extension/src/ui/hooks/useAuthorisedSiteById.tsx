@@ -1,4 +1,4 @@
-import { DEFAULT_ETH_CHAIN_ID } from "@common/extension-shared/constants"
+import { DEFAULT_ETH_CHAIN_ID } from "@common/constants"
 import type {
   AuthorizedSite,
   AuthorizedSiteAddresses,

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { type ReactNode, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"

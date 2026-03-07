@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { type MonoTypeOperatorFunction, tap } from "rxjs"
 
 // @dev turn this on temporarily when needed

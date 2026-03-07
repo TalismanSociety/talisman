@@ -1,5 +1,5 @@
-import { RAMPS_COINBASE_API_BASE_PATH } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { RAMPS_COINBASE_API_BASE_PATH } from "@common/constants"
+import { log } from "@common/log"
 import { isTokenDot, isTokenEth } from "@talismn/chaindata-provider"
 import { formatPrice } from "@talismn/util"
 import { type UseQueryResult, useQuery } from "@tanstack/react-query"

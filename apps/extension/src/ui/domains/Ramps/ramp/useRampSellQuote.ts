@@ -1,5 +1,5 @@
-import { RAMPS_RAMP_API_URL } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { RAMPS_RAMP_API_URL } from "@common/constants"
+import { log } from "@common/log"
 import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { type UseQueryResult, useQuery } from "@tanstack/react-query"
 import { useToken } from "@ui/state/chaindata"

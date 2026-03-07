@@ -1,5 +1,5 @@
 import type { AccountSummary, TransactionSimulation } from "@blockaid/client/resources/index.mjs"
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkById } from "@ui/state/chaindata"

@@ -1,4 +1,4 @@
-import { RAMPS_RAMP_API_URL } from "@common/extension-shared/constants"
+import { RAMPS_RAMP_API_URL } from "@common/constants"
 import { useQuery } from "@tanstack/react-query"
 
 import type { RampCurrency } from "./types"

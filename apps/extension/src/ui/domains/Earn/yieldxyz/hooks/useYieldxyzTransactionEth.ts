@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { TransactionDto } from "@core/domains/earn/exports"
 import { isEthereumAddress } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"

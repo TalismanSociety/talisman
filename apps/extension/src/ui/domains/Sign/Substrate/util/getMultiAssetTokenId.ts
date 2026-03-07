@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { XcmVersionedAssets } from "@polkadot-api/descriptors"
 import { type DotNetwork, subAssetTokenId, type TokenId } from "@talismn/chaindata-provider"
 

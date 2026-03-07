@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
 import { getBlockExplorerUrls, type SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo } from "@talismn/solana"

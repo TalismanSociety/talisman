@@ -1,4 +1,4 @@
-import { DEFAULT_ETH_CHAIN_ID } from "@common/extension-shared/constants"
+import { DEFAULT_ETH_CHAIN_ID } from "@common/constants"
 import { assert } from "@polkadot/util"
 import { base58 } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"

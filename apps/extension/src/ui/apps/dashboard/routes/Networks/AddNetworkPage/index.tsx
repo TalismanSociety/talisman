@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { getGithubTokenLogoUrlByCoingeckoId, NetworkBaseSchema } from "@talismn/chaindata-provider"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"

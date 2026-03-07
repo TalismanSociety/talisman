@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { bind } from "@react-rxjs/core"

@@ -1,5 +1,5 @@
-import { IS_FIREFOX } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 
 /**
  * Used to check if the current page is a background page.

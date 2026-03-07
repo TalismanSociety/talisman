@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { SendRequest } from "@core/types"
 // biome-ignore lint/style/useNodejsImportProtocol: runs in browser context
 import EventEmitter from "events"

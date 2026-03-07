@@ -1,4 +1,4 @@
-import { ASSET_DISCOVERY_API_URL } from "@common/extension-shared/constants"
+import { ASSET_DISCOVERY_API_URL } from "@common/constants"
 
 import type { AccountNfts } from "./types"
 

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Account } from "@core/domains/keyring/exports"
 import { createPair } from "@polkadot/keyring"

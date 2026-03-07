@@ -1,4 +1,4 @@
-import { POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared/constants"
+import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"

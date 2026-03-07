@@ -1,4 +1,4 @@
-import { POLKADOT_VAULT_DOCS_URL } from "@common/extension-shared/constants"
+import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"

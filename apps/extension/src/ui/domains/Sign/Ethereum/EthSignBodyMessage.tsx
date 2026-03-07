@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { Err, Ok, type Result } from "ts-results"
 
 export const getHostName = (url: string): Result<string, "Unable to get host from url"> => {

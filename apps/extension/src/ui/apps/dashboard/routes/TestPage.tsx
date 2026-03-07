@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { PublicKey } from "@solana/web3.js"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"

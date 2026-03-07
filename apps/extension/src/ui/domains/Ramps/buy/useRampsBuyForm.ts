@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"

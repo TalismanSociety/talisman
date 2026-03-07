@@ -1,4 +1,4 @@
-import { PRIVACY_POLICY_URL } from "@common/extension-shared/constants"
+import { PRIVACY_POLICY_URL } from "@common/constants"
 import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

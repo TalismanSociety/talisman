@@ -1,4 +1,4 @@
-import { TEST } from "@common/extension-shared/constants"
+import { TEST } from "@common/constants"
 import { bind } from "@react-rxjs/core"
 import { BrowserCodeReader } from "@zxing/browser"
 import { BehaviorSubject, combineLatest, from, map } from "rxjs"

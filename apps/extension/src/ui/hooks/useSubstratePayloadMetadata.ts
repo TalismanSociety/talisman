@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"

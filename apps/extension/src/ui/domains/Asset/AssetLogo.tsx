@@ -1,4 +1,4 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/extension-shared/constants"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/constants"
 import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { type CSSProperties, type FC, useId, useMemo } from "react"

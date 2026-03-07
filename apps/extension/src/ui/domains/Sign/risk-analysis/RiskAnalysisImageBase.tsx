@@ -1,4 +1,4 @@
-import { IPFS_GATEWAY } from "@common/extension-shared/constants"
+import { IPFS_GATEWAY } from "@common/constants"
 import { ImageIcon, QuestionCircleIcon } from "@talismn/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import type React from "react"

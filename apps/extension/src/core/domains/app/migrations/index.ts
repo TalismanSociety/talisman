@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { normalizeAddress } from "@talismn/crypto"
 
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"

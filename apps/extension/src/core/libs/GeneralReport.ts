@@ -1,4 +1,4 @@
-import { DEBUG, IS_FIREFOX } from "@common/extension-shared/constants"
+import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { Balances } from "@talismn/balances"
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"

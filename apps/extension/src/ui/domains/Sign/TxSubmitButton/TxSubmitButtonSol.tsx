@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { notify } from "@talisman/components/Notifications"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"

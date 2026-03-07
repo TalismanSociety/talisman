@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import type { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"

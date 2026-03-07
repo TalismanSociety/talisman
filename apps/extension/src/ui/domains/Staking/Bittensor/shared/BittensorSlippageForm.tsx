@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { Button } from "@ui/talisman-ui/components/Button"

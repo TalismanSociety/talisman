@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/extension-shared/constants"
+import { DEBUG } from "@common/constants"
 import type { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
 import useStatus from "@talisman/hooks/useStatus"

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { isNotNil } from "@talismn/util"
 
 import { db } from "../../../db"

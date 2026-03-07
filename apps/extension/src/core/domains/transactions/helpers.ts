@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"

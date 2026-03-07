@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { isTxInfoSwap } from "@core/domains/transactions/exports"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-provider"

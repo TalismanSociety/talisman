@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"

@@ -1,4 +1,4 @@
-import { DISCORD_TALISMAN_URL } from "@common/extension-shared/constants"
+import { DISCORD_TALISMAN_URL } from "@common/constants"
 import { Trans, useTranslation } from "react-i18next"
 
 export const AccountAddDcentDisabledMessage = () => {

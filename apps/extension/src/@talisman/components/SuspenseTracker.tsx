@@ -1,5 +1,5 @@
 // biome-ignore-all lint/suspicious/noConsole: debug logging
-import { DEBUG } from "@common/extension-shared/constants"
+import { DEBUG } from "@common/constants"
 import { type FC, useEffect } from "react"
 
 const SuspenseTrackerInner: FC<{ name: string }> = ({ name }) => {

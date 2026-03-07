@@ -1,5 +1,5 @@
-import { RAMPS_RAMP_API_URL } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { RAMPS_RAMP_API_URL } from "@common/constants"
+import { log } from "@common/log"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 

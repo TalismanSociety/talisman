@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"

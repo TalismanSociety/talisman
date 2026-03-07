@@ -1,4 +1,4 @@
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@common/extension-shared/constants"
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@common/constants"
 import { TalismanColouredHandWhiteTextLogo } from "@talisman/theme/logos"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

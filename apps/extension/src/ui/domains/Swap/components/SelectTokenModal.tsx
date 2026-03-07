@@ -1,4 +1,4 @@
-import { UNKNOWN_TOKEN_URL } from "@common/extension-shared/constants"
+import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import { FadeIn } from "@talisman/components/FadeIn"
 import type { Token } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronLeftIcon } from "@talismn/icons"

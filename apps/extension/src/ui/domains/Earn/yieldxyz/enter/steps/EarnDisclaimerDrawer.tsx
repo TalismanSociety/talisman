@@ -1,4 +1,4 @@
-import { TERMS_OF_USE_URL } from "@common/extension-shared/constants"
+import { TERMS_OF_USE_URL } from "@common/constants"
 import { useAppState } from "@ui/state/app"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Drawer } from "@ui/talisman-ui/components/Drawer"

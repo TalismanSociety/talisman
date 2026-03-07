@@ -12,7 +12,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
-import { log } from "./src/common/extension-shared/log"
+import { log } from "./src/common/log"
 
 const pkg = require("./package.json")
 

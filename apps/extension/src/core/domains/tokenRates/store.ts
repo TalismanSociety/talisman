@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { TokenList } from "@talismn/chaindata-provider"
 import {
   fetchTokenRates,

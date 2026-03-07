@@ -1,5 +1,5 @@
-import { ASSET_DISCOVERY_API_URL } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { ASSET_DISCOVERY_API_URL } from "@common/constants"
+import { log } from "@common/log"
 import { isAddressEqual } from "@talismn/crypto"
 import { isAccountNotContact } from "@talismn/keyring"
 import { getLoadable$, getSharedObservable, keepAlive, type Loadable } from "@talismn/util"

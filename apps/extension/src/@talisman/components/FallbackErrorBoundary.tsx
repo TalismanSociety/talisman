@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { Component, type ErrorInfo, type ReactNode } from "react"
 
 interface FallbackErrorBoundaryProps {

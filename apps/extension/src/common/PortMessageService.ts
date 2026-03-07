@@ -3,8 +3,8 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
-import { PORT_EXTENSION } from "@common/extension-shared/constants"
-import { log } from "@common/extension-shared/log"
+import { PORT_EXTENSION } from "@common/constants"
+import { log } from "@common/log"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,

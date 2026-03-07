@@ -1,4 +1,4 @@
-import { DEBUG, IS_FIREFOX } from "@common/extension-shared/constants"
+import { DEBUG, IS_FIREFOX } from "@common/constants"
 
 import { analyticsStore } from "../domains/analytics/store"
 import type { PostHogCaptureProperties } from "../domains/analytics/types"

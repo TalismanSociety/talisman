@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 

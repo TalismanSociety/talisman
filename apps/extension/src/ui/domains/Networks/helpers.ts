@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { Connection } from "@solana/web3.js"

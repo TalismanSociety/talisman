@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared/log"
+import { log } from "@common/log"
 import { captureException } from "@sentry/browser"
 import type { KeypairCurve } from "@talismn/crypto"
 import { Err, Ok, type Result } from "ts-results"
