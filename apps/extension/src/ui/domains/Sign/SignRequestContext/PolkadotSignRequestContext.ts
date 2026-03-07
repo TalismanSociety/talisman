@@ -20,7 +20,7 @@ import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo } from "react"
 
-import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
+import { useSubstratePayloadMetadataSuspense } from "../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (

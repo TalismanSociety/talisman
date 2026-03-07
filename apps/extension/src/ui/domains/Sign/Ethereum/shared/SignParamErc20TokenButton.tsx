@@ -1,8 +1,8 @@
 import type { EvmAddress } from "@core/domains/ethereum/types"
 import type { EthNetwork } from "@talismn/chaindata-provider"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
 import type { FC } from "react"
+import { useErc20Token } from "../hooks/useErc20Token"
 
 import { SignParamButton } from "./SignParamButton"
 

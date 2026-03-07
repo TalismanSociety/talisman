@@ -4,9 +4,9 @@ import { isEthereumAddress } from "@talismn/crypto"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Address } from "@ui/domains/Account/Address"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useToken } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
+import { useErc20Token } from "../hooks/useErc20Token"
 
 import { SignParamButton } from "./SignParamButton"
 
