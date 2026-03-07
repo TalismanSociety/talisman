@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { parseTransactionInfo } from "@talismn/solana"
 import { throwAfter } from "@talismn/util"

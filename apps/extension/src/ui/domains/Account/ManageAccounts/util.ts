@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Tree, TreeAccount, TreeFolder } from "@core/domains/accounts/helpers.catalog"
 
 import type { UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem, UiTreePosition } from "./types"

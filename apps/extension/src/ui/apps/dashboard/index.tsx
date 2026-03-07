@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/extension-shared"
+import { DEBUG } from "@common/extension-shared/constants"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLocked } from "@talisman/components/FullScreenLocked"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"

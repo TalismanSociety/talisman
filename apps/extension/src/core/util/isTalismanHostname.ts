@@ -1,4 +1,4 @@
-import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "../constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "../../common/extension-shared/constants"
 
 export const isTalismanHostname = (hostname: string | undefined) => {
   return (

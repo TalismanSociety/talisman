@@ -1,4 +1,4 @@
-import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@common/extension-shared"
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@common/extension-shared/constants"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"

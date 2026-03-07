@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Account } from "@core/domains/keyring/exports"
 import type { LedgerSolDerivationPathType } from "@core/domains/solana/exports"
 import { getSolLedgerDerivationPath } from "@core/domains/solana/exports"

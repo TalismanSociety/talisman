@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { AccountOfType } from "@core/domains/keyring/exports"
 import { PublicKey, type Transaction, type VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction } from "@talismn/solana"

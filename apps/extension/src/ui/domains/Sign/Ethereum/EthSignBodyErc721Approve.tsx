@@ -1,4 +1,4 @@
-import { TOKEN_APPROVALS_URL } from "@common/extension-shared"
+import { TOKEN_APPROVALS_URL } from "@common/extension-shared/constants"
 import { useQuery } from "@tanstack/react-query"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { UnsafeImage } from "@ui/talisman-ui/components/UnsafeImage"

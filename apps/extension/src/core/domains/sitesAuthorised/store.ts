@@ -1,4 +1,4 @@
-import { isTalismanHostname } from "@common/extension-shared"
+import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import { assert } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
 

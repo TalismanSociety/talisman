@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { EvmAddress } from "@core/domains/ethereum/types"
 import { abiErc20 } from "@core/util/abi"
 import { yupResolver } from "@hookform/resolvers/yup"

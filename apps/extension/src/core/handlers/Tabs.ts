@@ -1,4 +1,5 @@
-import { isTalismanUrl, log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
+import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import type {

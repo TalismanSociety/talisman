@@ -1,4 +1,4 @@
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@common/extension-shared"
+import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@common/extension-shared/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"

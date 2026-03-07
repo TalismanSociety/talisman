@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import type { EthGasSettingsLegacy } from "@core/domains/ethereum/types"
 import type {

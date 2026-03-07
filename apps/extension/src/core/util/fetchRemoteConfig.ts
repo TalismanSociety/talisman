@@ -1,4 +1,5 @@
-import { log, TALISMAN_CONFIG_URL } from "@common/extension-shared"
+import { TALISMAN_CONFIG_URL } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import toml from "toml"
 
 import type { RemoteConfigStoreData } from "../domains/app/types"

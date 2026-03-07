@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { decrypt } from "@metamask/browser-passworder"
 import { isObject } from "@polkadot/util"
 import { Err, Ok, type Result } from "ts-results"

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from polkadot.js
 
-import { DEBUG } from "@common/extension-shared"
+import { DEBUG } from "@common/extension-shared/constants"
 import type { Observable } from "rxjs"
 
 import type {

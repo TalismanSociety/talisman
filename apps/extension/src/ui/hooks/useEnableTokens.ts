@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { ActiveTokens } from "@core/domains/balances/store.activeTokens"
 import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
 import type { TokenId } from "@talismn/chaindata-provider"

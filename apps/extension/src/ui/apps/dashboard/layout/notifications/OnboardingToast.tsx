@@ -1,4 +1,4 @@
-import { IS_FIREFOX } from "@common/extension-shared"
+import { IS_FIREFOX } from "@common/extension-shared/constants"
 import { notifyCustom } from "@talisman/components/Notifications"
 import { ExtensionButtonIcon, PinIcon } from "@talismn/icons"
 import { useEffect, useMemo } from "react"

@@ -1,4 +1,3 @@
-import { isTalismanUrl } from "@common/extension-shared"
 import type { Account } from "@core/domains/keyring/exports"
 import {
   isAccountInTypes,
@@ -8,6 +7,7 @@ import {
   isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
 import type { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { useAccounts } from "@ui/state/accounts"
 import { useSettingValue } from "@ui/state/settings"
 import { useMemo } from "react"

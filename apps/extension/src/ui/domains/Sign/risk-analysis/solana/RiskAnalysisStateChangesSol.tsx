@@ -1,5 +1,5 @@
 import type { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { type SolNetworkId, solNativeTokenId, solSplTokenId } from "@talismn/chaindata-provider"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"

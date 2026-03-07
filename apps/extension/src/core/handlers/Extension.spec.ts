@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared/constants"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 import { TypeRegistry } from "@polkadot/types"

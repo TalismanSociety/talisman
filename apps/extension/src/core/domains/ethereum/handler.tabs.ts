@@ -1,4 +1,6 @@
-import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "@common/extension-shared"
+import { DEFAULT_ETH_CHAIN_ID } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
+import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import {

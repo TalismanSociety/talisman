@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/extension-shared"
+import { DEBUG } from "@common/extension-shared/constants"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { v4 as uuidV4 } from "uuid"
 

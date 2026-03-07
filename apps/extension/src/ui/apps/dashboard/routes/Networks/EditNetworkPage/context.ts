@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { notify } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import {

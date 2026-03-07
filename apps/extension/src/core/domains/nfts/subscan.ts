@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Account } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
 import { fromPairs, toPairs } from "lodash-es"

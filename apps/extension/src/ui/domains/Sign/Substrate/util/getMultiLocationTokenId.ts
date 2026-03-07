@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { XcmV3Junctions } from "@polkadot-api/descriptors"
 import type { DotNetwork, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { values } from "lodash-es"

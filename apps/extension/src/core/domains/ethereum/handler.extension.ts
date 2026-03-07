@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/extension-shared"
+import { DEBUG } from "@common/extension-shared/constants"
 import { personalSign, SignTypedDataVersion, signTypedData } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"

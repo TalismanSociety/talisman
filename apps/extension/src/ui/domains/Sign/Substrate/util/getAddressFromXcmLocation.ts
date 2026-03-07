@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Address } from "@core/types/base"
 import type { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { encodeAddressEthereum, encodeAddressSs58 } from "@talismn/crypto"

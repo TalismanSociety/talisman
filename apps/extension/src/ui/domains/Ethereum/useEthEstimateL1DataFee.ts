@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { getTransactionSerializable } from "@core/domains/ethereum/helpers"
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"

@@ -1,4 +1,4 @@
-import { TEST } from "@common/extension-shared"
+import { TEST } from "@common/extension-shared/constants"
 import { map, ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
 import { genericSubscription } from "../../handlers/subscriptions"

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import { notify } from "@talisman/components/Notifications"

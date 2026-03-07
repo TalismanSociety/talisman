@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared/constants"
 import { lt } from "semver"
 import { type LegacyAccount, LegacyAccountOrigin } from "../../domains/accounts/types"
 import { passwordStore } from "../../domains/app/store.password"

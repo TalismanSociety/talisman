@@ -1,4 +1,4 @@
-import { IS_FIREFOX } from "@common/extension-shared"
+import { IS_FIREFOX } from "@common/extension-shared/constants"
 import { classNames } from "@talismn/util"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import type { FC } from "react"

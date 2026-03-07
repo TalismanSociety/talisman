@@ -1,4 +1,5 @@
-import { log, TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import { checkHost } from "@polkadot/phishing"
 import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"

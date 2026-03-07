@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { type Token, TokenSchema } from "@talismn/chaindata-provider"
 import { isEqual, keyBy, values } from "lodash-es"
 import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"

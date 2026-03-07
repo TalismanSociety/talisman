@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/extension-shared/constants"
 import { renderHook, waitFor } from "@testing-library/react"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { ADDRESSES } from "../../../../tests/constants"

@@ -1,4 +1,4 @@
-import { IS_FIREFOX } from "@common/extension-shared"
+import { IS_FIREFOX } from "@common/extension-shared/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"

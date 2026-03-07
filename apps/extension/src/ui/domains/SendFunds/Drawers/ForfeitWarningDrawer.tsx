@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { isTokenNeedExistentialDeposit } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"

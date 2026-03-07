@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { ActionArgumentsDto, ArgumentSchemaDto } from "@core/domains/earn/exports"
 import { useMemo } from "react"
 

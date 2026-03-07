@@ -1,4 +1,4 @@
-import { DISCORD_TALISMAN_URL } from "@common/extension-shared"
+import { DISCORD_TALISMAN_URL } from "@common/extension-shared/constants"
 import { useSetting } from "@ui/state/settings"
 import { Button } from "@ui/talisman-ui/components/Button"
 import { Checkbox } from "@ui/talisman-ui/components/Checkbox"

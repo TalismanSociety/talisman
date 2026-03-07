@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { useTokensMap } from "@ui/state/chaindata"

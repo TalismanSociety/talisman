@@ -1,4 +1,4 @@
-import { IS_FIREFOX } from "@common/extension-shared"
+import { IS_FIREFOX } from "@common/extension-shared/constants"
 import {
   isTxInfoApproval,
   isTxInfoSwap,

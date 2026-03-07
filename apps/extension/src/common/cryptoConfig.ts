@@ -2,7 +2,7 @@
 // This must be imported early to ensure crypto is ready before any cryptographic operations
 // Some frontend features like JSON account import use @polkadot/keyring which requires WASM
 
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 
 cryptoWaitReady().catch((err) => {

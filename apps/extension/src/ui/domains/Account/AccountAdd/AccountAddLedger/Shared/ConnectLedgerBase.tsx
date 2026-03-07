@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { Spacer } from "@talisman/components/Spacer"
 import {
   LedgerConnectionStatus,

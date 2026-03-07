@@ -1,4 +1,4 @@
-import { DEBUG, DISCORD_TALISMAN_URL } from "@common/extension-shared"
+import { DEBUG, DISCORD_TALISMAN_URL } from "@common/extension-shared/constants"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import { TalismanDeadHandIcon } from "@talismn/icons"
 import { Button } from "@ui/talisman-ui/components/Button"

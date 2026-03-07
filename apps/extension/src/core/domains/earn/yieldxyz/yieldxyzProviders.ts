@@ -1,4 +1,5 @@
-import { log, YIELD_API_BASE_URL } from "@common/extension-shared"
+import { YIELD_API_BASE_URL } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import { getLoadableQuery$, keepAlive, type Loadable } from "@talismn/util"
 import { isEqual } from "lodash-es"
 import {

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { classNames } from "@talismn/util"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state/chaindata"

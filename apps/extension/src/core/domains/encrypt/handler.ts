@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import type { Keypair } from "@polkadot/util-crypto/types"
 import { getPublicKeyFromSecret } from "@talismn/crypto"

@@ -1,4 +1,4 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/extension-shared"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/extension-shared/constants"
 import type { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"

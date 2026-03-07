@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { type Connection, PublicKey } from "@solana/web3.js"
 import { networkIdFromTokenId, solSplTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"

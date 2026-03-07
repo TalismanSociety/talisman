@@ -1,4 +1,5 @@
-import { ASSET_DISCOVERY_API_URL, log } from "@common/extension-shared"
+import { ASSET_DISCOVERY_API_URL } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import {
   type EthNetworkId,
   evmErc20TokenId,

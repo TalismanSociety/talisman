@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import { provideContext } from "@talisman/util/provideContext"
 import type { Balance } from "@talismn/balances"

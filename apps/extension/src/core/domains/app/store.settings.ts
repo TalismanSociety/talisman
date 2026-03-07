@@ -1,4 +1,4 @@
-import { DEBUG, IS_FIREFOX } from "@common/extension-shared"
+import { DEBUG, IS_FIREFOX } from "@common/extension-shared/constants"
 import type { TokenRateCurrency } from "@talismn/token-rates"
 
 import { StorageProvider } from "../../libs/Store"

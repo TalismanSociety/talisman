@@ -1,4 +1,4 @@
-import { ASSET_DISCOVERY_API_URL } from "@common/extension-shared"
+import { ASSET_DISCOVERY_API_URL } from "@common/extension-shared/constants"
 
 export const fetchEvmNftRefresh = async (id: string) => {
   const req = await fetch(`${ASSET_DISCOVERY_API_URL}/nfts/refresh`, {

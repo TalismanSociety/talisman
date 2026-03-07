@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { ActionDto } from "@core/domains/earn/exports"
 import { notify } from "@talisman/components/Notifications"
 import type { NetworkId } from "@talismn/chaindata-provider"

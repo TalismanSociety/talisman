@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/extension-shared"
+import { DEBUG } from "@common/extension-shared/constants"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,

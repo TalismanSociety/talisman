@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { bind } from "@react-rxjs/core"
 import { CodeBlock } from "@talisman/components/CodeBlock"

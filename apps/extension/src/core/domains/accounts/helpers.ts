@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import type { DotNetwork, Network } from "@talismn/chaindata-provider"
 import {

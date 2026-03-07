@@ -1,4 +1,4 @@
-import { TEST } from "@common/extension-shared"
+import { TEST } from "@common/extension-shared/constants"
 import { TypeRegistry } from "@polkadot/types"
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { assert, u8aToHex } from "@polkadot/util"

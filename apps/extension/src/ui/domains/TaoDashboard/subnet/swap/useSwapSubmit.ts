@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"

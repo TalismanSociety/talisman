@@ -1,4 +1,5 @@
-import { DEBUG, log, TEST } from "@common/extension-shared"
+import { DEBUG, TEST } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import merge from "lodash-es/merge"
 

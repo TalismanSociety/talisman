@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { AnySigningRequest, SigningRequests } from "@core/domains/signing/types"
 import type { KnownRespondableRequest } from "@core/libs/requests/types"
 import { isEthereumRequest } from "@core/types/requests"

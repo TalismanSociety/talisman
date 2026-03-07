@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { isEqual } from "lodash-es"
 import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { SubstrateSigningRequest } from "@core/domains/signing/types"
 import type { Address } from "@core/types/base"
 import { isJsonPayload } from "@core/util/isJsonPayload"

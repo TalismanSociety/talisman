@@ -1,4 +1,4 @@
-import { IPFS_GATEWAY } from "@common/extension-shared"
+import { IPFS_GATEWAY } from "@common/extension-shared/constants"
 
 export const getSafeDownloadUrl = (url: string) =>
   url

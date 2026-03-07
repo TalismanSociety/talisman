@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"

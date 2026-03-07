@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/extension-shared"
+import { DEBUG } from "@common/extension-shared/constants"
 import type { UnsubscribeFn } from "@core/types"
 import { isFunction } from "@polkadot/util"
 import { useEffect, useState } from "react"

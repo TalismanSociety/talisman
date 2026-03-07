@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { getUniswapV2TokenInfo } from "@core/util/getUniswapV2TokenInfo"

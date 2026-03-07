@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { useCallback } from "react"
 

@@ -1,4 +1,4 @@
-import { IPFS_GATEWAY } from "@common/extension-shared"
+import { IPFS_GATEWAY } from "@common/extension-shared/constants"
 
 import { getSafeDownloadUrl } from "./getSafeDownloadUrl"
 

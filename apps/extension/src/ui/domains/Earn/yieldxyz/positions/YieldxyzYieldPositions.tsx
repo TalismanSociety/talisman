@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"

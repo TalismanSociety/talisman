@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { useNetworkById } from "@ui/state/chaindata"

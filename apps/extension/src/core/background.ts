@@ -1,4 +1,5 @@
-import { DEBUG, log, PORT_CONTENT, PORT_EXTENSION } from "@common/extension-shared"
+import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 

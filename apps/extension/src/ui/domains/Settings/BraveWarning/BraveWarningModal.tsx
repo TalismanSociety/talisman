@@ -1,4 +1,4 @@
-import { BRAVE_BALANCES_URL } from "@common/extension-shared"
+import { BRAVE_BALANCES_URL } from "@common/extension-shared/constants"
 import { appStore } from "@core/domains/app/store.app"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { Button } from "@ui/talisman-ui/components/Button"

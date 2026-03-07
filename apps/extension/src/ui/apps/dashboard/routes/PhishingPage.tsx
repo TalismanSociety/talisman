@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_URL } from "@common/extension-shared"
+import { TALISMAN_WEB_APP_URL } from "@common/extension-shared/constants"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"

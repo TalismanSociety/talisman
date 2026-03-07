@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import { fromHex, toHex } from "@polkadot-api/utils"
 import { TAO_DECIMALS } from "@talismn/balances"
 import { blake2b256 } from "@talismn/crypto"

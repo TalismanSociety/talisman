@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_URL } from "@common/extension-shared"
+import { TALISMAN_WEB_APP_URL } from "@common/extension-shared/constants"
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
 import type { Balance, Balances } from "@talismn/balances"

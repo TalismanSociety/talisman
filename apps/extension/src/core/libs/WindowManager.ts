@@ -1,4 +1,5 @@
-import { IS_FIREFOX, log } from "@common/extension-shared"
+import { IS_FIREFOX } from "@common/extension-shared/constants"
+import { log } from "@common/extension-shared/log"
 import { sleep } from "@talismn/util"
 
 import { appStore } from "../domains/app/store.app"

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import legacyKeyring from "@polkadot/ui-keyring"
 import { isValidDerivationPath } from "@talismn/crypto"
 import type { AddAccountExternalOptions } from "@talismn/keyring"

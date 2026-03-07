@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Loadable } from "@talismn/util"
 import { Observable, shareReplay, startWith, switchMap, timer } from "rxjs"
 

@@ -1,4 +1,4 @@
-import { log } from "@common/extension-shared"
+import { log } from "@common/extension-shared/log"
 import type { Account, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
 import { isAccountLedgerPolkadotGeneric } from "@core/domains/keyring/exports"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"

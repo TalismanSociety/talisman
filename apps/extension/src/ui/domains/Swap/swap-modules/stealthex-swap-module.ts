@@ -1,4 +1,4 @@
-import { UNKNOWN_TOKEN_URL } from "@common/extension-shared"
+import { UNKNOWN_TOKEN_URL } from "@common/extension-shared/constants"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
