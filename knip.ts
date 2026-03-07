@@ -9,7 +9,7 @@ const config: KnipConfig = {
 
   // Dependencies that are used but Knip can't detect (re-exports, dynamic imports, types, etc.)
   ignoreDependencies: [
-    // Re-exported through extension-core, used by apps/extension
+    // Used by apps/extension (re-exported through Solana inject code)
     "@solana/wallet-standard-util",
     // Type definitions - used by TypeScript but not detected by Knip
     "@types/pako",

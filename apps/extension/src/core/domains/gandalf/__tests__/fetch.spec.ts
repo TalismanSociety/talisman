@@ -12,7 +12,7 @@ vi.mock("../observable", () => ({
   gandalfAccessToken$: mockAccessToken$,
 }))
 
-vi.mock("extension-shared", () => ({
+vi.mock("@common/extension-shared", () => ({
   log: { debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }))
 

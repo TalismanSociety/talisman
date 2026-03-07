@@ -17,7 +17,7 @@ export const deriveEd25519 = (seed: Uint8Array, derivationPath: string): Keypair
 }
 
 export const getPublicKeyEd25519 = (secretKey: Uint8Array) => {
-  // When importing ed25519 polkadot-js accounts via json, which we do inside of `packages/extension-core/src/domains/keyring/getSecretKeyFromPjsJson.ts`,
+  // When importing ed25519 polkadot-js accounts via json, which we do inside of `apps/extension/src/core/domains/keyring/getSecretKeyFromPjsJson.ts`,
   // the secretKey we produce is 64 bytes in length.
   //
   // When using the ed25519 curve to derive a publicKey for this 64 bytes privateKey, we should only take the first 32 bytes:
