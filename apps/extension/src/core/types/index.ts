@@ -14,6 +14,7 @@ import type { GandalfMessages } from "../domains/gandalf/types"
 import type { MetadataMessages } from "../domains/metadata/types"
 import type { MnemonicMessages } from "../domains/mnemonics/types"
 import type { NftsMessages } from "../domains/nfts"
+import type { QueryCacheMessages } from "../domains/queryCache/types"
 import type { SendFundsMessages } from "../domains/sendFunds/types"
 import type { SigningMessages } from "../domains/signing/types"
 import type { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
@@ -100,6 +101,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   BittensorMessages &
   GandalfMessages &
   SendFundsMessages &
+  QueryCacheMessages &
   UnsubscribeMessages
 
 interface PingMessages {

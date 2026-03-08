@@ -1,0 +1,110 @@
+import type { Query, QueryFunctionContext, QueryKey, UseQueryOptions } from "@tanstack/react-query"
+import { notifyManager } from "@tanstack/react-query"
+
+import { api } from "../api/api"
+
+/** Configuration for persisting a query to the background-owned query cache. */
+export type QueryStorageConfig = {
+  /** Unique storage key for this query. Caller-defined — not derived from queryKey. */
+  key: string
+  /**
+   * Maximum age of the cached entry in milliseconds.
+   * The entry will be purged from storage after this duration.
+   * @default 86_400_000 (24 hours)
+   */
+  maxAge?: number
+}
+
+const DEFAULT_MAX_AGE = 86_400_000 // 24 hours
+
+/**
+ * Creates a TanStack Query per-query `persister` that reads/writes through
+ * the background-script query cache API.
+ *
+ * Follows the same pattern as `@tanstack/query-persist-client-core`'s
+ * `experimental_createQueryPersister`, adapted for Talisman's background-mediated
+ * IndexedDB storage with compression.
+ *
+ * The persister wraps `queryFn`:
+ *  1. On first fetch (no in-memory data), it tries to restore from background cache.
+ *  2. If restored, data is returned immediately (no loading state) and a stale refetch
+ *     is scheduled if the data is stale per TanStack's `staleTime`.
+ *  3. After a successful `queryFn` execution, the result is persisted to background cache.
+ *
+ * Works with `useQuery`, `useSuspenseQuery`, and `prefetchQuery` via the
+ * standard `persister` query option. TanStack automatically sets
+ * `networkMode: 'offlineFirst'` when a persister is present.
+ */
+export function createQueryStoragePersister(config: QueryStorageConfig) {
+  const { key, maxAge = DEFAULT_MAX_AGE } = config
+
+  return async <T, TQueryKey extends QueryKey>(
+    queryFn: (context: QueryFunctionContext<TQueryKey>) => T | Promise<T>,
+    context: QueryFunctionContext<TQueryKey>,
+    query: Query
+  ): Promise<T> => {
+    // Only attempt restore when no in-memory data exists
+    if (query.state.data === undefined) {
+      try {
+        const cached = await api.queryCacheGet(key)
+        if (cached) {
+          // Schedule a macro task to fix dataUpdatedAt and optionally refetch
+          notifyManager.schedule(() => {
+            query.setState({ dataUpdatedAt: cached.dataUpdatedAt })
+            if (query.isStale()) query.fetch()
+          })
+          // Return immediately to avoid loading state
+          return cached.data as T
+        }
+      } catch {
+        // Cache miss or error — fall through to queryFn
+      }
+    }
+
+    // No cached data or cache miss — run the real queryFn
+    const data = await queryFn(context)
+
+    // Persist after TanStack has updated internal state
+    notifyManager.schedule(() => {
+      const purgeAt = Date.now() + maxAge
+      api.queryCacheSet(key, data, purgeAt, query.state.dataUpdatedAt).catch(() => {})
+    })
+
+    return data
+  }
+}
+
+/**
+ * Augments standard TanStack `useQuery` options with background-owned persistence.
+ *
+ * Usage:
+ * ```ts
+ * useQuery(withQueryStorage(
+ *   { key: "tao-price", maxAge: 60_000 },
+ *   {
+ *     queryKey: ["sn45", "taoPrice"],
+ *     queryFn: () => fetchTaoPrice(),
+ *     staleTime: 30_000,
+ *   }
+ * ))
+ * ```
+ */
+export function withQueryStorage<
+  TQueryFnData = unknown,
+  TError = Error,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+>(
+  storage: QueryStorageConfig,
+  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>
+): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> {
+  return {
+    ...options,
+    persister: createQueryStoragePersister(storage) as UseQueryOptions<
+      TQueryFnData,
+      TError,
+      TData,
+      TQueryKey
+    >["persister"],
+  }
+}

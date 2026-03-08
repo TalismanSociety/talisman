@@ -319,4 +319,10 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(sendFunds.confirmedAddresses.subscribe)", null, cb),
   addConfirmedAddress: (tokenId, address) =>
     messageService.sendMessage("pri(sendFunds.confirmedAddresses.add)", { tokenId, address }),
+
+  // query cache
+  queryCacheGet: (key) => messageService.sendMessage("pri(queryCache.get)", { key }),
+  queryCacheSet: (key, data, purgeAt, dataUpdatedAt) =>
+    messageService.sendMessage("pri(queryCache.set)", { key, data, purgeAt, dataUpdatedAt }),
+  queryCacheRemove: (key) => messageService.sendMessage("pri(queryCache.remove)", { key }),
 }
