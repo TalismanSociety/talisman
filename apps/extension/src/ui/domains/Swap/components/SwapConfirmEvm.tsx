@@ -12,8 +12,6 @@ import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useSwap } from "@ui/domains/Swap/SwapProvider"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { atom, useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -56,19 +54,63 @@ export const SwapConfirmEvm = ({
     return () => clearTimeout(timeout)
   }, [swapView])
 
-  // exchangeAtom and evmTransactionAtom are still jotai atoms from the module
-  const exchangeAtom = useMemo(
-    () => swapModule?.exchangeAtom ?? atom(null),
-    [swapModule?.exchangeAtom]
-  )
-  const evmTransactionAtom = useMemo(
-    () => swapModule?.evmTransactionAtom ?? atom(null),
-    [swapModule?.evmTransactionAtom]
-  )
-
   const account = useAccountByAddress(fromAddress)
-  const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
-  const evmTxLoadable = useAtomValue(loadable(evmTransactionAtom))
+
+  // Fetch exchange + EVM transaction via async calls on the swap module
+  type ExchangeLoadable = import("../swaps.api").Loadable<{ id: string } | undefined>
+  type EvmTxLoadable = import("../swaps.api").Loadable<
+    import("viem").TransactionRequest | undefined
+  >
+  const [exchangeLoadable, setExchangeLoadable] = useState<ExchangeLoadable>({ state: "loading" })
+  const [evmTxLoadable, setEvmTxLoadable] = useState<EvmTxLoadable>({ state: "loading" })
+
+  useEffect(() => {
+    if (
+      !swapModule ||
+      !fromAsset ||
+      !toAsset ||
+      !fromAddress ||
+      !toAddress ||
+      swapView !== "confirm"
+    )
+      return
+    if (!isReady) return
+
+    const controller = new AbortController()
+    setExchangeLoadable({ state: "loading" })
+    setEvmTxLoadable({ state: "loading" })
+
+    const run = async () => {
+      try {
+        const exchange = await swapModule.createExchange({
+          fromAsset,
+          toAsset,
+          fromAmount,
+          fromAddress,
+          toAddress,
+        })
+        if (controller.signal.aborted) return
+        setExchangeLoadable({ state: "hasData", data: exchange })
+
+        if (fromAsset.networkType !== "evm" || !exchange) return
+
+        const evmTx = await swapModule.getEvmTransaction({
+          fromAsset,
+          fromAddress,
+          exchange,
+        })
+        if (controller.signal.aborted) return
+        setEvmTxLoadable({ state: "hasData", data: evmTx })
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setExchangeLoadable({ state: "hasError", error })
+        setEvmTxLoadable({ state: "hasError", error })
+      }
+    }
+    run()
+
+    return () => controller.abort()
+  }, [swapModule, fromAsset, toAsset, fromAddress, toAddress, fromAmount, isReady, swapView])
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!fromAsset) return

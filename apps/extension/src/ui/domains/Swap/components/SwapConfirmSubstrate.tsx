@@ -3,8 +3,6 @@ import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { atom, useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -46,11 +44,14 @@ export const SwapConfirmSubstrate = ({
     return () => clearTimeout(timeout)
   }, [swapView])
 
-  // exchangeAtom and substratePayloadAtom are still jotai atoms from the module
-  const exchangeAtom = useMemo(
-    () => swapModule?.exchangeAtom ?? atom(null),
-    [swapModule?.exchangeAtom]
-  )
+  // exchangeAtom and substratePayloadAtom are replaced with direct async calls
+  type SubstrateLoadable = import("../swaps.api").Loadable<{
+    payload: import("@core/domains/signing/types").SignerPayloadJSON
+    txMetadata?: Uint8Array
+  } | null>
+  type ExchangeLoadable = import("../swaps.api").Loadable<{ id: string } | undefined>
+  const [exchangeLoadable, setExchangeLoadable] = useState<ExchangeLoadable>({ state: "loading" })
+  const [payloadLoadable, setPayloadLoadable] = useState<SubstrateLoadable>({ state: "loading" })
 
   const insufficientBalance = useMemo(() => {
     if (!fastBalance?.balance) return undefined
@@ -66,12 +67,67 @@ export const SwapConfirmSubstrate = ({
       fromAmount.planck > fastBalance.balance.stayAlive.planck,
     [fastBalance, fromAmount.planck]
   )
-  const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
-  const substratePayloadAtom = useMemo(
-    () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
-    [swapModule, sapi, allowReap]
-  )
-  const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
+
+  useEffect(() => {
+    if (
+      !swapModule ||
+      !fromAsset ||
+      !toAsset ||
+      !fromAddress ||
+      !toAddress ||
+      swapView !== "confirm"
+    )
+      return
+    if (!isReady) return
+
+    const controller = new AbortController()
+    setExchangeLoadable({ state: "loading" })
+    setPayloadLoadable({ state: "loading" })
+
+    const run = async () => {
+      try {
+        const exchange = await swapModule.createExchange({
+          fromAsset,
+          toAsset,
+          fromAmount,
+          fromAddress,
+          toAddress,
+        })
+        if (controller.signal.aborted) return
+        setExchangeLoadable({ state: "hasData", data: exchange })
+
+        if (fromAsset.networkType !== "substrate" || !exchange || !sapi) return
+
+        const payload = await swapModule.getSubstratePayload({
+          fromAsset,
+          fromAddress,
+          exchange,
+          sapi,
+          allowReap,
+        })
+        if (controller.signal.aborted) return
+        setPayloadLoadable({ state: "hasData", data: payload })
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setExchangeLoadable({ state: "hasError", error })
+        setPayloadLoadable({ state: "hasError", error })
+      }
+    }
+    run()
+
+    return () => controller.abort()
+  }, [
+    swapModule,
+    fromAsset,
+    toAsset,
+    fromAddress,
+    toAddress,
+    fromAmount,
+    isReady,
+    swapView,
+    sapi,
+    allowReap,
+  ])
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (exchangeLoadable.state !== "hasData") return
@@ -146,7 +202,9 @@ export const SwapConfirmSubstrate = ({
 
   return (
     <>
-      {fromAsset?.networkType === "substrate" && <FeeEstimateSubstrate fastBalance={fastBalance} />}
+      {fromAsset?.networkType === "substrate" && (
+        <FeeEstimateSubstrate fastBalance={fastBalance} payloadLoadable={payloadLoadable} />
+      )}
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
         {payloadLoadable?.state === "hasError" && (

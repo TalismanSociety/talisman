@@ -1,100 +1,169 @@
 import { provideContext } from "@ui/util/provideContext"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { loadable } from "jotai/utils"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import type { SwapInit } from "./hooks/useSwapTokensModal"
-import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  fromEvmAddressAtom,
-  fromSubstrateAddressAtom,
-  quoteSortingAtom,
-  resetSwapFormAtom,
-  selectedProtocolAtom,
-  selectedSubProtocolAtom,
-  swapQuoteRefresherAtom,
-  toAddressAtom,
-  toAssetAtom,
-  toBtcAddressAtom,
-  toEvmAddressAtom,
-  toSubstrateAddressAtom,
+import type {
+  SupportedSwapProtocol,
+  SwappableAssetWithDecimals,
+  SwapView,
 } from "./swap-modules/common.swap-module"
 import {
-  approvalCounterAtom,
-  fromAssetsAtom,
-  safeTokensSetAtom,
-  selectedQuoteAtom,
-  selectedSwapModuleAtom,
-  sortedQuotesAtom,
-  swapQuotesAtom,
-  toAmountAtom,
-  toAssetsAtom,
-  tokenTabAtom,
   useFromAccount,
   useReverse,
+  useSafeTokens,
   useSetToAddress,
+  useSwapAssets,
   useSwapErc20Approval,
+  useSwapQuotes,
 } from "./swaps.api"
-import { swapViewAtom } from "./swaps-port/swapViewAtom"
+import { Decimal } from "./swaps-port/Decimal"
 
-export type SwapView = "form" | "approve-recipient" | "approve-erc20" | "confirm"
+export type { SwapView } from "./swap-modules/common.swap-module"
 
 type SwapProviderProps = {
   stateInit: SwapInit | null
 }
 
 const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
+  const { t } = useTranslation()
+
   // -- View --
-  const [swapView, setSwapView] = useAtom(swapViewAtom)
+  const [swapView, setSwapView] = useState<SwapView>("form")
 
   // -- Core form state --
-  const [fromAsset, setFromAsset] = useAtom(fromAssetAtom)
-  const [toAsset, setToAsset] = useAtom(toAssetAtom)
-  const [fromAmount, setFromAmount] = useAtom(fromAmountAtom)
-  const [selectedProtocol, setSelectedProtocol] = useAtom(selectedProtocolAtom)
-  const [selectedSubProtocol, setSelectedSubProtocol] = useAtom(selectedSubProtocolAtom)
-  const [quoteSorting, setQuoteSorting] = useAtom(quoteSortingAtom)
+  const [fromAsset, setFromAsset] = useState<SwappableAssetWithDecimals | null>(null)
+  const [toAsset, setToAsset] = useState<SwappableAssetWithDecimals | null>(null)
+  const [fromAmount, setFromAmount] = useState<Decimal>(Decimal.fromPlanck(0n, 1))
+  const [selectedProtocol, setSelectedProtocol] = useState<SupportedSwapProtocol | null>(null)
+  const [selectedSubProtocol, setSelectedSubProtocol] = useState<string | undefined>(undefined)
+  const [quoteSorting, setQuoteSorting] = useState<
+    "decentalised" | "cheapest" | "fastest" | "bestRate"
+  >("bestRate")
 
   // -- Address state --
-  const [fromEvmAddress, setFromEvmAddress] = useAtom(fromEvmAddressAtom)
-  const [fromSubstrateAddress, setFromSubstrateAddress] = useAtom(fromSubstrateAddressAtom)
-  const [toEvmAddress, setToEvmAddress] = useAtom(toEvmAddressAtom)
-  const [toSubstrateAddress, setToSubstrateAddress] = useAtom(toSubstrateAddressAtom)
-  const [toBtcAddress, setToBtcAddress] = useAtom(toBtcAddressAtom)
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const toAddress = useAtomValue(toAddressAtom)
+  const [fromEvmAddress, setFromEvmAddress] = useState<string | null>(null)
+  const [fromSubstrateAddress, setFromSubstrateAddress] = useState<string | null>(null)
+  const [toEvmAddress, setToEvmAddress] = useState<string | null>(null)
+  const [toSubstrateAddress, setToSubstrateAddress] = useState<string | null>(null)
+  const [toBtcAddress, setToBtcAddress] = useState<string | null>(null)
+
+  // -- Computed addresses --
+  const fromAddress = useMemo(() => {
+    if (!fromAsset) return null
+    if (fromAsset.networkType === "evm") return fromEvmAddress
+    return fromSubstrateAddress
+  }, [fromAsset, fromEvmAddress, fromSubstrateAddress])
+
+  const toAddress = useMemo(() => {
+    if (!toAsset) return null
+    if (toAsset.networkType === "evm") return toEvmAddress
+    if (toAsset.networkType === "btc") return toBtcAddress
+    return toSubstrateAddress
+  }, [toAsset, toEvmAddress, toSubstrateAddress, toBtcAddress])
 
   // -- Token tab --
-  const [tokenTab, setTokenTab] = useAtom(tokenTabAtom)
+  const [tokenTab, setTokenTab] = useState("all")
 
   // -- Actions --
-  const resetForm = useSetAtom(resetSwapFormAtom)
-  const setQuoteRefresher = useSetAtom(swapQuoteRefresherAtom)
-  const refreshQuotes = useCallback(() => setQuoteRefresher(Date.now()), [setQuoteRefresher])
-  const [approvalCounter, setApprovalCounter] = useAtom(approvalCounterAtom)
-  const incrementApprovalCounter = useCallback(
-    () => setApprovalCounter((c) => c + 1),
-    [setApprovalCounter]
+  const [quoteRefresher, setQuoteRefresher] = useState(Date.now())
+  const refreshQuotes = useCallback(() => setQuoteRefresher(Date.now()), [])
+  const [approvalCounter, setApprovalCounter] = useState(0)
+  const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
+
+  const resetForm = useCallback(() => {
+    setSwapView("form")
+    setFromAsset(null)
+    setToAsset(null)
+    setFromAmount(Decimal.fromPlanck(0n, 1))
+    setSelectedProtocol(null)
+    setSelectedSubProtocol(undefined)
+    setQuoteSorting("bestRate")
+    setFromEvmAddress(null)
+    setFromSubstrateAddress(null)
+    setToEvmAddress(null)
+    setToSubstrateAddress(null)
+    setToBtcAddress(null)
+    setTokenTab("all")
+    setApprovalCounter(0)
+  }, [])
+
+  // -- Async data hooks --
+  const safeTokensLoadable = useSafeTokens()
+  const safeTokensData = useMemo(
+    () => (safeTokensLoadable.state === "hasData" ? safeTokensLoadable.data : new Set<string>()),
+    [safeTokensLoadable]
+  )
+  const { fromAssetsLoadable, toAssetsLoadable } = useSwapAssets(
+    fromAsset,
+    tokenTab,
+    t,
+    safeTokensData
   )
 
-  // -- Derived async state (loadable to avoid Suspense) --
-  const fromAssetsLoadable = useAtomValue(loadable(fromAssetsAtom))
-  const toAssetsLoadable = useAtomValue(loadable(toAssetsAtom))
-  // swapQuotesAtom is already wrapped in loadable
-  const quotesLoadable = useAtomValue(swapQuotesAtom)
-  const sortedQuotesLoadable = useAtomValue(loadable(sortedQuotesAtom))
-  const selectedQuoteLoadable = useAtomValue(loadable(selectedQuoteAtom))
-  const selectedModuleLoadable = useAtomValue(loadable(selectedSwapModuleAtom))
-  const toAmountLoadable = useAtomValue(loadable(toAmountAtom))
-  const safeTokensLoadable = useAtomValue(loadable(safeTokensSetAtom))
+  const {
+    quotesLoadable,
+    sortedQuotesLoadable,
+    selectedQuoteLoadable,
+    selectedModuleLoadable,
+    toAmountLoadable,
+  } = useSwapQuotes({
+    fromAsset,
+    toAsset,
+    fromAmount,
+    fromAddress,
+    toAddress,
+    selectedProtocol,
+    selectedSubProtocol,
+    quoteSorting,
+    quoteRefresher,
+  })
 
-  // -- Side-effect hooks (run in provider so they're active for all views) --
-  const fromAccountInfo = useFromAccount()
-  useSetToAddress()
-  const reverse = useReverse()
-  const erc20Approval = useSwapErc20Approval()
+  // -- Side-effect hooks --
+  const { ethAccounts, substrateAccounts, fromEvmAccount, fromSubstrateAccount } = useFromAccount(
+    fromEvmAddress,
+    setFromEvmAddress,
+    fromSubstrateAddress,
+    setFromSubstrateAddress
+  )
+
+  useSetToAddress(
+    fromAddress,
+    toAsset,
+    toEvmAddress,
+    setToEvmAddress,
+    toSubstrateAddress,
+    setToSubstrateAddress,
+    toBtcAddress,
+    setToBtcAddress
+  )
+
+  const reverse = useReverse(
+    fromAsset,
+    setFromAsset,
+    toAsset,
+    setToAsset,
+    setFromAmount,
+    toAmountLoadable
+  )
+
+  // Extract selected module/quote data for approval hook
+  const selectedModuleData =
+    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
+  const selectedQuoteData =
+    selectedQuoteLoadable.state === "hasData" ? selectedQuoteLoadable.data : null
+
+  const erc20Approval = useSwapErc20Approval({
+    selectedModule: selectedModuleData,
+    fromAsset,
+    toAsset,
+    fromAmount,
+    fromAddress,
+    toAddress,
+    selectedSubProtocol,
+    selectedQuote: selectedQuoteData,
+    approvalCounter,
+  })
 
   return useMemo(
     () => ({
@@ -152,8 +221,11 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
       toAmountLoadable,
       safeTokensLoadable,
 
-      // Account info (spread from useFromAccount)
-      ...fromAccountInfo,
+      // Account info
+      ethAccounts,
+      substrateAccounts,
+      fromEvmAccount,
+      fromSubstrateAccount,
 
       // ERC20 approval
       erc20Approval,
@@ -161,41 +233,27 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
       // Init args
       stateInit,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- all values intentionally included
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       swapView,
-      setSwapView,
       fromAsset,
-      setFromAsset,
       toAsset,
-      setToAsset,
       fromAmount,
-      setFromAmount,
       selectedProtocol,
-      setSelectedProtocol,
       selectedSubProtocol,
-      setSelectedSubProtocol,
       quoteSorting,
-      setQuoteSorting,
       fromEvmAddress,
-      setFromEvmAddress,
       fromSubstrateAddress,
-      setFromSubstrateAddress,
       toEvmAddress,
-      setToEvmAddress,
       toSubstrateAddress,
-      setToSubstrateAddress,
       toBtcAddress,
-      setToBtcAddress,
       fromAddress,
       toAddress,
       tokenTab,
-      setTokenTab,
       resetForm,
       refreshQuotes,
       reverse,
       approvalCounter,
-      setApprovalCounter,
       incrementApprovalCounter,
       fromAssetsLoadable,
       toAssetsLoadable,
@@ -205,7 +263,10 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
       selectedModuleLoadable,
       toAmountLoadable,
       safeTokensLoadable,
-      fromAccountInfo,
+      ethAccounts,
+      substrateAccounts,
+      fromEvmAccount,
+      fromSubstrateAccount,
       erc20Approval,
       stateInit,
     ]

@@ -1,47 +1,33 @@
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworkById } from "@ui/state/chaindata"
-import { atom, useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useSwap } from "../SwapProvider"
+import type { Loadable } from "../swaps.api"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 
 export const FeeEstimateSubstrate = ({
-  fastBalance,
+  payloadLoadable,
 }: {
-  fastBalance: ReturnType<typeof useFastBalance>
+  fastBalance?: ReturnType<typeof useFastBalance>
+  payloadLoadable?: Loadable<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>
 }) => {
   const { t } = useTranslation()
 
-  const { fromAsset, fromAmount, selectedModuleLoadable } = useSwap()
+  const { fromAsset } = useSwap()
   const fromDotNetwork = useNetworkById(String(fromAsset?.chainId), "polkadot")
-  const swapModule =
-    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
 
   const { data: sapi } = useScaleApi(
     fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
   )
-  const allowReap = useMemo(
-    () =>
-      fastBalance?.balance?.stayAlive.planck !== undefined &&
-      fromAmount.planck > fastBalance.balance.stayAlive.planck,
-    [fastBalance, fromAmount.planck]
-  )
-  const substratePayloadAtom = useMemo(
-    () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
-    [swapModule, sapi, allowReap]
-  )
-  const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
 
   const feeEstimate = useGetFeeEstimate({
     sapi,
-    payload: payloadLoadable.state === "hasData" ? payloadLoadable.data?.payload : undefined,
+    payload: payloadLoadable?.state === "hasData" ? payloadLoadable.data?.payload : undefined,
   })
 
   return (
@@ -53,7 +39,7 @@ export const FeeEstimateSubstrate = ({
         <div>
           {feeEstimate.error ? (
             <div className="truncate text-alert-error">{t("Failed to estimate fee")}</div>
-          ) : payloadLoadable.state === "loading" || feeEstimate.isLoading ? (
+          ) : payloadLoadable?.state === "loading" || feeEstimate.isLoading ? (
             <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
               0.0000 TKN ($0.00)
             </div>

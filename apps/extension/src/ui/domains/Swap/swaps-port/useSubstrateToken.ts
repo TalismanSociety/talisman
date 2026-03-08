@@ -1,9 +1,6 @@
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import { useEffect, useState } from "react"
-
-import { apiPromiseAtom } from "./apiPromiseAtom"
 
 export type UseSubstrateTokenProps = {
   chainId: string
@@ -18,45 +15,69 @@ export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
   } | null>()
   const chain = useNetworkById(props?.chainId, "polkadot")
 
-  const apiLoadable = useAtomValue(loadable(apiPromiseAtom(chain?.id)))
+  const { data: sapi } = useScaleApi(chain?.id ?? null)
 
   useEffect(() => {
     if (!props) return
     if (token) return
-    if (apiLoadable.state !== "hasData") return
-
-    const api = apiLoadable.data
-    if (!api) return
+    if (!sapi) return
 
     const abortController = new AbortController()
 
-    api.isReady.then(async () => {
-      if (abortController.signal.aborted) return
-
-      if (props.assethubAssetId !== undefined) {
-        if (!api.query.assets) return
-
-        const metadata = await api.query.assets.metadata(props.assethubAssetId)
+    const run = async () => {
+      try {
         if (abortController.signal.aborted) return
 
-        setToken({
-          symbol: metadata.symbol.toHuman()?.toString() ?? "",
-          name: metadata.name.toHuman()?.toString() ?? "",
-          decimals: metadata.decimals.toNumber(),
-        })
-        return
-      }
+        if (props.assethubAssetId !== undefined) {
+          // Query asset metadata via SAPI storage
+          const metadata = await sapi.getStorage<{
+            symbol: string | { asText: () => string }
+            name: string | { asText: () => string }
+            decimals: number
+          }>("Assets", "Metadata", [props.assethubAssetId])
 
-      // default to polkadot
-      setToken({
-        symbol: api.registry.chainTokens[0] ?? "DOT",
-        name: chain?.name ?? "Polkadot",
-        decimals: api.registry.chainDecimals[0] ?? 10,
-      })
-    })
+          if (abortController.signal.aborted) return
+
+          if (metadata) {
+            setToken({
+              symbol:
+                typeof metadata.symbol === "string"
+                  ? metadata.symbol
+                  : (metadata.symbol?.toString?.() ?? ""),
+              name:
+                typeof metadata.name === "string"
+                  ? metadata.name
+                  : (metadata.name?.toString?.() ?? ""),
+              decimals: Number(metadata.decimals),
+            })
+            return
+          }
+
+          // Fallback to chain token if metadata query fails
+          const chainToken = sapi.token
+          setToken({
+            symbol: chainToken?.symbol ?? "DOT",
+            name: chain?.name ?? "Unknown",
+            decimals: chainToken?.decimals ?? 10,
+          })
+          return
+        }
+
+        // Default: use chain token metadata from SAPI
+        const chainToken = sapi.token
+        setToken({
+          symbol: chainToken?.symbol ?? "DOT",
+          name: chain?.name ?? "Polkadot",
+          decimals: chainToken?.decimals ?? 10,
+        })
+      } catch {
+        // Ignore errors, token stays null
+      }
+    }
+    run()
 
     return () => abortController.abort()
-  }, [apiLoadable, chain, props, token])
+  }, [sapi, chain, props, token])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {

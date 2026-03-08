@@ -1,10 +1,9 @@
 import { LoaderIcon } from "@talismn/icons"
-import type { Loadable } from "jotai/vanilla/utils/loadable"
 import { type ReactNode, Suspense, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
+import type { Loadable } from "../swaps.api"
 import { SwapDetailsCard } from "./SwapDetailsCard"
 import { SwapDetailsCardSkeleton } from "./SwapDetailsCardSkeleton"
 import { SwapDetailsContainer } from "./SwapDetailsContainer"

@@ -1,10 +1,8 @@
+import { BigMath } from "@talismn/util"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworksMapById } from "@ui/state/chaindata"
-import { useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { apiPromiseAtom } from "./apiPromiseAtom"
-import { computeSubstrateBalance } from "./computeSubstrateBalance"
 import { Decimal } from "./Decimal"
 import { useSubstrateToken } from "./useSubstrateToken"
 
@@ -34,38 +32,68 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
       [props?.assetHubAssetId, props?.chainId]
     )
   )
-  const unsubRef = useRef<() => void>()
   const chains = useNetworksMapById({ platform: "polkadot" })
   const chain = useMemo(() => {
     if (!props) return null
     return chains[props.chainId]
   }, [chains, props])
-  const apiLoadable = useAtomValue(loadable(apiPromiseAtom(chain?.id)))
 
-  const fetchBalance = useCallback(() => {
-    if (!props || unsubRef.current) return
-    if (apiLoadable.state !== "hasData") return
+  const { data: sapi } = useScaleApi(chain?.id ?? null)
+  const pollRef = useRef<ReturnType<typeof setTimeout>>()
 
-    const api = apiLoadable.data
-    if (!api) return
-    if (!api.query.system) return
+  const fetchBalance = useCallback(async () => {
+    if (!props || !sapi || !token) return
 
-    if (props.assetHubAssetId === undefined) {
-      return void api.query.system
-        .account(props.address, (account) => void setBalance(computeSubstrateBalance(api, account)))
-        // biome-ignore lint/suspicious/noAssignInExpressions: legacy
-        .then((unsub) => void (unsubRef.current = unsub))
+    try {
+      if (props.assetHubAssetId === undefined) {
+        // Query system account balance via SAPI
+        const result = await sapi.getStorage<{
+          data: { free: bigint; reserved: bigint; frozen: bigint }
+        }>("System", "Account", [props.address])
+        if (!result) return
+
+        const free = BigInt(result.data?.free ?? 0n)
+        const reserved = BigInt(result.data?.reserved ?? 0n)
+        const frozen = BigInt(result.data?.frozen ?? 0n)
+
+        // Match original computeSubstrateBalance logic
+        const untouchable = BigMath.max(frozen - reserved, 0n)
+        const transferableBN = BigMath.max(free - untouchable, 0n)
+
+        // Get real existential deposit from chain constants
+        let ed: bigint
+        try {
+          ed = sapi.getConstant<bigint>("Balances", "ExistentialDeposit")
+        } catch {
+          // Fallback: use 0 if constant not available (shouldn't happen for standard chains)
+          ed = 0n
+        }
+
+        const stayAliveBN = free - ed
+
+        setBalance({
+          transferable: Decimal.fromPlanck(transferableBN, token.decimals, {
+            currency: token.symbol,
+          }),
+          stayAlive: Decimal.fromPlanck(stayAliveBN > 0n ? stayAliveBN : 0n, token.decimals, {
+            currency: token.symbol,
+          }),
+        })
+        return
+      }
+
+      // For asset hub tokens, query assets.account via SAPI
+      const result = await sapi.getStorage<{ balance: bigint } | null>("Assets", "Account", [
+        props.assetHubAssetId,
+        props.address,
+      ])
+      const balanceBN = BigInt(result?.balance ?? 0n)
+      const balanceDec = Decimal.fromPlanck(balanceBN, token.decimals, { currency: token.symbol })
+      setBalance({ transferable: balanceDec, stayAlive: balanceDec })
+    } catch {
+      // Silently fail - balance stays undefined
     }
-
-    if (!token) return // waiting for token metadata
-    if (!api.query.assets) return // chain doesn't have assets pallet
-
-    api.query.assets.account(props.assetHubAssetId, props.address, (acc) => {
-      const balanceBN = acc.value?.balance?.toBigInt() ?? 0n
-      const balance = Decimal.fromPlanck(balanceBN, token.decimals, { currency: token.symbol })
-      setBalance({ transferable: balance, stayAlive: balance })
-    })
-  }, [props, apiLoadable, token])
+  }, [props, sapi, token])
 
   useEffect(() => {
     if (!props && balance !== undefined) setBalance(undefined)
@@ -76,13 +104,21 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
     setBalance(undefined)
   }, [props?.address, props?.assetHubAssetId, props?.chainId])
 
+  // Poll for balance updates (replaces subscription-based approach)
   useEffect(() => {
     fetchBalance()
+
+    // Poll every 15 seconds to keep balance fresh
+    const startPolling = () => {
+      pollRef.current = setTimeout(async () => {
+        await fetchBalance()
+        startPolling()
+      }, 15_000)
+    }
+    startPolling()
+
     return () => {
-      if (unsubRef.current) {
-        unsubRef.current?.()
-        unsubRef.current = undefined
-      }
+      if (pollRef.current) clearTimeout(pollRef.current)
     }
   }, [fetchBalance])
 
