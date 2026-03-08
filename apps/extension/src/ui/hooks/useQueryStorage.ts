@@ -1,12 +1,15 @@
 import type { Query, QueryFunctionContext, QueryKey } from "@tanstack/react-query"
-import { notifyManager } from "@tanstack/react-query"
+import { hashKey, notifyManager } from "@tanstack/react-query"
 
 import { api } from "../api/api"
 
 /** Configuration for persisting a query to the background-owned query cache. */
 export type QueryStorageConfig = {
-  /** Unique storage key for this query. Caller-defined — not derived from queryKey. */
-  key: string
+  /**
+   * Storage key for this query. When omitted, automatically derived from
+   * `queryKey` via TanStack's deterministic `hashKey`.
+   */
+  key?: string
   /**
    * Maximum age of the cached entry in milliseconds.
    * The entry will be purged from storage after this duration.
@@ -37,22 +40,33 @@ const DEFAULT_MAX_AGE = 86_400_000 // 24 hours
  *
  * Usage:
  * ```ts
+ * // Auto-derived key from queryKey (simplest)
  * useQuery({
  *   queryKey: ["sn45", "taoPrice"],
+ *   queryFn: () => fetchTaoPrice(),
+ *   persister: createQueryStoragePersister({ maxAge: 60_000 }),
+ *   staleTime: 30_000,
+ * })
+ *
+ * // Explicit key (when you need a stable key independent of queryKey)
+ * useQuery({
+ *   queryKey: ["sn45", "taoPrice", someVolatileParam],
  *   queryFn: () => fetchTaoPrice(),
  *   persister: createQueryStoragePersister({ key: "tao-price", maxAge: 60_000 }),
  *   staleTime: 30_000,
  * })
  * ```
  */
-export function createQueryStoragePersister(config: QueryStorageConfig) {
-  const { key, maxAge = DEFAULT_MAX_AGE } = config
+export function createQueryStoragePersister(config?: QueryStorageConfig) {
+  const { key: explicitKey, maxAge = DEFAULT_MAX_AGE } = config ?? {}
 
   return async <T, TQueryKey extends QueryKey>(
     queryFn: (context: QueryFunctionContext<TQueryKey>) => T | Promise<T>,
     context: QueryFunctionContext<TQueryKey>,
     query: Query
   ): Promise<T> => {
+    const key = explicitKey ?? hashKey(context.queryKey)
+
     // Only attempt restore when no in-memory data exists
     if (query.state.data === undefined) {
       try {

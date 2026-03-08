@@ -14,10 +14,7 @@ export function useGetValidatorsYield({ netuid }: { netuid: number }) {
         throw toTaoDataApiError(error, "Failed to load subnet validators")
       }
     },
-    persister: createQueryStoragePersister({
-      key: `validatorsYield:${netuid}`,
-      maxAge: 10 * 60_000,
-    }),
+    persister: createQueryStoragePersister({ maxAge: 10 * 60_000 }),
     enabled: typeof netuid === "number",
     retry: shouldRetryTaoDataApiError,
     staleTime: 5 * 60_000, // 5 mins
