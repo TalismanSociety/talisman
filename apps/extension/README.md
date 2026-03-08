@@ -46,7 +46,7 @@ pnpm wxt:dev:firefox
 
 In development mode:
 
-- Workspace packages (`@talismn/*`, `extension-core`, etc.) are aliased to their **source directories**
+- Workspace packages (`@talismn/*`) are aliased to their **source directories**
 - Changes to package source files trigger immediate rebuilds without needing to rebuild packages
 - The Vite dev server provides hot module replacement for React components
 
