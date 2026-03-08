@@ -17,6 +17,22 @@ cd apps/extension && pnpm dev
 
 This launches a Chromium browser with the extension loaded and CDP enabled on port 9223.
 
+For VS Code, the MCP server is already registered in `.vscode/mcp.json` with this config:
+
+```json
+{
+   "servers": {
+      "playwright-wxt": {
+         "type": "stdio",
+         "command": "npx",
+         "args": ["-y", "@playwright/mcp@latest", "--cdp-endpoint", "http://127.0.0.1:9223"]
+      }
+   }
+}
+```
+
+That file only registers the server inside VS Code. Copilot CLI users must configure the same MCP server manually in their CLI MCP config before using this skill.
+
 ## Limitation: Cannot Open Extension Pages
 
 The MCP server **cannot navigate to `chrome-extension://` URLs** on its own — the browser blocks it. If the extension page you need (popup, dashboard, onboarding) is not already open in a tab, you **must ask the user to open it manually** in the dev browser. Once the page is open, you can select the tab and interact with it normally.
