@@ -548,7 +548,7 @@ importers:
         specifier: ^3.2.6
         version: 3.2.6
       eth-phishing-detect:
-        specifier: latest
+        specifier: 1.2.0
         version: 1.2.0
       framer-motion:
         specifier: 11.11.9
