@@ -318,12 +318,13 @@ const getApprovalInfo = (
 const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
   try {
     const { fromAsset, fromAddress, exchange: quoteData } = params
-    // quoteData contains the selected quote's data field
     type LifiQuoteData = BaseQuote<
       lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest }
     >
     const selectedQuote = quoteData as LifiQuoteData | undefined
-    if (!selectedQuote?.data?.transactionRequest) throw new Error("Please select the quote again")
+    if (!selectedQuote?.data?.transactionRequest) {
+      throw new Error("Please select the quote again")
+    }
 
     if (!fromAddress) throw new Error("Missing from address")
     if (fromAsset?.networkType !== "evm") throw new Error("Not supported on Lifi")

@@ -39,6 +39,7 @@ export const SwapConfirmEvm = ({
     fromAmount,
     toAmountLoadable: toAmount,
     selectedModuleLoadable,
+    selectedQuoteLoadable,
     selectedSubProtocol: subProtocol,
     resetForm,
   } = useSwap()
@@ -92,12 +93,20 @@ export const SwapConfirmEvm = ({
         if (controller.signal.aborted) return
         setExchangeLoadable({ state: "hasData", data: exchange })
 
-        if (fromAsset.networkType !== "evm" || !exchange) return
+        if (fromAsset.networkType !== "evm") return
+
+        // For modules like LiFi where createExchange returns undefined,
+        // use the selected quote data so getEvmTransaction can build the tx
+        const selectedQuote =
+          selectedQuoteLoadable.state === "hasData" &&
+          selectedQuoteLoadable.data?.quote.state === "hasData"
+            ? selectedQuoteLoadable.data.quote.data
+            : undefined
 
         const evmTx = await swapModule.getEvmTransaction({
           fromAsset,
           fromAddress,
-          exchange,
+          exchange: exchange ?? selectedQuote,
         })
         if (controller.signal.aborted) return
         setEvmTxLoadable({ state: "hasData", data: evmTx })
@@ -110,7 +119,17 @@ export const SwapConfirmEvm = ({
     run()
 
     return () => controller.abort()
-  }, [swapModule, fromAsset, toAsset, fromAddress, toAddress, fromAmount, isReady, swapView])
+  }, [
+    swapModule,
+    fromAsset,
+    toAsset,
+    fromAddress,
+    toAddress,
+    fromAmount,
+    isReady,
+    swapView,
+    selectedQuoteLoadable,
+  ])
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!fromAsset) return
