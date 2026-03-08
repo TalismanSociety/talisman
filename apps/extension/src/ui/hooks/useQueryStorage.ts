@@ -1,4 +1,4 @@
-import type { Query, QueryFunctionContext, QueryKey, UseQueryOptions } from "@tanstack/react-query"
+import type { Query, QueryFunctionContext, QueryKey } from "@tanstack/react-query"
 import { notifyManager } from "@tanstack/react-query"
 
 import { api } from "../api/api"
@@ -34,6 +34,16 @@ const DEFAULT_MAX_AGE = 86_400_000 // 24 hours
  * Works with `useQuery`, `useSuspenseQuery`, and `prefetchQuery` via the
  * standard `persister` query option. TanStack automatically sets
  * `networkMode: 'offlineFirst'` when a persister is present.
+ *
+ * Usage:
+ * ```ts
+ * useQuery({
+ *   queryKey: ["sn45", "taoPrice"],
+ *   queryFn: () => fetchTaoPrice(),
+ *   persister: createQueryStoragePersister({ key: "tao-price", maxAge: 60_000 }),
+ *   staleTime: 30_000,
+ * })
+ * ```
  */
 export function createQueryStoragePersister(config: QueryStorageConfig) {
   const { key, maxAge = DEFAULT_MAX_AGE } = config
@@ -71,40 +81,5 @@ export function createQueryStoragePersister(config: QueryStorageConfig) {
     })
 
     return data
-  }
-}
-
-/**
- * Augments standard TanStack `useQuery` options with background-owned persistence.
- *
- * Usage:
- * ```ts
- * useQuery(withQueryStorage(
- *   { key: "tao-price", maxAge: 60_000 },
- *   {
- *     queryKey: ["sn45", "taoPrice"],
- *     queryFn: () => fetchTaoPrice(),
- *     staleTime: 30_000,
- *   }
- * ))
- * ```
- */
-export function withQueryStorage<
-  TQueryFnData = unknown,
-  TError = Error,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
->(
-  storage: QueryStorageConfig,
-  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>
-): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> {
-  return {
-    ...options,
-    persister: createQueryStoragePersister(storage) as UseQueryOptions<
-      TQueryFnData,
-      TError,
-      TData,
-      TQueryKey
-    >["persister"],
   }
 }

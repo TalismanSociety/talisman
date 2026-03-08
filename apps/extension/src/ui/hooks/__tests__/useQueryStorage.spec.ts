@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createQueryStoragePersister, withQueryStorage } from "../useQueryStorage"
+import { createQueryStoragePersister } from "../useQueryStorage"
 
 // Mock the api module
 vi.mock("@ui/api/api", () => ({
@@ -154,43 +154,5 @@ describe("createQueryStoragePersister", () => {
     const [, , purgeAt] = mockedApi.queryCacheSet.mock.calls[0]!
     expect(purgeAt).toBeGreaterThanOrEqual(before + 86_400_000)
     expect(purgeAt).toBeLessThanOrEqual(after + 86_400_000)
-  })
-})
-
-describe("withQueryStorage", () => {
-  it("should return options with persister injected", () => {
-    const options = withQueryStorage(
-      { key: "my-key", maxAge: 30_000 },
-      {
-        queryKey: ["prices", "tao"],
-        queryFn: () => Promise.resolve({ price: 1 }),
-        staleTime: 10_000,
-      }
-    )
-
-    expect(options.queryKey).toEqual(["prices", "tao"])
-    expect(options.staleTime).toBe(10_000)
-    expect(options.persister).toBeDefined()
-    expect(typeof options.persister).toBe("function")
-  })
-
-  it("should preserve all original options", () => {
-    const original = {
-      queryKey: ["test"] as const,
-      queryFn: () => Promise.resolve("data"),
-      staleTime: 5_000,
-      gcTime: 60_000,
-      retry: 3,
-      enabled: true,
-    }
-
-    const result = withQueryStorage({ key: "k" }, original)
-
-    expect(result.queryKey).toBe(original.queryKey)
-    expect(result.queryFn).toBe(original.queryFn)
-    expect(result.staleTime).toBe(original.staleTime)
-    expect(result.gcTime).toBe(original.gcTime)
-    expect(result.retry).toBe(original.retry)
-    expect(result.enabled).toBe(original.enabled)
   })
 })
