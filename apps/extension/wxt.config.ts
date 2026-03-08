@@ -473,6 +473,7 @@ export default defineConfig({
   webExt: {
     chromiumProfile: resolve(homedir(), ".talisman-dev/chrome-data"),
     keepProfileChanges: true,
+    chromiumArgs: ["--remote-debugging-port=9223"],
   },
 
   // Manifest configuration
