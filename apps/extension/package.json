@@ -93,7 +93,7 @@
     "dexie": "^4.0.9",
     "dexie-react-hooks": "^1.1.7",
     "dompurify": "^3.2.6",
-    "eth-phishing-detect": "latest",
+    "eth-phishing-detect": "1.2.0",
     "framer-motion": "11.11.9",
     "highlight.js": "11.10.0",
     "html-react-parser": "5.1.18",

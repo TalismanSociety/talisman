@@ -20,7 +20,7 @@ vi.mock("../client", () => ({
   requestAccessToken: (...args: unknown[]) => mockRequestAccessToken(...args),
 }))
 
-vi.mock("@common/extension-shared/log", () => ({
+vi.mock("@common/log", () => ({
   log: { debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }))
 

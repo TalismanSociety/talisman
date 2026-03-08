@@ -41,12 +41,13 @@
 
 | From ↓ \ To → | `common` | `core` | `ui` | `inject` |
 |----------------|----------|--------|------|----------|
-| **common**     | ✅       | ❌     | ❌   | ❌       |
+| **common**     | ✅       | types only | ❌   | ❌       |
 | **core**       | ✅       | ✅     | ❌   | ❌       |
 | **ui**         | ✅       | ✅     | ✅   | ❌       |
 | **inject**     | ✅       | types only | ❌ | ✅     |
 
 - `core` never imports from `ui` — the background service worker has no React.
+- `common` imports from `core` only for type definitions (`@core/types`), e.g. message protocol types used by `PortMessageService`.
 - `ui` imports from `core` for type definitions and domain exports, never for runtime classes.
 - `inject` imports from `core` only for type definitions.
 
