@@ -3,32 +3,11 @@ import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  type SwappableAssetWithDecimals,
-  swapQuoteRefresherAtom,
-  toAddressAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
-import {
-  fromAssetsAtom,
-  selectedQuoteAtom,
-  swapQuotesAtom,
-  toAmountAtom,
-  toAssetsAtom,
-  useFromAccount,
-  useReverse,
-  useSetToAddress,
-  useSwapErc20Approval,
-} from "../swaps.api"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
+import { useSwap } from "../SwapProvider"
+import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FromToAccountSelector } from "./FromToAccountSelector"
 import { ReverseButton } from "./ReverseButton"
@@ -43,27 +22,33 @@ export const SwapForm = ({
   approveRecipient?: boolean
 }) => {
   const { t } = useTranslation()
-  const setSwapView = useSetAtom(swapViewAtom)
 
-  const setQuoteRefresher = useSetAtom(swapQuoteRefresherAtom)
-  const quote = useAtomValue(loadable(selectedQuoteAtom))
+  const {
+    setSwapView,
+    refreshQuotes,
+    selectedQuoteLoadable: quote,
+    fromAddress,
+    fromAsset,
+    setFromAsset,
+    fromAmount,
+    setFromAmount,
+    fromEvmAccount,
+    fromSubstrateAccount,
+    toAddress,
+    toAsset,
+    setToAsset,
+    toAmountLoadable: toAmount,
+    fromAssetsLoadable: fromAssets,
+    toAssetsLoadable: toAssets,
+    quotesLoadable: quotes,
+    reverse,
+    erc20Approval: { data: approvalData, loading: approvalLoading },
+  } = useSwap()
 
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const [fromAsset, setFromAsset] = useAtom(fromAssetAtom)
-  const [fromAmount, setFromAmount] = useAtom(fromAmountAtom)
-  const { fromEvmAccount, fromSubstrateAccount } = useFromAccount()
-  const toAddress = useAtomValue(toAddressAtom)
-  useSetToAddress()
-  const [toAsset, setToAsset] = useAtom(toAssetAtom)
-
-  const toAmount = useAtomValue(loadable(toAmountAtom))
-  const fromAssets = useAtomValue(loadable(fromAssetsAtom))
-  const toAssets = useAtomValue(loadable(toAssetsAtom))
   const [cachedToAmount, setCachedToAmount] = useState(
     toAmount.state === "hasData" ? toAmount.data : undefined
   )
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
-  const quotes = useAtomValue(swapQuotesAtom)
 
   const accountsMap = useAccountsMap()
   const toAccount = toAddress ? accountsMap[toAddress] : null
@@ -86,8 +71,6 @@ export const SwapForm = ({
     if (toAmount.state === "hasData" && toAmount.data) setCachedToAmount(toAmount.data)
   }, [toAmount])
 
-  const reverse = useReverse()
-
   const handleChangeFromAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
       if (asset && toAsset && asset.id === toAsset.id) reverse()
@@ -109,8 +92,6 @@ export const SwapForm = ({
     return fromAmount.planck > fastBalance.balance.transferable.planck
   }, [fastBalance, fromAmount.planck])
 
-  const { data: approvalData, loading: approvalLoading } = useSwapErc20Approval()
-
   // refresh quote every 20 seconds
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
@@ -118,7 +99,7 @@ export const SwapForm = ({
     if (quotes.state === "hasData") {
       if (quotes.data?.some((d) => d.state === "loading")) return
     }
-    const id = setInterval(() => setQuoteRefresher(Date.now()), 20_000)
+    const id = setInterval(() => refreshQuotes(), 20_000)
     return () => clearInterval(id)
   }, [])
 

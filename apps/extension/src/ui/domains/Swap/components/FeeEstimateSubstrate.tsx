@@ -9,8 +9,7 @@ import { loadable } from "jotai/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { fromAmountAtom, fromAssetAtom } from "../swap-modules/common.swap-module"
-import { selectedSwapModuleAtom } from "../swaps.api"
+import { useSwap } from "../SwapProvider"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 
 export const FeeEstimateSubstrate = ({
@@ -20,10 +19,10 @@ export const FeeEstimateSubstrate = ({
 }) => {
   const { t } = useTranslation()
 
-  const fromAsset = useAtomValue(fromAssetAtom)
+  const { fromAsset, fromAmount, selectedModuleLoadable } = useSwap()
   const fromDotNetwork = useNetworkById(String(fromAsset?.chainId), "polkadot")
-  const fromAmount = useAtomValue(fromAmountAtom)
-  const swapModule = useAtomValue(selectedSwapModuleAtom)
+  const swapModule =
+    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
 
   const { data: sapi } = useScaleApi(
     fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null

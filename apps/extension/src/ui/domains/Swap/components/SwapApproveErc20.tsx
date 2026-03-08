@@ -8,18 +8,22 @@ import { notify } from "@ui/components/Notifications"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
-import { fromAddressAtom, fromAssetAtom } from "@ui/domains/Swap/swap-modules/common.swap-module"
-import { approvalCounterAtom, useSwapErc20Approval } from "@ui/domains/Swap/swaps.api"
-import { swapViewAtom } from "@ui/domains/Swap/swaps-port/swapViewAtom"
+import { useSwap } from "@ui/domains/Swap/SwapProvider"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export const SwapApproveErc20 = () => {
   const { t } = useTranslation()
 
-  const { data: approvalData, loading: approvalLoading, approveTxLoadable } = useSwapErc20Approval()
+  const {
+    erc20Approval: { data: approvalData, loading: approvalLoading, approveTxLoadable },
+    swapView,
+    setSwapView,
+    setApprovalCounter,
+    fromAsset,
+    fromAddress,
+  } = useSwap()
 
   const protocolNameCache = useRef(approvalData?.protocolName)
   const amountCache = useRef(approvalData?.amount)
@@ -27,7 +31,6 @@ export const SwapApproveErc20 = () => {
   if (approvalData?.amount) amountCache.current = approvalData?.amount
 
   // switch to confirm screen when approval has succeeded (and is no longer necessary)
-  const [swapView, setSwapView] = useAtom(swapViewAtom)
   useEffect(() => {
     if (!approvalLoading && approvalData === null) setSwapView("confirm")
   }, [approvalData, approvalLoading, setSwapView])
@@ -41,9 +44,6 @@ export const SwapApproveErc20 = () => {
   }, [swapView])
 
   const [isApproving, setIsApproving] = useState(false)
-  const setApprovalCounter = useSetAtom(approvalCounterAtom)
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const fromAddress = useAtomValue(fromAddressAtom)
   const account = useAccountByAddress(fromAddress)
 
   // once the payload is sent to ledger, we must freeze it

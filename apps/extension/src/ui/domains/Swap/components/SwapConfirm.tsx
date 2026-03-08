@@ -4,19 +4,9 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import { useTranslation } from "react-i18next"
-
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
-import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  toAddressAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
-import { toAmountAtom } from "../swaps.api"
+import { useSwap } from "../SwapProvider"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { SwapConfirmEvm } from "./SwapConfirmEvm"
 import { SwapConfirmSubstrate } from "./SwapConfirmSubstrate"
@@ -30,12 +20,14 @@ export const SwapConfirm = ({
 
   const networks = useNetworksMapById()
 
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
-  const fromAmount = useAtomValue(fromAmountAtom)
-  const toAmount = useAtomValue(loadable(toAmountAtom))
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const toAddress = useAtomValue(toAddressAtom)
+  const {
+    fromAsset,
+    toAsset,
+    fromAmount,
+    toAmountLoadable: toAmount,
+    fromAddress,
+    toAddress,
+  } = useSwap()
   const currency = useSelectedCurrency()
   const fromFiatAmount = useFiatValueForAmount({ amount: fromAmount, asset: fromAsset })
   const toFiatAmount = useFiatValueForAmount({

@@ -3,26 +3,16 @@ import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { atom, useAtomValue, useSetAtom } from "jotai"
+import { atom, useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import type { Hex } from "viem"
-
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
-import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  resetSwapFormAtom,
-  saveAddressForQuest,
-  toAddressAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
+import { useSwap } from "../SwapProvider"
+import { saveAddressForQuest } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
-import { selectedSwapModuleAtom, toAmountAtom } from "../swaps.api"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
 
@@ -33,7 +23,21 @@ export const SwapConfirmSubstrate = ({
 }) => {
   const { t } = useTranslation()
 
-  const swapView = useAtomValue(swapViewAtom)
+  const {
+    swapView,
+    fromAddress,
+    toAddress,
+    fromAsset,
+    toAsset,
+    fromAmount,
+    toAmountLoadable: toAmount,
+    selectedModuleLoadable,
+    resetForm,
+  } = useSwap()
+
+  const swapModule =
+    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
+
   const [isReady, setIsReady] = useState(false)
   useEffect(() => {
     if (swapView !== "confirm") return setIsReady(false)
@@ -42,13 +46,7 @@ export const SwapConfirmSubstrate = ({
     return () => clearTimeout(timeout)
   }, [swapView])
 
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const toAddress = useAtomValue(toAddressAtom)
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
-  const fromAmount = useAtomValue(fromAmountAtom)
-  const toAmount = useAtomValue(loadable(toAmountAtom))
-  const swapModule = useAtomValue(selectedSwapModuleAtom)
+  // exchangeAtom and substratePayloadAtom are still jotai atoms from the module
   const exchangeAtom = useMemo(
     () => swapModule?.exchangeAtom ?? atom(null),
     [swapModule?.exchangeAtom]
@@ -124,7 +122,6 @@ export const SwapConfirmSubstrate = ({
     )
   }, [fromAddress, insufficientBalance, isReady, payloadLoadable, sapi, toAddress, toAmount])
 
-  const resetSwapForm = useSetAtom(resetSwapFormAtom)
   const { close: closeSwapTokensModal } = useSwapTokensModal()
   const navigate = useNavigate()
   const onSubmitted = useCallback(
@@ -139,20 +136,12 @@ export const SwapConfirmSubstrate = ({
         saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
       closeSwapTokensModal()
-      resetSwapForm()
+      resetForm()
       if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
       if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
       navigate("/tx-history")
     },
-    [
-      closeSwapTokensModal,
-      fromAddress,
-      navigate,
-      resetSwapForm,
-      swapModule?.protocol,
-      toAsset,
-      txInfo,
-    ]
+    [closeSwapTokensModal, fromAddress, navigate, resetForm, swapModule?.protocol, toAsset, txInfo]
   )
 
   return (

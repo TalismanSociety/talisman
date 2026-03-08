@@ -1,27 +1,15 @@
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import { isAddressEqual, isBitcoinAddress, isEthereumAddress } from "@talismn/crypto"
 import { useAccounts } from "@ui/state/accounts"
-import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  fromAddressAtom,
-  fromAssetAtom,
-  fromEvmAddressAtom,
-  fromSubstrateAddressAtom,
-  type SwappableAssetWithDecimals,
-  toAddressAtom,
-  toAssetAtom,
-  toBtcAddressAtom,
-  toEvmAddressAtom,
-  toSubstrateAddressAtom,
-} from "../swap-modules/common.swap-module"
+import { useSwap } from "../SwapProvider"
+import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
 
 export const FromToAccountSelector = () => {
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
+  const { fromAsset, toAsset } = useSwap()
 
   const isSwappingFromBtc = useMemo(() => {
     return fromAsset?.id === "btc-native"
@@ -55,13 +43,15 @@ const FromAccount = () => {
   const { t } = useTranslation()
 
   const allAccounts = useAccounts()
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const setFromEvmAddress = useSetAtom(fromEvmAddressAtom)
-  const setFromSubstrateAddress = useSetAtom(fromSubstrateAddressAtom)
-  const setToEvmAddress = useSetAtom(toEvmAddressAtom)
-  const setToSubstrateAddress = useSetAtom(toSubstrateAddressAtom)
-  const setToBtcAddress = useSetAtom(toBtcAddressAtom)
+  const {
+    fromAsset,
+    fromAddress,
+    setFromEvmAddress,
+    setFromSubstrateAddress,
+    setToEvmAddress,
+    setToSubstrateAddress,
+    setToBtcAddress,
+  } = useSwap()
 
   const onChangeAddress = useCallback(
     (address: string | null) => {
@@ -129,11 +119,13 @@ const ToAccount = () => {
   const { t } = useTranslation()
 
   const allAccounts = useAccounts()
-  const toAsset = useAtomValue(toAssetAtom)
-  const toAddress = useAtomValue(toAddressAtom)
-  const setEvmAddress = useSetAtom(toEvmAddressAtom)
-  const setSubstrateAddress = useSetAtom(toSubstrateAddressAtom)
-  const setBtcAddress = useSetAtom(toBtcAddressAtom)
+  const {
+    toAsset,
+    toAddress,
+    setToEvmAddress: setEvmAddress,
+    setToSubstrateAddress: setSubstrateAddress,
+    setToBtcAddress: setBtcAddress,
+  } = useSwap()
 
   const onChangeAddress = useCallback(
     (address: string | null) => {

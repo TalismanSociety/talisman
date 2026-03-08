@@ -3,16 +3,12 @@ import { classNames, tokensToPlanck } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { useAtomValue } from "jotai"
 import { type FC, type ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
-
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
-import {
-  fromAddressAtom,
-  type SwappableAssetWithDecimals,
-} from "../swap-modules/common.swap-module"
+import { useSwap } from "../SwapProvider"
+import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { Decimal } from "../swaps-port/Decimal"
 import { SelectTokenModal } from "./SelectTokenModal"
 
@@ -65,7 +61,7 @@ export const TokenAmountInput: FC<Props> = ({
   const [input, setInput] = useState((amount?.planck ?? 0n) > 0n ? (amount?.toString() ?? "") : "")
 
   // reset input when fromAddress changes
-  const fromAddress = useAtomValue(fromAddressAtom)
+  const { fromAddress } = useSwap()
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     onChangeAmount?.(Decimal.fromPlanck(0n, 1))

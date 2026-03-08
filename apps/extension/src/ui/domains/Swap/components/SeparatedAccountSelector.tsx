@@ -22,15 +22,11 @@ import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsLi
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  fromAssetAtom,
-  type SwappableAssetWithDecimals,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
+import { useSwap } from "../SwapProvider"
+import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {
@@ -278,8 +274,7 @@ const AccountPicker = ({
 }) => {
   const { t } = useTranslation()
 
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
+  const { fromAsset, toAsset } = useSwap()
 
   const fromToken = useToken(fromAsset?.id)
   const fromChain = useNetworkById(fromToken?.networkId, "polkadot")

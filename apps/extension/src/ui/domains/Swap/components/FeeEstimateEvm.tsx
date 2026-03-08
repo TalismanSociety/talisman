@@ -11,11 +11,10 @@ import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useAtomValue } from "jotai"
 import { useTranslation } from "react-i18next"
 import type { TransactionRequest } from "viem"
 
-import { fromAssetAtom } from "../swap-modules/common.swap-module"
+import { useSwap } from "../SwapProvider"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 
 export const FeeEstimateEvm = ({
@@ -43,7 +42,7 @@ export const FeeEstimateEvm = ({
 }) => {
   const { t } = useTranslation()
 
-  const fromAsset = useAtomValue(fromAssetAtom)
+  const { fromAsset } = useSwap()
   const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
 
   if (loadableState === "hasError") return null

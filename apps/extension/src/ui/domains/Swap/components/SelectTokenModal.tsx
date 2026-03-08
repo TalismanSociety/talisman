@@ -6,13 +6,12 @@ import { FadeIn } from "@ui/components/FadeIn"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
-import { useAtomValue, useSetAtom } from "jotai"
-import { loadable } from "jotai/utils"
 import { useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { useSwap } from "../SwapProvider"
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { getTokenTabs, safeTokensSetAtom, tokenTabAtom } from "../swaps.api"
+import { getTokenTabs } from "../swaps.api"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {
@@ -32,7 +31,7 @@ export const SelectTokenModal: React.FC<Props> = ({
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [assetWithWarning, setAssetWithWarning] = useState<SwappableAssetWithDecimals | null>(null)
-  const safeList = useAtomValue(loadable(safeTokensSetAtom))
+  const { safeTokensLoadable: safeList } = useSwap()
 
   const handleSelectAsset = useCallback(
     (asset: SwappableAssetWithDecimals, hideWarning?: boolean) => {
@@ -239,8 +238,7 @@ const useTokenFilterOptions = () => {
     tab.label,
   ])
 
-  const defaultTokenFilterOption = useAtomValue(tokenTabAtom)
-  const onSelectTokenFilterOption = useSetAtom(tokenTabAtom)
+  const { tokenTab: defaultTokenFilterOption, setTokenTab: onSelectTokenFilterOption } = useSwap()
 
   return { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption }
 }

@@ -1,9 +1,6 @@
-import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 
-import { fromAssetAtom } from "../swap-modules/common.swap-module"
-import { swapQuotesAtom, useFromAccount } from "../swaps.api"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
+import { useSwap } from "../SwapProvider"
 import { useFastBalance } from "../swaps-port/useFastBalance"
 import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
@@ -11,10 +8,8 @@ import { SwapForm } from "./SwapForm"
 import { SwapHeader } from "./SwapHeader"
 
 export const SwapTokensWizard = () => {
-  const swapView = useAtomValue(swapViewAtom)
+  const { swapView, fromAsset, fromEvmAddress, fromSubstrateAddress, quotesLoadable } = useSwap()
 
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const { fromEvmAddress, fromSubstrateAddress } = useFromAccount()
   const fastBalance = useFastBalance(
     useMemo(() => {
       if (!fromAsset) return undefined
@@ -43,9 +38,8 @@ export const SwapTokensWizard = () => {
     }, [fromAsset, fromEvmAddress, fromSubstrateAddress])
   )
 
-  // START: some things to keep loaded when switching between swaps views
-  useAtomValue(swapQuotesAtom)
-  // END: some things to keep loaded when switching between swaps views
+  // keep quotes loaded when switching between swap views
+  void quotesLoadable
 
   return (
     <div id="SwapTokensModalDialog" className="relative flex h-full w-full flex-col gap-4">

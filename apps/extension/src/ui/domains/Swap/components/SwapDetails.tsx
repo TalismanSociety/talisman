@@ -1,28 +1,17 @@
 import { LoaderIcon } from "@talismn/icons"
-import { useAtom, useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import type { Loadable } from "jotai/vanilla/utils/loadable"
 import { type ReactNode, Suspense, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  type BaseQuote,
-  fromAmountAtom,
-  fromAssetAtom,
-  selectedProtocolAtom,
-  selectedSubProtocolAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
-import { sortedQuotesAtom } from "../swaps.api"
+import { useSwap } from "../SwapProvider"
+import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { SwapDetailsCard } from "./SwapDetailsCard"
 import { SwapDetailsCardSkeleton } from "./SwapDetailsCardSkeleton"
 import { SwapDetailsContainer } from "./SwapDetailsContainer"
 import { SwapDetailsError } from "./SwapDetailsError"
 
 export const SwapDetails = () => {
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
-  const fromAmount = useAtomValue(fromAmountAtom)
+  const { fromAsset, toAsset, fromAmount } = useSwap()
 
   if (!fromAsset || !toAsset || !fromAmount.planck) return null
 
@@ -36,15 +25,19 @@ export const SwapDetails = () => {
 
 const Details = () => {
   const { t } = useTranslation()
-  const quotes = useAtomValue(loadable(sortedQuotesAtom))
-  const [selectedProtocol, setSelectedProtocol] = useAtom(selectedProtocolAtom)
-  const [selectedSubProtocol, setSelectedSubProtocol] = useAtom(selectedSubProtocolAtom)
+  const {
+    sortedQuotesLoadable: quotes,
+    selectedProtocol,
+    setSelectedProtocol,
+    selectedSubProtocol,
+    setSelectedSubProtocol,
+    fromAmount,
+    fromAsset,
+    toAsset,
+  } = useSwap()
   const [cachedQuotes, setCachedQuotes] = useState<
     { fees?: number; quote: Loadable<BaseQuote | null> }[]
   >([])
-  const fromAmount = useAtomValue(fromAmountAtom)
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
 
   // Reset cached quotes when any of the swap parameters change
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy

@@ -1,10 +1,10 @@
 import { RepeatIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 
-import { useReverse } from "../swaps.api"
+import { useSwap } from "../SwapProvider"
 
 export const ReverseButton = () => {
-  const reverse = useReverse()
+  const { reverse } = useSwap()
 
   return (
     <div className="relative w-full">

@@ -1,12 +1,10 @@
-import { useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
 import { useTranslation } from "react-i18next"
 
-import { selectedQuoteAtom } from "../swaps.api"
+import { useSwap } from "../SwapProvider"
 
 export const QuoteProvider = () => {
   const { t } = useTranslation()
-  const quote = useAtomValue(loadable(selectedQuoteAtom))
+  const { selectedQuoteLoadable: quote } = useSwap()
 
   const isLoading =
     quote.state !== "hasData" ||

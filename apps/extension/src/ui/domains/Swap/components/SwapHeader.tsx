@@ -1,16 +1,14 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { useAtom } from "jotai"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
+import { useSwap } from "../SwapProvider"
 
 export const SwapHeader = () => {
   const { t } = useTranslation()
   const { isOpen, close: closeSwapTokensModal } = useSwapTokensModal()
 
-  const [swapView, setSwapView] = useAtom(swapViewAtom)
+  const { swapView, setSwapView } = useSwap()
   useEffect(() => {
     isOpen && setSwapView("form")
   }, [isOpen, setSwapView])

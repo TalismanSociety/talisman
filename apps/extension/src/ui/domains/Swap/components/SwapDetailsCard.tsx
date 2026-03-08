@@ -5,19 +5,11 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
 import { intervalToDuration } from "date-fns"
-import { useAtomValue, useSetAtom } from "jotai"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
-import {
-  type BaseQuote,
-  fromAmountAtom,
-  fromAssetAtom,
-  selectedProtocolAtom,
-  selectedSubProtocolAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
+import { useSwap } from "../SwapProvider"
+import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { Decimal } from "../swaps-port/Decimal"
 import { SwapDetailsContainer } from "./SwapDetailsContainer"
 
@@ -34,14 +26,9 @@ export const SwapDetailsCard = ({
 }) => {
   const { t } = useTranslation()
 
-  const setSelectedProtocol = useSetAtom(selectedProtocolAtom)
-  const setSelectedSubProtocol = useSetAtom(selectedSubProtocolAtom)
-
-  const toAsset = useAtomValue(toAssetAtom)
-  const fromAsset = useAtomValue(fromAssetAtom)
+  const { setSelectedProtocol, setSelectedSubProtocol, toAsset, fromAsset, fromAmount } = useSwap()
   const tokenRates = useTokenRatesMap()
   const currency = useSelectedCurrency()
-  const fromAmount = useAtomValue(fromAmountAtom)
 
   const amount = useMemo(() => {
     if (!toAsset) return
