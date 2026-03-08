@@ -1,5 +1,5 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import type { FC } from "react"
 
 /**

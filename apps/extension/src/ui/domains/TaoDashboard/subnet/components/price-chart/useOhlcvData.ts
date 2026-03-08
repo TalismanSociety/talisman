@@ -276,7 +276,7 @@ const bucketTime = (timestampMs: number, bucketSec: number): number =>
  *
  * This is a pure function suitable for unit testing.
  */
-export function consolidateRealtimeBars(
+function consolidateRealtimeBars(
   indexedBars: OhlcvBar[],
   realtimeEvents: RealtimeStakeEvent[],
   resolution: OhlcvResolution

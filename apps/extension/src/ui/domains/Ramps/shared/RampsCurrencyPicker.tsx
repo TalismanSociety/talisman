@@ -1,15 +1,14 @@
 import { Icon, loadIcons } from "@iconify/react"
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
+import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { range } from "lodash-es"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useOpenCloseStatus } from "talisman-ui"
-
 import { RAMPS_CURRENCIES, type RampsCurrency } from "./currencies"
 import { RampsPickerLayout } from "./RampsPickerLayout"
 

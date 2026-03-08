@@ -1,17 +1,18 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
-import {
-  useAccountByAddress,
-  useBalancesByAddress,
-  useNetworks,
-  useSelectedCurrency,
-} from "@ui/state"
-import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "extension-core"
+import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalancesByAddress } from "@ui/state/balances"
+import { useNetworks } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 

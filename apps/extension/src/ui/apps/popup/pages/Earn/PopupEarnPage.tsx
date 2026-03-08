@@ -1,15 +1,15 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
+import { log } from "@common/log"
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
 import { api } from "@ui/api"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useSelectedCurrency } from "@ui/state"
-import { log } from "extension-shared"
+import { useSelectedCurrency } from "@ui/state/settings"
 import {
   type FC,
   type PropsWithChildren,

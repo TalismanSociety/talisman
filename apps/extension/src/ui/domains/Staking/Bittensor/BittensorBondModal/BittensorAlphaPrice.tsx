@@ -1,7 +1,7 @@
+import { log } from "@common/log"
 import { classNames } from "@talismn/util"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useToken } from "@ui/state"
-import { log } from "extension-shared"
+import { useToken } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 
 export const BittensorAlphaPrice: FC<{

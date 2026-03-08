@@ -1,6 +1,6 @@
+import { TALISMAN_WEB_APP_STAKING_URL } from "@common/constants"
 import { ExternalLinkIcon, ZapIcon } from "@talismn/icons"
 import { EarnPositionsList } from "@ui/domains/Earn/components/EarnPositionsList"
-import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

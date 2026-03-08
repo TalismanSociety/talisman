@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Button } from "@ui/components/Button"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const TxSubmitButtonFallback: FC<{
   label?: string

@@ -1,11 +1,8 @@
-import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
-import {
-  type AnySigningRequest,
-  isEthereumRequest,
-  type KnownRespondableRequest,
-  type SigningRequests,
-} from "extension-core"
-import { log } from "extension-shared"
+import { log } from "@common/log"
+import type { AnySigningRequest, SigningRequests } from "@core/domains/signing/types"
+import type { KnownRespondableRequest } from "@core/libs/requests/types"
+import { isEthereumRequest } from "@core/types/requests"
+import useStatus, { type SetStatusFn, type StatusOptions } from "@ui/hooks/useStatus"
 import { useCallback } from "react"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {

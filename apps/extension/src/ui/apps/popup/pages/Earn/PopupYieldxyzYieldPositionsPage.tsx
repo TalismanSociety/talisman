@@ -1,4 +1,4 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { YieldxyzYieldPositions } from "@ui/domains/Earn/yieldxyz/positions/YieldxyzYieldPositions"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEffect } from "react"

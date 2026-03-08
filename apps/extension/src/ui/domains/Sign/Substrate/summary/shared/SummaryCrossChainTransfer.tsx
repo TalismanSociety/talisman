@@ -1,6 +1,6 @@
+import type { Address } from "@core/types/base"
 import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
-import type { Address } from "extension-core"
 import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

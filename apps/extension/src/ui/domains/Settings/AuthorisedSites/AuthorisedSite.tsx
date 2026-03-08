@@ -1,11 +1,13 @@
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { Favicon } from "@talisman/components/Favicon"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { Accordion, AccordionIcon } from "@ui/components/Accordion"
+import { Button } from "@ui/components/Button"
+import { Favicon } from "@ui/components/Favicon"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
-import type { ProviderType } from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
-
 import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
 
 const Title: FC<{ name: string; domain: string }> = ({ name, domain }) => (

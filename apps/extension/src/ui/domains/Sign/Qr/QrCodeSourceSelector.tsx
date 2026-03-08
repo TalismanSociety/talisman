@@ -1,12 +1,12 @@
 import type { HexString } from "@polkadot/util/types"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames, isHexString } from "@talismn/util"
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/components/Popover"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
-import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
+import { useNetworkByGenesisHash, useNetworkById } from "@ui/state/chaindata"
 import { startCase } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
 

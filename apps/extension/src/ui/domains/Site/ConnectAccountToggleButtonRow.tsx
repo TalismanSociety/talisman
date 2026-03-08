@@ -1,7 +1,8 @@
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
 import { classNames } from "@talismn/util"
-import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import type { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"

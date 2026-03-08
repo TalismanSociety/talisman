@@ -1,12 +1,12 @@
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { copyAddress } from "@ui/util/copyAddress"
 import { type FC, useCallback, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ViewDetailsField, type ViewDetailsFieldProps } from "./ViewDetailsField"
 

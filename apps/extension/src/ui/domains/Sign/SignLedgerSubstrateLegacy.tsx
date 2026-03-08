@@ -1,8 +1,9 @@
+import { log } from "@common/log"
+import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useAccountByAddress } from "@ui/state"
-import { type AccountLedgerPolkadot, isJsonPayload } from "extension-core"
-import { log } from "extension-shared"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

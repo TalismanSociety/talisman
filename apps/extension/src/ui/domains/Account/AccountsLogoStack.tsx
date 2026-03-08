@@ -1,8 +1,8 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
+import type { Account } from "@core/domains/keyring/exports"
 import { classNames } from "@talismn/util"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { useAccounts } from "@ui/state"
-import type { Account } from "extension-core"
+import { useAccounts } from "@ui/state/accounts"
 import { useMemo } from "react"
 
 type Props = { addresses?: string[]; className?: string; max?: number }
@@ -32,7 +32,7 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
   )
 }
 
-export const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
+const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
   if (!account) return null
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">
@@ -43,7 +43,7 @@ export const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
   )
 }
 
-export const AccountsLogoStackMore = ({ accounts }: { accounts: Account[] }) => {
+const AccountsLogoStackMore = ({ accounts }: { accounts: Account[] }) => {
   if (!accounts.length) return null
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">

@@ -1,26 +1,23 @@
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import {
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+} from "@core/domains/keyring/exports"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
-import {
-  getNetworks$,
-  getTokensMap$,
-  tokenRatesMap$,
-  useAccounts,
-  useNetworkById,
-  useTokensMap,
-} from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { getNetworks$, getTokensMap$, useNetworkById, useTokensMap } from "@ui/state/chaindata"
 import { t$ } from "@ui/state/i18n"
+import { tokenRatesMap$ } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
-import {
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAccountPlatformPolkadot,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-} from "extension-core"
 import type { TFunction } from "i18next"
 import type { PrimitiveAtom } from "jotai"
 import { type Atom, atom, type Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -237,7 +234,7 @@ export const getTokenTabs = ({
 ]
 
 export const tokenTabAtom = atom<string>("all")
-export const coingeckoAssetPlatformsAtom = atom(async (get) => {
+const coingeckoAssetPlatformsAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
   const response = await fetch(`${apiUrl}/api/v3/asset_platforms`, {
@@ -253,7 +250,7 @@ export const coingeckoAssetPlatformsAtom = atom(async (get) => {
   }[]
 })
 
-export const coingeckoListAtom = atom(async (get) => {
+const coingeckoListAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
   const response = await fetch(`${apiUrl}/api/v3/coins/list?include_platform=true`, {
@@ -263,7 +260,7 @@ export const coingeckoListAtom = atom(async (get) => {
   return (await response.json()) as { id: string; platforms: Record<string, string> }[]
 })
 
-export const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
+const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
   atom(async (get) => {
     const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
@@ -327,8 +324,8 @@ const coingeckoCoinByAddressAtom = atomFamily((addressPlatform: string) =>
   })
 )
 
-export const swapFromSearchAtom = atom<string>("")
-export const swapToSearchAtom = atom<string>("")
+const swapFromSearchAtom = atom<string>("")
+const swapToSearchAtom = atom<string>("")
 
 const erc20Atom = atomFamily((addressChainId: string) =>
   atom(async (get): Promise<SwappableAssetWithDecimals | null> => {
@@ -622,7 +619,7 @@ export const selectedSwapModuleAtom = atom(async (get) => {
 })
 
 export const approvalCounterAtom = atom(0)
-export const approvalAtom = atom(async (get) => {
+const approvalAtom = atom(async (get) => {
   const module = await get(selectedSwapModuleAtom)
 
   if (!module?.approvalAtom) return null
@@ -694,7 +691,7 @@ export const useReverse = () => {
   }, [fromAsset, setFromAmount, setFromAsset, setToAsset, toAmount, toAsset])
 }
 
-export const useAssetToken = (assetAtom: PrimitiveAtom<SwappableAssetBaseType | null>) => {
+const _useAssetToken = (assetAtom: PrimitiveAtom<SwappableAssetBaseType | null>) => {
   const asset = useAtomValue(assetAtom)
   const tokens = useTokensMap()
 
@@ -845,7 +842,7 @@ export const useSetToAddress = () => {
   ])
 }
 
-export const categoriesAtom = atom(async (get) => {
+const _categoriesAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
   const response = await fetch(`${apiUrl}/api/v3//coins/markets?vs_currency=usd&category=wallets`, {

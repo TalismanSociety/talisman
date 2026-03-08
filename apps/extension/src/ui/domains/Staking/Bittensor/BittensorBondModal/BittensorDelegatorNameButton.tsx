@@ -1,4 +1,4 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

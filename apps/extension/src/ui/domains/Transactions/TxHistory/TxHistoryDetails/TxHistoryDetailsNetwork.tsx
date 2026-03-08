@@ -1,7 +1,7 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

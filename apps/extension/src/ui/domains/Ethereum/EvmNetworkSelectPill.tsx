@@ -1,11 +1,12 @@
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { useAuthorisedSites, useNetworkById } from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAuthorisedSites } from "@ui/state/authorisedSites"
+import { useNetworkById } from "@ui/state/chaindata"
 import { Suspense, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
 

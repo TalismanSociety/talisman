@@ -1,14 +1,12 @@
 import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
 import { useGetSubnetPools } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetSubnetPools"
-import { useTokens } from "@ui/state"
+import { useTokens } from "@ui/state/chaindata"
 import { assign, keyBy } from "lodash-es"
 import { useMemo } from "react"
 
 import { useTranslation } from "react-i18next"
 import type { SubnetData } from "./types"
 import { useGetSubnets } from "./useGetSubnets"
-
-export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
 
 export const useCombinedSubnetData = (networkId: NetworkId) => {
   const { t } = useTranslation()

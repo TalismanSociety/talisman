@@ -1,6 +1,7 @@
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
-import type { SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import type { TransactionRequest } from "viem"
 
 export type TxSubmitButtonTransactionDot = {

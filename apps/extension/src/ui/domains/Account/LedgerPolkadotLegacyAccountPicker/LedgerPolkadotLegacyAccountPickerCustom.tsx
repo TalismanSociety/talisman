@@ -1,19 +1,20 @@
+import { log } from "@common/log"
+import type { Account, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
+import { isAccountLedgerPolkadotLegacy } from "@core/domains/keyring/exports"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Tooltip, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useNetworkById } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkById } from "@ui/state/chaindata"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import {
-  type Account,
-  isAccountLedgerPolkadotLegacy,
-  type LedgerPolkadotCurve,
-} from "extension-core"
-import { log } from "extension-shared"
 import {
   type ChangeEventHandler,
   type FC,
@@ -24,7 +25,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../AccountIcon"
 import { Address } from "../Address"

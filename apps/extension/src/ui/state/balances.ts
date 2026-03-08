@@ -1,9 +1,10 @@
+import { log } from "@common/log"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { bind } from "@react-rxjs/core"
 import { type Address, Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
-import { type BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "extension-core"
-import { log } from "extension-shared"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -104,7 +105,7 @@ const getBalancesByCategory$ = (category: AccountCategory = "all") =>
     })
   )
 
-export const [useBalance, getBalance$] = bind(
+const [useBalance, _getBalance$] = bind(
   (address: Address | null | undefined, tokenId: TokenId | null | undefined) =>
     getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
   null
@@ -121,7 +122,7 @@ export const [useBalancesByAddress] = bind(
 )
 
 // used to force suspense, as useBalances() doesn't
-export const [usePreloadBalances, preloadBalances$] = bind(
+const [_usePreloadBalances, preloadBalances$] = bind(
   new Observable<void>((subscriber) => {
     // Trigger the initial fetch of balances
     firstValueFrom(rawBalances$)
@@ -133,3 +134,5 @@ export const [usePreloadBalances, preloadBalances$] = bind(
       })
   })
 )
+
+export { useBalance, preloadBalances$ }

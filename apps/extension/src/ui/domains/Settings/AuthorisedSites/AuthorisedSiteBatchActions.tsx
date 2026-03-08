@@ -1,13 +1,16 @@
-import { notify } from "@talisman/components/Notifications"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
-import type { ProviderType } from "extension-core"
+import { Button } from "@ui/components/Button"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, type ReactNode, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
-export const BatchActionButton: FC<{
+const BatchActionButton: FC<{
   confirmTitle: ReactNode
   confirmDescription: ReactNode
   confirmBtnText: ReactNode

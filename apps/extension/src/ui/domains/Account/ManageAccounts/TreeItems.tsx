@@ -1,23 +1,23 @@
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
-import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
-import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import type { Account, AccountsCatalogTree } from "extension-core"
-import { type FC, Fragment, useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  IconButton,
-  useOpenClose,
-} from "talisman-ui"
-
+} from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
+import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
+import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
+import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
+import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { type FC, Fragment, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"
 import { TreeItemAccount } from "./TreeItemAccount"
 import type { UiTreeFolder, UiTreeItem } from "./types"
@@ -124,7 +124,7 @@ const SeparatorDropZone: FC<{
   )
 }
 
-export const TreeItemFolder: FC<{
+const TreeItemFolder: FC<{
   folder: UiTreeFolder
   balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree

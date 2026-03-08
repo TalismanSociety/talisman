@@ -1,11 +1,12 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSetting } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useSetting } from "@ui/state/settings"
 import { type FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenClose } from "talisman-ui"
-
 import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
@@ -35,7 +36,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
   )
 }
 
-export const RiskAnalysisPromptAutoRiskScan: FC = () => {
+const RiskAnalysisPromptAutoRiskScan: FC = () => {
   const [, setAutoRiskScan] = useSetting("autoRiskScan")
   const { t } = useTranslation()
 

@@ -1,5 +1,4 @@
-import { notify } from "@talisman/components/Notifications"
-import { provideContext } from "@talisman/util/provideContext"
+import { log } from "@common/log"
 import {
   isNativeToken,
   isNetworkDot,
@@ -9,8 +8,9 @@ import {
 } from "@talismn/chaindata-provider"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
-import { getToken$ } from "@ui/state"
-import { log } from "extension-shared"
+import { notify } from "@ui/components/Notifications"
+import { getToken$ } from "@ui/state/chaindata"
+import { provideContext } from "@ui/util/provideContext"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

@@ -1,10 +1,10 @@
 import { Icon } from "@iconify/react/dist/iconify.js"
 import { PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Drawer } from "@ui/components/Drawer"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, useOpenClose } from "talisman-ui"
-
 import { getRampsCurrency, type RampsCurrency } from "./currencies"
 import { RampsCurrencyPicker } from "./RampsCurrencyPicker"
 

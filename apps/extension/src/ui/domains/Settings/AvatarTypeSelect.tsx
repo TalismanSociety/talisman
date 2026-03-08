@@ -1,6 +1,7 @@
+import type { IdenticonType } from "@core/domains/accounts/types"
+import type { Address } from "@core/types/base"
 import { classNames } from "@talismn/util"
-import { useAccounts } from "@ui/state"
-import type { Address, IdenticonType } from "extension-core"
+import { useAccounts } from "@ui/state/accounts"
 import { type FC, useCallback, useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"

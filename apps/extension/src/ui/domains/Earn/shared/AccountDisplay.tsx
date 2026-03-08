@@ -1,12 +1,12 @@
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccountByAddress } from "@ui/state"
-import { getAccountGenesisHash } from "extension-core"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const AccountDisplay: FC<{
   address: string

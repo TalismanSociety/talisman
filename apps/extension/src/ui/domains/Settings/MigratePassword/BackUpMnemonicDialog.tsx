@@ -1,8 +1,9 @@
 import { ArrowRightIcon } from "@talismn/icons"
+import { Button } from "@ui/components/Button"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, ModalDialog } from "talisman-ui"
 
 import { useMigratePassword } from "./context"
 

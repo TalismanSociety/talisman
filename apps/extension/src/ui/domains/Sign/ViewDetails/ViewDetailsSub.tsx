@@ -1,19 +1,21 @@
+import type {
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+  TransactionMethod,
+} from "@core/domains/signing/types"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useToken, useTokenRates } from "@ui/state"
-import {
-  isJsonPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-  type TransactionMethod,
-} from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAddress } from "./ViewDetailsAddress"

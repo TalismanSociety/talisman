@@ -1,20 +1,20 @@
+import { getTotalFeesFromGasSettings } from "@core/domains/ethereum/helpers"
+import type {
+  EthPriorityOptionName,
+  EthPriorityOptionNameEip1559,
+  EthPriorityOptionNameLegacy,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "@core/domains/signing/types"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useNetworkById, useToken } from "@ui/state"
-import {
-  type EthPriorityOptionName,
-  type EthPriorityOptionNameEip1559,
-  type EthPriorityOptionNameLegacy,
-  type EthTransactionDetails,
-  type GasSettingsByPriority,
-  getTotalFeesFromGasSettings,
-} from "extension-core"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { useFeePriorityOptionsUI } from "./common"

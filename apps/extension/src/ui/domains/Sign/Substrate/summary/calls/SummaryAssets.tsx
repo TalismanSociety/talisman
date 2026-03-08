@@ -1,6 +1,6 @@
 import type { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
 import type { SubAssetsToken } from "@talismn/chaindata-provider"
-import { useNetworkById, useTokens } from "@ui/state"
+import { useNetworkById, useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

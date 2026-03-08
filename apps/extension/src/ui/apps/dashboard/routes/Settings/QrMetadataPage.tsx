@@ -1,7 +1,7 @@
 // biome-ignore-all lint/a11y/useAnchorContent: legacy
-import { FadeIn } from "@talisman/components/FadeIn"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
+
+import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
+import { log } from "@common/log"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { LoaderIcon, SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -11,16 +11,22 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { Button } from "@ui/components/Button"
+import { Dropdown } from "@ui/components/Dropdown"
+import { FadeIn } from "@ui/components/FadeIn"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { notify } from "@ui/components/Notifications"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useAppState, useBalancesHydrate, useMnemonic, useNetworks } from "@ui/state"
-import { log, POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { useAppState } from "@ui/state/app"
+import { useBalancesHydrate } from "@ui/state/balances"
+import { useNetworks } from "@ui/state/chaindata"
+import { useMnemonic } from "@ui/state/mnemonics"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, Dropdown } from "talisman-ui"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation()

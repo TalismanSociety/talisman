@@ -1,6 +1,14 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { AccountsCatalogTree, TreeItem } from "@core/domains/accounts/helpers.catalog"
+import type { AccountType } from "@core/domains/keyring/exports"
+import {
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+  isAccountPortfolio,
+} from "@core/domains/keyring/exports"
 import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IconButton } from "@ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -11,18 +19,10 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import {
-  type AccountsCatalogTree,
-  type AccountType,
-  getAccountGenesisHash,
-  getAccountSignetUrl,
-  isAccountPortfolio,
-  type TreeItem,
-} from "extension-core"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, Fragment, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const DashboardAccountsSidebar: FC = () => {
   return (

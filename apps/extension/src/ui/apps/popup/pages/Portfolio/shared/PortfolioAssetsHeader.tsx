@@ -1,7 +1,12 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
 import { type Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { ContextMenuTrigger } from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -12,23 +17,13 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import {
-  useBalances,
-  useNetworkByGenesisHash,
-  usePortfolioBalances,
-  useSelectedCurrency,
-} from "@ui/state"
-import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import { useBalances } from "@ui/state/balances"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { usePortfolioBalances } from "@ui/state/portfolio"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
-import {
-  ContextMenuTrigger,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()

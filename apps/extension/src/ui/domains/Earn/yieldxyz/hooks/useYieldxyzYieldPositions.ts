@@ -1,4 +1,4 @@
-import { useYieldxyzPositionsEnhanced } from "@ui/state"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
 import { useMemo } from "react"
 
 export const useYieldxyzYieldPositions = (

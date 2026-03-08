@@ -1,17 +1,18 @@
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountOwned } from "@core/domains/keyring/exports"
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronRightIcon } from "@talismn/icons"
 import type { TokenRatesList } from "@talismn/token-rates"
 import type { HexString } from "@talismn/util"
+import { Drawer } from "@ui/components/Drawer"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useNetworkById, useToken } from "@ui/state"
-import { type Account, getAccountGenesisHash, isAccountOwned } from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, useOpenClose } from "talisman-ui"
-
 import { type RampAccountPickerBalancesDisplayMode, RampsAccountPicker } from "./RampsAccountPicker"
 
 export const RampsAccountPickerButton: FC<{

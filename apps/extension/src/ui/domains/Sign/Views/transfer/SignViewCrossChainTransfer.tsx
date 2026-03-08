@@ -1,19 +1,20 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { type Address, BalanceFormatter } from "@talismn/balances"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import type { TokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useNetworkById, useSelectedCurrency } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
   const isKnown = useIsKnownAddress(address)

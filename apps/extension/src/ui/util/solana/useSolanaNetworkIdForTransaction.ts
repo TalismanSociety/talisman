@@ -1,9 +1,9 @@
+import { log } from "@common/log"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { parseTransactionInfo } from "@talismn/solana"
 import { throwAfter } from "@talismn/util"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { useNetworks } from "@ui/state"
-import { log } from "extension-shared"
+import { useNetworks } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 
 import { getFrontEndSolanaConnection } from "./useSolanaConnection"

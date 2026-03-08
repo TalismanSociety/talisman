@@ -1,5 +1,5 @@
+import { log } from "@common/log"
 import { isNotNil } from "@talismn/util"
-import { log } from "extension-shared"
 import { useMemo } from "react"
 
 import { useCoinbaseBuyCurrencies } from "../coinbase/useCoinbaseBuyCurrencies"

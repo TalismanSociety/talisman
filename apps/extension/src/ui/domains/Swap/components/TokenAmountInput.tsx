@@ -1,12 +1,12 @@
 import { HelpCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { useAtomValue } from "jotai"
 import { type FC, type ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import {

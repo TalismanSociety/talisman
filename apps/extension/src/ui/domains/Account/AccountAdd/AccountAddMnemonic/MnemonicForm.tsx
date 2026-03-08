@@ -1,33 +1,29 @@
-import { yupResolver } from "@hookform/resolvers/yup"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { type AccountPlatform, isAddressEqual } from "@talismn/crypto"
-import { classNames, isTruthy } from "@talismn/util"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts } from "@ui/state"
+import { DEBUG } from "@common/constants"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
-  getEthDerivationPath,
   SUPPORTED_ACCOUNT_PLATFORMS,
-} from "extension-core"
-import { DEBUG } from "extension-shared"
+} from "@core/domains/accounts/helpers"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { type AccountPlatform, isAddressEqual } from "@talismn/crypto"
+import { classNames, isTruthy } from "@talismn/util"
+import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { FormFieldTextarea } from "@ui/components/FormFieldTextarea"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
+import { Spacer } from "@ui/components/Spacer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { useAccounts } from "@ui/state/accounts"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { type UseFormSetValue, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  FormFieldTextarea,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 import * as yup from "yup"
 
 import { BackToAddAccountButton } from "../BackToAddAccountButton"

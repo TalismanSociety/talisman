@@ -1,7 +1,8 @@
 import { AlertCircleIcon } from "@talismn/icons"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
 import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 export const CopyAddressExchangeWarning: FC<{
   isOpen: boolean

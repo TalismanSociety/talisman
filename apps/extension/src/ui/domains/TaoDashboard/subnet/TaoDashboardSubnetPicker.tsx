@@ -1,16 +1,23 @@
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { type NetworkId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/BittensorBondModal/BittensorAlphaPrice"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useToken } from "@ui/state"
+import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
+import { useToken } from "@ui/state/chaindata"
 import {
   type FC,
   useDeferredValue,
@@ -21,13 +28,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-  useOpenCloseStatus,
-} from "talisman-ui"
 
 export const SubnetPicker: React.FC<{
   networkId: NetworkId

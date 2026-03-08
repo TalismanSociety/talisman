@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify } from "@talisman/components/Notifications"
 import {
   getAccountPlatformFromAddress,
   isAddressEqual,
@@ -9,15 +8,20 @@ import {
 import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Button } from "@ui/components/Button"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { keyBy } from "lodash-es"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 import { ContactNetworkPickerButton } from "./ContactNetworkModal"

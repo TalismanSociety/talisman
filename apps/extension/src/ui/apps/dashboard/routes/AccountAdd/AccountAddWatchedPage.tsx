@@ -1,7 +1,7 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import type { AccountPlatform } from "@talismn/crypto"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { capitalize } from "lodash-es"
@@ -9,7 +9,7 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 
-export const Content = () => {
+const Content = () => {
   const { t } = useTranslation()
   // get type paramter from url
   const [params] = useSearchParams()

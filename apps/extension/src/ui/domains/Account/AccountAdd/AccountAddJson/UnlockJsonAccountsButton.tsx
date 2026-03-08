@@ -1,20 +1,17 @@
+import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { KeyIcon } from "@talismn/icons"
-import { log } from "extension-shared"
+import { Button } from "@ui/components/Button"
+import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type CSSProperties, type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  Modal,
-  ModalDialog,
-  useOpenClose,
-} from "talisman-ui"
 import * as yup from "yup"
-
 import { useJsonAccountImport } from "./context"
 
 type FormData = {

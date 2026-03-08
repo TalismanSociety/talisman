@@ -1,15 +1,14 @@
-import { notify } from "@talisman/components/Notifications"
+import { log } from "@common/log"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
+import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
+import { notify } from "@ui/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
-import {
-  activeNetworksStore,
-  activeTokensStore,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
-import { log } from "extension-shared"
+import { useAccounts } from "@ui/state/accounts"
+import { getNetworkById$, getToken$, useNetworkById, useToken } from "@ui/state/chaindata"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"

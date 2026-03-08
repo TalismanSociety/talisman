@@ -1,10 +1,11 @@
+import { filterIsSameNetworkAndAddressTx } from "@core/domains/transactions/exports"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import { isNotNil } from "@talismn/util"
-import { filterIsSameNetworkAndAddressTx, type WalletTransaction } from "extension-core"
 import { useMemo } from "react"
 
 import { useTxHistory } from "./TxHistoryContext"
 
-export const useCanReplaceTx = (tx: WalletTransaction) => {
+const _useCanReplaceTx = (tx: WalletTransaction) => {
   const { transactions } = useTxHistory()
 
   return useMemo(() => {

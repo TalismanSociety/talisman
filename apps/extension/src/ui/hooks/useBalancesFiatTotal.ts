@@ -1,5 +1,5 @@
 import type { Balances } from "@talismn/balances"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { useMemo } from "react"
 
 export const useBalancesFiatTotal = (balances: Balances | null | undefined) => {

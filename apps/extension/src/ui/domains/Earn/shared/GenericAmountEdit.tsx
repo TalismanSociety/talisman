@@ -1,9 +1,11 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { PillButton } from "@ui/components/PillButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
+import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
+import { useSelectedCurrency } from "@ui/state/settings"
 import {
   type ChangeEventHandler,
   type FC,
@@ -15,7 +17,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
@@ -235,11 +236,6 @@ const TokenDisplay: FC<{ symbol: string; decimals: number; value: bigint | null 
       <Tokens amount={formatter.tokens} decimals={decimals} symbol={symbol} noCountUp />
     </DisplayContainer>
   )
-}
-
-export type AmountEditErrorProps = {
-  message: string
-  details?: string
 }
 
 export const GenericAmountEdit: FC<{

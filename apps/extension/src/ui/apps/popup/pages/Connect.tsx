@@ -1,19 +1,22 @@
-import { AppPill } from "@talisman/components/AppPill"
-import { notify } from "@talisman/components/Notifications"
+import type { Account } from "@core/domains/keyring/exports"
+import type { ProviderType } from "@core/domains/sitesAuthorised/types"
+import type { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { AppPill } from "@ui/components/AppPill"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { notify } from "@ui/components/Notifications"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
-import { useRequest } from "@ui/state"
-import type { Account, KnownRequestIdOnly, ProviderType } from "extension-core"
+import { useRequest } from "@ui/state/requests"
 import capitalize from "lodash-es/capitalize"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -156,7 +159,7 @@ const getConnectComponent = (provider: ProviderType): ConnectComponent => {
   }
 }
 
-export const ConnectPolkadot: ConnectComponent = ({
+const ConnectPolkadot: ConnectComponent = ({
   siteUrl,
   connected,
   setConnected,
@@ -201,12 +204,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   )
 }
 
-export const ConnectEth: ConnectComponent = ({
-  siteUrl,
-  connected,
-  setConnected,
-  onNoAccountClose,
-}) => {
+const ConnectEth: ConnectComponent = ({ siteUrl, connected, setConnected, onNoAccountClose }) => {
   const { t } = useTranslation()
 
   const accounts = useInjectableAccounts(siteUrl, "ethereum")
@@ -245,7 +243,7 @@ export const ConnectEth: ConnectComponent = ({
   )
 }
 
-export const ConnectSolana: ConnectComponent = ({
+const ConnectSolana: ConnectComponent = ({
   siteUrl,
   connected,
   setConnected,

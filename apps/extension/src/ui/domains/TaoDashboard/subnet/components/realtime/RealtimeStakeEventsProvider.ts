@@ -1,10 +1,10 @@
+import { log } from "@common/log"
 import { fromHex, toHex } from "@polkadot-api/utils"
-import { provideContext } from "@talisman/util/provideContext"
 import { blake2b256 } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { log } from "extension-shared"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import type { RealtimeStakeEvent } from "./types"
@@ -160,7 +160,7 @@ export type UseRealtimeStakeEventsReturn = {
  * On the first `reportFloor` call, a one-time backfill runs to capture any
  * events between the indexer head and the first polled block.
  */
-export const useRealtimeStakeEventsProvider = ({
+const useRealtimeStakeEventsProvider = ({
   netuid,
 }: {
   netuid: number | null | undefined

@@ -1,8 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import {
   ManageAccountsLists,
@@ -13,7 +13,8 @@ import {
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { accounts$, accountsCatalog$, balancesHydrate$ } from "@ui/state"
+import { accounts$, accountsCatalog$ } from "@ui/state/accounts"
+import { balancesHydrate$ } from "@ui/state/balances"
 import { useTranslation } from "react-i18next"
 import { combineLatest } from "rxjs"
 

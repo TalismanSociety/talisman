@@ -7,13 +7,5 @@
   "access": "restricted",
   "baseBranch": "origin/dev",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@polkadot-api/descriptors",
-    "balances-demo",
-    "extension",
-    "extension-core",
-    "extension-shared",
-    "talisman-ui",
-    "balances-bench"
-  ]
+  "ignore": ["@polkadot-api/descriptors", "balances-demo", "extension", "balances-bench"]
 }

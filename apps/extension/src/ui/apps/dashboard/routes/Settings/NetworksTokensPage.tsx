@@ -1,5 +1,3 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,
   DiamondIcon,
@@ -8,8 +6,10 @@ import {
   PolkadotVaultIcon,
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { CtaButton } from "@ui/components/CtaButton"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { useTranslation } from "react-i18next"
-import { CtaButton } from "talisman-ui"
 
 const Content = () => {
   const { t } = useTranslation()

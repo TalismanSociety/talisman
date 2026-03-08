@@ -1,18 +1,18 @@
+import type { EthGasSettings } from "@core/domains/ethereum/types"
+import type {
+  EthPriorityOptionName,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "@core/domains/signing/types"
 import { InfoIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
-import { useNetworkById } from "@ui/state"
-import type {
-  EthGasSettings,
-  EthPriorityOptionName,
-  EthTransactionDetails,
-  GasSettingsByPriority,
-} from "extension-core"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useAtomValue } from "jotai"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import type { TransactionRequest } from "viem"
 
 import { fromAssetAtom } from "../swap-modules/common.swap-module"

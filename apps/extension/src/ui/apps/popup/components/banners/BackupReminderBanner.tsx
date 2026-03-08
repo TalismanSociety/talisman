@@ -1,17 +1,16 @@
+import { appStore } from "@core/domains/app/store.app"
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import {
-  useAccounts,
-  useAppState,
-  useBalanceTotals,
-  useMnemonics,
-  useSessionState,
-} from "@ui/state"
-import { appStore } from "extension-core"
+import { Button } from "@ui/components/Button"
+import { IconButton } from "@ui/components/IconButton"
+import { useAccounts } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
+import { useBalanceTotals } from "@ui/state/balanceTotals"
+import { useMnemonics } from "@ui/state/mnemonics"
+import { useSessionState } from "@ui/state/session"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, IconButton } from "talisman-ui"
 
 export const BackupReminderBanner = () => {
   const { t } = useTranslation()

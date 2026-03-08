@@ -1,4 +1,4 @@
-import { TOKEN_APPROVALS_URL } from "extension-shared"
+import { TOKEN_APPROVALS_URL } from "@common/constants"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

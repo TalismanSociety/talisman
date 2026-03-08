@@ -1,4 +1,10 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import {
+  DISCORD_TALISMAN_URL,
+  PRIVACY_POLICY_URL,
+  RELEASE_NOTES_URL,
+  TALISMAN_DOCS_URL_PREFIX,
+  TERMS_OF_USE_URL,
+} from "@common/constants"
 import {
   CodeIcon,
   ExternalLinkIcon,
@@ -8,15 +14,9 @@ import {
   TalismanHandIcon,
 } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import {
-  DISCORD_TALISMAN_URL,
-  PRIVACY_POLICY_URL,
-  RELEASE_NOTES_URL,
-  TALISMAN_DOCS_URL_PREFIX,
-  TERMS_OF_USE_URL,
-} from "extension-shared"
+import { CtaButton } from "@ui/components/CtaButton"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Trans, useTranslation } from "react-i18next"
-import { CtaButton } from "talisman-ui"
 
 const Content = () => {
   const { t } = useTranslation()

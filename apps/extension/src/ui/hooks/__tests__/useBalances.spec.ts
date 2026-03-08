@@ -1,8 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { renderHook, waitFor } from "@testing-library/react"
-
+import { useBalances } from "@ui/state/balances"
 import { TestWrapper } from "../../../../tests/TestWrapper"
-import { useBalances } from "../../state"
 
 describe("useBalances tests", () => {
   test("Can get useBalances data", async () => {

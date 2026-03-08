@@ -1,17 +1,23 @@
-import type { HexString } from "@polkadot/util/types"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
-import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 import type {
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
-} from "extension-core"
+} from "@core/domains/transactions/types"
+import type { HexString } from "@polkadot/util/types"
+import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
+import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { Button } from "@ui/components/Button"
+import { PillButton } from "@ui/components/PillButton"
+import {
+  ProcessAnimation,
+  type ProcessAnimationStatus,
+} from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { useAnyNetwork, useNetworkById } from "@ui/state/chaindata"
+import { useTransaction } from "@ui/state/transactions"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, PillButton, ProcessAnimation, type ProcessAnimationStatus } from "talisman-ui"
 
 import { TxReplaceDrawer, type TxReplaceType } from "../Transactions"
 

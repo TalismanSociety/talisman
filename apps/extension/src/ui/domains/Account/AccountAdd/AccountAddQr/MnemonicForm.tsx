@@ -1,11 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { isTruthy } from "@talismn/util"
 import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { FadeIn } from "@ui/components/FadeIn"
+import { FormFieldTextarea } from "@ui/components/FormFieldTextarea"
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = {

@@ -1,11 +1,16 @@
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useNetworkById } from "@ui/state"
-import type { DefiPosition } from "extension-core"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 export const PositionContextMenu: FC<{ position: DefiPosition; className?: string }> = ({
   position,

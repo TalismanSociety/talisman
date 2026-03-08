@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { Modal } from "talisman-ui"
+import { Modal } from "@ui/components/Modal"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { SwapTokensFullscreenPortalContainer } from "./SwapTokensFullscreenPortal"

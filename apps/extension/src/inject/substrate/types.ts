@@ -53,4 +53,3 @@ export interface InjectedWindowProvider {
 export interface InjectedWindow extends This {
   injectedWeb3: Record<string, InjectedWindowProvider>
 }
-export type InjectedExtension = InjectedExtensionInfo & Injected

@@ -1,4 +1,4 @@
-import { RAMPS_COINBASE_API_BASE_PATH, RAMPS_COINBASE_PAY_URL } from "extension-shared"
+import { RAMPS_COINBASE_API_BASE_PATH, RAMPS_COINBASE_PAY_URL } from "@common/constants"
 import urlJoin from "url-join"
 
 export const getCoinbaseBuyUrl = async (

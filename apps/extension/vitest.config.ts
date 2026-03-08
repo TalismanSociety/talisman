@@ -26,17 +26,11 @@ export default defineConfig({
       "@talismn/on-chain-id": path.join(packagesDir, "on-chain-id/src"),
       "@talismn/orb": path.join(packagesDir, "orb/src"),
       "@talismn/icons": path.join(packagesDir, "icons/src"),
-      // Map internal packages (extension-core, extension-shared, talisman-ui)
-      "extension-core/src/": path.join(packagesDir, "extension-core/src/"),
-      "extension-core": path.join(packagesDir, "extension-core/src"),
-      "extension-shared/src/": path.join(packagesDir, "extension-shared/src/"),
-      "extension-shared": path.join(packagesDir, "extension-shared/src"),
-      "talisman-ui/src/": path.join(packagesDir, "talisman-ui/src/"),
-      "talisman-ui": path.join(packagesDir, "talisman-ui/src"),
+      // Map @core alias to local source
+      "@core": path.resolve(__dirname, "src/core"),
       // Path aliases from tsconfig (baseUrl is src/)
       "@ui": path.resolve(__dirname, "src/ui"),
       "@common": path.resolve(__dirname, "src/common"),
-      "@talisman": path.resolve(__dirname, "src/@talisman"),
       "@tests": path.resolve(__dirname, "tests"),
     },
   },
@@ -44,6 +38,12 @@ export default defineConfig({
     environment: "./tests/vitest-env-jsdom.ts",
     globals: true,
     testTimeout: 20_000,
-    setupFiles: ["fake-indexeddb/auto", "./tests/setup.ts", "./tests/mocks/index.ts"],
+    setupFiles: [
+      "fake-indexeddb/auto",
+      "./tests/setup.ts",
+      "./tests/mocks/index.ts",
+      "./tests/core/setup.ts",
+      "./tests/core/mocks/index.ts",
+    ],
   },
 })

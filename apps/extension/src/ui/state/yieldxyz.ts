@@ -1,3 +1,15 @@
+import { log } from "@common/log"
+import type {
+  Networks,
+  TokenDto,
+  YieldDto,
+  YieldxyzPosition,
+  YieldxyzProvider,
+} from "@core/domains/earn/exports"
+import {
+  getTalismanNetworkIdToYieldxyzNetworkIdMap,
+  getYieldxyzNetworkIdToTalismanNetworkIdMap,
+} from "@core/domains/earn/exports"
 import { bind } from "@react-rxjs/core"
 import {
   evmErc20TokenId,
@@ -10,16 +22,6 @@ import {
 } from "@talismn/chaindata-provider"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
-import {
-  getTalismanNetworkIdToYieldxyzNetworkIdMap,
-  getYieldxyzNetworkIdToTalismanNetworkIdMap,
-  type Networks,
-  type TokenDto,
-  type YieldDto,
-  type YieldxyzPosition,
-  type YieldxyzProvider,
-} from "extension-core"
-import { log } from "extension-shared"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
@@ -29,26 +31,25 @@ import { remoteConfig$ } from "./remoteConfig"
 export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
   bind(remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap)))
 
-export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYieldNetworkId$] =
-  bind(
-    (yieldNetworkId: Networks | null | undefined) =>
-      yieldNetworkIdToTalismanNetworkIdMap$.pipe(
-        map((map) => map[yieldNetworkId as Networks] ?? null)
-      ),
-    null
-  )
+const [_useTalismanNetworkIdFromYieldNetworkId, _getTalismanNetworkIdFromYieldNetworkId$] = bind(
+  (yieldNetworkId: Networks | null | undefined) =>
+    yieldNetworkIdToTalismanNetworkIdMap$.pipe(
+      map((map) => map[yieldNetworkId as Networks] ?? null)
+    ),
+  null
+)
 
-export const [useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] =
-  bind(remoteConfig$.pipe(map(getTalismanNetworkIdToYieldxyzNetworkIdMap)))
+const [_useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] = bind(
+  remoteConfig$.pipe(map(getTalismanNetworkIdToYieldxyzNetworkIdMap))
+)
 
-export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalismanNetworkId$] =
-  bind(
-    (talismanNetworkId: NetworkId | null | undefined) =>
-      talismanNetworkIdToYieldNetworkIdMap$.pipe(
-        map((map) => map[talismanNetworkId as NetworkId] ?? null)
-      ),
-    null
-  )
+const [_useYieldNetworkIdFromTalismanNetworkId, _getYieldNetworkIdFromTalismanNetworkId$] = bind(
+  (talismanNetworkId: NetworkId | null | undefined) =>
+    talismanNetworkIdToYieldNetworkIdMap$.pipe(
+      map((map) => map[talismanNetworkId as NetworkId] ?? null)
+    ),
+  null
+)
 
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
   const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
@@ -63,7 +64,7 @@ export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProvid
   data: [],
 })
 
-export const [useYieldxyzProvider, yieldxyzProvider$] = bind(
+const [useYieldxyzProvider, _yieldxyzProvider$] = bind(
   (providerId: string | null | undefined) =>
     yieldxyzProviders$.pipe(
       map((loadable) => {
@@ -112,7 +113,7 @@ export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
   }
 )
 
-export const [useYieldxyzProduct, yieldxyzProduct$] = bind(
+const [useYieldxyzProduct, _yieldxyzProduct$] = bind(
   (yieldId: string | null | undefined) =>
     yieldxyzProducts$.pipe(
       map((loadable) => {
@@ -133,7 +134,7 @@ const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subs
   return () => unsubscribe()
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
+const [useYieldxyzPositionsEnhanced, _yieldxyzPositionsEnhanced$] = bind(
   combineLatest([rawYieldxyzPositions$, rawYieldxyzProducts$]).pipe(
     map(([positionsLoadable, productsLoadable]) => {
       const status =
@@ -159,7 +160,7 @@ export type YieldxyzPositionEnhanced = YieldxyzPosition & {
   product: YieldDto
 }
 
-export const [useYieldxyzTalismanInputTokenIds, yieldxyzTalismanInputTokenIds$] = bind(
+const [useYieldxyzTalismanInputTokenIds, _yieldxyzTalismanInputTokenIds$] = bind(
   combineLatest([
     yieldxyzProducts$,
     yieldNetworkIdToTalismanNetworkIdMap$,
@@ -254,4 +255,11 @@ const enhanceYieldxyzPositions = (
       return { ...position, totalAmountUsd, product }
     })
     .filter(isNotNil)
+}
+
+export {
+  useYieldxyzProvider,
+  useYieldxyzProduct,
+  useYieldxyzPositionsEnhanced,
+  useYieldxyzTalismanInputTokenIds,
 }

@@ -1,14 +1,14 @@
+import type { Account } from "@core/domains/keyring/exports"
 import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { IconButton } from "@ui/components/IconButton"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
-import type { Account } from "extension-core"
 import { type FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { IconButton } from "talisman-ui"
 
 export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
   const navigate = useNavigate()

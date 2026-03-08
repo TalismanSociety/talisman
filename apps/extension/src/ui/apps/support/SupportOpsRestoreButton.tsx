@@ -1,7 +1,9 @@
 import { UploadIcon } from "@talismn/icons"
+import { Button } from "@ui/components/Button"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type ChangeEventHandler, type FC, useCallback, useState } from "react"
-import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
-
 import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
 import type { TalismanJsonBackup } from "./shared/types"
 

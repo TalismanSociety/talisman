@@ -1,6 +1,6 @@
 import type { TokenRateCurrency } from "@talismn/token-rates"
 import { currencyOrder } from "@ui/domains/Asset/currencyConfig"
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
 import { useCallback } from "react"
 
 import { useFavoriteCurrencies } from "./useFavoriteCurrencies"

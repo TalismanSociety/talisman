@@ -5,7 +5,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"

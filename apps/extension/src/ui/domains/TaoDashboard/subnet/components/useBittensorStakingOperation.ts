@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { fromHex, toHex } from "@polkadot-api/utils"
 import { TAO_DECIMALS } from "@talismn/balances"
 import { blake2b256 } from "@talismn/crypto"
@@ -5,7 +6,6 @@ import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { log } from "extension-shared"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import {
   findSubtensorStakeCall,

@@ -1,8 +1,8 @@
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { bind } from "@react-rxjs/core"
 import { normalizeAddress } from "@talismn/crypto"
 import type { Loadable } from "@talismn/util"
 import { api } from "@ui/api"
-import type { DefiPosition } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { getNetworks$ } from "./chaindata"
@@ -38,7 +38,7 @@ export const [useDefiPositions, defiPositions$] = bind(rawDefiPositions$, DEFAUL
 
 const subjectProtocolFilter = new BehaviorSubject<string | null>(null)
 
-export const [useDefiProtocolFilter, defiProtocolFilter$] = bind(subjectProtocolFilter)
+const [_useDefiProtocolFilter, defiProtocolFilter$] = bind(subjectProtocolFilter)
 
 export const setDefiProtocolFilter = (name: string | null) => {
   subjectProtocolFilter.next(name || null)
@@ -76,7 +76,7 @@ export const [useDefiProtocolFilterOptions, defiProtocolFilterOptions$] = bind(
   []
 )
 
-export const [useDefiProtocolFilterOption, getDefiProtocolFilterOption$] = bind(
+const [useDefiProtocolFilterOption, _getDefiProtocolFilterOption$] = bind(
   combineLatest([defiProtocolFilterOptions$, defiProtocolFilter$]).pipe(
     map(([protocolOptions, protocolId]) => {
       if (!protocolId) return null
@@ -122,7 +122,7 @@ const filteredDefiPositions$ = combineLatest({
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const [useDefiPositionsDisplay, defiPositionsDisplay$] = bind(
+const [useDefiPositionsDisplay, _defiPositionsDisplay$] = bind(
   combineLatest({
     search: portfolioSearch$,
     filtered: filteredDefiPositions$,
@@ -147,3 +147,5 @@ export const [useDefiPosition] = bind(
     ),
   null
 )
+
+export { useDefiProtocolFilterOption, useDefiPositionsDisplay }

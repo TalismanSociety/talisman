@@ -1,4 +1,3 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   AlertCircleIcon,
   GlobeIcon,
@@ -12,12 +11,14 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IconButton } from "@ui/components/IconButton"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { type FC, type ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, type To, useMatch, useNavigate } from "react-router-dom"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()

@@ -1,12 +1,12 @@
-import { notify } from "@talisman/components/Notifications"
+import type { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { notify } from "@ui/components/Notifications"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useRequest } from "@ui/state"
-import type { KnownRequestIdOnly } from "extension-core"
+import { useRequest } from "@ui/state/requests"
 import { type FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

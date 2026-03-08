@@ -1,6 +1,7 @@
-import { notify } from "@talisman/components/Notifications"
-import type { ActionDto, PendingActionDto, TransactionDto } from "extension-core"
-import { log, YIELD_API_BASE_URL } from "extension-shared"
+import { YIELD_API_BASE_URL } from "@common/constants"
+import { log } from "@common/log"
+import type { ActionDto, PendingActionDto, TransactionDto } from "@core/domains/earn/exports"
+import { notify } from "@ui/components/Notifications"
 import { useCallback, useMemo, useState } from "react"
 
 type UseYieldxyzPendingActionProps = {

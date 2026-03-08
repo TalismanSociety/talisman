@@ -1,11 +1,11 @@
-import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioToolbarDeFi } from "@ui/domains/Portfolio/PortfolioToolbarDeFi"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
-import { useFeatureFlag } from "@ui/state"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { Route, Routes } from "react-router-dom"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"

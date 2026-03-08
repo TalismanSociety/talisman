@@ -3,21 +3,22 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
+import { PORT_EXTENSION } from "@common/constants"
+import { log } from "@common/log"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,
   MessageTypesWithNullRequest,
   MessageTypesWithSubscriptions,
   OriginTypes,
-  Port,
   RequestTypes,
   ResponseTypes,
   SubscriptionMessageTypes,
   TransportRequestMessage,
   TransportResponseMessage,
   UnsubscribeFn,
-} from "extension-core"
-import { log, PORT_EXTENSION } from "extension-shared"
+} from "@core/types"
+import type { Port } from "@core/types/base"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
@@ -34,8 +35,6 @@ export interface Handler {
 }
 
 export type Handlers = Record<string, Handler>
-
-export class PortMessageError extends Error {}
 
 async function wakeupBackground(): Promise<Error | null> {
   try {

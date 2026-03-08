@@ -1,8 +1,5 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import {
   type AccountPlatform,
   addressEncodingFromCurve,
@@ -14,18 +11,17 @@ import {
 } from "@talismn/crypto"
 import { useField, useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
+import { Spacer } from "@ui/components/Spacer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 import { z } from "zod/v4"
 
 import { AccountPlatformDropdown } from "../AccountPlatformDropdown"

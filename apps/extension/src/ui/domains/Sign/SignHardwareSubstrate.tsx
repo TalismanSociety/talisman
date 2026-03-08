@@ -1,10 +1,10 @@
+import type { Account } from "@core/domains/keyring/exports"
 import type { TypeRegistry } from "@polkadot/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import type { HexString } from "@polkadot/util/types"
-import { useAccountByAddress } from "@ui/state"
-import type { Account } from "extension-core"
+import type { ButtonProps } from "@ui/components/Button"
+import { useAccountByAddress } from "@ui/state/accounts"
 import type { FC } from "react"
-import type { ButtonProps } from "talisman-ui"
 import { SignLedgerSubstrateGeneric } from "./SignLedgerSubstrateGeneric"
 import { SignLedgerSubstrateLegacy } from "./SignLedgerSubstrateLegacy"
 

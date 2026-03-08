@@ -1,5 +1,5 @@
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
 import { type SetStateAction, useCallback } from "react"
 
 export const useFavoriteCurrencies = () => {

@@ -1,17 +1,24 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
+import { isTokenActive } from "@core/domains/balances/store.activeTokens"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
+import { Button } from "@ui/components/Button"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { SelectedIndicator } from "@ui/components/SelectedIndicator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { useActiveTokensState, useNetworkByGenesisHash, useNetworks, useTokens } from "@ui/state"
-import { isTokenActive } from "extension-core"
+import {
+  useActiveTokensState,
+  useNetworkByGenesisHash,
+  useNetworks,
+  useTokens,
+} from "@ui/state/chaindata"
 import { type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"

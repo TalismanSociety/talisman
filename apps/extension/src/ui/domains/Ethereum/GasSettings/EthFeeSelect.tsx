@@ -1,15 +1,16 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import type { EthGasSettings } from "@core/domains/ethereum/types"
 import type {
-  EthGasSettings,
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "extension-core"
+} from "@core/domains/signing/types"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import { Drawer } from "@ui/components/Drawer"
+import { PillButton } from "@ui/components/PillButton"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback, useEffect, useState } from "react"
-import { Drawer, PillButton } from "talisman-ui"
 import type { TransactionRequest } from "viem"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
 import { CustomGasSettingsFormLegacy } from "./CustomGasSettingsFormLegacy"

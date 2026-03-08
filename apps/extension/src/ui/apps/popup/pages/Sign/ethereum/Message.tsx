@@ -1,20 +1,20 @@
-import { AppPill } from "@talisman/components/AppPill"
+import { isAccountOfType } from "@core/domains/keyring/exports"
 import {
   PopupContent,
   PopupFooter,
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
+import { Button } from "@ui/components/Button"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
-import { isAccountOfType } from "extension-core"
 import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 

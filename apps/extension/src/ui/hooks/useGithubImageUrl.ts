@@ -1,4 +1,4 @@
-import { DEBUG } from "extension-shared"
+import { DEBUG } from "@common/constants"
 import { useCallback, useEffect, useState } from "react"
 
 const GITRAW_URL = "https://raw.githubusercontent.com/"

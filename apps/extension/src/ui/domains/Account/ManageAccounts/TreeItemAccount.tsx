@@ -1,10 +1,11 @@
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
-import { type Account, getAccountGenesisHash } from "extension-core"
 import { type FC, useMemo } from "react"
 
 import { AccountContextMenu } from "../AccountContextMenu"

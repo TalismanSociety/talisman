@@ -1,8 +1,7 @@
-// biome-ignore lint/style/useNodejsImportProtocol: legacy
+import { log } from "@common/log"
+import type { SendRequest } from "@core/types"
+// biome-ignore lint/style/useNodejsImportProtocol: runs in browser context
 import EventEmitter from "events"
-
-import type { SendRequest } from "extension-core"
-import { log } from "extension-shared"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,

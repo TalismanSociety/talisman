@@ -1,10 +1,10 @@
-import { Spacer } from "@talisman/components/Spacer"
+import { log } from "@common/log"
+import { Spacer } from "@ui/components/Spacer"
 import {
   LedgerConnectionStatus,
   type LedgerConnectionStatusProps,
 } from "@ui/domains/Account/LedgerConnectionStatus"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
-import { log } from "extension-shared"
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,5 +1,5 @@
-import type { Address } from "extension-core"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import type { Address } from "@core/types/base"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 
 import { PortfolioAccount } from "../PortfolioAccount"
 

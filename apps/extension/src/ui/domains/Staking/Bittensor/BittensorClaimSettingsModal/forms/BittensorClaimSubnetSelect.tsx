@@ -1,16 +1,23 @@
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { Button } from "@ui/components/Button"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import {
   type FC,
   useCallback,
@@ -22,13 +29,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-} from "talisman-ui"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"

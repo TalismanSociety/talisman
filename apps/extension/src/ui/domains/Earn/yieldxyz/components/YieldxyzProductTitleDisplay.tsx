@@ -1,6 +1,6 @@
-import type { YieldDto } from "extension-core"
+import type { YieldDto } from "@core/domains/earn/exports"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import type { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const YieldxyzProductTitleDisplay: FC<{ product: YieldDto; className?: string }> = ({
   product,

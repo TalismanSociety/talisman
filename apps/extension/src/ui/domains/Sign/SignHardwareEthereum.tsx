@@ -1,7 +1,8 @@
+import type { Account, AccountOfType } from "@core/domains/keyring/exports"
+import type { EthSignMessageMethod } from "@core/domains/signing/types"
 import type { HexString } from "@polkadot/util/types"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
-import type { Account, AccountOfType, EthSignMessageMethod } from "extension-core"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { type FC, Suspense } from "react"
 
 import { SignLedgerEthereum } from "./SignLedgerEthereum"

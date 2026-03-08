@@ -1,19 +1,21 @@
-import { bind } from "@react-rxjs/core"
-import { notify } from "@talisman/components/Notifications"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { CopyIcon, LoaderIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountOfType,
   isAccountPlatformEthereum,
   isAccountPlatformSolana,
-} from "extension-core"
+} from "@core/domains/keyring/exports"
+import { bind } from "@react-rxjs/core"
+import { CopyIcon, LoaderIcon } from "@talismn/icons"
+import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
-import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"

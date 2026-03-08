@@ -3,10 +3,11 @@ import "@common/enableAnyloggerLogsInDevelopment"
 import "@common/i18nConfig"
 import "@common/zodConfig"
 
+import { IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
+import { appStore } from "@core/domains/app/store.app"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
-import { appStore } from "extension-core"
-import { IS_FIREFOX, log } from "extension-shared"
 
 const adjustPopupSize = async () => {
   // on embedded popup, zoom is disabled and the frame automatically syncs with the size of content

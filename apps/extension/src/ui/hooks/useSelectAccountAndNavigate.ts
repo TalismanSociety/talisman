@@ -1,5 +1,5 @@
 import { isAddressEqual } from "@talismn/crypto"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 

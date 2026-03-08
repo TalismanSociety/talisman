@@ -1,8 +1,8 @@
-import { notify } from "@talisman/components/Notifications"
+import { log } from "@common/log"
+import type { ActionDto } from "@core/domains/earn/exports"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import type { ActionDto } from "extension-core"
-import { log } from "extension-shared"
+import { notify } from "@ui/components/Notifications"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

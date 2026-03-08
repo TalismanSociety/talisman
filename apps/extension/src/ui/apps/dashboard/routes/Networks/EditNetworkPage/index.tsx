@@ -1,7 +1,5 @@
 // biome-ignore-all lint/correctness/noChildrenProp: legacy
 import * as Sentry from "@sentry/browser"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
@@ -15,31 +13,28 @@ import { CopyIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { Toggle } from "@ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAnyNetwork } from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAnyNetwork } from "@ui/state/chaindata"
 import { t } from "i18next"
 import { type FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
-import {
-  Button,
-  Checkbox,
-  FormFieldContainer,
-  FormFieldInputText,
-  IconButton,
-  Modal,
-  ModalDialog,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
 import { z } from "zod/v4"
-
 import { NetworkFormProvider, useNetworkForm } from "./context"
 import { NetworkRpcsField } from "./NetworkRpcsField"
 

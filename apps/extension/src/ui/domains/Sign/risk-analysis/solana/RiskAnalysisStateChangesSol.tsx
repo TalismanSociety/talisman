@@ -1,9 +1,9 @@
 import type { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
+import { log } from "@common/log"
 import { type SolNetworkId, solNativeTokenId, solSplTokenId } from "@talismn/chaindata-provider"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useTokensMap } from "@ui/state"
-import { log } from "extension-shared"
+import { useTokensMap } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

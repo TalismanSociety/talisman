@@ -1,8 +1,6 @@
 import { webcrypto } from "node:crypto"
-
-import { log } from "extension-shared"
-
 import { testNetworkDot } from "./common/testNetworkDot"
+import { log } from "./log"
 
 // Ensure globalThis.crypto is available (for Node.js)
 if (typeof globalThis.crypto === "undefined") {

@@ -1,9 +1,9 @@
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
-import { getNetworksMapById$, getTokensMap$ } from "@ui/state"
+import { getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { remoteConfigStore } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import {
@@ -120,8 +120,8 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
     )
 })
 
-export const fromAssetsSelector = atom(async (get) => await get(assetsSelector))
-export const toAssetsSelector = atom(async (get) => await get(assetsSelector))
+const fromAssetsSelector = atom(async (get) => await get(assetsSelector))
+const toAssetsSelector = atom(async (get) => await get(assetsSelector))
 
 const routesAtom = atom(async (get) => {
   try {

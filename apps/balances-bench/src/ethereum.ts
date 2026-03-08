@@ -1,8 +1,7 @@
 import "./common/polyfills"
 
-import { log } from "extension-shared"
-
 import { testNetworkEth } from "./common/testNetworkEth"
+import { log } from "./log"
 
 const NETWORK_CONFIG = {
   id: "1",

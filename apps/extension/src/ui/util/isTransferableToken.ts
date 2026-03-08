@@ -10,7 +10,7 @@ import {
 // until then we hardcode an exclusion list here :
 // ACA, BNC and KAR use native (orml won't work)
 // INTR, KINT and MGX use orml (native won't work)
-export const UNTRANSFERABLE_TOKENS = [
+const UNTRANSFERABLE_TOKENS = [
   subTokensTokenId("bifrost-kusama", '{"type":"Token","value":{"type":"BNC"}}'),
   subTokensTokenId("bifrost-polkadot", '{"type":"Token","value":{"type":"BNC"}}'),
   subNativeTokenId("interlay"),

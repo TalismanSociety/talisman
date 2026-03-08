@@ -4,7 +4,7 @@ import {
   type Token,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 export const useExistentialDeposit = (tokenId: TokenId | null | undefined) => {

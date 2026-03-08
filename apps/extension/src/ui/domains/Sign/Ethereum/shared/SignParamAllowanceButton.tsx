@@ -1,35 +1,35 @@
+import { log } from "@common/log"
+import type { EvmAddress } from "@core/domains/ethereum/types"
+import { abiErc20 } from "@core/util/abi"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { type Address, BalanceFormatter } from "@talismn/balances"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
 import { formatDecimals, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import {
+  type FormFieldInputContainerProps,
+  FormFieldInputText,
+} from "@ui/components/FormFieldInputText"
+import { notify } from "@ui/components/Notifications"
+import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useSelectedCurrency, useTokenRates } from "@ui/state"
-import { abiErc20, type EvmAddress } from "extension-core"
-import { log } from "extension-shared"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates } from "@ui/state/tokenRates"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  Button,
-  Drawer,
-  FormFieldContainer,
-  type FormFieldInputContainerProps,
-  FormFieldInputText,
-  PillButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
 import { formatUnits, getContract, hexToBigInt, parseAbi, parseUnits } from "viem"
 import * as yup from "yup"
+import { useErc20Token } from "../hooks/useErc20Token"
 
 export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

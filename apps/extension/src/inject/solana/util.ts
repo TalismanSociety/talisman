@@ -1,11 +1,11 @@
+import type { SolSerializedWalletAccount } from "@core/domains/solana/exports"
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import bs58 from "bs58"
-import type { SolSerializedWalletAccount } from "extension-core"
 
 import { TalismanSolWalletAccount } from "./account"
 import { isVersionedTransaction } from "./solana"
 
-export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+function _bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
   return arraysEqual(a, b)
 }
 
@@ -14,7 +14,7 @@ interface Indexed<T> {
   [index: number]: T
 }
 
-export function arraysEqual<T>(a: Indexed<T>, b: Indexed<T>): boolean {
+function arraysEqual<T>(a: Indexed<T>, b: Indexed<T>): boolean {
   if (a === b) return true
 
   const length = a.length

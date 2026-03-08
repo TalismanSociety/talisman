@@ -1,19 +1,17 @@
+import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import { useAccountsCatalog } from "@ui/state"
-import type { AccountsCatalogTree } from "extension-core"
+import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { useAccountsCatalog } from "@ui/state/accounts"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  Checkbox,
-  FormFieldContainer,
-  FormFieldInputText,
-  Modal,
-  ModalDialog,
-} from "talisman-ui"
 import * as yup from "yup"
 
 export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")

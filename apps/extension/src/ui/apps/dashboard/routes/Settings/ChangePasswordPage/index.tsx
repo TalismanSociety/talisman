@@ -1,20 +1,20 @@
+import type { ChangePasswordStatusUpdateType } from "@core/domains/app/types"
+import { ChangePasswordStatusUpdateStatus } from "@core/domains/app/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Button } from "@ui/components/Button"
+import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { notify } from "@ui/components/Notifications"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
-import {
-  ChangePasswordStatusUpdateStatus,
-  type ChangePasswordStatusUpdateType,
-} from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"

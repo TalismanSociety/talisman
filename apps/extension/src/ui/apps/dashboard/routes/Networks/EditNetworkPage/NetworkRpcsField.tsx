@@ -12,6 +12,8 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-
 import { CSS } from "@dnd-kit/utilities"
 import { DotNetworkSchema, isNetworkDot, SolNetworkSchema } from "@talismn/chaindata-provider"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import {
   fetchEthChainId,
   getDotGenesisHashFromRpc,
@@ -20,7 +22,6 @@ import {
 import type { TFunction } from "i18next"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
 
 import { type RpcFormData, useNetworkForm } from "./context"
@@ -98,7 +99,7 @@ export type SortableRpcItemProps = {
   placeholder: string
 }
 
-export const SortableRpcField: FC<SortableRpcItemProps> = ({
+const SortableRpcField: FC<SortableRpcItemProps> = ({
   rpc,
   index,
   canDelete,

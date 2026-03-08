@@ -1,6 +1,6 @@
+import type { Account } from "@core/domains/keyring/exports"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import type { Account } from "extension-core"
 import type { FC } from "react"
 
 export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({

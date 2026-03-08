@@ -1,7 +1,10 @@
+import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
-import { getEthTransferTransactionBase, isAccountOwned } from "extension-core"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalance } from "@ui/state/balances"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useMemo, useState } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
@@ -95,5 +98,3 @@ export const useSendFundsTransactionEth = ({
     setIsLocked,
   }
 }
-
-export type SendFundsTransactionEth = ReturnType<typeof useSendFundsTransactionEth>

@@ -9,18 +9,15 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import {
-  usePortfolioGlobalData,
-  useTokensMap,
-  useYieldxyzPositionsEnhanced,
-  type YieldxyzPositionEnhanced,
-} from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useTokensMap } from "@ui/state/chaindata"
+import { usePortfolioGlobalData } from "@ui/state/portfolio"
+import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
 import { IS_POPUP } from "@ui/util/constants"
 import { isNil, toPairs, uniq } from "lodash-es"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useOpenClose } from "talisman-ui"
-
 import { AccountDisplay } from "../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"

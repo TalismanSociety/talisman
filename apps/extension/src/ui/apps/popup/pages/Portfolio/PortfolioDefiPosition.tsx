@@ -1,14 +1,14 @@
 import { ChevronLeftIcon } from "@talismn/icons"
+import { IconButton } from "@ui/components/IconButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { PopupDefiPosition } from "@ui/domains/Portfolio/DeFi/PopupDefiPosition"
 import { PositionTotal } from "@ui/domains/Portfolio/DeFi/PositionTotal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useDefiPosition } from "@ui/state"
+import { useDefiPosition } from "@ui/state/defi"
 import { type FC, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
-import { IconButton } from "talisman-ui"
 
 export const PortfolioDefiPosition = () => {
   const { popupOpenEvent } = useAnalytics()

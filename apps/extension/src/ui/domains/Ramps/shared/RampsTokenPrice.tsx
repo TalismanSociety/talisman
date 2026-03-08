@@ -1,6 +1,7 @@
 import type { TokenRatesList } from "@talismn/token-rates"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useSelectedCurrency, useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, useMemo } from "react"
 
 export const RampsTokenPrice: FC<{

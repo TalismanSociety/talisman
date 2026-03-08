@@ -1,6 +1,6 @@
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import type { Address } from "@core/types/base"
 import type { TokenId } from "@talismn/chaindata-provider"
-import type { Address } from "extension-core"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useCallback } from "react"
 
 import { useResetNomPoolWithdrawWizard } from "./useNomPoolWithdrawWizard"

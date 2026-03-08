@@ -1,11 +1,12 @@
 import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
-import { useAccountsMap, useNetworkById } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { useAccountsMap } from "@ui/state/accounts"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import {
   fromAddressAtom,

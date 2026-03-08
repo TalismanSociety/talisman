@@ -1,11 +1,11 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { classNames, isTruthy } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import type { PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
-import { useNetworksMapById } from "@ui/state"
+import { useNetworksMapById } from "@ui/state/chaindata"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
 import { useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = { ids?: NetworkId[]; className?: string; max?: number }
 

@@ -1,13 +1,15 @@
+import type { Account } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import type { Account } from "extension-core"
+import { Button } from "@ui/components/Button"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { isEqual } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { BehaviorSubject, distinctUntilChanged } from "rxjs"
-import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 

@@ -1,4 +1,3 @@
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import {
   ArrowRightIcon,
@@ -10,13 +9,19 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { useAccounts } from "@ui/state/accounts"
+import { useBalances } from "@ui/state/balances"
+import { useToken } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, type SVGProps, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, IconButton, Modal } from "talisman-ui"
 
 import { ReactComponent as Background } from "./seek-benefits-page-bg.svg"
 import { useSeekStakingApr } from "./useSeekStakingApr"

@@ -1,16 +1,18 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { type Account, getAccountGenesisHash } from "extension-core"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 export const TxHistoryAccountPicker: FC<{
   isOpen?: boolean

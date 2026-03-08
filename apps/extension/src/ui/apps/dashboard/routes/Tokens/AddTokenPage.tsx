@@ -1,7 +1,9 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
+import { log } from "@common/log"
+import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { getUniswapV2TokenInfo } from "@core/util/getUniswapV2TokenInfo"
 import {
   EthereumAddressSchema,
   type EthNetwork,
@@ -16,19 +18,21 @@ import { useField, useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Button } from "@ui/components/Button"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
-import { activeTokensStore, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
-import { log } from "extension-shared"
+import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
 import { range } from "lodash-es"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
 
 const ANALYTICS_PAGE: AnalyticsPage = {

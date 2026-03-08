@@ -1,6 +1,7 @@
+import { Button } from "@ui/components/Button"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, useOpenClose } from "talisman-ui"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"

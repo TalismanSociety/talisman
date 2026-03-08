@@ -1,6 +1,6 @@
+import { passwordStore } from "@core/domains/app/store.password"
 import { bind } from "@react-rxjs/core"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { passwordStore } from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { BehaviorSubject, map } from "rxjs"
@@ -13,7 +13,7 @@ export const dismissMigratePasswordModal = () => {
 
 const [useDismiss] = bind(dismiss$)
 
-export const [useShouldMigratePassword, shouldMigratePassword$] = bind(
+const [useShouldMigratePassword, _shouldMigratePassword$] = bind(
   passwordStore.observable.pipe(map(({ isHashed }) => !isHashed))
 )
 

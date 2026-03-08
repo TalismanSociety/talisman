@@ -1,8 +1,8 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { cn } from "@talismn/util"
+import { Modal } from "@ui/components/Modal"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
-import { Modal } from "talisman-ui"
 
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"

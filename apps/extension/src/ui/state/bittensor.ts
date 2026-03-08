@@ -1,7 +1,7 @@
+import type { BittensorValidator } from "@core/domains/bittensor/exports"
 import { bind } from "@react-rxjs/core"
 import type { Loadable } from "@talismn/util"
 import { api } from "@ui/api"
-import type { BittensorValidator } from "extension-core"
 import { keyBy, uniq } from "lodash-es"
 import { map, Observable, shareReplay } from "rxjs"
 
@@ -21,7 +21,7 @@ const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const [useBittensorValidators, bittensorValidators$] = bind(bittensorValidatorsRaw$, {
+const [useBittensorValidators, _bittensorValidators$] = bind(bittensorValidatorsRaw$, {
   status: "loading",
   data: [],
 })
@@ -36,7 +36,7 @@ export const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
   { status: "loading", data: {} }
 )
 
-export const [useBittensorValidator, getBittensorValidator$] = bind(
+const [useBittensorValidator, _getBittensorValidator$] = bind(
   (address: string | null | undefined) =>
     bittensorValidatorsMap$.pipe(
       map((loadable) => {
@@ -64,10 +64,12 @@ export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
   []
 )
 
-export const [useIsBittensorNetwork, isBittensorNetwork$] = bind(
+const [_useIsBittensorNetwork, _isBittensorNetwork$] = bind(
   (networkId: string | null | undefined) =>
     bittensorNetworkIds$.pipe(
       map((networkIds) => (networkId ? networkIds.includes(networkId) : false))
     ),
   false
 )
+
+export { useBittensorValidators, useBittensorValidator }

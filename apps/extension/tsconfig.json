@@ -2,13 +2,14 @@
   "extends": "@talismn/tsconfig/es6-react.json",
   "compilerOptions": {
     "noEmit": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
     "baseUrl": ".",
     "moduleResolution": "bundler",
     "paths": {
       "@common": ["./src/common"],
       "@common/*": ["./src/common/*"],
-      "@talisman": ["./src/@talisman"],
-      "@talisman/*": ["./src/@talisman/*"],
+      "@core": ["./src/core"],
+      "@core/*": ["./src/core/*"],
       "@ui": ["./src/ui"],
       "@ui/*": ["./src/ui/*"],
       "@tests": ["./src/tests"],
@@ -20,6 +21,7 @@
     ".wxt/wxt.d.ts",
     "i18next-parser.config.cjs",
     "src",
+    "src/**/*.json",
     "entrypoints",
     "wxt.config.ts",
     "tests"

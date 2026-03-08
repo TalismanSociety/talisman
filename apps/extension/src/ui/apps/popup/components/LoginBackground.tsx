@@ -1,5 +1,9 @@
+import {
+  MYSTICAL_PHYSICS_V3,
+  MysticalBackgroundV3 as MysticalBackground,
+  type MysticalPhysicsV3,
+} from "@ui/components/MysticalBackgroundV3"
 import { useMemo } from "react"
-import { MYSTICAL_PHYSICS_V3, MysticalBackground, type MysticalPhysicsV3 } from "talisman-ui"
 
 const BG_CONFIG: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,

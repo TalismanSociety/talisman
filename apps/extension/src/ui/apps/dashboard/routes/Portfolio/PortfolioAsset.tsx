@@ -1,8 +1,9 @@
-import { Breadcrumb } from "@talisman/components/Breadcrumb"
-import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import type { Balances } from "@talismn/balances"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
+import { Breadcrumb } from "@ui/components/Breadcrumb"
+import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { BittensorClaimSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimSettingsToolbarButton"
@@ -21,13 +22,12 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { usePortfolioBalances } from "@ui/state"
+import { usePortfolioBalances } from "@ui/state/portfolio"
 import { t } from "i18next"
 import { uniq } from "lodash-es"
 import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const HeaderRow: FC<{
   token: Token | undefined

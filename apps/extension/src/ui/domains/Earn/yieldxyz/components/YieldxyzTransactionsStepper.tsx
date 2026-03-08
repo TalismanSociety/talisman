@@ -1,6 +1,6 @@
+import type { TransactionDto } from "@core/domains/earn/exports"
 import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import type { TransactionDto } from "extension-core"
 import type { FC } from "react"
 
 export const YieldxyzTransactionsStepper: FC<{

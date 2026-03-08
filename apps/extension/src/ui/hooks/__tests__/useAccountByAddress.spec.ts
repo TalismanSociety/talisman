@@ -1,8 +1,7 @@
 import { renderHook, waitFor } from "@testing-library/react"
-
+import { useAccountByAddress } from "@ui/state/accounts"
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
-import { useAccountByAddress } from "../../state"
 
 test("Can get account from address", async () => {
   const { result } = renderHook(() => useAccountByAddress(ADDRESSES.GAV), { wrapper: TestWrapper })

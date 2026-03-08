@@ -1,5 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import {
   type SubnetLeaderboardRow,
   useSubnetLeaderboardEntry,
@@ -14,7 +15,6 @@ import {
 } from "@ui/domains/TaoDashboard/shared/util"
 import { type FC, type PropsWithChildren, type ReactNode, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 export const SignalsSentimentTrend: FC<{ netuid: number }> = ({ netuid }) => {

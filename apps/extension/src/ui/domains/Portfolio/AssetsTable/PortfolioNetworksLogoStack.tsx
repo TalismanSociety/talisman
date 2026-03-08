@@ -1,13 +1,13 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { type PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
-export const PortfolioNetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
+const PortfolioNetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
   if (!network) return null
 
   return (
@@ -35,7 +35,7 @@ const MoreNetworksTooltip = ({ networks }: { networks: PortfolioNetwork[] }) => 
   )
 }
 
-export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork[] }) => {
+const PortfolioNetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork[] }) => {
   if (!networks.length) return null
 
   return (

@@ -1,11 +1,12 @@
 import { languages } from "@common/i18nConfig"
-import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { Drawer } from "@ui/components/Drawer"
+import { ExclusiveButtonsList } from "@ui/components/ExclusiveButtonsList"
+import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
 
 export const useLanguageDrawerOpenClose = () => useGlobalOpenClose("language-drawer")
 

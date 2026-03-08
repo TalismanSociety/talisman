@@ -1,4 +1,4 @@
-import { DEBUG } from "extension-shared"
+import { DEBUG } from "@common/constants"
 
 const getBase64ImageFromUrlRaw = async (url: string) => {
   try {

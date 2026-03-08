@@ -1,5 +1,5 @@
-import { AppPill } from "@talisman/components/AppPill"
-import { WithTooltip } from "@talisman/components/Tooltip"
+import type { EvmAddress } from "@core/domains/ethereum/types"
+import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -9,6 +9,10 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
+import { Button } from "@ui/components/Button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
@@ -21,10 +25,8 @@ import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
-import type { EthPriorityOptionName, EvmAddress } from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 

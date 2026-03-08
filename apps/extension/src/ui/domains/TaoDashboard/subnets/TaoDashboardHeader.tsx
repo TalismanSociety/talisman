@@ -3,7 +3,8 @@ import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useBalances, useIsBalanceInitializing, useToken } from "@ui/state"
+import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
+import { useToken } from "@ui/state/chaindata"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
@@ -11,7 +12,7 @@ import { Skeleton } from "../shared/Skeleton"
 import { raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
-export const PoweredBySn45 = () => {
+const _PoweredBySn45 = () => {
   const { t } = useTranslation()
   return (
     <a

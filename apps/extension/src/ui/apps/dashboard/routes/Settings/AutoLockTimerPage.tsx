@@ -1,14 +1,14 @@
-import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useSetting } from "@ui/state"
+import { ExclusiveButtonsList } from "@ui/components/ExclusiveButtonsList"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
+import { useSetting } from "@ui/state/settings"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 type Option = { value: number; label: string }
 
-export const Content = () => {
+const Content = () => {
   const { t } = useTranslation()
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockMinutes")
 

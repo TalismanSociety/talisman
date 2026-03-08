@@ -43,7 +43,7 @@ export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind
   )
 )
 
-export const [useNetworkDisplayType, networkDisplayType$] = bind(
+const [useNetworkDisplayType, _networkDisplayType$] = bind(
   (networkId: NetworkId | null | undefined) => {
     if (!networkId) return of(null)
     return networkDisplayTypesMapById$.pipe(map((map) => map[networkId] ?? null))
@@ -74,9 +74,11 @@ export const [useNetworkDisplayNamesMapById, networkDisplayNamesMapById$] = bind
   )
 )
 
-export const [useNetworkDisplayName, networkDisplayName$] = bind(
+const [useNetworkDisplayName, _networkDisplayName$] = bind(
   (networkId: NetworkId | null | undefined) => {
     if (!networkId) return of(null)
     return networkDisplayNamesMapById$.pipe(map((map) => map[networkId] ?? null))
   }
 )
+
+export { useNetworkDisplayType, useNetworkDisplayName }

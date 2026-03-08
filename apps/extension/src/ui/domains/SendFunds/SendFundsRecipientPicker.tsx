@@ -1,5 +1,8 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import {
   type DotNetwork,
   getNetworkGenesisHash,
@@ -16,17 +19,16 @@ import {
 } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
-import {
-  isAccountCompatibleWithNetwork,
-  isAccountOwned,
-  isAddressCompatibleWithNetwork,
-} from "extension-core"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenClose } from "talisman-ui"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { useSendFunds } from "./useSendFunds"

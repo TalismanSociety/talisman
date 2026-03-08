@@ -1,26 +1,21 @@
+import type { YieldDto } from "@core/domains/earn/exports"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import {
-  useNetworkById,
-  useNetworksMapById,
-  useToken,
-  useTokensMap,
-  useYieldxyzProviders,
-} from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state/chaindata"
+import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { IS_POPUP } from "@ui/util/constants"
-import type { YieldDto } from "extension-core"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
 import { useYieldxyzOpportunitiesByTokenId } from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"

@@ -1,7 +1,7 @@
+import { MNEMONIC_BACKUP_DOCS_URL } from "@common/constants"
 import { LockIcon, ShieldIcon, XIcon } from "@talismn/icons"
-import { MNEMONIC_BACKUP_DOCS_URL } from "extension-shared"
+import { Button } from "@ui/components/Button"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => void }) => {
   const { t } = useTranslation()

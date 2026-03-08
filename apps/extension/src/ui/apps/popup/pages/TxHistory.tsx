@@ -1,5 +1,5 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { AnalyticsPage } from "@ui/api/analytics"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import {
   TxHistoryList,
   TxHistoryProvider,

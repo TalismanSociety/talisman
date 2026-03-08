@@ -1,10 +1,6 @@
-import { RELEASE_NOTES_URL } from "extension-shared"
+import { RELEASE_NOTES_URL } from "@common/constants"
+import { PillButton } from "@ui/components/PillButton"
 import { type FC, useCallback } from "react"
-import { PillButton } from "talisman-ui"
-
-export interface BuildVersioProps {
-  className?: string
-}
 
 export const BuildVersionPill: FC<{ className?: string }> = ({ className }) => {
   const handleClick = useCallback(() => {

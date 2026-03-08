@@ -1,4 +1,4 @@
-import { useCurrentTab } from "@ui/state"
+import { useCurrentTab } from "@ui/state/browser"
 import { useMemo } from "react"
 
 export const useCurrentSite = () => {

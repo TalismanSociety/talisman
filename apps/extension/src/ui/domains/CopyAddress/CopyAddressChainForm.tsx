@@ -1,15 +1,21 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import {
+  getAccountGenesisHash,
+  isAccountLedgerPolkadotGeneric,
+} from "@core/domains/keyring/exports"
 import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, QrIcon } from "@talismn/icons"
+import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
-import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalancesByAddress } from "@ui/state/balances"
+import { useNetworks } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { AccountIcon } from "../Account/AccountIcon"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"

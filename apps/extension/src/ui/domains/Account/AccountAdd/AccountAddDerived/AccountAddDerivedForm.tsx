@@ -1,6 +1,11 @@
+import { log } from "@common/log"
+import {
+  getDefaultCurveForAccountPlatform,
+  getDerivationPathForCurve,
+  SUPPORTED_ACCOUNT_PLATFORMS,
+} from "@core/domains/accounts/helpers"
+import type { RequestAddAccountDerive } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { type AccountPlatform, isValidDerivationPath, type KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -11,32 +16,23 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { Accordion, AccordionIcon } from "@ui/components/Accordion"
+import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts, useMnemonics } from "@ui/state"
-import {
-  getDefaultCurveForAccountPlatform,
-  getDerivationPathForCurve,
-  type RequestAddAccountDerive,
-  SUPPORTED_ACCOUNT_PLATFORMS,
-} from "extension-core"
-import { log } from "extension-shared"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAccounts } from "@ui/state/accounts"
+import { useMnemonics } from "@ui/state/mnemonics"
 import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-import {
-  Button,
-  Checkbox,
-  FormFieldContainer,
-  FormFieldInputText,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
 import * as yup from "yup"
-
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"

@@ -1,3 +1,5 @@
+import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
 import {
   DndContext,
   type DragEndEvent,
@@ -6,9 +8,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import type { Account, AccountsCatalogTree } from "extension-core"
+import { notify } from "@ui/components/Notifications"
 import { type CSSProperties, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"

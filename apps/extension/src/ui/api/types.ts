@@ -1,3 +1,67 @@
+import type { RequestAccountsCatalogAction, Trees } from "@core/domains/accounts/helpers.catalog"
+import type {
+  RequestAccountContactUpdate,
+  RequestAddAccountDerive,
+  RequestAddAccountExternal,
+  RequestAddAccountKeypair,
+  RequestAddressLookup,
+} from "@core/domains/accounts/types"
+import type {
+  AnalyticsCaptureRequest,
+  ChangePasswordStatusUpdate,
+  LoggedinType,
+  SendFundsOpenRequest,
+} from "@core/domains/app/types"
+import type { AssetDiscoveryScanScope } from "@core/domains/assetDiscovery/types"
+import type {
+  AddressesAndTokens,
+  BalanceSubscriptionResponse,
+  RequestBalance,
+} from "@core/domains/balances/types"
+import type { BittensorValidator } from "@core/domains/bittensor/exports"
+import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
+import type { DefiPosition } from "@core/domains/defi/exports"
+import type {
+  YieldDto,
+  YieldxyzPosition,
+  YieldxyzPositionRefreshRequest,
+  YieldxyzProvider,
+} from "@core/domains/earn/exports"
+import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
+import type {
+  AddEthereumChainRequestId,
+  AnyEthRequestChainId,
+  EvmAddress,
+  WatchAssetRequestId,
+} from "@core/domains/ethereum/types"
+import type { Account, Mnemonic } from "@core/domains/keyring/exports"
+import type { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import type { RequestSetVerifierCertificateMnemonic } from "@core/domains/mnemonics/types"
+import type { NftData } from "@core/domains/nfts/exports"
+import type { ConfirmedExternalAddresses } from "@core/domains/sendFunds/types"
+import type {
+  SignerPayloadGenesisHash,
+  SignerPayloadJSON,
+  SigningRequestID,
+} from "@core/domains/signing/types"
+import type {
+  AuthorisedSiteUpdate,
+  AuthorizedSite,
+  AuthorizedSites,
+  AuthRequestAddresses,
+  AuthRequestId,
+  AuthSolanaSignInApprove,
+  ProviderType,
+} from "@core/domains/sitesAuthorised/types"
+import type {
+  RequestSolanaSignApprove,
+  ResponseSolanaSubmit,
+  SolRpcRequest,
+  SolRpcResponse,
+} from "@core/domains/solana/exports"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
+import type { UnsubscribeFn } from "@core/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
@@ -7,61 +71,6 @@ import type { KeypairCurve } from "@talismn/crypto"
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { TokenRatesStorage } from "@talismn/token-rates"
 import type { Loadable } from "@talismn/util"
-import type {
-  Account,
-  AddEthereumChainRequestId,
-  AddressesAndTokens,
-  AnalyticsCaptureRequest,
-  AnyEthRequestChainId,
-  AssetDiscoveryScanScope,
-  AuthorisedSiteUpdate,
-  AuthorizedSite,
-  AuthorizedSites,
-  AuthRequestAddresses,
-  AuthRequestId,
-  AuthSolanaSignInApprove,
-  BalanceSubscriptionResponse,
-  BittensorValidator,
-  ChangePasswordStatusUpdate,
-  ConfirmedExternalAddresses,
-  DecryptRequestId,
-  DefiPosition,
-  EncryptRequestId,
-  EvmAddress,
-  KnownRequestId,
-  LoggedinType,
-  MetadataUpdateStatus,
-  Mnemonic,
-  NftData,
-  ProviderType,
-  RequestAccountContactUpdate,
-  RequestAccountsCatalogAction,
-  RequestAddAccountDerive,
-  RequestAddAccountExternal,
-  RequestAddAccountKeypair,
-  RequestAddressLookup,
-  RequestBalance,
-  RequestMetadataId,
-  RequestNetworkUpsert,
-  RequestSetVerifierCertificateMnemonic,
-  RequestSolanaSignApprove,
-  ResponseSolanaSubmit,
-  SendFundsOpenRequest,
-  SignerPayloadGenesisHash,
-  SignerPayloadJSON,
-  SigningRequestID,
-  SolRpcRequest,
-  SolRpcResponse,
-  Trees,
-  UnsubscribeFn,
-  ValidRequests,
-  WalletTransactionInfo,
-  WatchAssetRequestId,
-  YieldDto,
-  YieldxyzPosition,
-  YieldxyzPositionRefreshRequest,
-  YieldxyzProvider,
-} from "extension-core"
 import type { MetadataDef } from "inject/substrate/types"
 import type { TransactionRequest } from "viem"
 

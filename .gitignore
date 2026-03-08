@@ -47,9 +47,16 @@ review
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.playwright-mcp
 
 # tmp folder for translations extraction
 .i18next-parser/
 
 /.verify-build/
 /.firefox-build-temp/
+
+# for ai temp scripts
+.tmp
+
+# do not track .claude folder as it would double the context bloat when using copilot
+.claude

@@ -1,4 +1,4 @@
-import { sortBigBy } from "@talisman/util/bigHelper"
+import type { Address } from "@core/types/base"
 import {
   type Balance,
   type BalanceLockType,
@@ -10,9 +10,10 @@ import {
 import type { TokenId } from "@talismn/chaindata-provider"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { sortBigBy } from "@ui/util/bigHelper"
 import BigNumber from "bignumber.js"
-import type { Address } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -37,8 +38,6 @@ type TokenBalancesParams = {
   tokenId: TokenId
   balances: Balances
 }
-
-export type TokenBalances = ReturnType<typeof useTokenBalances>
 
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)

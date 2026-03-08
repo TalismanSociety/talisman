@@ -1,16 +1,12 @@
+import { log } from "@common/log"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { log } from "extension-shared"
+import { Button } from "@ui/components/Button"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  FormFieldInputText,
-  PillButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 
 import {
   SUBNET_SLIPPAGE_SCHEMA,

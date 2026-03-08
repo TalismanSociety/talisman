@@ -1,10 +1,10 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { SigningRequestID } from "@core/domains/signing/types"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,
 } from "@ui/domains/Sign/SignRequestContext"
-import { useRequest } from "@ui/state"
-import type { SigningRequestID } from "extension-core"
+import { useRequest } from "@ui/state/requests"
 import { Suspense, useEffect } from "react"
 import { useParams } from "react-router-dom"
 

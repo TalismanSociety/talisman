@@ -1,14 +1,15 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { ChevronLeftIcon, StarIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
+import { Drawer } from "@ui/components/Drawer"
+import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
-import { useSetting } from "@ui/state"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { useSetting } from "@ui/state/settings"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
 
 export const useCurrenciesDrawerOpenClose = () => useGlobalOpenClose("currencies-drawer")
 

@@ -1,8 +1,8 @@
 import { classNames, cn } from "@talismn/util"
+import { Button, type ButtonProps } from "@ui/components/Button"
 import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, type ButtonProps } from "talisman-ui"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignApproveButton } from "./SignApproveButton"

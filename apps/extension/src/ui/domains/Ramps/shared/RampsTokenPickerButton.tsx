@@ -2,12 +2,12 @@ import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
 import type { TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
+import { Drawer } from "@ui/components/Drawer"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useNetworkById } from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, useOpenClose } from "talisman-ui"
-
 import { RampsTokenPicker } from "./RampsTokenPicker"
 
 export const RampsTokenPickerButton: FC<{

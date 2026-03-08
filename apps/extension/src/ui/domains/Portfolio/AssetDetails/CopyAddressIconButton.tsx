@@ -1,11 +1,11 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { type FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 

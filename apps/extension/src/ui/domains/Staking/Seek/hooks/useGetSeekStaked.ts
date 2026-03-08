@@ -1,8 +1,10 @@
+import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { BalanceFormatter } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
-import { isAccountAddressEthereum } from "extension-core"
+import { useAccounts } from "@ui/state/accounts"
+import { useToken } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
 
 import seekSinglePoolStakingAbi from "../seekSinglePoolStakingAbi"

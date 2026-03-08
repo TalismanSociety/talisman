@@ -1,4 +1,4 @@
-import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
+import { FallbackErrorBoundary } from "@ui/components/FallbackErrorBoundary"
 import type { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 import type { FC } from "react"
 

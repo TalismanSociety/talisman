@@ -1,10 +1,10 @@
 import type { HexString } from "@polkadot/util/types"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { provideContext } from "@talisman/util/provideContext"
 import { detectAddressEncoding } from "@talismn/crypto"
 import { api } from "@ui/api"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -63,7 +63,7 @@ type Action =
       mnemonicConfirmed?: boolean
     }
 
-export const reducer = (state: AddQrState, action: Action): AddQrState => {
+const reducer = (state: AddQrState, action: Action): AddQrState => {
   if (state.type === "SCAN") {
     if (action.method === "enableScan") return { type: "SCAN", enable: true }
     if (action.method === "setScanError")

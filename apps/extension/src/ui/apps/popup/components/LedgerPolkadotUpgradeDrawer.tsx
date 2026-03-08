@@ -1,7 +1,9 @@
-import { useAppState } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAppState } from "@ui/state/app"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 export const LedgerPolkadotUpgradeAlertDrawer = () => {
   const { t } = useTranslation()

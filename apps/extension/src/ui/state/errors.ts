@@ -1,5 +1,6 @@
+import type { ErrorsStoreData } from "@core/domains/app/store.errors"
+import { errorsStore } from "@core/domains/app/store.errors"
 import { bind } from "@react-rxjs/core"
-import { type ErrorsStoreData, errorsStore } from "extension-core"
 import { map, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"

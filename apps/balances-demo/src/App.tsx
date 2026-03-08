@@ -5,7 +5,6 @@ import { Balances, BalancesFallback } from "./components/Balances"
 import { BalancesTotal, BalancesTotalFallback } from "./components/BalancesTotal"
 import { Button } from "./components/Button"
 import { useExtensionAccounts } from "./hooks/useExtensionAccounts"
-import { useExtensionSyncCustomChaindata } from "./hooks/useExtensionSyncCustomChaindata"
 
 type Props = {
   withTestnets: boolean
@@ -13,8 +12,6 @@ type Props = {
 }
 
 export function App({ withTestnets, setWithTestnets }: Props): JSX.Element {
-  useExtensionSyncCustomChaindata()
-
   const accounts = useExtensionAccounts()
   const addresses = useMemo(() => (accounts ?? []).map((account) => account.address), [accounts])
   useSetBalancesAddresses(addresses)

@@ -1,9 +1,7 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
+
+import { log } from "@common/log"
 import * as Sentry from "@sentry/browser"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
@@ -19,30 +17,29 @@ import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Button } from "@ui/components/Button"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { FormFieldTextarea } from "@ui/components/FormFieldTextarea"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { Toggle } from "@ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAnyNetwork, useToken } from "@ui/state"
-import { log } from "extension-shared"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAnyNetwork, useToken } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  FormFieldTextarea,
-  IconButton,
-  Modal,
-  ModalDialog,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

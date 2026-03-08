@@ -1,6 +1,6 @@
 import { type Balance, BalanceFormatter } from "@talismn/balances"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
-import { useTokenRatesMap } from "@ui/state"
+import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
 export const useUniswapV2BalancePair = (balance: Balance) => {

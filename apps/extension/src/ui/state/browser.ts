@@ -1,6 +1,6 @@
+import { TEST } from "@common/constants"
 import { bind } from "@react-rxjs/core"
 import { BrowserCodeReader } from "@zxing/browser"
-import { TEST } from "extension-shared"
 import { BehaviorSubject, combineLatest, from, map } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
@@ -11,7 +11,7 @@ const getCurrentTab = async () => {
   return currentTab
 }
 
-export const [useCurrentTab, currentTab$] = bind(
+const [useCurrentTab, _currentTab$] = bind(
   from(getCurrentTab()).pipe(debugObservable("currentTab$"))
 )
 
@@ -27,8 +27,10 @@ export const setSelectedVideoInput = (deviceId: string) => {
   selectedVideoInputId$.next(deviceId)
 }
 
-export const [useSelectedVideoInput, selectedVideoInput$] = bind(
+const [useSelectedVideoInput, _selectedVideoInput$] = bind(
   combineLatest([selectedVideoInputId$, videoInputDevices$]).pipe(
     map(([selectedId, devices]) => (selectedId ? selectedId : devices[0].deviceId))
   )
 )
+
+export { useCurrentTab, useSelectedVideoInput }

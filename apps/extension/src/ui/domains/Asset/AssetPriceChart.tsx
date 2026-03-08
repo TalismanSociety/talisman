@@ -1,20 +1,23 @@
+import { log } from "@common/log"
+import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames, formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
+import { IconButton } from "@ui/components/IconButton"
+import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@ui/components/Popover"
+import { useTokensMap } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates, useTokenRatesMap } from "@ui/state/tokenRates"
 import ChartJs, {
   type ActiveElement,
   type ChartComponentLike,
   type ChartEvent,
 } from "chart.js/auto"
-import { fetchFromCoingecko } from "extension-core"
-import { log } from "extension-shared"
 import { uniq } from "lodash-es"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
 
 import { AssetPrice } from "./AssetPrice"
 import { TokenDisplaySymbol } from "./TokenDisplaySymbol"

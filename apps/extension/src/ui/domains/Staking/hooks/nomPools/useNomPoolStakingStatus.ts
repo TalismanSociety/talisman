@@ -1,10 +1,11 @@
+import { log } from "@common/log"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useBalances, useNetworkById, useToken } from "@ui/state"
-import { log } from "extension-shared"
+import { useBalances } from "@ui/state/balances"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 import { getStakingEraDurationMs } from "../../helpers"

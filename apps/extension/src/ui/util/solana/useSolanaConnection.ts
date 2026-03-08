@@ -1,8 +1,8 @@
+import type { SolRpcRequest } from "@core/domains/solana/exports"
 import { Connection, type ConnectionConfig } from "@solana/web3.js"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
 import type { SolNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
-import type { SolRpcRequest } from "extension-core"
 import { useMemo } from "react"
 
 /**

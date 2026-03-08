@@ -1,6 +1,7 @@
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import type { Account } from "@core/domains/keyring/exports"
+import { isAccountPortfolio } from "@core/domains/keyring/exports"
 import { api } from "@ui/api"
-import { type Account, isAccountPortfolio } from "extension-core"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

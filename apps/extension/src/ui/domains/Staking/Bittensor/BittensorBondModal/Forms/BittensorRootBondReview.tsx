@@ -1,10 +1,10 @@
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
-import type { WalletTransactionInfo } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"

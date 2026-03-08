@@ -1,7 +1,7 @@
 import { ArrowLeftIcon } from "@talismn/icons"
+import { Button } from "@ui/components/Button"
 import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import type { MethodType } from "./context"
 

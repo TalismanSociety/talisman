@@ -1,8 +1,8 @@
+import { log } from "@common/log"
+import type { LedgerTransportType } from "@core/domains/app/store.settings"
 import type Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
 import {
   BellIcon,
   CheckIcon,
@@ -20,15 +20,20 @@ import {
 import { classNames, isNotNil } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Button } from "@ui/components/Button"
+import { CtaButton } from "@ui/components/CtaButton"
+import { Dropdown } from "@ui/components/Dropdown"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { Setting } from "@ui/components/Setting"
+import { Toggle } from "@ui/components/Toggle"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
-import type { LedgerTransportType } from "extension-core"
-import { log } from "extension-shared"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, CtaButton, Dropdown, Modal, ModalDialog, Toggle } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -133,7 +138,7 @@ const Content = () => {
 
 type LedgerTransportStatusCheck = { ok: true } | { ok: false; error: string }
 
-export const LedgerTransportTypeSelect = () => {
+const LedgerTransportTypeSelect = () => {
   const { t } = useTranslation()
   const [ledgerTransportType, setLedgerTransportType] = useSetting("ledgerTransportType")
   const refTransport = useRef<Transport | null>(null)

@@ -1,11 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import {
-  authorisedSites$,
-  preloadBalances$,
-  remoteConfig$,
-  setPortfolioSelectedAccounts,
-  usePortfolioGlobalData,
-} from "@ui/state"
+import { authorisedSites$ } from "@ui/state/authorisedSites"
+import { preloadBalances$ } from "@ui/state/balances"
+import { setPortfolioSelectedAccounts, usePortfolioGlobalData } from "@ui/state/portfolio"
+import { remoteConfig$ } from "@ui/state/remoteConfig"
 import { type FC, type PropsWithChildren, useEffect } from "react"
 import { combineLatest } from "rxjs"
 

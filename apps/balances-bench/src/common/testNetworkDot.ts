@@ -14,8 +14,8 @@ import {
   toHex,
   unifyMetadata,
 } from "@talismn/scale"
-import { log } from "extension-shared"
 import { Enum } from "polkadot-api"
+import { log } from "../log"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
 const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"

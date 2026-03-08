@@ -8,7 +8,8 @@ import {
 } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { type QueryFunction, type QueryKey, useQuery } from "@tanstack/react-query"
-import { useSetting, useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
+import { useSetting } from "@ui/state/settings"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

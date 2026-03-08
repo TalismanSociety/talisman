@@ -1,12 +1,10 @@
+import { getTransactionSerializable } from "@core/domains/ethereum/helpers"
+import type { AccountLedgerEthereum } from "@core/domains/keyring/exports"
+import type { EthSignMessageMethod } from "@core/domains/signing/types"
 import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { isAddressEqual } from "@talismn/crypto"
-import {
-  type AccountLedgerEthereum,
-  type EthSignMessageMethod,
-  getTransactionSerializable,
-} from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"

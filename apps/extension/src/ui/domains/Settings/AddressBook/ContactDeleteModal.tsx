@@ -1,9 +1,11 @@
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Button } from "@ui/components/Button"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import type { ContactModalProps } from "./types"
 

@@ -1,5 +1,5 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import { useRemoteConfig } from "@ui/state"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
 
 export const useDetaultNomPoolId = (chainId?: DotNetworkId | null | undefined) => {

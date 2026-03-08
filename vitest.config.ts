@@ -12,6 +12,7 @@ export default defineConfig({
       "packages/sapi",
       "packages/solana",
       "packages/icons",
+      "packages/orb",
 
       // Crypto packages (node environment)
       "packages/crypto",
@@ -22,9 +23,6 @@ export default defineConfig({
       "packages/chaindata-provider",
       "packages/balances",
       "packages/balances-react",
-
-      // Extension packages (jsdom environment with custom setup)
-      "packages/extension-core",
 
       // Extension app (jsdom environment with custom setup)
       "apps/extension",

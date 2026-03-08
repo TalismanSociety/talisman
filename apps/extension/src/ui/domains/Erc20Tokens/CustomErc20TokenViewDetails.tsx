@@ -1,7 +1,9 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import type { EthNetwork, EvmErc20Token } from "@talismn/chaindata-provider"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { PillButton } from "@ui/components/PillButton"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, PillButton } from "talisman-ui"
 
 import { ViewDetailsAddress } from "../Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"

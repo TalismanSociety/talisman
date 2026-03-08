@@ -1,7 +1,7 @@
+import { log } from "@common/log"
 import type { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
-import { useNetworkById } from "@ui/state"
-import { log } from "extension-shared"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { createPublicClient, custom, type PublicClient } from "viem"
 

@@ -1,6 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

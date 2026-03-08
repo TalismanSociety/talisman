@@ -1,4 +1,6 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountOwned } from "@core/domains/keyring/exports"
 import {
   ArrowDownIcon,
   CreditCardIcon,
@@ -12,6 +14,9 @@ import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames, isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { ContextMenuTrigger } from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -23,23 +28,13 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
-import {
-  type Account,
-  getAccountGenesisHash,
-  isAccountOwned,
-  type TreeFolder,
-} from "extension-core"
+import { useBalanceTotals } from "@ui/state/balanceTotals"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
-import {
-  ContextMenuTrigger,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { BITTENSOR_TOKEN_ID } from "../Staking/Bittensor/utils/constants"
 import { useIsBittensorEnabled } from "../TaoDashboard/hooks/useIsBittensorEnabled"

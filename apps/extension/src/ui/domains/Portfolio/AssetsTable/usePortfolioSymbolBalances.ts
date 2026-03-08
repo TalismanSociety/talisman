@@ -1,7 +1,12 @@
 import { bind } from "@react-rxjs/core"
 import { Balance, Balances, type FiatSumBalancesFormatter } from "@talismn/balances"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { getSettingValue$, selectedCurrency$, useSelectedCurrency, useSetting } from "@ui/state"
+import {
+  getSettingValue$,
+  selectedCurrency$,
+  useSelectedCurrency,
+  useSetting,
+} from "@ui/state/settings"
 import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 
@@ -110,7 +115,7 @@ const sortSymbolBalancesBy =
     return aSymbol.localeCompare(bSymbol)
   }
 
-export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFilter$] = bind(
+const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$] = bind(
   (filter: "all" | "network" | "search") =>
     combineLatest([
       selectedCurrency$,
@@ -178,7 +183,9 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
   }
 )
 
-export const usePortfolioSymbolBalances = (balances: Balances) => {
+export { usePortfolioSymbolBalancesByFilter }
+
+const _usePortfolioSymbolBalances = (balances: Balances) => {
   const currency = useSelectedCurrency()
   const [hideDust] = useSetting("hideDust")
 

@@ -1,35 +1,34 @@
-import { DistanceToNow } from "@talisman/components/DistanceToNow"
-import { useScrollContainer } from "@talisman/components/ScrollContainer"
+import { IS_FIREFOX } from "@common/constants"
+import {
+  isTxInfoApproval,
+  isTxInfoSwap,
+  isTxInfoTransfer,
+} from "@core/domains/transactions/exports"
+import type {
+  TransactionStatus,
+  WalletTransaction,
+  WalletTransactionDot,
+  WalletTransactionEth,
+  WalletTransactionSol,
+} from "@core/domains/transactions/types"
 import { BalanceFormatter } from "@talismn/balances"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, LoaderIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { DistanceToNow } from "@ui/components/DistanceToNow"
+import { useScrollContainer } from "@ui/components/ScrollContainer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import {
-  useNetworkByGenesisHash,
-  useNetworkById,
-  useSelectedCurrency,
-  useToken,
-  useTokenRates,
-} from "@ui/state"
+import { useNetworkByGenesisHash, useNetworkById, useToken } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { IS_POPUP } from "@ui/util/constants"
-import {
-  isTxInfoApproval,
-  isTxInfoSwap,
-  isTxInfoTransfer,
-  type TransactionStatus,
-  type WalletTransaction,
-  type WalletTransactionDot,
-  type WalletTransactionEth,
-  type WalletTransactionSol,
-} from "extension-core"
-import { IS_FIREFOX } from "extension-shared"
 import {
   type FC,
   type ReactNode,
@@ -41,7 +40,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import type { ReplacementCallbackArgs } from "../TxProgress"
 import { useTxHistory } from "./TxHistoryContext"
 import { TxHistoryModal } from "./TxHistoryModal"

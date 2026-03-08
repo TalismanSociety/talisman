@@ -1,25 +1,27 @@
-import { SearchInput } from "@talisman/components/SearchInput"
 import { FilterIcon, GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { SearchInput } from "@ui/components/SearchInput"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import type { ProtocolOption } from "@ui/state/defi"
 import {
-  type NetworkOption,
-  type ProtocolOption,
   setDefiProtocolFilter,
-  setPortfolioNetworkFilter,
-  setPortfolioSearch,
-  useAllNetworkOptions,
   useDefiPositions,
   useDefiProtocolFilterOption,
   useDefiProtocolFilterOptions,
+} from "@ui/state/defi"
+import type { NetworkOption } from "@ui/state/portfolio"
+import {
+  setPortfolioNetworkFilter,
+  setPortfolioSearch,
+  useAllNetworkOptions,
   usePortfolioNetworkFilter,
   usePortfolioSearch,
-} from "@ui/state"
+} from "@ui/state/portfolio"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { AssetLogo } from "../Asset/AssetLogo"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { ProtocolOptionsModal } from "./DeFi/ProtocolFilterModal"

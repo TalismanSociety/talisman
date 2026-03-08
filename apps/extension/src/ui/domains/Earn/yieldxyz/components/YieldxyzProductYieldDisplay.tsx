@@ -1,10 +1,10 @@
+import type { YieldDto } from "@core/domains/earn/exports"
 import { InfoIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import type { YieldDto } from "extension-core"
 import { type FC, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 

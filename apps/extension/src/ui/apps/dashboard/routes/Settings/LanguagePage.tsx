@@ -1,8 +1,8 @@
 import { languages } from "@common/i18nConfig"
-import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { ExclusiveButtonsList } from "@ui/components/ExclusiveButtonsList"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

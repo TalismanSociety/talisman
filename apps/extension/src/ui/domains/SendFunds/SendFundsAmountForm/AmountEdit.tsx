@@ -1,11 +1,12 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
+import { log } from "@common/log"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { PillButton } from "@ui/components/PillButton"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 import BigNumber from "bignumber.js"
-import { log } from "extension-shared"
 import {
   type ChangeEventHandler,
   type FC,
@@ -17,7 +18,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"

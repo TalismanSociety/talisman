@@ -1,19 +1,19 @@
-import "@talisman/theme/styles.css"
+import "@ui/styles/styles.css"
 
 import { Subscribe } from "@react-rxjs/core"
-import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
-import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundary"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ErrorBoundaryDatabaseMigration } from "@ui/components/ErrorBoundaryDatabaseMigration"
+import { NotificationsContainer } from "@ui/components/Notifications/NotificationsContainer"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { TalismanErrorBoundary } from "@ui/components/TalismanErrorBoundary"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import { type KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
 import { type ReactNode, StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
-import { type FontFamily, preloadFonts } from "talisman-ui"
 
 import { initSentryFrontend } from "../sentry"
+import { type FontFamily, preloadFonts } from "./util/preloadFonts"
 
 const FONT_FAMILIES_DEFAULT: FontFamily[] = ["Surt", "SurtExpanded", "Inter"]
 const FONT_FAMILIES_ONBOARDING: FontFamily[] = ["Surt", "SurtExpanded", "WhyteInktrapMedium"]

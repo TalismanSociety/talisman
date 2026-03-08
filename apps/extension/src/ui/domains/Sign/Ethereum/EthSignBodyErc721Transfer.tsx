@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
+import { UnsafeImage } from "@ui/components/UnsafeImage"
 import { getNftMetadata } from "@ui/util/getNftMetadata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"

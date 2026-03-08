@@ -1,7 +1,7 @@
 import { type EvmUniswapV2Token, evmErc20TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import type { FC } from "react"
 
 export const TokenLogo: FC<{

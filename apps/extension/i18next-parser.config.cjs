@@ -36,15 +36,7 @@ module.exports = {
   // then run `pnpm chore:update-translations` and commit the result
   // defaultValue: (locale, _namespace, key) => (locale === "en" ? `T__${key}__T` : ""),
 
-  input: [
-    // wallet core
-    // "src/core/**/*.{ts,tsx}",
-    "../../packages/extension-core/src/**/*.{ts,tsx}",
-    // wallet ui
-    "src/ui/**/*.{ts,tsx,md}",
-    // wallet @talisman components
-    "src/@talisman/**/*.{ts,tsx}",
-  ],
+  input: ["src/**/*.{ts,tsx,md}"],
   output: ".i18next-parser/locales/$LOCALE/$NAMESPACE.json", // this should not be commited
 
   lexers: {

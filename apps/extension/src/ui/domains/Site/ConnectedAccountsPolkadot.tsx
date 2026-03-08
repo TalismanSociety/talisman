@@ -1,8 +1,10 @@
+import type { Account } from "@core/domains/keyring/exports"
+import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { InfoIcon } from "@talismn/icons"
-import { type Account, isAccountAddressEthereum } from "extension-core"
+import { Checkbox } from "@ui/components/Checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 

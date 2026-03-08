@@ -1,4 +1,4 @@
-import { useSettingValue } from "@ui/state"
+import { useSettingValue } from "@ui/state/settings"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) => {

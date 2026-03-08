@@ -1,6 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
@@ -9,7 +10,6 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 

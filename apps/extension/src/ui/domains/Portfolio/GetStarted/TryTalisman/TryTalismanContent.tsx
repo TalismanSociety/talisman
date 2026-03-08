@@ -1,4 +1,3 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -8,8 +7,9 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { IS_POPUP } from "@ui/util/constants"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type ChangeEventHandler,
   type FC,

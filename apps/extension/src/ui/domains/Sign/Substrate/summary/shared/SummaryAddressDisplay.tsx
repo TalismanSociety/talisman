@@ -1,13 +1,14 @@
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccountByAddress, useNetworkById } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useNetworkById } from "@ui/state/chaindata"
 import { copyAddress } from "@ui/util/copyAddress"
-import { getAccountGenesisHash } from "extension-core"
 import { type FC, useCallback, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import type { SummaryDisplayMode } from "../../types"
 

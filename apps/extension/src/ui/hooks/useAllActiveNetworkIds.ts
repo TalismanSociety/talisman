@@ -1,4 +1,4 @@
-import { useNetworks } from "@ui/state"
+import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 export const useActiveAssetDiscoveryNetworkIds = () => {

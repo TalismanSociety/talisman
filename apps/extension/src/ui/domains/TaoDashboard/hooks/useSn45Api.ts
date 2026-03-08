@@ -1,6 +1,6 @@
+import { getSn45Api } from "@core/domains/bittensor/exports"
 import { useQuery } from "@tanstack/react-query"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
-import { getSn45Api } from "extension-core"
 import { useMemo } from "react"
 
 import type { TimePeriod } from "../shared/types"

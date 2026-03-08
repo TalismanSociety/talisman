@@ -1,13 +1,10 @@
+import { log } from "@common/log"
+import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
+import { isAccountLedgerPolkadotGeneric, isAccountOfType } from "@core/domains/keyring/exports"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
-import { useAccountByAddress } from "@ui/state"
-import {
-  type AccountLedgerPolkadot,
-  isAccountLedgerPolkadotGeneric,
-  isAccountOfType,
-} from "extension-core"
-import { log } from "extension-shared"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useCallback, useMemo } from "react"
 
 import type { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"

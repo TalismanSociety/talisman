@@ -1,13 +1,20 @@
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
 import { classNames, cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInputControlled } from "@ui/components/SearchInputControlled"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import {
   type FC,
   useCallback,
@@ -19,15 +26,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 
 import type { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"

@@ -1,10 +1,10 @@
+import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { base58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
-import { useAccountByAddress } from "@ui/state"
-import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
+import { Button } from "@ui/components/Button"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { MsgSignButtonFallback } from "./MsgSignButtonFallback"

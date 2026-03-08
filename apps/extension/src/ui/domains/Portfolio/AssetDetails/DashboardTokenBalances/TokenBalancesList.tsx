@@ -1,7 +1,7 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { Balances } from "@talismn/balances"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"

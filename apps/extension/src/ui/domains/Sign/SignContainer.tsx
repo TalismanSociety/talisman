@@ -1,5 +1,5 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
+import { FadeIn } from "@ui/components/FadeIn"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 import type { FC, ReactNode } from "react"

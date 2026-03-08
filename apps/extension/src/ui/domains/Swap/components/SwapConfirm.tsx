@@ -1,11 +1,12 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
-import { useNetworksMapById, useSelectedCurrency } from "@ui/state"
+import { useNetworksMapById } from "@ui/state/chaindata"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import {

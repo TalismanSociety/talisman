@@ -1,28 +1,21 @@
+import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
+import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
+import { Button, type ButtonProps } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { Drawer } from "@ui/components/Drawer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useNetworkByGenesisHash, useSetting } from "@ui/state"
-import {
-  type AccountPolkadotVault,
-  isJsonPayload,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-} from "extension-core"
-import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { useSetting } from "@ui/state/settings"
 import { type ReactElement, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  Button,
-  type ButtonProps,
-  Checkbox,
-  Drawer,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"

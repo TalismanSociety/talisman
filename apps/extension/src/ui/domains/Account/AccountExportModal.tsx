@@ -1,21 +1,25 @@
-import { yupResolver } from "@hookform/resolvers/yup"
-import { bind } from "@react-rxjs/core"
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import downloadJson from "@talisman/util/downloadJson"
-import { api } from "@ui/api"
+import type { Account } from "@core/domains/keyring/exports"
 import {
-  type Account,
   isAccountOfType,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
-} from "extension-core"
+} from "@core/domains/keyring/exports"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { bind } from "@react-rxjs/core"
+import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { PasswordStrength } from "@ui/components/PasswordStrength"
+import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import downloadJson from "@ui/util/downloadJson"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"

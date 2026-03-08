@@ -1,23 +1,21 @@
-import { notify } from "@talisman/components/Notifications"
+import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
+import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
+import type { EthPriorityOptionName } from "@core/domains/signing/types"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { Button } from "@ui/components/Button"
+import { notify } from "@ui/components/Notifications"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
-import { useNetworkById, useToken } from "@ui/state"
 import { useAccountByAddress } from "@ui/state/accounts"
-import {
-  activeNetworksStore,
-  activeTokensStore,
-  type EthPriorityOptionName,
-  serializeTransactionRequest,
-  type WalletTransactionInfo,
-} from "extension-core"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
 import { EstimateGasExecutionError } from "viem"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"

@@ -1,6 +1,6 @@
+import type { ConfirmedExternalAddresses } from "@core/domains/sendFunds/types"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
-import type { ConfirmedExternalAddresses } from "extension-core"
 import { Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
@@ -18,4 +18,6 @@ const confirmedAddressesRaw$ = new Observable<ConfirmedExternalAddresses>((subsc
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const [useConfirmedAddresses, confirmedAddresses$] = bind(confirmedAddressesRaw$, {})
+const [useConfirmedAddresses, _confirmedAddresses$] = bind(confirmedAddressesRaw$, {})
+
+export { useConfirmedAddresses }

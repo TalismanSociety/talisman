@@ -1,10 +1,10 @@
+import { appStore } from "@core/domains/app/store.app"
 import { TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useAppState } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { useAppState } from "@ui/state/app"
 import { IS_POPUP } from "@ui/util/constants"
-import { appStore } from "extension-core"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const MigrationProgress = () => {
   const { t } = useTranslation()

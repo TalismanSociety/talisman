@@ -2,6 +2,7 @@ import { ArrowDownIcon, EyeIcon, EyeOffIcon, RepeatIcon, SendIcon } from "@talis
 import { classNames, isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -12,10 +13,10 @@ import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBitte
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import { useAccounts, useSelectedCurrency, useSetting } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useSelectedCurrency, useSetting } from "@ui/state/settings"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = {
   className?: string

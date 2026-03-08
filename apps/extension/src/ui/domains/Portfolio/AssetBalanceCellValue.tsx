@@ -1,6 +1,6 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import type BigNumber from "bignumber.js"
 import type { ReactNode } from "react"

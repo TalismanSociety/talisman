@@ -1,7 +1,16 @@
+import type {
+  AccountsCatalogTree,
+  TreeFolder,
+  TreeItem,
+} from "@core/domains/accounts/helpers.catalog"
+import type { Account, AccountType } from "@core/domains/keyring/exports"
+import {
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+  isAccountPortfolio,
+} from "@core/domains/keyring/exports"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import {
   ChevronLeftIcon,
@@ -15,6 +24,10 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
+import { IconButton } from "@ui/components/IconButton"
+import { SearchInput } from "@ui/components/SearchInput"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -27,22 +40,11 @@ import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarBu
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useBalances } from "@ui/state"
-import {
-  type Account,
-  type AccountsCatalogTree,
-  type AccountType,
-  getAccountGenesisHash,
-  getAccountSignetUrl,
-  isAccountPortfolio,
-  type TreeFolder,
-  type TreeItem,
-} from "extension-core"
+import { useBalances } from "@ui/state/balances"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { BehaviorSubject } from "rxjs"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { PopupHomeBanners } from "../../components/banners/PopupHomeBanners"

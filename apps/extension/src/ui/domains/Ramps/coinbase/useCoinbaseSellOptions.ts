@@ -1,5 +1,5 @@
+import { RAMPS_COINBASE_API_BASE_PATH } from "@common/constants"
 import { useQuery } from "@tanstack/react-query"
-import { RAMPS_COINBASE_API_BASE_PATH } from "extension-shared"
 import urlJoin from "url-join"
 
 import type { CoinbaseSellOptions } from "./types"

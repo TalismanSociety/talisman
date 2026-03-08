@@ -1,4 +1,5 @@
-import { AppPill } from "@talisman/components/AppPill"
+import { isAccountOfType } from "@core/domains/keyring/exports"
+import type { SolSigningRequest } from "@core/domains/signing/types"
 import { base58 } from "@talismn/crypto"
 import { api } from "@ui/api"
 import {
@@ -7,15 +8,15 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
+import { Button } from "@ui/components/Button"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
 import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { isAccountOfType, type SolSigningRequest } from "extension-core"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 export const SolSignMessageRequest: FC<{
   request: SolSigningRequest

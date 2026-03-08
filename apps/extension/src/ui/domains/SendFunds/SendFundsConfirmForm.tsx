@@ -1,13 +1,13 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSelectedCurrency } from "@ui/state"
+import { Checkbox } from "@ui/components/Checkbox"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { WithTooltip } from "@ui/components/WithTooltip"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Checkbox } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -104,7 +104,7 @@ const TotalAmountRow = () => {
   )
 }
 
-export const ExternalRecipientWarning = () => {
+const ExternalRecipientWarning = () => {
   const { t } = useTranslation()
   const {
     warningType,

@@ -1,3 +1,4 @@
+import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
 import {
   isTokenCustom,
   isTokenEvmUniswapV2,
@@ -8,24 +9,28 @@ import {
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { NetworkType } from "@ui/domains/Networks/NetworkType"
-import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
-import { activeTokensStore, isTokenActive } from "extension-core"
-import { sortBy } from "lodash-es"
-import { type FC, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  Toggle,
-} from "talisman-ui"
+} from "@ui/components/ContextMenu"
+import { Toggle } from "@ui/components/Toggle"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkType } from "@ui/domains/Networks/NetworkType"
+import {
+  useActiveTokensState,
+  useAnyNetwork,
+  useNetworksMapById,
+  useTokens,
+} from "@ui/state/chaindata"
+import { sortBy } from "lodash-es"
+import { type FC, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import urlJoin from "url-join"
 
 import type { PlatformOption } from "../Networks/usePlatformOptions"

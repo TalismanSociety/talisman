@@ -1,12 +1,15 @@
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { useMnemonic, useMnemonics } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useMnemonic, useMnemonics } from "@ui/state/mnemonics"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 
 const useMnemonicDeleteModalProvider = () => {
   const mnemonics = useMnemonics()

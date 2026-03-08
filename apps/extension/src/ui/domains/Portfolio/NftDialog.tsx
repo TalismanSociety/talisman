@@ -1,16 +1,27 @@
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { Tabs } from "@talisman/components/Tabs"
+import { log } from "@common/log"
+import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { notify, notifyUpdate } from "@ui/components/Notifications"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { Tabs } from "@ui/components/Tabs"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useNetworkById } from "@ui/state/chaindata"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nfts"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
-import type { Nft, NftCollection } from "extension-core"
-import { log } from "extension-shared"
 import { toPairs } from "lodash"
 import {
   type CSSProperties,
@@ -25,19 +36,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  IconButton,
-  Modal,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
-
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
 import { NetworkAddress } from "../Account/AddressLinkOrCopy"

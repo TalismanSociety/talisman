@@ -1,7 +1,5 @@
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import type { AccountOfType, Mnemonic } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountOfType } from "@core/domains/keyring/exports"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -12,20 +10,25 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { Accordion, AccordionIcon } from "@ui/components/Accordion"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { Spacer } from "@ui/components/Spacer"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccounts, useAppState, useMnemonics } from "@ui/state"
-import {
-  type AccountOfType,
-  getAccountGenesisHash,
-  isAccountOfType,
-  type Mnemonic,
-} from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAccounts } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
+import { useMnemonics } from "@ui/state/mnemonics"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {

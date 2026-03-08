@@ -1,14 +1,14 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
 import {
   MnemonicCreateModal,
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { useMnemonics } from "@ui/state"
-import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { Button } from "@ui/components/Button"
+import { HeaderBlock } from "@ui/components/HeaderBlock"
+import { useMnemonics } from "@ui/state/mnemonics"
 import { type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
 import { MnemonicForm } from "./MnemonicForm"

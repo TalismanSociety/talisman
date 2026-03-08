@@ -1,32 +1,26 @@
+import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
+import { isAccountOfType } from "@core/domains/keyring/exports"
+import type { EthTransactionDetails } from "@core/domains/signing/types"
+import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
 import type { HexString } from "@polkadot/util/types"
-import { notify } from "@talisman/components/Notifications"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { Modal } from "@ui/components/Modal"
+import { notify } from "@ui/components/Notifications"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
+import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalance } from "@ui/state/balances"
+import { useNetworkById } from "@ui/state/chaindata"
 import { IS_POPUP } from "@ui/util/constants"
-import {
-  type EthTransactionDetails,
-  isAccountOfType,
-  serializeTransactionRequest,
-  type WalletTransaction,
-  type WalletTransactionEth,
-} from "extension-core"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  Drawer,
-  Modal,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenCloseWithData,
-} from "talisman-ui"
-
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
@@ -46,7 +40,7 @@ type TxReplaceDrawerProps = {
   onClose?: (newTxHash?: HexString) => void
 }
 
-export const EvmEstimatedFeeTooltip: FC<{
+const EvmEstimatedFeeTooltip: FC<{
   account: string
   feeTokenId?: TokenId
   txDetails?: EthTransactionDetails

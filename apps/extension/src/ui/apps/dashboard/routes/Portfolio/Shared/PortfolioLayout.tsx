@@ -1,11 +1,12 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
+import { Button } from "@ui/components/Button"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { usePortfolioGlobalData } from "@ui/state"
-import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
+import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import {
   type FC,
   type PropsWithChildren,
@@ -16,7 +17,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()

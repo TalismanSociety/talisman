@@ -1,5 +1,5 @@
+import type { SignerPayloadRaw } from "@core/domains/signing/types"
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
-import { AppPill } from "@talisman/components/AppPill"
 import { normalizeAddress } from "@talismn/crypto"
 import { type SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
 import {
@@ -8,10 +8,10 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import type { SignerPayloadRaw } from "extension-core"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

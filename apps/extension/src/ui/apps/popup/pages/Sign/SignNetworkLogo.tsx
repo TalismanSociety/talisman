@@ -1,7 +1,7 @@
 import type { Network } from "@talismn/chaindata-provider"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import type { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const SignNetworkLogo: FC<{ network: Network | null | undefined }> = ({ network }) => {
   if (!network) return null

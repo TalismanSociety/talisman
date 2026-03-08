@@ -1,7 +1,7 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { HandMonoLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { HandMonoLogo } from "@ui/theme/logos"
 import {
   type DetailedHTMLProps,
   type FC,

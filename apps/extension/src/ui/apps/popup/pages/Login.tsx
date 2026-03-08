@@ -1,14 +1,17 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { HandMonoLogo } from "@talisman/theme/logos"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
+import { Button } from "@ui/components/Button"
+import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { useSetting } from "@ui/state"
+import { useSetting } from "@ui/state/settings"
+import { HandMonoLogo } from "@ui/theme/logos"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -18,7 +21,6 @@ import {
   useForm,
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"

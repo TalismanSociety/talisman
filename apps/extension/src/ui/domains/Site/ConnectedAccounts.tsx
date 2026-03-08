@@ -1,9 +1,10 @@
+import type { Account } from "@core/domains/keyring/exports"
+import type { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
 import { isAddressEqual } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
-import { useAuthorisedSites } from "@ui/state"
-import type { Account, AuthorizedSite } from "extension-core"
+import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

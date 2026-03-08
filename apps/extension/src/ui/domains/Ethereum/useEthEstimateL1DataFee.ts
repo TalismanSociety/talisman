@@ -1,8 +1,8 @@
+import { log } from "@common/log"
+import { getTransactionSerializable } from "@core/domains/ethereum/helpers"
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { useNetworkById } from "@ui/state"
-import { getTransactionSerializable } from "extension-core"
-import { log } from "extension-shared"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import {
   getContract,

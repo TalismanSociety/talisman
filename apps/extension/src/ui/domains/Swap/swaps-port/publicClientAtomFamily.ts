@@ -1,6 +1,6 @@
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getNetworkById$, getToken$ } from "@ui/state"
+import { getNetworkById$, getToken$ } from "@ui/state/chaindata"
 import { type Atom, atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import type { AtomFamily } from "jotai/vanilla/utils/atomFamily"

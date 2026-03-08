@@ -1,8 +1,10 @@
+import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { Drawer } from "@ui/components/Drawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
-import { useAppState } from "@ui/state"
+import { useAppState } from "@ui/state/app"
 import { type FC, type PropsWithChildren, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer } from "talisman-ui"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 

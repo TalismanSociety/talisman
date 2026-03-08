@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEthStub } from "@talismn/chain-connectors"
 import type { EthNetwork, TokenType } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
+import { log } from "../log"
 
 export type EthNetworkConfig = Pick<EthNetwork, "id" | "rpcs" | "contracts"> & {
   nativeCurrency?: Partial<EthNetwork["nativeCurrency"]>

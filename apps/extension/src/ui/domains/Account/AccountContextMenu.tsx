@@ -1,7 +1,16 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import type { PopoverOptions } from "@ui/components/Popover"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -11,20 +20,13 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, useNetworkByGenesisHash } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
-import { type Account, getAccountGenesisHash } from "extension-core"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  type PopoverOptions,
-} from "talisman-ui"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 

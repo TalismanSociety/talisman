@@ -1,10 +1,15 @@
 import { XIcon } from "@talismn/icons"
-import { useAccountsCatalog, useAppState } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
+import { Drawer } from "@ui/components/Drawer"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAccountsCatalog } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, IconButton, Modal, useOpenClose } from "talisman-ui"
-
 import imgWelcome from "./welcome.png"
 
 export const ManageAccountsWelcome = () => {

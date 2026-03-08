@@ -1,26 +1,30 @@
+import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
+import {
+  getGasLimit,
+  getGasSettingsEip1559,
+  getTotalFeesFromGasSettings,
+  prepareTransaction,
+  serializeTransactionRequest,
+} from "@core/domains/ethereum/helpers"
+import type {
+  EthGasSettings,
+  EthGasSettingsEip1559,
+  EthGasSettingsLegacy,
+} from "@core/domains/ethereum/types"
+import type {
+  EthPriorityOptionName,
+  EthPriorityOptionNameEip1559,
+  EthPriorityOptionNameLegacy,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "@core/domains/signing/types"
 import { bigIntMax } from "@ethereumjs/util"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isBigInt, isNotNil } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useNetworkById } from "@ui/state"
-import {
-  type EthGasSettings,
-  type EthGasSettingsEip1559,
-  type EthGasSettingsLegacy,
-  type EthPriorityOptionName,
-  type EthPriorityOptionNameEip1559,
-  type EthPriorityOptionNameLegacy,
-  type EthTransactionDetails,
-  type GasSettingsByPriority,
-  getGasLimit,
-  getGasSettingsEip1559,
-  getHumanReadableErrorMessage,
-  getTotalFeesFromGasSettings,
-  prepareTransaction,
-  serializeTransactionRequest,
-} from "extension-core"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type PublicClient, type TransactionRequest } from "viem"

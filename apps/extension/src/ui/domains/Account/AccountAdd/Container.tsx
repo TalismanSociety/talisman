@@ -1,18 +1,19 @@
+import { IS_FIREFOX } from "@common/constants"
+import { isAccountPlatformCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { AccountPlatform } from "@talismn/crypto"
+import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
+import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useNetworks } from "@ui/state/chaindata"
 import {
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
   SolanaCircleLogo,
-} from "@talisman/theme/logos"
-import type { AccountPlatform } from "@talismn/crypto"
-import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
-import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworks } from "@ui/state"
+} from "@ui/theme/logos"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
-import { isAccountPlatformCompatibleWithNetwork } from "extension-core"
-import { IS_FIREFOX } from "extension-shared"
 import {
   cloneElement,
   type ReactElement,
@@ -23,7 +24,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { type MethodType, useAccountCreateContext } from "./context"
 

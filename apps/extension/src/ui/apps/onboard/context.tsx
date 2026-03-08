@@ -1,11 +1,10 @@
-import { provideContext } from "@talisman/util/provideContext"
+import { passwordStore } from "@core/domains/app/store.password"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { api } from "@ui/api"
-import { useAppState, useIsOnboarded } from "@ui/state"
-import { passwordStore, settingsStore } from "extension-core"
+import { useAppState, useIsOnboarded } from "@ui/state/app"
+import { provideContext } from "@ui/util/provideContext"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
-export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
 
 export type OnboardingWizardData = {
   password?: string

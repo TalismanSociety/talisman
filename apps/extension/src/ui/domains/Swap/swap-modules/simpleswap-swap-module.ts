@@ -1,3 +1,5 @@
+import { UNKNOWN_TOKEN_URL } from "@common/constants"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -8,10 +10,9 @@ import {
 } from "@talismn/balances-react"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
-import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
+import { accounts$ } from "@ui/state/accounts"
+import { getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { remoteConfigStore } from "extension-core"
-import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
 import {
@@ -66,8 +67,8 @@ import {
 import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
-export const PROTOCOL: SupportedSwapProtocol = "simpleswap"
-export const PROTOCOL_NAME = "SimpleSwap"
+const PROTOCOL: SupportedSwapProtocol = "simpleswap"
+const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 const TALISMAN_FEE = 0.015
 const TALISMAN_FEE_DISCOUNTED = 0.004

@@ -1,0 +1,201 @@
+import type {
+  RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
+  RequestSign,
+} from "@polkadot/extension-base/background/types"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
+import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type { Account } from "@talismn/keyring"
+import type { RpcTransactionRequest } from "viem"
+
+import type { BaseRequest, BaseRequestId } from "../../types/base"
+import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
+
+export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
+
+export type {
+  RequestSign,
+  RequestSigningApprovePassword,
+  RequestSigningCancel,
+  RequestSigningIsLocked,
+  ResponseSigningIsLocked,
+} from "@polkadot/extension-base/background/types"
+
+export type SigningRequestID<T extends keyof SigningRequests> = BaseRequestId<T>
+
+export type KnownSigningRequestIdOnly<T extends keyof SigningRequests> = {
+  id: SigningRequestID<T>
+}
+
+export type KnownSigningRequestApprove<T extends keyof SigningRequests> = {
+  id: SigningRequestID<T>
+  payload?: SignerPayloadJSON
+}
+
+export type RequestSigningApproveSignature = Omit<PolkadotRequestSigningApproveSignature, "id"> & {
+  id: SigningRequestID<SUBSTRATE_SIGN>
+  payload?: SignerPayloadJSON
+}
+
+interface BaseSigningRequest<T extends keyof SigningRequests> extends BaseRequest<T> {
+  id: SigningRequestID<T>
+  url: string
+}
+
+type SUBSTRATE_SIGN = "substrate-sign"
+const SUBSTRATE_SIGN: SUBSTRATE_SIGN = "substrate-sign"
+
+export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SIGN> {
+  request: RequestSign
+  account: Account
+}
+
+export type SubstrateSignResponse = Omit<SignerResult, "id"> & { id: string }
+
+export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
+  ethChainId: EthNetworkId
+  account: Account
+  request: string | RpcTransactionRequest
+}
+
+export type ETH_SIGN = "eth-sign"
+export type ETH_SEND = "eth-send"
+export type SOL_SIGN = "sol-sign"
+
+const ETH_SIGN: ETH_SIGN = "eth-sign"
+const ETH_SEND: ETH_SEND = "eth-send"
+const SOL_SIGN: SOL_SIGN = "sol-sign"
+
+export const SIGNING_TYPES = {
+  ETH_SIGN,
+  ETH_SEND,
+  SUBSTRATE_SIGN,
+  SOL_SIGN,
+}
+
+export type EthSignMessageMethod =
+  | "personal_sign"
+  | "eth_signTypedData"
+  | "eth_signTypedData_v1"
+  | "eth_signTypedData_v3"
+  | "eth_signTypedData_v4"
+
+export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
+  request: string
+  ethChainId: EthNetworkId
+  method: EthSignMessageMethod
+  params: unknown[]
+}
+
+export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
+  request: RpcTransactionRequest
+  ethChainId: EthNetworkId
+  method: "eth_sendTransaction"
+}
+
+export type AnyEthSigningRequest = EthSignAndSendRequest | EthSignRequest
+export type AnySigningRequest = SubstrateSigningRequest | AnyEthSigningRequest | SolSigningRequest
+
+export type SolSignRequest =
+  | {
+      type: "message"
+      message: string
+    }
+  | {
+      type: "transaction"
+      transaction: string
+      send: boolean
+    }
+
+export type SolSignResult =
+  | {
+      type: "message"
+      signature: string
+    }
+  | {
+      type: "transaction"
+      transaction: string
+      networkId?: SolNetworkId
+    }
+
+export interface SolSigningRequest extends BaseSigningRequest<SOL_SIGN> {
+  request: SolSignRequest
+  account: Account
+}
+
+export type SigningRequests = {
+  "eth-sign": [EthSignRequest, string]
+  "eth-send": [EthSignAndSendRequest, string]
+  "substrate-sign": [SubstrateSigningRequest, SubstrateSignResponse]
+  "sol-sign": [SolSigningRequest, SolSignResult]
+}
+
+export type TransactionMethod = {
+  section: string
+  method: string
+  docs: string[]
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
+  args: any
+}
+
+export type TransactionPayload = {
+  blockHash: string
+  era: {
+    MortalEra?: {
+      period: string
+      phase: string
+    }
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
+    ImmortalEra?: any
+  }
+  genesisHash: string
+  method: string
+  nonce: string
+  specVersion: string
+  tip: string
+  transactionVersion?: string
+}
+
+type _TransactionDetails = {
+  payload?: TransactionPayload
+  method?: TransactionMethod
+  partialFee?: string
+}
+
+export type SignerPayloadGenesisHash = SignerPayloadJSON["genesisHash"] // extracting this out because it's liable to change to HexString in future
+
+// eth fees types ----------------------------------
+export type EthPriorityOptionNameEip1559 = "low" | "medium" | "high" | "custom"
+export type EthPriorityOptionNameLegacy = "recommended" | "custom"
+export type EthPriorityOptionName = EthPriorityOptionNameEip1559 | EthPriorityOptionNameLegacy
+
+export type GasSettingsByPriorityEip1559 = { type: "eip1559" } & Record<
+  EthPriorityOptionNameEip1559,
+  EthGasSettingsEip1559
+>
+export type GasSettingsByPriorityLegacy = { type: "legacy" } & Record<
+  EthPriorityOptionNameLegacy,
+  EthGasSettingsLegacy
+>
+export type GasSettingsByPriority = GasSettingsByPriorityEip1559 | GasSettingsByPriorityLegacy
+
+export type EthBaseFeeTrend = "idle" | "decreasing" | "increasing" | "toTheMoon"
+
+export type EthTransactionDetails = {
+  evmNetworkId: EthNetworkId
+  estimatedGas: bigint
+  gasPrice: bigint
+  estimatedFee: bigint
+  estimatedL1DataFee: bigint | null
+  maxFee: bigint
+  baseFeePerGas?: bigint | null
+  baseFeeTrend?: EthBaseFeeTrend
+}
+
+export interface SigningMessages {
+  // signing message signatures
+  "pri(signing.approveSign)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
+  "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
+  "pri(signing.approveSign.qr)": [RequestSigningApproveSignature, boolean]
+  "pri(signing.approveSign.signet)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
+  "pri(signing.cancel)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
+}

@@ -1,4 +1,4 @@
-import { useNetworksMapById } from "@ui/state"
+import { useNetworksMapById } from "@ui/state/chaindata"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"

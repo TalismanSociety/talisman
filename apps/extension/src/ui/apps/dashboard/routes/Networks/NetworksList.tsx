@@ -1,25 +1,27 @@
+import type { ActiveNetworks } from "@core/domains/balances/store.activeNetworks"
+import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
+import { Button } from "@ui/components/Button"
+import { ListButton } from "@ui/components/ListButton"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { Radio } from "@ui/components/Radio"
+import { Toggle } from "@ui/components/Toggle"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
-import {
-  useActiveNetworksState,
-  useBalances,
-  useIsBalanceInitializing,
-  useNetworks,
-  useRemoteConfig,
-} from "@ui/state"
-import { type ActiveNetworks, activeNetworksStore, isNetworkActive } from "extension-core"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
+import { useActiveNetworksState, useNetworks } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
-
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
 import type { PlatformOption } from "./usePlatformOptions"

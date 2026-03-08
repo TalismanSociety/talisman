@@ -1,7 +1,9 @@
 // Page script - injected into web pages for dApp interaction
 
+import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
+import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import type { Message } from "@polkadot/extension-base/types"
-import { DEBUG, isTalismanHostname, log } from "extension-shared"
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script"
 import WindowMessageService from "../src/common/WindowMessageService"
 import { injectEthereum } from "../src/inject/ethereum/injectEthereum"

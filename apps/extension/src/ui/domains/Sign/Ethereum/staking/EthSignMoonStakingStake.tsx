@@ -1,4 +1,4 @@
-import { useToken } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

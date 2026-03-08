@@ -1,13 +1,14 @@
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import type { NetworkOption } from "@ui/state"
+import { IconButton } from "@ui/components/IconButton"
+import { Modal } from "@ui/components/Modal"
+import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
+import type { NetworkOption } from "@ui/state/portfolio"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 

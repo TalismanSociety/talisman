@@ -1,6 +1,8 @@
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { cn } from "@talismn/util"
+import { Toggle } from "@ui/components/Toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { MevShieldInfoDrawer } from "@ui/domains/Staking/Bittensor/BittensorBondModal/Drawers/BittensorMevShieldInfoDrawer"
 import { BittensorSlippageDrawer } from "@ui/domains/Staking/Bittensor/BittensorBondModal/Drawers/BittensorSlippageDrawer"
@@ -15,7 +17,8 @@ import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDis
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useFeatureFlag } from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
 import {
   type ComponentProps,
   type FC,
@@ -25,7 +28,6 @@ import {
   useMemo,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Toggle, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 export const SwapConfirmContainer: FC<PropsWithChildren<{ className?: string }>> = ({
   children,

@@ -1,7 +1,9 @@
 import type { DotNetworkId, SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { useAccounts, useBalances, useSelectedCurrency } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
+import { useBalances } from "@ui/state/balances"
 import { useBittensorValidatorsMap } from "@ui/state/bittensor"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { useMemo } from "react"
 
 export const useBittensorStakingPositions = (networkId: DotNetworkId | null | undefined) => {

@@ -1,5 +1,13 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import type { Account } from "@core/domains/keyring/exports"
+import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import {
   evmErc20TokenId,
@@ -10,14 +18,6 @@ import {
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
-import {
-  type Account,
-  isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-  type SignerPayloadJSON,
-} from "extension-core"
 import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import { atom } from "jotai"
 import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
@@ -108,7 +108,7 @@ export type SwapActivity<TData> = {
   }
 }
 
-export type EstimateGasTx =
+type _EstimateGasTx =
   | {
       type: "evm"
       chainId: number
@@ -123,7 +123,7 @@ export type EstimateGasTx =
 export type QuoteFunction<TData = any> = Atom<
   Loadable<Promise<BaseQuote<TData> | Loadable<Promise<BaseQuote<TData> | null>>[] | null>>
 >
-export type SwapFunction<TData> = (
+type _SwapFunction<TData> = (
   get: Getter,
   set: Setter,
   props: SwapProps
@@ -219,7 +219,7 @@ export const toAddressAtom = atom((get) => {
   }
 })
 
-export const swappingAtom = atom(false)
+const _swappingAtom = atom(false)
 export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
   "bestRate"
 )
@@ -270,7 +270,7 @@ const swapsStorage: typeof _swapsStorage = {
 
 const swapsStorageAtom = atomWithStorage("@talisman/swaps", [], swapsStorage)
 
-export const swapsAtom = atom(
+const _swapsAtom = atom(
   (get) => filterAndSortStoredSwaps(get(swapsStorageAtom)),
   (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps)
 )

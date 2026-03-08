@@ -1,6 +1,8 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -10,11 +12,10 @@ import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { getMultiLocationTokenId } from "@ui/domains/Sign/Substrate/util/getMultiLocationTokenId"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state/chaindata"
 import { uniq } from "lodash-es"
 import { type FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const FooterContent = ({ isTransaction = false }: { isTransaction?: boolean }) => {
   const { t } = useTranslation()

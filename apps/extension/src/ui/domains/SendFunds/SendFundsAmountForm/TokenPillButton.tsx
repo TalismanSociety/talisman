@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
-import { useToken } from "@ui/state"
+import { PillButton } from "@ui/components/PillButton"
+import { useToken } from "@ui/state/chaindata"
 import type { FC } from "react"
-import { PillButton } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 

@@ -1,11 +1,20 @@
+import type {
+  AccountsCatalogTree,
+  TreeFolder,
+  TreeItem,
+} from "@core/domains/accounts/helpers.catalog"
 import type { Placement } from "@floating-ui/react"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { useAccountsCatalog } from "@ui/state"
-import type { AccountsCatalogTree, TreeFolder, TreeItem } from "extension-core"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import { useAccountsCatalog } from "@ui/state/accounts"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { useDeleteFolderModal } from "./DeleteFolderModal"
 import { useRenameFolderModal } from "./RenameFolderModal"

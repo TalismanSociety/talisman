@@ -1,13 +1,17 @@
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { setSelectedVideoInput, useSelectedVideoInput, useVideoInputDevices } from "@ui/state"
+import { Toggle } from "@ui/components/Toggle"
+import {
+  setSelectedVideoInput,
+  useSelectedVideoInput,
+  useVideoInputDevices,
+} from "@ui/state/browser"
 import { BrowserQRCodeReader } from "@zxing/browser"
 import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
-import { Toggle } from "talisman-ui"
 
 type Types = "address" | "signature"
 type CommonProps<T extends Types> = {

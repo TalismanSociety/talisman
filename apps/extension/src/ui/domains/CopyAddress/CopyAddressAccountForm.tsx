@@ -1,16 +1,16 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import type { Account } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useAccounts, useNetworkByGenesisHash } from "@ui/state"
-import {
-  type Account,
-  getAccountGenesisHash,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
+import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInput } from "@ui/components/SearchInput"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useAccounts } from "@ui/state/accounts"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type FC,
   type PropsWithChildren,
@@ -20,7 +20,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -138,7 +137,7 @@ type AccountsListProps = {
   header?: ReactNode
 }
 
-export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSelect, header }) => {
+const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSelect, header }) => {
   const { t } = useTranslation()
   const handleAccountClick = useCallback(
     (address: string) => () => {

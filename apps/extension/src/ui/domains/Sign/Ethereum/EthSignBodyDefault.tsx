@@ -1,6 +1,7 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import { useToken, useTokenRates } from "@ui/state"
+import { useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

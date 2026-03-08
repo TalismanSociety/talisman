@@ -15,6 +15,8 @@ const gandalfAccessTokenRaw$ = new Observable<Loadable<string>>((subscriber) => 
   }
 }).pipe(debugObservable("gandalfAccessTokenRaw$"), shareReplay({ bufferSize: 1, refCount: true }))
 
-export const [useGandalfAccessToken, gandalfAccessToken$] = bind(gandalfAccessTokenRaw$, {
+const [_useGandalfAccessToken, gandalfAccessToken$] = bind(gandalfAccessTokenRaw$, {
   status: "loading",
 })
+
+export { gandalfAccessToken$ }

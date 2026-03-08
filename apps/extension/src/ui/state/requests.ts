@@ -1,11 +1,16 @@
+import type {
+  KnownRequest,
+  KnownRequestId,
+  KnownRequestTypes,
+  ValidRequests,
+} from "@core/libs/requests/types"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
-import type { KnownRequest, KnownRequestId, KnownRequestTypes, ValidRequests } from "extension-core"
 import { map, Observable } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
-export const [useRequests, requests$] = bind(
+const [_useRequests, requests$] = bind(
   new Observable<ValidRequests[]>((subscriber) => {
     const unsubscribe = api.subscribeRequests((requests) => {
       subscriber.next(requests)

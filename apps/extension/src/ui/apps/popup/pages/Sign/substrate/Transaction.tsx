@@ -1,5 +1,5 @@
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { hexToNumber } from "@polkadot/util"
-import { AppPill } from "@talisman/components/AppPill"
 import { validateHexString } from "@talismn/util"
 import {
   PopupContent,
@@ -7,11 +7,11 @@ import {
   PopupHeader,
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
+import { AppPill } from "@ui/components/AppPill"
 import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
-import { isJsonPayload } from "extension-core"
 import { type FC, useEffect, useMemo } from "react"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"

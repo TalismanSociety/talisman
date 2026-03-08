@@ -1,7 +1,7 @@
 import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import type { FC, PropsWithChildren, ReactNode } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const FormFieldSet: FC<PropsWithChildren<{ className?: string }>> = ({
   children,

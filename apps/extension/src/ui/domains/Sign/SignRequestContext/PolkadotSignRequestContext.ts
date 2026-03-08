@@ -1,3 +1,7 @@
+import { log } from "@common/log"
+import type { SubstrateSigningRequest } from "@core/domains/signing/types"
+import type { Address } from "@core/types/base"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { GenericExtrinsic } from "@polkadot/types"
 import type {
   IRuntimeVersionBase,
@@ -6,18 +10,17 @@ import type {
 } from "@polkadot/types/types"
 import type { HexString } from "@polkadot/util/types"
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
-import { provideContext } from "@talisman/util/provideContext"
 import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useBalancesHydrate, useNetworkByGenesisHash } from "@ui/state"
+import { useBalancesHydrate } from "@ui/state/balances"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
-import { type Address, isJsonPayload, type SubstrateSigningRequest } from "extension-core"
-import { log } from "extension-shared"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo } from "react"
 
-import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
+import { useSubstratePayloadMetadataSuspense } from "../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (

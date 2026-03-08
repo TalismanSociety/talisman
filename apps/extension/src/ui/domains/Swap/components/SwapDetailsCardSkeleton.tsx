@@ -1,4 +1,4 @@
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state/settings"
 
 import { SwapDetailsContainer } from "./SwapDetailsContainer"
 

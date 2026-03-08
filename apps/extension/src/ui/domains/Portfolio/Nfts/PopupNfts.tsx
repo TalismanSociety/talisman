@@ -1,15 +1,12 @@
+import type { NftCollection, NftData } from "@core/domains/nfts/exports"
 import { StarIcon } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import {
-  useFeatureFlag,
-  useIsFavoriteNft,
-  useNetworksMapById,
-  useNfts,
-  useSetting,
-} from "@ui/state"
-import type { NftCollection, NftData } from "extension-core"
+import { useNetworksMapById } from "@ui/state/chaindata"
+import { useIsFavoriteNft, useNfts } from "@ui/state/nfts"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useSetting } from "@ui/state/settings"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"

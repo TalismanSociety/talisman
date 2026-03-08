@@ -1,10 +1,10 @@
 import type { Placement } from "@floating-ui/react"
 import { CopyIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useNetworkByGenesisHash } from "@ui/state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useCopyAddressModal } from "../CopyAddress"
 import { AccountIcon, type AccountIconProps } from "./AccountIcon"

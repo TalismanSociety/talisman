@@ -1,3 +1,15 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
+import { log } from "@common/log"
+import type { Trees } from "@core/domains/accounts/helpers.catalog"
+import type { AnalyticsCaptureRequest } from "@core/domains/app/types"
+import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
+import type { Account } from "@core/domains/keyring/exports"
+import { SitesAuthorizedStore } from "@core/domains/sitesAuthorised/store"
+import type {
+  AuthorizedSite,
+  AuthorizedSites,
+  ProviderType,
+} from "@core/domains/sitesAuthorised/types"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -7,15 +19,6 @@ import {
   type Token,
 } from "@talismn/chaindata-provider"
 import type { TokenRatesStorage } from "@talismn/token-rates"
-import type {
-  Account,
-  AuthorizedSite,
-  AuthorizedSites,
-  BalanceSubscriptionResponse,
-  ProviderType,
-} from "extension-core"
-import { type AnalyticsCaptureRequest, SitesAuthorizedStore, type Trees } from "extension-core"
-import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { vi } from "vitest"
 
 import { ADDRESSES } from "../constants"

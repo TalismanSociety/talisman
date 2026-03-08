@@ -1,9 +1,10 @@
+import { log } from "@common/log"
 import { PublicKey } from "@solana/web3.js"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
-import { useNetworksMapById, usePortfolioGlobalData, useTokens } from "@ui/state"
+import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useDefiPositions } from "@ui/state/defi"
+import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
-import { log } from "extension-shared"
 import { groupBy } from "lodash-es"
 import {
   type Dispatch,

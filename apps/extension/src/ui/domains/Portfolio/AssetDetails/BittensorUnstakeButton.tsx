@@ -3,13 +3,13 @@ import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { ZapOffIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import type { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
-import { useAccounts } from "@ui/state"
+import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string }> = ({
   balances,

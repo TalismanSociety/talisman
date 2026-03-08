@@ -1,26 +1,26 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
+import type { PopoverOptions } from "@ui/components/Popover"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useToken } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { useToken } from "@ui/state/chaindata"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  type PopoverOptions,
-} from "talisman-ui"
 import urlJoin from "url-join"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"

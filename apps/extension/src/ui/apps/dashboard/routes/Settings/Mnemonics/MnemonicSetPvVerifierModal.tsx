@@ -1,11 +1,14 @@
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useAppState, useMnemonic } from "@ui/state"
+import { Button } from "@ui/components/Button"
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
+import { notify } from "@ui/components/Notifications"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAppState } from "@ui/state/app"
+import { useMnemonic } from "@ui/state/mnemonics"
+import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Modal, ModalDialog } from "talisman-ui"
 
 const useMnemonicSetPvVerifierModalProvider = () => {
   const { isOpen, open: innerOpen, close } = useOpenClose()

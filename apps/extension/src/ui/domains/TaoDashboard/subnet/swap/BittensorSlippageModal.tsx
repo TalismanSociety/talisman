@@ -1,7 +1,9 @@
+import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { BittensorSlippageForm } from "@ui/domains/Staking/Bittensor/shared/BittensorSlippageForm"
+import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, ModalDialog, useOpenCloseStatus } from "talisman-ui"
 import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
 
 export const BittensorSlippageModal: FC = () => {

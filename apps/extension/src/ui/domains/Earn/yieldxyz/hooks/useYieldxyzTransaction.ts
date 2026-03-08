@@ -1,4 +1,4 @@
-import { useNetworkById } from "@ui/state"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
 import type { UseYieldxyzTransactionProps } from "./types"

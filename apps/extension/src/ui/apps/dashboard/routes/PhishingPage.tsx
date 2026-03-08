@@ -1,10 +1,10 @@
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { TALISMAN_WEB_APP_URL } from "extension-shared"
+import { Button } from "@ui/components/Button"
+import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 type PhishingPageProps = {
   url: string

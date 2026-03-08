@@ -33,8 +33,7 @@
     "@talismn/chain-connectors": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/sapi": "workspace:^",
-    "@talismn/scale": "workspace:^",
-    "extension-shared": "workspace:^"
+    "@talismn/scale": "workspace:^"
   },
   "devDependencies": {
     "tsx": "^4.20.3"

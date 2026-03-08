@@ -1,4 +1,4 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { NftsBreadcrumb } from "@ui/domains/Portfolio/Nfts/NftsBreadcrumb"
 import { PopupNftCollection } from "@ui/domains/Portfolio/Nfts/PopupNftCollection"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"

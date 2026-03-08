@@ -1,11 +1,12 @@
-import * as SentryReact from "@sentry/react"
-import type { Event } from "@sentry/types"
+import { DEBUG, IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 import {
-  settingsStore,
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
-} from "extension-core"
-import { DEBUG, IS_FIREFOX, log } from "extension-shared"
+} from "@core/domains/app/store.errors"
+import { settingsStore } from "@core/domains/app/store.settings"
+import * as SentryReact from "@sentry/react"
+import type { Event } from "@sentry/types"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 const normalizeUrl = (url: string) => {

@@ -1,8 +1,8 @@
 import { InfoIcon } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TaoDashboardPeriodTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { FC, ReactNode } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const SectionTitleBar: FC<{
   label: ReactNode

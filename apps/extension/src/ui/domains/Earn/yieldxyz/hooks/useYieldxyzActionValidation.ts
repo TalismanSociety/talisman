@@ -1,5 +1,5 @@
-import type { ActionArgumentsDto, ArgumentSchemaDto } from "extension-core"
-import { log } from "extension-shared"
+import { log } from "@common/log"
+import type { ActionArgumentsDto, ArgumentSchemaDto } from "@core/domains/earn/exports"
 import { useMemo } from "react"
 
 type UseYieldxyzEnterTransactionProps = {

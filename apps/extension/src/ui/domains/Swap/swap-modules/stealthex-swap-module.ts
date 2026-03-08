@@ -1,3 +1,4 @@
+import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -7,9 +8,9 @@ import {
 } from "@talismn/balances-react"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
-import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
+import { accounts$ } from "@ui/state/accounts"
+import { getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
 import createClient from "openapi-fetch"
@@ -70,8 +71,8 @@ import type {
 import stealthexLogo from "./stealthex-logo.svg?url"
 
 const apiUrl = "https://stealthex.talisman.xyz"
-export const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
-export const PROTOCOL_NAME = "StealthEX"
+const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
+const PROTOCOL_NAME = "StealthEX"
 const DECENTRALISATION_SCORE = 1.5
 type FeeProps = { fromAsset: SwappableAssetBaseType; toAsset: SwappableAssetBaseType }
 const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {

@@ -1,11 +1,13 @@
-import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
 import { cn } from "@talismn/util"
+import { Modal } from "@ui/components/Modal"
+import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { SenderAccountPicker } from "@ui/domains/Earn/shared/SenderAccountPicker"
-import { useAccountByAddress } from "@ui/state"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, useOpenClose, WizardModalDialog } from "talisman-ui"
 
 export const SelectSenderAccountPill: FC<{
   address: string | null

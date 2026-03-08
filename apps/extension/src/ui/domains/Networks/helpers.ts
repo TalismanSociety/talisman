@@ -1,3 +1,5 @@
+import { log } from "@common/log"
+import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { Connection } from "@solana/web3.js"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"
@@ -9,8 +11,6 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
-import type { SignerPayloadGenesisHash } from "extension-core"
-import { log } from "extension-shared"
 import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"
 
@@ -18,8 +18,8 @@ import { z } from "zod/v4"
 const rpcInfoCache = new Map<string, Promise<SubstrateRpcInfo | null>>()
 const genesisHashCache = new Map<string, Promise<string | null>>()
 
-export const wsRegEx = /^wss?:\/\/.+$/
-export const httpRegEx = /^https?:\/\/.+$/
+const wsRegEx = /^wss?:\/\/.+$/
+const httpRegEx = /^https?:\/\/.+$/
 
 export const getDotGenesisHashFromRpc = (rpcUrl: string): Promise<`0x${string}` | null> => {
   // check if valid url

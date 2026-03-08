@@ -1,5 +1,6 @@
+import type { AppStoreData } from "@core/domains/app/store.app"
+import { appStore } from "@core/domains/app/store.app"
 import { bind } from "@react-rxjs/core"
-import { type AppStoreData, appStore } from "extension-core"
 import { type SetStateAction, useCallback } from "react"
 import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"
 
@@ -35,6 +36,8 @@ export const [useIsOnboarded, isOnboarded$] = bind(
   getAppStateValue$("onboarded").pipe(map((onboarded) => onboarded === "TRUE"))
 )
 
-export const [useCurrentMigration, currentMigration$] = bind(
+const [_useCurrentMigration, currentMigration$] = bind(
   getAppStateValue$("currentMigration").pipe(map((migration) => migration ?? null))
 )
+
+export { currentMigration$ }

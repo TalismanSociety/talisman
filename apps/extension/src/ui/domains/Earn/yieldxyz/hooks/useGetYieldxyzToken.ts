@@ -1,11 +1,10 @@
+import type { TokenDto } from "@core/domains/earn/exports"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
+import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import {
   getYieldxyzTokenId as getYieldxyzTokenIdInner,
-  useNetworksMapById,
-  useTokensMap,
   useYieldNetworkIdToTalismanNetworkIdMap,
-} from "@ui/state"
-import type { TokenDto } from "extension-core"
+} from "@ui/state/yieldxyz"
 import { useCallback } from "react"
 
 export const useGetYieldxyzToken = () => {

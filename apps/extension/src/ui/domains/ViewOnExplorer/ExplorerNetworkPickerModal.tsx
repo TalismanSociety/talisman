@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
+import { Modal } from "@ui/components/Modal"
 import type { FC } from "react"
-import { Modal } from "talisman-ui"
 
 import { ExplorerNetworkPicker } from "./ExplorerNetworkPicker"
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"

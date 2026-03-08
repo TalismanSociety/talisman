@@ -6,13 +6,13 @@ import replace from "@rollup/plugin-replace"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
-import { log } from "extension-shared"
 import JSZip from "jszip"
 import type { Alias, Plugin } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
+import { log } from "./src/common/log"
 
 const pkg = require("./package.json")
 
@@ -349,13 +349,7 @@ const packagesDir = resolve(__dirname, "../../packages")
 // This enables hot reload in dev mode - changes to package source are reflected immediately
 function createPackageSourceAliases(): Alias[] {
   return [
-    // Internal packages - exact matches for main entry (subpath patterns are in baseAliases)
-    { find: /^talisman-ui$/, replacement: resolve(packagesDir, "talisman-ui/src") },
-
     // Map workspace packages to source for hot reload in dev (exact matches)
-    { find: "extension-core", replacement: resolve(packagesDir, "extension-core/src") },
-    { find: "extension-shared", replacement: resolve(packagesDir, "extension-shared/src") },
-
     { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
     {
       find: "@talismn/balances-react",
@@ -479,6 +473,7 @@ export default defineConfig({
   webExt: {
     chromiumProfile: resolve(homedir(), ".talisman-dev/chrome-data"),
     keepProfileChanges: true,
+    chromiumArgs: ["--remote-debugging-port=9223"],
   },
 
   // Manifest configuration
@@ -626,25 +621,12 @@ export default defineConfig({
     const baseAliases: Alias[] = [
       // Internal path aliases (from tsconfig.json with baseUrl: "src")
       { find: "@common", replacement: resolve(__dirname, "src/common") },
-      { find: "@talisman", replacement: resolve(__dirname, "src/@talisman") },
+      { find: "@core", replacement: resolve(__dirname, "src/core") },
+      { find: /^@core\/(.*)$/, replacement: resolve(__dirname, "src/core/$1") },
       { find: "@ui", replacement: resolve(__dirname, "src/ui") },
       { find: "@tests", replacement: resolve(__dirname, "src/tests") },
       // Base-relative imports from src/
       { find: /^inject\/(.*)$/, replacement: resolve(__dirname, "src/inject/$1") },
-      // Internal packages subpath imports (needed in both dev and production)
-      // These packages don't have proper exports in package.json for subpaths
-      {
-        find: /^extension-core\/(.*)$/,
-        replacement: resolve(packagesDir, "extension-core/src/$1"),
-      },
-      {
-        find: /^extension-shared\/(.*)$/,
-        replacement: resolve(packagesDir, "extension-shared/src/$1"),
-      },
-      {
-        find: /^talisman-ui\/src\/(.*)$/,
-        replacement: resolve(packagesDir, "talisman-ui/src/$1"),
-      },
     ]
 
     // Always use package source aliases for both dev and production builds

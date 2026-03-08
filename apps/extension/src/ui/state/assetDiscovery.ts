@@ -1,6 +1,7 @@
+import { db } from "@core/db"
+import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
-import { assetDiscoveryStore, db } from "extension-core"
 import groupBy from "lodash-es/groupBy"
 import sortBy from "lodash-es/sortBy"
 import { combineLatest, from, map, shareReplay, throttleTime } from "rxjs"

@@ -1,10 +1,12 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { XIcon } from "@talismn/icons"
 import type { DecodedCall, ScaleApi } from "@talismn/sapi"
-import type { SignerPayloadJSON } from "extension-core"
+import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { IconButton } from "@ui/components/IconButton"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, IconButton } from "talisman-ui"
 
 import { SubSignDecodedCallContent } from "./SubSignDecodedCallContent"
 

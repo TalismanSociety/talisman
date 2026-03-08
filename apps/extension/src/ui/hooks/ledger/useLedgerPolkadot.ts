@@ -1,15 +1,11 @@
+import type { AccountLedgerPolkadot, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
 import { PolkadotGenericApp, supportedApps } from "@zondax/ledger-substrate"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import {
-  type AccountLedgerPolkadot,
-  isJsonPayload,
-  type LedgerPolkadotCurve,
-  type SignerPayloadJSON,
-  type SignerPayloadRaw,
-} from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"

@@ -1,19 +1,24 @@
+import { log } from "@common/log"
+import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
+import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
+import type { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
+import type {
+  EthTransactionDetails,
+  GasSettingsByPriorityEip1559,
+} from "@core/domains/signing/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify } from "@talisman/components/Notifications"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import type { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { FormFieldContainer } from "@ui/components/FormFieldContainer"
+import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { IconButton } from "@ui/components/IconButton"
+import { notify } from "@ui/components/Notifications"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { WithTooltip } from "@ui/components/WithTooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import {
-  type EthGasSettingsEip1559,
-  type EthTransactionDetails,
-  type GasSettingsByPriorityEip1559,
-  getHumanReadableErrorMessage,
-  getMaxFeePerGas,
-} from "extension-core"
-import { log } from "extension-shared"
 import {
   type FC,
   type FormEventHandler,
@@ -26,15 +31,6 @@ import {
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
 import { formatGwei, parseGwei, type TransactionRequest } from "viem"
 import * as yup from "yup"
 

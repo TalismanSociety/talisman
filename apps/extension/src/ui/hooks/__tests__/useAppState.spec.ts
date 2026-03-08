@@ -1,9 +1,8 @@
+import { DEFAULT_APP_STATE } from "@core/domains/app/store.app"
 import { renderHook, waitFor } from "@testing-library/react"
-import { DEFAULT_APP_STATE } from "extension-core"
+import { useAppState } from "@ui/state/app"
 import { beforeEach } from "vitest"
-
 import { TestWrapper } from "../../../../tests/TestWrapper"
-import { useAppState } from "../../state"
 
 // Clear storage before each test to ensure isolation
 beforeEach(async () => {

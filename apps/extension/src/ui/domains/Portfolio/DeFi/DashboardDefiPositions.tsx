@@ -1,18 +1,16 @@
-import { FadeIn } from "@talisman/components/FadeIn"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { classNames, type Loadable, type LoadableStatus } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { FadeIn } from "@ui/components/FadeIn"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import {
-  useDefiPositionsDisplay,
-  usePortfolioSelectedAccounts,
-  useSelectedCurrency,
-} from "@ui/state"
-import type { DefiPosition } from "extension-core"
+import { useDefiPositionsDisplay } from "@ui/state/defi"
+import { usePortfolioSelectedAccounts } from "@ui/state/portfolio"
+import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

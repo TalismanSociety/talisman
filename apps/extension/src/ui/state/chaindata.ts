@@ -1,3 +1,5 @@
+import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
 import { bind, type StateObservable } from "@react-rxjs/core"
 import type {
   DotNetwork,
@@ -14,12 +16,6 @@ import type {
 } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
 import { api } from "@ui/api"
-import {
-  activeNetworksStore,
-  activeTokensStore,
-  isNetworkActive,
-  isTokenActive,
-} from "extension-core"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs"
 
@@ -119,7 +115,7 @@ export const [useNetworkById, getNetworkById$] = bind(
   ) => StateObservable<R | null>,
 ]
 
-export const [useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
+const [_useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
   (options?: Omit<ChaindataQueryOptions, "platform">) => {
     return getSharedObservable("getNetworksMapByGenesisHash$", options, (opts) => {
       return getNetworks$({ platform: "polkadot", ...opts }).pipe(

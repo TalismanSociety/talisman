@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
 import type { SolNetwork, TokenType } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
+import { log } from "../log"
 
 export type SolNetworkConfig = Pick<SolNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<SolNetwork["nativeCurrency"]>

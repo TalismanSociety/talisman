@@ -1,6 +1,6 @@
+import { Drawer } from "@ui/components/Drawer"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
 
 import { BittensorSlippageForm } from "../../shared/BittensorSlippageForm"
 
@@ -17,10 +17,7 @@ export const BittensorSlippageDrawer: FC<{
   )
 }
 
-export const Content: FC<{ netuid: number | null; onClose: () => void }> = ({
-  netuid,
-  onClose,
-}) => {
+const Content: FC<{ netuid: number | null; onClose: () => void }> = ({ netuid, onClose }) => {
   const { t } = useTranslation()
 
   return (
