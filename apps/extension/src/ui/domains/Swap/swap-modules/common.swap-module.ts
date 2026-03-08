@@ -8,7 +8,6 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -18,16 +17,14 @@ import {
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
-import type { Atom, Getter, SetStateAction, Setter } from "jotai"
-import { atom } from "jotai"
-import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
-import type { Loadable } from "jotai/vanilla/utils/loadable"
 import type { TransactionRequest } from "viem"
 
-import { Decimal } from "../swaps-port/Decimal"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import type { SimpleswapExchange } from "./simpleswap-swap-module"
-import type { StealthexExchange } from "./stealthex-swap-module"
+import type { Decimal } from "../swaps-port/Decimal"
+
+// Forward references — these types are exported by the module files
+// We use dynamic import types to avoid circular dependencies at runtime
+type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
+type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
 
 export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
 
@@ -91,11 +88,6 @@ export type QuoteResponse = {
   }
 }
 
-type SwapProps = {
-  allowReap?: boolean
-  toAmount: Decimal | null
-}
-
 export type SwapActivity<TData> = {
   protocol: SupportedSwapProtocol
   timestamp: number
@@ -108,51 +100,73 @@ export type SwapActivity<TData> = {
   }
 }
 
-type _EstimateGasTx =
-  | {
-      type: "evm"
-      chainId: number
-      tx: TransactionRequest
-    }
-  | {
-      type: "substrate"
-      fromAddress: string
-      tx: SubmittableExtrinsic<"promise">
-    }
+export type SwapView = "form" | "approve-recipient" | "approve-erc20" | "confirm"
 
-export type QuoteFunction<TData = any> = Atom<
-  Loadable<Promise<BaseQuote<TData> | Loadable<Promise<BaseQuote<TData> | null>>[] | null>>
->
-type _SwapFunction<TData> = (
-  get: Getter,
-  set: Setter,
-  props: SwapProps
-) => Promise<Omit<SwapActivity<TData>, "timestamp">>
-export type GetEstimateGasTxFunction = (get: Getter) => Promise<QuoteFee | null>
+// --- Param types for SwapModule methods ---
+
+export type QuoteParams = {
+  fromAsset: SwappableAssetWithDecimals
+  toAsset: SwappableAssetWithDecimals
+  fromAmount: Decimal
+  fromAddress: string | null
+  toAddress: string | null
+  selectedSubProtocol?: string
+}
+
+export type ExchangeParams = {
+  fromAsset: SwappableAssetWithDecimals
+  toAsset: SwappableAssetWithDecimals
+  fromAmount: Decimal
+  fromAddress: string | null
+  toAddress: string | null
+}
+
+export type EvmTxParams = {
+  fromAsset: SwappableAssetWithDecimals
+  fromAddress: string
+  exchange: unknown // specific exchange type varies per module
+}
+
+export type SubstrateTxParams = {
+  fromAsset: SwappableAssetWithDecimals
+  fromAddress: string
+  exchange: unknown // specific exchange type varies per module
+  sapi: ScaleApi
+  allowReap?: boolean
+}
+
+export type ApprovalInfo = {
+  contractAddress: string
+  amount: bigint
+  tokenAddress: string
+  chainId: number
+  fromAddress: string
+  protocolName: string
+} | null
 
 export type SwapModule = {
   protocol: SupportedSwapProtocol
-  fromAssetsSelector: Atom<Promise<SwappableAssetBaseType[]>>
-  toAssetsSelector: Atom<Promise<SwappableAssetBaseType[]>>
-  quote: QuoteFunction
-
-  exchangeAtom: Atom<Promise<SimpleswapExchange | StealthexExchange | undefined>>
-  evmTransactionAtom: Atom<Promise<TransactionRequest | undefined>>
-  substratePayloadAtom: (
-    sapi?: ScaleApi | null,
-    allowReap?: boolean
-  ) => Atom<Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>>
-
-  // talisman curated data
   decentralisationScore: number
-  approvalAtom?: Atom<{
-    contractAddress: string
-    amount: bigint
-    tokenAddress: string
-    chainId: number
-    fromAddress: string
-    protocolName: string
-  } | null>
+
+  getFromAssets: (signal: AbortSignal) => Promise<SwappableAssetBaseType[]>
+  getToAssets: (
+    fromAsset: SwappableAssetWithDecimals | null,
+    signal: AbortSignal
+  ) => Promise<SwappableAssetBaseType[]>
+
+  getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
+
+  createExchange: (
+    params: ExchangeParams
+  ) => Promise<SimpleswapExchange | StealthexExchange | undefined>
+  getEvmTransaction: (params: EvmTxParams) => Promise<TransactionRequest | undefined>
+  getSubstratePayload: (
+    params: SubstrateTxParams
+  ) => Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>
+
+  getApprovalInfo?: (
+    params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+  ) => ApprovalInfo
 }
 
 // atoms shared between swap module
@@ -180,100 +194,6 @@ export const validateAddress = (
       throw new Error("Invalid network type")
   }
 }
-
-export const selectedProtocolAtom = atom<SupportedSwapProtocol | null>(null)
-export const selectedSubProtocolAtom = atom<string | undefined>(undefined)
-export const fromAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
-export const fromAmountAtom = atom<Decimal>(Decimal.fromPlanck(0n, 1))
-export const fromSubstrateAddressAtom = atom<string | null>(null)
-export const fromEvmAddressAtom = atom<string | null>(null)
-export const fromAddressAtom = atom((get) => {
-  const fromAsset = get(fromAssetAtom)
-  const evmAddress = get(fromEvmAddressAtom)
-  const substrateAddress = get(fromSubstrateAddressAtom)
-  if (!fromAsset) return null
-  return fromAsset.networkType === "evm" ? evmAddress : substrateAddress
-})
-
-// TODO: Make this select from the URL so we can link it to the button in the seek banner
-export const toAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
-export const toSubstrateAddressAtom = atom<string | null>(null)
-export const toEvmAddressAtom = atom<string | null>(null)
-export const toBtcAddressAtom = atom<string | null>(null)
-
-export const toAddressAtom = atom((get) => {
-  const toAsset = get(toAssetAtom)
-  const evmAddress = get(toEvmAddressAtom)
-  const substrateAddress = get(toSubstrateAddressAtom)
-  const btcAddress = get(toBtcAddressAtom)
-  if (!toAsset) return null
-  switch (toAsset.networkType) {
-    case "evm":
-      return evmAddress
-    case "substrate":
-      return substrateAddress
-    case "btc":
-      return btcAddress
-    default:
-      return null
-  }
-})
-
-const _swappingAtom = atom(false)
-export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
-  "bestRate"
-)
-export const swapQuoteRefresherAtom = atom(Date.now())
-
-export const resetSwapFormAtom = atom(null, (_, set) => {
-  set(fromEvmAddressAtom, null)
-  set(fromSubstrateAddressAtom, null)
-  set(toEvmAddressAtom, null)
-  set(toSubstrateAddressAtom, null)
-  set(fromAssetAtom, null)
-  set(toAssetAtom, null)
-  set(fromAmountAtom, Decimal.fromPlanck(0n, 0))
-  set(swapViewAtom, "form")
-})
-
-// swaps history related atoms
-
-type StoredSwaps = SwapActivity<any>[]
-
-const validateSwaps = (value: unknown): value is StoredSwaps => {
-  if (!Array.isArray(value)) return false
-  for (const swap of value) {
-    if (typeof swap?.protocol !== "string" || typeof swap?.timestamp !== "number" || !swap?.data)
-      return false
-  }
-  return true
-}
-
-const _swapsStorage = unstable_withStorageValidator(validateSwaps)(
-  createJSONStorage(() => globalThis.localStorage, {
-    reviver: (key, value) => {
-      if (key === "timestamp" && typeof value === "number") new Date(value)
-      return value
-    },
-  })
-)
-
-const filterAndSortStoredSwaps = (swaps: StoredSwaps) =>
-  swaps.toSorted((a, b) => b.timestamp - a.timestamp)
-
-const swapsStorage: typeof _swapsStorage = {
-  ..._swapsStorage,
-  getItem: (key, initialValue) =>
-    filterAndSortStoredSwaps(_swapsStorage.getItem(key, initialValue)),
-  setItem: (key, newValue) => _swapsStorage.setItem(key, filterAndSortStoredSwaps(newValue)),
-}
-
-const swapsStorageAtom = atomWithStorage("@talisman/swaps", [], swapsStorage)
-
-const _swapsAtom = atom(
-  (get) => filterAndSortStoredSwaps(get(swapsStorageAtom)),
-  (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps)
-)
 
 // helpers
 

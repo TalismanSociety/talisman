@@ -9,15 +9,20 @@ import {
 } from "@talismn/balances-react"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import type { ScaleApi } from "@talismn/sapi"
+import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { accounts$ } from "@ui/state/accounts"
-import { getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
+import {
+  getNetworkById$,
+  getNetworks$,
+  getNetworksMapById$,
+  getToken$,
+  getTokensMap$,
+} from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { atom, type ExtractAtomValue } from "jotai"
-import { atomWithObservable, loadable } from "jotai/utils"
 import {
   catchError,
   defer,
+  firstValueFrom,
   interval,
   type Observable,
   of,
@@ -27,26 +32,22 @@ import {
   takeWhile,
 } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
-import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
-import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
 import {
   type BaseQuote,
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  type GetEstimateGasTxFunction,
+  type EvmTxParams,
+  type ExchangeParams,
   getTokenIdForSwappableAsset,
-  type QuoteFunction,
+  type QuoteFee,
+  type QuoteParams,
+  type SubstrateTxParams,
+  type SupportedSwapProtocol,
   type SwapModule,
   type SwappableAssetBaseType,
   type SwappableAssetWithDecimals,
-  swapQuoteRefresherAtom,
-  toAddressAtom,
-  toAssetAtom,
   validateAddress,
 } from "./common.swap-module"
-import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
+import type { QuoteResponse } from "./common.swap-module.ts"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
 const PROTOCOL: SupportedSwapProtocol = "simpleswap"
@@ -428,7 +429,36 @@ const simpleSwapSdk = {
   },
 }
 
-const simpleswapAssetsAtom = atom(async (get) => {
+// --- Helper to get a viem PublicClient for an EVM network ---
+const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
+  if (!evmNetworkId) return undefined
+  const evmNetwork = await firstValueFrom(getNetworkById$(evmNetworkId))
+  const nativeToken = await firstValueFrom(getToken$(evmNetwork?.nativeTokenId))
+  if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
+    return undefined
+  return getExtensionPublicClient(evmNetwork)
+}
+
+// --- Cached assets (promise-based to deduplicate concurrent calls) ---
+let cachedAssetsPromise: Promise<
+  SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>[]
+> | null = null
+
+const getSimpleswapAssets = async (
+  _signal: AbortSignal
+): Promise<SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>[]> => {
+  if (!cachedAssetsPromise) {
+    cachedAssetsPromise = fetchSimpleswapAssets().catch((err) => {
+      cachedAssetsPromise = null // clear on failure so retries work
+      throw err
+    })
+  }
+  return cachedAssetsPromise
+}
+
+const fetchSimpleswapAssets = async (): Promise<
+  SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>[]
+> => {
   const allCurrencies = await simpleSwapSdk.getAllCurrencies()
 
   const supportedTokens = allCurrencies.filter((currency) => {
@@ -442,12 +472,10 @@ const simpleswapAssetsAtom = atom(async (get) => {
     // substrate assets must be whitelisted as a special asset
     return isSpecialAsset
   })
-  const knownTokens = await get(atomWithObservable(() => getTokensMap$()))
-  const knownEvmNetworks = await get(
-    atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
-  )
+  const knownTokens = await firstValueFrom(getTokensMap$())
+  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
 
-  return Object.values(
+  const result = Object.values(
     supportedTokens.reduce(
       (acc, currency) => {
         const evmNetworkId = supportedEvmNetworkIds[currency.network]
@@ -493,15 +521,15 @@ const simpleswapAssetsAtom = atom(async (get) => {
       {} as Record<string, SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>>
     )
   )
-})
 
-const pairKeyFromPair = (pair: Awaited<ExtractAtomValue<typeof pairsAtom>>[number]) =>
-  pair.toLowerCase()
+  return result
+}
+
+const pairKeyFromPair = (pair: string) => pair.toLowerCase()
 const pairKeyFromAsset = (asset: SwappableAssetBaseType) =>
   asset.context.simpleswap?.symbol.toLowerCase()
 
-const pairsAtom = atom(async (get) => {
-  const fromAsset = get(fromAssetAtom)
+const getPairs = async (fromAsset: SwappableAssetWithDecimals | null) => {
   const { symbol } = fromAsset?.context?.simpleswap ?? {}
   if (!symbol) return [] // not supported
 
@@ -509,15 +537,20 @@ const pairsAtom = atom(async (get) => {
   if (!pairs || !Array.isArray(pairs)) return []
 
   return pairs
-})
+}
 
-const fromAssetsSelector = atom(async (get) => await get(simpleswapAssetsAtom))
-const toAssetsSelector = atom(async (get) => {
-  const allAssets = await get(simpleswapAssetsAtom)
-  const fromAsset = get(fromAssetAtom)
+const getFromAssets = async (signal: AbortSignal): Promise<SwappableAssetBaseType[]> => {
+  return await getSimpleswapAssets(signal)
+}
+
+const getToAssets = async (
+  fromAsset: SwappableAssetWithDecimals | null,
+  signal: AbortSignal
+): Promise<SwappableAssetBaseType[]> => {
+  const allAssets = await getSimpleswapAssets(signal)
   if (!fromAsset) return allAssets
 
-  const pairs = await get(pairsAtom)
+  const pairs = await getPairs(fromAsset)
   if (!pairs || !Array.isArray(pairs)) return []
 
   const validDestinations = new Set(pairs.map(pairKeyFromPair))
@@ -526,80 +559,122 @@ const toAssetsSelector = atom(async (get) => {
   )
 
   return [fromAsset, ...validDestAssets]
-})
+}
 
-const quote: QuoteFunction = loadable(
-  atom(async (get): Promise<(BaseQuote & { data?: QuoteResponse }) | null> => {
-    const fromAsset = get(fromAssetAtom)
-    const toAsset = get(toAssetAtom)
-    const fromAmount = get(fromAmountAtom)
+const estimateGas = async (
+  fromAsset: SwappableAssetWithDecimals,
+  fromAddress: string,
+  _fromAmount: Decimal
+): Promise<QuoteFee | null> => {
+  if (fromAsset.networkType === "evm") {
+    if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
+    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
+    const network = knownEvmNetworks[fromAsset.chainId]
+    const nativeToken = await firstValueFrom(getToken$(network?.nativeTokenId))
 
-    if (!fromAsset || !toAsset || !fromAmount || fromAmount.planck === 0n) return null
-    const currencyFrom = fromAsset.context.simpleswap?.symbol
-    const currencyTo = toAsset.context.simpleswap?.symbol
-    if (!currencyFrom || !currencyTo) return null
+    const data = fromAsset.contractAddress
+      ? encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [fromAddress, 0n] })
+      : undefined
 
-    // force refresh
-    get(swapQuoteRefresherAtom)
-
-    const range = await simpleSwapSdk.getRange({
-      currency_from: currencyFrom,
-      currency_to: currencyTo,
-    })
-    if (range?.min.isGreaterThan(fromAmount.toString()))
-      throw new Error(`SimpleSwap minimum is ${range.min.toString()} ${fromAsset.symbol}`)
-
-    const output = await simpleSwapSdk.getEstimate({
-      amount: fromAmount.toString(),
-      currencyFrom,
-      currencyTo,
-      fixed: false,
-    })
-    const talismanFee = await getTalismanFee({ currencyFrom, currencyTo })
-
-    // check for error object
-    if (!output || typeof output !== "string") {
-      if (output && typeof output !== "string") {
-        return {
-          decentralisationScore: DECENTRALISATION_SCORE,
-          protocol: PROTOCOL,
-          inputAmountBN: fromAmount.planck,
-          outputAmountBN: 0n,
-          error: output.description,
-          timeInSec: 5 * 60,
-          fees: [],
-          providerLogo: LOGO,
-          providerName: PROTOCOL_NAME,
-          talismanFee,
-        }
-      }
-      return null
+    if (network && nativeToken) {
+      const client = await getPublicClient(network.id)
+      if (!client) return null
+      const gasPrice = await client.getGasPrice()
+      // the to address and amount dont matter, we just need to place any address here for the estimation
+      const gasLimit = await client.estimateGas({
+        account: fromAddress as `0x${string}`,
+        data,
+        to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
+        value: 0n,
+      })
+      const amount = BigNumber(gasPrice.toString())
+        .times(gasLimit.toString())
+        .times(10 ** -(nativeToken.decimals ?? 0))
+      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
     }
 
-    const gasFee = await estimateGas(get)
-    // add talisman fee
-    const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
-      amount: BigNumber(fromAmount.planck.toString())
-        .times(10 ** -fromAmount.decimals)
-        .times(talismanFee),
-      name: "Talisman Fee",
-      tokenId: fromAsset.id,
-    })
+    return null
+  }
 
-    return {
-      decentralisationScore: DECENTRALISATION_SCORE,
-      protocol: PROTOCOL,
-      inputAmountBN: fromAmount.planck,
-      outputAmountBN: Decimal.fromUserInput(output, toAsset.decimals).planck,
-      // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
-      timeInSec: 5 * 60,
-      fees,
-      providerLogo: LOGO,
-      providerName: PROTOCOL_NAME,
-      talismanFee,
-    }
+  // cannot swap from BTC
+  const swappingFromBtc = fromAsset.id === "btc-native"
+  if (swappingFromBtc) return null
+
+  // TODO: re-add substrate gas estimation
+  // Previously used apiPromiseAtom to get an ApiPromise for the chain and estimate fees.
+  // This needs to be re-implemented with chain connectors outside of Jotai.
+  return null
+}
+
+const getQuote = async (
+  params: QuoteParams,
+  _signal: AbortSignal
+): Promise<(BaseQuote & { data?: QuoteResponse }) | null> => {
+  const { fromAsset, toAsset, fromAmount, fromAddress } = params
+
+  if (!fromAsset || !toAsset || !fromAmount || fromAmount.planck === 0n) return null
+  const currencyFrom = fromAsset.context.simpleswap?.symbol
+  const currencyTo = toAsset.context.simpleswap?.symbol
+  if (!currencyFrom || !currencyTo) return null
+
+  const range = await simpleSwapSdk.getRange({
+    currency_from: currencyFrom,
+    currency_to: currencyTo,
   })
-)
+  if (range?.min.isGreaterThan(fromAmount.toString()))
+    throw new Error(`SimpleSwap minimum is ${range.min.toString()} ${fromAsset.symbol}`)
+
+  const output = await simpleSwapSdk.getEstimate({
+    amount: fromAmount.toString(),
+    currencyFrom,
+    currencyTo,
+    fixed: false,
+  })
+  const talismanFee = await getTalismanFee({ currencyFrom, currencyTo })
+
+  // check for error object
+  if (!output || typeof output !== "string") {
+    if (output && typeof output !== "string") {
+      return {
+        decentralisationScore: DECENTRALISATION_SCORE,
+        protocol: PROTOCOL,
+        inputAmountBN: fromAmount.planck,
+        outputAmountBN: 0n,
+        error: output.description,
+        timeInSec: 5 * 60,
+        fees: [],
+        providerLogo: LOGO,
+        providerName: PROTOCOL_NAME,
+        talismanFee,
+      }
+    }
+    return null
+  }
+
+  const gasFee = fromAddress ? await estimateGas(fromAsset, fromAddress, fromAmount) : null
+  // add talisman fee
+  const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
+    amount: BigNumber(fromAmount.planck.toString())
+      .times(10 ** -fromAmount.decimals)
+      .times(talismanFee),
+    name: "Talisman Fee",
+    tokenId: fromAsset.id,
+  })
+
+  return {
+    decentralisationScore: DECENTRALISATION_SCORE,
+    protocol: PROTOCOL,
+    inputAmountBN: fromAmount.planck,
+    outputAmountBN: Decimal.fromUserInput(output, toAsset.decimals).planck,
+    // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
+    timeInSec: 5 * 60,
+    fees,
+    providerLogo: LOGO,
+    providerName: PROTOCOL_NAME,
+    talismanFee,
+  }
+}
+
 export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
   await fetch(`https://swap-providers-monitor.fly.dev/simpleswap/exchange`, {
     method: "POST",
@@ -611,11 +686,12 @@ export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
 }
 
 export type SimpleswapExchange = Exchange
-const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
+
+const createExchange = async (params: ExchangeParams): Promise<Exchange | undefined> => {
   try {
-    const substrateChains = await get(
-      atomWithObservable(() => getNetworks$({ platform: "polkadot" }))
-    )
+    const { fromAsset, toAsset, fromAmount, fromAddress, toAddress } = params
+
+    const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
     const formatAddress = (
       address: string | null,
       asset: SwappableAssetWithDecimals<unknown> | null
@@ -630,19 +706,15 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
       return encodeAnyAddress(address, { ss58Format: substrateChain.prefix })
     }
 
-    const fromAsset = get(fromAssetAtom)
-    const toAsset = get(toAssetAtom)
     if (!fromAsset) throw new Error("Missing from asset")
     if (!toAsset) throw new Error("Missing to asset")
 
-    const allAccounts = await get(atomWithObservable(() => accounts$))
+    const allAccounts = await firstValueFrom(accounts$)
 
-    const fromAddress = formatAddress(get(fromAddressAtom), fromAsset)
-    const toAddress = formatAddress(get(toAddressAtom), toAsset)
-    if (!fromAddress) throw new Error("Missing from address")
-    if (!toAddress) throw new Error("Missing to address")
-
-    const amount = get(fromAmountAtom)
+    const formattedFromAddress = formatAddress(fromAddress, fromAsset)
+    const formattedToAddress = formatAddress(toAddress, toAsset)
+    if (!formattedFromAddress) throw new Error("Missing from address")
+    if (!formattedToAddress) throw new Error("Missing to address")
 
     const currency_from = fromAsset.context?.simpleswap?.symbol as string
     const currency_to = toAsset.context?.simpleswap?.symbol as string
@@ -650,24 +722,30 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
     if (!currency_to) throw new Error("Missing currency to")
 
     // validate from address for the source chain
-    const fromAccount = allAccounts.find((account) => isAddressEqual(account.address, fromAddress))
+    const fromAccount = allAccounts.find((account) =>
+      isAddressEqual(account.address, formattedFromAddress)
+    )
     const fromChain = substrateChains.find((c) => c.id.toString() === String(fromAsset.chainId))
-    if (!validateAddress(fromAccount, fromAddress, fromChain, fromAsset.networkType))
-      throw new Error(`Cannot swap from ${fromAsset.chainId} chain with address: ${fromAddress}`)
+    if (!validateAddress(fromAccount, formattedFromAddress, fromChain, fromAsset.networkType))
+      throw new Error(
+        `Cannot swap from ${fromAsset.chainId} chain with address: ${formattedFromAddress}`
+      )
 
     // validate to address for the target chain
-    const toAccount = allAccounts.find((account) => isAddressEqual(account.address, toAddress))
+    const toAccount = allAccounts.find((account) =>
+      isAddressEqual(account.address, formattedToAddress)
+    )
     const toChain = substrateChains.find((c) => c.id.toString() === String(toAsset.chainId))
-    if (!validateAddress(toAccount, toAddress, toChain, toAsset.networkType))
-      throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${toAddress}`)
+    if (!validateAddress(toAccount, formattedToAddress, toChain, toAsset.networkType))
+      throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${formattedToAddress}`)
 
     // cannot swap from BTC
     if (fromAsset.networkType === "btc") throw new Error("Swapping from BTC is not supported.")
 
     const exchange = await simpleSwapSdk.createExchange({
       fixed: false,
-      address_to: toAddress,
-      amount: amount.toNumber(),
+      address_to: formattedToAddress,
+      amount: fromAmount.toNumber(),
       currency_from,
       currency_to,
       extra_id_to: "",
@@ -701,9 +779,9 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
       )
       throw new Error("Incorrect currencies from provider. Please try again later")
     }
-    if (+exchange.expected_amount > amount.toNumber())
+    if (+exchange.expected_amount > fromAmount.toNumber())
       throw new Error("Quote changed. Please try again.")
-    if (exchange.address_to !== toAddress)
+    if (exchange.address_to !== formattedToAddress)
       throw new Error("Incorrect destination address from provider. Please try again later")
 
     return exchange
@@ -712,28 +790,25 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
     console.error(new Error("Failed to create exchange", { cause }))
     throw cause
   }
-})
+}
 
-const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefined> => {
+const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
   try {
-    const fromAddress = get(fromAddressAtom)
+    const { fromAsset, fromAddress, exchange: exchangeData } = params
+    const exchange = exchangeData as Exchange
     if (!fromAddress) throw new Error("Missing from address")
-    const fromAsset = get(fromAssetAtom)
     if (!fromAsset) throw new Error("Missing from asset")
-    const exchange = await get(exchangeAtom)
     if (!exchange) throw new Error("Missing exchange")
 
     if (fromAsset.networkType !== "evm") return
 
-    const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
-    )
+    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
     if (!evmNetwork) throw new Error("Network not supported")
 
     const depositAmount = Decimal.fromUserInput(exchange.expected_amount, fromAsset.decimals)
 
-    const publicClient = await get(publicClientAtomFamily(evmNetwork.id))
+    const publicClient = await getPublicClient(evmNetwork.id)
     if (!publicClient) throw new Error("Missing public client")
 
     if (!fromAsset.contractAddress)
@@ -761,129 +836,63 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
-})
+}
 
-const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
-  atom(async (get) => {
-    try {
-      if (!sapi) return null
+const getSubstratePayload = async (
+  params: SubstrateTxParams
+): Promise<{
+  payload: import("@core/domains/signing/types").SignerPayloadJSON
+  txMetadata?: Uint8Array
+} | null> => {
+  try {
+    const { fromAsset, fromAddress, exchange: exchangeData, sapi, allowReap } = params
+    const exchange = exchangeData as Exchange
+    if (!sapi) return null
 
-      const fromAddress = get(fromAddressAtom)
-      if (!fromAddress) throw new Error("Missing from address")
-      const fromAsset = get(fromAssetAtom)
-      if (!fromAsset) throw new Error("Missing from asset")
-      const exchange = await get(exchangeAtom)
-      if (!exchange) throw new Error("Missing exchange")
+    if (!fromAddress) throw new Error("Missing from address")
+    if (!fromAsset) throw new Error("Missing from asset")
+    if (!exchange) throw new Error("Missing exchange")
 
-      if (fromAsset.networkType !== "substrate") return null
+    if (fromAsset.networkType !== "substrate") return null
 
-      const depositAmount = Decimal.fromUserInput(exchange.expected_amount, fromAsset.decimals)
+    const depositAmount = Decimal.fromUserInput(exchange.expected_amount, fromAsset.decimals)
 
-      const payload =
-        fromAsset.assetHubAssetId !== undefined
-          ? await sapi.getExtrinsicPayload(
-              "Assets",
-              allowReap ? "transfer" : "transfer_keep_alive",
-              {
-                id: fromAsset.assetHubAssetId,
-                target: MultiAddress.Id(exchange.address_from),
-                amount: depositAmount.planck,
-              },
-              { address: fromAddress }
-            )
-          : await sapi.getExtrinsicPayload(
-              "Balances",
-              allowReap ? "transfer_allow_death" : "transfer_keep_alive",
-              { dest: MultiAddress.Id(exchange.address_from), value: depositAmount.planck },
-              { address: fromAddress }
-            )
+    const payload =
+      fromAsset.assetHubAssetId !== undefined
+        ? await sapi.getExtrinsicPayload(
+            "Assets",
+            allowReap ? "transfer" : "transfer_keep_alive",
+            {
+              id: fromAsset.assetHubAssetId,
+              target: MultiAddress.Id(exchange.address_from),
+              amount: depositAmount.planck,
+            },
+            { address: fromAddress }
+          )
+        : await sapi.getExtrinsicPayload(
+            "Balances",
+            allowReap ? "transfer_allow_death" : "transfer_keep_alive",
+            { dest: MultiAddress.Id(exchange.address_from), value: depositAmount.planck },
+            { address: fromAddress }
+          )
 
-      return payload
-    } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(new Error("Failed to create substrate payload", { cause }))
-      throw cause
-    }
-  })
-
-const estimateGas: GetEstimateGasTxFunction = async (get) => {
-  const fromAsset = get(fromAssetAtom)
-  const fromAddress = get(fromAddressAtom)
-  if (!fromAsset) return null
-  if (!fromAddress) return null
-
-  if (fromAsset.networkType === "evm") {
-    if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
-    const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
-    )
-    const network = knownEvmNetworks[fromAsset.chainId]
-    const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeTokenId)))
-
-    const data = fromAsset.contractAddress
-      ? encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [fromAddress, 0n] })
-      : undefined
-
-    if (network && nativeToken) {
-      const client = await get(publicClientAtomFamily(network.id))
-      if (!client) return null
-      const gasPrice = await client.getGasPrice()
-      // the to address and amount dont matter, we just need to place any address here for the estimation
-      const gasLimit = await client.estimateGas({
-        account: fromAddress as `0x${string}`,
-        data,
-        to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
-        value: 0n,
-      })
-      const amount = BigNumber(gasPrice.toString())
-        .times(gasLimit.toString())
-        .times(10 ** -(nativeToken.decimals ?? 0))
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
-    }
-
-    return null
-  }
-
-  // cannot swap from BTC
-  const swappingFromBtc = fromAsset.id === "btc-native"
-  if (swappingFromBtc) return null
-
-  // swapping from Polkadot
-  const chains = await get(atomWithObservable(() => getNetworks$({ platform: "polkadot" })))
-  const substrateChain = chains.find((c) => c.id === fromAsset.chainId)
-  const polkadotApi = await get(apiPromiseAtom(substrateChain?.id))
-  if (!polkadotApi) return null
-  const fromAmount = get(fromAmountAtom)
-
-  const transferTx =
-    fromAsset.assetHubAssetId !== undefined
-      ? (polkadotApi.tx.assets.transferAllowDeath ?? polkadotApi.tx.assets.transfer)(
-          fromAsset.assetHubAssetId,
-          fromAddress,
-          fromAmount.planck
-        )
-      : (polkadotApi.tx.balances.transferAllowDeath ?? polkadotApi.tx.balances.transfer)(
-          fromAddress,
-          fromAmount.planck
-        )
-  const decimals = transferTx.registry.chainDecimals[0] ?? 10 // default to polkadot decimals 10
-  const paymentInfo = await transferTx.paymentInfo(fromAddress)
-  return {
-    name: "Est. Gas Fees",
-    tokenId: substrateChain?.nativeTokenId ?? subNativeTokenId("polkadot"),
-    amount: BigNumber(paymentInfo.partialFee.toBigInt().toString()).times(10 ** -decimals),
+    return payload
+  } catch (cause) {
+    // biome-ignore lint/suspicious/noConsole: legacy
+    console.error(new Error("Failed to create substrate payload", { cause }))
+    throw cause
   }
 }
 
 export const simpleswapSwapModule: SwapModule = {
   protocol: PROTOCOL,
-  fromAssetsSelector,
-  toAssetsSelector,
-  quote,
-  exchangeAtom,
-  evmTransactionAtom,
-  substratePayloadAtom,
   decentralisationScore: DECENTRALISATION_SCORE,
+  getFromAssets: getFromAssets,
+  getToAssets: getToAssets,
+  getQuote: getQuote,
+  createExchange: createExchange,
+  getEvmTransaction: getEvmTransaction,
+  getSubstratePayload: getSubstratePayload,
 }
 
 export const swapStatus$ = (id: string): Observable<Exchange["status"] | undefined> =>

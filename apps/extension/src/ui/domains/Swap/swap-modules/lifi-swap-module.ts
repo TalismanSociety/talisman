@@ -1,13 +1,14 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
-import { getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
+import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { atom } from "jotai"
-import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import {
   catchError,
   defer,
+  firstValueFrom,
   interval,
   type Observable,
   of,
@@ -17,22 +18,16 @@ import {
   takeWhile,
 } from "rxjs"
 import { type TransactionRequest, zeroAddress } from "viem"
-
-import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
-
 import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
+  type ApprovalInfo,
+  type BaseQuote,
+  type EvmTxParams,
   getTokenIdForSwappableAsset,
-  type QuoteFunction,
+  type QuoteParams,
   type SupportedSwapProtocol,
   type SwapModule,
   type SwappableAssetBaseType,
-  selectedSubProtocolAtom,
-  swapQuoteRefresherAtom,
-  toAddressAtom,
-  toAssetAtom,
+  type SwappableAssetWithDecimals,
 } from "./common.swap-module"
 
 const apiUrl = "https://lifi.talisman.xyz/v1"
@@ -71,7 +66,30 @@ const getTalismanFee = async (route: RouteProps) => {
   return TALISMAN_FEE
 }
 
-const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
+// --- Helper to get a viem PublicClient for an EVM network ---
+const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
+  if (!evmNetworkId) return undefined
+  const evmNetwork = await firstValueFrom(getNetworkById$(evmNetworkId))
+  const nativeToken = await firstValueFrom(getToken$(evmNetwork?.nativeTokenId))
+  if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
+    return undefined
+  return getExtensionPublicClient(evmNetwork)
+}
+
+// --- Cached assets (promise-based to deduplicate concurrent calls) ---
+let cachedAssetsPromise: Promise<SwappableAssetBaseType[]> | null = null
+
+const getLifiAssets = async (_signal: AbortSignal): Promise<SwappableAssetBaseType[]> => {
+  if (!cachedAssetsPromise) {
+    cachedAssetsPromise = fetchLifiAssets().catch((err) => {
+      cachedAssetsPromise = null // clear on failure so retries work
+      throw err
+    })
+  }
+  return cachedAssetsPromise
+}
+
+const fetchLifiAssets = async (): Promise<SwappableAssetBaseType[]> => {
   const allSdkTokens = (
     await lifiSdk.getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
   )?.tokens
@@ -89,12 +107,10 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
     }
   }
 
-  const knownEvmNetworks = await get(
-    atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
-  )
-  const knownTokens = await get(atomWithObservable(() => getTokensMap$({ platform: "ethereum" })))
+  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
+  const knownTokens = await firstValueFrom(getTokensMap$({ platform: "ethereum" }))
 
-  return Object.entries(allSdkTokens)
+  const result = Object.entries(allSdkTokens)
     .filter(([chainId]) => knownEvmNetworks[chainId])
     .flatMap(([chainId, tokens]): SwappableAssetBaseType[] =>
       tokens.map((token) => {
@@ -117,22 +133,28 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
         }
       })
     )
-})
 
-const fromAssetsSelector = atom(async (get) => await get(assetsSelector))
-const toAssetsSelector = atom(async (get) => await get(assetsSelector))
+  return result
+}
 
-const routesAtom = atom(async (get) => {
+const getFromAssets = async (signal: AbortSignal): Promise<SwappableAssetBaseType[]> => {
+  return await getLifiAssets(signal)
+}
+
+const getToAssets = async (
+  _fromAsset: SwappableAssetWithDecimals | null,
+  signal: AbortSignal
+): Promise<SwappableAssetBaseType[]> => {
+  return await getLifiAssets(signal)
+}
+
+const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | null> => {
   try {
+    const { fromAsset, toAsset, fromAmount, fromAddress, toAddress } = params
     const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
-    const fromAddress = get(fromAddressAtom) ?? SWAP_PLACEHOLDER_ADDRESS
-    const toAddress = get(toAddressAtom) ?? SWAP_PLACEHOLDER_ADDRESS
-    const fromAsset = get(fromAssetAtom)
-    const toAsset = get(toAssetAtom)
-    const fromAmount = get(fromAmountAtom)
-    const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
-    )
+    const effectiveFromAddress = fromAddress ?? SWAP_PLACEHOLDER_ADDRESS
+    const effectiveToAddress = toAddress ?? SWAP_PLACEHOLDER_ADDRESS
+    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
 
     if (fromAmount.planck === 0n) return null
     // assets not supported
@@ -141,12 +163,10 @@ const routesAtom = atom(async (get) => {
     // network not supported
     if (!evmNetwork) return null
 
-    get(swapQuoteRefresherAtom)
-
     const fee = await getTalismanFee({ fromAssetId: fromAsset?.id, toAssetId: toAsset?.id })
     return await lifiSdk.getRoutes({
-      fromAddress,
-      toAddress,
+      fromAddress: effectiveFromAddress,
+      toAddress: effectiveToAddress,
       fromChainId: +fromAsset.chainId,
       toChainId: +toAsset.chainId,
       fromAmount: fromAmount.planck.toString(),
@@ -162,124 +182,126 @@ const routesAtom = atom(async (get) => {
       unavailableRoutes: { failed: [], filteredOut: [] },
     } as lifiSdk.RoutesResponse
   }
-})
+}
 
-const quoteAtom: QuoteFunction<lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest }> =
-  loadable(
-    atom(async (get) => {
-      const routes = await get(routesAtom)
-      if (!routes) return null
+type LifiRouteQuote = BaseQuote<lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest }>
 
-      return routes.routes.map((route) => get(routeQuoteAtom(route.id)))
-    })
-  )
+const getRouteQuote = async (
+  route: lifiSdk.Route,
+  fromAsset: SwappableAssetWithDecimals,
+  toAsset: SwappableAssetWithDecimals | null
+): Promise<LifiRouteQuote | null> => {
+  const step = route.steps[0]
+  if (!step) return null
 
-const routeQuoteAtom = atomFamily((id: string) =>
-  loadable(
-    atom(async (get) => {
-      const routes = await get(routesAtom)
-      if (!routes) return null
+  const transaction = await lifiSdk.getStepTransaction(step)
+  if (!transaction?.transactionRequest) return null
 
-      const route = routes.routes.find((r) => r.id === id)
-      const step = route?.steps[0]
-      if (!step) return null
+  if (!fromAsset) return null
 
-      const transaction = await lifiSdk.getStepTransaction(step)
-      if (!transaction?.transactionRequest) return null
+  const fees =
+    step.estimate.feeCosts?.map((fee) => ({
+      amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
+      name: fee.name,
+      tokenId:
+        fee.token.address === zeroAddress
+          ? evmNativeTokenId(fee.token.chainId.toString())
+          : evmErc20TokenId(fee.token.chainId.toString(), fee.token.address as `0x${string}`),
+    })) ?? []
 
-      const fromAsset = get(fromAssetAtom)
-      const toAsset = get(toAssetAtom)
-      if (!fromAsset) return null
-
-      const fees =
-        step.estimate.feeCosts?.map((fee) => ({
-          amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
-          name: fee.name,
-          tokenId:
-            fee.token.address === zeroAddress
-              ? evmNativeTokenId(fee.token.chainId.toString())
-              : evmErc20TokenId(fee.token.chainId.toString(), fee.token.address as `0x${string}`),
-        })) ?? []
-
-      if (step.estimate.gasCosts) {
-        step.estimate.gasCosts.forEach((c) => {
-          fees.push({
-            amount: BigNumber(c.amount).times(10 ** -c.token.decimals),
-            name: "Gas",
-            tokenId:
-              c.token.address === zeroAddress
-                ? evmNativeTokenId(c.token.chainId.toString())
-                : evmErc20TokenId(c.token.chainId.toString(), c.token.address as `0x${string}`),
-          })
-        })
-      }
-
-      // add talisman fee
-      const talismanFee = await getTalismanFee({
-        fromAssetId: fromAsset?.id,
-        toAssetId: toAsset?.id,
-      })
+  if (step.estimate.gasCosts) {
+    step.estimate.gasCosts.forEach((c) => {
       fees.push({
-        amount: BigNumber(step.estimate.fromAmount.toString())
-          .times(10 ** -fromAsset.decimals)
-          .times(Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000),
-        name: "Talisman Fee",
-        tokenId: fromAsset.id,
+        amount: BigNumber(c.amount).times(10 ** -c.token.decimals),
+        name: "Gas",
+        tokenId:
+          c.token.address === zeroAddress
+            ? evmNativeTokenId(c.token.chainId.toString())
+            : evmErc20TokenId(c.token.chainId.toString(), c.token.address as `0x${string}`),
       })
-
-      const totalGasLimit =
-        fromAsset?.networkType === "evm" && fromAsset?.contractAddress === undefined
-          ? route.steps
-              .flatMap((step) =>
-                (step.estimate.gasCosts ?? []).flatMap((gas) =>
-                  String(gas.token.chainId) === String(fromAsset?.chainId) &&
-                  gas.token.address === zeroAddress
-                    ? gas.limit
-                    : "0"
-                )
-              )
-              .reduce((a, c) => a.plus(c), BigNumber(0))
-              .toString()
-          : undefined
-
-      return {
-        decentralisationScore: DECENTRALISATION_SCORE,
-        protocol: PROTOCOL,
-        subProtocol: step.tool,
-        inputAmountBN: BigInt(step.estimate.fromAmount),
-        outputAmountBN: BigInt(route.toAmountMin),
-        timeInSec: step.estimate.executionDuration,
-        fees,
-        providerLogo: step.toolDetails.logoURI,
-        providerName: step.toolDetails.name,
-        talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
-        data: { ...route, transactionRequest: transaction.transactionRequest },
-        maxNativeTokenGasBuffer: totalGasLimit,
-      }
     })
+  }
+
+  // add talisman fee
+  const talismanFee = await getTalismanFee({
+    fromAssetId: fromAsset?.id,
+    toAssetId: toAsset?.id,
+  })
+  fees.push({
+    amount: BigNumber(step.estimate.fromAmount.toString())
+      .times(10 ** -fromAsset.decimals)
+      .times(Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000),
+    name: "Talisman Fee",
+    tokenId: fromAsset.id,
+  })
+
+  const totalGasLimit =
+    fromAsset?.networkType === "evm" && fromAsset?.contractAddress === undefined
+      ? route.steps
+          .flatMap((step) =>
+            (step.estimate.gasCosts ?? []).flatMap((gas) =>
+              String(gas.token.chainId) === String(fromAsset?.chainId) &&
+              gas.token.address === zeroAddress
+                ? gas.limit
+                : "0"
+            )
+          )
+          .reduce((a, c) => a.plus(c), BigNumber(0))
+          .toString()
+      : undefined
+
+  return {
+    decentralisationScore: DECENTRALISATION_SCORE,
+    protocol: PROTOCOL,
+    subProtocol: step.tool,
+    inputAmountBN: BigInt(step.estimate.fromAmount),
+    outputAmountBN: BigInt(route.toAmountMin),
+    timeInSec: step.estimate.executionDuration,
+    fees,
+    providerLogo: step.toolDetails.logoURI,
+    providerName: step.toolDetails.name,
+    talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
+    data: { ...route, transactionRequest: transaction.transactionRequest },
+    maxNativeTokenGasBuffer: totalGasLimit,
+  }
+}
+
+const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote[] | null> => {
+  const routes = await getRoutes(params)
+  if (!routes) return null
+
+  const quotes = await Promise.allSettled(
+    routes.routes.map((route) => getRouteQuote(route, params.fromAsset, params.toAsset))
   )
-)
+
+  // Filter out nulls and failed promises
+  const validQuotes = quotes
+    .filter((r): r is PromiseFulfilledResult<LifiRouteQuote | null> => r.status === "fulfilled")
+    .map((r) => r.value)
+    .filter((q): q is LifiRouteQuote => q !== null)
+  return validQuotes.length > 0 ? validQuotes : null
+}
 
 // if approval is required, returns the contract to approve for, the amount, and token contract
-const approvalAtom = atom((get) => {
-  const quote = get(quoteAtom)
-  const fromAsset = get(fromAssetAtom)
-  if (quote.state !== "hasData" || !quote.data || !fromAsset || !fromAsset.contractAddress)
-    return null
+const getApprovalInfo = (
+  params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+): ApprovalInfo => {
+  const { fromAsset, selectedSubProtocol, quoteData } = params
+  if (!quoteData || !fromAsset || !fromAsset.contractAddress) return null
 
-  const selectedSubProtocol = get(selectedSubProtocolAtom)
-  const quoteData = Array.isArray(quote.data)
-    ? quote.data
-        .map((d) => (d.state === "hasData" ? d.data : null))
-        .find((d) => d?.subProtocol === selectedSubProtocol)
-    : quote.data
-  const lifiData = quoteData?.data
+  const quoteItem = Array.isArray(quoteData)
+    ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)
+    : quoteData
+
+  const lifiData = quoteItem?.data as
+    | (lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest })
+    | undefined
   if (!lifiData?.transactionRequest) return null
 
   const contractAddress = lifiData.transactionRequest.to
   const chainId = lifiData.transactionRequest.chainId
-  const fromAddress = lifiData.transactionRequest.from
-  if (!contractAddress || chainId === undefined || !fromAddress) return null
+  const txFromAddress = lifiData.transactionRequest.from
+  if (!contractAddress || chainId === undefined || !txFromAddress) return null
 
   const amount = BigInt(lifiData.fromAmount)
 
@@ -288,32 +310,25 @@ const approvalAtom = atom((get) => {
     amount,
     tokenAddress: fromAsset.contractAddress,
     chainId,
-    fromAddress,
+    fromAddress: txFromAddress,
     protocolName: PROTOCOL_NAME,
   }
-})
+}
 
-const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefined> => {
+const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
   try {
-    const quote = get(quoteAtom)
-    const selectedSubProtocol = get(selectedSubProtocolAtom)
-    if (quote.state !== "hasData" || !quote.data) throw new Error("Swap not ready yet")
+    const { fromAsset, fromAddress, exchange: quoteData } = params
+    // quoteData contains the selected quote's data field
+    type LifiQuoteData = BaseQuote<
+      lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest }
+    >
+    const selectedQuote = quoteData as LifiQuoteData | undefined
+    if (!selectedQuote?.data?.transactionRequest) throw new Error("Please select the quote again")
 
-    const fromAddress = get(fromAddressAtom)
     if (!fromAddress) throw new Error("Missing from address")
-
-    const fromAsset = get(fromAssetAtom)
     if (fromAsset?.networkType !== "evm") throw new Error("Not supported on Lifi")
 
-    const quoteData = Array.isArray(quote.data)
-      ? quote.data
-          .map((d) => (d.state === "hasData" ? d.data : null))
-          .find((d) => d?.subProtocol === selectedSubProtocol)
-      : quote.data
-    const lifiData = quoteData?.data
-    if (!lifiData?.transactionRequest) throw new Error("Please select the quote again")
-
-    const txRequest = lifiData.transactionRequest
+    const txRequest = selectedQuote.data.transactionRequest
     if (
       !txRequest ||
       txRequest.to === undefined ||
@@ -328,13 +343,11 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
     if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
       throw new Error("Invalid sender address")
 
-    const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
-    )
+    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
     const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
     if (!evmNetwork) throw new Error("Unknown chain")
 
-    const publicClient = await get(publicClientAtomFamily(evmNetwork.id))
+    const publicClient = await getPublicClient(evmNetwork.id)
     if (!publicClient) throw new Error("Missing public client")
 
     return publicClient.prepareTransactionRequest({
@@ -350,18 +363,18 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
-})
+}
 
 export const lifiSwapModule: SwapModule = {
   protocol: PROTOCOL,
-  fromAssetsSelector,
-  toAssetsSelector,
-  quote: quoteAtom,
-  exchangeAtom: atom(async () => undefined),
-  evmTransactionAtom,
-  substratePayloadAtom: () => atom(async () => null),
   decentralisationScore: DECENTRALISATION_SCORE,
-  approvalAtom,
+  getFromAssets: getFromAssets,
+  getToAssets: getToAssets,
+  getQuote: getQuote,
+  createExchange: async () => undefined,
+  getEvmTransaction: getEvmTransaction,
+  getSubstratePayload: async () => null,
+  getApprovalInfo: getApprovalInfo,
 }
 
 export type LifiStatus = "unknown" | "not_found" | "exchanging" | "finished" | "failed" | "invalid"
