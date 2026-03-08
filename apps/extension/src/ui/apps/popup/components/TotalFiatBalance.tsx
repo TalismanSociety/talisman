@@ -194,7 +194,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
+          onClick: () => openSwapTokensModal({}),
           disabled: disableActions,
           disabledReason,
         },

@@ -142,7 +142,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             className="px-2"
             primary
             onClick={() => {
-              openSwapTokensModal()
+              openSwapTokensModal({})
             }}
           >
             {t("Buy")} {tokenSymbol}

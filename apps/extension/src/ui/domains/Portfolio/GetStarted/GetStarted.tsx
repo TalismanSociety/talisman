@@ -188,7 +188,7 @@ const useGetStarted = () => {
 
   const onSwapClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
-    openSwapTokensModal()
+    openSwapTokensModal({})
   }, [openSwapTokensModal])
 
   const onBuyClick = useCallback(() => {

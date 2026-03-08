@@ -1,21 +1,11 @@
-import { useStateObservable } from "@react-rxjs/core"
-import type { SetStateAction } from "react"
+import type { TokenId } from "@talismn/chaindata-provider"
 
-import { setSwapTokensModalIsOpen, swapTokensModalIsOpen$ } from "../state/swapTokensModalIsOpen"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 
-export const useSwapTokensModal = () => ({
-  isOpen: useStateObservable(swapTokensModalIsOpen$),
-  open,
-  close,
-  toggle,
-  setIsOpen,
-})
+export type SwapInit = {
+  fromTokenId?: TokenId
+  toTokenId?: TokenId
+  fromAddress?: string
+}
 
-const open = () => setIsOpen(true)
-const close = () => setIsOpen(false)
-const toggle = () => setIsOpen((v) => !v)
-
-const setIsOpen = async (isOpen: SetStateAction<boolean>) =>
-  setSwapTokensModalIsOpen(
-    typeof isOpen === "function" ? isOpen(await swapTokensModalIsOpen$.getValue()) : isOpen
-  )
+export const [useSwapTokensModal] = createGlobalOpenClose<SwapInit>()

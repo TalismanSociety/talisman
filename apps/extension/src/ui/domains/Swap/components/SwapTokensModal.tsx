@@ -2,12 +2,13 @@ import { classNames } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
+import { SwapProvider } from "../SwapProvider"
 import { SwapTokensFullscreenPortalContainer } from "./SwapTokensFullscreenPortal"
 import { SwapTokensWizard } from "./SwapTokensWizard"
 
 // This control is injected directly in the layout of dashboard
 export const SwapTokensModal = () => {
-  const { isOpen, close } = useSwapTokensModal()
+  const { isOpen, close, args } = useSwapTokensModal()
 
   return (
     <Modal
@@ -19,8 +20,10 @@ export const SwapTokensModal = () => {
       )}
       containerId={window.location.pathname === "/popup.html" ? "main" : undefined}
     >
-      <SwapTokensWizard />
-      <SwapTokensFullscreenPortalContainer />
+      <SwapProvider stateInit={args}>
+        <SwapTokensWizard />
+        <SwapTokensFullscreenPortalContainer />
+      </SwapProvider>
     </Modal>
   )
 }

@@ -90,7 +90,7 @@ export const NavigationDrawer: FC = () => {
       action: "Swap button",
     })
 
-    await openSwapTokensModal()
+    openSwapTokensModal({})
     await sleep(150)
     close()
   }, [openSwapTokensModal, close])
