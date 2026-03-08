@@ -15,6 +15,7 @@ export const withPjsKeyringPair = async <T>(
   // use a PJS in-memory keyring to create the pair
   const keyring = new Keyring({ type: "sr25519" })
   let pair: KeyringPair | null = null
+  let secretKey: Uint8Array | null = null
 
   try {
     try {
@@ -26,7 +27,7 @@ export const withPjsKeyringPair = async <T>(
       const password = await passwordStore.getPassword()
       if (!password) return Err("Unauthorised")
 
-      const secretKey = await keyringStore.getAccountSecretKey(address, password)
+      secretKey = await keyringStore.getAccountSecretKey(address, password)
       const publicKey = getPublicKeyFromSecret(secretKey, account.curve)
       const type = curveToPjsKeypairType(account.curve)
 
@@ -40,6 +41,7 @@ export const withPjsKeyringPair = async <T>(
     return new Err(error as Error)
   } finally {
     // cleanup
+    secretKey?.fill(0)
     if (!!pair && !pair.isLocked) pair.lock()
     keyring.removePair(address)
   }

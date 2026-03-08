@@ -48,7 +48,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         const connection = await chainConnectorSol.getConnection(networkId)
 
         if (!signature) {
-          await withSecretKey(account.address, async (secretKey) => {
+          const signResult = await withSecretKey(account.address, async (secretKey) => {
             const keypair = getKeypair(secretKey)
 
             if (keypair.publicKey.toBase58() !== address) throw new Error("Address mismatch")
@@ -56,6 +56,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             if (isVersionedTransaction(tx)) tx.sign([keypair])
             else tx.sign(keypair)
           })
+          signResult.unwrap()
         }
 
         const sig = await connection.sendRawTransaction(tx.serialize(), {
@@ -121,11 +122,15 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             const { signature } = parseTransactionInfo(tx)
 
             if (!signature) {
-              await withSecretKey(signRequest.account.address, async (secretKey) => {
-                const keypair = getKeypair(secretKey)
-                if (isVersionedTransaction(tx)) tx.sign([keypair])
-                else tx.sign(keypair)
-              })
+              const signResult = await withSecretKey(
+                signRequest.account.address,
+                async (secretKey) => {
+                  const keypair = getKeypair(secretKey)
+                  if (isVersionedTransaction(tx)) tx.sign([keypair])
+                  else tx.sign(keypair)
+                }
+              )
+              signResult.unwrap()
             }
 
             if (dappRequest.send) {
