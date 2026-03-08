@@ -1,11 +1,7 @@
 import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import { MultiAddress } from "@polkadot-api/descriptors"
-import {
-  chainConnectorsAtom,
-  evmNativeTokenId,
-  subAssetTokenId,
-  subNativeTokenId,
-} from "@talismn/balances-react"
+import { evmNativeTokenId, subAssetTokenId, subNativeTokenId } from "@talismn/balances-react"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { accounts$ } from "@ui/state/accounts"
@@ -25,26 +21,10 @@ import {
   switchMap,
   takeWhile,
 } from "rxjs"
-import { encodeFunctionData, erc20Abi, publicActions, type TransactionRequest } from "viem"
-import type { Chain as ViemChain } from "viem/chains"
-import {
-  arbitrum,
-  arbitrumNova,
-  base,
-  bsc,
-  mainnet,
-  manta,
-  moonbeam,
-  opBNB,
-  optimism,
-  polygon,
-  theta,
-  zksync,
-} from "viem/chains"
+import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
-import { vanaMainnet } from "../swaps-port/vana"
 import {
   type BaseQuote,
   fromAddressAtom,
@@ -118,20 +98,20 @@ type AssetContext = {
   symbol: string
 }
 
-const supportedEvmChains: Record<string, ViemChain | undefined> = {
-  arbitrum,
-  arbnova: arbitrumNova,
-  base,
-  bsc,
-  eth: mainnet,
-  glmr: moonbeam,
-  manta,
-  matic: polygon,
-  opbnb: opBNB,
-  optimism,
-  theta,
-  vana: vanaMainnet,
-  zksync,
+const supportedEvmNetworkIds: Record<string, EthNetworkId | undefined> = {
+  arbitrum: "42161",
+  arbnova: "42170",
+  base: "8453",
+  bsc: "56",
+  eth: "1",
+  glmr: "1284",
+  manta: "169",
+  matic: "137",
+  opbnb: "204",
+  optimism: "10",
+  theta: "361",
+  vana: "1480",
+  zksync: "324",
 }
 
 /**
@@ -423,7 +403,7 @@ const assetsAtom = atom(async (get) => {
   const allCurrencies = await stealthexSdk.getAllCurrencies()
 
   const supportedTokens = allCurrencies.filter((currency) => {
-    const isEvmNetwork = !!supportedEvmChains[currency.network]
+    const isEvmNetwork = !!supportedEvmNetworkIds[currency.network]
     const isSpecialAsset = !!specialAssets[`${currency.network}::${currency.symbol}`]
 
     // evm assets must be whitelisted as a special asset or have a contract address
@@ -433,23 +413,27 @@ const assetsAtom = atom(async (get) => {
     return isSpecialAsset
   })
   const knownTokens = await get(atomWithObservable(() => getTokensMap$()))
+  const knownEvmNetworks = await get(
+    atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
+  )
 
   return Object.values(
     supportedTokens.reduce(
       (acc, currency) => {
-        const evmChain = supportedEvmChains[currency.network]
+        const evmNetworkId = supportedEvmNetworkIds[currency.network]
         const specialAsset = specialAssets[`${currency.network}::${currency.symbol}`]
 
-        const id = evmChain
+        const id = evmNetworkId
           ? getTokenIdForSwappableAsset(
               "evm",
-              evmChain.id,
+              evmNetworkId,
               currency.contract_address ? currency.contract_address : undefined
             )
           : specialAsset?.id
-        const chainId = evmChain ? evmChain.id : specialAsset?.chainId
+        const chainId = evmNetworkId ? Number(evmNetworkId) : specialAsset?.chainId
         if (!id || !chainId) return acc
 
+        const evmNetwork = evmNetworkId ? knownEvmNetworks[evmNetworkId] : undefined
         const image =
           (knownTokens[id]?.logo !== UNKNOWN_TOKEN_URL ? knownTokens[id]?.logo : undefined) ??
           currency.icon_url
@@ -459,13 +443,13 @@ const assetsAtom = atom(async (get) => {
           symbol: specialAsset?.symbol ?? currency.symbol,
           decimals:
             specialAsset?.decimals ??
-            evmChain?.nativeCurrency?.decimals ??
+            evmNetwork?.nativeCurrency?.decimals ??
             currency?.precision ??
             undefined,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,
-          networkType: evmChain ? "evm" : (specialAsset?.networkType ?? "substrate"),
+          networkType: evmNetworkId ? "evm" : (specialAsset?.networkType ?? "substrate"),
           assetHubAssetId: specialAsset?.assetHubAssetId,
           context: {
             stealthex: {
@@ -693,9 +677,6 @@ const exchangeAtom = atom(async (get): Promise<StealthexExchange | undefined> =>
 
 const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefined> => {
   try {
-    const evmChainConnector = get(chainConnectorsAtom).evm
-    if (!evmChainConnector) throw new Error("Missing evm chain connector")
-
     const fromAddress = get(fromAddressAtom)
     if (!fromAddress) throw new Error("Missing from address")
     const fromAsset = get(fromAssetAtom)
@@ -705,24 +686,23 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
 
     if (fromAsset.networkType !== "evm") return
 
-    const chain = Object.values(supportedEvmChains).find(
-      (c) => c?.id.toString() === fromAsset.chainId.toString()
+    const knownEvmNetworks = await get(
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
     )
-    if (!chain) throw new Error("Network not supported")
-
-    const walletClient = (
-      await evmChainConnector.getWalletClientForEvmNetwork(fromAsset.chainId.toString())
-    )?.extend(publicActions)
-    if (!walletClient) throw new Error("Missing evm client")
+    const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
+    if (!evmNetwork) throw new Error("Network not supported")
 
     const depositAmount = Decimal.fromUserInput(
       String(exchange.deposit.expected_amount),
       fromAsset.decimals
     )
 
+    const publicClient = await get(publicClientAtomFamily(evmNetwork.id))
+    if (!publicClient) throw new Error("Missing public client")
+
     if (!fromAsset.contractAddress)
-      return walletClient.prepareTransactionRequest({
-        chain,
+      return publicClient.prepareTransactionRequest({
+        chain: null,
         to: exchange.deposit.address as `0x${string}`,
         value: depositAmount.planck,
         account: fromAddress as `0x${string}`,
@@ -733,8 +713,8 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       functionName: "transfer",
       args: [exchange.deposit.address as `0x${string}`, depositAmount.planck],
     })
-    return walletClient.prepareTransactionRequest({
-      chain,
+    return publicClient.prepareTransactionRequest({
+      chain: null,
       to: fromAsset.contractAddress as `0x${string}`,
       data,
       value: 0n,
@@ -806,15 +786,12 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
     )
     const network = knownEvmNetworks[fromAsset.chainId]
     const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeTokenId)))
-    const evmChain = Object.values(supportedEvmChains).find(
-      (c) => c?.id.toString() === fromAsset.chainId.toString()
-    )
 
     const data = fromAsset.contractAddress
       ? encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [fromAddress, 0n] })
       : undefined
 
-    if (network && nativeToken && evmChain) {
+    if (network && nativeToken) {
       const client = await get(publicClientAtomFamily(network.id))
       if (!client) return null
       const gasPrice = await client.getGasPrice()

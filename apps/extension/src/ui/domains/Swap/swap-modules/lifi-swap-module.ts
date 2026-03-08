@@ -1,6 +1,5 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
-import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
 import { getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
@@ -17,9 +16,9 @@ import {
   switchMap,
   takeWhile,
 } from "rxjs"
-import { publicActions, type TransactionRequest, zeroAddress } from "viem"
-import type { Chain as ViemChain } from "viem/chains"
-import * as allEvmChains from "viem/chains"
+import { type TransactionRequest, zeroAddress } from "viem"
+
+import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
 
 import {
   fromAddressAtom,
@@ -296,9 +295,6 @@ const approvalAtom = atom((get) => {
 
 const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefined> => {
   try {
-    const evmChainConnector = get(chainConnectorsAtom).evm
-    if (!evmChainConnector) throw new Error("Missing evm chain connector")
-
     const quote = get(quoteAtom)
     const selectedSubProtocol = get(selectedSubProtocolAtom)
     if (quote.state !== "hasData" || !quote.data) throw new Error("Swap not ready yet")
@@ -308,11 +304,6 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
 
     const fromAsset = get(fromAssetAtom)
     if (fromAsset?.networkType !== "evm") throw new Error("Not supported on Lifi")
-
-    const walletClient = (
-      await evmChainConnector.getWalletClientForEvmNetwork(fromAsset.chainId.toString())
-    )?.extend(publicActions)
-    if (!walletClient) throw new Error("Missing evm client")
 
     const quoteData = Array.isArray(quote.data)
       ? quote.data
@@ -337,13 +328,17 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
     if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
       throw new Error("Invalid sender address")
 
-    const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-      (c) => c?.id === txRequest.chainId
+    const knownEvmNetworks = await get(
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
     )
-    if (!chain) throw new Error("Unknown chain")
+    const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
+    if (!evmNetwork) throw new Error("Unknown chain")
 
-    return walletClient.prepareTransactionRequest({
-      chain,
+    const publicClient = await get(publicClientAtomFamily(evmNetwork.id))
+    if (!publicClient) throw new Error("Missing public client")
+
+    return publicClient.prepareTransactionRequest({
+      chain: null,
       to: txRequest.to as `0x${string}`,
       value: BigInt(txRequest.value),
       data: txRequest.data as `0x${string}`,
