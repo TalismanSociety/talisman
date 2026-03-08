@@ -11,7 +11,7 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { useSwap } from "../SwapProvider"
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { getTokenTabs } from "../swaps.api"
+import { getTokenTabs } from "../swap-services/token-filtering"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {

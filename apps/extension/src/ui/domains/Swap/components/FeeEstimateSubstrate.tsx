@@ -7,8 +7,8 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
-import type { Loadable } from "../swaps.api"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
+import type { Loadable } from "../types"
 
 export const FeeEstimateSubstrate = ({
   payloadLoadable,

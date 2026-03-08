@@ -1,22 +1,16 @@
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
+import { useSwapAddresses } from "./hooks/useSwapAddresses"
+import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
+import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
 import type { SwapInit } from "./hooks/useSwapTokensModal"
 import type {
   SupportedSwapProtocol,
   SwappableAssetWithDecimals,
   SwapView,
 } from "./swap-modules/common.swap-module"
-import {
-  useFromAccount,
-  useReverse,
-  useSafeTokens,
-  useSetToAddress,
-  useSwapAssets,
-  useSwapErc20Approval,
-  useSwapQuotes,
-} from "./swaps.api"
+import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
 import { Decimal } from "./swaps-port/Decimal"
 
 export type { SwapView } from "./swap-modules/common.swap-module"
@@ -41,26 +35,26 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     "decentalised" | "cheapest" | "fastest" | "bestRate"
   >("bestRate")
 
-  // -- Address state --
-  const [fromEvmAddress, setFromEvmAddress] = useState<string | null>(null)
-  const [fromSubstrateAddress, setFromSubstrateAddress] = useState<string | null>(null)
-  const [toEvmAddress, setToEvmAddress] = useState<string | null>(null)
-  const [toSubstrateAddress, setToSubstrateAddress] = useState<string | null>(null)
-  const [toBtcAddress, setToBtcAddress] = useState<string | null>(null)
+  // -- Unified address state --
+  const [fromAddressRaw, setFromAddressRaw] = useState<string | null>(null)
+  const [toAddressRaw, setToAddressRaw] = useState<string | null>(null)
 
-  // -- Computed addresses --
-  const fromAddress = useMemo(() => {
-    if (!fromAsset) return null
-    if (fromAsset.networkType === "evm") return fromEvmAddress
-    return fromSubstrateAddress
-  }, [fromAsset, fromEvmAddress, fromSubstrateAddress])
-
-  const toAddress = useMemo(() => {
-    if (!toAsset) return null
-    if (toAsset.networkType === "evm") return toEvmAddress
-    if (toAsset.networkType === "btc") return toBtcAddress
-    return toSubstrateAddress
-  }, [toAsset, toEvmAddress, toSubstrateAddress, toBtcAddress])
+  const {
+    fromAddress,
+    toAddress,
+    setFromAddress,
+    setToAddress,
+    ethAccounts,
+    substrateAccounts,
+    fromEvmAccount,
+    fromSubstrateAccount,
+  } = useSwapAddresses({
+    fromAddress: fromAddressRaw,
+    setFromAddress: setFromAddressRaw,
+    toAddress: toAddressRaw,
+    setToAddress: setToAddressRaw,
+    toAsset,
+  })
 
   // -- Token tab --
   const [tokenTab, setTokenTab] = useState("all")
@@ -79,11 +73,8 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     setSelectedProtocol(null)
     setSelectedSubProtocol(undefined)
     setQuoteSorting("bestRate")
-    setFromEvmAddress(null)
-    setFromSubstrateAddress(null)
-    setToEvmAddress(null)
-    setToSubstrateAddress(null)
-    setToBtcAddress(null)
+    setFromAddressRaw(null)
+    setToAddressRaw(null)
     setTokenTab("all")
     setApprovalCounter(0)
   }, [])
@@ -107,7 +98,7 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     selectedQuoteLoadable,
     selectedModuleLoadable,
     toAmountLoadable,
-  } = useSwapQuotes({
+  } = useSwapQuoteManager({
     fromAsset,
     toAsset,
     fromAmount,
@@ -118,25 +109,6 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     quoteSorting,
     quoteRefresher,
   })
-
-  // -- Side-effect hooks --
-  const { ethAccounts, substrateAccounts, fromEvmAccount, fromSubstrateAccount } = useFromAccount(
-    fromEvmAddress,
-    setFromEvmAddress,
-    fromSubstrateAddress,
-    setFromSubstrateAddress
-  )
-
-  useSetToAddress(
-    fromAddress,
-    toAsset,
-    toEvmAddress,
-    setToEvmAddress,
-    toSubstrateAddress,
-    setToSubstrateAddress,
-    toBtcAddress,
-    setToBtcAddress
-  )
 
   const reverse = useReverse(
     fromAsset,
@@ -185,19 +157,11 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
       quoteSorting,
       setQuoteSorting,
 
-      // Addresses
-      fromEvmAddress,
-      setFromEvmAddress,
-      fromSubstrateAddress,
-      setFromSubstrateAddress,
-      toEvmAddress,
-      setToEvmAddress,
-      toSubstrateAddress,
-      setToSubstrateAddress,
-      toBtcAddress,
-      setToBtcAddress,
+      // Addresses (unified)
       fromAddress,
       toAddress,
+      setFromAddress,
+      setToAddress,
 
       // Token tab
       tokenTab,
@@ -242,13 +206,10 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
       selectedProtocol,
       selectedSubProtocol,
       quoteSorting,
-      fromEvmAddress,
-      fromSubstrateAddress,
-      toEvmAddress,
-      toSubstrateAddress,
-      toBtcAddress,
       fromAddress,
       toAddress,
+      setFromAddress,
+      setToAddress,
       tokenTab,
       resetForm,
       refreshQuotes,

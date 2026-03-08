@@ -8,34 +8,32 @@ import { SwapForm } from "./SwapForm"
 import { SwapHeader } from "./SwapHeader"
 
 export const SwapTokensWizard = () => {
-  const { swapView, fromAsset, fromEvmAddress, fromSubstrateAddress, quotesLoadable } = useSwap()
+  const { swapView, fromAsset, fromAddress, quotesLoadable } = useSwap()
 
   const fastBalance = useFastBalance(
     useMemo(() => {
-      if (!fromAsset) return undefined
+      if (!fromAsset || !fromAddress) return undefined
 
       if (fromAsset.networkType === "evm") {
-        if (!fromEvmAddress) return undefined
         return {
           type: "evm",
-          address: fromEvmAddress,
+          address: fromAddress,
           networkId: +fromAsset.chainId,
           tokenAddress: fromAsset.contractAddress as `0x${string}`,
         }
       }
 
       if (fromAsset.networkType === "substrate") {
-        if (!fromSubstrateAddress) return undefined
         return {
           type: "substrate",
-          address: fromSubstrateAddress,
+          address: fromAddress,
           chainId: fromAsset.chainId.toString(),
           assetHubAssetId: fromAsset.assetHubAssetId,
         }
       }
 
       return undefined
-    }, [fromAsset, fromEvmAddress, fromSubstrateAddress])
+    }, [fromAsset, fromAddress])
   )
 
   // keep quotes loaded when switching between swap views
