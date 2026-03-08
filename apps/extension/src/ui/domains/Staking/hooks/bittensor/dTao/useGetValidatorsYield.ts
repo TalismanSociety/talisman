@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { createQueryStoragePersister } from "@ui/hooks/useQueryStorage"
+import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 
 import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
 

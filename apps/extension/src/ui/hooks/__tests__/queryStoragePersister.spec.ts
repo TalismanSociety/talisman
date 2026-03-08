@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createQueryStoragePersister } from "../useQueryStorage"
+import { createQueryStoragePersister } from "../queryStoragePersister"
 
 // Mock the api module
 vi.mock("@ui/api/api", () => ({
