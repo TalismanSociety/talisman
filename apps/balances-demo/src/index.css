@@ -1,6 +1,17 @@
-@import "talisman-ui/styles.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
+  html {
+    font-size: 10px;
+    @apply min-h-screen;
+  }
+
+  body {
+    @apply leading-base text-body bg-black-primary font-sans text-base antialiased;
+  }
+
   pre,
   input,
   textarea {
