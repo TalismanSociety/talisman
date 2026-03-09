@@ -5,10 +5,11 @@ import { useFastBalance } from "../swaps-port/useFastBalance"
 import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm } from "./SwapForm"
+import { SwapFormShimmer } from "./SwapFormShimmer"
 import { SwapHeader } from "./SwapHeader"
 
 export const SwapTokensWizard = () => {
-  const { swapView, fromAsset, fromAddress } = useSwap()
+  const { swapView, fromAsset, fromAddress, isInitializing } = useSwap()
 
   const fastBalance = useFastBalance(
     useMemo(() => {
@@ -40,9 +41,12 @@ export const SwapTokensWizard = () => {
     <div id="SwapTokensModalDialog" className="relative flex h-full w-full flex-col gap-4">
       <SwapHeader />
 
-      {(swapView === "form" || swapView === "approve-recipient") && (
-        <SwapForm fastBalance={fastBalance} approveRecipient={swapView === "approve-recipient"} />
-      )}
+      {(swapView === "form" || swapView === "approve-recipient") &&
+        (isInitializing ? (
+          <SwapFormShimmer />
+        ) : (
+          <SwapForm fastBalance={fastBalance} approveRecipient={swapView === "approve-recipient"} />
+        ))}
       {swapView === "approve-erc20" && <SwapApproveErc20 />}
       {swapView === "confirm" && <SwapConfirm fastBalance={fastBalance} />}
     </div>

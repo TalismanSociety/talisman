@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
@@ -85,6 +85,37 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const { data: safeTokens = EMPTY_SAFE_TOKENS } = useSafeTokens()
   const { fromAssets, toAssets } = useSwapAssets(fromAsset, tokenTab, t, safeTokens)
 
+  // -- Initialize form from stateInit (one-shot per mount) --
+  const fromInitDone = useRef(false)
+  const toInitDone = useRef(false)
+
+  useEffect(() => {
+    if (!stateInit?.fromTokenId || fromInitDone.current) return
+    if (!fromAssets?.length) return
+
+    const match = fromAssets.find((a) => a.id === stateInit.fromTokenId)
+    if (match) {
+      setFromAsset(match)
+      fromInitDone.current = true
+    }
+  }, [stateInit?.fromTokenId, fromAssets])
+
+  useEffect(() => {
+    if (!stateInit?.toTokenId || toInitDone.current) return
+    if (!toAssets?.length) return
+
+    const match = toAssets.find((a) => a.id === stateInit.toTokenId)
+    if (match) {
+      setToAsset(match)
+      toInitDone.current = true
+    }
+  }, [stateInit?.toTokenId, toAssets])
+
+  useEffect(() => {
+    if (!stateInit?.fromAddress) return
+    setFromAddressRaw(stateInit.fromAddress)
+  }, [stateInit?.fromAddress])
+
   const {
     isLoadingQuotes,
     isAllQuotesSettled,
@@ -104,6 +135,12 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedSubProtocol,
     quoteSorting,
   })
+
+  // True when stateInit requests token pre-selection but assets haven't loaded yet
+  const isInitializing = Boolean(
+    (stateInit?.fromTokenId && !fromAsset && !fromAssets) ||
+      (stateInit?.toTokenId && !toAsset && !toAssets)
+  )
 
   const reverse = useReverse(fromAsset, setFromAsset, toAsset, setToAsset, setFromAmount, toAmount)
 
@@ -180,6 +217,9 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       // ERC20 approval
       erc20Approval,
 
+      // Loading state
+      isInitializing,
+
       // Init args
       stateInit,
     }),
@@ -217,6 +257,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       fromEvmAccount,
       fromSubstrateAccount,
       erc20Approval,
+      isInitializing,
       stateInit,
     ]
   )
