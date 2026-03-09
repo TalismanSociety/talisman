@@ -14,7 +14,6 @@ import type {
 } from "../swap-modules/common.swap-module"
 import type { swapModules } from "../swaps.api"
 import { allEvmChains } from "../swaps-port/allEvmChains"
-import type { Decimal } from "../swaps-port/Decimal"
 
 /**
  * Manages ERC20 approval state for the selected swap module.
@@ -24,7 +23,7 @@ export const useSwapErc20Approval = (params: {
   selectedModule: (typeof swapModules)[number] | undefined
   fromAsset: SwappableAssetWithDecimals | null
   toAsset: SwappableAssetWithDecimals | null
-  fromAmount: Decimal
+  fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol: string | undefined

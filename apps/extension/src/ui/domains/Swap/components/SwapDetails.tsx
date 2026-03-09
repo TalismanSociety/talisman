@@ -10,7 +10,7 @@ import { SwapDetailsError } from "./SwapDetailsError"
 export const SwapDetails = () => {
   const { fromAsset, toAsset, fromAmount } = useSwap()
 
-  if (!fromAsset || !toAsset || !fromAmount.planck) return null
+  if (!fromAsset || !toAsset || !fromAmount) return null
 
   return (
     // Details component handles its own error already. This is just in case there is an unhandled error

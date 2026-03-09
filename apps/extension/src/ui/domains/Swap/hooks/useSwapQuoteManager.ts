@@ -12,7 +12,6 @@ import type {
   SwappableAssetWithDecimals,
 } from "../swap-modules/common.swap-module"
 import { swapModules } from "../swaps.api"
-import { Decimal } from "../swaps-port/Decimal"
 
 /**
  * Fetches quotes from all applicable swap modules using useQueries,
@@ -21,7 +20,7 @@ import { Decimal } from "../swaps-port/Decimal"
 export const useSwapQuoteManager = (params: {
   fromAsset: SwappableAssetWithDecimals | null
   toAsset: SwappableAssetWithDecimals | null
-  fromAmount: Decimal
+  fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
   selectedProtocol: SupportedSwapProtocol | null
@@ -41,7 +40,7 @@ export const useSwapQuoteManager = (params: {
 
   const tokenRates = useTokenRatesMap()
 
-  const enabled = Boolean(fromAsset && toAsset && fromAmount.planck)
+  const enabled = Boolean(fromAsset && toAsset && fromAmount)
 
   const applicableModules = useMemo(
     () =>
@@ -58,7 +57,7 @@ export const useSwapQuoteManager = (params: {
         module.protocol,
         fromAsset?.id ?? null,
         toAsset?.id ?? null,
-        fromAmount.planck.toString(),
+        fromAmount.toString(),
         fromAddress,
         toAddress,
       ],
@@ -156,15 +155,11 @@ export const useSwapQuoteManager = (params: {
     return swapModules.find((m) => m.protocol === selectedQuote.protocol)
   }, [selectedQuote])
 
-  // Output amount (use primitive deps to avoid recreating Decimal on every render)
-  const outputAmountBN = selectedQuote?.outputAmountBN
-  const toDecimals = toAsset?.decimals
-  const toSymbol = toAsset?.symbol
-  const toAmount: Decimal | null = useMemo(() => {
-    if (outputAmountBN === undefined || outputAmountBN === null || !toDecimals || !toSymbol)
-      return null
-    return Decimal.fromPlanck(outputAmountBN, toDecimals, { currency: toSymbol })
-  }, [outputAmountBN, toDecimals, toSymbol])
+  // Output amount
+  const toAmount: bigint | null = useMemo(() => {
+    if (!selectedQuote?.outputAmountBN) return null
+    return selectedQuote.outputAmountBN
+  }, [selectedQuote])
 
   return {
     isLoadingQuotes,

@@ -1,5 +1,5 @@
 import { ClockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
-import { Decimal } from "../swaps-port/Decimal"
 import { SwapDetailsContainer } from "./SwapDetailsContainer"
 
 export const SwapDetailsCard = memo(
@@ -33,12 +32,9 @@ export const SwapDetailsCard = memo(
     const currency = useSelectedCurrency()
 
     const amount = useMemo(() => {
-      if (!toAsset) return
-      return Decimal.fromPlanck(amountOverride ?? quote.outputAmountBN, toAsset.decimals, {
-        currency: toAsset.symbol,
-      })
-    }, [amountOverride, quote.outputAmountBN, toAsset])
-    const fiatValue = useFiatValueForAmount({ amount, asset: toAsset, usdOverride })
+      return amountOverride ?? quote.outputAmountBN
+    }, [amountOverride, quote.outputAmountBN])
+    const fiatValue = useFiatValueForAmount({ planck: amount, asset: toAsset, usdOverride })
 
     const time = useMemo(() => {
       const duration = intervalToDuration({ start: 0, end: quote.timeInSec * 1000 })
@@ -49,13 +45,13 @@ export const SwapDetailsCard = memo(
     }, [quote.timeInSec])
 
     const toQuote = useMemo(() => {
-      if (!amount || !fromAmount) return undefined
-      return amount.mapNumber(() => {
-        const res = (amount.toNumber() ?? 0) / (fromAmount.toNumber() ?? 1)
-        if (res < 0.0001) return 0
-        return res
-      })
-    }, [fromAmount, amount])
+      if (!amount || !fromAmount || !toAsset || !fromAsset) return undefined
+      const toNum = Number(planckToTokens(amount.toString(), toAsset.decimals) ?? "0")
+      const fromNum = Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "1")
+      const res = toNum / (fromNum || 1)
+      if (res < 0.0001) return "0"
+      return res.toString()
+    }, [fromAmount, fromAsset, amount, toAsset])
 
     const totalFee = useMemo(
       () =>
@@ -85,7 +81,11 @@ export const SwapDetailsCard = memo(
         <div className="flex w-full items-start justify-between">
           <div className="flex flex-col">
             <div className="truncate font-bold text-sm">
-              {amount?.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+              {toAsset
+                ? `${parseFloat(
+                    planckToTokens(amount.toString(), toAsset.decimals) ?? "0"
+                  ).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${toAsset.symbol}`
+                : null}
             </div>
             <p className="text-body-secondary text-xs">
               {(fiatValue ?? 0)?.toLocaleString(undefined, { style: "currency", currency })}
@@ -102,12 +102,7 @@ export const SwapDetailsCard = memo(
             <div>
               <span className="whitespace-pre">1 {fromAsset?.symbol}</span> <span>=</span>{" "}
               <span className="whitespace-pre">
-                <Tokens
-                  amount={toQuote?.toString()}
-                  symbol={toQuote?.currency}
-                  decimals={toQuote?.decimals}
-                  noCountUp
-                />
+                <Tokens amount={toQuote} symbol={toAsset?.symbol} noCountUp />
               </span>
             </div>
             <div className="text-muted-foreground">

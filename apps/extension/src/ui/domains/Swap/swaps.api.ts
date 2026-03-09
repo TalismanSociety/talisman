@@ -14,7 +14,6 @@ import type {
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { enrichAssets, filterAndSortTokens } from "./swap-services/token-filtering"
-import type { Decimal } from "./swaps-port/Decimal"
 
 // ─── Re-exports (backward compatibility) ────────────────────────────
 
@@ -143,8 +142,8 @@ export const useReverse = (
   setFromAsset: (v: SwappableAssetWithDecimals | null) => void,
   toAsset: SwappableAssetWithDecimals | null,
   setToAsset: (v: SwappableAssetWithDecimals | null) => void,
-  setFromAmount: (v: Decimal) => void,
-  toAmount: Decimal | null
+  setFromAmount: (v: bigint) => void,
+  toAmount: bigint | null
 ) => {
   const toAmountRef = useRef(toAmount)
   toAmountRef.current = toAmount

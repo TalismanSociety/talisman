@@ -10,7 +10,6 @@ import type {
   SwapView,
 } from "./swap-modules/common.swap-module"
 import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
-import { Decimal } from "./swaps-port/Decimal"
 
 export type { SwapView } from "./swap-modules/common.swap-module"
 
@@ -29,7 +28,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   // -- Core form state --
   const [fromAsset, setFromAsset] = useState<SwappableAssetWithDecimals | null>(null)
   const [toAsset, setToAsset] = useState<SwappableAssetWithDecimals | null>(null)
-  const [fromAmount, setFromAmount] = useState<Decimal>(Decimal.fromPlanck(0n, 1))
+  const [fromAmount, setFromAmount] = useState<bigint>(0n)
   const [selectedProtocol, setSelectedProtocol] = useState<SupportedSwapProtocol | null>(null)
   const [selectedSubProtocol, setSelectedSubProtocol] = useState<string | undefined>(undefined)
   const [quoteSorting, setQuoteSorting] = useState<
@@ -70,7 +69,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setSwapView("form")
     setFromAsset(null)
     setToAsset(null)
-    setFromAmount(Decimal.fromPlanck(0n, 1))
+    setFromAmount(0n)
     setSelectedProtocol(null)
     setSelectedSubProtocol(undefined)
     setQuoteSorting("bestRate")

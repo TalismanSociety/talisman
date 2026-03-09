@@ -63,7 +63,7 @@ export const SwapConfirmEvm = ({
       toAsset?.id,
       fromAddress,
       toAddress,
-      fromAmount.planck.toString(),
+      fromAmount.toString(),
       selectedQuote?.protocol,
     ],
     queryFn: async ({ signal }) => {
@@ -121,8 +121,8 @@ export const SwapConfirmEvm = ({
           exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
-          fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.planck.toString(),
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
           to: toAddress,
         }
       case "stealthex":
@@ -132,8 +132,8 @@ export const SwapConfirmEvm = ({
           exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
-          fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.planck.toString(),
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
           to: toAddress,
         }
       case "lifi":
@@ -143,15 +143,15 @@ export const SwapConfirmEvm = ({
           protocolName: subProtocol,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
-          fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.planck.toString(),
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
           to: toAddress,
         }
     }
     throw new Error(`swapModule ${swapModule?.protocol} not supported`)
   }, [
     exchange,
-    fromAmount.planck,
+    fromAmount,
     fromAsset,
     subProtocol,
     swapModule?.protocol,

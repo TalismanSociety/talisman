@@ -18,8 +18,6 @@ import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
 
-import type { Decimal } from "../swaps-port/Decimal"
-
 // Forward references — these types are exported by the module files
 // We use dynamic import types to avoid circular dependencies at runtime
 type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
@@ -94,7 +92,7 @@ export type SwapView = "form" | "approve-recipient" | "approve-erc20" | "confirm
 export type QuoteParams = {
   fromAsset: SwappableAssetWithDecimals
   toAsset: SwappableAssetWithDecimals
-  fromAmount: Decimal
+  fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
@@ -103,7 +101,7 @@ export type QuoteParams = {
 export type ExchangeParams = {
   fromAsset: SwappableAssetWithDecimals
   toAsset: SwappableAssetWithDecimals
-  fromAmount: Decimal
+  fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
 }

@@ -96,7 +96,7 @@ export const FeeEstimateEvm = ({
                   tokenId={fromEvmNetwork.nativeTokenId}
                   estimatedFee={txDetails.estimatedFee}
                   maxFee={txDetails.maxFee}
-                  balance={fastBalance?.balance?.transferable?.planck}
+                  balance={fastBalance?.balance?.transferable}
                 />
               ) : (
                 <div className="flex flex-col gap-2 whitespace-nowrap text-xs">

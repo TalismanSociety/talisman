@@ -4,7 +4,6 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
-import { Decimal } from "./Decimal"
 import { useSubstrateToken } from "./useSubstrateToken"
 
 export type UseSubstrateBalanceProps = {
@@ -15,8 +14,8 @@ export type UseSubstrateBalanceProps = {
 }
 
 type SubstrateBalance = {
-  transferable: Decimal
-  stayAlive: Decimal
+  transferable: bigint
+  stayAlive: bigint
 }
 
 export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
@@ -72,12 +71,8 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
         const stayAliveBN = free - ed
 
         return {
-          transferable: Decimal.fromPlanck(transferableBN, token.decimals, {
-            currency: token.symbol,
-          }),
-          stayAlive: Decimal.fromPlanck(stayAliveBN > 0n ? stayAliveBN : 0n, token.decimals, {
-            currency: token.symbol,
-          }),
+          transferable: transferableBN,
+          stayAlive: stayAliveBN > 0n ? stayAliveBN : 0n,
         }
       }
 
@@ -86,8 +81,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
         address!,
       ])
       const balanceBN = BigInt(result?.balance ?? 0n)
-      const balanceDec = Decimal.fromPlanck(balanceBN, token.decimals, { currency: token.symbol })
-      return { transferable: balanceDec, stayAlive: balanceDec }
+      return { transferable: balanceBN, stayAlive: balanceBN }
     },
     enabled: !!props && !!sapi && !!token,
     refetchInterval: 15_000,

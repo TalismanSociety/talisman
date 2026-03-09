@@ -1,5 +1,5 @@
 import { HelpCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames, tokensToPlanck } from "@talismn/util"
+import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -9,20 +9,20 @@ import { Link } from "react-router-dom"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { Decimal } from "../swaps-port/Decimal"
+import { parseUserInputToPlanckOrUndefined } from "../swap-utils"
 import { SelectTokenModal } from "./SelectTokenModal"
 
 type Props = {
-  amount?: Decimal
+  amount?: bigint
   assets?: SwappableAssetWithDecimals[]
   selectedAsset?: SwappableAssetWithDecimals | null
   evmAddress?: `0x${string}`
   substrateAddress?: string
-  onChangeAmount?: (value: Decimal) => void
+  onChangeAmount?: (value: bigint) => void
   onChangeAsset?: (asset: SwappableAssetWithDecimals | null) => void
   leadingLabel?: ReactNode
-  availableBalance?: Decimal
-  stayAliveBalance?: Decimal
+  availableBalance?: bigint
+  stayAliveBalance?: bigint
   disabled?: boolean
   hideBalance?: boolean
   disableBtc?: boolean
@@ -58,13 +58,17 @@ export const TokenAmountInput: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
 
-  const [input, setInput] = useState((amount?.planck ?? 0n) > 0n ? (amount?.toString() ?? "") : "")
+  const [input, setInput] = useState(
+    (amount ?? 0n) > 0n
+      ? (planckToTokens(amount!.toString(), selectedAsset?.decimals ?? 0) ?? "")
+      : ""
+  )
 
   // reset input when fromAddress changes
   const { fromAddress } = useSwap()
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    onChangeAmount?.(Decimal.fromPlanck(0n, 1))
+    onChangeAmount?.(0n)
 
     // only re-run this effect when `fromAddress` changes
   }, [fromAddress])
@@ -78,15 +82,13 @@ export const TokenAmountInput: FC<Props> = ({
   }, [evmAddress, hideBalance, selectedAsset, substrateAddress])
 
   const parseInput = useCallback(
-    (value: string) => {
-      if (!selectedAsset) return Decimal.fromPlanck(0, 1)
+    (value: string): bigint => {
+      if (!selectedAsset) return 0n
       try {
         const formattedInput = value.endsWith(".") ? `${value}0` : value
-        return Decimal.fromUserInput(formattedInput, selectedAsset.decimals, {
-          currency: selectedAsset.symbol,
-        })
+        return parseUserInputToPlanckOrUndefined(formattedInput, selectedAsset.decimals) ?? 0n
       } catch {
-        return Decimal.fromPlanck(0, 1)
+        return 0n
       }
     },
     [selectedAsset]
@@ -96,7 +98,7 @@ export const TokenAmountInput: FC<Props> = ({
     (asset: SwappableAssetWithDecimals | null) => {
       setInput("")
       onChangeAsset?.(asset)
-      onChangeAmount?.(Decimal.fromPlanck(0, asset?.decimals ?? 1))
+      onChangeAmount?.(0n)
     },
     [onChangeAmount, onChangeAsset]
   )
@@ -104,31 +106,31 @@ export const TokenAmountInput: FC<Props> = ({
   const handleChangeInput = useCallback(
     (value: string) => {
       setInput(value)
-      const parsedDecimal = parseInput(value)
-      onChangeAmount?.(parsedDecimal)
+      const parsedPlanck = parseInput(value)
+      onChangeAmount?.(parsedPlanck)
     },
     [onChangeAmount, parseInput]
   )
 
-  const fiatValue = useFiatValueForAmount({ amount, asset: selectedAsset, usdOverride })
+  const fiatValue = useFiatValueForAmount({ planck: amount, asset: selectedAsset, usdOverride })
 
   const insufficientBalance = useMemo(() => {
     if (availableBalance === undefined || !amount) return false
-    return amount.planck > (availableBalance?.planck ?? 0n)
+    return amount > (availableBalance ?? 0n)
   }, [amount, availableBalance])
 
   const accountWillBeReaped = useMemo(() => {
-    if (!stayAliveBalance || !amount || amount.planck === 0n) return false
-    return stayAliveBalance.planck < amount.planck
+    if (stayAliveBalance === undefined || !amount || amount === 0n) return false
+    return stayAliveBalance < amount
   }, [amount, stayAliveBalance])
 
   const maxAfterGas = useMemo(() => {
-    if (!selectedAsset || !availableBalance) return null
+    if (!selectedAsset || availableBalance === undefined) return null
     const idParts = selectedAsset.id.split("-")
     const assetType = idParts[idParts.length - 1]
 
     if (assetType === "native") {
-      const { decimals, currency } = availableBalance
+      const decimals = selectedAsset.decimals
 
       const swapGasBufferWei = maxNativeTokenGasBuffer ? BigInt(maxNativeTokenGasBuffer) : 0n
       const hardcodedGasBufferWei = BigInt(
@@ -138,47 +140,51 @@ export const TokenAmountInput: FC<Props> = ({
         )
       )
 
-      const totalBufferWei = availableBalance.planck - hardcodedGasBufferWei - swapGasBufferWei
-      return Decimal.fromPlanck(totalBufferWei, decimals, { currency })
+      const totalBufferWei = availableBalance - hardcodedGasBufferWei - swapGasBufferWei
+      return totalBufferWei
     }
 
     return availableBalance
   }, [availableBalance, maxNativeTokenGasBuffer, selectedAsset])
+
   const onSetMaxAmount = useCallback(() => {
-    if (!maxAfterGas || maxAfterGas.planck <= 0) return
-    const { planck, decimals, currency } = maxAfterGas
-    handleChangeInput(Decimal.fromPlanck(planck, decimals, { currency }).toString())
-  }, [handleChangeInput, maxAfterGas])
+    if (maxAfterGas === null || maxAfterGas <= 0) return
+    const maxStr = planckToTokens(maxAfterGas.toString(), selectedAsset?.decimals ?? 0) ?? "0"
+    handleChangeInput(maxStr)
+  }, [handleChangeInput, maxAfterGas, selectedAsset?.decimals])
 
   useEffect(() => {
     if (!amount) return setInput("")
-    const parsedDecimal = parseInput(input)
-    if (parsedDecimal.planck !== amount.planck) {
-      if (amount.planck > 0n) {
-        setInput(amount.toString())
+    const parsedPlanck = parseInput(input)
+    if (parsedPlanck !== amount) {
+      if (amount > 0n) {
+        setInput(planckToTokens(amount.toString(), selectedAsset?.decimals ?? 0) ?? "0")
       } else {
-        if (parsedDecimal.planck !== 0n) {
+        if (parsedPlanck !== 0n) {
           setInput("")
         }
       }
     }
-  }, [amount, input, parseInput])
+  }, [amount, input, parseInput, selectedAsset?.decimals])
 
   const trailingLabel = useMemo(() => {
     if (!shouldDisplayBalance) return null
-    if (!maxAfterGas) return <LoaderIcon className="animate-spin-slow" />
+    if (maxAfterGas === null) return <LoaderIcon className="animate-spin-slow" />
 
-    const maxAfterGasAmount = maxAfterGas.planck <= 0 ? "0" : maxAfterGas.toString()
-    const decimals = maxAfterGas.decimals ?? selectedAsset?.decimals
-    const symbol = maxAfterGas.currency ?? selectedAsset?.symbol
+    const maxAfterGasAmount =
+      maxAfterGas <= 0
+        ? "0"
+        : (planckToTokens(maxAfterGas.toString(), selectedAsset?.decimals ?? 0) ?? "0")
+    const symbol = selectedAsset?.symbol
 
-    if (!availableBalance || availableBalance.planck <= 0)
+    if (availableBalance === undefined || availableBalance <= 0)
       return <div>{t("Selected account has no {{symbol}}", { symbol })}</div>
     if (maxAfterGasAmount === "0")
       return <div>{t("Insufficient {{symbol}} balance for gas", { symbol })}</div>
     return (
       <div>
-        {t("Available:")} <Tokens amount={maxAfterGasAmount} decimals={decimals} symbol={symbol} />
+        {t("Available:")}{" "}
+        <Tokens amount={maxAfterGasAmount} decimals={selectedAsset?.decimals} symbol={symbol} />
       </div>
     )
   }, [availableBalance, maxAfterGas, selectedAsset, shouldDisplayBalance, t])
@@ -262,11 +268,11 @@ export const TokenAmountInput: FC<Props> = ({
             className={classNames(
               "rounded-xs border border-current px-3 py-1 text-[1rem] text-body-secondary",
               !maxAfterGas && "animate-pulse text-body-disabled",
-              maxAfterGas && maxAfterGas.planck <= 0 && "text-body-disabled",
-              maxAfterGas && maxAfterGas.planck > 0 && "hover:text-white"
+              maxAfterGas !== null && maxAfterGas <= 0 && "text-body-disabled",
+              maxAfterGas !== null && maxAfterGas > 0 && "hover:text-white"
             )}
             onClick={onSetMaxAmount}
-            disabled={!maxAfterGas || maxAfterGas.planck <= 0}
+            disabled={maxAfterGas === null || maxAfterGas <= 0}
           >
             {t("Max")}
           </button>

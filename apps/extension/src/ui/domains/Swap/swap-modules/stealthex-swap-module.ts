@@ -3,6 +3,7 @@ import { MultiAddress } from "@polkadot-api/descriptors"
 import { evmNativeTokenId, subAssetTokenId, subNativeTokenId } from "@talismn/balances-react"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
+import { planckToTokens } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { accounts$ } from "@ui/state/accounts"
 import {
@@ -27,7 +28,7 @@ import {
   takeWhile,
 } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
-import { Decimal } from "../swaps-port/Decimal"
+import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type BaseQuote,
   type EvmTxParams,
@@ -550,7 +551,7 @@ const getToAssets = async (
 const estimateGas = async (
   fromAsset: SwappableAssetWithDecimals,
   fromAddress: string,
-  _fromAmount: Decimal
+  _fromAmount: bigint
 ): Promise<QuoteFee | null> => {
   if (fromAsset.networkType === "evm") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
@@ -595,25 +596,27 @@ const estimateGas = async (
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
   const { fromAsset, toAsset, fromAmount, fromAddress } = params
 
-  if (!fromAsset || !toAsset || !fromAmount || fromAmount.planck === 0n) return null
+  if (!fromAsset || !toAsset || !fromAmount || fromAmount === 0n) return null
   const from: AssetContext = fromAsset.context.stealthex
   const to: AssetContext = toAsset.context.stealthex
   if (!from || !to) return null
+
+  const fromAmountHuman = planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"
 
   const routeHasCustomFee = await getRouteHasCustomFee(fromAsset, toAsset)
   const additional_fee_percent = routeHasCustomFee
     ? getAdditionalFeePercent({ fromAsset, toAsset })
     : undefined
   const range = await stealthexSdk.getRange({ route: { from, to }, additional_fee_percent })
-  if (range?.min.isGreaterThan(fromAmount.toString()))
+  if (range?.min.isGreaterThan(fromAmountHuman))
     throw new Error(`StealthEX minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
   try {
     // TODO: Return `null` or an error when getRange / getEstimate fails
-    // Error format: `return { decentralisationScore: DECENTRALISATION_SCORE, protocol: PROTOCOL, inputAmountBN: fromAmount.planck, outputAmountBN: 0n, error: '<error here>', timeInSec: 5 * 60, fees: [], providerLogo: LOGO, providerName: PROTOCOL_NAME, talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE), }`
+    // Error format: `return { decentralisationScore: DECENTRALISATION_SCORE, protocol: PROTOCOL, inputAmountBN: fromAmount, outputAmountBN: 0n, error: '<error here>', timeInSec: 5 * 60, fees: [], providerLogo: LOGO, providerName: PROTOCOL_NAME, talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE), }`
     const estimate = await stealthexSdk.getEstimate({
       route: { from, to },
-      amount: fromAmount.toNumber(),
+      amount: Number(fromAmountHuman),
       additional_fee_percent,
     })
 
@@ -622,8 +625,8 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
     const talismanFee = Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE)
     // add talisman fee
     const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
-      amount: BigNumber(fromAmount.planck.toString())
-        .times(10 ** -fromAmount.decimals)
+      amount: BigNumber(fromAmount.toString())
+        .times(10 ** -fromAsset.decimals)
         .times(talismanFee),
       name: "Talisman Fee",
       tokenId: fromAsset.id,
@@ -632,8 +635,8 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
     return {
       decentralisationScore: DECENTRALISATION_SCORE,
       protocol: PROTOCOL,
-      inputAmountBN: fromAmount.planck,
-      outputAmountBN: Decimal.fromUserInput(String(estimate), toAsset.decimals).planck,
+      inputAmountBN: fromAmount,
+      outputAmountBN: parseUserInputToPlanck(String(estimate), toAsset.decimals),
       // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
       timeInSec: 5 * 60,
       fees,
@@ -710,9 +713,11 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
     const additional_fee_percent = routeHasCustomFee
       ? getAdditionalFeePercent({ fromAsset, toAsset })
       : undefined
+    const fromAmountNum = Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0")
+
     const exchange = await stealthexSdk.createExchange({
       route: { from, to },
-      amount: fromAmount.toNumber(),
+      amount: fromAmountNum,
       address: formattedToAddress,
       additional_fee_percent,
     })
@@ -726,8 +731,7 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
       exchange.withdrawal.symbol !== to.symbol
     )
       throw new Error("Incorrect currencies from provider. Please try again later")
-    if (exchange.deposit.amount > fromAmount.toNumber())
-      throw new Error("Quote changed. Please try again.")
+    if (exchange.deposit.amount > fromAmountNum) throw new Error("Quote changed. Please try again.")
     if (exchange.withdrawal.address !== formattedToAddress)
       throw new Error("Incorrect destination address from provider. Please try again later")
 
@@ -753,7 +757,7 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
     if (!evmNetwork) throw new Error("Network not supported")
 
-    const depositAmount = Decimal.fromUserInput(
+    const depositAmount = parseUserInputToPlanck(
       String(exchange.deposit.expected_amount),
       fromAsset.decimals
     )
@@ -765,14 +769,14 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
       return publicClient.prepareTransactionRequest({
         chain: null,
         to: exchange.deposit.address as `0x${string}`,
-        value: depositAmount.planck,
+        value: depositAmount,
         account: fromAddress as `0x${string}`,
       })
 
     const data = encodeFunctionData({
       abi: erc20Abi,
       functionName: "transfer",
-      args: [exchange.deposit.address as `0x${string}`, depositAmount.planck],
+      args: [exchange.deposit.address as `0x${string}`, depositAmount],
     })
     return publicClient.prepareTransactionRequest({
       chain: null,
@@ -805,7 +809,7 @@ const getSubstratePayload = async (
 
     if (fromAsset.networkType !== "substrate") return null
 
-    const depositAmount = Decimal.fromUserInput(
+    const depositAmount = parseUserInputToPlanck(
       String(exchange.deposit.expected_amount),
       fromAsset.decimals
     )
@@ -818,14 +822,14 @@ const getSubstratePayload = async (
             {
               id: fromAsset.assetHubAssetId,
               target: MultiAddress.Id(exchange.deposit.address),
-              amount: depositAmount.planck,
+              amount: depositAmount,
             },
             { address: fromAddress }
           )
         : await sapi.getExtrinsicPayload(
             "Balances",
             allowReap ? "transfer_allow_death" : "transfer_keep_alive",
-            { dest: MultiAddress.Id(exchange.deposit.address), value: depositAmount.planck },
+            { dest: MultiAddress.Id(exchange.deposit.address), value: depositAmount },
             { address: fromAddress }
           )
 

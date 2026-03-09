@@ -156,7 +156,7 @@ const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | 
     const effectiveToAddress = toAddress ?? SWAP_PLACEHOLDER_ADDRESS
     const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
 
-    if (fromAmount.planck === 0n) return null
+    if (fromAmount === 0n) return null
     // assets not supported
     if (fromAsset?.networkType !== "evm" || toAsset?.networkType !== "evm") return null
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
@@ -169,7 +169,7 @@ const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | 
       toAddress: effectiveToAddress,
       fromChainId: +fromAsset.chainId,
       toChainId: +toAsset.chainId,
-      fromAmount: fromAmount.planck.toString(),
+      fromAmount: fromAmount.toString(),
       fromTokenAddress: fromAsset.contractAddress ?? zeroAddress,
       toTokenAddress: toAsset.contractAddress ?? zeroAddress,
       options: { integrator: "talisman", fee },

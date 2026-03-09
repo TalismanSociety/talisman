@@ -76,8 +76,8 @@ export const SwapForm = ({
 
   const insufficientBalance = useMemo(() => {
     if (!fastBalance?.balance) return undefined
-    return fromAmount.planck > fastBalance.balance.transferable.planck
-  }, [fastBalance, fromAmount.planck])
+    return fromAmount > fastBalance.balance.transferable
+  }, [fastBalance, fromAmount])
 
   return (
     // mb-52 is composed of:
@@ -146,7 +146,7 @@ export const SwapForm = ({
             primary
             disabled={
               !toAmount ||
-              toAmount.planck === 0n ||
+              toAmount === 0n ||
               !fromAddress ||
               !toAddress ||
               insufficientBalance !== false ||

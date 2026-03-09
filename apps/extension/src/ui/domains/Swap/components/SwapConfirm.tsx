@@ -1,3 +1,4 @@
+import { planckToTokens } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -22,9 +23,9 @@ export const SwapConfirm = ({
 
   const { fromAsset, toAsset, fromAmount, toAmount, fromAddress, toAddress } = useSwap()
   const currency = useSelectedCurrency()
-  const fromFiatAmount = useFiatValueForAmount({ amount: fromAmount, asset: fromAsset })
+  const fromFiatAmount = useFiatValueForAmount({ planck: fromAmount, asset: fromAsset })
   const toFiatAmount = useFiatValueForAmount({
-    amount: toAmount ?? undefined,
+    planck: toAmount ?? undefined,
     asset: toAsset,
   })
   const fromNetwork = fromAsset ? networks[fromAsset.chainId] : undefined
@@ -56,9 +57,8 @@ export const SwapConfirm = ({
               <div className="flex items-center gap-2">
                 <Tokens
                   className="whitespace-pre"
-                  amount={fromAmount.toString()}
-                  symbol={fromAmount.currency}
-                  decimals={fromAmount.decimals}
+                  amount={planckToTokens(fromAmount.toString(), fromAsset?.decimals ?? 0)}
+                  symbol={fromAsset?.symbol}
                   noCountUp
                 />
                 <div className="text-body-secondary">
@@ -114,9 +114,8 @@ export const SwapConfirm = ({
                     ~
                     <Tokens
                       className="whitespace-pre"
-                      amount={toAmount.toString()}
-                      symbol={toAmount.currency}
-                      decimals={toAmount.decimals}
+                      amount={planckToTokens(toAmount.toString(), toAsset?.decimals ?? 0)}
+                      symbol={toAsset?.symbol}
                       noCountUp
                     />
                   </div>

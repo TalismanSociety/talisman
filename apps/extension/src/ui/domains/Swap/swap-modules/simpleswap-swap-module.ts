@@ -9,6 +9,7 @@ import {
 } from "@talismn/balances-react"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
+import { planckToTokens } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { accounts$ } from "@ui/state/accounts"
 import {
@@ -32,7 +33,7 @@ import {
   takeWhile,
 } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
-import { Decimal } from "../swaps-port/Decimal"
+import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type BaseQuote,
   type EvmTxParams,
@@ -564,7 +565,7 @@ const getToAssets = async (
 const estimateGas = async (
   fromAsset: SwappableAssetWithDecimals,
   fromAddress: string,
-  _fromAmount: Decimal
+  _fromAmount: bigint
 ): Promise<QuoteFee | null> => {
   if (fromAsset.networkType === "evm") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
@@ -612,20 +613,22 @@ const getQuote = async (
 ): Promise<(BaseQuote & { data?: QuoteResponse }) | null> => {
   const { fromAsset, toAsset, fromAmount, fromAddress } = params
 
-  if (!fromAsset || !toAsset || !fromAmount || fromAmount.planck === 0n) return null
+  if (!fromAsset || !toAsset || !fromAmount || fromAmount === 0n) return null
   const currencyFrom = fromAsset.context.simpleswap?.symbol
   const currencyTo = toAsset.context.simpleswap?.symbol
   if (!currencyFrom || !currencyTo) return null
+
+  const fromAmountHuman = planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"
 
   const range = await simpleSwapSdk.getRange({
     currency_from: currencyFrom,
     currency_to: currencyTo,
   })
-  if (range?.min.isGreaterThan(fromAmount.toString()))
+  if (range?.min.isGreaterThan(fromAmountHuman))
     throw new Error(`SimpleSwap minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
   const output = await simpleSwapSdk.getEstimate({
-    amount: fromAmount.toString(),
+    amount: fromAmountHuman,
     currencyFrom,
     currencyTo,
     fixed: false,
@@ -638,7 +641,7 @@ const getQuote = async (
       return {
         decentralisationScore: DECENTRALISATION_SCORE,
         protocol: PROTOCOL,
-        inputAmountBN: fromAmount.planck,
+        inputAmountBN: fromAmount,
         outputAmountBN: 0n,
         error: output.description,
         timeInSec: 5 * 60,
@@ -654,8 +657,8 @@ const getQuote = async (
   const gasFee = fromAddress ? await estimateGas(fromAsset, fromAddress, fromAmount) : null
   // add talisman fee
   const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
-    amount: BigNumber(fromAmount.planck.toString())
-      .times(10 ** -fromAmount.decimals)
+    amount: BigNumber(fromAmount.toString())
+      .times(10 ** -fromAsset.decimals)
       .times(talismanFee),
     name: "Talisman Fee",
     tokenId: fromAsset.id,
@@ -664,8 +667,8 @@ const getQuote = async (
   return {
     decentralisationScore: DECENTRALISATION_SCORE,
     protocol: PROTOCOL,
-    inputAmountBN: fromAmount.planck,
-    outputAmountBN: Decimal.fromUserInput(output, toAsset.decimals).planck,
+    inputAmountBN: fromAmount,
+    outputAmountBN: parseUserInputToPlanck(output, toAsset.decimals),
     // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
     timeInSec: 5 * 60,
     fees,
@@ -745,7 +748,7 @@ const createExchange = async (params: ExchangeParams): Promise<Exchange | undefi
     const exchange = await simpleSwapSdk.createExchange({
       fixed: false,
       address_to: formattedToAddress,
-      amount: fromAmount.toNumber(),
+      amount: Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"),
       currency_from,
       currency_to,
       extra_id_to: "",
@@ -779,7 +782,10 @@ const createExchange = async (params: ExchangeParams): Promise<Exchange | undefi
       )
       throw new Error("Incorrect currencies from provider. Please try again later")
     }
-    if (+exchange.expected_amount > fromAmount.toNumber())
+    if (
+      +exchange.expected_amount >
+      Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0")
+    )
       throw new Error("Quote changed. Please try again.")
     if (exchange.address_to !== formattedToAddress)
       throw new Error("Incorrect destination address from provider. Please try again later")
@@ -806,7 +812,7 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
     if (!evmNetwork) throw new Error("Network not supported")
 
-    const depositAmount = Decimal.fromUserInput(exchange.expected_amount, fromAsset.decimals)
+    const depositAmount = parseUserInputToPlanck(exchange.expected_amount, fromAsset.decimals)
 
     const publicClient = await getPublicClient(evmNetwork.id)
     if (!publicClient) throw new Error("Missing public client")
@@ -815,14 +821,14 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
       return publicClient.prepareTransactionRequest({
         chain: null,
         to: exchange.address_from as `0x${string}`,
-        value: depositAmount.planck,
+        value: depositAmount,
         account: fromAddress as `0x${string}`,
       })
 
     const data = encodeFunctionData({
       abi: erc20Abi,
       functionName: "transfer",
-      args: [exchange.address_from as `0x${string}`, depositAmount.planck],
+      args: [exchange.address_from as `0x${string}`, depositAmount],
     })
     return publicClient.prepareTransactionRequest({
       chain: null,
@@ -855,7 +861,7 @@ const getSubstratePayload = async (
 
     if (fromAsset.networkType !== "substrate") return null
 
-    const depositAmount = Decimal.fromUserInput(exchange.expected_amount, fromAsset.decimals)
+    const depositAmount = parseUserInputToPlanck(exchange.expected_amount, fromAsset.decimals)
 
     const payload =
       fromAsset.assetHubAssetId !== undefined
@@ -865,14 +871,14 @@ const getSubstratePayload = async (
             {
               id: fromAsset.assetHubAssetId,
               target: MultiAddress.Id(exchange.address_from),
-              amount: depositAmount.planck,
+              amount: depositAmount,
             },
             { address: fromAddress }
           )
         : await sapi.getExtrinsicPayload(
             "Balances",
             allowReap ? "transfer_allow_death" : "transfer_keep_alive",
-            { dest: MultiAddress.Id(exchange.address_from), value: depositAmount.planck },
+            { dest: MultiAddress.Id(exchange.address_from), value: depositAmount },
             { address: fromAddress }
           )
 

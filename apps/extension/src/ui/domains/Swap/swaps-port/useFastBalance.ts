@@ -3,7 +3,6 @@ import { useMemo } from "react"
 import { createPublicClient, erc20Abi, fallback, http, zeroAddress } from "viem"
 import type { Chain as ViemChain } from "viem/chains"
 import { allEvmChains } from "./allEvmChains"
-import { Decimal } from "./Decimal"
 import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
 import { useSubstrateBalance } from "./useSubstrateBalance"
 
@@ -62,10 +61,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
 
       // native token
       if (!tokenAddress || tokenAddress === zeroAddress) {
-        const balance = await client.getBalance({ address: address as `0x${string}` })
-        return Decimal.fromPlanck(balance, chain.nativeCurrency.decimals, {
-          currency: chain.nativeCurrency.symbol,
-        })
+        return await client.getBalance({ address: address as `0x${string}` })
       }
 
       // erc20 token
@@ -77,25 +73,12 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
             address: tokenAddress,
             args: [address as `0x${string}`],
           },
-          {
-            abi: erc20Abi,
-            functionName: "symbol",
-            address: tokenAddress,
-          },
-          {
-            abi: erc20Abi,
-            functionName: "decimals",
-            address: tokenAddress,
-          },
         ],
       })
 
-      const [balanceCall, symbolCall, decimalsCall] = calls
-      const symbol = symbolCall.status === "success" ? symbolCall.result : "Unknown"
-      const decimals = decimalsCall.status === "success" ? decimalsCall.result : 18
-
+      const [balanceCall] = calls
       if (balanceCall.status === "failure") return undefined
-      return Decimal.fromPlanck(balanceCall.result as bigint, decimals, { currency: symbol })
+      return balanceCall.result as bigint
     },
     enabled: props?.type === "evm" && !!networkId && !!address,
     refetchInterval: 15_000,

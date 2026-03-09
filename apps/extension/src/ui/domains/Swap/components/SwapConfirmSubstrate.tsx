@@ -43,17 +43,16 @@ export const SwapConfirmSubstrate = ({
 
   const insufficientBalance = useMemo(() => {
     if (!fastBalance?.balance) return undefined
-    return fromAmount.planck > fastBalance.balance.transferable.planck
-  }, [fastBalance, fromAmount.planck])
+    return fromAmount > fastBalance.balance.transferable
+  }, [fastBalance, fromAmount])
 
   const { data: sapi } = useScaleApi(
     fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
   )
   const allowReap = useMemo(
     () =>
-      fastBalance?.balance?.stayAlive.planck !== undefined &&
-      fromAmount.planck > fastBalance.balance.stayAlive.planck,
-    [fastBalance, fromAmount.planck]
+      fastBalance?.balance?.stayAlive !== undefined && fromAmount > fastBalance.balance.stayAlive,
+    [fastBalance, fromAmount]
   )
 
   // exchangeAtom and substratePayloadAtom are replaced with useQuery
@@ -65,7 +64,7 @@ export const SwapConfirmSubstrate = ({
       toAsset?.id,
       fromAddress,
       toAddress,
-      fromAmount.planck.toString(),
+      fromAmount.toString(),
       allowReap,
     ],
     queryFn: async ({ signal }) => {
@@ -129,8 +128,8 @@ export const SwapConfirmSubstrate = ({
           exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
-          fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.planck.toString(),
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
           to: toAddress,
         }
       case "stealthex":
@@ -139,8 +138,8 @@ export const SwapConfirmSubstrate = ({
           exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
-          fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.planck.toString(),
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
           to: toAddress,
         }
       // NOTE: Lifi doesn't support substrate, we don't need to handle it here
@@ -152,7 +151,7 @@ export const SwapConfirmSubstrate = ({
     return (
       !isReady ||
       !toAmount ||
-      toAmount.planck === 0n ||
+      toAmount === 0n ||
       !fromAddress ||
       !toAddress ||
       insufficientBalance !== false ||

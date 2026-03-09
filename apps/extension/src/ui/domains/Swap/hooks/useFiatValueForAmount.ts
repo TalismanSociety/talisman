@@ -1,19 +1,19 @@
+import { planckToTokens } from "@talismn/util"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import type { Decimal } from "../swaps-port/Decimal"
 import { useTokenRatesFromUsd } from "../swaps-port/useTokenRatesFromUsd"
 
 type UseFiatValueForAmountProps = {
-  amount?: Decimal
+  planck?: bigint
   asset?: SwappableAssetWithDecimals | null
   usdOverride?: number
 }
 export const useFiatValueForAmount = ({
-  amount,
+  planck,
   asset,
   usdOverride,
 }: UseFiatValueForAmountProps) => {
@@ -32,9 +32,10 @@ export const useFiatValueForAmount = ({
 
   return useMemo(() => {
     if (!asset) return null
-    if (!bestGuessRate || amount === undefined) return fiatOverride?.[currency]?.price
+    if (!bestGuessRate || planck === undefined) return fiatOverride?.[currency]?.price
     const rateInCurrency = bestGuessRate[currency]?.price
     if (!rateInCurrency) return null
-    return +amount?.toString() * rateInCurrency
-  }, [amount, bestGuessRate, currency, fiatOverride, asset])
+    const tokenAmount = Number(planckToTokens(planck.toString(), asset.decimals) ?? "0")
+    return tokenAmount * rateInCurrency
+  }, [planck, asset, bestGuessRate, currency, fiatOverride])
 }
