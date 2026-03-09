@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom"
 import type { Hex } from "viem"
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
-import { saveAddressForQuest } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
@@ -167,13 +166,6 @@ export const SwapConfirmSubstrate = ({
   const onSubmitted = useCallback(
     (hash: Hex) => {
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
-      if (
-        txInfo &&
-        ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type) &&
-        fromAddress &&
-        swapModule?.protocol
-      )
-        saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
       closeSwapTokensModal()
       resetForm()
@@ -181,7 +173,7 @@ export const SwapConfirmSubstrate = ({
       if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
       navigate("/tx-history")
     },
-    [closeSwapTokensModal, fromAddress, navigate, resetForm, swapModule?.protocol, toAsset, txInfo]
+    [closeSwapTokensModal, navigate, resetForm, toAsset, txInfo]
   )
 
   return (

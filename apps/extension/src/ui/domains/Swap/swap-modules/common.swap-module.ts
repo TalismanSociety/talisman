@@ -4,7 +4,6 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
@@ -202,19 +201,4 @@ export const getTokenIdForSwappableAsset = (
     default:
       return "not-supported"
   }
-}
-
-export const saveAddressForQuest = async (
-  swapId: string,
-  fromAddress: string,
-  provider: string
-) => {
-  const { questApi } = await remoteConfigStore.get("swaps")
-  if (!questApi) return
-
-  await fetch(`${questApi}/api/quests/swap`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ swapId, fromAddress, provider }),
-  })
 }

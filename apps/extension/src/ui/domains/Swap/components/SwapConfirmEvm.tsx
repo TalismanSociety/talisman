@@ -19,7 +19,6 @@ import { useNavigate } from "react-router-dom"
 import { EstimateGasExecutionError } from "viem"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
-import { saveAddressForQuest } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
@@ -195,13 +194,6 @@ export const SwapConfirmEvm = ({
       const hash = await api.ethSignAndSend(fromAsset?.chainId.toString(), serialized, txInfo)
 
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
-      if (
-        txInfo &&
-        (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") &&
-        fromAddress &&
-        swapModule?.protocol
-      )
-        saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
       closeSwapTokensModal()
       resetForm()
@@ -218,17 +210,7 @@ export const SwapConfirmEvm = ({
       })
     }
     setIsProcessing(false)
-  }, [
-    closeSwapTokensModal,
-    fromAddress,
-    fromAsset,
-    navigate,
-    resetForm,
-    swapModule?.protocol,
-    toAsset,
-    transaction,
-    txInfo,
-  ])
+  }, [closeSwapTokensModal, fromAsset, navigate, resetForm, toAsset, transaction, txInfo])
 
   const sendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -246,13 +228,6 @@ export const SwapConfirmEvm = ({
 
         if (txInfo && txInfo.type === "swap-simpleswap")
           saveIdForMonitoring(txInfo.exchangeId, hash)
-        if (
-          txInfo &&
-          (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") &&
-          fromAddress &&
-          swapModule?.protocol
-        )
-          saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
         closeSwapTokensModal()
         resetForm()
@@ -270,17 +245,7 @@ export const SwapConfirmEvm = ({
       }
       setIsProcessing(false)
     },
-    [
-      closeSwapTokensModal,
-      fromAddress,
-      fromAsset,
-      navigate,
-      resetForm,
-      swapModule?.protocol,
-      transaction,
-      txInfo,
-      toAsset,
-    ]
+    [closeSwapTokensModal, fromAsset, navigate, resetForm, transaction, txInfo, toAsset]
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])
