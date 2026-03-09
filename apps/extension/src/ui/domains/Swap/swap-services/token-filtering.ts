@@ -5,13 +5,11 @@ import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import type { TFunction } from "i18next"
 import { erc20Abi, isAddress } from "viem"
-import type { Chain as ViemChain } from "viem/chains"
 
 import type {
   SwappableAssetBaseType,
   SwappableAssetWithDecimals,
 } from "../swap-modules/common.swap-module"
-import { allEvmChains } from "../swaps-port/allEvmChains"
 import {
   fetchCoingeckoAssetPlatforms,
   fetchCoingeckoCoinByAddress,
@@ -177,9 +175,6 @@ async function lookupErc20Token(
   chainId: number,
   evmNetworks: { id: string }[]
 ): Promise<SwappableAssetWithDecimals | null> {
-  const chain: ViemChain | undefined = Object.values(allEvmChains).find((c) => c?.id === chainId)
-  if (!chain) return null
-
   const network = evmNetworks.find((n) => n.id.toString() === chainId.toString())
   if (!network) return null
 
@@ -240,19 +235,9 @@ export async function filterAndSortTokens(
     )
 
     if (isSearchingAddress && knownFilteredTokens.length === 0 && evmNetworks) {
+      const searchChainIds = [1, 42161, 8453, 56, 137, 10, 81457, 324]
       const allOnChainTokens = await Promise.all(
-        [
-          allEvmChains.mainnet,
-          allEvmChains.arbitrum,
-          allEvmChains.base,
-          allEvmChains.bsc,
-          allEvmChains.polygon,
-          allEvmChains.optimism,
-          allEvmChains.blast,
-          allEvmChains.zkSync,
-        ]
-          .flatMap((chain) => (chain ? chain : []))
-          .map((chain: ViemChain) => lookupErc20Token(search, chain.id, evmNetworks))
+        searchChainIds.map((chainId) => lookupErc20Token(search, chainId, evmNetworks))
       )
       return allOnChainTokens.filter((tk): tk is SwappableAssetWithDecimals => tk !== null)
     }

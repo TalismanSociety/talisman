@@ -5,7 +5,6 @@ import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { encodeFunctionData, erc20Abi } from "viem"
-import type { Chain as ViemChain } from "viem/chains"
 
 import type {
   ApprovalInfo,
@@ -13,7 +12,6 @@ import type {
   SwappableAssetWithDecimals,
 } from "../swap-modules/common.swap-module"
 import type { swapModules } from "../swaps.api"
-import { allEvmChains } from "../swaps-port/allEvmChains"
 
 /**
  * Manages ERC20 approval state for the selected swap module.
@@ -82,11 +80,6 @@ export const useSwapErc20Approval = (params: {
     queryFn: async () => {
       if (!approvalInfo) return null
 
-      const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-        (c) => c?.id === approvalInfo.chainId
-      )
-      if (!chain) return null
-
       const network = evmNetworks.find((n) => n.id.toString() === approvalInfo.chainId.toString())
       if (!network) return null
 
@@ -104,7 +97,7 @@ export const useSwapErc20Approval = (params: {
       })
 
       if (allowance >= approvalInfo.amount) return null
-      return { ...approvalInfo, chain }
+      return { ...approvalInfo }
     },
     enabled: !!approvalInfo,
   })
@@ -121,7 +114,7 @@ export const useSwapErc20Approval = (params: {
     })
 
     return {
-      chain: approval.chain,
+      chain: null,
       to: approval.tokenAddress as `0x${string}`,
       data,
       value: 0n,

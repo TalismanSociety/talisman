@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
+import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
-import { createPublicClient, erc20Abi, fallback, http, zeroAddress } from "viem"
-import type { Chain as ViemChain } from "viem/chains"
-import { allEvmChains } from "./allEvmChains"
+import { erc20Abi, zeroAddress } from "viem"
 import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
 import { useSubstrateBalance } from "./useSubstrateBalance"
 
@@ -39,25 +39,16 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
   const address = props?.type === "evm" ? props.address : undefined
   const tokenAddress = props?.type === "evm" ? props.tokenAddress : undefined
 
+  const evmNetwork = useNetworkById(networkId?.toString(), "ethereum")
+
   const { data: evmBalance } = useQuery({
     queryKey: ["swap-evm-balance", networkId, address, tokenAddress],
     queryFn: async () => {
-      if (!networkId || !address) return undefined
+      if (!networkId || !address || !evmNetwork) return undefined
 
-      const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-        (c) => c?.id === networkId
-      )
-      const rpcUrls = chain?.rpcUrls.default.http
-      if (!chain || !rpcUrls?.length) return undefined
-
-      const client = createPublicClient({
-        transport: fallback(
-          rpcUrls.map((rpc) => http(rpc, { retryCount: 0 })),
-          { retryCount: 0 }
-        ),
-        chain,
-        batch: { multicall: true },
-      })
+      // biome-ignore lint/suspicious/noExplicitAny: evmNetwork type mismatch between chaindata and extension
+      const client = getExtensionPublicClient(evmNetwork as any)
+      if (!client) return undefined
 
       // native token
       if (!tokenAddress || tokenAddress === zeroAddress) {
@@ -65,7 +56,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
       }
 
       // erc20 token
-      const calls = await client.multicall({
+      const [balanceCall] = await client.multicall({
         contracts: [
           {
             abi: erc20Abi,
@@ -76,11 +67,10 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
         ],
       })
 
-      const [balanceCall] = calls
       if (balanceCall.status === "failure") return undefined
       return balanceCall.result as bigint
     },
-    enabled: props?.type === "evm" && !!networkId && !!address,
+    enabled: props?.type === "evm" && !!networkId && !!address && !!evmNetwork,
     refetchInterval: 15_000,
   })
 
