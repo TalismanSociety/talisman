@@ -38,6 +38,7 @@ import type { Account, Mnemonic } from "@core/domains/keyring/exports"
 import type { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
 import type { RequestSetVerifierCertificateMnemonic } from "@core/domains/mnemonics/types"
 import type { NftData } from "@core/domains/nfts/exports"
+import type { ResponseQueryCacheGet } from "@core/domains/queryCache/types"
 import type { ConfirmedExternalAddresses } from "@core/domains/sendFunds/types"
 import type {
   SignerPayloadGenesisHash,
@@ -313,4 +314,14 @@ export default interface MessageTypes {
 
   confirmedAddressesSubscribe: (cb: (data: ConfirmedExternalAddresses) => void) => UnsubscribeFn
   addConfirmedAddress: (tokenId: string, address: string) => Promise<boolean>
+
+  // query cache
+  queryCacheGet: (key: string) => Promise<ResponseQueryCacheGet>
+  queryCacheSet: (
+    key: string,
+    data: unknown,
+    purgeAt: number,
+    dataUpdatedAt: number
+  ) => Promise<boolean>
+  queryCacheRemove: (key: string) => Promise<boolean>
 }

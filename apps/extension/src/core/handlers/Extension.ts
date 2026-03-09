@@ -3,6 +3,7 @@ import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import { isAccountOwned } from "@talismn/keyring"
 
 import { db } from "../db"
+import { queryCacheStore } from "../db/queryCache"
 import { AccountsHandler } from "../domains/accounts"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
@@ -20,6 +21,7 @@ import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
 import { NftsHandler } from "../domains/nfts"
+import { QueryCacheHandler } from "../domains/queryCache/handler"
 import { SendFundsHandler } from "../domains/sendFunds/handler"
 import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
@@ -65,6 +67,7 @@ export default class Extension extends ExtensionHandler {
       bittensor: new BittensorHandler(stores),
       gandalf: new GandalfHandler(stores),
       sendFunds: new SendFundsHandler(stores),
+      queryCache: new QueryCacheHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
@@ -195,6 +198,10 @@ export default class Extension extends ExtensionHandler {
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
+
+    // periodically purge expired query cache entries
+    queryCacheStore.purgeExpired()
+    setInterval(() => queryCacheStore.purgeExpired(), 5 * 60_000)
   }
 
   public async handle<TMessageType extends MessageTypes>(
