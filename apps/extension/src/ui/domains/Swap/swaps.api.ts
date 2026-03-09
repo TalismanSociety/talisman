@@ -18,9 +18,9 @@ import type { Decimal } from "./swaps-port/Decimal"
 
 // ─── Re-exports (backward compatibility) ────────────────────────────
 
-export { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
-export { useSwapQuoteManager as useSwapQuotes } from "./hooks/useSwapQuoteManager"
-export { filterAndSortTokens, getTokenTabs } from "./swap-services/token-filtering"
+// export { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
+// export { useSwapQuoteManager as useSwapQuotes } from "./hooks/useSwapQuoteManager"
+// export { filterAndSortTokens, getTokenTabs } from "./swap-services/token-filtering"
 
 // ─── Constants ──────────────────────────────────────────────────────
 

@@ -7,7 +7,7 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 const dataCache = new Map<string, { data: any; timestamp: number }>()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
-export async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
   const cached = dataCache.get(key)
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) return cached.data as T
   const data = await fetcher()

@@ -88,18 +88,6 @@ export type QuoteResponse = {
   }
 }
 
-export type SwapActivity<TData> = {
-  protocol: SupportedSwapProtocol
-  timestamp: number
-  data: TData
-  depositRes?: {
-    chainId: string | number
-    extrinsicId?: string
-    txHash?: string
-    error?: string
-  }
-}
-
 export type SwapView = "form" | "approve-recipient" | "approve-erc20" | "confirm"
 
 // --- Param types for SwapModule methods ---

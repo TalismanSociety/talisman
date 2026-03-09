@@ -172,7 +172,7 @@ async function getCoingeckoCategoryTokens(
 
 // ─── ERC-20 on-chain lookup ─────────────────────────────────────────
 
-export async function lookupErc20Token(
+async function lookupErc20Token(
   address: string,
   chainId: number,
   evmNetworks: { id: string }[]
