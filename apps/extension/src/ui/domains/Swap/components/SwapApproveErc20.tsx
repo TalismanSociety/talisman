@@ -17,7 +17,7 @@ export const SwapApproveErc20 = () => {
   const { t } = useTranslation()
 
   const {
-    erc20Approval: { data: approvalData, loading: approvalLoading, approveTxLoadable },
+    erc20Approval: { data: approvalData, loading: approvalLoading, approveTx },
     swapView,
     setSwapView,
     setApprovalCounter,
@@ -50,7 +50,7 @@ export const SwapApproveErc20 = () => {
   const [isPayloadLocked, setIsPayloadLocked] = useState(false)
 
   const { transaction } = useEthTransaction(
-    approveTxLoadable?.state === "hasData" ? (approveTxLoadable.data ?? undefined) : undefined,
+    approveTx ?? undefined,
     fromAsset?.chainId.toString(),
     isPayloadLocked
   )
@@ -131,13 +131,13 @@ export const SwapApproveErc20 = () => {
   const [triggeredOnce, setTriggeredOnce] = useState(false)
   useEffect(() => {
     if (account?.type === "ledger-ethereum") return
-    if (!isReady || approveTxLoadable?.state !== "hasData") return
+    if (!isReady || !approveTx) return
     if (isApproving) return
     if (triggeredOnce) return
 
     setTriggeredOnce(true)
     send()
-  }, [account?.type, approveTxLoadable?.state, isApproving, isReady, send, triggeredOnce])
+  }, [account?.type, approveTx, isApproving, isReady, send, triggeredOnce])
 
   return (
     <>
@@ -173,14 +173,12 @@ export const SwapApproveErc20 = () => {
 
       {account?.type === "ledger-ethereum" ? (
         <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-          {isReady && approveTxLoadable?.state === "hasData" ? (
+          {isReady && approveTx ? (
             <SignHardwareEthereum
               evmNetworkId={fromAsset?.chainId.toString()}
               account={account}
               method="eth_sendTransaction"
-              payload={
-                isReady && approveTxLoadable?.state === "hasData" ? approveTxLoadable.data : null
-              }
+              payload={isReady && approveTx ? approveTx : null}
               onSigned={sendSigned}
               onSentToDevice={onSentToDevice}
               containerId="SwapTokensModalDialog"

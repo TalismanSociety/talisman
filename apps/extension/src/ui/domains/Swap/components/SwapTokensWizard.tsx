@@ -8,7 +8,7 @@ import { SwapForm } from "./SwapForm"
 import { SwapHeader } from "./SwapHeader"
 
 export const SwapTokensWizard = () => {
-  const { swapView, fromAsset, fromAddress, quotesLoadable } = useSwap()
+  const { swapView, fromAsset, fromAddress } = useSwap()
 
   const fastBalance = useFastBalance(
     useMemo(() => {
@@ -35,9 +35,6 @@ export const SwapTokensWizard = () => {
       return undefined
     }, [fromAsset, fromAddress])
   )
-
-  // keep quotes loaded when switching between swap views
-  void quotesLoadable
 
   return (
     <div id="SwapTokensModalDialog" className="relative flex h-full w-full flex-col gap-4">

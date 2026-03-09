@@ -3,7 +3,7 @@ import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useSwap } from "../SwapProvider"
@@ -25,8 +25,7 @@ export const SwapForm = ({
 
   const {
     setSwapView,
-    refreshQuotes,
-    selectedQuoteLoadable: quote,
+    selectedQuote,
     fromAddress,
     fromAsset,
     setFromAsset,
@@ -37,17 +36,15 @@ export const SwapForm = ({
     toAddress,
     toAsset,
     setToAsset,
-    toAmountLoadable: toAmount,
-    fromAssetsLoadable: fromAssets,
-    toAssetsLoadable: toAssets,
-    quotesLoadable: quotes,
+    toAmount,
+    fromAssets,
+    toAssets,
+    isLoadingQuotes,
+    isAllQuotesSettled,
     reverse,
     erc20Approval: { data: approvalData, loading: approvalLoading },
   } = useSwap()
 
-  const [cachedToAmount, setCachedToAmount] = useState(
-    toAmount.state === "hasData" ? toAmount.data : undefined
-  )
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
 
   const accountsMap = useAccountsMap()
@@ -60,16 +57,6 @@ export const SwapForm = ({
   useEffect(() => {
     if (approveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
   }, [approveRecipient, setSwapView, toIsExternal, toIsWatched])
-
-  // reset when any of the inputs change
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
-  useEffect(() => {
-    setCachedToAmount(undefined)
-  }, [fromAmount, fromAsset, toAsset])
-
-  useEffect(() => {
-    if (toAmount.state === "hasData" && toAmount.data) setCachedToAmount(toAmount.data)
-  }, [toAmount])
 
   const handleChangeFromAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
@@ -92,17 +79,6 @@ export const SwapForm = ({
     return fromAmount.planck > fastBalance.balance.transferable.planck
   }, [fastBalance, fromAmount.planck])
 
-  // refresh quote every 20 seconds
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
-  useEffect(() => {
-    if (quotes.state === "loading") return
-    if (quotes.state === "hasData") {
-      if (quotes.data?.some((d) => d.state === "loading")) return
-    }
-    const id = setInterval(() => refreshQuotes(), 20_000)
-    return () => clearInterval(id)
-  }, [])
-
   return (
     // mb-52 is composed of:
     //     mb-44 (the height of the `Review` button and its container)
@@ -115,7 +91,7 @@ export const SwapForm = ({
 
         <TokenAmountInput
           hideBalance={fromAsset?.id === "btc-native"}
-          assets={fromAssets.state === "hasData" ? fromAssets.data : undefined}
+          assets={fromAssets}
           amount={fromAmount}
           onChangeAmount={setFromAmount}
           leadingLabel={t("You're sending")}
@@ -126,18 +102,13 @@ export const SwapForm = ({
           stayAliveBalance={fastBalance?.balance?.stayAlive}
           onChangeAsset={handleChangeFromAsset}
           disableBtc
-          maxNativeTokenGasBuffer={
-            (quote?.state === "hasData" &&
-              quote?.data?.quote?.state === "hasData" &&
-              quote?.data?.quote?.data?.maxNativeTokenGasBuffer) ||
-            undefined
-          }
+          maxNativeTokenGasBuffer={selectedQuote?.maxNativeTokenGasBuffer || undefined}
           priorityMode="sell"
         />
         <ReverseButton />
         <TokenAmountInput
-          amount={cachedToAmount ?? undefined}
-          assets={toAssets.state === "hasData" ? toAssets.data : undefined}
+          amount={toAmount ?? undefined}
+          assets={toAssets}
           leadingLabel={t("You're receiving")}
           selectedAsset={toAsset}
           onChangeAsset={handleChangeToAsset}
@@ -174,20 +145,18 @@ export const SwapForm = ({
             className="!w-full !rounded"
             primary
             disabled={
-              toAmount.state !== "hasData" ||
-              !toAmount.data ||
-              toAmount.data.planck === 0n ||
+              !toAmount ||
+              toAmount.planck === 0n ||
               !fromAddress ||
               !toAddress ||
               insufficientBalance !== false ||
-              quotes.state !== "hasData" ||
-              quotes.data?.some((d) => d.state === "loading") ||
+              isLoadingQuotes ||
+              !isAllQuotesSettled ||
               approvalLoading
             }
             onClick={() => {
-              if (quote.state !== "hasData" || !quote.data) return
+              if (!selectedQuote) return
               if (!fastBalance?.balance) return
-              if (quote.data.quote.state !== "hasData" || !quote.data.quote.data) return
 
               // if toAddress isn't an owned account, show a warning to the user
               if (toIsExternal || toIsWatched) return setSwapView("approve-recipient")

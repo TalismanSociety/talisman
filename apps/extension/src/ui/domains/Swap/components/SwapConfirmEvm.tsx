@@ -4,6 +4,7 @@ import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { LoaderIcon } from "@talismn/icons"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
@@ -37,15 +38,12 @@ export const SwapConfirmEvm = ({
     fromAsset,
     toAsset,
     fromAmount,
-    toAmountLoadable: toAmount,
-    selectedModuleLoadable,
-    selectedQuoteLoadable,
+    toAmount,
+    selectedModule: swapModule,
+    selectedQuote,
     selectedSubProtocol: subProtocol,
     resetForm,
   } = useSwap()
-
-  const swapModule =
-    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
 
   const [isReady, setIsReady] = useState(false)
   useEffect(() => {
@@ -57,110 +55,86 @@ export const SwapConfirmEvm = ({
 
   const account = useAccountByAddress(fromAddress)
 
-  // Fetch exchange + EVM transaction via async calls on the swap module
-  type ExchangeLoadable = import("../swaps.api").Loadable<{ id: string } | undefined>
-  type EvmTxLoadable = import("../swaps.api").Loadable<
-    import("viem").TransactionRequest | undefined
-  >
-  const [exchangeLoadable, setExchangeLoadable] = useState<ExchangeLoadable>({ state: "loading" })
-  const [evmTxLoadable, setEvmTxLoadable] = useState<EvmTxLoadable>({ state: "loading" })
+  // Fetch exchange + EVM transaction via useQuery
+  const exchangeAndTxQuery = useQuery({
+    queryKey: [
+      "swap-exchange-evm",
+      swapModule?.protocol,
+      fromAsset?.id,
+      toAsset?.id,
+      fromAddress,
+      toAddress,
+      fromAmount.planck.toString(),
+      selectedQuote?.protocol,
+    ],
+    queryFn: async ({ signal }) => {
+      if (!swapModule || !fromAsset || !toAsset || !fromAddress || !toAddress)
+        throw new Error("Missing params")
 
-  useEffect(() => {
-    if (
-      !swapModule ||
-      !fromAsset ||
-      !toAsset ||
-      !fromAddress ||
-      !toAddress ||
-      swapView !== "confirm"
-    )
-      return
-    if (!isReady) return
+      const exchange = await swapModule.createExchange({
+        fromAsset,
+        toAsset,
+        fromAmount,
+        fromAddress,
+        toAddress,
+      })
+      if (signal.aborted) throw new Error("Aborted")
 
-    const controller = new AbortController()
-    setExchangeLoadable({ state: "loading" })
-    setEvmTxLoadable({ state: "loading" })
-
-    const run = async () => {
-      try {
-        const exchange = await swapModule.createExchange({
-          fromAsset,
-          toAsset,
-          fromAmount,
-          fromAddress,
-          toAddress,
-        })
-        if (controller.signal.aborted) return
-        setExchangeLoadable({ state: "hasData", data: exchange })
-
-        if (fromAsset.networkType !== "evm") return
-
-        // For modules like LiFi where createExchange returns undefined,
-        // use the selected quote data so getEvmTransaction can build the tx
-        const selectedQuote =
-          selectedQuoteLoadable.state === "hasData" &&
-          selectedQuoteLoadable.data?.quote.state === "hasData"
-            ? selectedQuoteLoadable.data.quote.data
-            : undefined
-
-        const evmTx = await swapModule.getEvmTransaction({
+      let evmTx: import("viem").TransactionRequest | undefined
+      if (fromAsset.networkType === "evm") {
+        evmTx = await swapModule.getEvmTransaction({
           fromAsset,
           fromAddress,
           exchange: exchange ?? selectedQuote,
         })
-        if (controller.signal.aborted) return
-        setEvmTxLoadable({ state: "hasData", data: evmTx })
-      } catch (error) {
-        if (controller.signal.aborted) return
-        setExchangeLoadable({ state: "hasError", error })
-        setEvmTxLoadable({ state: "hasError", error })
       }
-    }
-    run()
+      if (signal.aborted) throw new Error("Aborted")
 
-    return () => controller.abort()
-  }, [
-    swapModule,
-    fromAsset,
-    toAsset,
-    fromAddress,
-    toAddress,
-    fromAmount,
-    isReady,
-    swapView,
-    selectedQuoteLoadable,
-  ])
+      return { exchange, evmTx }
+    },
+    enabled:
+      !!swapModule &&
+      !!fromAsset &&
+      !!toAsset &&
+      !!fromAddress &&
+      !!toAddress &&
+      swapView === "confirm" &&
+      isReady,
+    retry: false,
+  })
+
+  const exchange = exchangeAndTxQuery.data?.exchange
+  const evmTx = exchangeAndTxQuery.data?.evmTx
+  const isExchangeLoading = exchangeAndTxQuery.isLoading
+  const exchangeError = exchangeAndTxQuery.error
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!fromAsset) return
     if (!toAsset) return
-    if (toAmount.state !== "hasData") return
-    if (toAmount.data === null) return
+    if (!toAmount) return
     if (toAddress === null) return
 
     switch (swapModule?.protocol) {
       case "simpleswap":
-        if (exchangeLoadable.state !== "hasData") return
-        if (!exchangeLoadable.data) return
+        if (!exchange) return
         return {
           type: "swap-simpleswap",
-          exchangeId: exchangeLoadable.data.id,
+          exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
           fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.data.planck.toString(),
+          toAmount: toAmount.planck.toString(),
           to: toAddress,
         }
       case "stealthex":
-        if (exchangeLoadable.state !== "hasData") return
-        if (!exchangeLoadable.data) return
+        if (!exchange) return
         return {
           type: "swap-stealthex",
-          exchangeId: exchangeLoadable.data.id,
+          exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
           fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.data.planck.toString(),
+          toAmount: toAmount.planck.toString(),
           to: toAddress,
         }
       case "lifi":
@@ -171,13 +145,13 @@ export const SwapConfirmEvm = ({
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
           fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.data.planck.toString(),
+          toAmount: toAmount.planck.toString(),
           to: toAddress,
         }
     }
     throw new Error(`swapModule ${swapModule?.protocol} not supported`)
   }, [
-    exchangeLoadable,
+    exchange,
     fromAmount.planck,
     fromAsset,
     subProtocol,
@@ -198,11 +172,7 @@ export const SwapConfirmEvm = ({
     networkUsage,
     gasSettingsByPriority,
     setCustomSettings,
-  } = useEthTransaction(
-    evmTxLoadable?.state === "hasData" ? (evmTxLoadable.data ?? undefined) : undefined,
-    fromAsset?.chainId.toString(),
-    isPayloadLocked
-  )
+  } = useEthTransaction(evmTx ?? undefined, fromAsset?.chainId.toString(), isPayloadLocked)
 
   const handleFeeChange = useCallback(
     (priority: EthPriorityOptionName) => {
@@ -321,7 +291,8 @@ export const SwapConfirmEvm = ({
   return (
     <>
       <FeeEstimateEvm
-        loadableState={evmTxLoadable?.state}
+        isLoading={isExchangeLoading}
+        isError={!!exchangeError}
         fastBalance={fastBalance}
         transaction={transaction}
         txDetails={txDetails}
@@ -334,41 +305,33 @@ export const SwapConfirmEvm = ({
       />
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {evmTxLoadable?.state === "hasError" &&
-          (evmTxLoadable.error instanceof EstimateGasExecutionError ? (
+        {exchangeError &&
+          (exchangeError instanceof EstimateGasExecutionError ? (
             <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
               {t("Insufficient {{symbol}} available to pay for gas", { symbol: gasTokenSymbol })}
             </div>
           ) : (
             <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
-              {t("Error loading transaction:")} {String(evmTxLoadable.error)}
+              {t("Error loading transaction:")} {String(exchangeError)}
             </div>
           ))}
 
-        {evmTxLoadable?.state === "loading" || isProcessing ? (
+        {isExchangeLoading || isProcessing ? (
           <Button className="w-full" primary disabled>
             <LoaderIcon className="animate-spin-slow text-lg" />
           </Button>
-        ) : account &&
-          account.type === "ledger-ethereum" &&
-          isReady &&
-          evmTxLoadable?.state === "hasData" ? (
+        ) : account && account.type === "ledger-ethereum" && isReady && !!evmTx ? (
           <SignHardwareEthereum
             evmNetworkId={fromAsset?.chainId.toString()}
             account={account}
             method="eth_sendTransaction"
-            payload={isReady && evmTxLoadable?.state === "hasData" ? evmTxLoadable.data : null}
+            payload={isReady && evmTx ? evmTx : null}
             onSigned={sendSigned}
             onSentToDevice={onSentToDevice}
             containerId="SwapTokensModalDialog"
           />
         ) : (
-          <Button
-            className="w-full"
-            primary
-            onClick={send}
-            disabled={!isReady || evmTxLoadable?.state !== "hasData"}
-          >
+          <Button className="w-full" primary onClick={send} disabled={!isReady || !evmTx}>
             {t("Confirm Swap")}
           </Button>
         )}

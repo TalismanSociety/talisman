@@ -1,6 +1,6 @@
+import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useEffect, useState } from "react"
 
 export type UseSubstrateTokenProps = {
   chainId: string
@@ -8,82 +8,57 @@ export type UseSubstrateTokenProps = {
 }
 
 export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
-  const [token, setToken] = useState<{
-    symbol: string
-    name: string
-    decimals: number
-  } | null>()
   const chain = useNetworkById(props?.chainId, "polkadot")
-
   const { data: sapi } = useScaleApi(chain?.id ?? null)
 
-  useEffect(() => {
-    if (!props) return
-    if (token) return
-    if (!sapi) return
+  const chainId = props?.chainId
+  const assethubAssetId = props?.assethubAssetId
+  const chainName = chain?.name
 
-    const abortController = new AbortController()
+  const { data: token } = useQuery({
+    queryKey: ["swap-substrate-token", chainId, assethubAssetId],
+    queryFn: async () => {
+      if (!sapi) throw new Error("sapi not ready")
 
-    const run = async () => {
-      try {
-        if (abortController.signal.aborted) return
+      if (assethubAssetId !== undefined) {
+        const metadata = await sapi.getStorage<{
+          symbol: string | { asText: () => string }
+          name: string | { asText: () => string }
+          decimals: number
+        }>("Assets", "Metadata", [assethubAssetId])
 
-        if (props.assethubAssetId !== undefined) {
-          // Query asset metadata via SAPI storage
-          const metadata = await sapi.getStorage<{
-            symbol: string | { asText: () => string }
-            name: string | { asText: () => string }
-            decimals: number
-          }>("Assets", "Metadata", [props.assethubAssetId])
-
-          if (abortController.signal.aborted) return
-
-          if (metadata) {
-            setToken({
-              symbol:
-                typeof metadata.symbol === "string"
-                  ? metadata.symbol
-                  : (metadata.symbol?.toString?.() ?? ""),
-              name:
-                typeof metadata.name === "string"
-                  ? metadata.name
-                  : (metadata.name?.toString?.() ?? ""),
-              decimals: Number(metadata.decimals),
-            })
-            return
+        if (metadata) {
+          return {
+            symbol:
+              typeof metadata.symbol === "string"
+                ? metadata.symbol
+                : (metadata.symbol?.toString?.() ?? ""),
+            name:
+              typeof metadata.name === "string"
+                ? metadata.name
+                : (metadata.name?.toString?.() ?? ""),
+            decimals: Number(metadata.decimals),
           }
-
-          // Fallback to chain token if metadata query fails
-          const chainToken = sapi.token
-          setToken({
-            symbol: chainToken?.symbol ?? "DOT",
-            name: chain?.name ?? "Unknown",
-            decimals: chainToken?.decimals ?? 10,
-          })
-          return
         }
 
-        // Default: use chain token metadata from SAPI
         const chainToken = sapi.token
-        setToken({
+        return {
           symbol: chainToken?.symbol ?? "DOT",
-          name: chain?.name ?? "Polkadot",
+          name: chainName ?? "Unknown",
           decimals: chainToken?.decimals ?? 10,
-        })
-      } catch {
-        // Ignore errors, token stays null
+        }
       }
-    }
-    run()
 
-    return () => abortController.abort()
-  }, [sapi, chain, props, token])
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
-  useEffect(() => {
-    if (!token) return
-    return () => setToken(null)
-  }, [props, token])
+      const chainToken = sapi.token
+      return {
+        symbol: chainToken?.symbol ?? "DOT",
+        name: chainName ?? "Polkadot",
+        decimals: chainToken?.decimals ?? 10,
+      }
+    },
+    enabled: !!props && !!sapi,
+    staleTime: Number.POSITIVE_INFINITY,
+  })
 
   return token
 }

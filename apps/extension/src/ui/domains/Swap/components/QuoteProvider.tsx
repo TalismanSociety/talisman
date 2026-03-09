@@ -4,13 +4,9 @@ import { useSwap } from "../SwapProvider"
 
 export const QuoteProvider = () => {
   const { t } = useTranslation()
-  const { selectedQuoteLoadable: quote } = useSwap()
+  const { selectedQuote } = useSwap()
 
-  const isLoading =
-    quote.state !== "hasData" ||
-    !quote.data ||
-    quote.data.quote.state !== "hasData" ||
-    !quote.data.quote.data
+  const isLoading = !selectedQuote
 
   return (
     <div className="flex items-center justify-between">
@@ -27,23 +23,12 @@ export const QuoteProvider = () => {
         ) : (
           <>
             <img
-              src={
-                (quote.state === "hasData" &&
-                  quote.data &&
-                  quote.data.quote.state === "hasData" &&
-                  quote.data.quote.data &&
-                  quote.data.quote.data.providerLogo) ||
-                undefined
-              }
+              src={selectedQuote.providerLogo || undefined}
               alt=""
               className="mb-1 h-10 rounded-full"
             />
             <p className="max-w-60 truncate font-semibold text-body-secondary text-xs">
-              {quote.state === "hasData" &&
-                quote.data &&
-                quote.data.quote.state === "hasData" &&
-                quote.data.quote.data &&
-                quote.data.quote.data.providerName}
+              {selectedQuote.providerName}
             </p>
           </>
         )}

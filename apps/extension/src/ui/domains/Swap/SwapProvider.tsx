@@ -60,8 +60,6 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
   const [tokenTab, setTokenTab] = useState("all")
 
   // -- Actions --
-  const [quoteRefresher, setQuoteRefresher] = useState(Date.now())
-  const refreshQuotes = useCallback(() => setQuoteRefresher(Date.now()), [])
   const [approvalCounter, setApprovalCounter] = useState(0)
   const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
 
@@ -80,24 +78,18 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
   }, [])
 
   // -- Async data hooks --
-  const safeTokensLoadable = useSafeTokens()
-  const safeTokensData = useMemo(
-    () => (safeTokensLoadable.state === "hasData" ? safeTokensLoadable.data : new Set<string>()),
-    [safeTokensLoadable]
-  )
-  const { fromAssetsLoadable, toAssetsLoadable } = useSwapAssets(
-    fromAsset,
-    tokenTab,
-    t,
-    safeTokensData
-  )
+  const { data: safeTokens = new Set<string>() } = useSafeTokens()
+  const { fromAssets, toAssets } = useSwapAssets(fromAsset, tokenTab, t, safeTokens)
 
   const {
-    quotesLoadable,
-    sortedQuotesLoadable,
-    selectedQuoteLoadable,
-    selectedModuleLoadable,
-    toAmountLoadable,
+    isLoadingQuotes,
+    isAllQuotesSettled,
+    hasQuoteError,
+    sortedQuotes,
+    selectedQuote,
+    selectedQuoteFees,
+    selectedModule,
+    toAmount,
   } = useSwapQuoteManager({
     fromAsset,
     toAsset,
@@ -107,33 +99,19 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
-    quoteRefresher,
   })
 
-  const reverse = useReverse(
-    fromAsset,
-    setFromAsset,
-    toAsset,
-    setToAsset,
-    setFromAmount,
-    toAmountLoadable
-  )
-
-  // Extract selected module/quote data for approval hook
-  const selectedModuleData =
-    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
-  const selectedQuoteData =
-    selectedQuoteLoadable.state === "hasData" ? selectedQuoteLoadable.data : null
+  const reverse = useReverse(fromAsset, setFromAsset, toAsset, setToAsset, setFromAmount, toAmount)
 
   const erc20Approval = useSwapErc20Approval({
-    selectedModule: selectedModuleData,
+    selectedModule,
     fromAsset,
     toAsset,
     fromAmount,
     fromAddress,
     toAddress,
     selectedSubProtocol,
-    selectedQuote: selectedQuoteData,
+    selectedQuote,
     approvalCounter,
   })
 
@@ -169,21 +147,25 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
 
       // Actions
       resetForm,
-      refreshQuotes,
       reverse,
       approvalCounter,
       setApprovalCounter,
       incrementApprovalCounter,
 
       // Async state
-      fromAssetsLoadable,
-      toAssetsLoadable,
-      quotesLoadable,
-      sortedQuotesLoadable,
-      selectedQuoteLoadable,
-      selectedModuleLoadable,
-      toAmountLoadable,
-      safeTokensLoadable,
+      fromAssets,
+      toAssets,
+      safeTokens,
+
+      // Quote state (new shape)
+      isLoadingQuotes,
+      isAllQuotesSettled,
+      hasQuoteError,
+      sortedQuotes,
+      selectedQuote,
+      selectedQuoteFees,
+      selectedModule,
+      toAmount,
 
       // Account info
       ethAccounts,
@@ -212,18 +194,20 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
       setToAddress,
       tokenTab,
       resetForm,
-      refreshQuotes,
       reverse,
       approvalCounter,
       incrementApprovalCounter,
-      fromAssetsLoadable,
-      toAssetsLoadable,
-      quotesLoadable,
-      sortedQuotesLoadable,
-      selectedQuoteLoadable,
-      selectedModuleLoadable,
-      toAmountLoadable,
-      safeTokensLoadable,
+      fromAssets,
+      toAssets,
+      safeTokens,
+      isLoadingQuotes,
+      isAllQuotesSettled,
+      hasQuoteError,
+      sortedQuotes,
+      selectedQuote,
+      selectedQuoteFees,
+      selectedModule,
+      toAmount,
       ethAccounts,
       substrateAccounts,
       fromEvmAccount,

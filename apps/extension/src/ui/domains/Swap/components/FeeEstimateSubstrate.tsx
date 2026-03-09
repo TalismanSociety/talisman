@@ -8,13 +8,14 @@ import { useNetworkById } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
-import type { Loadable } from "../types"
 
 export const FeeEstimateSubstrate = ({
-  payloadLoadable,
+  payload,
+  isLoading,
 }: {
   fastBalance?: ReturnType<typeof useFastBalance>
-  payloadLoadable?: Loadable<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>
+  payload?: { payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null
+  isLoading?: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -27,7 +28,7 @@ export const FeeEstimateSubstrate = ({
 
   const feeEstimate = useGetFeeEstimate({
     sapi,
-    payload: payloadLoadable?.state === "hasData" ? payloadLoadable.data?.payload : undefined,
+    payload: payload?.payload,
   })
 
   return (
@@ -39,7 +40,7 @@ export const FeeEstimateSubstrate = ({
         <div>
           {feeEstimate.error ? (
             <div className="truncate text-alert-error">{t("Failed to estimate fee")}</div>
-          ) : payloadLoadable?.state === "loading" || feeEstimate.isLoading ? (
+          ) : isLoading || feeEstimate.isLoading ? (
             <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
               0.0000 TKN ($0.00)
             </div>

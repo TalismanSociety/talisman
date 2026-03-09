@@ -1,6 +1,7 @@
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import { useQuery } from "@tanstack/react-query"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -28,13 +29,10 @@ export const SwapConfirmSubstrate = ({
     fromAsset,
     toAsset,
     fromAmount,
-    toAmountLoadable: toAmount,
-    selectedModuleLoadable,
+    toAmount,
+    selectedModule: swapModule,
     resetForm,
   } = useSwap()
-
-  const swapModule =
-    selectedModuleLoadable.state === "hasData" ? selectedModuleLoadable.data : undefined
 
   const [isReady, setIsReady] = useState(false)
   useEffect(() => {
@@ -43,15 +41,6 @@ export const SwapConfirmSubstrate = ({
     const timeout = setTimeout(() => setIsReady(true), 1_000)
     return () => clearTimeout(timeout)
   }, [swapView])
-
-  // exchangeAtom and substratePayloadAtom are replaced with direct async calls
-  type SubstrateLoadable = import("../swaps.api").Loadable<{
-    payload: import("@core/domains/signing/types").SignerPayloadJSON
-    txMetadata?: Uint8Array
-  } | null>
-  type ExchangeLoadable = import("../swaps.api").Loadable<{ id: string } | undefined>
-  const [exchangeLoadable, setExchangeLoadable] = useState<ExchangeLoadable>({ state: "loading" })
-  const [payloadLoadable, setPayloadLoadable] = useState<SubstrateLoadable>({ state: "loading" })
 
   const insufficientBalance = useMemo(() => {
     if (!fastBalance?.balance) return undefined
@@ -68,115 +57,110 @@ export const SwapConfirmSubstrate = ({
     [fastBalance, fromAmount.planck]
   )
 
-  useEffect(() => {
-    if (
-      !swapModule ||
-      !fromAsset ||
-      !toAsset ||
-      !fromAddress ||
-      !toAddress ||
-      swapView !== "confirm"
-    )
-      return
-    if (!isReady) return
+  // exchangeAtom and substratePayloadAtom are replaced with useQuery
+  const exchangeAndPayloadQuery = useQuery({
+    queryKey: [
+      "swap-exchange-substrate",
+      swapModule?.protocol,
+      fromAsset?.id,
+      toAsset?.id,
+      fromAddress,
+      toAddress,
+      fromAmount.planck.toString(),
+      allowReap,
+    ],
+    queryFn: async ({ signal }) => {
+      if (!swapModule || !fromAsset || !toAsset || !fromAddress || !toAddress || !sapi)
+        throw new Error("Missing params")
 
-    const controller = new AbortController()
-    setExchangeLoadable({ state: "loading" })
-    setPayloadLoadable({ state: "loading" })
+      const exchange = await swapModule.createExchange({
+        fromAsset,
+        toAsset,
+        fromAmount,
+        fromAddress,
+        toAddress,
+      })
+      if (signal.aborted) throw new Error("Aborted")
 
-    const run = async () => {
-      try {
-        const exchange = await swapModule.createExchange({
-          fromAsset,
-          toAsset,
-          fromAmount,
-          fromAddress,
-          toAddress,
-        })
-        if (controller.signal.aborted) return
-        setExchangeLoadable({ state: "hasData", data: exchange })
-
-        if (fromAsset.networkType !== "substrate" || !exchange || !sapi) return
-
-        const payload = await swapModule.getSubstratePayload({
+      let payload: {
+        payload: import("@core/domains/signing/types").SignerPayloadJSON
+        txMetadata?: Uint8Array
+      } | null = null
+      if (fromAsset.networkType === "substrate" && exchange) {
+        payload = await swapModule.getSubstratePayload({
           fromAsset,
           fromAddress,
           exchange,
           sapi,
           allowReap,
         })
-        if (controller.signal.aborted) return
-        setPayloadLoadable({ state: "hasData", data: payload })
-      } catch (error) {
-        if (controller.signal.aborted) return
-        setExchangeLoadable({ state: "hasError", error })
-        setPayloadLoadable({ state: "hasError", error })
       }
-    }
-    run()
+      if (signal.aborted) throw new Error("Aborted")
 
-    return () => controller.abort()
-  }, [
-    swapModule,
-    fromAsset,
-    toAsset,
-    fromAddress,
-    toAddress,
-    fromAmount,
-    isReady,
-    swapView,
-    sapi,
-    allowReap,
-  ])
+      return { exchange, payload }
+    },
+    enabled:
+      !!swapModule &&
+      !!fromAsset &&
+      !!toAsset &&
+      !!fromAddress &&
+      !!toAddress &&
+      !!sapi &&
+      swapView === "confirm" &&
+      isReady,
+    retry: false,
+  })
+
+  const exchange = exchangeAndPayloadQuery.data?.exchange
+  const payload = exchangeAndPayloadQuery.data?.payload ?? null
+  const isExchangeLoading = exchangeAndPayloadQuery.isLoading
+  const exchangeError = exchangeAndPayloadQuery.error
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (exchangeLoadable.state !== "hasData") return
-    if (!exchangeLoadable.data) return
+    if (!exchange) return
     if (!fromAsset) return
     if (!toAsset) return
-    if (toAmount.state !== "hasData") return
-    if (toAmount.data === null) return
+    if (!toAmount) return
     if (toAddress === null) return
 
     switch (swapModule?.protocol) {
       case "simpleswap":
         return {
           type: "swap-simpleswap",
-          exchangeId: exchangeLoadable.data.id,
+          exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
           fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.data.planck.toString(),
+          toAmount: toAmount.planck.toString(),
           to: toAddress,
         }
       case "stealthex":
         return {
           type: "swap-stealthex",
-          exchangeId: exchangeLoadable.data.id,
+          exchangeId: exchange.id,
           fromTokenId: fromAsset.id,
           toTokenId: toAsset.id,
           fromAmount: fromAmount.planck.toString(),
-          toAmount: toAmount.data.planck.toString(),
+          toAmount: toAmount.planck.toString(),
           to: toAddress,
         }
       // NOTE: Lifi doesn't support substrate, we don't need to handle it here
     }
     throw new Error(`swapModule ${swapModule?.protocol} not supported`)
-  }, [exchangeLoadable, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])
+  }, [exchange, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])
 
   const isDisabled = useMemo(() => {
     return (
       !isReady ||
-      toAmount.state !== "hasData" ||
-      !toAmount.data ||
-      toAmount.data.planck === 0n ||
+      !toAmount ||
+      toAmount.planck === 0n ||
       !fromAddress ||
       !toAddress ||
       insufficientBalance !== false ||
       !sapi ||
-      payloadLoadable.state === "loading"
+      isExchangeLoading
     )
-  }, [fromAddress, insufficientBalance, isReady, payloadLoadable, sapi, toAddress, toAmount])
+  }, [fromAddress, insufficientBalance, isReady, isExchangeLoading, sapi, toAddress, toAmount])
 
   const { close: closeSwapTokensModal } = useSwapTokensModal()
   const navigate = useNavigate()
@@ -203,32 +187,28 @@ export const SwapConfirmSubstrate = ({
   return (
     <>
       {fromAsset?.networkType === "substrate" && (
-        <FeeEstimateSubstrate fastBalance={fastBalance} payloadLoadable={payloadLoadable} />
+        <FeeEstimateSubstrate
+          fastBalance={fastBalance}
+          payload={payload}
+          isLoading={isExchangeLoading}
+        />
       )}
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {payloadLoadable?.state === "hasError" && (
+        {exchangeError && (
           <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
-            {t("Error loading transaction:")} {String(payloadLoadable.error)}
+            {t("Error loading transaction:")} {String(exchangeError)}
           </div>
         )}
 
-        {payloadLoadable?.state !== "hasError" && (
+        {!exchangeError && (
           <SapiSendButton
             containerId="SwapTokensModalDialog"
             label={t("Confirm Swap")}
-            loading={!isReady || !sapi || payloadLoadable.state === "loading"}
-            payload={
-              isReady && sapi && payloadLoadable.state === "hasData"
-                ? payloadLoadable.data?.payload
-                : undefined
-            }
+            loading={!isReady || !sapi || isExchangeLoading}
+            payload={isReady && sapi && payload ? payload.payload : undefined}
             txInfo={txInfo}
-            txMetadata={
-              isReady && sapi && payloadLoadable.state === "hasData"
-                ? payloadLoadable.data?.txMetadata
-                : undefined
-            }
+            txMetadata={isReady && sapi && payload ? payload.txMetadata : undefined}
             onSubmitted={onSubmitted}
             disabled={isDisabled}
           />

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 import { createPublicClient, erc20Abi, fallback, http, zeroAddress } from "viem"
 import type { Chain as ViemChain } from "viem/chains"
 import { allEvmChains } from "./allEvmChains"
@@ -35,46 +36,36 @@ export const useFastBalance = (props?: UseFastBalanceProps) => {
 }
 
 const useEvmBalance = (props?: UseFastBalanceProps) => {
-  const [evmBalance, setEvmBalance] = useState<Decimal | undefined>()
+  const networkId = props?.type === "evm" ? props.networkId : undefined
+  const address = props?.type === "evm" ? props.address : undefined
+  const tokenAddress = props?.type === "evm" ? props.tokenAddress : undefined
 
-  useEffect(() => {
-    const abortController = new AbortController()
+  const { data: evmBalance } = useQuery({
+    queryKey: ["swap-evm-balance", networkId, address, tokenAddress],
+    queryFn: async () => {
+      if (!networkId || !address) return undefined
 
-    if (props?.type !== "evm") return setEvmBalance(undefined)
+      const chain: ViemChain | undefined = Object.values(allEvmChains).find(
+        (c) => c?.id === networkId
+      )
+      const rpcUrls = chain?.rpcUrls.default.http
+      if (!chain || !rpcUrls?.length) return undefined
 
-    const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-      (chain) => chain?.id === props.networkId
-    )
-    const rpcUrls = chain?.rpcUrls.default.http
-    if (!chain || !rpcUrls?.length) return setEvmBalance(undefined)
+      const client = createPublicClient({
+        transport: fallback(
+          rpcUrls.map((rpc) => http(rpc, { retryCount: 0 })),
+          { retryCount: 0 }
+        ),
+        chain,
+        batch: { multicall: true },
+      })
 
-    // NOTE: This public client needs to support any known evm network, not just the evm networks in chaindata
-    // which is why we can't use the getExtensionPublicClient function!
-    const client = createPublicClient({
-      transport: fallback(
-        rpcUrls.map((rpc) => http(rpc, { retryCount: 0 })),
-        { retryCount: 0 }
-      ),
-      chain,
-      batch: { multicall: true },
-    })
-
-    let timeoutId: NodeJS.Timeout | null = null
-    const timeoutMs = 15_000 // 15 seconds
-
-    const refetch = async () => {
       // native token
-      if (!props.tokenAddress || props.tokenAddress === zeroAddress) {
-        setEvmBalance(undefined)
-        const balance = await client.getBalance({ address: props.address as `0x${string}` })
-        if (abortController.signal.aborted) return
-
-        setEvmBalance(
-          Decimal.fromPlanck(balance, chain.nativeCurrency.decimals, {
-            currency: chain.nativeCurrency.symbol,
-          })
-        )
-        return setTimeout(refetch, timeoutMs)
+      if (!tokenAddress || tokenAddress === zeroAddress) {
+        const balance = await client.getBalance({ address: address as `0x${string}` })
+        return Decimal.fromPlanck(balance, chain.nativeCurrency.decimals, {
+          currency: chain.nativeCurrency.symbol,
+        })
       }
 
       // erc20 token
@@ -83,42 +74,32 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
           {
             abi: erc20Abi,
             functionName: "balanceOf",
-            address: props.tokenAddress!,
-            args: [props.address as `0x${string}`],
+            address: tokenAddress,
+            args: [address as `0x${string}`],
           },
           {
             abi: erc20Abi,
             functionName: "symbol",
-            address: props.tokenAddress!,
+            address: tokenAddress,
           },
           {
             abi: erc20Abi,
             functionName: "decimals",
-            address: props.tokenAddress!,
+            address: tokenAddress,
           },
         ],
       })
-      if (abortController.signal.aborted) return
 
       const [balanceCall, symbolCall, decimalsCall] = calls
-
       const symbol = symbolCall.status === "success" ? symbolCall.result : "Unknown"
       const decimals = decimalsCall.status === "success" ? decimalsCall.result : 18
 
-      if (balanceCall.status === "failure") return setEvmBalance(undefined)
-      setEvmBalance(
-        Decimal.fromPlanck(balanceCall.result as bigint, decimals, { currency: symbol })
-      )
-      return setTimeout(refetch, timeoutMs)
-    }
-
-    timeoutId = setTimeout(refetch, timeoutMs)
-    abortController.signal.addEventListener = () => clearTimeout(timeoutId)
-
-    refetch()
-
-    return () => abortController.abort()
-  }, [props])
+      if (balanceCall.status === "failure") return undefined
+      return Decimal.fromPlanck(balanceCall.result as bigint, decimals, { currency: symbol })
+    },
+    enabled: props?.type === "evm" && !!networkId && !!address,
+    refetchInterval: 15_000,
+  })
 
   return evmBalance
 }

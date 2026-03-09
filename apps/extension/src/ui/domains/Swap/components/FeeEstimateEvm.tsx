@@ -18,7 +18,8 @@ import { useSwap } from "../SwapProvider"
 import type { useFastBalance } from "../swaps-port/useFastBalance"
 
 export const FeeEstimateEvm = ({
-  loadableState,
+  isLoading,
+  isError,
   fastBalance,
   transaction,
   txDetails,
@@ -29,7 +30,8 @@ export const FeeEstimateEvm = ({
   handleFeeChange,
   networkUsage,
 }: {
-  loadableState: "loading" | "hasError" | "hasData"
+  isLoading: boolean
+  isError: boolean
   fastBalance: ReturnType<typeof useFastBalance>
   transaction?: TransactionRequest
   txDetails?: EthTransactionDetails
@@ -45,7 +47,7 @@ export const FeeEstimateEvm = ({
   const { fromAsset } = useSwap()
   const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
 
-  if (loadableState === "hasError") return null
+  if (isError) return null
   return (
     <div className="relative flex min-h-[4.48rem] w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8">
       <QuoteProvider />
@@ -53,10 +55,7 @@ export const FeeEstimateEvm = ({
       {transaction?.type === undefined || transaction?.type === "eip1559" ? (
         <div className="flex h-10 items-center justify-between">
           <div className="text-body-secondary text-xs">{t("Priority")}</div>
-          {loadableState === "hasData" &&
-          transaction &&
-          txDetails &&
-          fromEvmNetwork?.nativeTokenId ? (
+          {!isLoading && !isError && transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
             <EthFeeSelect
               className="h-10"
               tx={transaction}
@@ -88,7 +87,8 @@ export const FeeEstimateEvm = ({
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {loadableState === "hasData" &&
+              {!isLoading &&
+              !isError &&
               transaction &&
               txDetails &&
               fromEvmNetwork?.nativeTokenId ? (
@@ -135,10 +135,7 @@ export const FeeEstimateEvm = ({
             </TooltipContent>
           </Tooltip>
         </div>
-        {loadableState === "hasData" &&
-        transaction &&
-        txDetails &&
-        fromEvmNetwork?.nativeTokenId ? (
+        {!isLoading && !isError && transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
           <div className="h-10">
             <TokensAndFiat
               className="text-body-secondary text-xs"

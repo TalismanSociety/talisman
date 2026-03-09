@@ -20,18 +20,11 @@ export const SwapConfirm = ({
 
   const networks = useNetworksMapById()
 
-  const {
-    fromAsset,
-    toAsset,
-    fromAmount,
-    toAmountLoadable: toAmount,
-    fromAddress,
-    toAddress,
-  } = useSwap()
+  const { fromAsset, toAsset, fromAmount, toAmount, fromAddress, toAddress } = useSwap()
   const currency = useSelectedCurrency()
   const fromFiatAmount = useFiatValueForAmount({ amount: fromAmount, asset: fromAsset })
   const toFiatAmount = useFiatValueForAmount({
-    amount: toAmount.state === "hasData" && toAmount.data ? toAmount.data : undefined,
+    amount: toAmount ?? undefined,
     asset: toAsset,
   })
   const fromNetwork = fromAsset ? networks[fromAsset.chainId] : undefined
@@ -115,15 +108,15 @@ export const SwapConfirm = ({
             )}
 
             <div className="flex flex-col items-end">
-              {toAmount.state === "hasData" && toAmount.data ? (
+              {toAmount ? (
                 <div className="flex items-center gap-2">
                   <div>
                     ~
                     <Tokens
                       className="whitespace-pre"
-                      amount={toAmount.data.toString()}
-                      symbol={toAmount.data.currency}
-                      decimals={toAmount.data.decimals}
+                      amount={toAmount.toString()}
+                      symbol={toAmount.currency}
+                      decimals={toAmount.decimals}
                       noCountUp
                     />
                   </div>

@@ -31,16 +31,13 @@ export const SelectTokenModal: React.FC<Props> = ({
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [assetWithWarning, setAssetWithWarning] = useState<SwappableAssetWithDecimals | null>(null)
-  const { safeTokensLoadable: safeList } = useSwap()
+  const { safeTokens } = useSwap()
 
   const handleSelectAsset = useCallback(
     (asset: SwappableAssetWithDecimals, hideWarning?: boolean) => {
       if (!hideWarning) {
         const erc20Address = asset.contractAddress
-        const isSafe =
-          safeList.state === "hasData"
-            ? safeList.data.has(`${asset.chainId}:${erc20Address?.toLowerCase()}`)
-            : false
+        const isSafe = safeTokens.has(`${asset.chainId}:${erc20Address?.toLowerCase()}`)
         const shouldShowWarning = !isSafe && erc20Address !== undefined
         if (shouldShowWarning) return setAssetWithWarning(asset)
       }
@@ -49,7 +46,7 @@ export const SelectTokenModal: React.FC<Props> = ({
       onSelectAsset(asset)
       setOpen(false)
     },
-    [onSelectAsset, safeList]
+    [onSelectAsset, safeTokens]
   )
   const assetIds = assets?.map((a) => a.id)
   const handleSelectAssetId = useCallback(
