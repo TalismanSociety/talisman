@@ -23,7 +23,7 @@ import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsLi
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSwap } from "../SwapProvider"
@@ -44,273 +44,279 @@ type Props = {
   value?: string | null
 }
 
-export const SeparatedAccountSelector = ({
-  title,
-  subtitle,
-  asset,
-  accountsType = "substrate",
-  allowInput = false,
-  allowZeroBalance = false,
-  onAccountChange,
-  evmAccountsFilter,
-  substrateAccountsFilter,
-  substrateAccountPrefix,
-  value,
-  disableBtc = false,
-}: Props) => {
-  const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
+export const SeparatedAccountSelector = memo(
+  ({
+    title,
+    subtitle,
+    asset,
+    accountsType = "substrate",
+    allowInput = false,
+    allowZeroBalance = false,
+    onAccountChange,
+    evmAccountsFilter,
+    substrateAccountsFilter,
+    substrateAccountPrefix,
+    value,
+    disableBtc = false,
+  }: Props) => {
+    const { t } = useTranslation()
+    const [open, setOpen] = useState(false)
 
-  const allAccounts = useAccounts(allowInput ? "all" : "owned")
+    const allAccounts = useAccounts(allowInput ? "all" : "owned")
 
-  const chain = useNetworkById(String(asset?.chainId), "polkadot")
+    const chain = useNetworkById(String(asset?.chainId), "polkadot")
 
-  const defaultSubstrateAccounts = allAccounts.filter(
-    (a) => chain && isAccountCompatibleWithNetwork(chain, a)
-  )
-  const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
+    const defaultSubstrateAccounts = allAccounts.filter(
+      (a) => chain && isAccountCompatibleWithNetwork(chain, a)
+    )
+    const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
 
-  const [query, setQuery] = useState("")
+    const [query, setQuery] = useState("")
+    const deferredQuery = useDeferredValue(query)
 
-  const accountFromInput = useMemo((): Account | null => {
-    if (!allowInput) return null
-    if (!query) return null
+    const accountFromInput = useMemo((): Account | null => {
+      if (!allowInput) return null
+      if (!deferredQuery) return null
 
-    const accountCommon = {
-      type: "watch-only" as const,
-      isPortfolio: false,
-      createdAt: 0,
-    }
+      const accountCommon = {
+        type: "watch-only" as const,
+        isPortfolio: false,
+        createdAt: 0,
+      }
 
-    if (isValidAddress(query)) {
-      const encoding = detectAddressEncoding(query)
-      switch (encoding) {
-        case "ss58": {
-          const address = normalizeAddress(query)
-          return { ...accountCommon, name: shortenAddress(address), address }
+      if (isValidAddress(deferredQuery)) {
+        const encoding = detectAddressEncoding(deferredQuery)
+        switch (encoding) {
+          case "ss58": {
+            const address = normalizeAddress(deferredQuery)
+            return { ...accountCommon, name: shortenAddress(address), address }
+          }
+          default:
+            return { ...accountCommon, name: shortenAddress(deferredQuery), address: deferredQuery }
         }
-        default:
-          return { ...accountCommon, name: shortenAddress(query), address: query }
       }
-    }
-    return null
-  }, [allowInput, query])
+      return null
+    }, [allowInput, deferredQuery])
 
-  const evmAccounts = useMemo(() => {
-    const filtered = evmAccountsFilter
-      ? defaultEvmAccounts.filter(evmAccountsFilter)
-      : defaultEvmAccounts
-    if (
-      !accountFromInput ||
-      !isAccountAddressEthereum(accountFromInput) ||
-      filtered.find((a) => a.address.toLowerCase() === accountFromInput?.address.toLowerCase())
+    const evmAccounts = useMemo(() => {
+      const filtered = evmAccountsFilter
+        ? defaultEvmAccounts.filter(evmAccountsFilter)
+        : defaultEvmAccounts
+      if (
+        !accountFromInput ||
+        !isAccountAddressEthereum(accountFromInput) ||
+        filtered.find((a) => a.address.toLowerCase() === accountFromInput?.address.toLowerCase())
+      )
+        return filtered
+      return [accountFromInput, ...filtered]
+    }, [accountFromInput, defaultEvmAccounts, evmAccountsFilter])
+
+    const substrateAccounts = useMemo(() => {
+      const filtered = substrateAccountsFilter
+        ? defaultSubstrateAccounts.filter(substrateAccountsFilter)
+        : defaultSubstrateAccounts
+      if (
+        !accountFromInput ||
+        !isAccountAddressSs58(accountFromInput) ||
+        filtered.find((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
+      )
+        return filtered
+      return [accountFromInput, ...filtered]
+    }, [accountFromInput, substrateAccountsFilter, defaultSubstrateAccounts])
+
+    const queriedEvmAccounts = useMemo(() => {
+      if (deferredQuery.trim() === "") return evmAccounts
+      return evmAccounts.filter(
+        (account) =>
+          account.address?.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+          account.name?.toLowerCase().includes(deferredQuery.toLowerCase())
+      )
+    }, [deferredQuery, evmAccounts])
+
+    const queriedSubstrateAccounts = useMemo(() => {
+      if (deferredQuery.trim() === "") return substrateAccounts
+      return substrateAccounts.filter(
+        (account) =>
+          account.address?.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+          encodeAnyAddress(account.address, { ss58Format: substrateAccountPrefix })
+            .toLowerCase()
+            .includes(deferredQuery.toLowerCase()) ||
+          account.name?.toLowerCase().includes(deferredQuery.toLowerCase())
+      )
+    }, [deferredQuery, substrateAccountPrefix, substrateAccounts])
+
+    const btcAccounts = useMemo(() => {
+      if (isAccountBitcoin(accountFromInput)) return [accountFromInput]
+      return []
+    }, [accountFromInput])
+
+    const selectedAccount = useMemo(() => {
+      if (value === null || value === undefined) return
+
+      const accounts = (() => {
+        switch (accountsType) {
+          case "all":
+            return [...evmAccounts, ...substrateAccounts]
+          case "ethereum":
+            return evmAccounts
+          case "substrate":
+            return substrateAccounts
+          case "btc":
+            return btcAccounts
+          default:
+            return []
+        }
+      })()
+
+      return accounts.find((account) => isAddressEqual(account.address, value))
+    }, [accountsType, evmAccounts, substrateAccounts, btcAccounts, value])
+
+    const onSelectAccount = useCallback(
+      (address: string | null) => {
+        setOpen(false)
+        onAccountChange?.(address)
+      },
+      [onAccountChange]
     )
-      return filtered
-    return [accountFromInput, ...filtered]
-  }, [accountFromInput, defaultEvmAccounts, evmAccountsFilter])
 
-  const substrateAccounts = useMemo(() => {
-    const filtered = substrateAccountsFilter
-      ? defaultSubstrateAccounts.filter(substrateAccountsFilter)
-      : defaultSubstrateAccounts
-    if (
-      !accountFromInput ||
-      !isAccountAddressSs58(accountFromInput) ||
-      filtered.find((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
-    )
-      return filtered
-    return [accountFromInput, ...filtered]
-  }, [accountFromInput, substrateAccountsFilter, defaultSubstrateAccounts])
-
-  const queriedEvmAccounts = useMemo(() => {
-    if (query.trim() === "") return evmAccounts
-    return evmAccounts.filter(
-      (account) =>
-        account.address?.toLowerCase().includes(query.toLowerCase()) ||
-        account.name?.toLowerCase().includes(query.toLowerCase())
-    )
-  }, [query, evmAccounts])
-
-  const queriedSubstrateAccounts = useMemo(() => {
-    if (query.trim() === "") return substrateAccounts
-    return substrateAccounts.filter(
-      (account) =>
-        account.address?.toLowerCase().includes(query.toLowerCase()) ||
-        encodeAnyAddress(account.address, { ss58Format: substrateAccountPrefix })
-          .toLowerCase()
-          .includes(query.toLowerCase()) ||
-        account.name?.toLowerCase().includes(query.toLowerCase())
-    )
-  }, [query, substrateAccountPrefix, substrateAccounts])
-
-  const btcAccounts = useMemo(() => {
-    if (isAccountBitcoin(accountFromInput)) return [accountFromInput]
-    return []
-  }, [accountFromInput])
-
-  const selectedAccount = useMemo(() => {
-    if (value === null || value === undefined) return
-
-    const accounts = (() => {
-      switch (accountsType) {
-        case "all":
-          return [...evmAccounts, ...substrateAccounts]
-        case "ethereum":
-          return evmAccounts
-        case "substrate":
-          return substrateAccounts
-        case "btc":
-          return btcAccounts
-        default:
-          return []
+    // selected account is invalid, clear it
+    useEffect(() => {
+      if (!selectedAccount && value) {
+        onAccountChange?.(null)
+        setQuery("")
       }
-    })()
+    }, [onAccountChange, selectedAccount, value])
 
-    return accounts.find((account) => isAddressEqual(account.address, value))
-  }, [accountsType, evmAccounts, substrateAccounts, btcAccounts, value])
+    const accounts: Account[] = useMemo(() => {
+      if (accountsType === "all") return [...queriedEvmAccounts, ...queriedSubstrateAccounts]
+      if (accountsType === "ethereum")
+        return accountFromInput ? [accountFromInput] : queriedEvmAccounts
+      if (accountsType === "substrate")
+        return accountFromInput ? [accountFromInput] : queriedSubstrateAccounts
+      if (accountsType === "btc") return accountFromInput ? [accountFromInput] : btcAccounts
+      return []
+    }, [accountFromInput, accountsType, btcAccounts, queriedEvmAccounts, queriedSubstrateAccounts])
 
-  const onSelectAccount = useCallback(
-    (address: string | null) => {
-      setOpen(false)
-      onAccountChange?.(address)
-    },
-    [onAccountChange]
-  )
+    if (accountsType === "btc" && disableBtc)
+      return (
+        <div className="rounded p-6 [&>p]:text-sm">
+          <p className="text-center">{t("BTC accounts not supported.")}</p>
+        </div>
+      )
 
-  // selected account is invalid, clear it
-  useEffect(() => {
-    if (!selectedAccount && value) {
-      onAccountChange?.(null)
-      setQuery("")
-    }
-  }, [onAccountChange, selectedAccount, value])
-
-  const accounts: Account[] = useMemo(() => {
-    if (accountsType === "all") return [...queriedEvmAccounts, ...queriedSubstrateAccounts]
-    if (accountsType === "ethereum")
-      return accountFromInput ? [accountFromInput] : queriedEvmAccounts
-    if (accountsType === "substrate")
-      return accountFromInput ? [accountFromInput] : queriedSubstrateAccounts
-    if (accountsType === "btc") return accountFromInput ? [accountFromInput] : btcAccounts
-    return []
-  }, [accountFromInput, accountsType, btcAccounts, queriedEvmAccounts, queriedSubstrateAccounts])
-
-  if (accountsType === "btc" && disableBtc)
     return (
-      <div className="rounded p-6 [&>p]:text-sm">
-        <p className="text-center">{t("BTC accounts not supported.")}</p>
-      </div>
-    )
+      <>
+        <button
+          type="button"
+          className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
+          onClick={() => setOpen(true)}
+        >
+          {selectedAccount && (
+            <div className="flex shrink-0 items-center gap-4">
+              <AccountIcon className="text-lg" address={selectedAccount.address} />
+              <AccountRow
+                substrateAccountPrefix={substrateAccountPrefix}
+                address={selectedAccount.address}
+                name={selectedAccount.name}
+              />
+            </div>
+          )}
+          {!selectedAccount && (
+            <div className="flex shrink-0 items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-body-inactive"></div>
+              <div>{t("Select account")}</div>
+            </div>
+          )}
+        </button>
 
-  return (
-    <>
-      <button
-        type="button"
-        className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
-        onClick={() => setOpen(true)}
+        <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
+          <AccountPicker
+            title={title}
+            subtitle={subtitle}
+            accounts={accounts}
+            selectedAccount={selectedAccount}
+            query={query}
+            setQuery={setQuery}
+            allowInput={allowInput}
+            allowZeroBalance={allowZeroBalance}
+            onAccountChange={onSelectAccount}
+            onClose={() => setOpen(false)}
+          />
+        </Modal>
+      </>
+    )
+  }
+)
+
+const AccountPicker = memo(
+  ({
+    title,
+    subtitle,
+    accounts,
+    selectedAccount,
+    query,
+    setQuery,
+    allowInput,
+    allowZeroBalance,
+    onAccountChange,
+    onClose,
+  }: {
+    title: string
+    subtitle: string
+    accounts: Account[]
+    selectedAccount?: Account
+    query?: string
+    setQuery?: (query: string) => void
+    allowInput?: boolean
+    allowZeroBalance?: boolean
+    onAccountChange?: (address: string | null) => void
+    onClose: () => void
+  }) => {
+    const { t } = useTranslation()
+
+    const { fromAsset, toAsset } = useSwap()
+
+    const fromToken = useToken(fromAsset?.id)
+    const fromChain = useNetworkById(fromToken?.networkId, "polkadot")
+
+    const toToken = useToken(toAsset?.id)
+    const toChain = useNetworkById(toToken?.networkId, "polkadot")
+
+    return (
+      <WizardModalDialog
+        className="border-none"
+        contentClassName="!overflow-hidden !p-0 flex flex-col"
+        title={title}
+        onBackClick={onClose}
       >
-        {selectedAccount && (
-          <div className="flex shrink-0 items-center gap-4">
-            <AccountIcon className="text-lg" address={selectedAccount.address} />
-            <AccountRow
-              substrateAccountPrefix={substrateAccountPrefix}
-              address={selectedAccount.address}
-              name={selectedAccount.name}
+        <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+          <div className="font-bold">{subtitle}</div>
+          <div className="mx-1 grow overflow-hidden px-1">
+            <SearchInput
+              initialValue={query}
+              onChange={setQuery}
+              placeholder={allowInput ? t("Enter address") : t("Search by account name")}
+              autoFocus
             />
           </div>
-        )}
-        {!selectedAccount && (
-          <div className="flex shrink-0 items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-body-inactive"></div>
-            <div>{t("Select account")}</div>
-          </div>
-        )}
-      </button>
-
-      <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
-        <AccountPicker
-          title={title}
-          subtitle={subtitle}
-          accounts={accounts}
-          selectedAccount={selectedAccount}
-          query={query}
-          setQuery={setQuery}
-          allowInput={allowInput}
-          allowZeroBalance={allowZeroBalance}
-          onAccountChange={onSelectAccount}
-          onClose={() => setOpen(false)}
-        />
-      </Modal>
-    </>
-  )
-}
-
-const AccountPicker = ({
-  title,
-  subtitle,
-  accounts,
-  selectedAccount,
-  query,
-  setQuery,
-  allowInput,
-  allowZeroBalance,
-  onAccountChange,
-  onClose,
-}: {
-  title: string
-  subtitle: string
-  accounts: Account[]
-  selectedAccount?: Account
-  query?: string
-  setQuery?: (query: string) => void
-  allowInput?: boolean
-  allowZeroBalance?: boolean
-  onAccountChange?: (address: string | null) => void
-  onClose: () => void
-}) => {
-  const { t } = useTranslation()
-
-  const { fromAsset, toAsset } = useSwap()
-
-  const fromToken = useToken(fromAsset?.id)
-  const fromChain = useNetworkById(fromToken?.networkId, "polkadot")
-
-  const toToken = useToken(toAsset?.id)
-  const toChain = useNetworkById(toToken?.networkId, "polkadot")
-
-  return (
-    <WizardModalDialog
-      className="border-none"
-      contentClassName="!overflow-hidden !p-0 flex flex-col"
-      title={title}
-      onBackClick={onClose}
-    >
-      <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <div className="font-bold">{subtitle}</div>
-        <div className="mx-1 grow overflow-hidden px-1">
-          <SearchInput
-            initialValue={query}
-            onChange={setQuery}
-            placeholder={allowInput ? t("Enter address") : t("Search by account name")}
-            autoFocus
-          />
         </div>
-      </div>
-      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
-        <SendFundsAccountsList
-          accounts={accounts}
-          genesisHash={!allowInput ? fromChain?.genesisHash : toChain?.genesisHash}
-          selected={selectedAccount?.address}
-          onSelect={onAccountChange}
-          tokenId={!allowInput ? fromToken?.id : toToken?.id}
-          showBalances
-          showIfEmpty
-          allowZeroBalance={allowZeroBalance}
-        />
-      </ScrollContainer>
-    </WizardModalDialog>
-  )
-}
+        <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
+          <SendFundsAccountsList
+            accounts={accounts}
+            genesisHash={!allowInput ? fromChain?.genesisHash : toChain?.genesisHash}
+            selected={selectedAccount?.address}
+            onSelect={onAccountChange}
+            tokenId={!allowInput ? fromToken?.id : toToken?.id}
+            showBalances
+            showIfEmpty
+            allowZeroBalance={allowZeroBalance}
+            virtualized
+          />
+        </ScrollContainer>
+      </WizardModalDialog>
+    )
+  }
+)
 
 const AccountRow = ({
   address,

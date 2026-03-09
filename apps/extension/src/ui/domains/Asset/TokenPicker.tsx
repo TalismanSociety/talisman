@@ -258,6 +258,10 @@ const TokensList: FC<TokensListProps> = ({
   const balances = useBalances(ownedOnly ? "owned" : "all")
   const currency = useSelectedCurrency()
 
+  // Capture the selected token at mount time so the sort order stays stable.
+  // When the modal re-opens, the component remounts and picks up the new value.
+  const initialSelectedRef = useRef(selected)
+
   const accountBalances = useMemo(
     () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),
     [address, selected, balances]
@@ -307,9 +311,10 @@ const TokensList: FC<TokensListProps> = ({
         if (isTransferableA && !isTransferableB) return -1
         if (!isTransferableA && isTransferableB) return 1
 
-        // selected token first
-        if (a.id === selected) return -1
-        if (b.id === selected) return 1
+        // Pin the initially-selected token to the top — but don't re-sort
+        // when the selection changes, so the list stays visually stable.
+        if (a.id === initialSelectedRef.current) return -1
+        if (b.id === initialSelectedRef.current) return 1
 
         // sort by fiat balance
         const aFiat = a.balances.sum.fiat(currency).transferable
@@ -332,7 +337,7 @@ const TokensList: FC<TokensListProps> = ({
         // keep alphabetical sort
         return 0
       }),
-    [currency, selected, priorityTokens]
+    [currency, priorityTokens]
   )
 
   const tokensWithBalances = useMemo<TokenData[]>(() => {

@@ -2,7 +2,7 @@ import { bind } from "@react-rxjs/core"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { TokenRatesStorage } from "@talismn/token-rates"
 import { api } from "@ui/api"
-import { map, Observable, shareReplay } from "rxjs"
+import { map, Observable, shareReplay, throttleTime } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -14,7 +14,11 @@ export const tokenRates$ = new Observable<TokenRatesStorage>((subscriber) => {
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("tokenRates$"), shareReplay(1))
+}).pipe(
+  debugObservable("tokenRates$"),
+  throttleTime(2_000, undefined, { leading: true, trailing: true }),
+  shareReplay(1)
+)
 
 export const [useTokenRatesMap, tokenRatesMap$] = bind(
   tokenRates$.pipe(map((tokenRates) => tokenRates.tokenRates))

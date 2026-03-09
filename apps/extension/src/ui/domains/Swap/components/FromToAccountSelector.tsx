@@ -1,11 +1,12 @@
 import { isAccountOwned } from "@core/domains/keyring/exports"
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSwap } from "../SwapProvider"
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
 
-export const FromToAccountSelector = () => {
+export const FromToAccountSelector = memo(() => {
   const { fromAsset, toAsset } = useSwap()
 
   const isSwappingFromBtc = fromAsset?.id === "btc-native"
@@ -21,7 +22,7 @@ export const FromToAccountSelector = () => {
       {shouldShowToAccount && <ToAccount />}
     </div>
   )
-}
+})
 
 const FromAccount = () => {
   const { t } = useTranslation()
