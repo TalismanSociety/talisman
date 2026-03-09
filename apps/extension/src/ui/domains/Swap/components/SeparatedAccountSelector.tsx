@@ -14,10 +14,10 @@ import {
   isBitcoinAddress,
   normalizeAddress,
 } from "@talismn/crypto"
-import { ChevronLeftIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
 import { useAccounts } from "@ui/state/accounts"
@@ -228,20 +228,18 @@ export const SeparatedAccountSelector = ({
       </button>
 
       <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
-        <div className="h-full w-full bg-black">
-          <AccountPicker
-            title={title}
-            subtitle={subtitle}
-            accounts={accounts}
-            selectedAccount={selectedAccount}
-            query={query}
-            setQuery={setQuery}
-            allowInput={allowInput}
-            allowZeroBalance={allowZeroBalance}
-            onAccountChange={onSelectAccount}
-            onClose={() => setOpen(false)}
-          />
-        </div>
+        <AccountPicker
+          title={title}
+          subtitle={subtitle}
+          accounts={accounts}
+          selectedAccount={selectedAccount}
+          query={query}
+          setQuery={setQuery}
+          allowInput={allowInput}
+          allowZeroBalance={allowZeroBalance}
+          onAccountChange={onSelectAccount}
+          onClose={() => setOpen(false)}
+        />
       </Modal>
     </>
   )
@@ -281,18 +279,12 @@ const AccountPicker = ({
   const toChain = useNetworkById(toToken?.networkId, "polkadot")
 
   return (
-    <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <button type="button" className="px-12 py-10" onClick={onClose}>
-            <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
-          </button>
-        </div>
-
-        <h3 className="text-base text-body-secondary">{title}</h3>
-
-        <div className="flex-1" />
-      </div>
+    <WizardModalDialog
+      className="border-none"
+      contentClassName="!overflow-hidden !p-0 flex flex-col"
+      title={title}
+      onBackClick={onClose}
+    >
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <div className="font-bold">{subtitle}</div>
         <div className="mx-1 grow overflow-hidden px-1">
@@ -316,7 +308,7 @@ const AccountPicker = ({
           allowZeroBalance={allowZeroBalance}
         />
       </ScrollContainer>
-    </div>
+    </WizardModalDialog>
   )
 }
 

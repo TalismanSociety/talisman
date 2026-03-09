@@ -1,9 +1,10 @@
 import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import type { Token } from "@talismn/chaindata-provider"
-import { AlertTriangleIcon, ChevronLeftIcon } from "@talismn/icons"
+import { AlertTriangleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { FadeIn } from "@ui/components/FadeIn"
 import { Modal } from "@ui/components/Modal"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
@@ -86,19 +87,12 @@ export const SelectTokenModal: React.FC<Props> = ({
       <OpenSelectorButton selectedAsset={selectedAsset} onClick={() => setOpen(true)} />
 
       <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
-        <div className="flex h-full w-full flex-col bg-black">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <button type="button" className="px-12 py-10" onClick={() => setOpen(false)}>
-                <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
-              </button>
-            </div>
-
-            <h3 className="text-base text-body-secondary">{t("Select a token")}</h3>
-
-            <div className="flex-1" />
-          </div>
-
+        <WizardModalDialog
+          className="border-none"
+          contentClassName="!p-0 relative"
+          title={t("Select a token")}
+          onBackClick={() => setOpen(false)}
+        >
           <TokenPicker
             selected={selectedAsset?.id}
             allowUntransferable
@@ -178,7 +172,7 @@ export const SelectTokenModal: React.FC<Props> = ({
               </div>
             </FadeIn>
           )}
-        </div>
+        </WizardModalDialog>
       </Modal>
     </>
   )
