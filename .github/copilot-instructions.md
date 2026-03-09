@@ -37,7 +37,7 @@
 ## Architecture & Reuse
 
 - Favor **RxJS (+ @react-rxjs/core)** for state/logic that must run in both UI and service-worker contexts so we can reuse the same streams across backend and frontend; React local state is fine for purely local UI concerns.
-- Use provideContext when a react context is needed (for sharing data within wizards or component sub-trees)
+- Use provideContext when a react context is needed (for sharing data within wizards or component sub-trees). When using `provideContext`, define the main hook in a separate `.internal` file (e.g., `SwapProvider.internal.ts`) and re-export the provider/hook from the public module. This prevents WXT's HMR from resetting the entire component tree on every code change during development.
 - Reuse existing packages/modules (`@talismn/balances`, `chaindata-provider`, shared stores, UI components) before inventing new abstractions.
 - Keep modules composable and documented (see `BalancesModules.md` for expectations on APIs, storage, hydration).
 - Encourage `lodash-es` helpers when they keep code clear/concise.
