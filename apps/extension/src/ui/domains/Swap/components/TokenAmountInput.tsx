@@ -154,7 +154,7 @@ export const TokenAmountInput: FC<Props> = ({
   }, [handleChangeInput, maxAfterGas, selectedAsset?.decimals])
 
   useEffect(() => {
-    if (!amount) return setInput("")
+    if (amount == null) return setInput("")
     const parsedPlanck = parseInput(input)
     if (parsedPlanck !== amount) {
       if (amount > 0n) {

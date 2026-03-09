@@ -23,9 +23,8 @@ export function parseUserInputToPlanck(input: string, decimals: number): bigint 
       case 1:
         throw new Error("Fewer than two elements in split result. This must not happen here.")
       case 2:
-        if (!parts[1]) throw new Error("Fractional part missing")
         whole = parts[0]!
-        fractional = parts[1].replace(/0+$/, "")
+        fractional = (parts[1] ?? "").replace(/0+$/, "")
         break
       default:
         throw new Error("More than one separator found")
