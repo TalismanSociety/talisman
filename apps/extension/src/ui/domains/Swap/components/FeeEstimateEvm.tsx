@@ -13,13 +13,11 @@ import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 import type { TransactionRequest } from "viem"
-import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwap } from "../SwapProvider"
 
 export const FeeEstimateEvm = ({
   isLoading,
   isError,
-  fastBalance,
   transaction,
   txDetails,
   isPayloadLocked,
@@ -31,7 +29,6 @@ export const FeeEstimateEvm = ({
 }: {
   isLoading: boolean
   isError: boolean
-  fastBalance: ReturnType<typeof useFastBalance>
   transaction?: TransactionRequest
   txDetails?: EthTransactionDetails
   isPayloadLocked: boolean
@@ -42,6 +39,7 @@ export const FeeEstimateEvm = ({
   networkUsage?: number
 }) => {
   const { t } = useTranslation()
+  const { fastBalance } = useSwap()
 
   const { fromAsset } = useSwap()
   const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")

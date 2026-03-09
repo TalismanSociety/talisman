@@ -6,14 +6,12 @@ import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
-import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwap } from "../SwapProvider"
 
 export const FeeEstimateSubstrate = ({
   payload,
   isLoading,
 }: {
-  fastBalance?: ReturnType<typeof useFastBalance>
   payload?: { payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null
   isLoading?: boolean
 }) => {

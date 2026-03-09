@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useFastBalance } from "./hooks/useFastBalance"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
@@ -155,6 +156,32 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     approvalCounter,
   })
 
+  const fastBalance = useFastBalance(
+    useMemo(() => {
+      if (!fromAsset || !fromAddress) return undefined
+
+      if (fromAsset.networkType === "evm") {
+        return {
+          type: "evm",
+          address: fromAddress,
+          networkId: +fromAsset.chainId,
+          tokenAddress: fromAsset.contractAddress as `0x${string}`,
+        }
+      }
+
+      if (fromAsset.networkType === "substrate") {
+        return {
+          type: "substrate",
+          address: fromAddress,
+          chainId: fromAsset.chainId.toString(),
+          assetHubAssetId: fromAsset.assetHubAssetId,
+        }
+      }
+
+      return undefined
+    }, [fromAsset, fromAddress])
+  )
+
   return useMemo(
     () => ({
       // View
@@ -216,6 +243,9 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       // ERC20 approval
       erc20Approval,
 
+      // Balance
+      fastBalance,
+
       // Loading state
       isInitializing,
 
@@ -256,6 +286,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       fromEvmAccount,
       fromSubstrateAccount,
       erc20Approval,
+      fastBalance,
       isInitializing,
       stateInit,
     ]

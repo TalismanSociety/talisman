@@ -1,5 +1,3 @@
-import { useMemo } from "react"
-import { useFastBalance } from "../hooks/useFastBalance"
 import { useSwap } from "../SwapProvider"
 import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
@@ -8,46 +6,22 @@ import { SwapFormShimmer } from "./SwapFormShimmer"
 import { SwapHeader } from "./SwapHeader"
 
 export const SwapTokensWizard = () => {
-  const { swapView, fromAsset, fromAddress, isInitializing } = useSwap()
-
-  const fastBalance = useFastBalance(
-    useMemo(() => {
-      if (!fromAsset || !fromAddress) return undefined
-
-      if (fromAsset.networkType === "evm") {
-        return {
-          type: "evm",
-          address: fromAddress,
-          networkId: +fromAsset.chainId,
-          tokenAddress: fromAsset.contractAddress as `0x${string}`,
-        }
-      }
-
-      if (fromAsset.networkType === "substrate") {
-        return {
-          type: "substrate",
-          address: fromAddress,
-          chainId: fromAsset.chainId.toString(),
-          assetHubAssetId: fromAsset.assetHubAssetId,
-        }
-      }
-
-      return undefined
-    }, [fromAsset, fromAddress])
-  )
+  const { swapView, isInitializing } = useSwap()
 
   return (
     <div className="relative flex h-full w-full flex-col gap-4">
       <SwapHeader />
-
-      {(swapView === "form" || swapView === "approve-recipient") &&
-        (isInitializing ? (
-          <SwapFormShimmer />
-        ) : (
-          <SwapForm fastBalance={fastBalance} approveRecipient={swapView === "approve-recipient"} />
-        ))}
-      {swapView === "approve-erc20" && <SwapApproveErc20 />}
-      {swapView === "confirm" && <SwapConfirm fastBalance={fastBalance} />}
+      {(() => {
+        switch (swapView) {
+          case "form":
+          case "approve-recipient":
+            return isInitializing ? <SwapFormShimmer /> : <SwapForm />
+          case "approve-erc20":
+            return <SwapApproveErc20 />
+          case "confirm":
+            return <SwapConfirm />
+        }
+      })()}
     </div>
   )
 }

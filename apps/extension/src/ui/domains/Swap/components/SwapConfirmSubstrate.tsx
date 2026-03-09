@@ -8,21 +8,17 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import type { Hex } from "viem"
-import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
 
-export const SwapConfirmSubstrate = ({
-  fastBalance,
-}: {
-  fastBalance: ReturnType<typeof useFastBalance>
-}) => {
+export const SwapConfirmSubstrate = () => {
   const { t } = useTranslation()
 
   const {
     swapView,
+    fastBalance,
     fromAddress,
     toAddress,
     fromAsset,
@@ -178,11 +174,7 @@ export const SwapConfirmSubstrate = ({
   return (
     <>
       {fromAsset?.networkType === "substrate" && (
-        <FeeEstimateSubstrate
-          fastBalance={fastBalance}
-          payload={payload}
-          isLoading={isExchangeLoading}
-        />
+        <FeeEstimateSubstrate payload={payload} isLoading={isExchangeLoading} />
       )}
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">

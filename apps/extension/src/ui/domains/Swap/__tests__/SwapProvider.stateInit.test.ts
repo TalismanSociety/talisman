@@ -49,6 +49,10 @@ vi.mock("../hooks/useSwapErc20Approval", () => ({
   useSwapErc20Approval: () => ({}),
 }))
 
+vi.mock("../hooks/useFastBalance", () => ({
+  useFastBalance: () => undefined,
+}))
+
 // ── Import after mocks ────────────────────────────────────────────
 
 // eslint-disable-next-line import/first

@@ -6,17 +6,12 @@ import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTranslation } from "react-i18next"
-import type { useFastBalance } from "../hooks/useFastBalance"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirmEvm } from "./SwapConfirmEvm"
 import { SwapConfirmSubstrate } from "./SwapConfirmSubstrate"
 
-export const SwapConfirm = ({
-  fastBalance,
-}: {
-  fastBalance: ReturnType<typeof useFastBalance>
-}) => {
+export const SwapConfirm = () => {
   const { t } = useTranslation()
 
   const networks = useNetworksMapById()
@@ -182,8 +177,8 @@ export const SwapConfirm = ({
         </div>
       </div>
 
-      {fromAsset?.networkType === "evm" && <SwapConfirmEvm fastBalance={fastBalance} />}
-      {fromAsset?.networkType === "substrate" && <SwapConfirmSubstrate fastBalance={fastBalance} />}
+      {fromAsset?.networkType === "evm" && <SwapConfirmEvm />}
+      {fromAsset?.networkType === "substrate" && <SwapConfirmSubstrate />}
     </div>
   )
 }

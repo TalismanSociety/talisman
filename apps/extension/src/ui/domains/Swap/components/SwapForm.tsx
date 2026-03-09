@@ -5,7 +5,6 @@ import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwap } from "../SwapProvider"
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { FromToAccountSelector } from "./FromToAccountSelector"
@@ -13,16 +12,12 @@ import { ReverseButton } from "./ReverseButton"
 import { SwapDetails } from "./SwapDetails"
 import { TokenAmountInput } from "./TokenAmountInput"
 
-export const SwapForm = ({
-  fastBalance,
-  approveRecipient,
-}: {
-  fastBalance: ReturnType<typeof useFastBalance>
-  approveRecipient?: boolean
-}) => {
+export const SwapForm = () => {
   const { t } = useTranslation()
 
   const {
+    swapView,
+    fastBalance,
     setSwapView,
     selectedQuote,
     fromAddress,
@@ -53,9 +48,11 @@ export const SwapForm = ({
 
   useSyncSwapsChaindata()
 
+  const isApproveRecipient = swapView === "approve-recipient"
+
   useEffect(() => {
-    if (approveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
-  }, [approveRecipient, setSwapView, toIsExternal, toIsWatched])
+    if (isApproveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
+  }, [isApproveRecipient, setSwapView, toIsExternal, toIsWatched])
 
   const handleChangeFromAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
@@ -171,7 +168,7 @@ export const SwapForm = ({
           </Button>
         )}
 
-        {approveRecipient && (
+        {isApproveRecipient && (
           <div className="absolute bottom-0 left-0 m-8 flex animate-slide-in-up flex-col gap-8 rounded bg-black-tertiary p-8">
             <div className="flex items-center gap-3 text-orange-400 text-sm">
               {toIsWatched && (

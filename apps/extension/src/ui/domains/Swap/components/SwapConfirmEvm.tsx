@@ -17,16 +17,11 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { EstimateGasExecutionError } from "viem"
-import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
 
-export const SwapConfirmEvm = ({
-  fastBalance,
-}: {
-  fastBalance: ReturnType<typeof useFastBalance>
-}) => {
+export const SwapConfirmEvm = () => {
   const { t } = useTranslation()
 
   const {
@@ -257,7 +252,6 @@ export const SwapConfirmEvm = ({
       <FeeEstimateEvm
         isLoading={isExchangeLoading}
         isError={!!exchangeError}
-        fastBalance={fastBalance}
         transaction={transaction}
         txDetails={txDetails}
         isPayloadLocked={isPayloadLocked}
