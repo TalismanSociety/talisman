@@ -203,7 +203,7 @@ export const SwapConfirmSubstrate = ({
 
         {!exchangeError && (
           <SapiSendButton
-            containerId="SwapTokensModalDialog"
+            containerId="swap-modal"
             label={t("Confirm Swap")}
             loading={!isReady || !sapi || isExchangeLoading}
             payload={isReady && sapi && payload ? payload.payload : undefined}

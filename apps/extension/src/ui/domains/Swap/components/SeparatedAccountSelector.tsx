@@ -15,6 +15,7 @@ import {
   normalizeAddress,
 } from "@talismn/crypto"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -27,7 +28,6 @@ import { useTranslation } from "react-i18next"
 
 import { useSwap } from "../SwapProvider"
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {
   title: string
@@ -227,24 +227,22 @@ export const SeparatedAccountSelector = ({
         )}
       </button>
 
-      {open && (
-        <SwapTokensFullscreenPortal>
-          <div className="absolute top-0 left-0 h-full w-full bg-black">
-            <AccountPicker
-              title={title}
-              subtitle={subtitle}
-              accounts={accounts}
-              selectedAccount={selectedAccount}
-              query={query}
-              setQuery={setQuery}
-              allowInput={allowInput}
-              allowZeroBalance={allowZeroBalance}
-              onAccountChange={onSelectAccount}
-              onClose={() => setOpen(false)}
-            />
-          </div>
-        </SwapTokensFullscreenPortal>
-      )}
+      <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
+        <div className="h-full w-full bg-black">
+          <AccountPicker
+            title={title}
+            subtitle={subtitle}
+            accounts={accounts}
+            selectedAccount={selectedAccount}
+            query={query}
+            setQuery={setQuery}
+            allowInput={allowInput}
+            allowZeroBalance={allowZeroBalance}
+            onAccountChange={onSelectAccount}
+            onClose={() => setOpen(false)}
+          />
+        </div>
+      </Modal>
     </>
   )
 }

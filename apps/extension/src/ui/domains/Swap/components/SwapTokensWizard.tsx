@@ -38,7 +38,7 @@ export const SwapTokensWizard = () => {
   )
 
   return (
-    <div id="SwapTokensModalDialog" className="relative flex h-full w-full flex-col gap-4">
+    <div className="relative flex h-full w-full flex-col gap-4">
       <SwapHeader />
 
       {(swapView === "form" || swapView === "approve-recipient") &&

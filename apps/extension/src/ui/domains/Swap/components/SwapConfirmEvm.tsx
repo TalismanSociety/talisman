@@ -328,7 +328,7 @@ export const SwapConfirmEvm = ({
             payload={isReady && evmTx ? evmTx : null}
             onSigned={sendSigned}
             onSentToDevice={onSentToDevice}
-            containerId="SwapTokensModalDialog"
+            containerId="swap-modal"
           />
         ) : (
           <Button className="w-full" primary onClick={send} disabled={!isReady || !evmTx}>

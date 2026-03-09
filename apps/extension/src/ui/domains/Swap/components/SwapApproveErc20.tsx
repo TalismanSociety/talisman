@@ -181,7 +181,7 @@ export const SwapApproveErc20 = () => {
               payload={isReady && approveTx ? approveTx : null}
               onSigned={sendSigned}
               onSentToDevice={onSentToDevice}
-              containerId="SwapTokensModalDialog"
+              containerId="swap-modal"
             />
           ) : (
             <Button className="w-full" primary disabled>

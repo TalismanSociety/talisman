@@ -67,7 +67,7 @@ export const FeeEstimateEvm = ({
               priority={priority}
               onChange={handleFeeChange}
               networkUsage={networkUsage}
-              drawerContainerId="SwapTokensModalDialog"
+              drawerContainerId="swap-modal"
             />
           ) : (
             <div className={"h-10 animate-pulse rounded-xs bg-body-disabled text-body-disabled"}>
