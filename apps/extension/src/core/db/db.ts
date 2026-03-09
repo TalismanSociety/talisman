@@ -4,6 +4,7 @@ import type { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import type { TalismanMetadataDef } from "../domains/substrate/types"
 import type { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
 import type { DbBlobId, DbBlobItem } from "./blobs"
+import type { QueryCacheItem } from "./queryCache"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
@@ -14,6 +15,7 @@ class TalismanDatabase extends Dexie {
   transactions!: Dexie.Table<LegacyWalletTransaction, string>
   transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
+  queryCache!: Dexie.Table<QueryCacheItem, string>
 
   constructor() {
     super("Talisman")
@@ -55,6 +57,11 @@ class TalismanDatabase extends Dexie {
     // v12: migrate phishing data from dedicated table to compressed blob store
     this.version(12).stores({
       phishing: null,
+    })
+
+    // v13: query cache table for persisted React Query data
+    this.version(13).stores({
+      queryCache: "key, purgeAt",
     })
   }
 }

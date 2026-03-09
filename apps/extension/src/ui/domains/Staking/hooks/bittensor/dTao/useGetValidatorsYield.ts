@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
+import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
+
 import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
-import type { ValidatorYield } from "./types"
 
 export function useGetValidatorsYield({ netuid }: { netuid: number }) {
-  return useQuery<ValidatorYield[]>({
-    queryKey: ["taoData", "validatorsYield", netuid],
+  return useQuery({
+    queryKey: ["taoData", "validatorsYield", netuid] as const,
     queryFn: async ({ signal }) => {
       try {
         return (await taoDataApi.subnets.listSubnetValidators(String(netuid), { signal })).data
@@ -13,10 +14,11 @@ export function useGetValidatorsYield({ netuid }: { netuid: number }) {
         throw toTaoDataApiError(error, "Failed to load subnet validators")
       }
     },
+    persister: createQueryStoragePersister(),
     enabled: typeof netuid === "number",
     retry: shouldRetryTaoDataApiError,
-    staleTime: 5 * 60 * 1000, // 5 mins
-    gcTime: 10 * 60 * 1000, // 10 mins
+    staleTime: 5 * 60_000, // 5 mins
+    gcTime: 10 * 60_000, // 10 mins
     refetchOnReconnect: true,
   })
 }
