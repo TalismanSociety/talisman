@@ -50,11 +50,13 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     substrateAccounts,
     fromEvmAccount,
     fromSubstrateAccount,
+    resetFromAddressManuallySet,
   } = useSwapAddresses({
     fromAddress: fromAddressRaw,
     setFromAddress: setFromAddressRaw,
     toAddress: toAddressRaw,
     setToAddress: setToAddressRaw,
+    fromAsset,
     toAsset,
   })
 
@@ -77,7 +79,8 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
     setToAddressRaw(null)
     setTokenTab("all")
     setApprovalCounter(0)
-  }, [])
+    resetFromAddressManuallySet()
+  }, [resetFromAddressManuallySet])
 
   // -- Async data hooks --
   const { data: safeTokens = EMPTY_SAFE_TOKENS } = useSafeTokens()

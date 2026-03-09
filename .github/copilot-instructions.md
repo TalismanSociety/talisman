@@ -77,6 +77,12 @@
 4. Any change that touches the keyring or secret storage must ship with dedicated unit tests.
 5. Before considering a task complete, ensure `pnpm check` passes (Biome check for the repo).
 
+## Browser Testing with the Wallet
+
+- When you need to interact with the Talisman wallet in a browser (e.g., to verify UI, test flows, or debug visually), use the `agent-browser` CLI.
+- **Only connect to the dev-mode browser on CDP port 9223** (`--cdp-url http://localhost:9223`). This is the designated development browser with the extension loaded.
+- **Using Talisman on any other browser instance is strictly forbidden.** Do not launch new browsers or connect to other CDP ports for wallet interactions.
+
 ## Commenting & Documentation
 
 - Code should be self-explanatory; add **succinct comments** only when context is non-obvious (security rationale, tricky RxJS flows, chain-specific quirks).
@@ -86,8 +92,8 @@
 ## Code quality
 
 - Add relevant tests along with any new development.
-- Before completing work, ensure `pnpm check --fix` passes, and verify that typescript code can compile using typecheck scripts.
+- Before completing work, ensure `pnpm check --fix`, `pnpm typecheck` and `pnpm knip` pass.
 
-## Temporary scripts
+## Temporary files
 
-- Temporary scripts and data can be stored in the `.tmp` folder that is not tracked by git. Delete them once they are no longer needed.
+- Temporary files can be stored in the `.tmp` folder at the root of the project, it is not tracked by git. Delete them once they are no longer needed.
