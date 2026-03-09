@@ -60,9 +60,9 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [remoteConfig.seek.stakingUrl])
 
   const handleClickSwap = useCallback(() => {
-    openSwapTokensModal({})
+    openSwapTokensModal({ toTokenId: remoteConfig.seek.tokenId })
     onClose()
-  }, [openSwapTokensModal, onClose])
+  }, [openSwapTokensModal, onClose, remoteConfig.seek.tokenId])
 
   const handleClickTrade = useCallback(() => {
     window.open(remoteConfig.seek.tradeUrl, "_blank", "noopener")
