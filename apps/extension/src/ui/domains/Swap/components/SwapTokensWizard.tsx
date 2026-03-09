@@ -1,7 +1,6 @@
 import { useMemo } from "react"
-
+import { useFastBalance } from "../hooks/useFastBalance"
 import { useSwap } from "../SwapProvider"
-import { useFastBalance } from "../swaps-port/useFastBalance"
 import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm } from "./SwapForm"

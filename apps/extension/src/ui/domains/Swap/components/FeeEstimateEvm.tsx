@@ -13,9 +13,8 @@ import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 import type { TransactionRequest } from "viem"
-
+import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwap } from "../SwapProvider"
-import type { useFastBalance } from "../swaps-port/useFastBalance"
 
 export const FeeEstimateEvm = ({
   isLoading,

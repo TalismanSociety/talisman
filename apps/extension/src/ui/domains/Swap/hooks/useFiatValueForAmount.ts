@@ -1,4 +1,4 @@
-import type { TokenRates } from "@talismn/token-rates"
+import type { TokenRateData, TokenRates } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -27,10 +27,10 @@ export const useFiatValueForAmount = ({
     if (!defaultTokenRate) return null
     const baseRate = defaultTokenRate.usd?.price
     if (!baseRate) return null
-    const result: Record<string, number> = {}
+    const result = {} as Record<string, TokenRateData>
     for (const [cur, rate] of Object.entries(defaultTokenRate)) {
       if (rate !== null && rate !== undefined) {
-        result[cur] = (usdOverride * rate.price) / baseRate
+        result[cur] = { price: (usdOverride * rate.price) / baseRate }
       }
     }
     return result as TokenRates

@@ -17,10 +17,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { EstimateGasExecutionError } from "viem"
-
+import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
-import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
 
 export const SwapConfirmEvm = ({

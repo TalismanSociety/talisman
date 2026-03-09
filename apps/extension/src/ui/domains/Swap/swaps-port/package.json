@@ -1,8 +1,0 @@
-{
-  "name": "swaps-port",
-  "module": "src/index.ts",
-  "type": "module",
-  "devDependencies": {
-    "typescript": "^5.0.0"
-  }
-}

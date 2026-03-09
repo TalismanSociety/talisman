@@ -1,10 +1,7 @@
 import { BigMath } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useNetworksMapById } from "@ui/state/chaindata"
-import { useMemo } from "react"
-
-import { useSubstrateToken } from "./useSubstrateToken"
+import { useNetworkById } from "@ui/state/chaindata"
 
 export type UseSubstrateBalanceProps = {
   type: "substrate"
@@ -19,24 +16,7 @@ type SubstrateBalance = {
 }
 
 export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
-  const token = useSubstrateToken(
-    useMemo(
-      () =>
-        props?.chainId
-          ? {
-              chainId: props?.chainId,
-              assethubAssetId: props?.assetHubAssetId,
-            }
-          : undefined,
-      [props?.assetHubAssetId, props?.chainId]
-    )
-  )
-  const chains = useNetworksMapById({ platform: "polkadot" })
-  const chain = useMemo(() => {
-    if (!props) return null
-    return chains[props.chainId]
-  }, [chains, props])
-
+  const chain = useNetworkById(props?.chainId, "polkadot")
   const { data: sapi } = useScaleApi(chain?.id ?? null)
 
   const address = props?.address
@@ -46,7 +26,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
   const { data: balance } = useQuery({
     queryKey: ["swap-substrate-balance", chainId, address, assetHubAssetId],
     queryFn: async (): Promise<SubstrateBalance | undefined> => {
-      if (!props || !sapi || !token) return undefined
+      if (!props || !sapi) return undefined
 
       if (assetHubAssetId === undefined) {
         const result = await sapi.getStorage<{
@@ -83,7 +63,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
       const balanceBN = BigInt(result?.balance ?? 0n)
       return { transferable: balanceBN, stayAlive: balanceBN }
     },
-    enabled: !!props && !!sapi && !!token,
+    enabled: !!props && !!sapi,
     refetchInterval: 15_000,
   })
 

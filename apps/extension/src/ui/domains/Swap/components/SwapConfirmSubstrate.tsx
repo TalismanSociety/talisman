@@ -8,10 +8,10 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import type { Hex } from "viem"
+import type { useFastBalance } from "../hooks/useFastBalance"
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
-import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
 
 export const SwapConfirmSubstrate = ({
