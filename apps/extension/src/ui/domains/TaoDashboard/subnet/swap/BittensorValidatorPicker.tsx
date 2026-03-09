@@ -1,5 +1,5 @@
 import { type DotNetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
-import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
+import { GlobeIcon, LockIcon, TalismanHandIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
 import { cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import {
@@ -14,11 +14,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { EarnTypeBadge } from "@ui/domains/Earn/components/EarnTypeBadge"
+import {
+  sortValidatorOptions,
+  type ValidatorSortValue,
+} from "@ui/domains/Staking/Bittensor/utils/validatorSorting"
 import type { BondOption as BondOptionType } from "@ui/domains/Staking/hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useToken } from "@ui/state/chaindata"
 import {
   type FC,
+  useCallback,
   useDeferredValue,
   useEffect,
   useMemo,
@@ -28,25 +34,7 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 
-type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
-
-const sortBondOptions = (data: BondOptionType[], sortBy: SortValue): BondOptionType[] =>
-  data
-    .concat()
-    .sort((a, b) => {
-      if (sortBy === "name") {
-        if (a.name && !b.name) return -1
-        if (!a.name && b.name) return 1
-        return a.name.localeCompare(b.name)
-      } else {
-        // Sort other fields in descending order
-        if (a[sortBy] > b[sortBy]) return -1
-        if (a[sortBy] < b[sortBy]) return 1
-      }
-      return 0 // Keep them in the same place if equal
-    })
-    // Validators with yield data first (others dont validate this subnet)
-    .sort((a, b) => (a.validatorYield ? -1 : 1) - (b.validatorYield ? -1 : 1))
+let lastPickedValidatorSortMethod: ValidatorSortValue = "featured"
 
 export const BittensorValidatorPicker: FC<{
   networkId: DotNetworkId
@@ -57,12 +45,30 @@ export const BittensorValidatorPicker: FC<{
   const { t } = useTranslation()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const [sortMethod, setSortMethod] = useState<SortValue>("totalStaked")
+  const [sortMethod, setSortMethod] = useState<ValidatorSortValue>(
+    () => lastPickedValidatorSortMethod
+  )
+  const [prioritizeFeaturedOnOpen, setPrioritizeFeaturedOnOpen] = useState(
+    () => lastPickedValidatorSortMethod !== "featured"
+  )
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
 
+  const handleSortMethodChange = useCallback(
+    (method: ValidatorSortValue) => {
+      if (method !== sortMethod) setPrioritizeFeaturedOnOpen(false)
+      lastPickedValidatorSortMethod = method
+      setSortMethod(method)
+    },
+    [sortMethod]
+  )
+
   const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
-    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined
+    combinedValidatorsData.length
+      ? sortValidatorOptions(combinedValidatorsData, sortMethod, {
+          prioritizeFeatured: prioritizeFeaturedOnOpen,
+        })
+      : undefined
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -85,9 +91,13 @@ export const BittensorValidatorPicker: FC<{
   useEffect(() => {
     if (combinedValidatorsData.length)
       startTransition(() => {
-        setSortedValidators(sortBondOptions(combinedValidatorsData, sortMethod))
+        setSortedValidators(
+          sortValidatorOptions(combinedValidatorsData, sortMethod, {
+            prioritizeFeatured: prioritizeFeaturedOnOpen,
+          })
+        )
       })
-  }, [combinedValidatorsData, sortMethod])
+  }, [combinedValidatorsData, sortMethod, prioritizeFeaturedOnOpen])
 
   // Reset scroll to top when sort method or search changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
@@ -111,7 +121,7 @@ export const BittensorValidatorPicker: FC<{
             autoFocus
           />
         </div>
-        <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
+        <SortMethodButton method={sortMethod} onChange={handleSortMethodChange} />
       </div>
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
@@ -151,13 +161,14 @@ export const BittensorValidatorPicker: FC<{
 }
 
 const SortMethodButton: FC<{
-  method: SortValue
-  onChange: (method: SortValue) => void
+  method: ValidatorSortValue
+  onChange: (method: ValidatorSortValue) => void
 }> = ({ method, onChange }) => {
   const { t } = useTranslation()
 
-  const sortMethods = useMemo<{ label: string; value: SortValue }[]>(
+  const sortMethods = useMemo<{ label: string; value: ValidatorSortValue }[]>(
     () => [
+      { label: t("Featured"), value: "featured" },
       { label: t("Total Staked"), value: "totalStaked" },
       { label: t("Name"), value: "name" },
       { label: t("N° of Stakers"), value: "totalStakers" },
@@ -304,16 +315,24 @@ const ValidatorRow: FC<{
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
         <div className="flex w-full justify-between text-body text-sm">
           <div className={cn(option.isRecommended && "font-bold text-primary")}>
-            {option.name ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>{option.name}</div>
-                </TooltipTrigger>
-                <TooltipContent>{option.hotkey}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
-            )}
+            <div className="flex items-center gap-2">
+              {option.name ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>{option.name}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>{option.hotkey}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
+              )}
+              {option.isFeatured && (
+                <EarnTypeBadge className="mx-0 inline-flex items-center gap-2 rounded border-none bg-primary/10 px-4 py-2 font-light text-primary text-xs normal-case">
+                  <TalismanHandIcon className="size-8" />
+                  {t("Featured")}
+                </EarnTypeBadge>
+              )}
+            </div>
           </div>
           <div className={cn(isLoading && "animate-pulse")}>
             {option.validatorYield?.thirty_day_apy

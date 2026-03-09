@@ -71,6 +71,7 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       buy: {},
       sell: {},
     },
+    featuredValidators: [],
   },
   recommendedNetworks: [],
   postHogUrl: "https://us.i.posthog.com/batch/",

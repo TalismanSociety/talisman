@@ -5,7 +5,12 @@ import type { Address } from "../../types/base"
 import type { PostHogCaptureProperties } from "../analytics/types"
 import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
-export type RemoteConfigStoreData = RemoteConfigData
+export type RemoteConfigStoreData = RemoteConfigData & {
+  bittensor: RemoteConfigData["bittensor"] & {
+    /** config.toml: [bittensor] featuredValidators = ["<validator-hotkey>"] */
+    featuredValidators: string[]
+  }
+}
 
 export interface RequestOnboardCreatePassword {
   pass: string
