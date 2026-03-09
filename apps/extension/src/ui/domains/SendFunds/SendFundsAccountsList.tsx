@@ -126,6 +126,10 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   const token = useToken(tokenId)
   const balances = useBalances()
 
+  // Capture the selected account at mount time so the sort order stays stable.
+  // When the modal re-opens, the component remounts and picks up the new value.
+  const initialSelectedRef = useRef(selected)
+
   const accountsWithBalance = useMemo(() => {
     return accounts
       .map((account) => ({
@@ -133,9 +137,9 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         balance: balances.find({ address: account.address, tokenId }).sorted[0],
       }))
       .sort((a, b) => {
-        // selected account first
-        if (a.address === selected) return -1
-        if (b.address === selected) return 1
+        // Pin the initially-selected account to the top
+        if (a.address === initialSelectedRef.current) return -1
+        if (b.address === initialSelectedRef.current) return 1
 
         // then accounts by descending balance
         const balanceA = a.balance?.transferable.planck ?? 0n
@@ -148,7 +152,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         ...account,
         disabled: !account.balance || account.balance.transferable.planck === 0n,
       }))
-  }, [accounts, balances, selected, tokenId])
+  }, [accounts, balances, tokenId])
 
   if (!showIfEmpty && !accounts?.length) return null
 
