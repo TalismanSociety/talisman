@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { useTokensMap } from "@ui/state/chaindata"
 import type { TFunction } from "i18next"
-import { useCallback } from "react"
+import { useCallback, useRef } from "react"
 
 import type {
   SwappableAssetBaseType,
@@ -146,9 +146,12 @@ export const useReverse = (
   setFromAmount: (v: Decimal) => void,
   toAmount: Decimal | null
 ) => {
+  const toAmountRef = useRef(toAmount)
+  toAmountRef.current = toAmount
+
   return useCallback(() => {
-    if (toAmount) setFromAmount(toAmount)
+    if (toAmountRef.current) setFromAmount(toAmountRef.current)
     setFromAsset(toAsset)
     setToAsset(fromAsset)
-  }, [fromAsset, setFromAmount, setFromAsset, setToAsset, toAmount, toAsset])
+  }, [fromAsset, setFromAmount, setFromAsset, setToAsset, toAsset])
 }

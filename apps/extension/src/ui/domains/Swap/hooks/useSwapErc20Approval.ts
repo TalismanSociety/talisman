@@ -130,9 +130,12 @@ export const useSwapErc20Approval = (params: {
     }
   }, [allowanceQuery.data, fromAddress])
 
-  return {
-    data: allowanceQuery.data ?? null,
-    loading: allowanceQuery.isLoading,
-    approveTx,
-  }
+  return useMemo(
+    () => ({
+      data: allowanceQuery.data ?? null,
+      loading: allowanceQuery.isLoading,
+      approveTx,
+    }),
+    [allowanceQuery.data, allowanceQuery.isLoading, approveTx]
+  )
 }

@@ -43,6 +43,7 @@ const Details = () => {
     }
     if ((!selectedSubProtocol || !selectedProtocol) && sortedQuotes.length > 0) {
       const defaultQuote = sortedQuotes[0]
+      if (!selectedProtocol) setSelectedProtocol(defaultQuote.quote.protocol)
       if (defaultQuote?.quote.subProtocol) setSelectedSubProtocol(defaultQuote.quote.subProtocol)
     }
   }, [

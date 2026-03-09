@@ -56,12 +56,11 @@ export const useSwapQuoteManager = (params: {
       queryKey: [
         "swap-quote",
         module.protocol,
-        fromAsset,
-        toAsset,
+        fromAsset?.id ?? null,
+        toAsset?.id ?? null,
         fromAmount.planck.toString(),
         fromAddress,
         toAddress,
-        selectedSubProtocol,
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(
@@ -88,7 +87,11 @@ export const useSwapQuoteManager = (params: {
     (!enabled && queryResults.length === 0)
   const hasQuoteError = queryResults.length > 0 && queryResults.every((r) => r.isError)
 
-  // Flatten results into sorted quotes with fees
+  // Stable dependency: only changes when actual query data updates
+  // (useQueries returns a new array reference every render, so we can't use it directly)
+  const quotesDataKey = queryResults.map((r) => r.dataUpdatedAt).join(",")
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
   const sortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
     const flatQuotes: BaseQuote[] = []
     for (const result of queryResults) {
@@ -127,7 +130,7 @@ export const useSwapQuoteManager = (params: {
           return 0
       }
     })
-  }, [queryResults, tokenRates, quoteSorting])
+  }, [quotesDataKey, tokenRates, quoteSorting])
 
   // Selected quote
   const selectedQuote: BaseQuote | null = useMemo(() => {
@@ -153,13 +156,15 @@ export const useSwapQuoteManager = (params: {
     return swapModules.find((m) => m.protocol === selectedQuote.protocol)
   }, [selectedQuote])
 
-  // Output amount
+  // Output amount (use primitive deps to avoid recreating Decimal on every render)
+  const outputAmountBN = selectedQuote?.outputAmountBN
+  const toDecimals = toAsset?.decimals
+  const toSymbol = toAsset?.symbol
   const toAmount: Decimal | null = useMemo(() => {
-    if (!selectedQuote || selectedQuote.outputAmountBN === undefined || !toAsset) return null
-    return Decimal.fromPlanck(selectedQuote.outputAmountBN, toAsset.decimals, {
-      currency: toAsset.symbol,
-    })
-  }, [selectedQuote, toAsset])
+    if (outputAmountBN === undefined || outputAmountBN === null || !toDecimals || !toSymbol)
+      return null
+    return Decimal.fromPlanck(outputAmountBN, toDecimals, { currency: toSymbol })
+  }, [outputAmountBN, toDecimals, toSymbol])
 
   return {
     isLoadingQuotes,

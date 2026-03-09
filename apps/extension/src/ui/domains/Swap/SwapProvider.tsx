@@ -15,6 +15,8 @@ import { Decimal } from "./swaps-port/Decimal"
 
 export type { SwapView } from "./swap-modules/common.swap-module"
 
+const EMPTY_SAFE_TOKENS = new Set<string>()
+
 type SwapProviderProps = {
   stateInit: SwapInit | null
 }
@@ -78,7 +80,7 @@ const useSwapProviderContext = ({ stateInit }: SwapProviderProps) => {
   }, [])
 
   // -- Async data hooks --
-  const { data: safeTokens = new Set<string>() } = useSafeTokens()
+  const { data: safeTokens = EMPTY_SAFE_TOKENS } = useSafeTokens()
   const { fromAssets, toAssets } = useSwapAssets(fromAsset, tokenTab, t, safeTokens)
 
   const {
