@@ -1,3 +1,4 @@
+import type { TokenRates } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -5,7 +6,6 @@ import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
 import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { useTokenRatesFromUsd } from "../swaps-port/useTokenRatesFromUsd"
 
 type UseFiatValueForAmountProps = {
   planck?: bigint
@@ -21,7 +21,20 @@ export const useFiatValueForAmount = ({
   const tokens = useTokensMap()
   const rates = useTokenRatesMap()
 
-  const fiatOverride = useTokenRatesFromUsd(usdOverride)
+  const fiatOverride = useMemo((): TokenRates | null => {
+    if (usdOverride === undefined || usdOverride === null) return null
+    const defaultTokenRate = Object.values(rates ?? {})[0]
+    if (!defaultTokenRate) return null
+    const baseRate = defaultTokenRate.usd?.price
+    if (!baseRate) return null
+    const result: Record<string, number> = {}
+    for (const [cur, rate] of Object.entries(defaultTokenRate)) {
+      if (rate !== null && rate !== undefined) {
+        result[cur] = (usdOverride * rate.price) / baseRate
+      }
+    }
+    return result as TokenRates
+  }, [rates, usdOverride])
 
   const bestGuessRate = useMemo(() => {
     if (!asset) return null
