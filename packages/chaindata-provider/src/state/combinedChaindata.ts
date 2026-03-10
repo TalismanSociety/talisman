@@ -9,7 +9,7 @@ import {
   shareReplay,
 } from "rxjs"
 
-import { type Network, NetworkSchema, type Token, TokenSchema } from "../chaindata"
+import { type Network, type Token, TokenSchema } from "../chaindata"
 import log from "../log"
 import { type Chaindata, type CustomChaindata, CustomChaindataSchema } from "./schema"
 
@@ -124,35 +124,24 @@ type ChaindataProviderToken = Token & {
   __isTestnet: boolean
 }
 
-export const isNetworkCustom = (network: Network): boolean => {
-  if (typeof network !== "object") return false
-  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
-  return __isCustom && NetworkSchema.safeParse(rest).success
-}
+// Flag checks only — no Zod safeParse. All data is already validated upstream:
+// - Default chaindata: validated by ChaindataFileSchema in storageValidated$ / fetchChaindata()
+// - Custom chaindata: validated by CustomChaindataSchema in the customChaindata$ pipe
+// - Dynamic tokens: validated by TokenSchema.safeParse in the defaultChainData$ pipe
+export const isNetworkCustom = (network: Network): boolean =>
+  typeof network === "object" && (network as ChaindataProviderNetwork).__isCustom === true
 
-export const isNetworkKnown = (network: Network): boolean => {
-  if (typeof network !== "object") return false
-  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
-  return __isKnown && NetworkSchema.safeParse(rest).success
-}
+export const isNetworkKnown = (network: Network): boolean =>
+  typeof network === "object" && (network as ChaindataProviderNetwork).__isKnown === true
 
-export const isTokenCustom = (token: Token): boolean => {
-  if (typeof token !== "object") return false
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return __isCustom && TokenSchema.safeParse(rest).success
-}
+export const isTokenCustom = (token: Token): boolean =>
+  typeof token === "object" && (token as ChaindataProviderToken).__isCustom === true
 
-export const isTokenKnown = (token: Token): boolean => {
-  if (typeof token !== "object") return false
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return __isKnown && TokenSchema.safeParse(rest).success
-}
+export const isTokenKnown = (token: Token): boolean =>
+  typeof token === "object" && (token as ChaindataProviderToken).__isKnown === true
 
-export const isTokenTestnet = (token: Token): boolean => {
-  if (typeof token !== "object") return false
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return __isTestnet && TokenSchema.safeParse(rest).success
-}
+export const isTokenTestnet = (token: Token): boolean =>
+  typeof token === "object" && (token as ChaindataProviderToken).__isTestnet === true
 
 export const getCleanNetwork = (network: Network): Network => {
   const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
