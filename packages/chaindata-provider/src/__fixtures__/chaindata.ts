@@ -4,6 +4,7 @@ import type { EthNetwork } from "../chaindata/networks/EthNetwork"
 import type { SolNetwork } from "../chaindata/networks/SolNetwork"
 import type { EvmNativeToken } from "../chaindata/tokens/EvmNativeToken"
 import type { SolNativeToken } from "../chaindata/tokens/SolNativeToken"
+import type { SubDTaoToken } from "../chaindata/tokens/SubstrateDTaoToken"
 import type { SubNativeToken } from "../chaindata/tokens/SubstrateNativeToken"
 import type { Chaindata, CustomChaindata } from "../state/schema"
 
@@ -80,6 +81,19 @@ export const makeSolNativeToken = (overrides: Partial<SolNativeToken> = {}): Sol
   platform: "solana",
   decimals: 9,
   symbol: "SOL",
+  ...overrides,
+})
+
+export const makeSubDTaoToken = (
+  overrides: Partial<SubDTaoToken> = {}
+): Omit<SubDTaoToken, "isTransferable"> & { isTransferable?: boolean } => ({
+  id: "polkadot-substrate-dtao-0-hotkey",
+  networkId: "polkadot",
+  type: "substrate-dtao",
+  platform: "polkadot",
+  decimals: 9,
+  symbol: "dTAO",
+  netuid: 0,
   ...overrides,
 })
 

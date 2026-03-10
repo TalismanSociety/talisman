@@ -40,7 +40,12 @@ export const getCombinedChaindata$ = (
       ...data,
       tokens: values(
         keyBy(
-          data.tokens.concat(dynamicTokens.filter((t) => TokenSchema.safeParse(t).success)),
+          data.tokens.concat(
+            dynamicTokens.flatMap((t) => {
+              const result = TokenSchema.safeParse(t)
+              return result.success ? [result.data] : []
+            })
+          ),
           (t) => t.id
         )
       ),

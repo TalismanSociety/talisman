@@ -1,4 +1,4 @@
-import { firstValueFrom, of, ReplaySubject } from "rxjs"
+import { firstValueFrom, of, ReplaySubject, take, toArray } from "rxjs"
 import { describe, expect, it } from "vitest"
 import {
   makeChaindata,
@@ -7,6 +7,7 @@ import {
   makeEvmNativeToken,
   makeInvalidToken,
   makeMiniMetadata,
+  makeSubDTaoToken,
 } from "../__fixtures__/chaindata"
 import type { Network, Token } from "../chaindata"
 import {
@@ -248,6 +249,72 @@ describe("getCombinedChaindata$", () => {
 
       const merged = findToken(result.tokens, "1-evm-native")
       expect(merged.symbol).toBe("DYN-ETH")
+    })
+
+    it("applies schema defaults to dynamic tokens (e.g. isTransferable)", async () => {
+      // SubDTaoToken schema declares isTransferable: z.boolean().default(true)
+      // A dynamic token without isTransferable should get the default applied via safeParse
+      const dtaoToken = makeSubDTaoToken()
+      expect(dtaoToken).not.toHaveProperty("isTransferable")
+
+      const data = makeChaindata()
+      const result = await combine(data, undefined, [dtaoToken as Token])
+
+      const merged = findToken(result.tokens, dtaoToken.id)
+      expect(merged).toBeDefined()
+      expect(merged.isTransferable).toBe(true)
+    })
+  })
+
+  // ── shareReplay ────────────────────────────────────────────────
+
+  describe("shareReplay", () => {
+    it("concurrent subscribers receive the same object reference (no redundant merge)", async () => {
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([])
+
+      const result$ = getCombinedChaindata$(of(makeChaindata()), undefined, dynamicTokens$)
+
+      // subscribe concurrently so refCount stays > 0
+      const results: Chaindata[] = []
+      const sub1 = result$.subscribe((v) => results.push(v))
+      const sub2 = result$.subscribe((v) => results.push(v))
+
+      // wait for both to receive
+      await firstValueFrom(result$)
+
+      expect(results.length).toBeGreaterThanOrEqual(2)
+      // both subscribers got the exact same object reference — merge ran once
+      expect(results[0]).toBe(results[1])
+
+      sub1.unsubscribe()
+      sub2.unsubscribe()
+    })
+
+    it("emits updated value when upstream changes, replays latest to new subscribers", async () => {
+      const default$ = new ReplaySubject<Chaindata>(1)
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([])
+
+      const data1 = makeChaindata()
+      default$.next(data1)
+
+      const result$ = getCombinedChaindata$(default$, undefined, dynamicTokens$)
+
+      // collect two emissions
+      const emissions = firstValueFrom(result$.pipe(take(2), toArray()))
+
+      // push a second emission
+      const data2 = makeChaindata({
+        tokens: [makeEvmNativeToken({ id: "1-evm-native", symbol: "UPDATED" })],
+        networks: [makeEthNetwork()],
+        miniMetadatas: [],
+      })
+      default$.next(data2)
+
+      const [emission1, emission2] = await emissions
+      expect(emission1).not.toBe(emission2) // different merge results
+      expect(findToken(emission2.tokens, "1-evm-native").symbol).toBe("UPDATED")
     })
   })
 
