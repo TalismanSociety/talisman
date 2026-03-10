@@ -25,7 +25,8 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
 
       // schema is invalid, fallback to empty data
       return validation.success ? validation.data : EMPTY_DATA
-    })
+    }),
+    shareReplay({ bufferSize: 1, refCount: true })
   )
 
   return new Observable<Chaindata>((subscriber) => {
@@ -45,8 +46,15 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
 
         try {
           // if fetching from github fails, and if DB is empty, provision it with initial data
-          log.info("[defaultChaindata$] Importing initial chaindata file", initChaindata)
-          storage$.next(initChaindata as Chaindata)
+          log.info("[defaultChaindata$] Importing initial chaindata file")
+          const validation = ChaindataFileSchema.safeParse(initChaindata)
+          if (!validation.success) {
+            log.error("[defaultChaindata$] initChaindata failed schema validation", {
+              error: validation.error,
+            })
+            return
+          }
+          storage$.next(validation.data)
           log.info("[defaultChaindata$] Initial chaindata file imported successfully")
         } catch (cause) {
           log.error("[defaultChaindata$] Failed to import initial chaindata file", { cause })

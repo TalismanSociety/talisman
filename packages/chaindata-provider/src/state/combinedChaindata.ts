@@ -8,16 +8,10 @@ import {
   of,
   shareReplay,
 } from "rxjs"
-import z from "zod/v4"
 
 import { type Network, NetworkSchema, type Token, TokenSchema } from "../chaindata"
 import log from "../log"
-import {
-  type Chaindata,
-  ChaindataFileSchema,
-  type CustomChaindata,
-  CustomChaindataSchema,
-} from "./schema"
+import { type Chaindata, type CustomChaindata, CustomChaindataSchema } from "./schema"
 
 const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
 
@@ -57,81 +51,73 @@ export const getCombinedChaindata$ = (
   return combineLatest({ defaultData: defaultChainData$, customData: customChaindata$ }).pipe(
     map((data) => {
       const start = performance.now()
-      const parsed = ChaindataProviderDataSchema.safeParse(data)
+      const result = mergeDefaultAndCustomChaindata(data.defaultData, data.customData)
       log.debug(
-        "[ChaindataProvider] Combined chaindata schema validation: %sms",
+        "[ChaindataProvider] Combined chaindata merge: %sms",
         (performance.now() - start).toFixed(2)
       )
-      if (!parsed.success) {
-        log.error("Failed to parse chaindata provider data", { parsed, data })
-        throw new Error("Failed to parse chaindata provider data")
-      }
-      return parsed.data as Chaindata
+      return result as Chaindata
     }),
     shareReplay({ bufferSize: 1, refCount: true })
   )
 }
 
 /**
- * ⚠️ Hack ⚠️
- * Because Token and Network schemas are unions, zod doesn't allow extending them
- * ChaindataProvider needs to merge default and custom entities, and it turns out that doing it via a zod schema generates the correct output types.
- * So let's take the opportunity and generate the helpper functions we need to leverage those properties
+ * Merges default and custom chaindata, adding __isCustom, __isKnown, __isTestnet flags.
  *
- * Note: ChaindataProvider's consolidated output is the only context where we can safely derive isCustom and isTestnet properties.
- * So these properties should not be declared on the main Token & Network schemas.
+ * Input data is already validated by upstream observables (storageValidated$ for default,
+ * customChaindata$ pipe for custom). This is a pure data transformation.
  */
-const ChaindataProviderDataSchema = z
-  .strictObject({
-    defaultData: ChaindataFileSchema,
-    customData: CustomChaindataSchema,
-  })
-  .transform(({ defaultData, customData }) => {
-    const defaultNetworksById = keyBy(
-      defaultData.networks.map((n) => ({ ...n, __isKnown: true, __isCustom: false })),
-      (n) => n.id
-    )
-    const customNetworksById = keyBy(
-      customData.networks?.map((t) => ({
-        ...t,
-        __isKnown: !!defaultNetworksById[t.id],
-        __isCustom: true,
-      })),
-      (n) => n.id
-    )
-    const networksById = assign({}, defaultNetworksById, customNetworksById)
+const mergeDefaultAndCustomChaindata = (defaultData: Chaindata, customData: CustomChaindata) => {
+  const defaultNetworksById = keyBy(
+    defaultData.networks.map((n) => ({ ...n, __isKnown: true, __isCustom: false })),
+    (n) => n.id
+  )
+  const customNetworksById = keyBy(
+    customData.networks?.map((t) => ({
+      ...t,
+      __isKnown: !!defaultNetworksById[t.id],
+      __isCustom: true,
+    })),
+    (n) => n.id
+  )
+  const networksById = assign({}, defaultNetworksById, customNetworksById)
 
-    const defaultTokensById = keyBy(
-      defaultData.tokens.map((n) => ({
-        ...n,
-        __isCustom: false,
-        __isKnown: true,
-        __isTestnet: !!networksById[n.networkId]?.isTestnet,
-      })),
-      (n) => n.id
-    )
-    const customTokensById = keyBy(
-      customData.tokens.map((t) => ({
-        ...t,
-        __isCustom: true,
-        __isKnown: !!defaultTokensById[t.id],
-        __isTestnet: !!networksById[t.networkId]?.isTestnet,
-      })),
-      (n) => n.id
-    )
-    const tokensById = assign({}, defaultTokensById, customTokensById)
+  const defaultTokensById = keyBy(
+    defaultData.tokens.map((n) => ({
+      ...n,
+      __isCustom: false,
+      __isKnown: true,
+      __isTestnet: !!networksById[n.networkId]?.isTestnet,
+    })),
+    (n) => n.id
+  )
+  const customTokensById = keyBy(
+    customData.tokens.map((t) => ({
+      ...t,
+      __isCustom: true,
+      __isKnown: !!defaultTokensById[t.id],
+      __isTestnet: !!networksById[t.networkId]?.isTestnet,
+    })),
+    (n) => n.id
+  )
+  const tokensById = assign({}, defaultTokensById, customTokensById)
 
-    return {
-      networks: values(networksById),
-      tokens: values(tokensById),
-      miniMetadatas: defaultData.miniMetadatas,
-    }
-  })
+  return {
+    networks: values(networksById),
+    tokens: values(tokensById),
+    miniMetadatas: defaultData.miniMetadatas,
+  }
+}
 
-// these types shouldnt be exported, we only leverage them to generate the helper functions
-type ChaindataProviderData = z.infer<typeof ChaindataProviderDataSchema>
-type ChaindataProviderNetwork = ChaindataProviderData["networks"][number]
-type ChaindataProviderToken = ChaindataProviderData["tokens"][number]
+// Types for the merged chaindata with __isCustom/__isKnown/__isTestnet flags.
+// Previously inferred from ChaindataProviderDataSchema via z.infer.
+type ChaindataProviderNetwork = Network & { __isCustom: boolean; __isKnown: boolean }
+type ChaindataProviderToken = Token & {
+  __isCustom: boolean
+  __isKnown: boolean
+  __isTestnet: boolean
+}
 
 export const isNetworkCustom = (network: Network): boolean => {
   if (typeof network !== "object") return false
