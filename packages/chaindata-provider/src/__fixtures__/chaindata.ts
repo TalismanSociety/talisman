@@ -39,7 +39,7 @@ export const makeEthNetwork = (overrides: Partial<EthNetwork> = {}): EthNetwork 
   ...overrides,
 })
 
-export const makeSolNetwork = (overrides: Partial<SolNetwork> = {}): SolNetwork => ({
+const makeSolNetwork = (overrides: Partial<SolNetwork> = {}): SolNetwork => ({
   id: "solana",
   name: "Solana",
   nativeTokenId: "solana-sol-native",
@@ -74,7 +74,7 @@ export const makeEvmNativeToken = (overrides: Partial<EvmNativeToken> = {}): Evm
   ...overrides,
 })
 
-export const makeSolNativeToken = (overrides: Partial<SolNativeToken> = {}): SolNativeToken => ({
+const makeSolNativeToken = (overrides: Partial<SolNativeToken> = {}): SolNativeToken => ({
   id: "solana-sol-native",
   networkId: "solana",
   type: "sol-native",
@@ -177,12 +177,5 @@ export const makeUnknownTokenTypeData = () => ({
       symbol: "FUT",
     },
   ],
-  miniMetadatas: [],
-})
-
-/** Simulates persisted data with tokens but no networks — missing cross-reference */
-export const makeTokensWithoutNetworks = (): Chaindata => ({
-  networks: [],
-  tokens: [makeEvmNativeToken()],
   miniMetadatas: [],
 })
