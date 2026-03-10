@@ -36,19 +36,21 @@ export type BalancesStatus =
  * @returns An instance of `BalancesStatus` which represents the status of the balances collection.
 
  */
+export const deriveBalancesStatus = (balances: Balances): BalancesStatus => {
+  // stale
+  const staleChains = getStaleChains(balances)
+  if (staleChains.length > 0) return { status: "stale", staleChains }
+
+  // fetching
+  const hasCachedBalances = balances.each.some((b) => b.status === "cache")
+  if (hasCachedBalances) return { status: "fetching" }
+
+  // live
+  return { status: "live" }
+}
+
 export const useBalancesStatus = (balances: Balances) =>
-  useMemo<BalancesStatus>(() => {
-    // stale
-    const staleChains = getStaleChains(balances)
-    if (staleChains.length > 0) return { status: "stale", staleChains }
-
-    // fetching
-    const hasCachedBalances = balances.each.some((b) => b.status === "cache")
-    if (hasCachedBalances) return { status: "fetching" }
-
-    // live
-    return { status: "live" }
-  }, [balances])
+  useMemo<BalancesStatus>(() => deriveBalancesStatus(balances), [balances])
 
 export const getStaleChains = (balances: Balances): string[] => [
   ...new Set(

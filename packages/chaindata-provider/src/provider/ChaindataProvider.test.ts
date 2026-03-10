@@ -459,4 +459,336 @@ describe("ChaindataProvider", () => {
       expect(metas.length).toBe(data.miniMetadatas.length)
     })
   })
+
+  // ── Genesis hash methods ─────────────────────────────────────────
+
+  describe("genesis hash methods", () => {
+    const POLKADOT_GENESIS =
+      "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3" as const
+
+    it("getNetworkByGenesisHash returns network for known genesis hash", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await provider.getNetworkByGenesisHash(POLKADOT_GENESIS)
+      expect(network).not.toBeNull()
+      expect(network!.id).toBe("polkadot")
+      expect(network!.genesisHash).toBe(POLKADOT_GENESIS)
+    })
+
+    it("getNetworkByGenesisHash returns null for unknown genesis hash", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await provider.getNetworkByGenesisHash("0xdeadbeef")
+      expect(network).toBeNull()
+    })
+
+    it("getNetworkByGenesisHash$ returns observable with matching network", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await firstValueFrom(provider.getNetworkByGenesisHash$(POLKADOT_GENESIS))
+      expect(network).not.toBeNull()
+      expect(network!.id).toBe("polkadot")
+    })
+
+    it("getNetworkByGenesisHash$ returns observable emitting null for unknown hash", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await firstValueFrom(provider.getNetworkByGenesisHash$("0xdeadbeef"))
+      expect(network).toBeNull()
+    })
+
+    it("getNetworksMapByGenesisHash returns a map keyed by genesis hash", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const map = await provider.getNetworksMapByGenesisHash()
+      expect(map[POLKADOT_GENESIS]).toBeDefined()
+      expect(map[POLKADOT_GENESIS]!.id).toBe("polkadot")
+    })
+
+    it("getNetworksMapByGenesisHash$ returns observable of genesis hash map", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const map = await firstValueFrom(provider.getNetworksMapByGenesisHash$())
+      expect(map[POLKADOT_GENESIS]).toBeDefined()
+      expect(map[POLKADOT_GENESIS]!.id).toBe("polkadot")
+    })
+
+    it("getNetworksMapByGenesisHash excludes networks without genesisHash", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const map = await provider.getNetworksMapByGenesisHash()
+      // EthNetwork has no genesisHash; only polkadot networks should appear
+      const keys = Object.keys(map)
+      expect(keys.length).toBeGreaterThan(0)
+      for (const network of Object.values(map)) {
+        expect(network.platform).toBe("polkadot")
+      }
+    })
+
+    it("getNetworkByGenesisHash finds second polkadot network", async () => {
+      const kusama = makeDotNetwork({
+        id: "kusama",
+        name: "Kusama",
+        genesisHash: "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+      })
+      const data = makeChaindata({
+        networks: [makeDotNetwork(), kusama, makeEthNetwork()],
+      })
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await provider.getNetworkByGenesisHash(
+        "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe"
+      )
+      expect(network).not.toBeNull()
+      expect(network!.id).toBe("kusama")
+    })
+  })
+
+  // ── ID listing methods ───────────────────────────────────────────
+
+  describe("ID listing methods", () => {
+    it("getNetworkIds returns all network IDs", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const ids = await provider.getNetworkIds()
+      expect(ids).toContain("polkadot")
+      expect(ids).toContain("1")
+      expect(ids.length).toBe(data.networks.length)
+    })
+
+    it("getNetworkIds$ returns observable of network IDs", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const ids = await firstValueFrom(provider.getNetworkIds$())
+      expect(ids).toContain("polkadot")
+      expect(ids).toContain("1")
+      expect(ids.length).toBe(data.networks.length)
+    })
+
+    it("getNetworkIds filters by platform", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const dotIds = await provider.getNetworkIds("polkadot")
+      expect(dotIds).toContain("polkadot")
+      expect(dotIds).not.toContain("1")
+
+      const ethIds = await provider.getNetworkIds("ethereum")
+      expect(ethIds).toContain("1")
+      expect(ethIds).not.toContain("polkadot")
+    })
+
+    it("getTokenIds returns all token IDs", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const ids = await provider.getTokenIds()
+      expect(ids).toContain("polkadot-substrate-native")
+      expect(ids).toContain("1-evm-native")
+      expect(ids.length).toBe(data.tokens.length)
+    })
+
+    it("getTokenIds$ returns observable of token IDs", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const ids = await firstValueFrom(provider.getTokenIds$())
+      expect(ids).toContain("polkadot-substrate-native")
+      expect(ids).toContain("1-evm-native")
+      expect(ids.length).toBe(data.tokens.length)
+    })
+
+    it("getTokenIds filters by type", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const subIds = await provider.getTokenIds("substrate-native")
+      expect(subIds).toContain("polkadot-substrate-native")
+      expect(subIds).not.toContain("1-evm-native")
+
+      const evmIds = await provider.getTokenIds("evm-native")
+      expect(evmIds).toContain("1-evm-native")
+      expect(evmIds).not.toContain("polkadot-substrate-native")
+    })
+
+    it("getNetworkIds returns empty array for empty provider", async () => {
+      const provider = new ChaindataProvider()
+      const ids = await provider.getNetworkIds()
+      expect(ids).toEqual([])
+    })
+
+    it("getTokenIds returns empty array for empty provider", async () => {
+      const provider = new ChaindataProvider()
+      const ids = await provider.getTokenIds()
+      expect(ids).toEqual([])
+    })
+  })
+
+  // ── Mini metadata by ID ──────────────────────────────────────────
+
+  describe("mini metadata by ID", () => {
+    it("miniMetadataById returns metadata for known ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const meta = await provider.miniMetadataById("substrate-native-polkadot")
+      expect(meta).not.toBeNull()
+      expect(meta!.id).toBe("substrate-native-polkadot")
+      expect(meta!.chainId).toBe("polkadot")
+    })
+
+    it("miniMetadataById returns null for unknown ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const meta = await provider.miniMetadataById("nonexistent")
+      expect(meta).toBeNull()
+    })
+
+    it("getMiniMetadataById$ returns observable with matching metadata", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const meta = await firstValueFrom(provider.getMiniMetadataById$("substrate-native-polkadot"))
+      expect(meta).not.toBeNull()
+      expect(meta!.id).toBe("substrate-native-polkadot")
+    })
+
+    it("getMiniMetadataById$ returns observable emitting null for unknown ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const meta = await firstValueFrom(provider.getMiniMetadataById$("nonexistent"))
+      expect(meta).toBeNull()
+    })
+  })
+
+  // ── Token type filtering ─────────────────────────────────────────
+
+  describe("token type filtering", () => {
+    it("getTokens('substrate-native') returns only substrate native tokens", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokens = await provider.getTokens("substrate-native")
+      expect(tokens.length).toBeGreaterThan(0)
+      expect(tokens.every((t) => t.type === "substrate-native")).toBe(true)
+    })
+
+    it("getTokens('evm-native') returns only EVM native tokens", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokens = await provider.getTokens("evm-native")
+      expect(tokens.length).toBeGreaterThan(0)
+      expect(tokens.every((t) => t.type === "evm-native")).toBe(true)
+    })
+
+    it("getTokens('sol-native') returns only Solana native tokens", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokens = await provider.getTokens("sol-native")
+      expect(tokens.length).toBeGreaterThan(0)
+      expect(tokens.every((t) => t.type === "sol-native")).toBe(true)
+    })
+
+    it("getTokens with type that has no matches returns empty array", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokens = await provider.getTokens("evm-erc20")
+      expect(tokens).toEqual([])
+    })
+
+    it("getTokens$ with type filter returns observable of filtered tokens", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokens = await firstValueFrom(provider.getTokens$("substrate-native"))
+      expect(tokens.length).toBeGreaterThan(0)
+      expect(tokens.every((t) => t.type === "substrate-native")).toBe(true)
+    })
+
+    it("getTokens without type returns all tokens", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const allTokens = await provider.getTokens()
+      const subTokens = await provider.getTokens("substrate-native")
+      const evmTokens = await provider.getTokens("evm-native")
+      const solTokens = await provider.getTokens("sol-native")
+
+      expect(allTokens.length).toBe(subTokens.length + evmTokens.length + solTokens.length)
+    })
+  })
+
+  // ── Edge cases ───────────────────────────────────────────────────
+
+  describe("edge cases", () => {
+    it("getNetworkById returns null for non-existent ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await provider.getNetworkById("does-not-exist")
+      expect(network).toBeNull()
+    })
+
+    it("getTokenById returns null for non-existent ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const token = await provider.getTokenById("does-not-exist")
+      expect(token).toBeNull()
+    })
+
+    it("miniMetadataById returns null for empty string ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const meta = await provider.miniMetadataById("")
+      expect(meta).toBeNull()
+    })
+
+    it("getNetworkByGenesisHash returns null for non-existent genesis hash", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const network = await provider.getNetworkByGenesisHash(
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      )
+      expect(network).toBeNull()
+    })
+
+    it("getNetworksMapById returns map keyed by network ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const map = await provider.getNetworksMapById()
+      expect(map.polkadot).toBeDefined()
+      expect(map.polkadot!.name).toBe("Polkadot")
+      expect(map["1"]).toBeDefined()
+      expect(map["1"]!.name).toBe("Ethereum Mainnet")
+    })
+
+    it("getTokensMapById returns map keyed by token ID", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const map = await provider.getTokensMapById()
+      expect(map["polkadot-substrate-native"]).toBeDefined()
+      expect(map["polkadot-substrate-native"]!.symbol).toBe("DOT")
+      expect(map["1-evm-native"]).toBeDefined()
+      expect(map["1-evm-native"]!.symbol).toBe("ETH")
+    })
+  })
 })

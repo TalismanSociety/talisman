@@ -1,0 +1,176 @@
+================================================================================
+  PUBLIC API SURFACE ANALYSIS - CHAINDATA & BALANCES PACKAGES
+  Executive Summary & Regression Test Priorities
+================================================================================
+
+📦 THREE PACKAGES ANALYZED:
+  1. @talismn/chaindata-provider (v1.3.6) - Chain/token data management
+  2. @talismn/balances (v1.3.3) - Balance aggregation & formatting
+  3. @talismn/balances-react (v1.3.3) - React hooks & Jotai atoms
+
+================================================================================
+  OVERALL TEST COVERAGE
+================================================================================
+
+✅ WELL TESTED (726+ lines):
+  • Balance.class - Full balance object functionality
+  • Balance.formatters - Amount formatting (planck, tokens, fiat)
+  • Balances.collection - find(), filterMirrorTokens(), add(), remove()
+  • getBlockExplorerUrls() - All URL generation logic
+
+❌ NOT TESTED (Critical Gaps):
+  • BalancesProvider.getBalances$() - Main balance fetching pipeline
+  • BalancesProvider address cleanup & validation
+  • ChaindataProvider.syncDynamicTokens()
+  • parseTokenId() - Token ID parsing
+  • All token ID generators (7 functions)
+  • Type guard functions (20+ functions)
+  • React hooks: useBalances(), useBalancesStatus()
+  • Balance amount utility functions (excludeFromFeePayableLocks, etc.)
+
+================================================================================
+  🔴 HIGH PRIORITY TESTS NEEDED
+================================================================================
+
+1. BALANCE FETCHING PIPELINE (BalancesProvider.getBalances$)
+   ├─ Complexity: Address validation per platform
+   ├─ Complexity: Network routing (Polkadot/Ethereum/Solana)
+   ├─ Risk: Silent address rejection
+   ├─ Risk: Incorrect network routing
+   └─ Suggested Tests:
+      • Valid address validation per token type
+      • Invalid address rejection
+      • Network platform routing logic
+      • Stale balance handling after 30s timeout
+      • Error recovery with cached balances
+
+2. CHAINDATA TOKEN MANAGEMENT
+   ├─ Complexity: Token ID format varies by type (7 different formats)
+   ├─ Complexity: parseTokenId() must handle all formats
+   ├─ Risk: Parsing failures break balance fetching
+   ├─ Risk: Type coercion bugs
+   └─ Suggested Tests:
+      • parseTokenId() with all token types
+      • Token ID generation (evmErc20TokenId, subAssetTokenId, etc.)
+      • Round-trip: generate → parse verification
+      • Edge cases (empty IDs, special chars, etc.)
+
+3. BLOCK EXPLORER URL GENERATION
+   ├─ Complexity: 8+ different explorer hosts
+   ├─ Complexity: Different URL formats per platform
+   ├─ Risk: 404 errors from malformed URLs
+   ├─ Risk: Block ID type coercion (string/number/bigint)
+   └─ Suggested Tests:
+      • All 8 explorer hosts (polkadot.js, statescan, subscan, etc.)
+      • All query types (address, transaction, block, extrinsic)
+      • Block ID types: string, number, bigint
+      • Edge case: RPC URL encoding in query strings
+
+================================================================================
+  🟡 MEDIUM PRIORITY TESTS NEEDED
+================================================================================
+
+4. BALANCE AMOUNT CALCULATIONS
+   ├─ Complexity: Different logic per network (legacy Substrate flag)
+   ├─ Complexity: Flag-based filtering (includeInTransferable, excludeFromFee)
+   ├─ Risk: Incorrect balance calculations for transfers
+   ├─ Risk: Incorrect available balance for fees
+   └─ Suggested Tests:
+      • excludeFromTransferableAmount() with various lock scenarios
+      • excludeFromFeePayableLocks() flag-based filtering
+      • includeInTotalExtraAmount() for extra amounts
+      • Legacy transferable calculation flag behavior
+
+5. TYPE GUARD FUNCTIONS (20+ functions)
+   ├─ Complexity: Must match all token type discriminators
+   ├─ Complexity: Platform-specific checks
+   ├─ Risk: Incorrect type coercion
+   ├─ Risk: Missing cases in platform selection
+   └─ Suggested Tests:
+      • isTokenOfType() for all token types
+      • isNetworkOfPlatform() for all platforms
+      • isTokenNeedExistentialDeposit() for Substrate
+      • Edge cases: null, undefined inputs
+
+6. REACT HOOKS (balances-react)
+   ├─ Complexity: Jotai async atoms with side effects
+   ├─ Complexity: Chain/token filtering configuration
+   ├─ Risk: Race conditions in hydration
+   ├─ Risk: Incorrect filter application
+   └─ Suggested Tests:
+      • useBalancesStatus() state determination logic
+      • useBalances() with different configurations
+      • Configuration filtering (enabledChains, enabledTokens)
+      • Testnet flag behavior
+
+================================================================================
+  KEY METRICS
+================================================================================
+
+Total Public API Items Cataloged:    80+
+├─ Classes:                          10
+├─ Interfaces/Types:                 30+
+├─ Functions:                        30+
+└─ React Components/Hooks:           10+
+
+Test Coverage by Category:
+├─ Class Methods:      60% (6/10)
+├─ Utility Functions:  40% (12/30+)
+├─ Type Guards:        0% (0/20+)
+└─ React Hooks:        0% (0/10)
+
+Lines of Test Code: 1,294 (mostly balance/formatter tests)
+Files with Tests: 18 test files
+
+================================================================================
+  CRITICAL DATA FLOWS TO PROTECT
+================================================================================
+
+BALANCE FETCHING:
+  addresses[] → BalancesProvider.getBalances$
+    → address validation per platform
+    → network routing via parseTokenId
+    → module filtering by platform
+    → parallel module fetching
+    → 30s timeout & stale marking
+    → error recovery with cache
+    → BalancesResult { status, balances, errors }
+
+AMOUNT CALCULATION:
+  IBalance JSON → Balance object
+    → Getter chains (total, free, reserved, locked, etc.)
+    → Formatting (planck, tokens, fiat)
+    → Lock/extra filtering based on flags
+    → Final calculated amounts
+
+TOKEN ID ENCODING:
+  (networkId, address) → parseTokenId()
+    → extract networkId, type, identifier
+    → lookup network and token
+    → hydrate Balance with token/network data
+
+================================================================================
+  IMPLEMENTATION RECOMMENDATIONS
+================================================================================
+
+Phase 1 (Regression Foundation):
+  ✓ Unit tests for parseTokenId() with all 7 token types
+  ✓ Unit tests for 8 block explorer URL formats
+  ✓ Integration tests for BalancesProvider.getBalances$()
+  ✓ Tests for balance amount calculation flags
+
+Phase 2 (Type Safety):
+  ✓ Unit tests for all 20+ type guard functions
+  ✓ Platform-specific type coercion tests
+  ✓ Edge case tests (null, undefined, empty collections)
+
+Phase 3 (React Layer):
+  ✓ Hook tests with Jotai provider setup
+  ✓ Configuration filtering tests
+  ✓ Async atom hydration tests
+
+Estimated Test Lines: 1,500-2,000
+Estimated Implementation Time: 3-4 weeks
+Risk Reduction: 80% (covers critical paths + type safety)
+
+================================================================================
