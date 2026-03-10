@@ -79,7 +79,9 @@ export const useResetBittensorBondWizard = () => {
   const reset = useCallback((init: BittensorStakingWizardOpenOptions) => {
     const stakeType =
       typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
-    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType }))
+    const step =
+      init.stakeDirection === "bond" && typeof init.netuid !== "number" ? "select-subnet" : "form"
+    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType, step }))
   }, [])
 
   return reset
@@ -482,11 +484,6 @@ const useBittensorBondWizardProvider = () => {
     // if unstaking and no position selected, open position select step
     if (stakeDirection === "unbond" && step === "form" && !position) setStep("select-position")
   }, [stakeDirection, position, setStep, step])
-
-  useEffect(() => {
-    // on mount, if stake type is not set, display the stake type select drawer
-    if (!stakeType && stakeDirection === "bond") stakeTypeDrawer.open()
-  }, [stakeType, stakeDirection, stakeTypeDrawer])
 
   return {
     account,

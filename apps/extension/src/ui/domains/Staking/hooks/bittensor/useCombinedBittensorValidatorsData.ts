@@ -6,6 +6,8 @@ import { useMemo } from "react"
 import { useGetValidatorsYield } from "./dTao/useGetValidatorsYield"
 import type { BondOption } from "./types"
 
+const TEMP_FEATURED_VALIDATORS = ["5Fq5v71D4LX8Db1xsmRSy6udQThcZ8sFDqxQFwnUZ1BuqY5A"]
+
 export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
   const { data: validatorsYieldData, isLoading } = useGetValidatorsYield({
     netuid: netuid || 0,
@@ -17,7 +19,10 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
   } = useRemoteConfig()
 
   const featuredHotkeys = useMemo(
-    () => new Set(featuredValidators.map((hotkey) => hotkey.toLowerCase())),
+    () =>
+      new Set(
+        [...featuredValidators, ...TEMP_FEATURED_VALIDATORS].map((hotkey) => hotkey.toLowerCase())
+      ),
     [featuredValidators]
   )
 

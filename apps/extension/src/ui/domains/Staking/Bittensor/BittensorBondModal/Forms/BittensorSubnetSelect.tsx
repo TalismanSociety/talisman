@@ -39,7 +39,7 @@ type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] => {
   const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
   const sorted = data
-    .filter((sn) => sn.netuid)
+    .filter((sn) => typeof sn.netuid === "number")
     .sort((a, b) => {
       if (descendingFilters.includes(sortBy)) {
         // Sort other fields in descending order
@@ -111,7 +111,7 @@ export const BittensorSubnetSelect = () => {
       header={
         <BittensorStakingModalHeader
           title={t("Select Subnet")}
-          onBackClick={() => setStep("form")}
+          onBackClick={() => (netuid === null ? close() : setStep("form"))}
           onCloseModal={close}
           withClose
         />
@@ -279,13 +279,15 @@ const SubnetRow: FC<{
 
   const emission = useMemo(
     () =>
-      // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
-      // so we multiply by 2 to get the total emission rate.
-      option.emission
-        ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
-          "%"
-        : t("N/A"),
-    [option.emission, t]
+      option.netuid === 0
+        ? "-"
+        : // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
+          // so we multiply by 2 to get the total emission rate.
+          option.emission
+          ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
+            "%"
+          : t("N/A"),
+    [option.emission, option.netuid, t]
   )
 
   if (!tokenAlpha) return null
