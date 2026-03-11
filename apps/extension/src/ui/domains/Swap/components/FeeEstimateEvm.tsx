@@ -10,7 +10,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
-import { useNetworkById } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 import type { TransactionRequest } from "viem"
 import { useSwap } from "../SwapProvider"
@@ -39,10 +39,10 @@ export const FeeEstimateEvm = ({
   networkUsage?: number
 }) => {
   const { t } = useTranslation()
-  const { fastBalance } = useSwap()
+  const { fastBalance, fromTokenId } = useSwap()
 
-  const { fromAsset } = useSwap()
-  const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const fromEvmNetwork = useNetworkById(fromToken?.networkId, "ethereum")
 
   if (isError) return null
   return (

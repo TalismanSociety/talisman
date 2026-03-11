@@ -9,7 +9,6 @@ import type {
   BaseQuote,
   SupportedSwapProtocol,
   SwapModule,
-  SwappableAssetWithDecimals,
 } from "../swap-modules/common.swap-module"
 import { swapModules } from "../swaps.api"
 
@@ -18,8 +17,9 @@ import { swapModules } from "../swaps.api"
  * sorts them, and derives the selected quote, module, and output amount.
  */
 export const useSwapQuoteManager = (params: {
-  fromAsset: SwappableAssetWithDecimals | null
-  toAsset: SwappableAssetWithDecimals | null
+  fromTokenId: string | null
+  toTokenId: string | null
+  supportMap: Map<string, Set<SupportedSwapProtocol>> | null
   fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
@@ -28,8 +28,9 @@ export const useSwapQuoteManager = (params: {
   quoteSorting: "decentalised" | "cheapest" | "fastest" | "bestRate"
 }) => {
   const {
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
+    supportMap,
     fromAmount,
     fromAddress,
     toAddress,
@@ -40,14 +41,18 @@ export const useSwapQuoteManager = (params: {
 
   const tokenRates = useTokenRatesMap()
 
-  const enabled = Boolean(fromAsset && toAsset && fromAmount)
+  const enabled = Boolean(fromTokenId && toTokenId && fromAmount)
 
   const applicableModules = useMemo(
     () =>
-      fromAsset && toAsset
-        ? swapModules.filter((m) => toAsset.context[m.protocol] && fromAsset.context[m.protocol])
+      fromTokenId && toTokenId && supportMap
+        ? swapModules.filter(
+            (m) =>
+              supportMap.get(fromTokenId)?.has(m.protocol) &&
+              supportMap.get(toTokenId)?.has(m.protocol)
+          )
         : [],
-    [fromAsset, toAsset]
+    [fromTokenId, toTokenId, supportMap]
   )
 
   const queryResults = useQueries({
@@ -55,8 +60,8 @@ export const useSwapQuoteManager = (params: {
       queryKey: [
         "swap-quote",
         module.protocol,
-        fromAsset?.id ?? null,
-        toAsset?.id ?? null,
+        fromTokenId,
+        toTokenId,
         fromAmount.toString(),
         fromAddress,
         toAddress,
@@ -64,8 +69,8 @@ export const useSwapQuoteManager = (params: {
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(
           {
-            fromAsset: fromAsset!,
-            toAsset: toAsset!,
+            fromTokenId: fromTokenId!,
+            toTokenId: toTokenId!,
             fromAmount,
             fromAddress,
             toAddress,

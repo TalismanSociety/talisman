@@ -1,15 +1,13 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import type { Token } from "@talismn/chaindata-provider"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import type { TFunction } from "i18next"
 import { erc20Abi, isAddress } from "viem"
 
-import type {
-  SwappableAssetBaseType,
-  SwappableAssetWithDecimals,
-} from "../swap-modules/common.swap-module"
+import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import {
   fetchCoingeckoAssetPlatforms,
   fetchCoingeckoCoinByAddress,
@@ -19,16 +17,8 @@ import {
 
 // ─── Constants ──────────────────────────────────────────────────────
 
-const ETH_LOGO =
-  "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eth.svg"
-const BTC_LOGO = "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400"
-
-const btcTokens: Record<string, { symbol: string; decimals: number; image: string }> = {
-  "btc-native": {
-    symbol: "BTC",
-    decimals: 8,
-    image: BTC_LOGO,
-  },
+const BTC_TOKEN_DATA: Record<string, { symbol: string; decimals: number }> = {
+  "btc-native": { symbol: "BTC", decimals: 8 },
 }
 
 // ─── Token tab definitions ──────────────────────────────────────────
@@ -37,8 +27,8 @@ export type TokenTab = {
   value: string
   label: string
   coingecko?: boolean
-  filter?: (token: SwappableAssetWithDecimals) => boolean
-  sort?: (a: SwappableAssetWithDecimals, b: SwappableAssetWithDecimals) => number
+  filter?: (tokenId: string) => boolean
+  sort?: (a: string, b: string) => number
 }
 
 export const getTokenTabs = ({
@@ -51,17 +41,13 @@ export const getTokenTabs = ({
   {
     value: "all",
     label: t("All tokens"),
-    sort: curatedTokens
-      ? (a, b) => curatedTokens.indexOf(a.id) - curatedTokens.indexOf(b.id)
-      : undefined,
+    sort: curatedTokens ? (a, b) => curatedTokens.indexOf(a) - curatedTokens.indexOf(b) : undefined,
   },
   {
     value: "popular",
     label: t("🔥 Popular"),
-    filter: curatedTokens ? (token) => curatedTokens.includes(token.id) ?? false : undefined,
-    sort: curatedTokens
-      ? (a, b) => curatedTokens.indexOf(a.id) - curatedTokens.indexOf(b.id)
-      : undefined,
+    filter: curatedTokens ? (tokenId) => curatedTokens.includes(tokenId) ?? false : undefined,
+    sort: curatedTokens ? (a, b) => curatedTokens.indexOf(a) - curatedTokens.indexOf(b) : undefined,
   },
   {
     value: "meme-token",
@@ -95,50 +81,54 @@ export const getTokenTabs = ({
   },
 ]
 
-// ─── Asset enrichment ───────────────────────────────────────────────
+// ─── Asset registry (replaces enrichAssets) ─────────────────────────
 
-export function enrichAssets(
-  assets: SwappableAssetBaseType[],
-  tokensMap: Record<string, { symbol?: string; decimals?: number } | undefined>
-): SwappableAssetWithDecimals[] {
-  const byChainId: Record<string, Record<string, SwappableAssetWithDecimals>> = {}
+export type AssetRegistry = {
+  tokenIds: string[]
+  supportMap: Map<string, Set<SupportedSwapProtocol>>
+}
 
-  for (const cur of assets) {
-    const chainKey = cur.chainId.toString()
-    const chainAssets = byChainId[chainKey] ?? {}
-    const tokenDetails = tokensMap[cur.id] ?? btcTokens[cur.id as "btc-native"]
+/**
+ * Build a registry of swappable tokenIds and which protocols support each one.
+ * Each entry in `moduleResults` is a tuple of [protocol, tokenIds[]].
+ * Only tokenIds present in `tokensMap` (or the BTC special case) are included.
+ */
+export function buildAssetRegistry(
+  moduleResults: Array<[SupportedSwapProtocol, string[]]>,
+  tokensMap: Record<string, Token | undefined>
+): AssetRegistry {
+  const supportMap = new Map<string, Set<SupportedSwapProtocol>>()
 
-    const symbol = tokenDetails?.symbol ?? cur.symbol
-    const decimals = tokenDetails?.decimals ?? cur.decimals
-    const image = symbol?.toLowerCase() === "eth" ? ETH_LOGO : cur.image
-    if (!symbol || !decimals) continue
+  for (const [protocol, tokenIds] of moduleResults) {
+    for (const tokenId of tokenIds) {
+      // Only include tokens that exist in chaindata or are BTC
+      if (!tokensMap[tokenId] && !BTC_TOKEN_DATA[tokenId]) continue
 
-    chainAssets[cur.id] = {
-      ...cur,
-      symbol,
-      decimals,
-      image,
-      context: {
-        ...chainAssets[cur.id]?.context,
-        ...cur.context,
-      },
+      let protocols = supportMap.get(tokenId)
+      if (!protocols) {
+        protocols = new Set()
+        supportMap.set(tokenId, protocols)
+      }
+      protocols.add(protocol)
     }
-    byChainId[chainKey] = chainAssets
   }
 
-  return Object.values(byChainId).flatMap((tokens) =>
-    Object.values(tokens).sort((a, b) =>
-      a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
-    )
-  )
+  const tokenIds = [...supportMap.keys()].sort((a, b) => {
+    const symA = (tokensMap[a]?.symbol ?? BTC_TOKEN_DATA[a]?.symbol ?? "").replaceAll("$", "")
+    const symB = (tokensMap[b]?.symbol ?? BTC_TOKEN_DATA[b]?.symbol ?? "").replaceAll("$", "")
+    return symA.localeCompare(symB)
+  })
+
+  return { tokenIds, supportMap }
 }
 
 // ─── Coingecko category matching ────────────────────────────────────
 
-async function getCoingeckoCategoryTokens(
+async function getCoingeckoCategoryTokenIds(
   categoryId: string,
-  tokens: SwappableAssetWithDecimals[]
-): Promise<SwappableAssetWithDecimals[]> {
+  tokenIds: string[],
+  tokensMap: Record<string, Token | undefined>
+): Promise<string[]> {
   const platforms = await fetchCoingeckoAssetPlatforms()
   const coinsList = await fetchCoingeckoList()
   const coins = await fetchCoingeckoCoinsByCategory(categoryId)
@@ -149,23 +139,28 @@ async function getCoingeckoCategoryTokens(
         coinsList.find((coin) => coin.id === c.id)?.platforms ?? {}
       )
       if (coinPlatforms.length === 0) {
-        const token = tokens.find((t) => t.symbol.toLowerCase() === c.symbol.toLowerCase())
-        if (token && !token.image && c.image) token.image = c.image
-        return token
+        return tokenIds.find((id) => {
+          const token = tokensMap[id]
+          return token && token.symbol.toLowerCase() === c.symbol.toLowerCase()
+        })
       }
 
       return coinPlatforms.map(([platformId, address]) => {
         const platform = platforms.find((p) => p.id === platformId)
-        const token = tokens.find(
-          (t) =>
-            (t.networkType === "evm" ? +t.chainId : t.chainId) === platform?.chain_identifier &&
-            t.contractAddress?.toLowerCase() === address.toLowerCase()
-        )
-        if (token && !token.image && c.image) token.image = c.image
-        return token
+        return tokenIds.find((id) => {
+          const token = tokensMap[id]
+          if (!token) return false
+          const chainId =
+            token.type === "evm-native" || token.type === "evm-erc20"
+              ? +token.networkId
+              : token.networkId
+          const contractAddress =
+            token.type === "evm-erc20" ? token.contractAddress?.toLowerCase() : undefined
+          return chainId === platform?.chain_identifier && contractAddress === address.toLowerCase()
+        })
       })
     })
-    .filter((c): c is SwappableAssetWithDecimals => !!c)
+    .filter((id): id is string => !!id)
 }
 
 // ─── ERC-20 on-chain lookup ─────────────────────────────────────────
@@ -174,7 +169,15 @@ async function lookupErc20Token(
   address: string,
   chainId: number,
   evmNetworks: { id: string }[]
-): Promise<SwappableAssetWithDecimals | null> {
+): Promise<{
+  tokenId: string
+  symbol: string
+  decimals: number
+  name: string
+  image?: string
+  contractAddress: string
+  chainId: number
+} | null> {
   const network = evmNetworks.find((n) => n.id.toString() === chainId.toString())
   if (!network) return null
 
@@ -199,16 +202,14 @@ async function lookupErc20Token(
   if (!symbol || !decimals || !name) return null
 
   const coingeckoData = await fetchCoingeckoCoinByAddress(address, platform.id)
-  const id = evmErc20TokenId(chainId.toString(), address as `0x${string}`)
+  const tokenId = evmErc20TokenId(chainId.toString(), address as `0x${string}`)
 
   return {
-    id,
+    tokenId,
     chainId,
-    context: {},
     decimals,
     name,
     symbol,
-    networkType: "evm",
     contractAddress: address,
     image: coingeckoData?.image?.small,
   }
@@ -217,53 +218,73 @@ async function lookupErc20Token(
 // ─── Token search and tab-based filtering ───────────────────────────
 
 export async function filterAndSortTokens(
-  tokens: SwappableAssetWithDecimals[],
+  tokenIds: string[],
+  tokensMap: Record<string, Token | undefined>,
   search: string,
   safeTokens: Set<string>,
   tokenTab: string,
   t: TFunction,
   evmNetworks?: { id: string }[]
-): Promise<SwappableAssetWithDecimals[]> {
+): Promise<string[]> {
   if (search.trim().length > 0) {
     const isSearchingAddress = isAddress(search)
     const searchLoweredCase = search.toLowerCase()
-    const knownFilteredTokens = tokens.filter(
-      (tk) =>
-        tk.symbol.toLowerCase().startsWith(searchLoweredCase) ||
-        tk.name.toLowerCase().startsWith(searchLoweredCase) ||
-        (isSearchingAddress && tk.contractAddress?.startsWith(searchLoweredCase))
-    )
+    const knownFilteredTokens = tokenIds.filter((id) => {
+      const token = tokensMap[id] ?? (BTC_TOKEN_DATA[id] as { symbol: string } | undefined)
+      if (!token) return false
+      const sym = token.symbol.toLowerCase()
+      const name = "name" in token && typeof token.name === "string" ? token.name.toLowerCase() : ""
+      const contractAddress =
+        tokensMap[id]?.type === "evm-erc20"
+          ? (tokensMap[id] as Extract<Token, { type: "evm-erc20" }>).contractAddress
+          : undefined
+      return (
+        sym.startsWith(searchLoweredCase) ||
+        name.startsWith(searchLoweredCase) ||
+        (isSearchingAddress && contractAddress?.startsWith(searchLoweredCase))
+      )
+    })
 
     if (isSearchingAddress && knownFilteredTokens.length === 0 && evmNetworks) {
       const searchChainIds = [1, 42161, 8453, 56, 137, 10, 81457, 324]
       const allOnChainTokens = await Promise.all(
         searchChainIds.map((chainId) => lookupErc20Token(search, chainId, evmNetworks))
       )
-      return allOnChainTokens.filter((tk): tk is SwappableAssetWithDecimals => tk !== null)
+      return allOnChainTokens
+        .filter((tk): tk is NonNullable<typeof tk> => tk !== null)
+        .map((tk) => tk.tokenId)
     }
 
-    return knownFilteredTokens.sort((a, b) => {
-      if (a.id.includes("native") && !b.id.includes("native")) return -1
-      if (b.id.includes("native") && !a.id.includes("native")) return 1
+    return knownFilteredTokens.sort((aId, bId) => {
+      const a = tokensMap[aId]
+      const b = tokensMap[bId]
+      const aChainId = a?.type === "evm-native" || a?.type === "evm-erc20" ? +a.networkId : 0
+      const bChainId = b?.type === "evm-native" || b?.type === "evm-erc20" ? +b.networkId : 0
+      const aContractAddress =
+        a?.type === "evm-erc20" ? a.contractAddress?.toLowerCase() : undefined
+      const bContractAddress =
+        b?.type === "evm-erc20" ? b.contractAddress?.toLowerCase() : undefined
 
-      const aSafe = safeTokens.has(`${a.chainId}:${a.contractAddress?.toLowerCase()}`)
-      const bSafe = safeTokens.has(`${b.chainId}:${b.contractAddress?.toLowerCase()}`)
+      if (aId.includes("native") && !bId.includes("native")) return -1
+      if (bId.includes("native") && !aId.includes("native")) return 1
+
+      const aSafe = safeTokens.has(`${aChainId}:${aContractAddress}`)
+      const bSafe = safeTokens.has(`${bChainId}:${bContractAddress}`)
       if (aSafe && !bSafe) return -1
       if (bSafe && !aSafe) return 1
 
-      const aSymbol = a.symbol.toLowerCase()
-      const bSymbol = b.symbol.toLowerCase()
+      const aSymbol = (a?.symbol ?? "").toLowerCase()
+      const bSymbol = (b?.symbol ?? "").toLowerCase()
       if (aSymbol === searchLoweredCase && bSymbol !== searchLoweredCase) return -1
       if (bSymbol === searchLoweredCase && aSymbol !== searchLoweredCase) return 1
-      if (aSymbol === searchLoweredCase && bSymbol === searchLoweredCase)
-        return +a.chainId - +b.chainId
+      if (aSymbol === searchLoweredCase && bSymbol === searchLoweredCase) return aChainId - bChainId
 
       if (aSymbol.startsWith(searchLoweredCase) && !bSymbol.startsWith(searchLoweredCase)) return -1
       if (bSymbol.startsWith(searchLoweredCase) && !aSymbol.startsWith(searchLoweredCase)) return 1
       if (aSymbol.startsWith(searchLoweredCase) && bSymbol.startsWith(searchLoweredCase))
-        return +a.chainId - +b.chainId
+        return aChainId - bChainId
 
-      return a.symbol.localeCompare(b.symbol)
+      return aSymbol.localeCompare(bSymbol)
     })
   }
 
@@ -273,13 +294,14 @@ export async function filterAndSortTokens(
   const sort = tokenTabs.find((tb) => tb.value === tokenTab)?.sort
   const coingeckoCategoryId = tokenTabs.find((tb) => tb.value === tokenTab && tb.coingecko)?.value
 
-  let filteredSortedTokens = [...tokens]
+  let filteredSortedTokens = [...tokenIds]
   if (filter) filteredSortedTokens = filteredSortedTokens.filter(filter)
   if (sort) filteredSortedTokens = filteredSortedTokens.sort(sort)
   if (coingeckoCategoryId)
-    filteredSortedTokens = await getCoingeckoCategoryTokens(
+    filteredSortedTokens = await getCoingeckoCategoryTokenIds(
       coingeckoCategoryId,
-      filteredSortedTokens
+      filteredSortedTokens,
+      tokensMap
     )
 
   return filteredSortedTokens

@@ -1,9 +1,10 @@
 import { planckToTokens } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
-import { useNetworksMapById } from "@ui/state/chaindata"
+import { useNetworksMapById, useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTranslation } from "react-i18next"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
@@ -16,15 +17,25 @@ export const SwapConfirm = () => {
 
   const networks = useNetworksMapById()
 
-  const { fromAsset, toAsset, fromAmount, toAmount, fromAddress, toAddress } = useSwap()
+  const { fromTokenId, toTokenId, fromAmount, toAmount, fromAddress, toAddress } = useSwap()
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const toToken = useToken(toTokenId ?? undefined)
+
   const currency = useSelectedCurrency()
-  const fromFiatAmount = useFiatValueForAmount({ planck: fromAmount, asset: fromAsset })
+  const fromFiatAmount = useFiatValueForAmount({ planck: fromAmount, tokenId: fromTokenId })
   const toFiatAmount = useFiatValueForAmount({
     planck: toAmount ?? undefined,
-    asset: toAsset,
+    tokenId: toTokenId,
   })
-  const fromNetwork = fromAsset ? networks[fromAsset.chainId] : undefined
-  const toNetwork = toAsset ? networks[toAsset.chainId] : undefined
+  const fromNetwork = fromToken ? networks[fromToken.networkId] : undefined
+  const toNetwork = toToken ? networks[toToken.networkId] : undefined
+
+  const fromNetworkType =
+    fromToken?.platform === "ethereum"
+      ? "evm"
+      : fromToken?.platform === "polkadot"
+        ? "substrate"
+        : null
 
   return (
     <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12">
@@ -34,11 +45,10 @@ export const SwapConfirm = () => {
         <div className="flex items-center justify-between gap-4">
           <div className="text-body-secondary">{t("Sending")}</div>
           <div className="flex items-center gap-4">
-            {fromAsset && (
+            {fromToken && (
               <div className="relative">
-                <img
-                  src={fromAsset.image}
-                  alt=""
+                <TokenLogo
+                  tokenId={fromToken.id}
                   className="h-12 w-12 min-w-12 rounded-full border-grey-800"
                 />
                 <NetworkLogo
@@ -52,8 +62,8 @@ export const SwapConfirm = () => {
               <div className="flex items-center gap-2">
                 <Tokens
                   className="whitespace-pre"
-                  amount={planckToTokens(fromAmount.toString(), fromAsset?.decimals ?? 0)}
-                  symbol={fromAsset?.symbol}
+                  amount={planckToTokens(fromAmount.toString(), fromToken?.decimals ?? 0)}
+                  symbol={fromToken?.symbol}
                   noCountUp
                 />
                 <div className="text-body-secondary">
@@ -88,11 +98,10 @@ export const SwapConfirm = () => {
         <div className="flex items-center justify-between gap-4">
           <div className="text-body-secondary">{t("Receiving")}</div>
           <div className="flex items-center gap-4">
-            {toAsset && (
+            {toToken && (
               <div className="relative">
-                <img
-                  src={toAsset.image}
-                  alt=""
+                <TokenLogo
+                  tokenId={toToken.id}
                   className="h-12 w-12 min-w-12 rounded-full border-grey-800"
                 />
                 <NetworkLogo
@@ -109,8 +118,8 @@ export const SwapConfirm = () => {
                     ~
                     <Tokens
                       className="whitespace-pre"
-                      amount={planckToTokens(toAmount.toString(), toAsset?.decimals ?? 0)}
-                      symbol={toAsset?.symbol}
+                      amount={planckToTokens(toAmount.toString(), toToken?.decimals ?? 0)}
+                      symbol={toToken?.symbol}
                       noCountUp
                     />
                   </div>
@@ -159,7 +168,7 @@ export const SwapConfirm = () => {
             <AddressDisplay
               className="h-16"
               address={fromAddress}
-              networkId={fromAsset?.chainId ? String(fromAsset?.chainId) : undefined}
+              networkId={fromToken?.networkId}
             />
           </div>
         </div>
@@ -168,17 +177,13 @@ export const SwapConfirm = () => {
             <div className="text-body-secondary text-sm">{t("To")}</div>
           </div>
           <div className="flex items-center gap-3">
-            <AddressDisplay
-              className="h-16"
-              address={toAddress}
-              networkId={toAsset?.chainId ? String(toAsset?.chainId) : undefined}
-            />
+            <AddressDisplay className="h-16" address={toAddress} networkId={toToken?.networkId} />
           </div>
         </div>
       </div>
 
-      {fromAsset?.networkType === "evm" && <SwapConfirmEvm />}
-      {fromAsset?.networkType === "substrate" && <SwapConfirmSubstrate />}
+      {fromNetworkType === "evm" && <SwapConfirmEvm />}
+      {fromNetworkType === "substrate" && <SwapConfirmSubstrate />}
     </div>
   )
 }

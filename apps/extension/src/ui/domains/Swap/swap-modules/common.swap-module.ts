@@ -12,6 +12,7 @@ import {
   evmNativeTokenId,
   type Network,
   subNativeTokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
@@ -25,28 +26,10 @@ type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
 
 export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
 
-export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
-  id: string
-  name: string
-  symbol: string
-  chainId: number | string
-  contractAddress?: string
-  assetHubAssetId?: string
-  image?: string
-  networkType: "evm" | "substrate" | "btc"
-  /** protocol modules can store context here, like any special identifier */
-  context: TContext
-  decimals?: number
-}
-
-export type SwappableAssetWithDecimals<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
-  decimals: number
-} & SwappableAssetBaseType<TContext>
-
 export type QuoteFee = {
   name: string
   amount: BigNumber
-  tokenId: string
+  tokenId: TokenId
 }
 
 export type BaseQuote<TData = any> = {
@@ -90,8 +73,8 @@ export type SwapView = "form" | "approve-recipient" | "approve-erc20" | "confirm
 // --- Param types for SwapModule methods ---
 
 export type QuoteParams = {
-  fromAsset: SwappableAssetWithDecimals
-  toAsset: SwappableAssetWithDecimals
+  fromTokenId: TokenId
+  toTokenId: TokenId
   fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
@@ -99,21 +82,21 @@ export type QuoteParams = {
 }
 
 export type ExchangeParams = {
-  fromAsset: SwappableAssetWithDecimals
-  toAsset: SwappableAssetWithDecimals
+  fromTokenId: TokenId
+  toTokenId: TokenId
   fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
 }
 
 export type EvmTxParams = {
-  fromAsset: SwappableAssetWithDecimals
+  fromTokenId: TokenId
   fromAddress: string
   exchange: unknown // specific exchange type varies per module
 }
 
 export type SubstrateTxParams = {
-  fromAsset: SwappableAssetWithDecimals
+  fromTokenId: TokenId
   fromAddress: string
   exchange: unknown // specific exchange type varies per module
   sapi: ScaleApi
@@ -133,11 +116,8 @@ export type SwapModule = {
   protocol: SupportedSwapProtocol
   decentralisationScore: number
 
-  getFromAssets: (signal: AbortSignal) => Promise<SwappableAssetBaseType[]>
-  getToAssets: (
-    fromAsset: SwappableAssetWithDecimals | null,
-    signal: AbortSignal
-  ) => Promise<SwappableAssetBaseType[]>
+  getFromAssets: (signal: AbortSignal) => Promise<TokenId[]>
+  getToAssets: (fromTokenId: TokenId | null, signal: AbortSignal) => Promise<TokenId[]>
 
   getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
 
@@ -180,7 +160,7 @@ export const validateAddress = (
   }
 }
 
-// helpers
+// helpers — module-internal use only
 
 export const getTokenIdForSwappableAsset = (
   chainType: "substrate" | "evm" | "btc",
@@ -199,4 +179,22 @@ export const getTokenIdForSwappableAsset = (
     default:
       return "not-supported"
   }
+}
+
+/**
+ * Internal type used by swap modules to cache their provider-specific asset data.
+ * Not exposed outside the module layer — the public API only uses tokenIds (string).
+ */
+export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
+  id: string
+  name: string
+  symbol: string
+  chainId: number | string
+  contractAddress?: string
+  assetHubAssetId?: string
+  image?: string
+  networkType: "evm" | "substrate" | "btc"
+  /** protocol modules can store context here, like any special identifier */
+  context: TContext
+  decimals?: number
 }

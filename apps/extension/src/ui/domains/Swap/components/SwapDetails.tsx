@@ -7,9 +7,9 @@ import { SwapDetailsCardSkeleton } from "./SwapDetailsCardSkeleton"
 import { SwapDetailsError } from "./SwapDetailsError"
 
 export const SwapDetails = () => {
-  const { fromAsset, toAsset, fromAmount } = useSwap()
+  const { fromTokenId, toTokenId, fromAmount } = useSwap()
 
-  if (!fromAsset || !toAsset || !fromAmount) return null
+  if (!fromTokenId || !toTokenId || !fromAmount) return null
 
   return (
     <Suspense fallback={<LoadingUI />}>

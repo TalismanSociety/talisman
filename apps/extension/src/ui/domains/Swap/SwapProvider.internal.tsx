@@ -1,3 +1,4 @@
+import { useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useFastBalance } from "./hooks/useFastBalance"
@@ -5,11 +6,7 @@ import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
 import type { SwapInit } from "./hooks/useSwapTokensModal"
-import type {
-  SupportedSwapProtocol,
-  SwappableAssetWithDecimals,
-  SwapView,
-} from "./swap-modules/common.swap-module"
+import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
 import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
 
 export type { SwapView } from "./swap-modules/common.swap-module"
@@ -27,8 +24,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const [swapView, setSwapView] = useState<SwapView>("form")
 
   // -- Core form state --
-  const [fromAsset, setFromAsset] = useState<SwappableAssetWithDecimals | null>(null)
-  const [toAsset, setToAsset] = useState<SwappableAssetWithDecimals | null>(null)
+  const [fromTokenId, setFromTokenId] = useState<string | null>(null)
+  const [toTokenId, setToTokenId] = useState<string | null>(null)
   const [fromAmount, setFromAmount] = useState<bigint>(0n)
   const [selectedProtocol, setSelectedProtocol] = useState<SupportedSwapProtocol | null>(null)
   const [selectedSubProtocol, setSelectedSubProtocol] = useState<string | undefined>(undefined)
@@ -55,8 +52,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setFromAddress: setFromAddressRaw,
     toAddress: toAddressRaw,
     setToAddress: setToAddressRaw,
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
   })
 
   // -- Token tab --
@@ -68,8 +65,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
   const resetForm = useCallback(() => {
     setSwapView("form")
-    setFromAsset(null)
-    setToAsset(null)
+    setFromTokenId(null)
+    setToTokenId(null)
     setFromAmount(0n)
     setSelectedProtocol(null)
     setSelectedSubProtocol(undefined)
@@ -83,7 +80,32 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
   // -- Async data hooks --
   const { data: safeTokens = EMPTY_SAFE_TOKENS } = useSafeTokens()
-  const { fromAssets, toAssets } = useSwapAssets(fromAsset, tokenTab, t, safeTokens)
+  const {
+    fromAssetIds,
+    toAssetIds,
+    fromSupportMap,
+    toSupportMap,
+    isLoadingFromAssets,
+    isLoadingToAssets,
+  } = useSwapAssets(fromTokenId, tokenTab, t, safeTokens)
+
+  // Merge from+to support maps for quote manager routing
+  const combinedSupportMap = useMemo(() => {
+    if (!fromSupportMap && !toSupportMap) return null
+    const merged = new Map<string, Set<SupportedSwapProtocol>>()
+    for (const map of [fromSupportMap, toSupportMap]) {
+      if (!map) continue
+      for (const [tokenId, protocols] of map) {
+        const existing = merged.get(tokenId)
+        if (existing) {
+          for (const p of protocols) existing.add(p)
+        } else {
+          merged.set(tokenId, new Set(protocols))
+        }
+      }
+    }
+    return merged
+  }, [fromSupportMap, toSupportMap])
 
   // -- Initialize form from stateInit (one-shot per mount) --
   const fromInitDone = useRef(false)
@@ -91,25 +113,23 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
   useEffect(() => {
     if (!stateInit?.fromTokenId || fromInitDone.current) return
-    if (!fromAssets?.length) return
+    if (!fromAssetIds?.length) return
 
-    const match = fromAssets.find((a) => a.id === stateInit.fromTokenId)
-    if (match) {
-      setFromAsset(match)
+    if (fromAssetIds.includes(stateInit.fromTokenId)) {
+      setFromTokenId(stateInit.fromTokenId)
       fromInitDone.current = true
     }
-  }, [stateInit?.fromTokenId, fromAssets])
+  }, [stateInit?.fromTokenId, fromAssetIds])
 
   useEffect(() => {
     if (!stateInit?.toTokenId || toInitDone.current) return
-    if (!toAssets?.length) return
+    if (!toAssetIds?.length) return
 
-    const match = toAssets.find((a) => a.id === stateInit.toTokenId)
-    if (match) {
-      setToAsset(match)
+    if (toAssetIds.includes(stateInit.toTokenId)) {
+      setToTokenId(stateInit.toTokenId)
       toInitDone.current = true
     }
-  }, [stateInit?.toTokenId, toAssets])
+  }, [stateInit?.toTokenId, toAssetIds])
 
   useEffect(() => {
     if (!stateInit?.fromAddress) return
@@ -126,8 +146,9 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedModule,
     toAmount,
   } = useSwapQuoteManager({
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
+    supportMap: combinedSupportMap,
     fromAmount,
     fromAddress,
     toAddress,
@@ -138,16 +159,23 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet
   const isInitializing = Boolean(
-    (stateInit?.fromTokenId && !fromAsset && !fromAssets) ||
-      (stateInit?.toTokenId && !toAsset && !toAssets)
+    (stateInit?.fromTokenId && !fromTokenId && !fromAssetIds) ||
+      (stateInit?.toTokenId && !toTokenId && !toAssetIds)
   )
 
-  const reverse = useReverse(fromAsset, setFromAsset, toAsset, setToAsset, setFromAmount, toAmount)
+  const reverse = useReverse(
+    fromTokenId,
+    setFromTokenId,
+    toTokenId,
+    setToTokenId,
+    setFromAmount,
+    toAmount
+  )
 
   const erc20Approval = useSwapErc20Approval({
     selectedModule,
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
     fromAmount,
     fromAddress,
     toAddress,
@@ -156,30 +184,36 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     approvalCounter,
   })
 
+  // Derive fast balance params from the Token type
+  const fromToken = useToken(fromTokenId ?? undefined)
+
   const fastBalance = useFastBalance(
     useMemo(() => {
-      if (!fromAsset || !fromAddress) return undefined
+      if (!fromToken || !fromAddress) return undefined
 
-      if (fromAsset.networkType === "evm") {
+      if (fromToken.platform === "ethereum") {
         return {
-          type: "evm",
+          type: "evm" as const,
           address: fromAddress,
-          networkId: +fromAsset.chainId,
-          tokenAddress: fromAsset.contractAddress as `0x${string}`,
+          networkId: +fromToken.networkId,
+          tokenAddress:
+            "contractAddress" in fromToken
+              ? (fromToken.contractAddress as `0x${string}`)
+              : undefined,
         }
       }
 
-      if (fromAsset.networkType === "substrate") {
+      if (fromToken.platform === "polkadot") {
         return {
-          type: "substrate",
+          type: "substrate" as const,
           address: fromAddress,
-          chainId: fromAsset.chainId.toString(),
-          assetHubAssetId: fromAsset.assetHubAssetId,
+          chainId: fromToken.networkId,
+          assetHubAssetId: "assetId" in fromToken ? String(fromToken.assetId) : undefined,
         }
       }
 
       return undefined
-    }, [fromAsset, fromAddress])
+    }, [fromToken, fromAddress])
   )
 
   return useMemo(
@@ -189,10 +223,10 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       setSwapView,
 
       // Form state
-      fromAsset,
-      setFromAsset,
-      toAsset,
-      setToAsset,
+      fromTokenId,
+      setFromTokenId,
+      toTokenId,
+      setToTokenId,
       fromAmount,
       setFromAmount,
       selectedProtocol,
@@ -220,11 +254,15 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       incrementApprovalCounter,
 
       // Async state
-      fromAssets,
-      toAssets,
+      fromAssetIds,
+      toAssetIds,
+      fromSupportMap,
+      toSupportMap,
       safeTokens,
+      isLoadingFromAssets,
+      isLoadingToAssets,
 
-      // Quote state (new shape)
+      // Quote state
       isLoadingQuotes,
       isAllQuotesSettled,
       hasQuoteError,
@@ -255,8 +293,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       swapView,
-      fromAsset,
-      toAsset,
+      fromTokenId,
+      toTokenId,
       fromAmount,
       selectedProtocol,
       selectedSubProtocol,
@@ -270,9 +308,13 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       reverse,
       approvalCounter,
       incrementApprovalCounter,
-      fromAssets,
-      toAssets,
+      fromAssetIds,
+      toAssetIds,
+      fromSupportMap,
+      toSupportMap,
       safeTokens,
+      isLoadingFromAssets,
+      isLoadingToAssets,
       isLoadingQuotes,
       isAllQuotesSettled,
       hasQuoteError,

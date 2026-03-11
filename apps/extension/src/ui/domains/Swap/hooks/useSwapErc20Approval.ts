@@ -6,11 +6,7 @@ import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { encodeFunctionData, erc20Abi } from "viem"
 
-import type {
-  ApprovalInfo,
-  BaseQuote,
-  SwappableAssetWithDecimals,
-} from "../swap-modules/common.swap-module"
+import type { ApprovalInfo, BaseQuote } from "../swap-modules/common.swap-module"
 import type { swapModules } from "../swaps.api"
 
 /**
@@ -19,8 +15,8 @@ import type { swapModules } from "../swaps.api"
  */
 export const useSwapErc20Approval = (params: {
   selectedModule: (typeof swapModules)[number] | undefined
-  fromAsset: SwappableAssetWithDecimals | null
-  toAsset: SwappableAssetWithDecimals | null
+  fromTokenId: string | null
+  toTokenId: string | null
   fromAmount: bigint
   fromAddress: string | null
   toAddress: string | null
@@ -30,8 +26,8 @@ export const useSwapErc20Approval = (params: {
 }) => {
   const {
     selectedModule,
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
     fromAmount,
     fromAddress,
     toAddress,
@@ -44,12 +40,12 @@ export const useSwapErc20Approval = (params: {
   // Get approval info from module (synchronous)
   const approvalInfo: ApprovalInfo = useMemo(() => {
     if (!selectedModule?.getApprovalInfo) return null
-    if (!fromAsset || !toAsset) return null
+    if (!fromTokenId || !toTokenId) return null
     if (!selectedQuote) return null
 
     return selectedModule.getApprovalInfo({
-      fromAsset,
-      toAsset,
+      fromTokenId,
+      toTokenId,
       fromAmount,
       fromAddress,
       toAddress,
@@ -58,8 +54,8 @@ export const useSwapErc20Approval = (params: {
     })
   }, [
     selectedModule,
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
     fromAmount,
     fromAddress,
     toAddress,

@@ -28,8 +28,8 @@ export const SwapConfirmEvm = () => {
     swapView,
     fromAddress,
     toAddress,
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
     fromAmount,
     toAmount,
     selectedModule: swapModule,
@@ -37,6 +37,9 @@ export const SwapConfirmEvm = () => {
     selectedSubProtocol: subProtocol,
     resetForm,
   } = useSwap()
+
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const toToken = useToken(toTokenId ?? undefined)
 
   const [isReady, setIsReady] = useState(false)
   useEffect(() => {
@@ -53,20 +56,20 @@ export const SwapConfirmEvm = () => {
     queryKey: [
       "swap-exchange-evm",
       swapModule?.protocol,
-      fromAsset?.id,
-      toAsset?.id,
+      fromTokenId,
+      toTokenId,
       fromAddress,
       toAddress,
       fromAmount.toString(),
       selectedQuote?.protocol,
     ],
     queryFn: async ({ signal }) => {
-      if (!swapModule || !fromAsset || !toAsset || !fromAddress || !toAddress)
+      if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress)
         throw new Error("Missing params")
 
       const exchange = await swapModule.createExchange({
-        fromAsset,
-        toAsset,
+        fromTokenId,
+        toTokenId,
         fromAmount,
         fromAddress,
         toAddress,
@@ -74,9 +77,9 @@ export const SwapConfirmEvm = () => {
       if (signal.aborted) throw new Error("Aborted")
 
       let evmTx: import("viem").TransactionRequest | undefined
-      if (fromAsset.networkType === "evm") {
+      if (fromToken?.platform === "ethereum") {
         evmTx = await swapModule.getEvmTransaction({
-          fromAsset,
+          fromTokenId,
           fromAddress,
           exchange: exchange ?? selectedQuote,
         })
@@ -87,8 +90,8 @@ export const SwapConfirmEvm = () => {
     },
     enabled:
       !!swapModule &&
-      !!fromAsset &&
-      !!toAsset &&
+      !!fromTokenId &&
+      !!toTokenId &&
       !!fromAddress &&
       !!toAddress &&
       swapView === "confirm" &&
@@ -102,8 +105,8 @@ export const SwapConfirmEvm = () => {
   const exchangeError = exchangeAndTxQuery.error
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!fromAsset) return
-    if (!toAsset) return
+    if (!fromTokenId) return
+    if (!toTokenId) return
     if (!toAmount) return
     if (toAddress === null) return
 
@@ -113,8 +116,8 @@ export const SwapConfirmEvm = () => {
         return {
           type: "swap-simpleswap",
           exchangeId: exchange.id,
-          fromTokenId: fromAsset.id,
-          toTokenId: toAsset.id,
+          fromTokenId,
+          toTokenId,
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
@@ -124,8 +127,8 @@ export const SwapConfirmEvm = () => {
         return {
           type: "swap-stealthex",
           exchangeId: exchange.id,
-          fromTokenId: fromAsset.id,
-          toTokenId: toAsset.id,
+          fromTokenId,
+          toTokenId,
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
@@ -135,8 +138,8 @@ export const SwapConfirmEvm = () => {
         return {
           type: "swap-lifi",
           protocolName: subProtocol,
-          fromTokenId: fromAsset.id,
-          toTokenId: toAsset.id,
+          fromTokenId,
+          toTokenId,
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
@@ -146,12 +149,12 @@ export const SwapConfirmEvm = () => {
   }, [
     exchange,
     fromAmount,
-    fromAsset,
+    fromTokenId,
     subProtocol,
     swapModule?.protocol,
     toAddress,
     toAmount,
-    toAsset,
+    toTokenId,
   ])
 
   // once the payload is sent to ledger, we must freeze it
@@ -165,12 +168,11 @@ export const SwapConfirmEvm = () => {
     networkUsage,
     gasSettingsByPriority,
     setCustomSettings,
-  } = useEthTransaction(evmTx ?? undefined, fromAsset?.chainId.toString(), isPayloadLocked)
+  } = useEthTransaction(evmTx ?? undefined, fromToken?.networkId, isPayloadLocked)
 
   const handleFeeChange = useCallback(
     (priority: EthPriorityOptionName) => {
       setPriority(priority)
-      // setReady() // clear error from previous submit attempt
     },
     [setPriority]
   )
@@ -180,19 +182,19 @@ export const SwapConfirmEvm = () => {
   const { close: closeSwapTokensModal } = useSwapTokensModal()
   const navigate = useNavigate()
   const send = useCallback(async () => {
-    if (!transaction || !fromAsset) return
+    if (!transaction || !fromToken) return
 
     setIsProcessing(true)
     try {
       const serialized = serializeTransactionRequest(transaction)
-      const hash = await api.ethSignAndSend(fromAsset?.chainId.toString(), serialized, txInfo)
+      const hash = await api.ethSignAndSend(fromToken.networkId, serialized, txInfo)
 
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
 
       closeSwapTokensModal()
       resetForm()
-      if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
-      if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
+      if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
+      if (toTokenId) activeTokensStore.setActive(toTokenId, true)
       navigate("/tx-history")
     } catch (cause) {
       // biome-ignore lint/suspicious/noConsole: legacy
@@ -204,29 +206,33 @@ export const SwapConfirmEvm = () => {
       })
     }
     setIsProcessing(false)
-  }, [closeSwapTokensModal, fromAsset, navigate, resetForm, toAsset, transaction, txInfo])
+  }, [
+    closeSwapTokensModal,
+    fromToken,
+    navigate,
+    resetForm,
+    toToken,
+    toTokenId,
+    transaction,
+    txInfo,
+  ])
 
   const sendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
-      if (!transaction || !fromAsset) return
+      if (!transaction || !fromToken) return
 
       setIsProcessing(true)
       try {
         const serialized = serializeTransactionRequest(transaction)
-        const hash = await api.ethSendSigned(
-          fromAsset?.chainId.toString(),
-          serialized,
-          signature,
-          txInfo
-        )
+        const hash = await api.ethSendSigned(fromToken.networkId, serialized, signature, txInfo)
 
         if (txInfo && txInfo.type === "swap-simpleswap")
           saveIdForMonitoring(txInfo.exchangeId, hash)
 
         closeSwapTokensModal()
         resetForm()
-        if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
-        if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
+        if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
+        if (toTokenId) activeTokensStore.setActive(toTokenId, true)
         navigate("/tx-history")
       } catch (cause) {
         // biome-ignore lint/suspicious/noConsole: legacy
@@ -239,12 +245,12 @@ export const SwapConfirmEvm = () => {
       }
       setIsProcessing(false)
     },
-    [closeSwapTokensModal, fromAsset, navigate, resetForm, transaction, txInfo, toAsset]
+    [closeSwapTokensModal, fromToken, navigate, resetForm, transaction, txInfo, toToken, toTokenId]
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])
 
-  const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
+  const fromEvmNetwork = useNetworkById(fromToken?.networkId, "ethereum")
   const gasTokenSymbol = useToken(fromEvmNetwork?.nativeTokenId)?.symbol ?? "ETH"
 
   return (
@@ -280,7 +286,7 @@ export const SwapConfirmEvm = () => {
           </Button>
         ) : account && account.type === "ledger-ethereum" && isReady && !!evmTx ? (
           <SignHardwareEthereum
-            evmNetworkId={fromAsset?.chainId.toString()}
+            evmNetworkId={fromToken?.networkId}
             account={account}
             method="eth_sendTransaction"
             payload={isReady && evmTx ? evmTx : null}

@@ -1,20 +1,25 @@
 import { act, renderHook } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-
 // ── Module mocks ──────────────────────────────────────────────────
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }))
 
-let mockFromAssets: SwappableAssetWithDecimals[] | undefined = []
-let mockToAssets: SwappableAssetWithDecimals[] | undefined = []
+let mockFromAssetIds: string[] | undefined = []
+let mockToAssetIds: string[] | undefined = []
 
 vi.mock("../swaps.api", () => ({
   useSafeTokens: () => ({ data: new Set<string>() }),
-  useSwapAssets: () => ({ fromAssets: mockFromAssets, toAssets: mockToAssets }),
+  useSwapAssets: () => ({
+    fromAssetIds: mockFromAssetIds,
+    toAssetIds: mockToAssetIds,
+    fromSupportMap: null,
+    toSupportMap: null,
+    isLoadingFromAssets: false,
+    isLoadingToAssets: false,
+  }),
   useReverse: () => vi.fn(),
 }))
 
@@ -53,121 +58,106 @@ vi.mock("../hooks/useFastBalance", () => ({
   useFastBalance: () => undefined,
 }))
 
+vi.mock("@ui/state/chaindata", () => ({
+  useToken: vi.fn(() => null),
+}))
+
 // ── Import after mocks ────────────────────────────────────────────
 
 // eslint-disable-next-line import/first
 import { useSwapContextProvider } from "../SwapProvider.internal"
 
-// ── Helpers ───────────────────────────────────────────────────────
-
-function makeAsset(id: string, symbol: string): SwappableAssetWithDecimals {
-  return {
-    id,
-    name: symbol,
-    networkType: "evm",
-    chainId: 1,
-    symbol,
-    decimals: 18,
-    context: {},
-  } as SwappableAssetWithDecimals
-}
-
 // ── Tests ─────────────────────────────────────────────────────────
 
 describe("useSwapContextProvider stateInit initialization", () => {
   beforeEach(() => {
-    mockFromAssets = []
-    mockToAssets = []
+    mockFromAssetIds = []
+    mockToAssetIds = []
   })
 
-  it("initializes toAsset from stateInit.toTokenId when toAssets loads", () => {
-    const seekAsset = makeAsset("8453:erc20:0xseek", "SEEK")
-    mockToAssets = [makeAsset("1:native:eth", "ETH"), seekAsset]
+  it("initializes toTokenId from stateInit.toTokenId when toAssetIds loads", () => {
+    mockToAssetIds = ["1:native:eth", "8453:erc20:0xseek"]
 
     const { result } = renderHook(() =>
       useSwapContextProvider({ stateInit: { toTokenId: "8453:erc20:0xseek" } })
     )
 
-    expect(result.current.toAsset).toBe(seekAsset)
+    expect(result.current.toTokenId).toBe("8453:erc20:0xseek")
   })
 
-  it("initializes fromAsset from stateInit.fromTokenId when fromAssets loads", () => {
-    const ethAsset = makeAsset("1:native:eth", "ETH")
-    mockFromAssets = [ethAsset, makeAsset("137:native:matic", "MATIC")]
+  it("initializes fromTokenId from stateInit.fromTokenId when fromAssetIds loads", () => {
+    mockFromAssetIds = ["1:native:eth", "137:native:matic"]
 
     const { result } = renderHook(() =>
       useSwapContextProvider({ stateInit: { fromTokenId: "1:native:eth" } })
     )
 
-    expect(result.current.fromAsset).toBe(ethAsset)
+    expect(result.current.fromTokenId).toBe("1:native:eth")
   })
 
   it("does not initialize when stateInit is null", () => {
-    mockToAssets = [makeAsset("1:native:eth", "ETH")]
-    mockFromAssets = [makeAsset("1:native:eth", "ETH")]
+    mockToAssetIds = ["1:native:eth"]
+    mockFromAssetIds = ["1:native:eth"]
 
     const { result } = renderHook(() => useSwapContextProvider({ stateInit: null }))
 
-    expect(result.current.fromAsset).toBeNull()
-    expect(result.current.toAsset).toBeNull()
+    expect(result.current.fromTokenId).toBeNull()
+    expect(result.current.toTokenId).toBeNull()
   })
 
-  it("does not re-initialize after user changes toAsset", () => {
-    const seekAsset = makeAsset("8453:erc20:0xseek", "SEEK")
-    const otherAsset = makeAsset("1:native:eth", "ETH")
-    mockToAssets = [otherAsset, seekAsset]
+  it("does not re-initialize after user changes toTokenId", () => {
+    mockToAssetIds = ["1:native:eth", "8453:erc20:0xseek"]
 
     const { result } = renderHook(() =>
       useSwapContextProvider({ stateInit: { toTokenId: "8453:erc20:0xseek" } })
     )
 
     // Verify initial auto-selection
-    expect(result.current.toAsset).toBe(seekAsset)
+    expect(result.current.toTokenId).toBe("8453:erc20:0xseek")
 
-    // Simulate user selecting a different asset
+    // Simulate user selecting a different token
     act(() => {
-      result.current.setToAsset(otherAsset)
+      result.current.setToTokenId("1:native:eth")
     })
 
-    expect(result.current.toAsset).toBe(otherAsset)
+    expect(result.current.toTokenId).toBe("1:native:eth")
   })
 
-  it("waits for toAssets to load before initializing", () => {
-    // Start with empty toAssets
-    mockToAssets = []
+  it("waits for toAssetIds to load before initializing", () => {
+    // Start with empty toAssetIds
+    mockToAssetIds = []
 
     const { result, rerender } = renderHook(() =>
       useSwapContextProvider({ stateInit: { toTokenId: "8453:erc20:0xseek" } })
     )
 
-    expect(result.current.toAsset).toBeNull()
+    expect(result.current.toTokenId).toBeNull()
 
-    // Simulate toAssets loading
-    const seekAsset = makeAsset("8453:erc20:0xseek", "SEEK")
-    mockToAssets = [seekAsset]
+    // Simulate toAssetIds loading
+    mockToAssetIds = ["8453:erc20:0xseek"]
     rerender()
 
-    expect(result.current.toAsset).toBe(seekAsset)
+    expect(result.current.toTokenId).toBe("8453:erc20:0xseek")
   })
 
-  it("handles toTokenId not found in toAssets gracefully", () => {
-    mockToAssets = [makeAsset("1:native:eth", "ETH")]
+  it("handles toTokenId not found in toAssetIds gracefully", () => {
+    mockToAssetIds = ["1:native:eth"]
 
     const { result } = renderHook(() =>
       useSwapContextProvider({ stateInit: { toTokenId: "nonexistent:token" } })
     )
 
-    expect(result.current.toAsset).toBeNull()
+    expect(result.current.toTokenId).toBeNull()
   })
 })
 
 describe("useSwapContextProvider isInitializing", () => {
   beforeEach(() => {
-    mockFromAssets = undefined
-    mockToAssets = undefined
+    mockFromAssetIds = undefined
+    mockToAssetIds = undefined
   })
 
-  it("is true when stateInit.toTokenId is set but toAssets has not loaded", () => {
+  it("is true when stateInit.toTokenId is set but toAssetIds has not loaded", () => {
     const { result } = renderHook(() =>
       useSwapContextProvider({ stateInit: { toTokenId: "8453:erc20:0xseek" } })
     )
@@ -175,7 +165,7 @@ describe("useSwapContextProvider isInitializing", () => {
     expect(result.current.isInitializing).toBe(true)
   })
 
-  it("is true when stateInit.fromTokenId is set but fromAssets has not loaded", () => {
+  it("is true when stateInit.fromTokenId is set but fromAssetIds has not loaded", () => {
     const { result } = renderHook(() =>
       useSwapContextProvider({ stateInit: { fromTokenId: "1:native:eth" } })
     )
@@ -183,19 +173,18 @@ describe("useSwapContextProvider isInitializing", () => {
     expect(result.current.isInitializing).toBe(true)
   })
 
-  it("becomes false once toAssets loads and toAsset is set", () => {
+  it("becomes false once toAssetIds loads and toTokenId is set", () => {
     const { result, rerender } = renderHook(() =>
       useSwapContextProvider({ stateInit: { toTokenId: "8453:erc20:0xseek" } })
     )
 
     expect(result.current.isInitializing).toBe(true)
 
-    const seekAsset = makeAsset("8453:erc20:0xseek", "SEEK")
-    mockToAssets = [seekAsset]
+    mockToAssetIds = ["8453:erc20:0xseek"]
     rerender()
 
     expect(result.current.isInitializing).toBe(false)
-    expect(result.current.toAsset).toBe(seekAsset)
+    expect(result.current.toTokenId).toBe("8453:erc20:0xseek")
   })
 
   it("becomes false when assets load even if token not found", () => {
@@ -205,12 +194,12 @@ describe("useSwapContextProvider isInitializing", () => {
 
     expect(result.current.isInitializing).toBe(true)
 
-    mockToAssets = [makeAsset("1:native:eth", "ETH")]
+    mockToAssetIds = ["1:native:eth"]
     rerender()
 
-    // toAssets loaded (not undefined), so isInitializing becomes false
+    // toAssetIds loaded (not undefined), so isInitializing becomes false
     expect(result.current.isInitializing).toBe(false)
-    expect(result.current.toAsset).toBeNull()
+    expect(result.current.toTokenId).toBeNull()
   })
 
   it("is false when stateInit is null", () => {

@@ -1,143 +1,74 @@
+import type { Token } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
-
-import type {
-  SwappableAssetBaseType,
-  SwappableAssetWithDecimals,
-} from "../swap-modules/common.swap-module"
-import { enrichAssets, getTokenTabs } from "../swap-services/token-filtering"
+import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import { buildAssetRegistry, getTokenTabs } from "../swap-services/token-filtering"
 
 // ─── Test helpers ───────────────────────────────────────────────────
 
-function makeBaseAsset(
-  overrides: Partial<SwappableAssetBaseType> & Pick<SwappableAssetBaseType, "id" | "chainId">
-): SwappableAssetBaseType {
-  return {
-    name: overrides.name ?? "Token",
-    symbol: overrides.symbol ?? "TKN",
-    networkType: overrides.networkType ?? "evm",
-    context: overrides.context ?? {},
-    ...overrides,
-  }
+/** Minimal mock Token for tokensMap */
+function makeToken(id: string, symbol: string, decimals = 18) {
+  return { id, symbol, decimals } as unknown as Token
+}
+
+function makeTokensMap(entries: Array<[string, Token]>) {
+  return Object.fromEntries(entries) as Record<string, Token>
 }
 
 const stubT = ((key: string) => key) as unknown as Parameters<typeof getTokenTabs>[0]["t"]
 
-// ─── enrichAssets ───────────────────────────────────────────────────
+// ─── buildAssetRegistry ─────────────────────────────────────────────
 
-describe("enrichAssets", () => {
-  it("uses token map symbol and decimals when available", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({ id: "tok-1", chainId: 1, symbol: "OLD", decimals: 6 }),
-    ]
-    const tokensMap = { "tok-1": { symbol: "NEW", decimals: 18 } }
+describe("buildAssetRegistry", () => {
+  it("includes tokenIds that exist in tokensMap", () => {
+    const tokensMap = makeTokensMap([["tok-1", makeToken("tok-1", "TKN")]])
+    const result = buildAssetRegistry([["simpleswap", ["tok-1"]]], tokensMap)
 
-    const result = enrichAssets(assets, tokensMap)
-
-    expect(result).toHaveLength(1)
-    expect(result[0]!.symbol).toBe("NEW")
-    expect(result[0]!.decimals).toBe(18)
+    expect(result.tokenIds).toContain("tok-1")
+    expect(result.supportMap.get("tok-1")?.has("simpleswap")).toBe(true)
   })
 
-  it("falls back to asset symbol/decimals when token map has no entry", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({ id: "tok-2", chainId: 1, symbol: "FALLBACK", decimals: 8 }),
-    ]
+  it("excludes tokenIds not in tokensMap (and not BTC)", () => {
+    const result = buildAssetRegistry([["simpleswap", ["tok-unknown"]]], {})
 
-    const result = enrichAssets(assets, {})
-
-    expect(result).toHaveLength(1)
-    expect(result[0]!.symbol).toBe("FALLBACK")
-    expect(result[0]!.decimals).toBe(8)
+    expect(result.tokenIds).toHaveLength(0)
   })
 
-  it("skips assets with no symbol and no decimals", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({ id: "tok-3", chainId: 1, symbol: undefined, decimals: undefined }),
-    ]
-    const tokensMap = {}
+  it("handles BTC native token without tokensMap entry", () => {
+    const result = buildAssetRegistry([["simpleswap", ["btc-native"]]], {})
 
-    const result = enrichAssets(assets, tokensMap)
-    expect(result).toHaveLength(0)
+    expect(result.tokenIds).toContain("btc-native")
   })
 
-  it("uses ETH logo for tokens with symbol 'ETH'", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({
-        id: "eth-native",
-        chainId: 1,
-        symbol: "ETH",
-        decimals: 18,
-        image: "original.png",
-      }),
-    ]
+  it("merges protocols from multiple modules for the same tokenId", () => {
+    const tokensMap = makeTokensMap([["tok-1", makeToken("tok-1", "TKN")]])
+    const result = buildAssetRegistry(
+      [
+        ["simpleswap", ["tok-1"]],
+        ["lifi", ["tok-1"]],
+      ],
+      tokensMap
+    )
 
-    const result = enrichAssets(assets, {})
-
-    expect(result[0]!.image).toContain("eth.svg")
+    expect(result.tokenIds).toHaveLength(1)
+    const protocols = result.supportMap.get("tok-1")!
+    expect(protocols.has("simpleswap")).toBe(true)
+    expect(protocols.has("lifi")).toBe(true)
   })
 
-  it("handles BTC native token via btcTokens lookup", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({
-        id: "btc-native",
-        chainId: "btc",
-        networkType: "btc",
-        name: "Bitcoin",
-      }),
-    ]
+  it("deduplicates tokenIds across modules", () => {
+    const tokensMap = makeTokensMap([
+      ["tok-1", makeToken("tok-1", "AAA")],
+      ["tok-2", makeToken("tok-2", "BBB")],
+    ])
+    const result = buildAssetRegistry(
+      [
+        ["simpleswap" as SupportedSwapProtocol, ["tok-1", "tok-2"]],
+        ["stealthex" as SupportedSwapProtocol, ["tok-1"]],
+      ],
+      tokensMap
+    )
 
-    const result = enrichAssets(assets, {})
-
-    expect(result).toHaveLength(1)
-    expect(result[0]!.symbol).toBe("BTC")
-    expect(result[0]!.decimals).toBe(8)
-  })
-
-  it("merges context from duplicate assets on same chain", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({
-        id: "tok-5",
-        chainId: 1,
-        symbol: "DUP",
-        decimals: 18,
-        context: { simpleswap: "a" },
-      }),
-      makeBaseAsset({
-        id: "tok-5",
-        chainId: 1,
-        symbol: "DUP",
-        decimals: 18,
-        context: { lifi: "b" },
-      }),
-    ]
-
-    const result = enrichAssets(assets, {})
-
-    expect(result).toHaveLength(1)
-    expect(result[0]!.context).toEqual({ simpleswap: "a", lifi: "b" })
-  })
-
-  it("sorts tokens alphabetically within each chain", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({ id: "tok-z", chainId: 1, symbol: "ZZZ", decimals: 18 }),
-      makeBaseAsset({ id: "tok-a", chainId: 1, symbol: "AAA", decimals: 18 }),
-      makeBaseAsset({ id: "tok-m", chainId: 1, symbol: "MMM", decimals: 18 }),
-    ]
-
-    const result = enrichAssets(assets, {})
-
-    expect(result.map((r) => r.symbol)).toEqual(["AAA", "MMM", "ZZZ"])
-  })
-
-  it("handles $ in symbol sorting correctly", () => {
-    const assets: SwappableAssetBaseType[] = [
-      makeBaseAsset({ id: "tok-b", chainId: 1, symbol: "$BBB", decimals: 18 }),
-      makeBaseAsset({ id: "tok-a", chainId: 1, symbol: "AAA", decimals: 18 }),
-    ]
-
-    const result = enrichAssets(assets, {})
-
-    expect(result.map((r) => r.symbol)).toEqual(["AAA", "$BBB"])
+    expect(result.tokenIds).toHaveLength(2)
   })
 })
 
@@ -169,18 +100,15 @@ describe("getTokenTabs", () => {
     expect(allTab.filter).toBeUndefined()
   })
 
-  it("popular tab filters by curated tokens", () => {
+  it("popular tab filters by curated tokenIds", () => {
     const curatedTokens = ["tok-1", "tok-2"]
     const tabs = getTokenTabs({ t: stubT, curatedTokens })
     const popularTab = tabs.find((tb) => tb.value === "popular")!
 
     expect(popularTab.filter).toBeDefined()
 
-    const included = { id: "tok-1" } as SwappableAssetWithDecimals
-    const excluded = { id: "tok-99" } as SwappableAssetWithDecimals
-
-    expect(popularTab.filter!(included)).toBe(true)
-    expect(popularTab.filter!(excluded)).toBe(false)
+    expect(popularTab.filter!("tok-1")).toBe(true)
+    expect(popularTab.filter!("tok-99")).toBe(false)
   })
 
   it("popular tab sorts by curated order", () => {
@@ -188,11 +116,8 @@ describe("getTokenTabs", () => {
     const tabs = getTokenTabs({ t: stubT, curatedTokens })
     const popularTab = tabs.find((tb) => tb.value === "popular")!
 
-    const a = { id: "tok-1" } as SwappableAssetWithDecimals
-    const b = { id: "tok-2" } as SwappableAssetWithDecimals
-
-    expect(popularTab.sort!(a, b)).toBeGreaterThan(0)
-    expect(popularTab.sort!(b, a)).toBeLessThan(0)
+    expect(popularTab.sort!("tok-1", "tok-2")).toBeGreaterThan(0)
+    expect(popularTab.sort!("tok-2", "tok-1")).toBeLessThan(0)
   })
 
   it("coingecko tabs are flagged", () => {

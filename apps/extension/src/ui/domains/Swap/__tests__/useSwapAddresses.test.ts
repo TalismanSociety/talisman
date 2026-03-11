@@ -1,8 +1,6 @@
 import { act, renderHook } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-
 // ── Module mocks ──────────────────────────────────────────────────
 
 const mockUseAccounts = vi.fn()
@@ -15,8 +13,10 @@ vi.mock("@ui/state/balances", () => ({
   useBalances: () => mockUseBalances(),
 }))
 
+const mockUseToken = vi.fn()
 vi.mock("@ui/state/chaindata", () => ({
   useNetworkById: vi.fn(() => null),
+  useToken: (...args: unknown[]) => mockUseToken(...args),
 }))
 
 vi.mock("@core/domains/accounts/helpers", () => ({
@@ -79,40 +79,16 @@ const SUB_ACCOUNT_B = {
 
 const ALL_ACCOUNTS = [ETH_ACCOUNT_A, ETH_ACCOUNT_B, SUB_ACCOUNT_A, SUB_ACCOUNT_B]
 
-function makeEvmAsset(id = "evm-token"): SwappableAssetWithDecimals {
-  return {
-    id,
-    name: "ETH",
-    networkType: "evm",
-    chainId: 1,
-    symbol: "ETH",
-    decimals: 18,
-    context: {},
-  } as SwappableAssetWithDecimals
-}
-
-function makeSubstrateAsset(id = "sub-token"): SwappableAssetWithDecimals {
-  return {
-    id,
-    name: "DOT",
-    networkType: "substrate",
-    chainId: "polkadot",
-    symbol: "DOT",
-    decimals: 10,
-    context: {},
-  } as SwappableAssetWithDecimals
-}
-
-function makeBtcAsset(): SwappableAssetWithDecimals {
-  return {
-    id: "btc-native",
-    name: "BTC",
-    networkType: "btc",
-    chainId: "btc",
-    symbol: "BTC",
-    decimals: 8,
-    context: {},
-  } as SwappableAssetWithDecimals
+/** Mock token data returned by useToken for different token types */
+function mockTokenForId(tokenId: string | undefined) {
+  if (!tokenId) return null
+  if (tokenId === "evm-token" || tokenId === "evm-token-2")
+    return { id: tokenId, platform: "ethereum", type: "evm-native", networkId: "1" }
+  if (tokenId === "sub-token")
+    return { id: tokenId, platform: "polkadot", type: "substrate-native", networkId: "polkadot" }
+  if (tokenId === "btc-native")
+    return { id: tokenId, platform: undefined, type: "btc-native", networkId: "btc" }
+  return null
 }
 
 /**
@@ -144,8 +120,8 @@ function defaultProps(
     setFromAddress: overrides.setFromAddress ?? vi.fn(),
     toAddress: null,
     setToAddress: overrides.setToAddress ?? vi.fn(),
-    fromAsset: null,
-    toAsset: null,
+    fromTokenId: null,
+    toTokenId: null,
     ...overrides,
   }
 }
@@ -157,9 +133,10 @@ describe("useSwapAddresses — auto-select from address", () => {
     vi.clearAllMocks()
     mockUseAccounts.mockImplementation(() => ALL_ACCOUNTS)
     mockUseBalances.mockReturnValue(createMockBalances({}))
+    mockUseToken.mockImplementation(mockTokenForId)
   })
 
-  it("does nothing when fromAsset is null", () => {
+  it("does nothing when fromTokenId is null", () => {
     const setFromAddress = vi.fn()
     renderHook(() => useSwapAddresses(defaultProps({ setFromAddress })))
     expect(setFromAddress).not.toHaveBeenCalled()
@@ -174,7 +151,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     )
 
     const setFromAddress = vi.fn()
-    renderHook(() => useSwapAddresses(defaultProps({ fromAsset: makeEvmAsset(), setFromAddress })))
+    renderHook(() => useSwapAddresses(defaultProps({ fromTokenId: "evm-token", setFromAddress })))
 
     expect(setFromAddress).toHaveBeenCalledWith("0xBBB")
   })
@@ -188,9 +165,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     )
 
     const setFromAddress = vi.fn()
-    renderHook(() =>
-      useSwapAddresses(defaultProps({ fromAsset: makeSubstrateAsset(), setFromAddress }))
-    )
+    renderHook(() => useSwapAddresses(defaultProps({ fromTokenId: "sub-token", setFromAddress })))
 
     expect(setFromAddress).toHaveBeenCalledWith(SUB_ACCOUNT_B.address)
   })
@@ -199,7 +174,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     mockUseBalances.mockReturnValue(createMockBalances({}))
 
     const setFromAddress = vi.fn()
-    renderHook(() => useSwapAddresses(defaultProps({ fromAsset: makeEvmAsset(), setFromAddress })))
+    renderHook(() => useSwapAddresses(defaultProps({ fromTokenId: "evm-token", setFromAddress })))
 
     // First EVM account is selected (all tied at 0n)
     expect(setFromAddress).toHaveBeenCalledWith("0xAAA")
@@ -207,7 +182,7 @@ describe("useSwapAddresses — auto-select from address", () => {
 
   it("sets null for BTC assets (no compatible accounts)", () => {
     const setFromAddress = vi.fn()
-    renderHook(() => useSwapAddresses(defaultProps({ fromAsset: makeBtcAsset(), setFromAddress })))
+    renderHook(() => useSwapAddresses(defaultProps({ fromTokenId: "btc-native", setFromAddress })))
 
     expect(setFromAddress).toHaveBeenCalledWith(null)
   })
@@ -224,7 +199,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     const setToAddress = vi.fn()
     const { result, rerender } = renderHook((props: HookProps) => useSwapAddresses(props), {
       initialProps: defaultProps({
-        fromAsset: makeEvmAsset(),
+        fromTokenId: "evm-token",
         fromAddress: "0xBBB",
         setFromAddress,
         setToAddress,
@@ -241,7 +216,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     // Change to a different token — auto-select should be suppressed
     rerender(
       defaultProps({
-        fromAsset: makeEvmAsset("evm-token-2"),
+        fromTokenId: "evm-token-2",
         fromAddress: "0xAAA",
         setFromAddress,
         setToAddress,
@@ -264,7 +239,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     const setToAddress = vi.fn()
     const { result, rerender } = renderHook((props: HookProps) => useSwapAddresses(props), {
       initialProps: defaultProps({
-        fromAsset: makeEvmAsset(),
+        fromTokenId: "evm-token",
         fromAddress: "0xBBB",
         setFromAddress,
         setToAddress,
@@ -286,7 +261,7 @@ describe("useSwapAddresses — auto-select from address", () => {
     // Change token — auto-select should now fire again
     rerender(
       defaultProps({
-        fromAsset: makeEvmAsset("evm-token-2"),
+        fromTokenId: "evm-token-2",
         fromAddress: "0xAAA",
         setFromAddress,
         setToAddress,

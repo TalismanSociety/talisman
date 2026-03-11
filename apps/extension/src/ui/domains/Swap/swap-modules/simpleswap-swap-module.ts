@@ -45,7 +45,6 @@ import {
   type SupportedSwapProtocol,
   type SwapModule,
   type SwappableAssetBaseType,
-  type SwappableAssetWithDecimals,
   validateAddress,
 } from "./common.swap-module"
 import type { QuoteResponse } from "./common.swap-module.ts"
@@ -440,14 +439,21 @@ const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) 
   return getExtensionPublicClient(evmNetwork)
 }
 
-// --- Cached assets (promise-based to deduplicate concurrent calls) ---
-let cachedAssetsPromise: Promise<
-  SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>[]
-> | null = null
+// --- Internal asset type for SimpleSwap (not exposed) ---
+type SimpleswapInternalAsset = SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }> & {
+  decimals: number
+}
 
-const getSimpleswapAssets = async (
-  _signal: AbortSignal
-): Promise<SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>[]> => {
+// --- Internal lookup cache keyed by tokenId ---
+const assetsByTokenId = new Map<string, SimpleswapInternalAsset>()
+
+const resolveAsset = (tokenId: string): SimpleswapInternalAsset | undefined =>
+  assetsByTokenId.get(tokenId)
+
+// --- Cached assets (promise-based to deduplicate concurrent calls) ---
+let cachedAssetsPromise: Promise<SimpleswapInternalAsset[]> | null = null
+
+const getSimpleswapAssets = async (_signal: AbortSignal): Promise<SimpleswapInternalAsset[]> => {
   if (!cachedAssetsPromise) {
     cachedAssetsPromise = fetchSimpleswapAssets().catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
@@ -457,9 +463,7 @@ const getSimpleswapAssets = async (
   return cachedAssetsPromise
 }
 
-const fetchSimpleswapAssets = async (): Promise<
-  SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>[]
-> => {
+const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
   const allCurrencies = await simpleSwapSdk.getAllCurrencies()
 
   const supportedTokens = allCurrencies.filter((currency) => {
@@ -523,14 +527,20 @@ const fetchSimpleswapAssets = async (): Promise<
     )
   )
 
-  return result
+  // Only keep assets that have decimals (required for amount conversion)
+  const withDecimals = result.filter((a): a is SimpleswapInternalAsset => a.decimals !== undefined)
+
+  // Populate the lookup cache
+  assetsByTokenId.clear()
+  for (const asset of withDecimals) assetsByTokenId.set(asset.id, asset)
+
+  return withDecimals
 }
 
 const pairKeyFromPair = (pair: string) => pair.toLowerCase()
-const pairKeyFromAsset = (asset: SwappableAssetBaseType) =>
-  asset.context.simpleswap?.symbol.toLowerCase()
 
-const getPairs = async (fromAsset: SwappableAssetWithDecimals | null) => {
+const getPairs = async (fromTokenId: string | null) => {
+  const fromAsset = fromTokenId ? resolveAsset(fromTokenId) : null
   const { symbol } = fromAsset?.context?.simpleswap ?? {}
   if (!symbol) return [] // not supported
 
@@ -540,30 +550,28 @@ const getPairs = async (fromAsset: SwappableAssetWithDecimals | null) => {
   return pairs
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<SwappableAssetBaseType[]> => {
-  return await getSimpleswapAssets(signal)
+const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
+  const assets = await getSimpleswapAssets(signal)
+  return assets.map((a) => a.id)
 }
 
-const getToAssets = async (
-  fromAsset: SwappableAssetWithDecimals | null,
-  signal: AbortSignal
-): Promise<SwappableAssetBaseType[]> => {
+const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
   const allAssets = await getSimpleswapAssets(signal)
-  if (!fromAsset) return allAssets
+  if (!fromTokenId) return allAssets.map((a) => a.id)
 
-  const pairs = await getPairs(fromAsset)
+  const pairs = await getPairs(fromTokenId)
   if (!pairs || !Array.isArray(pairs)) return []
 
   const validDestinations = new Set(pairs.map(pairKeyFromPair))
   const validDestAssets = allAssets.filter((asset) =>
-    validDestinations.has(pairKeyFromAsset(asset))
+    validDestinations.has(asset.context.simpleswap?.symbol.toLowerCase())
   )
 
-  return [fromAsset, ...validDestAssets]
+  return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
 const estimateGas = async (
-  fromAsset: SwappableAssetWithDecimals,
+  fromAsset: SimpleswapInternalAsset,
   fromAddress: string,
   _fromAmount: bigint
 ): Promise<QuoteFee | null> => {
@@ -611,8 +619,10 @@ const getQuote = async (
   params: QuoteParams,
   _signal: AbortSignal
 ): Promise<(BaseQuote & { data?: QuoteResponse }) | null> => {
-  const { fromAsset, toAsset, fromAmount, fromAddress } = params
+  const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
 
+  const fromAsset = resolveAsset(fromTokenId)
+  const toAsset = resolveAsset(toTokenId)
   if (!fromAsset || !toAsset || !fromAmount || fromAmount === 0n) return null
   const currencyFrom = fromAsset.context.simpleswap?.symbol
   const currencyTo = toAsset.context.simpleswap?.symbol
@@ -692,13 +702,13 @@ export type SimpleswapExchange = Exchange
 
 const createExchange = async (params: ExchangeParams): Promise<Exchange | undefined> => {
   try {
-    const { fromAsset, toAsset, fromAmount, fromAddress, toAddress } = params
+    const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
+
+    const fromAsset = resolveAsset(fromTokenId)
+    const toAsset = resolveAsset(toTokenId)
 
     const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
-    const formatAddress = (
-      address: string | null,
-      asset: SwappableAssetWithDecimals<unknown> | null
-    ) => {
+    const formatAddress = (address: string | null, asset: SimpleswapInternalAsset | undefined) => {
       if (!address) return address
       if (asset?.networkType !== "substrate") return address
 
@@ -800,8 +810,9 @@ const createExchange = async (params: ExchangeParams): Promise<Exchange | undefi
 
 const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
   try {
-    const { fromAsset, fromAddress, exchange: exchangeData } = params
+    const { fromTokenId, fromAddress, exchange: exchangeData } = params
     const exchange = exchangeData as Exchange
+    const fromAsset = resolveAsset(fromTokenId)
     if (!fromAddress) throw new Error("Missing from address")
     if (!fromAsset) throw new Error("Missing from asset")
     if (!exchange) throw new Error("Missing exchange")
@@ -851,8 +862,9 @@ const getSubstratePayload = async (
   txMetadata?: Uint8Array
 } | null> => {
   try {
-    const { fromAsset, fromAddress, exchange: exchangeData, sapi, allowReap } = params
+    const { fromTokenId, fromAddress, exchange: exchangeData, sapi, allowReap } = params
     const exchange = exchangeData as Exchange
+    const fromAsset = resolveAsset(fromTokenId)
     if (!sapi) return null
 
     if (!fromAddress) throw new Error("Missing from address")

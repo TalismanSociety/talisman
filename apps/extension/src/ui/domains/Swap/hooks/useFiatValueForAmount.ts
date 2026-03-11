@@ -1,23 +1,22 @@
 import type { TokenRateData, TokenRates } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
-import { useTokensMap } from "@ui/state/chaindata"
+import { useToken, useTokensMap } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-
 type UseFiatValueForAmountProps = {
   planck?: bigint
-  asset?: SwappableAssetWithDecimals | null
+  tokenId?: string | null
   usdOverride?: number
 }
 export const useFiatValueForAmount = ({
   planck,
-  asset,
+  tokenId,
   usdOverride,
 }: UseFiatValueForAmountProps) => {
   const currency = useSelectedCurrency()
+  const token = useToken(tokenId ?? undefined)
   const tokens = useTokensMap()
   const rates = useTokenRatesMap()
 
@@ -37,18 +36,18 @@ export const useFiatValueForAmount = ({
   }, [rates, usdOverride])
 
   const bestGuessRate = useMemo(() => {
-    if (!asset) return null
-    const confirmedRate = rates[asset.id]
+    if (!token) return null
+    const confirmedRate = rates[token.id]
     if (confirmedRate) return confirmedRate
-    return Object.entries(rates ?? {}).find(([id]) => tokens[id]?.symbol === asset.symbol)?.[1]
-  }, [asset, rates, tokens])
+    return Object.entries(rates ?? {}).find(([id]) => tokens[id]?.symbol === token.symbol)?.[1]
+  }, [token, rates, tokens])
 
   return useMemo(() => {
-    if (!asset) return null
+    if (!token) return null
     if (!bestGuessRate || planck === undefined) return fiatOverride?.[currency]?.price
     const rateInCurrency = bestGuessRate[currency]?.price
     if (!rateInCurrency) return null
-    const tokenAmount = Number(planckToTokens(planck.toString(), asset.decimals) ?? "0")
+    const tokenAmount = Number(planckToTokens(planck.toString(), token.decimals) ?? "0")
     return tokenAmount * rateInCurrency
-  }, [planck, asset, bestGuessRate, currency, fiatOverride])
+  }, [planck, token, bestGuessRate, currency, fiatOverride])
 }

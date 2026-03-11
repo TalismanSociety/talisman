@@ -40,7 +40,6 @@ import {
   type SupportedSwapProtocol,
   type SwapModule,
   type SwappableAssetBaseType,
-  type SwappableAssetWithDecimals,
   validateAddress,
 } from "./common.swap-module"
 import type {
@@ -54,7 +53,18 @@ const apiUrl = "https://stealthex.talisman.xyz"
 const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
 const PROTOCOL_NAME = "StealthEX"
 const DECENTRALISATION_SCORE = 1.5
-type FeeProps = { fromAsset: SwappableAssetBaseType; toAsset: SwappableAssetBaseType }
+
+type AssetContext = {
+  network: string
+  symbol: string
+}
+
+// --- Internal asset type for StealthEX (not exposed) ---
+type StealthexInternalAsset = SwappableAssetBaseType<{ stealthex: AssetContext }> & {
+  decimals: number
+}
+
+type FeeProps = { fromAsset: StealthexInternalAsset; toAsset: StealthexInternalAsset }
 const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {
   const isSubToOrFromEvm =
     (fromAsset.networkType === "substrate" && toAsset.networkType === "evm") ||
@@ -92,11 +102,6 @@ const decimalToPercent = (decimal: number) => Math.round(decimal * 100 * 100) / 
 const getAdditionalFeePercent = (feeProps: FeeProps) => decimalToPercent(getAdditionalFee(feeProps)) // to percent
 
 const LOGO = stealthexLogo
-
-type AssetContext = {
-  network: string
-  symbol: string
-}
 
 const supportedEvmNetworkIds: Record<string, EthNetworkId | undefined> = {
   arbitrum: "42161",
@@ -409,13 +414,16 @@ const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) 
   return getExtensionPublicClient(evmNetwork)
 }
 
-// --- Cached assets (promise-based to deduplicate concurrent calls) ---
-let cachedAssetsPromise: Promise<SwappableAssetBaseType<{ stealthex: AssetContext }>[]> | null =
-  null
+// --- Internal lookup cache keyed by tokenId ---
+const assetsByTokenId = new Map<string, StealthexInternalAsset>()
 
-const getStealthexAssets = async (
-  _signal: AbortSignal
-): Promise<SwappableAssetBaseType<{ stealthex: AssetContext }>[]> => {
+const resolveAsset = (tokenId: string): StealthexInternalAsset | undefined =>
+  assetsByTokenId.get(tokenId)
+
+// --- Cached assets (promise-based to deduplicate concurrent calls) ---
+let cachedAssetsPromise: Promise<StealthexInternalAsset[]> | null = null
+
+const getStealthexAssets = async (_signal: AbortSignal): Promise<StealthexInternalAsset[]> => {
   if (!cachedAssetsPromise) {
     cachedAssetsPromise = fetchStealthexAssets().catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
@@ -425,9 +433,7 @@ const getStealthexAssets = async (
   return cachedAssetsPromise
 }
 
-const fetchStealthexAssets = async (): Promise<
-  SwappableAssetBaseType<{ stealthex: AssetContext }>[]
-> => {
+const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
   const allCurrencies = await stealthexSdk.getAllCurrencies()
 
   const supportedTokens = allCurrencies.filter((currency) => {
@@ -491,15 +497,21 @@ const fetchStealthexAssets = async (): Promise<
     )
   )
 
-  return result
+  // Only keep assets that have decimals (required for amount conversion)
+  const withDecimals = result.filter((a): a is StealthexInternalAsset => a.decimals !== undefined)
+
+  // Populate the lookup cache
+  assetsByTokenId.clear()
+  for (const asset of withDecimals) assetsByTokenId.set(asset.id, asset)
+
+  return withDecimals
 }
 
 type PairItem = NonNullable<StealthexCurrency["available_routes"]>[number]
 const pairKeyFromPair = (pair: PairItem) => `${pair.network}::${pair.symbol}`
-const pairKeyFromAsset = (asset: SwappableAssetBaseType) =>
-  asset && `${asset.context?.stealthex?.network}::${asset.context?.stealthex?.symbol}`
 
-const getPairs = async (fromAsset: SwappableAssetWithDecimals | null) => {
+const getPairs = async (fromTokenId: string | null) => {
+  const fromAsset = fromTokenId ? resolveAsset(fromTokenId) : null
   const { symbol, network } = fromAsset?.context?.stealthex ?? {}
   if (!symbol || !network) return [] // not supported
 
@@ -510,46 +522,44 @@ const getPairs = async (fromAsset: SwappableAssetWithDecimals | null) => {
 }
 
 const getRouteHasCustomFee = async (
-  fromAsset: SwappableAssetWithDecimals | null,
-  toAsset: SwappableAssetWithDecimals | null
+  fromTokenId: string | null,
+  toTokenId: string | null
 ): Promise<boolean> => {
-  const pairs = await getPairs(fromAsset)
+  const pairs = await getPairs(fromTokenId)
   if (!pairs || !Array.isArray(pairs)) return false
 
+  const toAsset = toTokenId ? resolveAsset(toTokenId) : null
   if (!toAsset || !toAsset.context.stealthex) return false
-  if (!("stealthex" in toAsset.context)) return false
 
-  const toAssetKey = pairKeyFromAsset(toAsset)
+  const toAssetKey = `${toAsset.context.stealthex.network}::${toAsset.context.stealthex.symbol}`
   const pair = pairs.find((pair) => pairKeyFromPair(pair) === toAssetKey)
   if (!pair) return false
 
   return !!pair.features.includes("custom_fee")
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<SwappableAssetBaseType[]> => {
-  return await getStealthexAssets(signal)
+const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
+  const assets = await getStealthexAssets(signal)
+  return assets.map((a) => a.id)
 }
 
-const getToAssets = async (
-  fromAsset: SwappableAssetWithDecimals | null,
-  signal: AbortSignal
-): Promise<SwappableAssetBaseType[]> => {
+const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
   const allAssets = await getStealthexAssets(signal)
-  if (!fromAsset) return allAssets
+  if (!fromTokenId) return allAssets.map((a) => a.id)
 
-  const pairs = await getPairs(fromAsset)
+  const pairs = await getPairs(fromTokenId)
   if (!pairs || !Array.isArray(pairs)) return []
 
   const validDestinations = new Set(pairs.map(pairKeyFromPair))
   const validDestAssets = allAssets.filter((asset) =>
-    validDestinations.has(pairKeyFromAsset(asset))
+    validDestinations.has(`${asset.context.stealthex.network}::${asset.context.stealthex.symbol}`)
   )
 
-  return [fromAsset, ...validDestAssets]
+  return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
 const estimateGas = async (
-  fromAsset: SwappableAssetWithDecimals,
+  fromAsset: StealthexInternalAsset,
   fromAddress: string,
   _fromAmount: bigint
 ): Promise<QuoteFee | null> => {
@@ -594,8 +604,10 @@ const estimateGas = async (
 }
 
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
-  const { fromAsset, toAsset, fromAmount, fromAddress } = params
+  const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
 
+  const fromAsset = resolveAsset(fromTokenId)
+  const toAsset = resolveAsset(toTokenId)
   if (!fromAsset || !toAsset || !fromAmount || fromAmount === 0n) return null
   const from: AssetContext = fromAsset.context.stealthex
   const to: AssetContext = toAsset.context.stealthex
@@ -603,7 +615,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
 
   const fromAmountHuman = planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"
 
-  const routeHasCustomFee = await getRouteHasCustomFee(fromAsset, toAsset)
+  const routeHasCustomFee = await getRouteHasCustomFee(fromTokenId, toTokenId)
   const additional_fee_percent = routeHasCustomFee
     ? getAdditionalFeePercent({ fromAsset, toAsset })
     : undefined
@@ -612,8 +624,6 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
     throw new Error(`StealthEX minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
   try {
-    // TODO: Return `null` or an error when getRange / getEstimate fails
-    // Error format: `return { decentralisationScore: DECENTRALISATION_SCORE, protocol: PROTOCOL, inputAmountBN: fromAmount, outputAmountBN: 0n, error: '<error here>', timeInSec: 5 * 60, fees: [], providerLogo: LOGO, providerName: PROTOCOL_NAME, talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE), }`
     const estimate = await stealthexSdk.getEstimate({
       route: { from, to },
       amount: Number(fromAmountHuman),
@@ -655,13 +665,13 @@ export type { StealthexExchange }
 
 const createExchange = async (params: ExchangeParams): Promise<StealthexExchange | undefined> => {
   try {
-    const { fromAsset, toAsset, fromAmount, fromAddress, toAddress } = params
+    const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
+
+    const fromAsset = resolveAsset(fromTokenId)
+    const toAsset = resolveAsset(toTokenId)
 
     const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
-    const formatAddress = (
-      address: string | null,
-      asset: SwappableAssetWithDecimals<unknown> | null
-    ) => {
+    const formatAddress = (address: string | null, asset: StealthexInternalAsset | undefined) => {
       if (!address) return address
       if (asset?.networkType !== "substrate") return address
 
@@ -708,7 +718,7 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
     // cannot swap from BTC
     if (fromAsset.networkType === "btc") throw new Error("Swapping from BTC is not supported.")
 
-    const routeHasCustomFee = await getRouteHasCustomFee(fromAsset, toAsset)
+    const routeHasCustomFee = await getRouteHasCustomFee(fromTokenId, toTokenId)
 
     const additional_fee_percent = routeHasCustomFee
       ? getAdditionalFeePercent({ fromAsset, toAsset })
@@ -745,8 +755,9 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
 
 const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
   try {
-    const { fromAsset, fromAddress, exchange: exchangeData } = params
+    const { fromTokenId, fromAddress, exchange: exchangeData } = params
     const exchange = exchangeData as StealthexExchange
+    const fromAsset = resolveAsset(fromTokenId)
     if (!fromAddress) throw new Error("Missing from address")
     if (!fromAsset) throw new Error("Missing from asset")
     if (!exchange) throw new Error("Missing exchange")
@@ -799,8 +810,9 @@ const getSubstratePayload = async (
   txMetadata?: Uint8Array
 } | null> => {
   try {
-    const { fromAsset, fromAddress, exchange: exchangeData, sapi, allowReap } = params
+    const { fromTokenId, fromAddress, exchange: exchangeData, sapi, allowReap } = params
     const exchange = exchangeData as StealthexExchange
+    const fromAsset = resolveAsset(fromTokenId)
     if (!sapi) return null
 
     if (!fromAddress) throw new Error("Missing from address")

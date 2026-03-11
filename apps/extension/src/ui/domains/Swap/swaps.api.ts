@@ -7,19 +7,14 @@ import { useTokensMap } from "@ui/state/chaindata"
 import type { TFunction } from "i18next"
 import { useCallback, useRef } from "react"
 
-import type {
-  SwappableAssetBaseType,
-  SwappableAssetWithDecimals,
-} from "./swap-modules/common.swap-module"
+import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
-import { enrichAssets, filterAndSortTokens } from "./swap-services/token-filtering"
-
-// ─── Re-exports (backward compatibility) ────────────────────────────
-
-// export { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
-// export { useSwapQuoteManager as useSwapQuotes } from "./hooks/useSwapQuoteManager"
-// export { filterAndSortTokens, getTokenTabs } from "./swap-services/token-filtering"
+import {
+  type AssetRegistry,
+  buildAssetRegistry,
+  filterAndSortTokens,
+} from "./swap-services/token-filtering"
 
 // ─── Constants ──────────────────────────────────────────────────────
 
@@ -52,11 +47,11 @@ const withRetry = async <T>(
 // ─── Hooks ──────────────────────────────────────────────────────────
 
 /**
- * Fetches from/to assets from all swap modules, enriches with token map data.
- * Returns useQuery results for both from and to asset lists.
+ * Fetches from/to assets from all swap modules.
+ * Returns tokenId arrays and support maps.
  */
 export const useSwapAssets = (
-  fromAsset: SwappableAssetWithDecimals | null,
+  fromTokenId: string | null,
   tokenTab: string,
   t: TFunction,
   safeTokens: Set<string>
@@ -67,32 +62,57 @@ export const useSwapAssets = (
   const fromAssetsQuery = useQuery({
     queryKey: ["swap-from-assets", tokenTab, safeTokens.size, tokensCount],
     queryFn: async ({ signal }) => {
-      const results = await Promise.all(
-        swapModules.map((m) => withRetry(() => m.getFromAssets(signal), signal))
+      const moduleResults: Array<[SupportedSwapProtocol, string[]]> = await Promise.all(
+        swapModules.map(async (m) => {
+          const ids = await withRetry(() => m.getFromAssets(signal), signal)
+          return [m.protocol, ids as string[]] as [SupportedSwapProtocol, string[]]
+        })
       )
-      const enriched = enrichAssets(results.flat() as SwappableAssetBaseType[], tokensMap)
-      const filtered = enriched.filter((tk) => tk.networkType !== "btc")
-      return filterAndSortTokens(filtered, "", safeTokens, tokenTab, t)
+      const registry = buildAssetRegistry(moduleResults, tokensMap)
+      // Filter out BTC from "from" assets
+      const filtered = registry.tokenIds.filter((id) => id !== "btc-native")
+      const sorted = await filterAndSortTokens(filtered, tokensMap, "", safeTokens, tokenTab, t)
+      return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
     },
     enabled: tokensCount > 0,
   })
 
+  // Use fromAssetsQuery's support map to filter modules for toAssetsQuery
+  const fromSupportMapInternal = fromAssetsQuery.data?.supportMap ?? null
+
   const toAssetsQuery = useQuery({
-    queryKey: ["swap-to-assets", fromAsset?.id ?? null, tokenTab, safeTokens.size, tokensCount],
+    queryKey: ["swap-to-assets", fromTokenId, tokenTab, safeTokens.size, tokensCount],
     queryFn: async ({ signal }) => {
-      const modules = swapModules.filter((m) => (fromAsset ? fromAsset.context[m.protocol] : true))
-      const results = await Promise.all(
-        modules.map((m) => withRetry(() => m.getToAssets(fromAsset, signal), signal))
+      const modules = swapModules.filter((m) =>
+        fromTokenId && fromSupportMapInternal
+          ? (fromSupportMapInternal.get(fromTokenId)?.has(m.protocol) ?? false)
+          : true
       )
-      const enriched = enrichAssets(results.flat() as SwappableAssetBaseType[], tokensMap)
-      return filterAndSortTokens(enriched, "", safeTokens, tokenTab, t)
+      const moduleResults: Array<[SupportedSwapProtocol, string[]]> = await Promise.all(
+        modules.map(async (m) => {
+          const ids = await withRetry(() => m.getToAssets(fromTokenId, signal), signal)
+          return [m.protocol, ids as string[]] as [SupportedSwapProtocol, string[]]
+        })
+      )
+      const registry = buildAssetRegistry(moduleResults, tokensMap)
+      const sorted = await filterAndSortTokens(
+        registry.tokenIds,
+        tokensMap,
+        "",
+        safeTokens,
+        tokenTab,
+        t
+      )
+      return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
     },
     enabled: tokensCount > 0,
   })
 
   return {
-    fromAssets: fromAssetsQuery.data,
-    toAssets: toAssetsQuery.data,
+    fromAssetIds: fromAssetsQuery.data?.tokenIds,
+    toAssetIds: toAssetsQuery.data?.tokenIds,
+    fromSupportMap: fromAssetsQuery.data?.supportMap ?? null,
+    toSupportMap: toAssetsQuery.data?.supportMap ?? null,
     isLoadingFromAssets: fromAssetsQuery.isLoading,
     isLoadingToAssets: toAssetsQuery.isLoading,
   }
@@ -135,13 +155,13 @@ export const useSafeTokens = () => {
 }
 
 /**
- * Returns a callback to swap from↔to assets and amounts.
+ * Returns a callback to swap from↔to tokenIds and amounts.
  */
 export const useReverse = (
-  fromAsset: SwappableAssetWithDecimals | null,
-  setFromAsset: (v: SwappableAssetWithDecimals | null) => void,
-  toAsset: SwappableAssetWithDecimals | null,
-  setToAsset: (v: SwappableAssetWithDecimals | null) => void,
+  fromTokenId: string | null,
+  setFromTokenId: (v: string | null) => void,
+  toTokenId: string | null,
+  setToTokenId: (v: string | null) => void,
   setFromAmount: (v: bigint) => void,
   toAmount: bigint | null
 ) => {
@@ -150,7 +170,7 @@ export const useReverse = (
 
   return useCallback(() => {
     if (toAmountRef.current) setFromAmount(toAmountRef.current)
-    setFromAsset(toAsset)
-    setToAsset(fromAsset)
-  }, [fromAsset, setFromAmount, setFromAsset, setToAsset, toAsset])
+    setFromTokenId(toTokenId)
+    setToTokenId(fromTokenId)
+  }, [fromTokenId, setFromAmount, setFromTokenId, setToTokenId, toTokenId])
 }

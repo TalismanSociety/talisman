@@ -4,6 +4,7 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useQuery } from "@tanstack/react-query"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -21,13 +22,16 @@ export const SwapConfirmSubstrate = () => {
     fastBalance,
     fromAddress,
     toAddress,
-    fromAsset,
-    toAsset,
+    fromTokenId,
+    toTokenId,
     fromAmount,
     toAmount,
     selectedModule: swapModule,
     resetForm,
   } = useSwap()
+
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const toToken = useToken(toTokenId ?? undefined)
 
   const [isReady, setIsReady] = useState(false)
   useEffect(() => {
@@ -43,7 +47,7 @@ export const SwapConfirmSubstrate = () => {
   }, [fastBalance, fromAmount])
 
   const { data: sapi } = useScaleApi(
-    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
+    fromToken?.platform === "polkadot" ? fromToken.networkId : null
   )
   const allowReap = useMemo(
     () =>
@@ -56,20 +60,20 @@ export const SwapConfirmSubstrate = () => {
     queryKey: [
       "swap-exchange-substrate",
       swapModule?.protocol,
-      fromAsset?.id,
-      toAsset?.id,
+      fromTokenId,
+      toTokenId,
       fromAddress,
       toAddress,
       fromAmount.toString(),
       allowReap,
     ],
     queryFn: async ({ signal }) => {
-      if (!swapModule || !fromAsset || !toAsset || !fromAddress || !toAddress || !sapi)
+      if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress || !sapi)
         throw new Error("Missing params")
 
       const exchange = await swapModule.createExchange({
-        fromAsset,
-        toAsset,
+        fromTokenId,
+        toTokenId,
         fromAmount,
         fromAddress,
         toAddress,
@@ -80,9 +84,9 @@ export const SwapConfirmSubstrate = () => {
         payload: import("@core/domains/signing/types").SignerPayloadJSON
         txMetadata?: Uint8Array
       } | null = null
-      if (fromAsset.networkType === "substrate" && exchange) {
+      if (fromToken?.platform === "polkadot" && exchange) {
         payload = await swapModule.getSubstratePayload({
-          fromAsset,
+          fromTokenId,
           fromAddress,
           exchange,
           sapi,
@@ -95,8 +99,8 @@ export const SwapConfirmSubstrate = () => {
     },
     enabled:
       !!swapModule &&
-      !!fromAsset &&
-      !!toAsset &&
+      !!fromTokenId &&
+      !!toTokenId &&
       !!fromAddress &&
       !!toAddress &&
       !!sapi &&
@@ -112,8 +116,8 @@ export const SwapConfirmSubstrate = () => {
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!exchange) return
-    if (!fromAsset) return
-    if (!toAsset) return
+    if (!fromTokenId) return
+    if (!toTokenId) return
     if (!toAmount) return
     if (toAddress === null) return
 
@@ -122,8 +126,8 @@ export const SwapConfirmSubstrate = () => {
         return {
           type: "swap-simpleswap",
           exchangeId: exchange.id,
-          fromTokenId: fromAsset.id,
-          toTokenId: toAsset.id,
+          fromTokenId,
+          toTokenId,
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
@@ -132,8 +136,8 @@ export const SwapConfirmSubstrate = () => {
         return {
           type: "swap-stealthex",
           exchangeId: exchange.id,
-          fromTokenId: fromAsset.id,
-          toTokenId: toAsset.id,
+          fromTokenId,
+          toTokenId,
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
@@ -141,7 +145,7 @@ export const SwapConfirmSubstrate = () => {
       // NOTE: Lifi doesn't support substrate, we don't need to handle it here
     }
     throw new Error(`swapModule ${swapModule?.protocol} not supported`)
-  }, [exchange, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])
+  }, [exchange, fromAmount, fromTokenId, swapModule, toAddress, toAmount, toTokenId])
 
   const isDisabled = useMemo(() => {
     return (
@@ -164,16 +168,16 @@ export const SwapConfirmSubstrate = () => {
 
       closeSwapTokensModal()
       resetForm()
-      if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
-      if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
+      if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
+      if (toTokenId) activeTokensStore.setActive(toTokenId, true)
       navigate("/tx-history")
     },
-    [closeSwapTokensModal, navigate, resetForm, toAsset, txInfo]
+    [closeSwapTokensModal, navigate, resetForm, toToken, toTokenId, txInfo]
   )
 
   return (
     <>
-      {fromAsset?.networkType === "substrate" && (
+      {fromToken?.platform === "polkadot" && (
         <FeeEstimateSubstrate payload={payload} isLoading={isExchangeLoading} />
       )}
 

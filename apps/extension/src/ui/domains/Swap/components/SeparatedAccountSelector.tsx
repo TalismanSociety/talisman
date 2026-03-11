@@ -27,14 +27,13 @@ import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } fro
 import { useTranslation } from "react-i18next"
 
 import { useSwap } from "../SwapProvider"
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 
 type Props = {
   title: string
   subtitle: string
   allowInput?: boolean
   allowZeroBalance?: boolean
-  asset: SwappableAssetWithDecimals | null
+  tokenId: string | null
   accountsType?: "substrate" | "ethereum" | "btc" | "all"
   onAccountChange?: (address: string | null) => void
   evmAccountsFilter?: (account: Account) => boolean
@@ -49,7 +48,7 @@ export const SeparatedAccountSelector = memo(
   ({
     title,
     subtitle,
-    asset,
+    tokenId,
     accountsType = "substrate",
     allowInput = false,
     allowZeroBalance = false,
@@ -66,7 +65,8 @@ export const SeparatedAccountSelector = memo(
 
     const allAccounts = useAccounts(allowInput ? "all" : "owned")
 
-    const chain = useNetworkById(String(asset?.chainId), "polkadot")
+    const token = useToken(tokenId ?? undefined)
+    const chain = useNetworkById(token?.networkId, "polkadot")
 
     const defaultSubstrateAccounts = allAccounts.filter(
       (a) => chain && isAccountCompatibleWithNetwork(chain, a)
@@ -299,12 +299,12 @@ const AccountPicker = memo(
   }) => {
     const { t } = useTranslation()
 
-    const { fromAsset, toAsset } = useSwap()
+    const { fromTokenId, toTokenId } = useSwap()
 
-    const fromToken = useToken(fromAsset?.id)
+    const fromToken = useToken(fromTokenId ?? undefined)
     const fromChain = useNetworkById(fromToken?.networkId, "polkadot")
 
-    const toToken = useToken(toAsset?.id)
+    const toToken = useToken(toTokenId ?? undefined)
     const toChain = useNetworkById(toToken?.networkId, "polkadot")
 
     return (

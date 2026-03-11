@@ -1,6 +1,7 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useToken } from "@ui/state/chaindata"
 import { memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
@@ -10,21 +11,24 @@ export const SwapDetailsCard = memo(
   ({ quote, showBestRate }: { quote: BaseQuote; showBestRate?: boolean }) => {
     const { t } = useTranslation()
 
-    const { setSelectedProtocol, setSelectedSubProtocol, toAsset, fromAsset, fromAmount } =
+    const { setSelectedProtocol, setSelectedSubProtocol, toTokenId, fromTokenId, fromAmount } =
       useSwap()
+
+    const fromToken = useToken(fromTokenId ?? undefined)
+    const toToken = useToken(toTokenId ?? undefined)
 
     const amount = quote.outputAmountBN
 
     const toQuote = useMemo(() => {
-      if (!amount || !fromAmount || !toAsset || !fromAsset) return undefined
-      const toNum = Number(planckToTokens(amount.toString(), toAsset.decimals) ?? "0")
-      const fromNum = Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "1")
+      if (!amount || !fromAmount || !toToken || !fromToken) return undefined
+      const toNum = Number(planckToTokens(amount.toString(), toToken.decimals) ?? "0")
+      const fromNum = Number(planckToTokens(fromAmount.toString(), fromToken.decimals) ?? "1")
       const res = toNum / (fromNum || 1)
       if (res < 0.0001) return "0"
       return res.toString()
-    }, [fromAmount, fromAsset, amount, toAsset])
+    }, [fromAmount, fromToken, amount, toToken])
 
-    if (!toAsset) return null
+    if (!toToken) return null
 
     return (
       <button
@@ -45,7 +49,7 @@ export const SwapDetailsCard = memo(
             {quote.providerName}
           </span>
           <span className="truncate text-[12px] text-body-secondary">
-            1 {fromAsset?.symbol} = <Tokens amount={toQuote} symbol={toAsset?.symbol} noCountUp />
+            1 {fromToken?.symbol} = <Tokens amount={toQuote} symbol={toToken?.symbol} noCountUp />
           </span>
         </div>
         {showBestRate && (

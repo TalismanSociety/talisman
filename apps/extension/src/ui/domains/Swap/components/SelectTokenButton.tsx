@@ -8,59 +8,56 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { type FC, memo, startTransition, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { getTokenTabs } from "../swap-services/token-filtering"
 
 type Props = {
-  assets?: SwappableAssetWithDecimals[]
-  selectedAsset?: SwappableAssetWithDecimals | null
-  onSelectAsset: (asset: SwappableAssetWithDecimals | null) => void
+  assetIds?: string[]
+  selectedTokenId?: string | null
+  onSelectTokenId: (tokenId: string | null) => void
   /** Used to determine which tokens should be prioritized to the top of the list */
   priorityMode?: "buy" | "sell"
 }
 
 export const SelectTokenButton: React.FC<Props> = memo(
-  ({ assets, selectedAsset, onSelectAsset, priorityMode }) => {
+  ({ assetIds, selectedTokenId, onSelectTokenId, priorityMode }) => {
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
-    const [assetWithWarning, setAssetWithWarning] = useState<SwappableAssetWithDecimals | null>(
-      null
-    )
+    const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
     const { safeTokens } = useSwap()
+    const tokensMap = useTokensMap()
 
-    const handleSelectAsset = useCallback(
-      (asset: SwappableAssetWithDecimals, hideWarning?: boolean) => {
+    const handleSelectTokenId = useCallback(
+      (tokenId: string, hideWarning?: boolean) => {
         if (!hideWarning) {
-          const erc20Address = asset.contractAddress
-          const isSafe = safeTokens.has(`${asset.chainId}:${erc20Address?.toLowerCase()}`)
+          const token = tokensMap[tokenId]
+          const erc20Address =
+            token && "contractAddress" in token ? (token.contractAddress as string) : undefined
+          const networkId = token?.networkId
+          const isSafe = safeTokens.has(`${networkId}:${erc20Address?.toLowerCase()}`)
           const shouldShowWarning = !isSafe && erc20Address !== undefined
-          if (shouldShowWarning) return setAssetWithWarning(asset)
+          if (shouldShowWarning) return setWarningTokenId(tokenId)
         }
 
-        setAssetWithWarning(null)
+        setWarningTokenId(null)
         setOpen(false)
-        // Defer the parent state update so the modal close animation isn't
-        // blocked by cascading re-renders through SwapProvider.
         startTransition(() => {
-          onSelectAsset(asset)
+          onSelectTokenId(tokenId)
         })
       },
-      [onSelectAsset, safeTokens]
+      [onSelectTokenId, safeTokens, tokensMap]
     )
-    const assetIdSet = useMemo(() => new Set(assets?.map((a) => a.id)), [assets])
-    const handleSelectAssetId = useCallback(
-      (assetId: string | undefined) => {
-        const asset = assets?.find((a) => a.id === assetId)
-        if (!asset) return onSelectAsset(null)
-
-        return handleSelectAsset(asset)
+    const assetIdSet = useMemo(() => new Set(assetIds), [assetIds])
+    const handleSelectFromPicker = useCallback(
+      (tokenId: string | undefined) => {
+        if (!tokenId || !assetIdSet.has(tokenId)) return onSelectTokenId(null)
+        handleSelectTokenId(tokenId)
       },
-      [assets, handleSelectAsset, onSelectAsset]
+      [assetIdSet, handleSelectTokenId, onSelectTokenId]
     )
 
     const remoteConfig = useRemoteConfig()
@@ -84,7 +81,7 @@ export const SelectTokenButton: React.FC<Props> = memo(
 
     return (
       <>
-        <OpenSelectorButton selectedAsset={selectedAsset} onClick={() => setOpen(true)} />
+        <OpenSelectorButton selectedTokenId={selectedTokenId} onClick={() => setOpen(true)} />
 
         <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
           <WizardModalDialog
@@ -94,22 +91,22 @@ export const SelectTokenButton: React.FC<Props> = memo(
             onBackClick={() => setOpen(false)}
           >
             <TokenPicker
-              selected={selectedAsset?.id}
+              selected={selectedTokenId ?? undefined}
               allowUntransferable
               ownedOnly
-              isInitializing={!assets}
+              isInitializing={!assetIds}
               priorityTokens={promotedTokens}
               tokenFilter={tokenFilter}
               tokenFilterOptions={tokenFilterOptions}
               tokenFilterDefaultOption={defaultTokenFilterOption}
               onTokenFilterOptionChange={onSelectTokenFilterOption}
-              onSelect={handleSelectAssetId}
+              onSelect={handleSelectFromPicker}
               showEmptyBalances
             />
             <SelectTokenWarningDrawer
-              asset={assetWithWarning}
-              onBack={() => setAssetWithWarning(null)}
-              onAccept={(asset) => handleSelectAsset(asset, true)}
+              tokenId={warningTokenId}
+              onBack={() => setWarningTokenId(null)}
+              onAccept={(id) => handleSelectTokenId(id, true)}
             />
           </WizardModalDialog>
         </Modal>
@@ -119,14 +116,14 @@ export const SelectTokenButton: React.FC<Props> = memo(
 )
 
 const OpenSelectorButton = ({
-  selectedAsset,
+  selectedTokenId,
   onClick,
 }: {
-  selectedAsset?: SwappableAssetWithDecimals | null
+  selectedTokenId?: string | null
   onClick: () => void
 }) => {
   const { t } = useTranslation()
-  const token = useToken(selectedAsset?.id)
+  const token = useToken(selectedTokenId ?? undefined)
   const network = useNetworkById(token?.networkId)
 
   if (!token) {
@@ -180,30 +177,34 @@ const useTokenFilterOptions = () => {
 }
 
 const SelectTokenWarningDrawer: FC<{
-  asset: SwappableAssetWithDecimals | null
+  tokenId: string | null
   onBack: () => void
-  onAccept: (asset: SwappableAssetWithDecimals) => void
-}> = ({ asset, onBack, onAccept }) => {
+  onAccept: (tokenId: string) => void
+}> = ({ tokenId, onBack, onAccept }) => {
   const { t } = useTranslation()
 
   // keep something to display while drawer closes
-  const [safeAsset, setSafeAsset] = useState<SwappableAssetWithDecimals | null>(asset)
+  const [safeTokenId, setSafeTokenId] = useState<string | null>(tokenId)
+  const token = useToken(safeTokenId ?? undefined)
 
   useEffect(() => {
-    if (asset) setSafeAsset(asset)
-  }, [asset])
+    if (tokenId) setSafeTokenId(tokenId)
+  }, [tokenId])
+
+  const contractAddress =
+    token && "contractAddress" in token ? (token.contractAddress as string) : undefined
 
   return (
     <Drawer
       anchor="bottom"
-      isOpen={!!asset}
+      isOpen={!!tokenId}
       onDismiss={onBack}
       containerId="swap-modal"
       // make it appear above the modal's picker
       overlayClassName="z-20"
       className="z-20"
     >
-      {safeAsset && (
+      {safeTokenId && token && (
         <div className="flex flex-col items-center gap-12 rounded-t-xl bg-grey-800 p-12">
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-4">
@@ -211,7 +212,7 @@ const SelectTokenWarningDrawer: FC<{
               <p className="font-light text-alert-warn text-md">{t("Warning")}</p>
             </div>
             <p className="text-alert-warn text-sm leading-paragraph">
-              {safeAsset.name} (${safeAsset.symbol}){" "}
+              {token.symbol} (${token.symbol}){" "}
               {t(
                 "isn't traded on leading U.S. centralised exchanges or frequently swapped. Always do your own research before proceeding."
               )}
@@ -230,7 +231,7 @@ const SelectTokenWarningDrawer: FC<{
               </div>
               <div className="grow"></div>
               <a
-                href={`https://gopluslabs.io/token-security/${safeAsset.chainId}/${safeAsset.contractAddress}`}
+                href={`https://gopluslabs.io/token-security/${token.networkId}/${contractAddress}`}
                 target="_blank"
                 className="flex h-14 items-center rounded-full bg-primary-500/10 px-6 text-primary-500/80 text-sm hover:bg-primary-500/20 hover:text-primary"
               >
@@ -242,7 +243,7 @@ const SelectTokenWarningDrawer: FC<{
             <Button className="w-full" onClick={onBack}>
               {t("Back")}
             </Button>
-            <Button primary onClick={() => onAccept(safeAsset)} className="w-full">
+            <Button primary onClick={() => onAccept(safeTokenId)} className="w-full">
               {t("I Understand")}
             </Button>
           </div>

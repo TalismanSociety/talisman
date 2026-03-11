@@ -1,20 +1,20 @@
 import { AlertCircleIcon, ArrowUpDownIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
+import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, useCallback, useEffect, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { parseUserInputToPlanckOrUndefined } from "../swap-utils"
 import { SelectTokenButton } from "./SelectTokenButton"
 
 type Props = {
   amount?: bigint
-  assets?: SwappableAssetWithDecimals[]
-  selectedAsset?: SwappableAssetWithDecimals | null
+  assetIds?: string[]
+  selectedTokenId?: string | null
   onChangeAmount?: (value: bigint) => void
-  onChangeAsset?: (asset: SwappableAssetWithDecimals | null) => void
+  onChangeTokenId?: (tokenId: string | null) => void
   availableBalance?: bigint
   stayAliveBalance?: bigint
   disabled?: boolean
@@ -26,10 +26,10 @@ type Props = {
 
 export const TokenAmountInput: FC<Props> = ({
   amount,
-  assets,
+  assetIds,
   availableBalance,
-  onChangeAsset,
-  selectedAsset,
+  onChangeTokenId,
+  selectedTokenId,
   onChangeAmount,
   stayAliveBalance,
   disabled = false,
@@ -38,10 +38,11 @@ export const TokenAmountInput: FC<Props> = ({
   priorityMode,
 }) => {
   const { t } = useTranslation()
+  const selectedToken = useToken(selectedTokenId ?? undefined)
 
   const [input, setInput] = useState(
     (amount ?? 0n) > 0n
-      ? (planckToTokens(amount!.toString(), selectedAsset?.decimals ?? 0) ?? "")
+      ? (planckToTokens(amount!.toString(), selectedToken?.decimals ?? 0) ?? "")
       : ""
   )
 
@@ -58,24 +59,24 @@ export const TokenAmountInput: FC<Props> = ({
 
   const parseInput = useCallback(
     (value: string): bigint => {
-      if (!selectedAsset) return 0n
+      if (!selectedToken) return 0n
       try {
         const formattedInput = value.endsWith(".") ? `${value}0` : value
-        return parseUserInputToPlanckOrUndefined(formattedInput, selectedAsset.decimals) ?? 0n
+        return parseUserInputToPlanckOrUndefined(formattedInput, selectedToken.decimals) ?? 0n
       } catch {
         return 0n
       }
     },
-    [selectedAsset]
+    [selectedToken]
   )
 
-  const handleChangeAsset = useCallback(
-    (asset: SwappableAssetWithDecimals | null) => {
+  const handleChangeTokenId = useCallback(
+    (tokenId: string | null) => {
       setInput("")
-      onChangeAsset?.(asset)
+      onChangeTokenId?.(tokenId)
       onChangeAmount?.(0n)
     },
-    [onChangeAmount, onChangeAsset]
+    [onChangeAmount, onChangeTokenId]
   )
 
   const handleChangeInput = useCallback(
@@ -87,7 +88,7 @@ export const TokenAmountInput: FC<Props> = ({
     [onChangeAmount, parseInput]
   )
 
-  const fiatValue = useFiatValueForAmount({ planck: amount, asset: selectedAsset, usdOverride })
+  const fiatValue = useFiatValueForAmount({ planck: amount, tokenId: selectedTokenId, usdOverride })
 
   const insufficientBalance = useMemo(() => {
     if (availableBalance === undefined || !amount) return false
@@ -104,14 +105,14 @@ export const TokenAmountInput: FC<Props> = ({
     const parsedPlanck = parseInput(input)
     if (parsedPlanck !== amount) {
       if (amount > 0n) {
-        setInput(planckToTokens(amount.toString(), selectedAsset?.decimals ?? 0) ?? "0")
+        setInput(planckToTokens(amount.toString(), selectedToken?.decimals ?? 0) ?? "0")
       } else {
         if (parsedPlanck !== 0n) {
           setInput("")
         }
       }
     }
-  }, [amount, input, parseInput, selectedAsset?.decimals])
+  }, [amount, input, parseInput, selectedToken?.decimals])
 
   const inputId = useId()
 
@@ -119,9 +120,9 @@ export const TokenAmountInput: FC<Props> = ({
     <div className="flex items-center gap-2">
       <div className="shrink-0">
         <SelectTokenButton
-          onSelectAsset={handleChangeAsset}
-          selectedAsset={selectedAsset}
-          assets={assets}
+          onSelectTokenId={handleChangeTokenId}
+          selectedTokenId={selectedTokenId}
+          assetIds={assetIds}
           priorityMode={priorityMode}
         />
       </div>

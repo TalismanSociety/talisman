@@ -11,38 +11,55 @@ import {
 import { isAddressEqual } from "@talismn/crypto"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
-import { useNetworkById } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
+/** Derive networkType from a Talisman Token type */
+const getNetworkType = (token: { type: string; platform?: string } | null | undefined) => {
+  if (!token) return null
+  if (token.platform === "ethereum") return "evm" as const
+  if (token.platform === "polkadot") return "substrate" as const
+  if (token.type === "btc-native") return "btc" as const
+  return null
+}
+
+/** Derive networkId (chainId) for useNetworkById from a Token */
+const getNetworkId = (token: { type: string; networkId?: string } | null | undefined) => {
+  if (!token) return ""
+  return token.networkId ?? ""
+}
 
 /**
  * Unified address management for swaps.
  *
- * Replaces the old 5 separate address states (fromEvmAddress, fromSubstrateAddress,
- * toEvmAddress, toSubstrateAddress, toBtcAddress) with a simple {from, to} pair.
- * Platform-specific logic is derived from asset.networkType at consumption time.
+ * Replaces the old 5 separate address states with a simple {from, to} pair.
+ * Platform-specific logic is derived from the Talisman Token type at consumption time.
  */
 export function useSwapAddresses({
   fromAddress,
   setFromAddress,
   toAddress,
   setToAddress,
-  fromAsset,
-  toAsset,
+  fromTokenId,
+  toTokenId,
 }: {
   fromAddress: string | null
   setFromAddress: (v: string | null) => void
   toAddress: string | null
   setToAddress: (v: string | null) => void
-  fromAsset: SwappableAssetWithDecimals | null
-  toAsset: SwappableAssetWithDecimals | null
+  fromTokenId: string | null
+  toTokenId: string | null
 }) {
   // TODO: Support signet accounts
   const allAccounts = useAccounts()
   const ownedAccounts = useAccounts("owned")
   const balances = useBalances()
-  const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const toToken = useToken(toTokenId ?? undefined)
+  const toNetworkId = getNetworkId(toToken)
+  const toNetwork = useNetworkById(toNetworkId)
+  const fromNetworkType = getNetworkType(fromToken)
+  const toNetworkType = getNetworkType(toToken)
 
   // Track whether the user has explicitly picked an account via the account picker.
   // When true, auto-selection is suppressed to respect the user's choice.
@@ -72,13 +89,11 @@ export function useSwapAddresses({
   )
 
   // ─── Auto-select from address based on largest token balance ────
-  // When fromAsset changes and the user hasn't manually picked an account,
-  // select the owned account with the largest balance for the selected token.
   useEffect(() => {
-    if (!fromAsset || fromAddressManuallySet.current) return
+    if (!fromTokenId || !fromNetworkType || fromAddressManuallySet.current) return
 
     const compatibleAccounts = (() => {
-      switch (fromAsset.networkType) {
+      switch (fromNetworkType) {
         case "evm":
           return ethAccounts
         case "substrate":
@@ -96,8 +111,8 @@ export function useSwapAddresses({
     const accountsWithBalance = compatibleAccounts.map((a) => ({
       address: a.address,
       transferable:
-        balances.find({ address: a.address, tokenId: fromAsset.id }).each[0]?.transferable
-          ?.planck ?? 0n,
+        balances.find({ address: a.address, tokenId: fromTokenId }).each[0]?.transferable?.planck ??
+        0n,
     }))
 
     accountsWithBalance.sort((a, b) => {
@@ -108,13 +123,13 @@ export function useSwapAddresses({
 
     const best = accountsWithBalance[0]
     setFromAddress(best?.address ?? null)
-  }, [fromAsset, ethAccounts, substrateAccounts, balances, setFromAddress])
+  }, [fromTokenId, fromNetworkType, ethAccounts, substrateAccounts, balances, setFromAddress])
 
-  // ─── Auto-set to address when toAsset changes ────────────────────
+  // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {
-    if (!toAsset) return
+    if (!toTokenId || !toNetworkType) return
 
-    switch (toAsset.networkType) {
+    switch (toNetworkType) {
       case "evm": {
         if (toAddress && (!toNetwork || isAddressCompatibleWithNetwork(toNetwork, toAddress)))
           return
@@ -141,22 +156,19 @@ export function useSwapAddresses({
       default: {
         // biome-ignore lint/suspicious/noConsole: legacy
         console.error(
-          `networkType ${toAsset.networkType} not handled in updateSelectedAccountsOnAssetChange`
+          `networkType ${toNetworkType} not handled in updateSelectedAccountsOnAssetChange`
         )
         return setToAddress(null)
       }
     }
-  }, [fromAccount, fromAddress, setToAddress, toAsset, toAddress, toNetwork])
+  }, [fromAccount, fromAddress, setToAddress, toTokenId, toNetworkType, toAddress, toNetwork])
 
   // ─── Callbacks for FromToAccountSelector ──────────────────────────
 
   const setFromAddressWithReset = useCallback(
     (address: string | null) => {
-      // Mark as manually set only when the user explicitly picks an account (non-null).
-      // Null is dispatched by the SeparatedAccountSelector clear-effect and should not count.
       if (address !== null) fromAddressManuallySet.current = true
       setFromAddress(address)
-      // Reset to-address so useSetToAddress auto-derives it
       setToAddress(null)
     },
     [setFromAddress, setToAddress]

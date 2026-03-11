@@ -4,7 +4,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useNetworkById } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 
@@ -17,11 +17,12 @@ export const FeeEstimateSubstrate = ({
 }) => {
   const { t } = useTranslation()
 
-  const { fromAsset } = useSwap()
-  const fromDotNetwork = useNetworkById(String(fromAsset?.chainId), "polkadot")
+  const { fromTokenId } = useSwap()
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const fromDotNetwork = useNetworkById(fromToken?.networkId, "polkadot")
 
   const { data: sapi } = useScaleApi(
-    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
+    fromToken?.platform === "polkadot" ? fromToken.networkId : null
   )
 
   const feeEstimate = useGetFeeEstimate({
@@ -42,7 +43,7 @@ export const FeeEstimateSubstrate = ({
             <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
               0.0000 TKN ($0.00)
             </div>
-          ) : (feeEstimate.data || feeEstimate.data === 0n) && fromAsset?.id ? (
+          ) : (feeEstimate.data || feeEstimate.data === 0n) && fromTokenId ? (
             <TokensAndFiat
               className={classNames(feeEstimate.isLoading && "animate-pulse")}
               tokensClassName="text-body"

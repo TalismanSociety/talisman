@@ -10,6 +10,7 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useSwap } from "@ui/domains/Swap/SwapProvider"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,9 +22,11 @@ export const SwapApproveErc20 = () => {
     swapView,
     setSwapView,
     setApprovalCounter,
-    fromAsset,
+    fromTokenId,
     fromAddress,
   } = useSwap()
+
+  const fromToken = useToken(fromTokenId ?? undefined)
 
   const protocolNameCache = useRef(approvalData?.protocolName)
   const amountCache = useRef(approvalData?.amount)
@@ -51,30 +54,30 @@ export const SwapApproveErc20 = () => {
 
   const { transaction } = useEthTransaction(
     approveTx ?? undefined,
-    fromAsset?.chainId.toString(),
+    fromToken?.networkId,
     isPayloadLocked
   )
 
   const publicClient = usePublicClient(approvalData?.chainId?.toString())
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!fromAsset || !approvalData) return
+    if (!fromTokenId || !approvalData) return
 
     return {
       type: "approve-erc20",
-      tokenId: fromAsset.id,
+      tokenId: fromTokenId,
       contractAddress: approvalData?.contractAddress,
       amount: approvalData?.amount.toString(),
     }
-  }, [approvalData, fromAsset])
+  }, [approvalData, fromTokenId])
 
   const send = useCallback(async () => {
-    if (!transaction || !fromAsset || !publicClient) return
+    if (!transaction || !fromToken || !publicClient) return
 
     setIsApproving(true)
     try {
       const serialized = serializeTransactionRequest(transaction)
-      const hash = await api.ethSignAndSend(fromAsset?.chainId.toString(), serialized, txInfo)
+      const hash = await api.ethSignAndSend(fromToken.networkId, serialized, txInfo)
 
       const approved = await publicClient.waitForTransactionReceipt({ hash })
 
@@ -91,21 +94,16 @@ export const SwapApproveErc20 = () => {
     } finally {
       setIsApproving(false)
     }
-  }, [fromAsset, publicClient, setApprovalCounter, transaction, txInfo])
+  }, [fromToken, publicClient, setApprovalCounter, transaction, txInfo])
 
   const sendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
-      if (!transaction || !fromAsset || !publicClient) return
+      if (!transaction || !fromToken || !publicClient) return
 
       setIsApproving(true)
       try {
         const serialized = serializeTransactionRequest(transaction)
-        const hash = await api.ethSendSigned(
-          fromAsset?.chainId.toString(),
-          serialized,
-          signature,
-          txInfo
-        )
+        const hash = await api.ethSendSigned(fromToken.networkId, serialized, signature, txInfo)
 
         const approved = await publicClient.waitForTransactionReceipt({ hash })
 
@@ -123,7 +121,7 @@ export const SwapApproveErc20 = () => {
         setIsApproving(false)
       }
     },
-    [fromAsset, publicClient, setApprovalCounter, transaction, txInfo]
+    [fromToken, publicClient, setApprovalCounter, transaction, txInfo]
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])
@@ -147,9 +145,9 @@ export const SwapApproveErc20 = () => {
           {t(`Approving {{protocolName}} to spend {{amount}} {{symbol}}`, {
             protocolName: protocolNameCache?.current,
             amount: formatDecimals(
-              planckToTokens(amountCache?.current?.toString(), fromAsset?.decimals ?? 0)
+              planckToTokens(amountCache?.current?.toString(), fromToken?.decimals ?? 0)
             ),
-            symbol: fromAsset?.symbol,
+            symbol: fromToken?.symbol,
           })}
           <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
         </div>
@@ -161,9 +159,9 @@ export const SwapApproveErc20 = () => {
           {t(`Approve {{protocolName}} to spend {{amount}} {{symbol}}`, {
             protocolName: protocolNameCache?.current,
             amount: formatDecimals(
-              planckToTokens(amountCache?.current?.toString(), fromAsset?.decimals ?? 0)
+              planckToTokens(amountCache?.current?.toString(), fromToken?.decimals ?? 0)
             ),
-            symbol: fromAsset?.symbol,
+            symbol: fromToken?.symbol,
           })}
           <div className="font-normal text-sm opacity-70">
             {t("Connect your Ledger to approve")}
@@ -175,7 +173,7 @@ export const SwapApproveErc20 = () => {
         <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
           {isReady && approveTx ? (
             <SignHardwareEthereum
-              evmNetworkId={fromAsset?.chainId.toString()}
+              evmNetworkId={fromToken?.networkId}
               account={account}
               method="eth_sendTransaction"
               payload={isReady && approveTx ? approveTx : null}

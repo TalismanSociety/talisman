@@ -5,20 +5,19 @@ import { classNames, cn, planckToTokens } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useAccountsMap } from "@ui/state/accounts"
-import { useNetworkById } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
-import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { ReverseButton } from "./ReverseButton"
 import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
 import { SwapDetails } from "./SwapDetails"
 import { TokenAmountInput } from "./TokenAmountInput"
 
-const assetAccountsType = (asset?: SwappableAssetWithDecimals | null) => {
-  if (!asset) return "all"
-  if (asset.id === "btc-native") return "btc"
-  if (asset.networkType === "evm") return "ethereum"
+const tokenAccountsType = (token: { platform?: string; id?: string } | null | undefined) => {
+  if (!token) return "all"
+  if (token.id === "btc-native") return "btc"
+  if (token.platform === "ethereum") return "ethereum"
   return "substrate"
 }
 
@@ -31,16 +30,16 @@ export const SwapForm = () => {
     setSwapView,
     selectedQuote,
     fromAddress,
-    fromAsset,
-    setFromAsset,
+    fromTokenId,
+    setFromTokenId,
     fromAmount,
     setFromAmount,
     toAddress,
-    toAsset,
-    setToAsset,
+    toTokenId,
+    setToTokenId,
     toAmount,
-    fromAssets,
-    toAssets,
+    fromAssetIds,
+    toAssetIds,
     isLoadingQuotes,
     isAllQuotesSettled,
     sortedQuotes,
@@ -51,7 +50,9 @@ export const SwapForm = () => {
     setToAddress,
   } = useSwap()
 
-  const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const toToken = useToken(toTokenId ?? undefined)
+  const toNetwork = useNetworkById(toToken?.networkId)
 
   const accountsMap = useAccountsMap()
   const toAccount = toAddress ? accountsMap[toAddress] : null
@@ -66,20 +67,20 @@ export const SwapForm = () => {
     if (isApproveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
   }, [isApproveRecipient, setSwapView, toIsExternal, toIsWatched])
 
-  const handleChangeFromAsset = useCallback(
-    (asset: SwappableAssetWithDecimals | null) => {
-      if (asset && toAsset && asset.id === toAsset.id) reverse()
-      else setFromAsset(asset)
+  const handleChangeFromToken = useCallback(
+    (tokenId: string | null) => {
+      if (tokenId && toTokenId && tokenId === toTokenId) reverse()
+      else setFromTokenId(tokenId)
     },
-    [reverse, setFromAsset, toAsset]
+    [reverse, setFromTokenId, toTokenId]
   )
 
-  const handleChangeToAsset = useCallback(
-    (asset: SwappableAssetWithDecimals | null) => {
-      if (asset && fromAsset && asset.id === fromAsset.id) reverse()
-      else setToAsset(asset)
+  const handleChangeToToken = useCallback(
+    (tokenId: string | null) => {
+      if (tokenId && fromTokenId && tokenId === fromTokenId) reverse()
+      else setToTokenId(tokenId)
     },
-    [fromAsset, reverse, setToAsset]
+    [fromTokenId, reverse, setToTokenId]
   )
 
   const insufficientBalance = useMemo(() => {
@@ -87,13 +88,21 @@ export const SwapForm = () => {
     return fromAmount > fastBalance.balance.transferable
   }, [fastBalance, fromAmount])
 
-  const isSwappingFromBtc = fromAsset?.id === "btc-native"
-  const shouldShowFromAccount = !!fromAsset && !isSwappingFromBtc
-  const shouldShowToAccount = !!fromAsset && !!toAsset && !isSwappingFromBtc
+  const isSwappingFromBtc = fromTokenId === "btc-native"
+  const shouldShowFromAccount = !!fromTokenId && !isSwappingFromBtc
+  const shouldShowToAccount = !!fromTokenId && !!toTokenId && !isSwappingFromBtc
+  const fromNetworkType =
+    fromToken?.platform === "ethereum"
+      ? "evm"
+      : fromToken?.platform === "polkadot"
+        ? "substrate"
+        : fromTokenId === "btc-native"
+          ? "btc"
+          : null
   const hasError =
     insufficientBalance === true ||
     (hasQuoteError && sortedQuotes.length === 0) ||
-    (sortedQuotes.length === 0 && isAllQuotesSettled && !!fromAmount && !!toAsset)
+    (sortedQuotes.length === 0 && isAllQuotesSettled && !!fromAmount && !!toTokenId)
 
   return (
     <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
@@ -113,32 +122,23 @@ export const SwapForm = () => {
             )}
           ></div>
           <TokenAmountInput
-            assets={fromAssets}
+            assetIds={fromAssetIds}
             amount={fromAmount}
             onChangeAmount={setFromAmount}
-            selectedAsset={fromAsset}
+            selectedTokenId={fromTokenId}
             availableBalance={fastBalance?.balance?.transferable}
             stayAliveBalance={fastBalance?.balance?.stayAlive}
-            onChangeAsset={handleChangeFromAsset}
+            onChangeTokenId={handleChangeFromToken}
             priorityMode="sell"
           />
-          {/* <div
-            aria-hidden={!insufficientBalance}
-            className={cn(
-              "invisible flex h-12 shrink-0 items-center text-right text-alert-error text-xs leading-paragraph"
-              // insufficientBalance ? "visible" : "invisible"
-            )}
-          >
-            {t("Insufficient balance")}
-          </div> */}
           {shouldShowFromAccount && (
             <div className="flex items-center justify-between">
               <SeparatedAccountSelector
                 compact
                 title={t("Sender")}
                 subtitle={t("From")}
-                asset={fromAsset}
-                accountsType={assetAccountsType(fromAsset)}
+                tokenId={fromTokenId}
+                accountsType={tokenAccountsType(fromToken)}
                 disableBtc
                 substrateAccountPrefix={0}
                 substrateAccountsFilter={isAccountOwned}
@@ -147,7 +147,7 @@ export const SwapForm = () => {
                 onAccountChange={setFromAddress}
               />
               <AvailableBalance
-                asset={fromAsset}
+                tokenId={fromTokenId}
                 balance={fastBalance?.balance?.transferable}
                 highlight={insufficientBalance === true}
               />
@@ -162,9 +162,9 @@ export const SwapForm = () => {
         <div className="flex flex-col gap-8 rounded bg-grey-900 px-6 py-8">
           <TokenAmountInput
             amount={toAmount ?? undefined}
-            assets={toAssets}
-            selectedAsset={toAsset}
-            onChangeAsset={handleChangeToAsset}
+            assetIds={toAssetIds}
+            selectedTokenId={toTokenId}
+            onChangeTokenId={handleChangeToToken}
             disabled
             showFiat={false}
             priorityMode="buy"
@@ -177,8 +177,8 @@ export const SwapForm = () => {
                 subtitle={t("To")}
                 allowInput
                 allowZeroBalance
-                asset={toAsset}
-                accountsType={assetAccountsType(toAsset)}
+                tokenId={toTokenId}
+                accountsType={tokenAccountsType(toToken)}
                 substrateAccountPrefix={0}
                 substrateAccountsFilter={isAccountOwned}
                 value={toAddress}
@@ -192,22 +192,22 @@ export const SwapForm = () => {
       <SwapDetails />
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {fromAsset?.networkType === "btc" && (
+        {fromNetworkType === "btc" && (
           <Button className="!w-full !rounded" disabled>
             {t("Swapping from BTC is not supported")}
           </Button>
         )}
 
-        {["evm", "substrate"].includes(fromAsset?.networkType ?? "") && approvalData && (
+        {fromNetworkType && ["evm", "substrate"].includes(fromNetworkType) && approvalData && (
           <Button className="!w-full !rounded" primary onClick={() => setSwapView("approve-erc20")}>
             {t(`Allow {{protocolName}} to spend {{symbol}}`, {
               protocolName: approvalData.protocolName,
-              symbol: fromAsset?.symbol,
+              symbol: fromToken?.symbol,
             })}
           </Button>
         )}
 
-        {["evm", "substrate"].includes(fromAsset?.networkType ?? "") && !approvalData && (
+        {fromNetworkType && ["evm", "substrate"].includes(fromNetworkType) && !approvalData && (
           <Button
             className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
             primary
@@ -244,13 +244,13 @@ export const SwapForm = () => {
             <div className="flex items-center gap-3 text-orange-400 text-sm">
               {toIsWatched && (
                 <Trans t={t}>
-                  <AlertCircleIcon /> Sending {toAsset?.symbol} to a watch-only account on{" "}
+                  <AlertCircleIcon /> Sending {toToken?.symbol} to a watch-only account on{" "}
                   {toNetwork?.name}.
                 </Trans>
               )}
               {toIsExternal && (
                 <Trans t={t}>
-                  <AlertCircleIcon /> Sending {toAsset?.symbol} to an external account on{" "}
+                  <AlertCircleIcon /> Sending {toToken?.symbol} to an external account on{" "}
                   {toNetwork?.name}.
                 </Trans>
               )}
@@ -276,20 +276,21 @@ export const SwapForm = () => {
 }
 
 const AvailableBalance = ({
-  asset,
+  tokenId,
   balance,
   highlight,
 }: {
-  asset?: SwappableAssetWithDecimals | null
+  tokenId?: string | null
   balance?: bigint
   highlight?: boolean
 }) => {
   const { t } = useTranslation()
-  if (!asset || balance === undefined) return null
-  const amount = planckToTokens(balance.toString(), asset.decimals) ?? "0"
+  const token = useToken(tokenId ?? undefined)
+  if (!token || balance === undefined) return null
+  const amount = planckToTokens(balance.toString(), token.decimals) ?? "0"
   return (
     <span className={classNames("text-[11px]", highlight ? "text-white" : "text-body-disabled")}>
-      {t("Available:")} <Tokens amount={amount} symbol={asset.symbol} noCountUp />
+      {t("Available:")} <Tokens amount={amount} symbol={token.symbol} noCountUp />
     </span>
   )
 }
