@@ -1,9 +1,13 @@
 import type { AmountWithLabel } from "./balancetypes"
 import { getValueId } from "./balancetypes"
 
-const makeAmount = (
-  overrides: Partial<AmountWithLabel<string>> & { label: string; type: string }
-): AmountWithLabel<string> =>
+const makeAmount = (overrides: {
+  label: string
+  type: string
+  source?: string
+  amount?: string
+  meta?: unknown
+}): AmountWithLabel<string> =>
   ({
     label: overrides.label,
     type: overrides.type,

@@ -335,7 +335,7 @@ describe("PlanckSumBalancesFormatter", () => {
           decimals: 0,
           networkId: "test-network",
         },
-      } as HydrateDb["tokens"],
+      } as unknown as HydrateDb["tokens"],
     })
     const balances = new Balances([b])
     // locked is max of locks: max(300, 500) = 500

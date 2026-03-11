@@ -7,16 +7,17 @@ const NETWORK_ID = "bittensor-0"
 const ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 const HOTKEY = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
 
-const makeArgs = (overrides: Record<string, unknown> = {}) => ({
-  stake: 1_000_000_000n,
-  hotkey: HOTKEY,
-  address: ADDRESS,
-  networkId: NETWORK_ID,
-  validatorRootClaimableRate: new Map<number, bigint>(),
-  dynamicInfoByNetuid: {} as Record<number, { alpha_in: bigint; tao_in: bigint } | undefined>,
-  alreadyClaimedByNetuid: new Map<number, bigint>(),
-  ...overrides,
-})
+const makeArgs = (overrides: Record<string, unknown> = {}) =>
+  ({
+    stake: 1_000_000_000n,
+    hotkey: HOTKEY,
+    address: ADDRESS,
+    networkId: NETWORK_ID,
+    validatorRootClaimableRate: new Map<number, bigint>(),
+    dynamicInfoByNetuid: {},
+    alreadyClaimedByNetuid: new Map<number, bigint>(),
+    ...overrides,
+  }) as unknown as Parameters<typeof calculatePendingRootClaimable>[0]
 
 describe("calculatePendingRootClaimable", () => {
   it("returns empty array when validatorRootClaimableRate is empty", () => {

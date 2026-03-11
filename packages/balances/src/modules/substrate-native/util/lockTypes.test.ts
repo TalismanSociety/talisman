@@ -1,3 +1,5 @@
+import { vi } from "vitest"
+
 import { filterBaseLocks, getLockedType, getLockTitle } from "./lockTypes"
 
 const makeLock = (label: string) => ({

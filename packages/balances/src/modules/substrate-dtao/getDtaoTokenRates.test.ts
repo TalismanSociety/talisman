@@ -16,6 +16,7 @@ const makeToken = (netuid: number): SubDTaoToken => ({
   netuid,
   decimals: 9,
   symbol: netuid === 0 ? "TAO" : `α${netuid}`,
+  isTransferable: true,
 })
 
 const makeTaoRates = () => {

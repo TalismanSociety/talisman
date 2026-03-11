@@ -1,6 +1,6 @@
 import type { UnifiedMetadata } from "@talismn/scale"
 import { parseMetadataRpc } from "@talismn/scale"
-
+import { vi } from "vitest"
 import {
   getConstantValue,
   hasRuntimeApi,
@@ -14,7 +14,7 @@ vi.mock("@talismn/scale", () => ({
 }))
 
 const makeMetadata = (
-  overrides: Partial<Pick<UnifiedMetadata, "pallets" | "apis">> = {}
+  overrides: { pallets?: Record<string, unknown>[]; apis?: Record<string, unknown>[] } = {}
 ): UnifiedMetadata =>
   ({
     pallets: [],
