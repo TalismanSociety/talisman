@@ -7,7 +7,11 @@ import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
 export type RemoteConfigStoreData = RemoteConfigData & {
   bittensor: RemoteConfigData["bittensor"] & {
-    /** config.toml: [bittensor] featuredValidators = ["<validator-hotkey>"] */
+    /** config.toml: [bittensor] defaultValidators = ["<hotkey>", ...] — pick first valid for subnet */
+    defaultValidators: string[]
+    /** config.toml: [bittensor.defaultValidatorsBySubnet] 45 = "<hotkey>" — per-subnet overrides */
+    defaultValidatorsBySubnet: Record<number, string>
+    /** config.toml: [bittensor] featuredValidators = ["<hotkey>", ...] */
     featuredValidators: string[]
   }
 }

@@ -34,8 +34,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 
-let lastPickedValidatorSortMethod: ValidatorSortValue = "featured"
-
 export const BittensorValidatorPicker: FC<{
   networkId: DotNetworkId
   netuid: number
@@ -45,29 +43,17 @@ export const BittensorValidatorPicker: FC<{
   const { t } = useTranslation()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const [sortMethod, setSortMethod] = useState<ValidatorSortValue>(
-    () => lastPickedValidatorSortMethod
-  )
-  const [prioritizeFeaturedOnOpen, setPrioritizeFeaturedOnOpen] = useState(
-    () => lastPickedValidatorSortMethod !== "featured"
-  )
+  const [sortMethod, setSortMethod] = useState<ValidatorSortValue>("featured")
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
 
-  const handleSortMethodChange = useCallback(
-    (method: ValidatorSortValue) => {
-      if (method !== sortMethod) setPrioritizeFeaturedOnOpen(false)
-      lastPickedValidatorSortMethod = method
-      setSortMethod(method)
-    },
-    [sortMethod]
-  )
+  const handleSortMethodChange = useCallback((method: ValidatorSortValue) => {
+    setSortMethod(method)
+  }, [])
 
   const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
     combinedValidatorsData.length
-      ? sortValidatorOptions(combinedValidatorsData, sortMethod, {
-          prioritizeFeatured: prioritizeFeaturedOnOpen,
-        })
+      ? sortValidatorOptions(combinedValidatorsData, sortMethod)
       : undefined
   )
 
@@ -91,13 +77,9 @@ export const BittensorValidatorPicker: FC<{
   useEffect(() => {
     if (combinedValidatorsData.length)
       startTransition(() => {
-        setSortedValidators(
-          sortValidatorOptions(combinedValidatorsData, sortMethod, {
-            prioritizeFeatured: prioritizeFeaturedOnOpen,
-          })
-        )
+        setSortedValidators(sortValidatorOptions(combinedValidatorsData, sortMethod))
       })
-  }, [combinedValidatorsData, sortMethod, prioritizeFeaturedOnOpen])
+  }, [combinedValidatorsData, sortMethod])
 
   // Reset scroll to top when sort method or search changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy

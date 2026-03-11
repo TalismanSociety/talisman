@@ -16,8 +16,8 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
     bittensor: { featuredValidators },
   } = useRemoteConfig()
 
-  const featuredHotkeys = useMemo(
-    () => new Set(featuredValidators.map((hotkey) => hotkey.toLowerCase())),
+  const featuredHotkeyOrder = useMemo(
+    () => new Map(featuredValidators.map((hotkey, i) => [hotkey.toLowerCase(), i])),
     [featuredValidators]
   )
 
@@ -39,14 +39,15 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
           apr: Number(validatorYield?.thirty_day_apy ?? 0),
           subnets: validator.active_subnets,
           rank: validator.rank,
-          isFeatured: featuredHotkeys.has(validator.hotkey.toLowerCase()),
+          isFeatured: featuredHotkeyOrder.has(validator.hotkey.toLowerCase()),
+          featuredOrder: featuredHotkeyOrder.get(validator.hotkey.toLowerCase()) ?? -1,
           hasData: !!validator,
           isError: status === "error",
         }
       }) ?? []
 
     return combined
-  }, [featuredHotkeys, status, validators, validatorsYieldData])
+  }, [featuredHotkeyOrder, status, validators, validatorsYieldData])
 
   return {
     combinedValidatorsData,

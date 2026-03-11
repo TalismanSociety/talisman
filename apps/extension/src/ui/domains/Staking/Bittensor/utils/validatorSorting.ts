@@ -1,9 +1,6 @@
 import type { BondOption } from "@ui/domains/Staking/hooks/bittensor/types"
 
 export type ValidatorSortValue = "featured" | "name" | "totalStaked" | "totalStakers" | "apr"
-type ValidatorSortOptions = {
-  prioritizeFeatured?: boolean
-}
 
 const compareNumberDescending = (a: number, b: number) => {
   if (a > b) return -1
@@ -21,24 +18,23 @@ const compareYieldAvailability = (a: BondOption, b: BondOption) =>
   Number(Boolean(b.validatorYield)) - Number(Boolean(a.validatorYield))
 
 const getFeaturedSortMetric = (validator: BondOption) => {
-  return validator.validatorYield?.thirty_day_apy ?? validator.apr
+  return validator.apr + validator.totalStaked + validator.totalStakers
 }
 
 export const sortValidatorOptions = (
   data: BondOption[],
-  sortBy: ValidatorSortValue,
-  options: ValidatorSortOptions = {}
+  sortBy: ValidatorSortValue
 ): BondOption[] => {
-  const sorted = data.concat().sort((a, b) => {
+  return data.concat().sort((a, b) => {
     if (sortBy === "featured") {
-      const featuredPriority = Number(b.isFeatured) - Number(a.isFeatured)
-      if (featuredPriority !== 0) return featuredPriority
+      // featured validators pinned to top in config order
+      if (a.isFeatured && b.isFeatured) return a.featuredOrder - b.featuredOrder
+      if (a.isFeatured) return -1
+      if (b.isFeatured) return 1
 
+      // non-featured sorted by composite metric
       const metricSort = compareNumberDescending(getFeaturedSortMetric(a), getFeaturedSortMetric(b))
       if (metricSort !== 0) return metricSort
-
-      const yieldSort = compareYieldAvailability(a, b)
-      if (yieldSort !== 0) return yieldSort
 
       return compareName(a, b)
     }
@@ -53,10 +49,4 @@ export const sortValidatorOptions = (
 
     return compareName(a, b)
   })
-
-  if (!options.prioritizeFeatured || sortBy === "featured") return sorted
-
-  const featured = sorted.filter((validator) => validator.isFeatured)
-  const others = sorted.filter((validator) => !validator.isFeatured)
-  return featured.concat(others)
 }

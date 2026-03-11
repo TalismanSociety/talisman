@@ -10,6 +10,7 @@ const createOption = (overrides: Partial<BondOption>): BondOption => ({
   hasData: true,
   isError: false,
   isFeatured: false,
+  featuredOrder: -1,
   apr: 0,
   subnets: 0,
   rank: 0,
@@ -17,62 +18,59 @@ const createOption = (overrides: Partial<BondOption>): BondOption => ({
 })
 
 describe("sortValidatorOptions", () => {
-  test("sorts featured validators to the top, then orders each group by 30-day APY", () => {
+  test("featured validators appear in config order, non-featured sorted by composite metric", () => {
     const validators: BondOption[] = [
       createOption({
         hotkey: "5A",
         name: "A",
         isFeatured: true,
-        validatorYield: { hotkey: "5A", stake: 10, thirty_day_apy: 0.1 },
+        featuredOrder: 0,
+        apr: 0.1,
+        totalStaked: 10,
+        totalStakers: 5,
       }),
       createOption({
         hotkey: "5B",
         name: "B",
         isFeatured: false,
-        validatorYield: { hotkey: "5B", stake: 200, thirty_day_apy: 0.4 },
+        apr: 0.4,
+        totalStaked: 200,
+        totalStakers: 50,
       }),
       createOption({
         hotkey: "5C",
         name: "C",
         isFeatured: true,
-        validatorYield: { hotkey: "5C", stake: 50, thirty_day_apy: 0.25 },
+        featuredOrder: 1,
+        apr: 0.25,
+        totalStaked: 50,
+        totalStakers: 20,
       }),
       createOption({
         hotkey: "5D",
         name: "D",
         isFeatured: false,
-        validatorYield: { hotkey: "5D", stake: 100, thirty_day_apy: 0.3 },
+        apr: 0.3,
+        totalStaked: 100,
+        totalStakers: 30,
       }),
     ]
 
     const sorted = sortValidatorOptions(validators, "featured")
 
-    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5C", "5A", "5B", "5D"])
+    // featured first in config order (A=0, C=1), then non-featured by metric desc (B=250.4, D=130.3)
+    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5A", "5C", "5B", "5D"])
   })
 
-  test("keeps validators with missing APY after validators with APY in each featured group", () => {
+  test("non-featured validators with zero metric sort by name", () => {
     const validators: BondOption[] = [
-      createOption({
-        hotkey: "5A",
-        isFeatured: true,
-        validatorYield: { hotkey: "5A", stake: 10, thirty_day_apy: 0.1 },
-      }),
-      createOption({
-        hotkey: "5B",
-        isFeatured: true,
-        validatorYield: { hotkey: "5B", stake: 60, thirty_day_apy: null },
-      }),
-      createOption({
-        hotkey: "5C",
-        isFeatured: false,
-        validatorYield: { hotkey: "5C", stake: 120, thirty_day_apy: 0.05 },
-      }),
-      createOption({ hotkey: "5D", isFeatured: false }),
+      createOption({ hotkey: "5A", name: "Zebra" }),
+      createOption({ hotkey: "5B", name: "Alpha" }),
     ]
 
     const sorted = sortValidatorOptions(validators, "featured")
 
-    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5A", "5B", "5C", "5D"])
+    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5A"])
   })
 
   test("keeps validators with yield data first for non-featured sort modes", () => {
@@ -89,38 +87,5 @@ describe("sortValidatorOptions", () => {
     const sorted = sortValidatorOptions(validators, "name")
 
     expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5A", "5C"])
-  })
-
-  test("can prioritize featured validators on top for non-featured sort modes", () => {
-    const validators: BondOption[] = [
-      createOption({
-        hotkey: "5A",
-        name: "Alpha",
-        isFeatured: false,
-        validatorYield: { hotkey: "5A", stake: 1, thirty_day_apy: 0.1 },
-      }),
-      createOption({
-        hotkey: "5B",
-        name: "Bravo",
-        isFeatured: true,
-        validatorYield: { hotkey: "5B", stake: 1, thirty_day_apy: 0.1 },
-      }),
-      createOption({
-        hotkey: "5C",
-        name: "Charlie",
-        isFeatured: false,
-        validatorYield: { hotkey: "5C", stake: 1, thirty_day_apy: 0.1 },
-      }),
-      createOption({
-        hotkey: "5D",
-        name: "Delta",
-        isFeatured: true,
-        validatorYield: { hotkey: "5D", stake: 1, thirty_day_apy: 0.1 },
-      }),
-    ]
-
-    const sorted = sortValidatorOptions(validators, "name", { prioritizeFeatured: true })
-
-    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5D", "5A", "5C"])
   })
 })

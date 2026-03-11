@@ -36,8 +36,6 @@ import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChang
 import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
 import { sortValidatorOptions, type ValidatorSortValue } from "../../utils/validatorSorting"
 
-let lastPickedChangeValidatorSortMethod: ValidatorSortValue = "featured"
-
 export const ChangeValidatorSelect = () => {
   const { t } = useTranslation()
   const { token, currentHotkey, newHotkey, currentPosition, selectValidator, setStep, close } =
@@ -47,20 +45,13 @@ export const ChangeValidatorSelect = () => {
 
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const [sortMethod, setSortMethod] = useState<ValidatorSortValue>(
-    () => lastPickedChangeValidatorSortMethod
-  )
-  const [prioritizeFeaturedOnOpen, setPrioritizeFeaturedOnOpen] = useState(
-    () => lastPickedChangeValidatorSortMethod !== "featured"
-  )
+  const [sortMethod, setSortMethod] = useState<ValidatorSortValue>("featured")
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
 
   const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
     combinedValidatorsData.length
-      ? sortValidatorOptions(combinedValidatorsData, sortMethod, {
-          prioritizeFeatured: prioritizeFeaturedOnOpen,
-        })
+      ? sortValidatorOptions(combinedValidatorsData, sortMethod)
       : undefined
   )
 
@@ -84,27 +75,18 @@ export const ChangeValidatorSelect = () => {
     [selectValidator]
   )
 
-  const handleSortMethodChange = useCallback(
-    (method: ValidatorSortValue) => {
-      if (method !== sortMethod) setPrioritizeFeaturedOnOpen(false)
-      lastPickedChangeValidatorSortMethod = method
-      setSortMethod(method)
-    },
-    [sortMethod]
-  )
+  const handleSortMethodChange = useCallback((method: ValidatorSortValue) => {
+    setSortMethod(method)
+  }, [])
 
   const [, startTransition] = useTransition()
 
   useEffect(() => {
     if (combinedValidatorsData.length)
       startTransition(() => {
-        setSortedValidators(
-          sortValidatorOptions(combinedValidatorsData, sortMethod, {
-            prioritizeFeatured: prioritizeFeaturedOnOpen,
-          })
-        )
+        setSortedValidators(sortValidatorOptions(combinedValidatorsData, sortMethod))
       })
-  }, [combinedValidatorsData, sortMethod, prioritizeFeaturedOnOpen])
+  }, [combinedValidatorsData, sortMethod])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {

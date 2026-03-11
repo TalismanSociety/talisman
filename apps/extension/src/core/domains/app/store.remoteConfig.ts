@@ -71,6 +71,8 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       buy: {},
       sell: {},
     },
+    defaultValidators: [],
+    defaultValidatorsBySubnet: {},
     featuredValidators: [],
   },
   recommendedNetworks: [],

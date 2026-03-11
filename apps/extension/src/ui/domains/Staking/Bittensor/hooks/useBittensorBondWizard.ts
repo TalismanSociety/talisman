@@ -13,7 +13,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
 import { usePortfolioBalances } from "@ui/state/portfolio"
-import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -117,6 +117,9 @@ const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
+  const {
+    bittensor: { defaultValidators, defaultValidatorsBySubnet },
+  } = useRemoteConfig()
 
   const [
     {
@@ -145,7 +148,6 @@ const useBittensorBondWizardProvider = () => {
   const tokenRates = useTokenRates(nativeTokenId)
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
   const accountPicker = useOpenClose()
-  const stakeTypeDrawer = useOpenClose()
   const slippageDrawer = useOpenClose()
   const warningDrawer = useOpenClose()
   const seekDiscountDrawer = useOpenClose()
@@ -235,25 +237,18 @@ const useBittensorBondWizardProvider = () => {
   )
   const setNetuid = useCallback(
     (netuid: number) =>
-      setWizardState((prev) => ({ ...prev, netuid, stakeType: netuid ? "subnet" : "root" })),
-    []
+      setWizardState((prev) => ({
+        ...prev,
+        netuid,
+        stakeType: netuid ? "subnet" : "root",
+        hotkey: defaultValidatorsBySubnet[netuid] ?? defaultValidators[0] ?? prev.hotkey,
+      })),
+    [defaultValidators, defaultValidatorsBySubnet]
   )
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
     []
-  )
-
-  const setStakeType = useCallback(
-    (stakeType: StakeType) => {
-      setWizardState((prev) => ({
-        ...prev,
-        stakeType,
-        netuid: stakeType === "root" ? 0 : prev.netuid || null,
-      }))
-      stakeTypeDrawer.close()
-    },
-    [stakeTypeDrawer]
   )
 
   const toggleDisplayMode = useCallback(() => {
@@ -498,7 +493,6 @@ const useBittensorBondWizardProvider = () => {
     amountAlpha,
     displayMode,
     accountPicker,
-    stakeTypeDrawer,
     slippageDrawer,
     warningDrawer,
     seekDiscountDrawer,
@@ -536,7 +530,6 @@ const useBittensorBondWizardProvider = () => {
     setHotkey,
     setPlancks,
     setStep,
-    setStakeType,
     setPosition,
     toggleDisplayMode,
     onSubmitted,
