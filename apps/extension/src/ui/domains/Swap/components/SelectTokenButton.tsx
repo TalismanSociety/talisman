@@ -1,12 +1,14 @@
-import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import type { Token } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon } from "@talismn/icons"
+import { cn } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
-import { useNetworkById } from "@ui/state/chaindata"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { type FC, memo, startTransition, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,7 +24,7 @@ type Props = {
   priorityMode?: "buy" | "sell"
 }
 
-export const SelectTokenModal: React.FC<Props> = memo(
+export const SelectTokenButton: React.FC<Props> = memo(
   ({ assets, selectedAsset, onSelectAsset, priorityMode }) => {
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
@@ -124,38 +126,45 @@ const OpenSelectorButton = ({
   onClick: () => void
 }) => {
   const { t } = useTranslation()
+  const token = useToken(selectedAsset?.id)
+  const network = useNetworkById(token?.networkId)
 
-  const selectedAssetChain = useNetworkById(selectedAsset?.chainId.toString())
+  if (!token) {
+    return (
+      <BaseButton className="text-body-secondary text-sm hover:text-body" onClick={onClick}>
+        <TokenLogo className="size-16" />
+        {t("Select Token")}
+      </BaseButton>
+    )
+  }
 
   return (
-    <button
-      type="button"
-      className="flex h-20 items-center gap-4 rounded bg-grey-750 px-4 py-2 text-body-secondary text-sm transition-opacity hover:bg-grey-700"
-      onClick={onClick}
-    >
-      {selectedAsset && (
-        <img
-          key={selectedAsset?.image ?? UNKNOWN_TOKEN_URL}
-          src={selectedAsset?.image ?? UNKNOWN_TOKEN_URL}
-          alt=""
-          className="h-12 w-12 min-w-12 rounded-full"
+    <BaseButton onClick={onClick}>
+      <div className="relative h-[32px] w-[32px] shrink-0">
+        <TokenLogo tokenId={token.id} className="size-16" />
+        <NetworkLogo
+          networkId={token.networkId} // TODO remove cast once we have a correctly typed networkId
+          className="absolute -right-[2px] -bottom-[2px] h-[14px] w-[14px] rounded-full border-[1.5px] border-grey-900"
         />
-      )}
-      {selectedAsset && (
-        <div className="text-left">
-          <p className="mb-1 text-body text-sm leading-none">{selectedAsset.symbol}</p>
-          <p className="max-w-[52px] overflow-hidden text-ellipsis whitespace-nowrap text-grey-400 text-tiny leading-none">
-            {selectedAssetChain?.name}
-          </p>
-        </div>
-      )}
-
-      {!selectedAsset && (
-        <p className="whitespace-nowrap text-grey-400 text-xs">{t("Select Token")}</p>
-      )}
-    </button>
+      </div>
+      <div className="flex flex-col items-start gap-1">
+        <div className="text-body text-sm">{token.symbol}</div>
+        <div className="text-body-secondary text-xs">{network?.name}</div>
+      </div>
+    </BaseButton>
   )
 }
+
+const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ className, ...props }) => (
+  <button
+    type="button"
+    className={cn(
+      "flex h-24 items-center gap-4 rounded-sm bg-grey-800 px-4 hover:bg-grey-750",
+      className
+    )}
+    {...props}
+  />
+)
 
 const useTokenFilterOptions = () => {
   const { t } = useTranslation()

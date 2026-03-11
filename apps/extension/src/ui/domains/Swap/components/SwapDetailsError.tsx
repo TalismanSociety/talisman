@@ -1,21 +1,10 @@
-import { classNames } from "@talismn/util"
-import { useTranslation } from "react-i18next"
+import { AlertCircleIcon } from "@talismn/icons"
 
-export const SwapDetailsError = ({
-  message,
-  messageClassName,
-}: {
-  message?: string
-  messageClassName?: string
-}) => {
-  const { t } = useTranslation()
-
+export const SwapDetailsError = ({ message }: { message?: string }) => {
   return (
-    <div className="mt-4 flex flex-col items-center justify-center rounded border border-grey-800 p-8">
-      <h4 className="text-center font-bold text-sm">{t("Failed to get quote")}</h4>
-      <p className={classNames("text-center text-[14px] text-gray-400", messageClassName)}>
-        {message}
-      </p>
+    <div className="flex h-[48px] items-center gap-[8px] rounded-[12px] bg-alert-warn/10 px-[12px]">
+      <AlertCircleIcon className="h-[24px] w-[24px] shrink-0 text-[#f48f45]" />
+      <p className="text-[#f48f45] text-[10px] leading-tight">{message}</p>
     </div>
   )
 }

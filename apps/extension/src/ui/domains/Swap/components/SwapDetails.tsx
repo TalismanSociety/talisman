@@ -1,10 +1,9 @@
 import { LoaderIcon } from "@talismn/icons"
-import { type ReactNode, Suspense, useEffect } from "react"
+import { type ReactNode, Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import { SwapDetailsCard } from "./SwapDetailsCard"
 import { SwapDetailsCardSkeleton } from "./SwapDetailsCardSkeleton"
-import { SwapDetailsContainer } from "./SwapDetailsContainer"
 import { SwapDetailsError } from "./SwapDetailsError"
 
 export const SwapDetails = () => {
@@ -13,7 +12,6 @@ export const SwapDetails = () => {
   if (!fromAsset || !toAsset || !fromAmount) return null
 
   return (
-    // Details component handles its own error already. This is just in case there is an unhandled error
     <Suspense fallback={<LoadingUI />}>
       <Details />
     </Suspense>
@@ -54,47 +52,45 @@ const Details = () => {
     selectedSubProtocol,
   ])
 
-  if (hasQuoteError && sortedQuotes.length === 0) {
-    return (
-      <SwapDetailsContainer>
-        <SwapDetailsError
-          messageClassName="whitespace-pre-wrap text-[12px] leading-6 mt-4"
-          message={"No route found. Try larger amount."}
-        />
-      </SwapDetailsContainer>
+  const { displayQuote, isBestRate } = useMemo(() => {
+    if (sortedQuotes.length === 0) return { displayQuote: null, isBestRate: false }
+    const selectedIdx = sortedQuotes.findIndex(
+      ({ quote }) =>
+        selectedProtocol === quote.protocol &&
+        (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
     )
+    const idx = selectedIdx >= 0 ? selectedIdx : 0
+    return { displayQuote: sortedQuotes[idx], isBestRate: idx === 0 }
+  }, [sortedQuotes, selectedProtocol, selectedSubProtocol])
+
+  if (hasQuoteError && sortedQuotes.length === 0) {
+    return <SwapDetailsError message={"No route found. Try larger amount."} />
   }
   if (sortedQuotes.length === 0 && isAllQuotesSettled)
+    return <SwapDetailsError message={t("Pair is unavailable.")} />
+
+  if (sortedQuotes.length === 0 && isLoadingQuotes)
     return (
-      <SwapDetailsContainer>
-        <SwapDetailsError message={t("Pair is unavailable.")} />
-      </SwapDetailsContainer>
+      <div className="flex w-full flex-col gap-[8px]">
+        <span className="font-semibold text-[14px] text-white/60">{t("Provider")}</span>
+        <SwapDetailsCardSkeleton />
+      </div>
     )
 
-  if (sortedQuotes.length === 0 && isLoadingQuotes) return <SwapDetailsCardSkeleton />
+  if (!displayQuote) return null
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      {sortedQuotes.map(({ quote }, index) => (
-        <SwapDetailsCard
-          key={`${quote.protocol}${quote.subProtocol}`}
-          quote={quote}
-          selected={
-            selectedProtocol === null
-              ? index === 0
-              : selectedProtocol === quote.protocol &&
-                (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
-          }
-        />
-      ))}
+    <div className="flex w-full flex-col gap-[8px]">
+      <span className="font-semibold text-[14px] text-white/60">{t("Provider")}</span>
+      <SwapDetailsCard quote={displayQuote.quote} showBestRate={isBestRate} />
     </div>
   )
 }
 
 const LoadingUI = ({ title, description }: { title?: string; description?: ReactNode }) => (
-  <SwapDetailsContainer>
-    <div className="flex flex-col items-center justify-center gap-4 rounded-sm border border-grey-800 p-8">
-      <div className="flex h-[94px] w-[94px] items-center justify-center">
+  <div className="flex w-full flex-col gap-[8px]">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-[12px] bg-grey-900 p-8">
+      <div className="flex h-[48px] w-[48px] items-center justify-center">
         <LoaderIcon className="animate-spin-slow" />
       </div>
       <div>
@@ -102,5 +98,5 @@ const LoadingUI = ({ title, description }: { title?: string; description?: React
         <p className="text-center text-body-secondary text-sm">{description}</p>
       </div>
     </div>
-  </SwapDetailsContainer>
+  </div>
 )

@@ -1,24 +1,27 @@
-import { RepeatIcon } from "@talismn/icons"
+import { ArrowDownIcon, RepeatIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 
 import { useSwap } from "../SwapProvider"
 
-export const ReverseButton = () => {
+export const ReverseButton = ({ hasError }: { hasError?: boolean }) => {
   const { reverse } = useSwap()
 
   return (
-    <div className="relative w-full">
+    <div className="relative z-10 -my-[18px] flex justify-center">
       <button
         type="button"
         className={classNames(
-          "absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2",
-          "flex items-center justify-center",
-          "rounded-full border border-black-secondary border-solid bg-[#2D3121] p-6 text-md text-primary",
+          "flex h-[48px] w-[48px] items-center justify-center",
+          "rounded-full border-[3px] border-grey-900 bg-[#2d3121] text-primary",
           "transition-colors hover:bg-[#383d29]"
         )}
         onClick={reverse}
       >
-        <RepeatIcon />
+        {hasError ? (
+          <ArrowDownIcon className="text-[20px]" />
+        ) : (
+          <RepeatIcon className="text-[20px]" />
+        )}
       </button>
     </div>
   )

@@ -42,6 +42,7 @@ type Props = {
   substrateAccountPrefix?: number
   disableBtc?: boolean
   value?: string | null
+  compact?: boolean
 }
 
 export const SeparatedAccountSelector = memo(
@@ -58,6 +59,7 @@ export const SeparatedAccountSelector = memo(
     substrateAccountPrefix,
     value,
     disableBtc = false,
+    compact = false,
   }: Props) => {
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
@@ -204,30 +206,53 @@ export const SeparatedAccountSelector = memo(
         </div>
       )
 
+    const triggerButton = compact ? (
+      <button
+        type="button"
+        className="flex h-[26px] items-center gap-3 rounded-[13px] bg-[#262626] pr-[8px] pl-[5px] transition-colors hover:bg-[#363636]"
+        onClick={() => setOpen(true)}
+      >
+        {selectedAccount ? (
+          <>
+            <AccountIcon className="!text-[16px]" address={selectedAccount.address} />
+            <span className="max-w-[100px] truncate text-white text-xs leading-none">
+              {selectedAccount.name || shortenAddress(selectedAccount.address)}
+            </span>
+          </>
+        ) : (
+          <span className="whitespace-nowrap text-body-secondary text-xs leading-none">
+            {t("Select Account")}
+          </span>
+        )}
+      </button>
+    ) : (
+      <button
+        type="button"
+        className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
+        onClick={() => setOpen(true)}
+      >
+        {selectedAccount && (
+          <div className="flex shrink-0 items-center gap-4">
+            <AccountIcon className="text-lg" address={selectedAccount.address} />
+            <AccountRow
+              substrateAccountPrefix={substrateAccountPrefix}
+              address={selectedAccount.address}
+              name={selectedAccount.name}
+            />
+          </div>
+        )}
+        {!selectedAccount && (
+          <div className="flex shrink-0 items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-body-inactive"></div>
+            <div>{t("Select account")}</div>
+          </div>
+        )}
+      </button>
+    )
+
     return (
       <>
-        <button
-          type="button"
-          className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
-          onClick={() => setOpen(true)}
-        >
-          {selectedAccount && (
-            <div className="flex shrink-0 items-center gap-4">
-              <AccountIcon className="text-lg" address={selectedAccount.address} />
-              <AccountRow
-                substrateAccountPrefix={substrateAccountPrefix}
-                address={selectedAccount.address}
-                name={selectedAccount.name}
-              />
-            </div>
-          )}
-          {!selectedAccount && (
-            <div className="flex shrink-0 items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-body-inactive"></div>
-              <div>{t("Select account")}</div>
-            </div>
-          )}
-        </button>
+        {triggerButton}
 
         <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
           <AccountPicker
