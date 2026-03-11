@@ -620,6 +620,7 @@ const getQuote = async (
   _signal: AbortSignal
 ): Promise<(BaseQuote & { data?: QuoteResponse }) | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
+  if (!fromTokenId || !toTokenId) return null
 
   const fromAsset = resolveAsset(fromTokenId)
   const toAsset = resolveAsset(toTokenId)

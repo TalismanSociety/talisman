@@ -20,7 +20,7 @@ export const useSwapQuoteManager = (params: {
   fromTokenId: string | null
   toTokenId: string | null
   supportMap: Map<string, Set<SupportedSwapProtocol>> | null
-  fromAmount: bigint
+  fromAmount: bigint | null
   fromAddress: string | null
   toAddress: string | null
   selectedProtocol: SupportedSwapProtocol | null
@@ -62,15 +62,15 @@ export const useSwapQuoteManager = (params: {
         module.protocol,
         fromTokenId,
         toTokenId,
-        fromAmount.toString(),
+        fromAmount?.toString(),
         fromAddress,
         toAddress,
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(
           {
-            fromTokenId: fromTokenId!,
-            toTokenId: toTokenId!,
+            fromTokenId,
+            toTokenId,
             fromAmount,
             fromAddress,
             toAddress,

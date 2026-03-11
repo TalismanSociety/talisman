@@ -605,6 +605,7 @@ const estimateGas = async (
 
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
+  if (!fromTokenId || !toTokenId) return null
 
   const fromAsset = resolveAsset(fromTokenId)
   const toAsset = resolveAsset(toTokenId)

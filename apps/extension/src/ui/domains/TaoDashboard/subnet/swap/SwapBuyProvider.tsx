@@ -8,7 +8,7 @@ import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -67,7 +67,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const balancesProps = useMemo(
-    (): BalanceByParamsProps =>
+    (): BalancesByParamsProps =>
       address && tokenIdIn
         ? {
             addressesAndTokens: {

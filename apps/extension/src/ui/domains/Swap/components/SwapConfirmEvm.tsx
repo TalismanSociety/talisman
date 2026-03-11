@@ -60,11 +60,11 @@ export const SwapConfirmEvm = () => {
       toTokenId,
       fromAddress,
       toAddress,
-      fromAmount.toString(),
+      fromAmount?.toString(),
       selectedQuote?.protocol,
     ],
     queryFn: async ({ signal }) => {
-      if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress)
+      if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress || !fromAmount)
         throw new Error("Missing params")
 
       const exchange = await swapModule.createExchange({
@@ -94,6 +94,7 @@ export const SwapConfirmEvm = () => {
       !!toTokenId &&
       !!fromAddress &&
       !!toAddress &&
+      !!fromAmount &&
       swapView === "confirm" &&
       isReady,
     retry: false,
@@ -108,6 +109,7 @@ export const SwapConfirmEvm = () => {
     if (!fromTokenId) return
     if (!toTokenId) return
     if (!toAmount) return
+    if (!fromAmount) return
     if (toAddress === null) return
 
     switch (swapModule?.protocol) {

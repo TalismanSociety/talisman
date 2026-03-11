@@ -22,7 +22,10 @@ export const SwapConfirm = () => {
   const toToken = useToken(toTokenId ?? undefined)
 
   const currency = useSelectedCurrency()
-  const fromFiatAmount = useFiatValueForAmount({ planck: fromAmount, tokenId: fromTokenId })
+  const fromFiatAmount = useFiatValueForAmount({
+    planck: fromAmount ?? undefined,
+    tokenId: fromTokenId,
+  })
   const toFiatAmount = useFiatValueForAmount({
     planck: toAmount ?? undefined,
     tokenId: toTokenId,
@@ -62,7 +65,7 @@ export const SwapConfirm = () => {
               <div className="flex items-center gap-2">
                 <Tokens
                   className="whitespace-pre"
-                  amount={planckToTokens(fromAmount.toString(), fromToken?.decimals ?? 0)}
+                  amount={planckToTokens(fromAmount?.toString() ?? "0", fromToken?.decimals ?? 0)}
                   symbol={fromToken?.symbol}
                   noCountUp
                 />

@@ -39,7 +39,7 @@ export const FeeEstimateEvm = ({
   networkUsage?: number
 }) => {
   const { t } = useTranslation()
-  const { fastBalance, fromTokenId } = useSwap()
+  const { fromBalance, fromTokenId } = useSwap()
 
   const fromToken = useToken(fromTokenId ?? undefined)
   const fromEvmNetwork = useNetworkById(fromToken?.networkId, "ethereum")
@@ -93,7 +93,7 @@ export const FeeEstimateEvm = ({
                   tokenId={fromEvmNetwork.nativeTokenId}
                   estimatedFee={txDetails.estimatedFee}
                   maxFee={txDetails.maxFee}
-                  balance={fastBalance?.balance?.transferable}
+                  balance={fromBalance?.transferable.planck}
                 />
               ) : (
                 <div className="flex flex-col gap-2 whitespace-nowrap text-xs">

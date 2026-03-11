@@ -4,7 +4,7 @@ import type { Balance } from "@talismn/balances"
 import { isTokenInTypes, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useYieldxyzProduct } from "@ui/state/yieldxyz"
@@ -90,7 +90,7 @@ const useYieldxyzEnterWizardProvider = ({
   const account = useAccountByAddress(state.address)
   const network = useNetworkById(tokenIn?.networkId)
 
-  const balanceParams = useMemo<BalanceByParamsProps>(() => {
+  const balanceParams = useMemo<BalancesByParamsProps>(() => {
     if (!state.address || !tokenIn) return {}
     return {
       addressesAndTokens: {

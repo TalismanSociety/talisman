@@ -162,6 +162,8 @@ const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Pr
 const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | null> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
+    if (!fromTokenId || !toTokenId || !fromAmount) return null
+
     const fromAsset = resolveAsset(fromTokenId)
     const toAsset = resolveAsset(toTokenId)
     if (!fromAsset || !toAsset) return null
@@ -281,11 +283,14 @@ const getRouteQuote = async (
 }
 
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote[] | null> => {
+  const { fromTokenId, toTokenId } = params
+  if (!fromTokenId) return null
+
   const routes = await getRoutes(params)
   if (!routes) return null
 
   const quotes = await Promise.allSettled(
-    routes.routes.map((route) => getRouteQuote(route, params.fromTokenId, params.toTokenId))
+    routes.routes.map((route) => getRouteQuote(route, fromTokenId, toTokenId))
   )
 
   // Filter out nulls and failed promises
@@ -301,6 +306,7 @@ const getApprovalInfo = (
   params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
 ): ApprovalInfo => {
   const { fromTokenId, selectedSubProtocol, quoteData } = params
+  if (!fromTokenId) return null
   const fromAsset = resolveAsset(fromTokenId)
   if (!quoteData || !fromAsset || !fromAsset.contractAddress) return null
 

@@ -1,7 +1,6 @@
-import { useToken } from "@ui/state/chaindata"
+import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useFastBalance } from "./hooks/useFastBalance"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
@@ -26,7 +25,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   // -- Core form state --
   const [fromTokenId, setFromTokenId] = useState<string | null>(null)
   const [toTokenId, setToTokenId] = useState<string | null>(null)
-  const [fromAmount, setFromAmount] = useState<bigint>(0n)
+  const [fromAmount, setFromAmount] = useState<bigint | null>(null)
   const [selectedProtocol, setSelectedProtocol] = useState<SupportedSwapProtocol | null>(null)
   const [selectedSubProtocol, setSelectedSubProtocol] = useState<string | undefined>(undefined)
   const [quoteSorting, setQuoteSorting] = useState<
@@ -67,7 +66,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setSwapView("form")
     setFromTokenId(null)
     setToTokenId(null)
-    setFromAmount(0n)
+    setFromAmount(null)
     setSelectedProtocol(null)
     setSelectedSubProtocol(undefined)
     setQuoteSorting("bestRate")
@@ -185,152 +184,81 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   })
 
   // Derive fast balance params from the Token type
-  const fromToken = useToken(fromTokenId ?? undefined)
+  // const fromToken = useToken(fromTokenId ?? undefined)
 
-  const fastBalance = useFastBalance(
-    useMemo(() => {
-      if (!fromToken || !fromAddress) return undefined
+  const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
 
-      if (fromToken.platform === "ethereum") {
-        return {
-          type: "evm" as const,
-          address: fromAddress,
-          networkId: +fromToken.networkId,
-          tokenAddress:
-            "contractAddress" in fromToken
-              ? (fromToken.contractAddress as `0x${string}`)
-              : undefined,
-        }
-      }
+  return {
+    // View
+    swapView,
+    setSwapView,
 
-      if (fromToken.platform === "polkadot") {
-        return {
-          type: "substrate" as const,
-          address: fromAddress,
-          chainId: fromToken.networkId,
-          assetHubAssetId: "assetId" in fromToken ? String(fromToken.assetId) : undefined,
-        }
-      }
+    // Form state
+    fromTokenId,
+    setFromTokenId,
+    toTokenId,
+    setToTokenId,
+    fromAmount,
+    setFromAmount,
+    selectedProtocol,
+    setSelectedProtocol,
+    selectedSubProtocol,
+    setSelectedSubProtocol,
+    quoteSorting,
+    setQuoteSorting,
 
-      return undefined
-    }, [fromToken, fromAddress])
-  )
+    // Addresses (unified)
+    fromAddress,
+    toAddress,
+    setFromAddress,
+    setToAddress,
 
-  return useMemo(
-    () => ({
-      // View
-      swapView,
-      setSwapView,
+    // Token tab
+    tokenTab,
+    setTokenTab,
 
-      // Form state
-      fromTokenId,
-      setFromTokenId,
-      toTokenId,
-      setToTokenId,
-      fromAmount,
-      setFromAmount,
-      selectedProtocol,
-      setSelectedProtocol,
-      selectedSubProtocol,
-      setSelectedSubProtocol,
-      quoteSorting,
-      setQuoteSorting,
+    // Actions
+    resetForm,
+    reverse,
+    approvalCounter,
+    setApprovalCounter,
+    incrementApprovalCounter,
 
-      // Addresses (unified)
-      fromAddress,
-      toAddress,
-      setFromAddress,
-      setToAddress,
+    // Async state
+    fromAssetIds,
+    toAssetIds,
+    fromSupportMap,
+    toSupportMap,
+    safeTokens,
+    isLoadingFromAssets,
+    isLoadingToAssets,
 
-      // Token tab
-      tokenTab,
-      setTokenTab,
+    // Quote state
+    isLoadingQuotes,
+    isAllQuotesSettled,
+    hasQuoteError,
+    sortedQuotes,
+    selectedQuote,
+    selectedQuoteFees,
+    selectedModule,
+    toAmount,
 
-      // Actions
-      resetForm,
-      reverse,
-      approvalCounter,
-      setApprovalCounter,
-      incrementApprovalCounter,
+    // Account info
+    ethAccounts,
+    substrateAccounts,
+    fromEvmAccount,
+    fromSubstrateAccount,
 
-      // Async state
-      fromAssetIds,
-      toAssetIds,
-      fromSupportMap,
-      toSupportMap,
-      safeTokens,
-      isLoadingFromAssets,
-      isLoadingToAssets,
+    // ERC20 approval
+    erc20Approval,
 
-      // Quote state
-      isLoadingQuotes,
-      isAllQuotesSettled,
-      hasQuoteError,
-      sortedQuotes,
-      selectedQuote,
-      selectedQuoteFees,
-      selectedModule,
-      toAmount,
+    // Balance
+    fromBalance,
 
-      // Account info
-      ethAccounts,
-      substrateAccounts,
-      fromEvmAccount,
-      fromSubstrateAccount,
+    // Loading state
+    isInitializing,
 
-      // ERC20 approval
-      erc20Approval,
-
-      // Balance
-      fastBalance,
-
-      // Loading state
-      isInitializing,
-
-      // Init args
-      stateInit,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      swapView,
-      fromTokenId,
-      toTokenId,
-      fromAmount,
-      selectedProtocol,
-      selectedSubProtocol,
-      quoteSorting,
-      fromAddress,
-      toAddress,
-      setFromAddress,
-      setToAddress,
-      tokenTab,
-      resetForm,
-      reverse,
-      approvalCounter,
-      incrementApprovalCounter,
-      fromAssetIds,
-      toAssetIds,
-      fromSupportMap,
-      toSupportMap,
-      safeTokens,
-      isLoadingFromAssets,
-      isLoadingToAssets,
-      isLoadingQuotes,
-      isAllQuotesSettled,
-      hasQuoteError,
-      sortedQuotes,
-      selectedQuote,
-      selectedQuoteFees,
-      selectedModule,
-      toAmount,
-      ethAccounts,
-      substrateAccounts,
-      fromEvmAccount,
-      fromSubstrateAccount,
-      erc20Approval,
-      fastBalance,
-      isInitializing,
-      stateInit,
-    ]
-  )
+    // Init args
+    stateInit,
+  }
 }

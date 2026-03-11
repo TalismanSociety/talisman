@@ -1,5 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
 
@@ -7,7 +7,7 @@ export const useAccountImportBalances = (accounts: Account[]) => {
   const networks = useNetworksMapById({ includeTestnets: false, activeOnly: true })
   const tokens = useTokens({ includeTestnets: false, activeOnly: true })
 
-  const balanceParams = useMemo((): BalanceByParamsProps => {
+  const balanceParams = useMemo((): BalancesByParamsProps => {
     const tokenIds = tokens.filter((t) => networks[t.networkId]).map((t) => t.id)
     const addresses = accounts.map(({ address }) => address)
 

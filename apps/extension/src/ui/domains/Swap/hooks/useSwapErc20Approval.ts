@@ -17,7 +17,7 @@ export const useSwapErc20Approval = (params: {
   selectedModule: (typeof swapModules)[number] | undefined
   fromTokenId: string | null
   toTokenId: string | null
-  fromAmount: bigint
+  fromAmount: bigint | null
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol: string | undefined

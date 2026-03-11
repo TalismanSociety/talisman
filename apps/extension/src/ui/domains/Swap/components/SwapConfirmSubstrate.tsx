@@ -1,9 +1,11 @@
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import { useNetwork } from "@talismn/balances-react"
 import { useQuery } from "@tanstack/react-query"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,7 +21,7 @@ export const SwapConfirmSubstrate = () => {
 
   const {
     swapView,
-    fastBalance,
+    fromBalance,
     fromAddress,
     toAddress,
     fromTokenId,
@@ -42,17 +44,24 @@ export const SwapConfirmSubstrate = () => {
   }, [swapView])
 
   const insufficientBalance = useMemo(() => {
-    if (!fastBalance?.balance) return undefined
-    return fromAmount > fastBalance.balance.transferable
-  }, [fastBalance, fromAmount])
+    if (!fromBalance?.transferable.planck || !fromAmount) return undefined
+    return fromAmount > fromBalance.transferable.planck
+  }, [fromBalance, fromAmount])
 
   const { data: sapi } = useScaleApi(
     fromToken?.platform === "polkadot" ? fromToken.networkId : null
   )
+
+  const network = useNetwork(fromToken?.networkId ?? undefined)
+  const existentialDeposit = useExistentialDeposit(network.nativeTokenId)
+
   const allowReap = useMemo(
     () =>
-      fastBalance?.balance?.stayAlive !== undefined && fromAmount > fastBalance.balance.stayAlive,
-    [fastBalance, fromAmount]
+      !!fromBalance &&
+      fromAmount !== null &&
+      // TODO check this rule, doesnt seem accurate. we should check resulting balance (fromBalance - fromAmount) against existential deposit, not just fromAmount
+      (!existentialDeposit || fromAmount > existentialDeposit.planck),
+    [fromBalance, fromAmount, existentialDeposit]
   )
 
   // exchangeAtom and substratePayloadAtom are replaced with useQuery
@@ -64,11 +73,19 @@ export const SwapConfirmSubstrate = () => {
       toTokenId,
       fromAddress,
       toAddress,
-      fromAmount.toString(),
+      fromAmount?.toString(),
       allowReap,
     ],
     queryFn: async ({ signal }) => {
-      if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress || !sapi)
+      if (
+        !swapModule ||
+        !fromTokenId ||
+        !toTokenId ||
+        !fromAddress ||
+        !toAddress ||
+        !sapi ||
+        !fromAmount
+      )
         throw new Error("Missing params")
 
       const exchange = await swapModule.createExchange({
@@ -103,6 +120,7 @@ export const SwapConfirmSubstrate = () => {
       !!toTokenId &&
       !!fromAddress &&
       !!toAddress &&
+      !!fromAmount &&
       !!sapi &&
       swapView === "confirm" &&
       isReady,
@@ -119,6 +137,7 @@ export const SwapConfirmSubstrate = () => {
     if (!fromTokenId) return
     if (!toTokenId) return
     if (!toAmount) return
+    if (!fromAmount) return
     if (toAddress === null) return
 
     switch (swapModule?.protocol) {

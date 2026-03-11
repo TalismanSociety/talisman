@@ -7,7 +7,7 @@ import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useToken } from "@ui/state/chaindata"
 import { capitalize } from "lodash-es"
@@ -226,7 +226,7 @@ const AccountBalance: FC<{
   tokenRates: TokenRatesList
 }> = ({ address, tokenId, amount, tokenRates }) => {
   const { t } = useTranslation()
-  const balProps = useMemo<BalanceByParamsProps>(() => {
+  const balProps = useMemo<BalancesByParamsProps>(() => {
     return address && tokenId
       ? {
           addressesAndTokens: { addresses: [address], tokenIds: [tokenId] },

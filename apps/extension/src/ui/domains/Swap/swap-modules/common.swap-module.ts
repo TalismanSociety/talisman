@@ -73,9 +73,9 @@ export type SwapView = "form" | "approve-recipient" | "approve-erc20" | "confirm
 // --- Param types for SwapModule methods ---
 
 export type QuoteParams = {
-  fromTokenId: TokenId
-  toTokenId: TokenId
-  fromAmount: bigint
+  fromTokenId: TokenId | null
+  toTokenId: TokenId | null
+  fromAmount: bigint | null
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
