@@ -68,7 +68,7 @@ export type QuoteResponse = {
   }
 }
 
-export type SwapView = "form" | "approve-recipient" | "confirm"
+export type SwapView = "form" | "approve-recipient" | "confirm" | "submitted"
 
 // --- Param types for SwapModule methods ---
 

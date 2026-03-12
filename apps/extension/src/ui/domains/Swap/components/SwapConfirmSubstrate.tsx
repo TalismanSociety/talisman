@@ -9,9 +9,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import type { Hex } from "viem"
-import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
@@ -29,7 +27,7 @@ export const SwapConfirmSubstrate = () => {
     fromAmount,
     toAmount,
     selectedModule: swapModule,
-    resetForm,
+    gotoSubmitted,
   } = useSwap()
 
   const fromToken = useToken(fromTokenId ?? undefined)
@@ -179,19 +177,16 @@ export const SwapConfirmSubstrate = () => {
     )
   }, [fromAddress, insufficientBalance, isReady, isExchangeLoading, sapi, toAddress, toAmount])
 
-  const { close: closeSwapTokensModal } = useSwapTokensModal()
-  const navigate = useNavigate()
   const onSubmitted = useCallback(
     (hash: Hex) => {
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
 
-      closeSwapTokensModal()
-      resetForm()
       if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
       if (toTokenId) activeTokensStore.setActive(toTokenId, true)
-      navigate("/tx-history")
+      if (txInfo && fromToken?.networkId)
+        gotoSubmitted({ hash, networkId: fromToken.networkId, txInfo })
     },
-    [closeSwapTokensModal, navigate, resetForm, toToken, toTokenId, txInfo]
+    [fromToken, gotoSubmitted, toToken, toTokenId, txInfo]
   )
 
   return (

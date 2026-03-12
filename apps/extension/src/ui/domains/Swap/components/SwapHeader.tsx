@@ -8,12 +8,14 @@ export const SwapHeader = () => {
   const { t } = useTranslation()
   const { isOpen, close: closeSwapTokensModal } = useSwapTokensModal()
 
-  const { swapView, setSwapView } = useSwap()
+  const { swapView, setSwapView, resetForm } = useSwap()
   useEffect(() => {
     isOpen && setSwapView("form")
   }, [isOpen, setSwapView])
+
   const title = useMemo(() => {
     if (swapView === "confirm") return t("Confirm")
+    if (swapView === "submitted") return null
     return t("Swap")
   }, [swapView, t])
 
@@ -21,14 +23,32 @@ export const SwapHeader = () => {
     () =>
       ["form", "approve-recipient"].includes(swapView)
         ? closeSwapTokensModal
-        : () => void setSwapView("form"),
+        : swapView === "submitted"
+          ? undefined
+          : () => void setSwapView("form"),
     [closeSwapTokensModal, setSwapView, swapView]
   )
+
+  const onClose = useMemo(
+    () =>
+      ["form", "approve-recipient"].includes(swapView)
+        ? closeSwapTokensModal
+        : swapView === "submitted"
+          ? () => {
+              resetForm()
+              closeSwapTokensModal()
+            }
+          : undefined,
+    [closeSwapTokensModal, resetForm, swapView]
+  )
+
+  // Hide header entirely in submitted view — SwapProgress has its own layout
+  if (swapView === "submitted") return null
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex-1">
-        {!["form", "approve-recipient"].includes(swapView) && (
+        {onBack && !["form", "approve-recipient"].includes(swapView) && (
           <button type="button" className="px-12 py-10" onClick={onBack}>
             <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
           </button>
@@ -38,8 +58,8 @@ export const SwapHeader = () => {
       <h3 className="text-base text-body-secondary">{title}</h3>
 
       <div className="flex flex-1 justify-end">
-        {["form", "approve-recipient"].includes(swapView) && (
-          <button type="button" className="px-12 py-10" onClick={onBack}>
+        {onClose && (
+          <button type="button" className="px-12 py-10" onClick={onClose}>
             <XIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
           </button>
         )}

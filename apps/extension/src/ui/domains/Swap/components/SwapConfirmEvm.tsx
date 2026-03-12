@@ -16,9 +16,7 @@ import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { EstimateGasExecutionError } from "viem"
-import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
 
@@ -36,7 +34,7 @@ export const SwapConfirmEvm = () => {
     selectedModule: swapModule,
     selectedQuote,
     selectedSubProtocol: subProtocol,
-    resetForm,
+    gotoSubmitted,
     erc20Approval: { data: approvalData, loading: approvalLoading, approveTx },
     incrementApprovalCounter,
   } = useSwap()
@@ -295,10 +293,8 @@ export const SwapConfirmEvm = () => {
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const { close: closeSwapTokensModal } = useSwapTokensModal()
-  const navigate = useNavigate()
   const send = useCallback(async () => {
-    if (!swapEthTx.transaction || !fromToken) return
+    if (!swapEthTx.transaction || !fromToken || !txInfo) return
 
     setIsProcessing(true)
     try {
@@ -307,11 +303,9 @@ export const SwapConfirmEvm = () => {
 
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
 
-      closeSwapTokensModal()
-      resetForm()
       if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
       if (toTokenId) activeTokensStore.setActive(toTokenId, true)
-      navigate("/tx-history")
+      gotoSubmitted({ hash, networkId: fromToken.networkId, txInfo })
     } catch (cause) {
       // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to submit swap", { cause }))
@@ -322,21 +316,11 @@ export const SwapConfirmEvm = () => {
       })
     }
     setIsProcessing(false)
-  }, [
-    closeSwapTokensModal,
-    fromToken,
-    navigate,
-    resetForm,
-    swapEthTx.transaction,
-    t,
-    toToken,
-    toTokenId,
-    txInfo,
-  ])
+  }, [fromToken, gotoSubmitted, swapEthTx.transaction, t, toToken, toTokenId, txInfo])
 
   const sendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
-      if (!swapEthTx.transaction || !fromToken) return
+      if (!swapEthTx.transaction || !fromToken || !txInfo) return
 
       setIsProcessing(true)
       try {
@@ -346,11 +330,9 @@ export const SwapConfirmEvm = () => {
         if (txInfo && txInfo.type === "swap-simpleswap")
           saveIdForMonitoring(txInfo.exchangeId, hash)
 
-        closeSwapTokensModal()
-        resetForm()
         if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
         if (toTokenId) activeTokensStore.setActive(toTokenId, true)
-        navigate("/tx-history")
+        gotoSubmitted({ hash, networkId: fromToken.networkId, txInfo })
       } catch (cause) {
         // biome-ignore lint/suspicious/noConsole: legacy
         console.error(new Error("Failed to submit swap", { cause }))
@@ -362,17 +344,7 @@ export const SwapConfirmEvm = () => {
       }
       setIsProcessing(false)
     },
-    [
-      closeSwapTokensModal,
-      fromToken,
-      navigate,
-      resetForm,
-      swapEthTx.transaction,
-      t,
-      txInfo,
-      toToken,
-      toTokenId,
-    ]
+    [fromToken, gotoSubmitted, swapEthTx.transaction, t, txInfo, toToken, toTokenId]
   )
 
   const onSwapSentToDevice = useCallback(() => setIsSwapPayloadLocked(true), [])

@@ -1,3 +1,4 @@
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -58,6 +59,29 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   // -- Token tab --
   const [tokenTab, setTokenTab] = useState("all")
 
+  // -- Submitted swap state --
+  const [submittedTxHash, setSubmittedTxHash] = useState<string | null>(null)
+  const [submittedNetworkId, setSubmittedNetworkId] = useState<string | null>(null)
+  const [submittedTxInfo, setSubmittedTxInfo] = useState<WalletTransactionInfo | null>(null)
+
+  const gotoSubmitted = useCallback(
+    ({
+      hash,
+      networkId,
+      txInfo,
+    }: {
+      hash: string
+      networkId: string
+      txInfo: WalletTransactionInfo
+    }) => {
+      setSubmittedTxHash(hash)
+      setSubmittedNetworkId(networkId)
+      setSubmittedTxInfo(txInfo)
+      setSwapView("submitted")
+    },
+    []
+  )
+
   // -- Actions --
   const [approvalCounter, setApprovalCounter] = useState(0)
   const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
@@ -75,6 +99,9 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setTokenTab("all")
     setApprovalCounter(0)
     resetFromAddressManuallySet()
+    setSubmittedTxHash(null)
+    setSubmittedNetworkId(null)
+    setSubmittedTxInfo(null)
   }, [resetFromAddressManuallySet])
 
   // -- Async data hooks --
@@ -224,6 +251,12 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     approvalCounter,
     setApprovalCounter,
     incrementApprovalCounter,
+    gotoSubmitted,
+
+    // Submitted swap state
+    submittedTxHash,
+    submittedNetworkId,
+    submittedTxInfo,
 
     // Async state
     fromAssetIds,
