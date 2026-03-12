@@ -414,7 +414,7 @@ export const SwapConfirmEvm = () => {
             </Button>
           )
         ) : // --- Swap Phase ---
-        isExchangeLoading || isProcessing ? (
+        isExchangeLoading || isProcessing || (!evmTx && !exchangeError) ? (
           <Button className="w-full" primary disabled>
             <LoaderIcon className="animate-spin-slow text-lg" />
           </Button>

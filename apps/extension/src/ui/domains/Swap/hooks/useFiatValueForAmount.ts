@@ -1,13 +1,13 @@
 import type { TokenRateData, TokenRates } from "@talismn/token-rates"
-import { planckToTokens } from "@talismn/util"
+import { isNotNil, planckToTokens } from "@talismn/util"
 import { useToken, useTokensMap } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 
 type UseFiatValueForAmountProps = {
-  planck?: bigint
-  tokenId?: string | null
+  planck: bigint | null | undefined
+  tokenId: string | null | undefined
   usdOverride?: number
 }
 export const useFiatValueForAmount = ({
@@ -43,7 +43,7 @@ export const useFiatValueForAmount = ({
   }, [token, rates, tokens])
 
   return useMemo(() => {
-    if (!token) return null
+    if (!token || !isNotNil(planck)) return null
     if (!bestGuessRate || planck === undefined) return fiatOverride?.[currency]?.price
     const rateInCurrency = bestGuessRate[currency]?.price
     if (!rateInCurrency) return null
