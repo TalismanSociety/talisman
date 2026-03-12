@@ -95,37 +95,36 @@ const SwapProviderQuoteButton: FC<{
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full flex-col justify-between rounded-[12px] bg-grey-900 px-[12px] py-[10px] transition-colors hover:bg-grey-800"
+      className="flex w-full flex-col justify-between gap-5 rounded bg-grey-900 px-6 py-5 transition-colors hover:bg-grey-800"
     >
       {/* Top row: provider info + badge + radio */}
-      <div className="flex w-full items-start justify-between">
-        <div className="flex flex-col items-start gap-[10px]">
-          <div className="flex items-center gap-[8px]">
-            <img src={quote.providerLogo} alt="" className="size-[24px] shrink-0 rounded-full" />
-            <span className="font-semibold text-[14px] text-white">{quote.providerName}</span>
-          </div>
-          <div className="flex items-center gap-[4px]">
-            <Tokens
-              className="font-semibold text-[14px] text-white"
-              amount={toAmountFormatted}
-              symbol={toToken.symbol}
-              noCountUp
-            />
-            {toFiat !== null && (
-              <span className="text-[12px] text-body-secondary">
-                ≈ <Fiat amount={toFiat} noCountUp />
-              </span>
-            )}
-          </div>
+      <div className="flex w-full items-center justify-between">
+        <div className="flex items-center gap-4">
+          <img src={quote.providerLogo} alt="" className="size-12 shrink-0 rounded-full" />
+          <span className="font-semibold text-[14px] text-white">{quote.providerName}</span>
         </div>
         <div className="flex items-center gap-[8px]">
           {isBestRate && (
-            <div className="rounded-[24px] bg-[rgba(108,252,105,0.1)] px-[8px] py-[6px]">
+            <div className="flex h-10 items-center rounded-full bg-[rgba(108,252,105,0.1)] px-4">
               <span className="whitespace-nowrap text-[#ddff76] text-[11px]">{t("Best Rate")}</span>
             </div>
           )}
           <RadioIndicator selected={isSelected} />
         </div>
+      </div>
+
+      <div className="flex items-center gap-[4px]">
+        <Tokens
+          className="font-semibold text-[14px] text-white"
+          amount={toAmountFormatted}
+          symbol={toToken.symbol}
+          noCountUp
+        />
+        {toFiat !== null && (
+          <span className="text-[12px] text-body-secondary">
+            ≈ <Fiat amount={toFiat} noCountUp />
+          </span>
+        )}
       </div>
 
       {/* Bottom row: rate, fee, time */}
