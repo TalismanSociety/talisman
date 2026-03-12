@@ -153,10 +153,8 @@ const SwapProviderButton = memo(
           </span>
         </div>
         {showBestRate && (
-          <div className="shrink-0 rounded-[24px] bg-[rgba(108,252,105,0.1)] px-[8px] py-[4px]">
-            <span className="whitespace-nowrap font-semibold text-[#ddff76] text-[11px]">
-              {t("Best Rate")}
-            </span>
+          <div className="shrink-0 whitespace-nowrap rounded-full bg-primary/10 px-4 py-2 font-semibold text-primary text-xs">
+            {t("Best Rate")}
           </div>
         )}
         <ChevronRightIcon className="h-[20px] w-[20px] shrink-0 text-body-secondary" />
