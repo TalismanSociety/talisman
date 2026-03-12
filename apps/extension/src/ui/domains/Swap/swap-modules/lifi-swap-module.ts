@@ -1,6 +1,6 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
-import type { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
@@ -27,42 +27,14 @@ import {
   type SupportedSwapProtocol,
   type SwapModule,
 } from "./common.swap-module"
+import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 
 const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
-const TALISMAN_FEE = 0.002 // We take a fee of 0.2%
-const LIFI_FEE = 0.0025 // lifi takes a fee of 0.25%
 
 lifiSdk.createConfig({ integrator: "talisman", apiUrl })
-
-type RouteProps = {
-  fromAssetId?: TokenId
-  toAssetId?: TokenId
-}
-const customFeeForRoute = async ({
-  fromAssetId,
-  toAssetId,
-}: RouteProps): Promise<number | undefined> => {
-  const lifiCustomFeeTokens = (await remoteConfigStore.get("swaps"))?.lifiCustomFeeTokens ?? {}
-
-  // prefer toAsset fee
-  const toFee = toAssetId && lifiCustomFeeTokens[toAssetId]
-  if (typeof toFee === "number") return toFee
-
-  // fall back to fromAsset fee
-  const fromFee = fromAssetId && lifiCustomFeeTokens[fromAssetId]
-  if (typeof fromFee === "number") return fromFee
-
-  // use default fee
-  return undefined
-}
-const getTalismanFee = async (route: RouteProps) => {
-  const customFee = await customFeeForRoute(route)
-  if (customFee !== undefined) return customFee
-  return TALISMAN_FEE
-}
 
 // --- Helper to get a viem PublicClient for an EVM network ---
 const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {

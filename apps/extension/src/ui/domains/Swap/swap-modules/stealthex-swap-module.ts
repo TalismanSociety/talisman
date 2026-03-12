@@ -42,6 +42,11 @@ import {
   type SwappableAssetBaseType,
   validateAddress,
 } from "./common.swap-module"
+import {
+  STEALTHEX_BUILT_IN_FEE as BUILT_IN_FEE,
+  getStealthexAdditionalFeePercent,
+  getStealthexTalismanTotalFee,
+} from "./fee-utils"
 import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
@@ -65,38 +70,9 @@ type StealthexInternalAsset = SwappableAssetBaseType<{ stealthex: AssetContext }
 }
 
 type FeeProps = { fromAsset: StealthexInternalAsset; toAsset: StealthexInternalAsset }
-const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {
-  const isSubToOrFromEvm =
-    (fromAsset.networkType === "substrate" && toAsset.networkType === "evm") ||
-    (fromAsset.networkType === "evm" && toAsset.networkType === "substrate")
 
-  const isSubToOrFromSub =
-    (fromAsset.networkType === "substrate" && toAsset.networkType === "substrate") ||
-    (fromAsset.networkType === "substrate" && toAsset.networkType === "substrate")
-
-  const isEvmToOrFromEvm =
-    (fromAsset.networkType === "evm" && toAsset.networkType === "evm") ||
-    (fromAsset.networkType === "evm" && toAsset.networkType === "evm")
-
-  if (isSubToOrFromEvm) return 0.006 // 0.6% total fee for sub<>evm
-  if (isSubToOrFromSub) return 0.005 // 0.5% total fee for sub<>sub
-  if (isEvmToOrFromEvm) return 0.002 // 0.2% total fee for evm<>evm (NOTE: will actually be 0.4%, as that is the minimum we can set via stealthex for now)
-  return 0.01 // 1.0% total fee by default
-}
-const BUILT_IN_FEE = 0.004 // StealthEX always includes an affiliate fee of 0.4%
-const getAdditionalFee = (feeProps: FeeProps) =>
-  Math.max(
-    // we want a total fee of x,
-    // so get the total talisman fee for this route,
-    // then subtract the built-in fee of 0.4%, which is applied to all exchanges made via stealthex
-    getTalismanTotalFee(feeProps) - BUILT_IN_FEE,
-    // if the talisman total fee is less than the built-in fee, default to an additional_fee of 0.0
-    0
-  )
-// Our UI represents a 1% fee as `0.01`, but the StealthEX api represents a 1% fee as `1.0`.
-// 1.0 = 0.01 * 100
-const decimalToPercent = (decimal: number) => Math.round(decimal * 100 * 100) / 100
-const getAdditionalFeePercent = (feeProps: FeeProps) => decimalToPercent(getAdditionalFee(feeProps)) // to percent
+const getTalismanTotalFee = (feeProps: FeeProps) => getStealthexTalismanTotalFee(feeProps)
+const getAdditionalFeePercent = (feeProps: FeeProps) => getStealthexAdditionalFeePercent(feeProps)
 
 const LOGO = stealthexLogo
 

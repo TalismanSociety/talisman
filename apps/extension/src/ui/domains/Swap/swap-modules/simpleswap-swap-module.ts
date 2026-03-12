@@ -48,25 +48,16 @@ import {
   validateAddress,
 } from "./common.swap-module"
 import type { QuoteResponse } from "./common.swap-module.ts"
+import { getSimpleSwapApiKey as getApiKeyFromUtils, getSimpleSwapTalismanFee } from "./fee-utils"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
 const PROTOCOL: SupportedSwapProtocol = "simpleswap"
 const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
-const TALISMAN_FEE = 0.015
-const TALISMAN_FEE_DISCOUNTED = 0.004
 
 type RouteProps = { currencyFrom: string; currencyTo: string }
-const discountedRoute = async ({ currencyFrom, currencyTo }: RouteProps) => {
-  const { simpleswapDiscountedCurrencies: discounted = [] } = await remoteConfigStore.get("swaps")
-  return discounted.includes(currencyFrom) || discounted.includes(currencyTo)
-}
-const getTalismanFee = async (route: RouteProps) =>
-  (await discountedRoute(route)) ? TALISMAN_FEE_DISCOUNTED : TALISMAN_FEE
-const getApiKey = async (route: RouteProps) =>
-  (await discountedRoute(route))
-    ? (await remoteConfigStore.get("swaps")).simpleswapApiKeyDiscounted
-    : (await remoteConfigStore.get("swaps")).simpleswapApiKey
+const getTalismanFee = (route: RouteProps) => getSimpleSwapTalismanFee(route)
+const getApiKey = (route: RouteProps) => getApiKeyFromUtils(route)
 
 const LOGO = simpleswapLogo
 
