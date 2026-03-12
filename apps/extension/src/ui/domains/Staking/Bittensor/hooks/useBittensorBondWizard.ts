@@ -16,7 +16,7 @@ import { usePortfolioBalances } from "@ui/state/portfolio"
 import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
@@ -231,18 +231,23 @@ const useBittensorBondWizardProvider = () => {
     []
   )
 
-  const setHotkey = useCallback(
-    (hotkey: string) => setWizardState((prev) => ({ ...prev, hotkey })),
-    []
-  )
+  const isHotkeyAutoSelected = useRef(true)
+
+  const setHotkey = useCallback((hotkey: string) => {
+    isHotkeyAutoSelected.current = false
+    setWizardState((prev) => ({ ...prev, hotkey }))
+  }, [])
+
   const setNetuid = useCallback(
-    (netuid: number) =>
+    (netuid: number) => {
+      isHotkeyAutoSelected.current = true
       setWizardState((prev) => ({
         ...prev,
         netuid,
         stakeType: netuid ? "subnet" : "root",
         hotkey: defaultValidatorsBySubnet[netuid] ?? defaultValidators[0] ?? prev.hotkey,
-      })),
+      }))
+    },
     [defaultValidators, defaultValidatorsBySubnet]
   )
 
@@ -280,7 +285,12 @@ const useBittensorBondWizardProvider = () => {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    if (!!currentHotkey && !hotkey && currentHotkey !== hotkey && stakeDirection === "bond") {
+    if (
+      !!currentHotkey &&
+      isHotkeyAutoSelected.current &&
+      currentHotkey !== hotkey &&
+      stakeDirection === "bond"
+    ) {
       setWizardState((prev) => ({ ...prev, hotkey: currentHotkey }))
     }
   }, [currentHotkey, hotkey, stakeDirection, step])
