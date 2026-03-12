@@ -200,7 +200,7 @@ const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | 
   }
 }
 
-type LifiRouteQuote = BaseQuote<lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest }>
+type LifiRouteQuote = BaseQuote<lifiSdk.Route>
 
 const getRouteQuote = async (
   route: lifiSdk.Route,
@@ -209,9 +209,6 @@ const getRouteQuote = async (
 ): Promise<LifiRouteQuote | null> => {
   const step = route.steps[0]
   if (!step) return null
-
-  const transaction = await lifiSdk.getStepTransaction(step)
-  if (!transaction?.transactionRequest) return null
 
   const fromAsset = resolveAsset(fromTokenId)
   if (!fromAsset) return null
@@ -278,7 +275,7 @@ const getRouteQuote = async (
     providerLogo: step.toolDetails.logoURI,
     providerName: step.toolDetails.name,
     talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
-    data: { ...route, transactionRequest: transaction.transactionRequest },
+    data: route,
     maxNativeTokenGasBuffer: totalGasLimit,
   }
 }
@@ -306,8 +303,8 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
 const getApprovalInfo = (
   params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
 ): ApprovalInfo => {
-  const { fromTokenId, selectedSubProtocol, quoteData } = params
-  if (!fromTokenId) return null
+  const { fromTokenId, fromAddress, selectedSubProtocol, quoteData } = params
+  if (!fromTokenId || !fromAddress) return null
   const fromAsset = resolveAsset(fromTokenId)
   if (!quoteData || !fromAsset || !fromAsset.contractAddress) return null
 
@@ -315,24 +312,18 @@ const getApprovalInfo = (
     ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)
     : quoteData
 
-  const lifiData = quoteItem?.data as
-    | (lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest })
-    | undefined
-  if (!lifiData?.transactionRequest) return null
+  const lifiData = quoteItem?.data as lifiSdk.Route | undefined
+  if (!lifiData) return null
 
-  const contractAddress = lifiData.transactionRequest.to
-  const chainId = lifiData.transactionRequest.chainId
-  const txFromAddress = lifiData.transactionRequest.from
-  if (!contractAddress || chainId === undefined || !txFromAddress) return null
-
-  const amount = BigInt(lifiData.fromAmount)
+  const step = lifiData.steps[0]
+  if (!step?.estimate.approvalAddress) return null
 
   return {
-    contractAddress,
-    amount,
+    contractAddress: step.estimate.approvalAddress,
+    amount: BigInt(lifiData.fromAmount),
     tokenAddress: fromAsset.contractAddress,
-    chainId,
-    fromAddress: txFromAddress,
+    chainId: step.action.fromChainId,
+    fromAddress,
     protocolName: PROTOCOL_NAME,
   }
 }
@@ -340,11 +331,8 @@ const getApprovalInfo = (
 const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
   try {
     const { fromTokenId, fromAddress, exchange: quoteData } = params
-    type LifiQuoteData = BaseQuote<
-      lifiSdk.Route & { transactionRequest: lifiSdk.TransactionRequest }
-    >
-    const selectedQuote = quoteData as LifiQuoteData | undefined
-    if (!selectedQuote?.data?.transactionRequest) {
+    const selectedQuote = quoteData as BaseQuote<lifiSdk.Route> | undefined
+    if (!selectedQuote?.data) {
       throw new Error("Please select the quote again")
     }
 
@@ -352,7 +340,12 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
     const fromAsset = resolveAsset(fromTokenId)
     if (!fromAsset) throw new Error("Not supported on Lifi")
 
-    const txRequest = selectedQuote.data.transactionRequest
+    const step = selectedQuote.data.steps[0]
+    if (!step) throw new Error("No step found in route")
+
+    // Fetch fresh transaction calldata from LiFi at confirmation time
+    const transaction = await lifiSdk.getStepTransaction(step)
+    const txRequest = transaction?.transactionRequest
     if (
       !txRequest ||
       txRequest.to === undefined ||
