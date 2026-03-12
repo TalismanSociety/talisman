@@ -71,7 +71,7 @@ const Details = () => {
   }, [sortedQuotes, selectedProtocol, selectedSubProtocol])
 
   if (hasQuoteError && sortedQuotes.length === 0) {
-    return <SwapProviderError message={"No route found. Try larger amount."} />
+    return <SwapProviderError message={t("No route found. Try larger amount.")} />
   }
   if (sortedQuotes.length === 0 && isAllQuotesSettled)
     return <SwapProviderError message={t("Pair is unavailable.")} />

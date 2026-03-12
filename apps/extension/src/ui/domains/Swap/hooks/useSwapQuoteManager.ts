@@ -67,6 +67,7 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString(),
         fromAddress,
         toAddress,
+        selectedSubProtocol,
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(

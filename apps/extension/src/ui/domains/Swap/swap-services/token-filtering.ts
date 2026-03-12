@@ -37,7 +37,16 @@ export const getTokenTabs = ({
   {
     value: "all",
     label: t("All tokens"),
-    sort: curatedTokens ? (a, b) => curatedTokens.indexOf(a) - curatedTokens.indexOf(b) : undefined,
+    sort: curatedTokens
+      ? (a, b) => {
+          const ia = curatedTokens.indexOf(a)
+          const ib = curatedTokens.indexOf(b)
+          if (ia === -1 && ib === -1) return 0
+          if (ia === -1) return 1
+          if (ib === -1) return -1
+          return ia - ib
+        }
+      : undefined,
   },
   {
     value: "popular",

@@ -624,7 +624,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       decentralisationScore: DECENTRALISATION_SCORE,
       protocol: PROTOCOL,
       inputAmountBN: fromAmount,
-      outputAmountBN: parseUserInputToPlanck(String(estimate), toAsset.decimals),
+      outputAmountBN: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
       // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
       timeInSec: 5 * 60,
       fees,
@@ -744,7 +744,7 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
     if (!evmNetwork) throw new Error("Network not supported")
 
     const depositAmount = parseUserInputToPlanck(
-      String(exchange.deposit.expected_amount),
+      BigNumber(exchange.deposit.expected_amount).toFixed(),
       fromAsset.decimals
     )
 
@@ -797,7 +797,7 @@ const getSubstratePayload = async (
     if (fromAsset.networkType !== "substrate") return null
 
     const depositAmount = parseUserInputToPlanck(
-      String(exchange.deposit.expected_amount),
+      BigNumber(exchange.deposit.expected_amount).toFixed(),
       fromAsset.decimals
     )
 

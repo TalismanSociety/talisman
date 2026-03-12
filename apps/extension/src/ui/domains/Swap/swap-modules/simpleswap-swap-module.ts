@@ -771,8 +771,9 @@ const createExchange = async (params: ExchangeParams): Promise<Exchange | undefi
       throw new Error("Incorrect currencies from provider. Please try again later")
     }
     if (
-      +exchange.expected_amount >
-      Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0")
+      BigNumber(exchange.expected_amount).isGreaterThan(
+        planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"
+      )
     )
       throw new Error("Quote changed. Please try again.")
     if (exchange.address_to !== formattedToAddress)

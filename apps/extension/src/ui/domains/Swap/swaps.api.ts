@@ -85,8 +85,17 @@ export const useSwapAssets = (
   // Use fromAssetsQuery's support map to filter modules for toAssetsQuery
   const fromSupportMapInternal = fromAssetsQuery.data?.supportMap ?? null
 
+  const fromSupportMapSize = fromSupportMapInternal?.size ?? 0
+
   const toAssetsQuery = useQuery({
-    queryKey: ["swap-to-assets", fromTokenId, tokenTab, safeTokens.size, tokensCount],
+    queryKey: [
+      "swap-to-assets",
+      fromTokenId,
+      tokenTab,
+      safeTokens.size,
+      tokensCount,
+      fromSupportMapSize,
+    ],
     queryFn: async ({ signal }) => {
       const modules = swapModules.filter((m) =>
         fromTokenId && fromSupportMapInternal

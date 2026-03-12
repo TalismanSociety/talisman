@@ -49,23 +49,30 @@ export type CoingeckoCoinDetail = {
 
 // ─── API functions ──────────────────────────────────────────────────
 
+async function fetchCoingeckoJson<T>(url: string, headers: Record<string, string>): Promise<T> {
+  const response = await fetch(url, { headers })
+  if (!response.ok)
+    throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`)
+  return response.json()
+}
+
 export async function fetchCoingeckoAssetPlatforms(): Promise<CoingeckoAssetPlatform[]> {
   return cachedFetch("coingecko-asset-platforms", async () => {
     const { apiUrl, apiKeyName, apiKeyValue } = await getCoingeckoConfig()
-    const response = await fetch(`${apiUrl}/api/v3/asset_platforms`, {
-      headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {},
-    })
-    return response.json()
+    return fetchCoingeckoJson(
+      `${apiUrl}/api/v3/asset_platforms`,
+      apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {}
+    )
   })
 }
 
 export async function fetchCoingeckoList(): Promise<CoingeckoCoin[]> {
   return cachedFetch("coingecko-list", async () => {
     const { apiUrl, apiKeyName, apiKeyValue } = await getCoingeckoConfig()
-    const response = await fetch(`${apiUrl}/api/v3/coins/list?include_platform=true`, {
-      headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {},
-    })
-    return response.json()
+    return fetchCoingeckoJson(
+      `${apiUrl}/api/v3/coins/list?include_platform=true`,
+      apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {}
+    )
   })
 }
 
@@ -74,11 +81,10 @@ export async function fetchCoingeckoCoinsByCategory(
 ): Promise<CoingeckoCategoryItem[]> {
   return cachedFetch(`coingecko-category-${category}`, async () => {
     const { apiUrl, apiKeyName, apiKeyValue } = await getCoingeckoConfig()
-    const response = await fetch(
+    return fetchCoingeckoJson(
       `${apiUrl}/api/v3/coins/markets?vs_currency=usd&category=${category}&include_platform=true`,
-      { headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {} }
+      apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {}
     )
-    return response.json()
   })
 }
 
@@ -88,9 +94,9 @@ export async function fetchCoingeckoCoinByAddress(
 ): Promise<CoingeckoCoinDetail> {
   return cachedFetch(`coingecko-coin-${address}:${platformId}`, async () => {
     const { apiUrl, apiKeyName, apiKeyValue } = await getCoingeckoConfig()
-    const response = await fetch(`${apiUrl}/api/v3/coins/${platformId}/contract/${address}`, {
-      headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {},
-    })
-    return response.json()
+    return fetchCoingeckoJson(
+      `${apiUrl}/api/v3/coins/${platformId}/contract/${address}`,
+      apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {}
+    )
   })
 }
