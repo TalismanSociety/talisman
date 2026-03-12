@@ -471,7 +471,6 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
     return isSpecialAsset
   })
   const knownTokens = await firstValueFrom(getTokensMap$())
-  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
 
   const result = Object.values(
     supportedTokens.reduce(
@@ -489,22 +488,17 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
         const chainId = evmNetworkId ? Number(evmNetworkId) : polkadotAsset?.chainId
         if (!id || !chainId) return acc
 
-        const evmNetwork = evmNetworkId ? knownEvmNetworks[evmNetworkId] : undefined
-        const image =
-          (knownTokens[id]?.logo !== UNKNOWN_TOKEN_URL ? knownTokens[id]?.logo : undefined) ??
-          currency.image
-        const asset: SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }> = {
+        const token = knownTokens[id]
+        if (!token) return acc
+
+        const asset: SimpleswapInternalAsset = {
           id,
-          name: polkadotAsset?.name ?? currency.name,
-          symbol: polkadotAsset?.symbol ?? currency.symbol,
-          decimals:
-            polkadotAsset?.decimals ??
-            evmNetwork?.nativeCurrency?.decimals ??
-            currency.precision ??
-            undefined,
+          name: token.name ?? currency.name,
+          symbol: token.symbol,
+          decimals: token.decimals,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
-          image,
+          image: (token.logo !== UNKNOWN_TOKEN_URL ? token.logo : undefined) ?? currency.image,
           networkType: evmNetworkId ? "evm" : (polkadotAsset?.networkType ?? "substrate"),
           assetHubAssetId: polkadotAsset?.assetHubAssetId,
           context: {
@@ -516,18 +510,15 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
         // biome-ignore lint/performance/noAccumulatingSpread: legacy
         return { ...acc, [id]: asset }
       },
-      {} as Record<string, SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>>
+      {} as Record<string, SimpleswapInternalAsset>
     )
   )
 
-  // Only keep assets that have decimals (required for amount conversion)
-  const withDecimals = result.filter((a): a is SimpleswapInternalAsset => a.decimals !== undefined)
-
   // Populate the lookup cache
   assetsByTokenId.clear()
-  for (const asset of withDecimals) assetsByTokenId.set(asset.id, asset)
+  for (const asset of result) assetsByTokenId.set(asset.id, asset)
 
-  return withDecimals
+  return result
 }
 
 const pairKeyFromPair = (pair: string) => pair.toLowerCase()

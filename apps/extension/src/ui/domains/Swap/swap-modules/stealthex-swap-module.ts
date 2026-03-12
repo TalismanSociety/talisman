@@ -437,7 +437,6 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
     return isSpecialAsset
   })
   const knownTokens = await firstValueFrom(getTokensMap$())
-  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
 
   const result = Object.values(
     supportedTokens.reduce(
@@ -455,22 +454,17 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
         const chainId = evmNetworkId ? Number(evmNetworkId) : specialAsset?.chainId
         if (!id || !chainId) return acc
 
-        const evmNetwork = evmNetworkId ? knownEvmNetworks[evmNetworkId] : undefined
-        const image =
-          (knownTokens[id]?.logo !== UNKNOWN_TOKEN_URL ? knownTokens[id]?.logo : undefined) ??
-          currency.icon_url
-        const asset: SwappableAssetBaseType<{ stealthex: AssetContext }> = {
+        const token = knownTokens[id]
+        if (!token) return acc
+
+        const asset: StealthexInternalAsset = {
           id,
-          name: specialAsset?.name ?? currency.name,
-          symbol: specialAsset?.symbol ?? currency.symbol,
-          decimals:
-            specialAsset?.decimals ??
-            evmNetwork?.nativeCurrency?.decimals ??
-            currency?.precision ??
-            undefined,
+          name: token.name ?? currency.name,
+          symbol: token.symbol,
+          decimals: token.decimals,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
-          image,
+          image: (token.logo !== UNKNOWN_TOKEN_URL ? token.logo : undefined) ?? currency.icon_url,
           networkType: evmNetworkId ? "evm" : (specialAsset?.networkType ?? "substrate"),
           assetHubAssetId: specialAsset?.assetHubAssetId,
           context: {
@@ -483,18 +477,15 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
         // biome-ignore lint/performance/noAccumulatingSpread: legacy
         return { ...acc, [id]: asset }
       },
-      {} as Record<string, SwappableAssetBaseType<{ stealthex: AssetContext }>>
+      {} as Record<string, StealthexInternalAsset>
     )
   )
 
-  // Only keep assets that have decimals (required for amount conversion)
-  const withDecimals = result.filter((a): a is StealthexInternalAsset => a.decimals !== undefined)
-
   // Populate the lookup cache
   assetsByTokenId.clear()
-  for (const asset of withDecimals) assetsByTokenId.set(asset.id, asset)
+  for (const asset of result) assetsByTokenId.set(asset.id, asset)
 
-  return withDecimals
+  return result
 }
 
 type PairItem = NonNullable<StealthexCurrency["available_routes"]>[number]

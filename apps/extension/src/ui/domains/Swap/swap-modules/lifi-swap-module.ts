@@ -125,19 +125,20 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
   const result = Object.entries(allSdkTokens)
     .filter(([chainId]) => knownEvmNetworks[chainId])
     .flatMap(([chainId, tokens]): LifiInternalAsset[] =>
-      tokens.map((token) => {
-        const contractAddress = token.address === zeroAddress ? undefined : token.address
+      tokens.flatMap((sdkToken) => {
+        const contractAddress = sdkToken.address === zeroAddress ? undefined : sdkToken.address
         const id = getTokenIdForSwappableAsset("evm", chainId, contractAddress)
-        const symbol = knownTokens[id]?.symbol ?? token.symbol
-        const decimals = knownTokens[id]?.decimals ?? token.decimals
+
+        const token = knownTokens[id]
+        if (!token) return []
 
         return {
           tokenId: id,
           chainId,
           contractAddress,
-          decimals,
-          symbol,
-          lifiToken: token,
+          decimals: token.decimals,
+          symbol: token.symbol,
+          lifiToken: sdkToken,
         }
       })
     )
