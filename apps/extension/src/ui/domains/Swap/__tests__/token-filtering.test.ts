@@ -27,16 +27,10 @@ describe("buildAssetRegistry", () => {
     expect(result.supportMap.get("tok-1")?.has("simpleswap")).toBe(true)
   })
 
-  it("excludes tokenIds not in tokensMap (and not BTC)", () => {
+  it("excludes tokenIds not in tokensMap", () => {
     const result = buildAssetRegistry([["simpleswap", ["tok-unknown"]]], {})
 
     expect(result.tokenIds).toHaveLength(0)
-  })
-
-  it("handles BTC native token without tokensMap entry", () => {
-    const result = buildAssetRegistry([["simpleswap", ["btc-native"]]], {})
-
-    expect(result.tokenIds).toContain("btc-native")
   })
 
   it("merges protocols from multiple modules for the same tokenId", () => {

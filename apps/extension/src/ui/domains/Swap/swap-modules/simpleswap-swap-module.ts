@@ -211,13 +211,6 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     symbol: "ANLOG",
     networkType: "substrate",
   },
-  btc: {
-    id: "btc-native",
-    name: "Bitcoin",
-    chainId: "bitcoin",
-    symbol: "BTC",
-    networkType: "btc",
-  },
   /** SS expects substrate address when swapping ASTR */
   astr: {
     id: subNativeTokenId("astar"),
@@ -605,10 +598,6 @@ const estimateGas = async (
     return null
   }
 
-  // cannot swap from BTC
-  const swappingFromBtc = fromAsset.id === "btc-native"
-  if (swappingFromBtc) return null
-
   // TODO: re-add substrate gas estimation
   // Previously used apiPromiseAtom to get an ApiPromise for the chain and estimate fees.
   // This needs to be re-implemented with chain connectors outside of Jotai.
@@ -752,9 +741,6 @@ const createExchange = async (params: ExchangeParams): Promise<Exchange | undefi
     const toChain = substrateChains.find((c) => c.id.toString() === String(toAsset.chainId))
     if (!validateAddress(toAccount, formattedToAddress, toChain, toAsset.networkType))
       throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${formattedToAddress}`)
-
-    // cannot swap from BTC
-    if (fromAsset.networkType === "btc") throw new Error("Swapping from BTC is not supported.")
 
     const exchange = await simpleSwapSdk.createExchange({
       fixed: false,

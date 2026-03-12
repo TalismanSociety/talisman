@@ -14,7 +14,7 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
+import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
@@ -139,7 +139,7 @@ export const validateAddress = (
   account: Account | undefined,
   address: string,
   network: Network | undefined,
-  networkType: "evm" | "substrate" | "btc"
+  networkType: "evm" | "substrate"
 ) => {
   if (network) {
     if (account) return isAccountCompatibleWithNetwork(network, account)
@@ -153,8 +153,6 @@ export const validateAddress = (
       return account
         ? network && isAccountCompatibleWithNetwork(network, account)
         : isSs58Address(address)
-    case "btc":
-      return isBitcoinAddress(address)
     default:
       throw new Error("Invalid network type")
   }
@@ -163,7 +161,7 @@ export const validateAddress = (
 // helpers — module-internal use only
 
 export const getTokenIdForSwappableAsset = (
-  chainType: "substrate" | "evm" | "btc",
+  chainType: "substrate" | "evm",
   chainId: number | string,
   contractAddress?: string
 ) => {
@@ -174,8 +172,6 @@ export const getTokenIdForSwappableAsset = (
         : evmNativeTokenId(chainId.toString())
     case "substrate":
       return subNativeTokenId(chainId.toString())
-    case "btc":
-      return "btc-native"
     default:
       return "not-supported"
   }
@@ -193,7 +189,7 @@ export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtoc
   contractAddress?: string
   assetHubAssetId?: string
   image?: string
-  networkType: "evm" | "substrate" | "btc"
+  networkType: "evm" | "substrate"
   /** protocol modules can store context here, like any special identifier */
   context: TContext
   decimals?: number

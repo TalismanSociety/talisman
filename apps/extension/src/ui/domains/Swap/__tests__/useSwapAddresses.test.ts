@@ -86,8 +86,6 @@ function mockTokenForId(tokenId: string | undefined) {
     return { id: tokenId, platform: "ethereum", type: "evm-native", networkId: "1" }
   if (tokenId === "sub-token")
     return { id: tokenId, platform: "polkadot", type: "substrate-native", networkId: "polkadot" }
-  if (tokenId === "btc-native")
-    return { id: tokenId, platform: undefined, type: "btc-native", networkId: "btc" }
   return null
 }
 
@@ -178,13 +176,6 @@ describe("useSwapAddresses — auto-select from address", () => {
 
     // First EVM account is selected (all tied at 0n)
     expect(setFromAddress).toHaveBeenCalledWith("0xAAA")
-  })
-
-  it("sets null for BTC assets (no compatible accounts)", () => {
-    const setFromAddress = vi.fn()
-    renderHook(() => useSwapAddresses(defaultProps({ fromTokenId: "btc-native", setFromAddress })))
-
-    expect(setFromAddress).toHaveBeenCalledWith(null)
   })
 
   it("does not auto-select after user manually picks an account", () => {

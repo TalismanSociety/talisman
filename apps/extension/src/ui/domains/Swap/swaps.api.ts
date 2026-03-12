@@ -69,9 +69,14 @@ export const useSwapAssets = (
         })
       )
       const registry = buildAssetRegistry(moduleResults, tokensMap)
-      // Filter out BTC from "from" assets
-      const filtered = registry.tokenIds.filter((id) => id !== "btc-native")
-      const sorted = await filterAndSortTokens(filtered, tokensMap, "", safeTokens, tokenTab, t)
+      const sorted = await filterAndSortTokens(
+        registry.tokenIds,
+        tokensMap,
+        "",
+        safeTokens,
+        tokenTab,
+        t
+      )
       return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
     },
     enabled: tokensCount > 0,

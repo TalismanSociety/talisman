@@ -1,4 +1,5 @@
 import { isAccountOwned } from "@core/domains/keyring/exports"
+import type { Balance } from "@talismn/balances"
 import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon, ArrowUpDownIcon, LoaderIcon } from "@talismn/icons"
 import { cn, isNotNil, planckToTokens, tokensToPlanck } from "@talismn/util"
@@ -15,11 +16,9 @@ import { ReverseButton } from "./ReverseButton"
 import { SelectTokenButton } from "./SelectTokenButton"
 import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
 import { SwapDetails } from "./SwapDetails"
-import { TokenAmountInput } from "./TokenAmountInput"
 
 const tokenAccountsType = (token: { platform?: string; id?: string } | null | undefined) => {
   if (!token) return "all"
-  if (token.id === "btc-native") return "btc"
   if (token.platform === "ethereum") return "ethereum"
   return "substrate"
 }
@@ -30,6 +29,7 @@ export const SwapForm = () => {
   const {
     swapView,
     fromBalance,
+    toBalance,
     setSwapView,
     selectedQuote,
     fromAddress,
@@ -91,17 +91,13 @@ export const SwapForm = () => {
     return fromAmount > fromBalance.transferable.planck
   }, [fromBalance, fromAmount])
 
-  const isSwappingFromBtc = fromTokenId === "btc-native"
-  // const shouldShowFromAccount = !!fromTokenId && !isSwappingFromBtc
-  const shouldShowToAccount = !!fromTokenId && !!toTokenId && !isSwappingFromBtc
+  const _shouldShowToAccount = !!fromTokenId && !!toTokenId
   const fromNetworkType =
     fromToken?.platform === "ethereum"
       ? "evm"
       : fromToken?.platform === "polkadot"
         ? "substrate"
-        : fromTokenId === "btc-native"
-          ? "btc"
-          : null
+        : null
   const hasError =
     insufficientBalance === true ||
     (hasQuoteError && sortedQuotes.length === 0) ||
@@ -111,40 +107,76 @@ export const SwapForm = () => {
 
   return (
     <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
-      <TokenAndAmountContainer
-        tokenButton={
-          <SelectTokenButton
-            onSelectTokenId={setFromTokenId}
-            selectedTokenId={fromTokenId}
-            assetIds={fromAssetIds}
-            priorityMode="sell"
-          />
-        }
-        tokenAmount={<InputFromAmount />}
-        accountButton={
-          <SeparatedAccountSelector
-            compact
-            title={t("Sender")}
-            subtitle={t("From")}
-            tokenId={fromTokenId}
-            accountsType={tokenAccountsType(fromToken)}
-            disableBtc
-            substrateAccountPrefix={0}
-            substrateAccountsFilter={isAccountOwned}
-            evmAccountsFilter={isAccountOwned}
-            value={fromAddress}
-            onAccountChange={setFromAddress}
-          />
-        }
-        accountBalance={<AvailableFromBalance />}
-        isError={!!insufficientBalance}
-      />
+      <div className="relative flex flex-col gap-6">
+        <TokenAndAmountContainer
+          tokenButton={
+            <SelectTokenButton
+              onSelectTokenId={setFromTokenId}
+              selectedTokenId={fromTokenId}
+              assetIds={fromAssetIds}
+              priorityMode="sell"
+            />
+          }
+          tokenAmount={<InputFromAmount />}
+          accountButton={
+            <SeparatedAccountSelector
+              compact
+              title={t("Sender")}
+              subtitle={t("From")}
+              tokenId={fromTokenId}
+              accountsType={tokenAccountsType(fromToken)}
+              substrateAccountPrefix={0}
+              substrateAccountsFilter={isAccountOwned}
+              evmAccountsFilter={isAccountOwned}
+              value={fromAddress}
+              onAccountChange={setFromAddress}
+            />
+          }
+          accountBalance={<AvailableBalance balance={fromBalance} />}
+          isError={!!insufficientBalance}
+        />
+
+        <TokenAndAmountContainer
+          tokenButton={
+            <SelectTokenButton
+              onSelectTokenId={handleChangeToToken}
+              selectedTokenId={toTokenId}
+              assetIds={toAssetIds}
+              priorityMode="buy"
+            />
+          }
+          tokenAmount={null}
+          accountButton={
+            <SeparatedAccountSelector
+              compact
+              title={t("Recipient")}
+              subtitle={t("To")}
+              allowInput
+              allowZeroBalance
+              tokenId={toTokenId}
+              accountsType={tokenAccountsType(toToken)}
+              substrateAccountPrefix={0}
+              substrateAccountsFilter={isAccountOwned}
+              evmAccountsFilter={isAccountOwned}
+              value={toAddress}
+              onAccountChange={setToAddress}
+            />
+          }
+          accountBalance={<AvailableBalance balance={toBalance} />}
+          isError={false}
+        />
+
+        <ReverseButton
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          hasError={hasError}
+        />
+      </div>
 
       {/* <TokenAndAmountContainer /> */}
       {/* Input cards section */}
-      <div className="flex flex-col">
-        {/* FROM Card */}
-        {/* <div
+      {/* <div className="flex flex-col"> */}
+      {/* FROM Card */}
+      {/* <div
           className={classNames(
             "relative flex flex-col gap-8 rounded bg-grey-900 px-6 py-8"
             //insufficientBalance && "outline outline-alert-error/50"
@@ -174,7 +206,6 @@ export const SwapForm = () => {
                 subtitle={t("From")}
                 tokenId={fromTokenId}
                 accountsType={tokenAccountsType(fromToken)}
-                disableBtc
                 substrateAccountPrefix={0}
                 substrateAccountsFilter={isAccountOwned}
                 evmAccountsFilter={isAccountOwned}
@@ -190,11 +221,11 @@ export const SwapForm = () => {
           )}
         </div> */}
 
-        {/* Reverse Button */}
-        <ReverseButton hasError={hasError} />
+      {/* Reverse Button */}
+      {/* <ReverseButton hasError={hasError} /> */}
 
-        {/* TO Card */}
-        <div className="flex flex-col gap-8 rounded bg-grey-900 px-6 py-8">
+      {/* TO Card */}
+      {/* <div className="flex flex-col gap-8 rounded bg-grey-900 px-6 py-8">
           <TokenAmountInput
             amount={toAmount ?? undefined}
             assetIds={toAssetIds}
@@ -221,19 +252,13 @@ export const SwapForm = () => {
               />
             </div>
           )}
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
 
       <SwapDetails />
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {fromNetworkType === "btc" && (
-          <Button className="!w-full !rounded" disabled>
-            {t("Swapping from BTC is not supported")}
-          </Button>
-        )}
-
-        {fromNetworkType && ["evm", "substrate"].includes(fromNetworkType) && approvalData && (
+        {fromNetworkType && approvalData && (
           <Button className="!w-full !rounded" primary onClick={() => setSwapView("approve-erc20")}>
             {t(`Allow {{protocolName}} to spend {{symbol}}`, {
               protocolName: approvalData.protocolName,
@@ -242,7 +267,7 @@ export const SwapForm = () => {
           </Button>
         )}
 
-        {fromNetworkType && ["evm", "substrate"].includes(fromNetworkType) && !approvalData && (
+        {fromNetworkType && !approvalData && (
           <Button
             className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
             primary
@@ -310,11 +335,14 @@ export const SwapForm = () => {
   )
 }
 
-const AvailableFromBalance = ({ className }: { className?: string }) => {
-  const { fromBalance } = useSwap()
+const AvailableBalance: FC<{
+  balance: Balance | null | undefined
+  onMaxClick?: () => void
+  className?: string
+}> = ({ balance, onMaxClick, className }) => {
   const { t } = useTranslation()
 
-  if (!fromBalance?.token) return null
+  if (!balance?.token) return null
 
   return (
     <div
@@ -324,14 +352,16 @@ const AvailableFromBalance = ({ className }: { className?: string }) => {
       )}
     >
       <div>{t("Bal:")}</div>
-      <Tokens
-        amount={fromBalance.transferable.tokens}
-        symbol={fromBalance.token.symbol}
-        noCountUp
-      />
-      <button type="button" className="rounded-xs border px-1 hover:bg-gray-750">
-        {t("Max")}
-      </button>
+      <Tokens amount={balance.transferable.tokens} symbol={balance.token.symbol} noCountUp />
+      {!!onMaxClick && (
+        <button
+          type="button"
+          className="rounded-xs border px-1 hover:bg-gray-750"
+          onClick={onMaxClick}
+        >
+          {t("Max")}
+        </button>
+      )}
     </div>
   )
 }

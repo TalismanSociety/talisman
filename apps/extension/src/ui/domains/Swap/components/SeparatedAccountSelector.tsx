@@ -3,7 +3,6 @@ import type { Account } from "@core/domains/keyring/exports"
 import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
-  isAccountBitcoin,
   isAccountPlatformEthereum,
 } from "@core/domains/keyring/exports"
 import { isValidAddress } from "@ethereumjs/util"
@@ -11,7 +10,6 @@ import {
   detectAddressEncoding,
   encodeAnyAddress,
   isAddressEqual,
-  isBitcoinAddress,
   normalizeAddress,
 } from "@talismn/crypto"
 import { Modal } from "@ui/components/Modal"
@@ -34,12 +32,11 @@ type Props = {
   allowInput?: boolean
   allowZeroBalance?: boolean
   tokenId: string | null
-  accountsType?: "substrate" | "ethereum" | "btc" | "all"
+  accountsType?: "substrate" | "ethereum" | "all"
   onAccountChange?: (address: string | null) => void
   evmAccountsFilter?: (account: Account) => boolean
   substrateAccountsFilter?: (account: Account) => boolean
   substrateAccountPrefix?: number
-  disableBtc?: boolean
   value?: string | null
   compact?: boolean
 }
@@ -57,7 +54,6 @@ export const SeparatedAccountSelector = memo(
     substrateAccountsFilter,
     substrateAccountPrefix,
     value,
-    disableBtc = false,
     compact = false,
   }: Props) => {
     const { t } = useTranslation()
@@ -147,11 +143,6 @@ export const SeparatedAccountSelector = memo(
       )
     }, [deferredQuery, substrateAccountPrefix, substrateAccounts])
 
-    const btcAccounts = useMemo(() => {
-      if (isAccountBitcoin(accountFromInput)) return [accountFromInput]
-      return []
-    }, [accountFromInput])
-
     const selectedAccount = useMemo(() => {
       if (value === null || value === undefined) return
 
@@ -163,15 +154,13 @@ export const SeparatedAccountSelector = memo(
             return evmAccounts
           case "substrate":
             return substrateAccounts
-          case "btc":
-            return btcAccounts
           default:
             return []
         }
       })()
 
       return accounts.find((account) => isAddressEqual(account.address, value))
-    }, [accountsType, evmAccounts, substrateAccounts, btcAccounts, value])
+    }, [accountsType, evmAccounts, substrateAccounts, value])
 
     const onSelectAccount = useCallback(
       (address: string | null) => {
@@ -195,16 +184,8 @@ export const SeparatedAccountSelector = memo(
         return accountFromInput ? [accountFromInput] : queriedEvmAccounts
       if (accountsType === "substrate")
         return accountFromInput ? [accountFromInput] : queriedSubstrateAccounts
-      if (accountsType === "btc") return accountFromInput ? [accountFromInput] : btcAccounts
       return []
-    }, [accountFromInput, accountsType, btcAccounts, queriedEvmAccounts, queriedSubstrateAccounts])
-
-    if (accountsType === "btc" && disableBtc)
-      return (
-        <div className="rounded p-6 [&>p]:text-sm">
-          <p className="text-center">{t("BTC accounts not supported.")}</p>
-        </div>
-      )
+    }, [accountFromInput, accountsType, queriedEvmAccounts, queriedSubstrateAccounts])
 
     const triggerButton = compact ? (
       <button
@@ -353,12 +334,7 @@ const AccountRow = ({
   substrateAccountPrefix?: number
 }) => {
   const formattedAddress = useMemo(() => {
-    if (
-      address.startsWith("0x") ||
-      substrateAccountPrefix === undefined ||
-      isBitcoinAddress(address)
-    )
-      return address
+    if (address.startsWith("0x") || substrateAccountPrefix === undefined) return address
 
     return encodeAnyAddress(address, { ss58Format: substrateAccountPrefix })
   }, [address, substrateAccountPrefix])

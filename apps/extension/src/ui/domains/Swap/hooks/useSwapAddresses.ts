@@ -19,7 +19,6 @@ const getNetworkType = (token: { type: string; platform?: string } | null | unde
   if (!token) return null
   if (token.platform === "ethereum") return "evm" as const
   if (token.platform === "polkadot") return "substrate" as const
-  if (token.type === "btc-native") return "btc" as const
   return null
 }
 
@@ -148,10 +147,6 @@ export function useSwapAddresses({
           return setToAddress(null)
 
         return setToAddress(fromAddress)
-      }
-      case "btc": {
-        if (toAddress) return
-        return setToAddress(null)
       }
       default: {
         // biome-ignore lint/suspicious/noConsole: legacy

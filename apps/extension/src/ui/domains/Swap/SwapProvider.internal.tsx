@@ -187,6 +187,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   // const fromToken = useToken(fromTokenId ?? undefined)
 
   const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
+  const toBalance = useBalanceByParams({ address: toAddress, tokenId: toTokenId })
 
   return {
     // View
@@ -254,6 +255,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
     // Balance
     fromBalance,
+    toBalance,
 
     // Loading state
     isInitializing,

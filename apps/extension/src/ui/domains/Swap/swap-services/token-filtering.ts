@@ -17,10 +17,6 @@ import {
 
 // ─── Constants ──────────────────────────────────────────────────────
 
-const BTC_TOKEN_DATA: Record<string, { symbol: string; decimals: number }> = {
-  "btc-native": { symbol: "BTC", decimals: 8 },
-}
-
 // ─── Token tab definitions ──────────────────────────────────────────
 
 export type TokenTab = {
@@ -91,7 +87,7 @@ export type AssetRegistry = {
 /**
  * Build a registry of swappable tokenIds and which protocols support each one.
  * Each entry in `moduleResults` is a tuple of [protocol, tokenIds[]].
- * Only tokenIds present in `tokensMap` (or the BTC special case) are included.
+ * Only tokenIds present in `tokensMap` are included.
  */
 export function buildAssetRegistry(
   moduleResults: Array<[SupportedSwapProtocol, string[]]>,
@@ -101,8 +97,7 @@ export function buildAssetRegistry(
 
   for (const [protocol, tokenIds] of moduleResults) {
     for (const tokenId of tokenIds) {
-      // Only include tokens that exist in chaindata or are BTC
-      if (!tokensMap[tokenId] && !BTC_TOKEN_DATA[tokenId]) continue
+      if (!tokensMap[tokenId]) continue
 
       let protocols = supportMap.get(tokenId)
       if (!protocols) {
@@ -114,8 +109,8 @@ export function buildAssetRegistry(
   }
 
   const tokenIds = [...supportMap.keys()].sort((a, b) => {
-    const symA = (tokensMap[a]?.symbol ?? BTC_TOKEN_DATA[a]?.symbol ?? "").replaceAll("$", "")
-    const symB = (tokensMap[b]?.symbol ?? BTC_TOKEN_DATA[b]?.symbol ?? "").replaceAll("$", "")
+    const symA = (tokensMap[a]?.symbol ?? "").replaceAll("$", "")
+    const symB = (tokensMap[b]?.symbol ?? "").replaceAll("$", "")
     return symA.localeCompare(symB)
   })
 
@@ -230,7 +225,7 @@ export async function filterAndSortTokens(
     const isSearchingAddress = isAddress(search)
     const searchLoweredCase = search.toLowerCase()
     const knownFilteredTokens = tokenIds.filter((id) => {
-      const token = tokensMap[id] ?? (BTC_TOKEN_DATA[id] as { symbol: string } | undefined)
+      const token = tokensMap[id]
       if (!token) return false
       const sym = token.symbol.toLowerCase()
       const name = "name" in token && typeof token.name === "string" ? token.name.toLowerCase() : ""
