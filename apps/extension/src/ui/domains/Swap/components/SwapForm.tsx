@@ -15,7 +15,7 @@ import { useSwap } from "../SwapProvider"
 import { ReverseButton } from "./ReverseButton"
 import { SelectTokenButton } from "./SelectTokenButton"
 import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
-import { SwapDetails } from "./SwapDetails"
+import { SwapProviderPickerButton } from "./SwapProviderPickerButton"
 
 const tokenAccountsType = (token: { platform?: string; id?: string } | null | undefined) => {
   if (!token) return "all"
@@ -255,7 +255,7 @@ export const SwapForm = () => {
         </div> */}
       {/* </div> */}
 
-      <SwapDetails />
+      <SwapProviderPickerButton />
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
         {fromNetworkType && approvalData && (

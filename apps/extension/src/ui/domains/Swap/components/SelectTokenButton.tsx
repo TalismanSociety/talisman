@@ -211,7 +211,7 @@ const SelectTokenWarningDrawer: FC<{
               <AlertTriangleIcon className="text-alert-warn text-md" />
               <p className="font-light text-alert-warn text-md">{t("Warning")}</p>
             </div>
-            <p className="text-alert-warn text-sm leading-paragraph">
+            <p className="font-light text-alert-warn text-sm leading-paragraph">
               {token.symbol} (${token.symbol}){" "}
               {t(
                 "isn't traded on leading U.S. centralised exchanges or frequently swapped. Always do your own research before proceeding."
