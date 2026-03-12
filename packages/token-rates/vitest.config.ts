@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@talismn/chaindata-provider": path.join(packagesDir, "chaindata-provider/src"),
+      "@talismn/util": path.join(packagesDir, "util/src"),
     },
   },
   test: {

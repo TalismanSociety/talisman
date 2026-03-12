@@ -40,8 +40,11 @@ const fetchJsonFromGithubUrl = async <T>(
 
   if (schema) {
     const result = schema.safeParse(data)
-    if (!result.success) log.warn("Failed to parse data from", url, { error: result.error, data })
-    else return result.data as T
+    if (!result.success) {
+      log.error("Failed to parse data from", url, { error: result.error })
+      throw new Error(`Schema validation failed for ${url}`)
+    }
+    return result.data as T
   }
 
   return data as T

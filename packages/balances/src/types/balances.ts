@@ -96,7 +96,10 @@ export class Balances {
   // Properties
   //
 
-  #balances: Array<Balance> = []
+  #balancesMap: Map<string, Balance> = new Map()
+  #cachedArray: Balance[] | null = null
+  #cachedFilteredMirrorTokens: Balances | null = null
+  #cachedSumFormatter: SumBalancesFormatter | null = null
 
   //
   // Methods
@@ -108,7 +111,7 @@ export class Balances {
   ) {
     // handle Balances (convert to Balance[])
     // biome-ignore lint/correctness/noConstructorReturn: legacy
-    if (balances instanceof Balances) return new Balances(balances.each, hydrate)
+    if (balances instanceof Balances) return new Balances([...balances], hydrate)
 
     // handle Balance (convert to Balance[])
     // biome-ignore lint/correctness/noConstructorReturn: legacy
@@ -131,7 +134,7 @@ export class Balances {
       )
 
     // handle Balance[]
-    this.#balances = balances
+    this.#balancesMap = new Map(balances.map((b) => [b.id, b]))
     if (hydrate !== undefined) this.hydrate(hydrate)
   }
 
@@ -140,7 +143,7 @@ export class Balances {
    */
   toJSON = (): BalanceJsonList =>
     Object.fromEntries(
-      this.#balances
+      [...this.#balancesMap.values()]
         .map((balance) => {
           try {
             return [balance.id, balance.toJSON()]
@@ -163,9 +166,7 @@ export class Balances {
    *   // do something
    * }
    */
-  [Symbol.iterator] = () =>
-    // Create an array of the balances in this collection and return the result of its iterator.
-    this.#balances[Symbol.iterator]()
+  [Symbol.iterator] = () => this.#balancesMap.values()[Symbol.iterator]()
 
   /**
    * Hydrates all balances in this collection.
@@ -173,7 +174,11 @@ export class Balances {
    * @param sources - The sources to hydrate from.
    */
   hydrate = (sources: HydrateDb) => {
-    this.#balances.map((balance) => balance.hydrate(sources))
+    // Invalidate caches — hydrate mutates Balance objects, so derived caches become stale
+    this.#cachedArray = null
+    this.#cachedFilteredMirrorTokens = null
+    this.#cachedSumFormatter = null
+    for (const balance of this.#balancesMap.values()) balance.hydrate(sources)
   }
 
   /**
@@ -182,7 +187,7 @@ export class Balances {
    * @param id - The id of the balance to fetch.
    * @returns The balance if one exists, or none.
    */
-  get = (id: string): Balance | null => this.#balances.find((balance) => balance.id === id) ?? null
+  get = (id: string): Balance | null => this.#balancesMap.get(id) ?? null
 
   /**
    * Retrieve balances from this collection by search query.
@@ -206,14 +211,29 @@ export class Balances {
       )
 
     // return filter matches
-    return new Balances([...this].filter(filter))
+    return new Balances(this.#toArray().filter(filter))
   }
 
   /**
    * Filters this collection to exclude token balances where the token has a `mirrorOf` field
    * and another balance exists in this collection for the token specified by the `mirrorOf` field.
    */
-  filterMirrorTokens = (): Balances => new Balances([...this].filter(filterMirrorTokens))
+  filterMirrorTokens = (): Balances => {
+    if (!this.#cachedFilteredMirrorTokens) {
+      const balances = this.#toArray()
+      const tokenIds = new Set<string>()
+      for (const b of balances) {
+        if (b.tokenId) tokenIds.add(b.tokenId)
+      }
+      this.#cachedFilteredMirrorTokens = new Balances(
+        balances.filter((balance) => {
+          const mirrorOf = balance.token?.mirrorOf
+          return !mirrorOf || !tokenIds.has(mirrorOf)
+        })
+      )
+    }
+    return this.#cachedFilteredMirrorTokens
+  }
 
   /**
    * Filters this collection to only include balances which are not zero AND have a fiat conversion rate.
@@ -244,19 +264,10 @@ export class Balances {
    * @returns The new collection of balances.
    */
   add = (balances: Balances | Balance): Balances => {
-    // handle single balance
     if (balances instanceof Balance) return this.add(new Balances(balances))
-
-    // merge balances
-    const mergedBalances = Object.fromEntries(
-      this.#balances.map((balance) => [balance.id, balance])
-    )
-    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
-    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
-    balances.each.forEach((balance) => (mergedBalances[balance.id] = balance))
-
-    // return new balances
-    return new Balances(Object.values(mergedBalances))
+    const mergedMap = new Map(this.#balancesMap)
+    for (const balance of balances) mergedMap.set(balance.id, balance)
+    return new Balances([...mergedMap.values()])
   }
 
   /**
@@ -268,17 +279,20 @@ export class Balances {
    * @returns The new collection of balances.
    */
   remove = (ids: string[] | string): Balances => {
-    // handle single id
     if (!Array.isArray(ids)) return this.remove([ids])
-
-    // merge and return new balances
-    return new Balances(this.#balances.filter((balance) => !ids.includes(balance.id)))
+    const idSet = new Set(ids)
+    return new Balances(this.#toArray().filter((balance) => !idSet.has(balance.id)))
   }
 
   // TODO: Add some more useful aggregator methods
 
+  #toArray = (): Balance[] => {
+    if (!this.#cachedArray) this.#cachedArray = [...this.#balancesMap.values()]
+    return this.#cachedArray
+  }
+
   get each() {
-    return [...this]
+    return this.#toArray()
   }
 
   /** @deprecated use each instead */
@@ -292,7 +306,7 @@ export class Balances {
    * @returns The number of balances in this collection.
    */
   get count() {
-    return [...this].length
+    return this.#balancesMap.size
   }
 
   /**
@@ -304,7 +318,8 @@ export class Balances {
    * balances.sum.fiat('usd').transferable
    */
   get sum() {
-    return new SumBalancesFormatter(this)
+    if (!this.#cachedSumFormatter) this.#cachedSumFormatter = new SumBalancesFormatter(this)
+    return this.#cachedSumFormatter
   }
 }
 

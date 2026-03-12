@@ -1023,6 +1023,9 @@ importers:
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
+      fake-indexeddb:
+        specifier: 6.0.0
+        version: 6.0.0
       typescript:
         specifier: ^5.6.3
         version: 5.8.3
@@ -3060,7 +3063,7 @@ packages:
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: '>=4.22.4'
+      rollup: '>=2.79.2'
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -3345,6 +3348,9 @@ packages:
 
   '@sinonjs/text-encoding@0.7.1':
     resolution: {integrity: sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==}
+    deprecated: |-
+      Deprecated: no longer maintained and no longer used by Sinon packages. See
+        https://github.com/sinonjs/nise/issues/243 for replacement details.
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
@@ -5739,6 +5745,7 @@ packages:
   git-raw-commits@4.0.0:
     resolution: {integrity: sha512-ICsMM1Wk8xSGMowkOmPrzo2Fgmfo4bMHLNX6ytHjajRJUqvHOw/TFapQ+QG75c3X/tTDDhOSRPGC52dDbNM8FQ==}
     engines: {node: '>=16'}
+    deprecated: This package is no longer maintained. For the JavaScript API, please use @conventional-changelog/git-client instead.
     hasBin: true
 
   glob-parent@6.0.2:
@@ -5754,6 +5761,7 @@ packages:
 
   glob@10.5.0:
     resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@13.0.0:
@@ -5762,7 +5770,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-directory@4.0.1:
     resolution: {integrity: sha512-wHTUcDUoZ1H5/0iVqEudYW4/kAlN5cZ3j/bXn0Dpbizl9iaUVeWSHqiOjsgk6OW2bkLclbBjzewBz6weQ1zA2Q==}
@@ -5943,6 +5951,7 @@ packages:
   i18next-parser@9.3.0:
     resolution: {integrity: sha512-VaQqk/6nLzTFx1MDiCZFtzZXKKyBV6Dv0cJMFM/hOt4/BWHWRgYafzYfVQRUzotwUwjqeNCprWnutzD/YAGczg==}
     engines: {node: ^18.0.0 || ^20.0.0 || ^22.0.0, npm: '>=6', yarn: '>=1'}
+    deprecated: Project is deprecated, use i18next-cli instead
     hasBin: true
 
   i18next@24.2.3:
@@ -11024,7 +11033,7 @@ snapshots:
       '@polkadot-api/metadata-compatibility': 0.2.4
       '@polkadot-api/observable-client': 0.11.2(@polkadot-api/substrate-client@0.4.0)(rxjs@7.8.2)
       '@polkadot-api/polkadot-sdk-compat': 2.3.2
-      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))
       '@polkadot-api/smoldot': 0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@polkadot-api/substrate-bindings': 0.14.0
       '@polkadot-api/substrate-client': 0.4.0
@@ -11184,12 +11193,6 @@ snapshots:
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/substrate-bindings': 0.14.0
       '@polkadot-api/utils': 0.2.0
-
-  '@polkadot-api/sm-provider@0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@polkadot-api/json-rpc-provider': 0.0.4
-      '@polkadot-api/json-rpc-provider-proxy': 0.2.4
-      '@polkadot-api/smoldot': 0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10)
 
   '@polkadot-api/sm-provider@0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))':
     dependencies:
@@ -17070,7 +17073,7 @@ snapshots:
       '@polkadot-api/polkadot-sdk-compat': 2.3.2
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/signer': 0.2.2
-      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@polkadot-api/sm-provider': 0.1.7(@polkadot-api/smoldot@0.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))
       '@polkadot-api/smoldot': 0.3.9(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@polkadot-api/substrate-bindings': 0.14.0
       '@polkadot-api/substrate-client': 0.4.0

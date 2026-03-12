@@ -1,5 +1,49 @@
-import "./ChainConnectorSol"
+import { Connection } from "@solana/web3.js"
 
-describe("ChainConnectorSol", () => {
-  it("Can be tested", () => {})
+import { ChainConnectorSolStub } from "./ChainConnectorSolStub"
+import { getSolConnection } from "./getSolConnection"
+
+describe("getSolConnection", () => {
+  it("creates a Connection with the first RPC URL", () => {
+    const conn = getSolConnection("solana", [
+      "https://rpc1.example.com",
+      "https://rpc2.example.com",
+    ])
+    expect(conn).toBeInstanceOf(Connection)
+    expect(conn.rpcEndpoint).toBe("https://rpc1.example.com")
+  })
+
+  it('uses "confirmed" commitment', () => {
+    const conn = getSolConnection("solana", ["https://rpc.example.com"])
+    expect(conn.commitment).toBe("confirmed")
+  })
+})
+
+describe("ChainConnectorSolStub", () => {
+  it("creates a connection from a network object", async () => {
+    const network = { id: "solana" as const, rpcs: ["https://rpc.example.com"] }
+    const stub = new ChainConnectorSolStub(network)
+    const conn = await stub.getConnection()
+
+    expect(conn).toBeInstanceOf(Connection)
+    expect(conn.rpcEndpoint).toBe("https://rpc.example.com")
+  })
+
+  it("stores an existing Connection when passed directly", async () => {
+    const connection = new Connection("https://direct.example.com", { commitment: "finalized" })
+    const stub = new ChainConnectorSolStub(connection)
+    const conn = await stub.getConnection()
+
+    expect(conn).toBe(connection)
+    expect(conn.rpcEndpoint).toBe("https://direct.example.com")
+  })
+
+  it("getConnection() returns the same connection each time", async () => {
+    const network = { id: "solana" as const, rpcs: ["https://rpc.example.com"] }
+    const stub = new ChainConnectorSolStub(network)
+
+    const conn1 = await stub.getConnection()
+    const conn2 = await stub.getConnection()
+    expect(conn1).toBe(conn2)
+  })
 })

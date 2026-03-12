@@ -216,10 +216,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
     const currentStorage = await firstValueFrom(this.#dynamicTokens$)
     const currentById = keyBy<Token>(currentStorage, (t) => t.id)
-    const newById = keyBy<Token>(
-      tokens.filter((t) => TokenSchema.parse(t)),
-      (t) => t.id
-    )
+    const newById = keyBy<Token>(tokens, (t) => t.id)
     const dynamicTokens = values<Token>({ ...currentById, ...newById }).sort((a, b) =>
       a.id.localeCompare(b.id)
     )

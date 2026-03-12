@@ -465,14 +465,13 @@ export class BalancesProvider {
     if (balancesResult.status !== "live") return
 
     const storage = this.#storage.getValue()
+    const failedIds = new Set(balancesResult.failedBalanceIds)
     const balances = assign(
       {},
       storage.balances,
       // delete all balances expected in the result set (except the ones that failed). because if they are not present it means they are empty.
       fromPairs(
-        balanceIds
-          .filter((bid) => !balancesResult.failedBalanceIds.includes(bid))
-          .map((balanceId) => [balanceId, undefined])
+        balanceIds.filter((bid) => !failedIds.has(bid)).map((balanceId) => [balanceId, undefined])
       ),
       keyBy(
         // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
