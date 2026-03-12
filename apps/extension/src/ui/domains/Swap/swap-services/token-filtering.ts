@@ -1,7 +1,5 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: legacy
-
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import type { Token } from "@talismn/chaindata-provider"
+import type { EthNetwork, Token } from "@talismn/chaindata-provider"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import type { TFunction } from "i18next"
@@ -172,7 +170,7 @@ async function getCoingeckoCategoryTokenIds(
 async function lookupErc20Token(
   address: string,
   chainId: number,
-  evmNetworks: { id: string }[]
+  evmNetworks: EthNetwork[]
 ): Promise<{
   tokenId: string
   symbol: string
@@ -189,7 +187,7 @@ async function lookupErc20Token(
   const platform = platforms.find((p) => p.chain_identifier === chainId)
   if (!platform) return null
 
-  const client = getExtensionPublicClient(network as any)
+  const client = getExtensionPublicClient(network)
   if (!client) return null
 
   const [symbolData, decimalsData, namedata] = await client.multicall({
@@ -228,7 +226,7 @@ export async function filterAndSortTokens(
   safeTokens: Set<string>,
   tokenTab: string,
   t: TFunction,
-  evmNetworks?: { id: string }[]
+  evmNetworks?: EthNetwork[]
 ): Promise<string[]> {
   if (search.trim().length > 0) {
     const isSearchingAddress = isAddress(search)

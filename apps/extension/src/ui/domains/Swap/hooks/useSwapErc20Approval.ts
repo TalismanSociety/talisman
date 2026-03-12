@@ -1,5 +1,3 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: legacy
-
 import { useQuery } from "@tanstack/react-query"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworks } from "@ui/state/chaindata"
@@ -79,7 +77,7 @@ export const useSwapErc20Approval = (params: {
       const network = evmNetworks.find((n) => n.id.toString() === approvalInfo.chainId.toString())
       if (!network) return null
 
-      const client = getExtensionPublicClient(network as any)
+      const client = getExtensionPublicClient(network)
       if (!client) return null
 
       const allowance = await client.readContract({

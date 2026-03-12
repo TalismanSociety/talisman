@@ -1,17 +1,13 @@
-import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
-import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
-import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useNetwork } from "@talismn/balances-react"
 import { useQuery } from "@tanstack/react-query"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useToken } from "@ui/state/chaindata"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import type { Hex } from "viem"
+import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwap } from "../SwapProvider"
-import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
 
 export const SwapConfirmSubstrate = () => {
@@ -33,13 +29,7 @@ export const SwapConfirmSubstrate = () => {
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
 
-  const [isReady, setIsReady] = useState(false)
-  useEffect(() => {
-    if (swapView !== "confirm") return setIsReady(false)
-
-    const timeout = setTimeout(() => setIsReady(true), 1_000)
-    return () => clearTimeout(timeout)
-  }, [swapView])
+  const isReady = useConfirmReadiness(swapView)
 
   const insufficientBalance = useMemo(() => {
     if (!fromBalance?.transferable.planck || !fromAmount) return undefined
@@ -57,8 +47,8 @@ export const SwapConfirmSubstrate = () => {
     () =>
       !!fromBalance &&
       fromAmount !== null &&
-      // TODO check this rule, doesnt seem accurate. we should check resulting balance (fromBalance - fromAmount) against existential deposit, not just fromAmount
-      (!existentialDeposit || fromAmount > existentialDeposit.planck),
+      (!existentialDeposit ||
+        fromBalance.transferable.planck - fromAmount < existentialDeposit.planck),
     [fromBalance, fromAmount, existentialDeposit]
   )
 
@@ -130,39 +120,15 @@ export const SwapConfirmSubstrate = () => {
   const isExchangeLoading = exchangeAndPayloadQuery.isLoading
   const exchangeError = exchangeAndPayloadQuery.error
 
-  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!exchange) return
-    if (!fromTokenId) return
-    if (!toTokenId) return
-    if (!toAmount) return
-    if (!fromAmount) return
-    if (toAddress === null) return
-
-    switch (swapModule?.protocol) {
-      case "simpleswap":
-        return {
-          type: "swap-simpleswap",
-          exchangeId: exchange.id,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "stealthex":
-        return {
-          type: "swap-stealthex",
-          exchangeId: exchange.id,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      // NOTE: Lifi doesn't support substrate, we don't need to handle it here
-    }
-    throw new Error(`swapModule ${swapModule?.protocol} not supported`)
-  }, [exchange, fromAmount, fromTokenId, swapModule, toAddress, toAmount, toTokenId])
+  const txInfo = useSwapTxInfo({
+    exchange,
+    fromTokenId,
+    toTokenId,
+    fromAmount,
+    toAmount,
+    toAddress,
+    protocol: swapModule?.protocol,
+  })
 
   const isDisabled = useMemo(() => {
     return (
@@ -177,27 +143,29 @@ export const SwapConfirmSubstrate = () => {
     )
   }, [fromAddress, insufficientBalance, isReady, isExchangeLoading, sapi, toAddress, toAmount])
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
-
-      if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
-      if (toTokenId) activeTokensStore.setActive(toTokenId, true)
-      if (txInfo && fromToken?.networkId)
-        gotoSubmitted({ hash, networkId: fromToken.networkId, txInfo })
-    },
-    [fromToken, gotoSubmitted, toToken, toTokenId, txInfo]
-  )
+  const onSubmitted = useSwapPostSubmit({
+    fromNetworkId: fromToken?.networkId,
+    toNetworkId: toToken?.networkId,
+    toTokenId,
+    txInfo,
+    gotoSubmitted,
+  })
 
   return (
     <>
+      <span className="sr-only" aria-live="polite">
+        {isExchangeLoading ? t("Submitting swap...") : ""}
+      </span>
       {fromToken?.platform === "polkadot" && (
         <FeeEstimateSubstrate payload={payload} isLoading={isExchangeLoading} />
       )}
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
         {exchangeError && (
-          <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
+          <div
+            role="alert"
+            className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny"
+          >
             {t("Error loading transaction:")} {String(exchangeError)}
           </div>
         )}

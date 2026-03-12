@@ -6,6 +6,7 @@ import { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
+import { QuoteCountdown } from "./QuoteCountdown"
 import { SwapProviderPickerModal } from "./SwapProviderPickerModal"
 
 export const SwapProviderPickerButton = () => {
@@ -76,13 +77,29 @@ const Details = () => {
   if (sortedQuotes.length === 0 && isAllQuotesSettled)
     return <SwapProviderError message={t("Pair is unavailable.")} />
 
-  if (sortedQuotes.length === 0 && isLoadingQuotes) return <LoadingUI />
+  if (sortedQuotes.length === 0 && isLoadingQuotes)
+    return (
+      <>
+        <LoadingUI />
+        <span className="sr-only" aria-live="polite">
+          {t("Loading quotes...")}
+        </span>
+      </>
+    )
 
   if (!displayQuote) return null
 
   return (
     <div className="flex w-full flex-col gap-[8px]">
-      <span className="font-semibold text-[14px] text-white/60">{t("Provider")}</span>
+      <span className="sr-only" aria-live="polite">
+        {isLoadingQuotes
+          ? t("Loading quotes...")
+          : t("{{count}} quotes found", { count: sortedQuotes.length })}
+      </span>
+      <div className="flex items-center justify-between">
+        <span className="font-semibold text-[14px] text-white/60">{t("Provider")}</span>
+        <QuoteCountdown isLoading={isLoadingQuotes} />
+      </div>
       <SwapProviderButton
         quote={displayQuote.quote}
         showBestRate={isBestRate}
@@ -136,6 +153,7 @@ const SwapProviderButton = memo(
     return (
       <button
         type="button"
+        aria-haspopup="dialog"
         className="flex h-[64px] w-full items-center gap-[8px] rounded-[13px] bg-grey-900 px-[12px] transition-colors hover:bg-grey-800"
         onClick={onClick}
       >

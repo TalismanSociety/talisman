@@ -1,5 +1,7 @@
 import { UNKNOWN_TOKEN_URL } from "@common/constants"
+import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   evmErc20TokenId,
@@ -9,7 +11,9 @@ import {
 } from "@talismn/balances-react"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
+import { getScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
+import { api } from "@ui/api"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { accounts$ } from "@ui/state/accounts"
 import {
@@ -580,9 +584,59 @@ const estimateGas = async (
     return null
   }
 
-  // TODO: re-add substrate gas estimation
-  // Previously used apiPromiseAtom to get an ApiPromise for the chain and estimate fees.
-  // This needs to be re-implemented with chain connectors outside of Jotai.
+  if (fromAsset.networkType === "substrate") {
+    try {
+      const knownSubstrateNetworks = await firstValueFrom(
+        getNetworksMapById$({ platform: "polkadot" })
+      )
+      const network = knownSubstrateNetworks[fromAsset.chainId]
+      if (!network || !("genesisHash" in network)) return null
+
+      const nativeToken = await firstValueFrom(getToken$(network.nativeTokenId))
+      if (!nativeToken) return null
+
+      const metadataDef = await api.subChainMetadata(network.genesisHash)
+      if (!metadataDef?.metadataRpc) return null
+
+      const metadataRpc = getMetadataRpcFromDef(metadataDef)
+      if (!metadataRpc) return null
+
+      const sapi = getScaleApi(
+        {
+          chainId: network.id,
+          send: (...args) => api.subSend(network.id, ...args),
+        },
+        metadataRpc as `0x${string}`,
+        nativeToken,
+        network.hasCheckMetadataHash,
+        network.signedExtensions,
+        network.registryTypes
+      )
+
+      // Create a dummy transfer payload for fee estimation (amount/recipient don't affect the fee)
+      const isAssetHubToken = fromAsset.assetHubAssetId !== undefined
+      const { payload } = await sapi.getExtrinsicPayload(
+        isAssetHubToken ? "Assets" : "Balances",
+        "transfer_keep_alive",
+        isAssetHubToken
+          ? {
+              id: fromAsset.assetHubAssetId,
+              target: MultiAddress.Id(fromAddress),
+              amount: 0n,
+            }
+          : { dest: MultiAddress.Id(fromAddress), value: 0n },
+        { address: fromAddress }
+      )
+
+      const fee = await sapi.getFeeEstimate(payload)
+      const amount = BigNumber(fee.toString()).times(10 ** -nativeToken.decimals)
+      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
+    } catch (err) {
+      log.error(new Error("Failed to estimate substrate gas", { cause: err }))
+      return null
+    }
+  }
+
   return null
 }
 

@@ -155,6 +155,7 @@ const OpenSelectorButton = ({
 const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ className, ...props }) => (
   <button
     type="button"
+    aria-haspopup="dialog"
     className={cn(
       "flex h-24 items-center gap-4 rounded-sm bg-grey-800 px-4 hover:bg-grey-750",
       className

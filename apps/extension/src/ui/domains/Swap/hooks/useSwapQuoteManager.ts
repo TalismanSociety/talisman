@@ -1,8 +1,5 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: legacy
-
 import { useQueries } from "@tanstack/react-query"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
-import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 import type {
@@ -11,6 +8,7 @@ import type {
   SwapModule,
 } from "../swap-modules/common.swap-module"
 import { swapModules } from "../swaps.api"
+import { attachFees, flattenQuotes, selectQuote, sortQuotes } from "./quote-sorting"
 
 /**
  * Fetches quotes from all applicable swap modules using useQueries,
@@ -100,57 +98,16 @@ export const useSwapQuoteManager = (params: {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
   const sortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
-    const flatQuotes: BaseQuote[] = []
-    for (const result of queryResults) {
-      if (!result.data) continue
-      const data = result.data
-      if (Array.isArray(data)) {
-        for (const q of data) {
-          if (q && q.outputAmountBN > 0n) flatQuotes.push(q)
-        }
-      } else {
-        if (data.outputAmountBN > 0n) flatQuotes.push(data)
-      }
-    }
-
-    const withFees = flatQuotes.map((quote) => {
-      const fees = quote.fees
-        .reduce((acc, fee) => {
-          const rate = (tokenRates as any)[fee.tokenId]?.usd?.price ?? 0
-          return acc.plus(fee.amount.times(rate))
-        }, BigNumber(0))
-        .toNumber()
-      return { quote, fees }
-    })
-
-    return [...withFees].sort((a, b) => {
-      switch (quoteSorting) {
-        case "bestRate":
-          return +(b.quote.outputAmountBN - a.quote.outputAmountBN).toString()
-        case "fastest":
-          return a.quote.timeInSec - b.quote.timeInSec
-        case "cheapest":
-          return a.fees - b.fees
-        case "decentalised":
-          return b.quote.decentralisationScore - a.quote.decentralisationScore
-        default:
-          return 0
-      }
-    })
+    const flatQuotes = flattenQuotes(queryResults.map((r) => r.data))
+    const withFees = attachFees(flatQuotes, tokenRates)
+    return sortQuotes(withFees, quoteSorting)
   }, [quotesDataKey, tokenRates, quoteSorting])
 
   // Selected quote
-  const selectedQuote: BaseQuote | null = useMemo(() => {
-    if (sortedQuotes.length === 0) return null
-
-    const match = sortedQuotes.find(
-      ({ quote }) =>
-        quote.protocol === selectedProtocol &&
-        (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
-    )
-
-    return (match ?? sortedQuotes[0])?.quote ?? null
-  }, [sortedQuotes, selectedProtocol, selectedSubProtocol])
+  const selectedQuote: BaseQuote | null = useMemo(
+    () => selectQuote(sortedQuotes, selectedProtocol, selectedSubProtocol),
+    [sortedQuotes, selectedProtocol, selectedSubProtocol]
+  )
 
   const selectedQuoteFees: number | undefined = useMemo(() => {
     if (!selectedQuote) return undefined

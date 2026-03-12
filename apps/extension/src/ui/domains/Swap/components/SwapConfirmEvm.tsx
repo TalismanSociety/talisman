@@ -1,5 +1,3 @@
-import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
-import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
@@ -14,10 +12,11 @@ import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useSwap } from "@ui/domains/Swap/SwapProvider"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { isUserRejectionError } from "@ui/util/isUserRejectionError"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
-import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
+import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
 
 export const SwapConfirmEvm = () => {
@@ -43,14 +42,7 @@ export const SwapConfirmEvm = () => {
   const toToken = useToken(toTokenId ?? undefined)
 
   const needsApproval = !approvalLoading && approvalData !== null
-
-  const [isReady, setIsReady] = useState(false)
-  useEffect(() => {
-    if (swapView !== "confirm") return setIsReady(false)
-
-    const timeout = setTimeout(() => setIsReady(true), 1_000)
-    return () => clearTimeout(timeout)
-  }, [swapView])
+  const isReady = useConfirmReadiness(swapView)
 
   const account = useAccountByAddress(fromAddress)
 
@@ -91,13 +83,21 @@ export const SwapConfirmEvm = () => {
       if (approved.status === "success") incrementApprovalCounter()
       if (approved.status === "reverted") throw new Error("Approval reverted")
     } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(new Error("Failed to approve ERC20", { cause }))
-      notify({
-        title: t("Approval failed"),
-        type: "error",
-        subtitle: (cause as Error)?.message,
-      })
+      if (!isUserRejectionError(cause)) {
+        // biome-ignore lint/suspicious/noConsole: legacy
+        console.error(new Error("Failed to approve ERC20", { cause }))
+        notify({
+          title:
+            cause instanceof EstimateGasExecutionError
+              ? t("Insufficient gas for approval")
+              : t("Approval failed"),
+          type: "error",
+          subtitle:
+            cause instanceof EstimateGasExecutionError
+              ? undefined
+              : (cause as Error)?.message?.slice(0, 100),
+        })
+      }
     } finally {
       setIsApproving(false)
     }
@@ -129,13 +129,21 @@ export const SwapConfirmEvm = () => {
         if (approved.status === "success") incrementApprovalCounter()
         if (approved.status === "reverted") throw new Error("Approval reverted")
       } catch (cause) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error(new Error("Failed to approve ERC20", { cause }))
-        notify({
-          title: t("Approval failed"),
-          type: "error",
-          subtitle: (cause as Error)?.message,
-        })
+        if (!isUserRejectionError(cause)) {
+          // biome-ignore lint/suspicious/noConsole: legacy
+          console.error(new Error("Failed to approve ERC20", { cause }))
+          notify({
+            title:
+              cause instanceof EstimateGasExecutionError
+                ? t("Insufficient gas for approval")
+                : t("Approval failed"),
+            type: "error",
+            subtitle:
+              cause instanceof EstimateGasExecutionError
+                ? undefined
+                : (cause as Error)?.message?.slice(0, 100),
+          })
+        }
       } finally {
         setIsApproving(false)
         setIsApprovalPayloadLocked(false)
@@ -220,59 +228,16 @@ export const SwapConfirmEvm = () => {
   const isExchangeLoading = exchangeAndTxQuery.isLoading
   const exchangeError = exchangeAndTxQuery.error
 
-  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!fromTokenId) return
-    if (!toTokenId) return
-    if (!toAmount) return
-    if (!fromAmount) return
-    if (toAddress === null) return
-
-    switch (swapModule?.protocol) {
-      case "simpleswap":
-        if (!exchange) return
-        return {
-          type: "swap-simpleswap",
-          exchangeId: exchange.id,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "stealthex":
-        if (!exchange) return
-        return {
-          type: "swap-stealthex",
-          exchangeId: exchange.id,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "lifi":
-        if (!subProtocol) return
-        return {
-          type: "swap-lifi",
-          protocolName: subProtocol,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-    }
-    throw new Error(`swapModule ${swapModule?.protocol} not supported`)
-  }, [
+  const txInfo = useSwapTxInfo({
     exchange,
-    fromAmount,
     fromTokenId,
-    subProtocol,
-    swapModule?.protocol,
-    toAddress,
-    toAmount,
     toTokenId,
-  ])
+    fromAmount,
+    toAmount,
+    toAddress,
+    protocol: swapModule?.protocol,
+    subProtocol,
+  })
 
   const [isSwapPayloadLocked, setIsSwapPayloadLocked] = useState(false)
 
@@ -293,6 +258,14 @@ export const SwapConfirmEvm = () => {
 
   const [isProcessing, setIsProcessing] = useState(false)
 
+  const onSwapSubmitted = useSwapPostSubmit({
+    fromNetworkId: fromToken?.networkId,
+    toNetworkId: toToken?.networkId,
+    toTokenId,
+    txInfo,
+    gotoSubmitted,
+  })
+
   const send = useCallback(async () => {
     if (!swapEthTx.transaction || !fromToken || !txInfo) return
 
@@ -300,23 +273,26 @@ export const SwapConfirmEvm = () => {
     try {
       const serialized = serializeTransactionRequest(swapEthTx.transaction)
       const hash = await api.ethSignAndSend(fromToken.networkId, serialized, txInfo)
-
-      if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
-
-      if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
-      if (toTokenId) activeTokensStore.setActive(toTokenId, true)
-      gotoSubmitted({ hash, networkId: fromToken.networkId, txInfo })
+      onSwapSubmitted(hash)
     } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(new Error("Failed to submit swap", { cause }))
-      notify({
-        title: t("Failed to submit swap"),
-        type: "error",
-        subtitle: (cause as Error)?.message,
-      })
+      if (!isUserRejectionError(cause)) {
+        // biome-ignore lint/suspicious/noConsole: legacy
+        console.error(new Error("Failed to submit swap", { cause }))
+        notify({
+          title:
+            cause instanceof EstimateGasExecutionError
+              ? t("Insufficient gas to complete swap")
+              : t("Failed to submit swap"),
+          type: "error",
+          subtitle:
+            cause instanceof EstimateGasExecutionError
+              ? undefined
+              : (cause as Error)?.message?.slice(0, 100),
+        })
+      }
     }
     setIsProcessing(false)
-  }, [fromToken, gotoSubmitted, swapEthTx.transaction, t, toToken, toTokenId, txInfo])
+  }, [fromToken, onSwapSubmitted, swapEthTx.transaction, t, txInfo])
 
   const sendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -326,25 +302,27 @@ export const SwapConfirmEvm = () => {
       try {
         const serialized = serializeTransactionRequest(swapEthTx.transaction)
         const hash = await api.ethSendSigned(fromToken.networkId, serialized, signature, txInfo)
-
-        if (txInfo && txInfo.type === "swap-simpleswap")
-          saveIdForMonitoring(txInfo.exchangeId, hash)
-
-        if (toToken?.networkId) activeNetworksStore.setActive(toToken.networkId, true)
-        if (toTokenId) activeTokensStore.setActive(toTokenId, true)
-        gotoSubmitted({ hash, networkId: fromToken.networkId, txInfo })
+        onSwapSubmitted(hash)
       } catch (cause) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error(new Error("Failed to submit swap", { cause }))
-        notify({
-          title: t("Failed to submit swap"),
-          type: "error",
-          subtitle: (cause as Error)?.message,
-        })
+        if (!isUserRejectionError(cause)) {
+          // biome-ignore lint/suspicious/noConsole: legacy
+          console.error(new Error("Failed to submit swap", { cause }))
+          notify({
+            title:
+              cause instanceof EstimateGasExecutionError
+                ? t("Insufficient gas to complete swap")
+                : t("Failed to submit swap"),
+            type: "error",
+            subtitle:
+              cause instanceof EstimateGasExecutionError
+                ? undefined
+                : (cause as Error)?.message?.slice(0, 100),
+          })
+        }
       }
       setIsProcessing(false)
     },
-    [fromToken, gotoSubmitted, swapEthTx.transaction, t, txInfo, toToken, toTokenId]
+    [fromToken, onSwapSubmitted, swapEthTx.transaction, t, txInfo]
   )
 
   const onSwapSentToDevice = useCallback(() => setIsSwapPayloadLocked(true), [])
@@ -361,6 +339,9 @@ export const SwapConfirmEvm = () => {
 
   return (
     <>
+      <span className="sr-only" aria-live="polite">
+        {isApproving ? t("Approving token...") : isProcessing ? t("Submitting swap...") : ""}
+      </span>
       <FeeEstimateEvm
         isLoading={activeIsLoading}
         isError={activeIsError}
@@ -378,11 +359,17 @@ export const SwapConfirmEvm = () => {
         {!needsApproval &&
           exchangeError &&
           (exchangeError instanceof EstimateGasExecutionError ? (
-            <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
+            <div
+              role="alert"
+              className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny"
+            >
               {t("Insufficient {{symbol}} available to pay for gas", { symbol: gasTokenSymbol })}
             </div>
           ) : (
-            <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
+            <div
+              role="alert"
+              className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny"
+            >
               {t("Error loading transaction:")} {String(exchangeError)}
             </div>
           ))}
@@ -390,7 +377,7 @@ export const SwapConfirmEvm = () => {
         {needsApproval ? (
           // --- Approval Phase ---
           isApproving ? (
-            <Button className="w-full" primary disabled>
+            <Button className="w-full" primary disabled aria-label={t("Approving...")}>
               <LoaderIcon className="animate-spin-slow text-lg" />
             </Button>
           ) : account?.type === "ledger-ethereum" && isReady && approveTx ? (
@@ -415,7 +402,7 @@ export const SwapConfirmEvm = () => {
           )
         ) : // --- Swap Phase ---
         isExchangeLoading || isProcessing || (!evmTx && !exchangeError) ? (
-          <Button className="w-full" primary disabled>
+          <Button className="w-full" primary disabled aria-label={t("Processing swap...")}>
             <LoaderIcon className="animate-spin-slow text-lg" />
           </Button>
         ) : account?.type === "ledger-ethereum" && isReady && !!evmTx ? (

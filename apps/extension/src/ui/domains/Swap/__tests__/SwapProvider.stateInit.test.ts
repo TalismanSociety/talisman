@@ -58,9 +58,18 @@ vi.mock("../hooks/useFastBalance", () => ({
   useFastBalance: () => undefined,
 }))
 
-vi.mock("@ui/state/chaindata", () => ({
-  useToken: vi.fn(() => null),
+vi.mock("@ui/hooks/useBalancesByParams", () => ({
+  useBalanceByParams: () => null,
 }))
+
+vi.mock("@ui/state/chaindata", () => {
+  const { EMPTY } = require("rxjs")
+  return {
+    useToken: vi.fn(() => null),
+    getNetworksMapById$: vi.fn(() => EMPTY),
+    getTokensMap$: vi.fn(() => EMPTY),
+  }
+})
 
 // ── Import after mocks ────────────────────────────────────────────
 

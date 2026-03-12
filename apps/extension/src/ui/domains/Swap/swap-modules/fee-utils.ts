@@ -56,10 +56,12 @@ export const getSimpleSwapTalismanFee = async (route: SimpleSwapRouteProps): Pro
     ? SIMPLESWAP_TALISMAN_FEE_DISCOUNTED
     : SIMPLESWAP_TALISMAN_FEE
 
-export const getSimpleSwapApiKey = async (route: SimpleSwapRouteProps): Promise<string> =>
-  (await isSimpleSwapDiscountedRoute(route))
-    ? (await remoteConfigStore.get("swaps")).simpleswapApiKeyDiscounted
-    : (await remoteConfigStore.get("swaps")).simpleswapApiKey
+export const getSimpleSwapApiKey = async (route: SimpleSwapRouteProps): Promise<string> => {
+  const swaps = await remoteConfigStore.get("swaps")
+  return (await isSimpleSwapDiscountedRoute(route))
+    ? (swaps.simpleswapApiKeyDiscounted ?? "")
+    : (swaps.simpleswapApiKey ?? "")
+}
 
 // === LI.FI fee logic ===
 

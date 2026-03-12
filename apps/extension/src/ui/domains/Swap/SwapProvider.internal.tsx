@@ -218,48 +218,26 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const toBalance = useBalanceByParams({ address: toAddress, tokenId: toTokenId })
 
   return {
-    // View
-    swapView,
-    setSwapView,
-
-    // Form state
     fromTokenId,
     setFromTokenId,
     toTokenId,
     setToTokenId,
     fromAmount,
     setFromAmount,
+    fromAddress,
+    setFromAddress,
+    toAddress,
+    setToAddress,
     selectedProtocol,
     setSelectedProtocol,
     selectedSubProtocol,
     setSelectedSubProtocol,
     quoteSorting,
     setQuoteSorting,
-
-    // Addresses (unified)
-    fromAddress,
-    toAddress,
-    setFromAddress,
-    setToAddress,
-
-    // Token tab
     tokenTab,
     setTokenTab,
-
-    // Actions
-    resetForm,
     reverse,
-    approvalCounter,
-    setApprovalCounter,
-    incrementApprovalCounter,
-    gotoSubmitted,
-
-    // Submitted swap state
-    submittedTxHash,
-    submittedNetworkId,
-    submittedTxInfo,
-
-    // Async state
+    resetForm,
     fromAssetIds,
     toAssetIds,
     fromSupportMap,
@@ -267,34 +245,33 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     safeTokens,
     isLoadingFromAssets,
     isLoadingToAssets,
-
-    // Quote state
-    isLoadingQuotes,
-    isAllQuotesSettled,
-    hasQuoteError,
-    sortedQuotes,
-    selectedQuote,
-    selectedQuoteFees,
-    selectedModule,
-    toAmount,
-
-    // Account info
+    fromBalance,
+    toBalance,
     ethAccounts,
     substrateAccounts,
     fromEvmAccount,
     fromSubstrateAccount,
+    isInitializing,
+    stateInit,
+    approvalCounter,
+    setApprovalCounter,
+    incrementApprovalCounter,
 
-    // ERC20 approval
+    sortedQuotes,
+    selectedQuote,
+    selectedQuoteFees,
+    selectedModule,
+    isLoadingQuotes,
+    isAllQuotesSettled,
+    hasQuoteError,
+    toAmount,
     erc20Approval,
 
-    // Balance
-    fromBalance,
-    toBalance,
-
-    // Loading state
-    isInitializing,
-
-    // Init args
-    stateInit,
+    swapView,
+    setSwapView,
+    submittedTxHash,
+    submittedNetworkId,
+    submittedTxInfo,
+    gotoSubmitted,
   }
 }
