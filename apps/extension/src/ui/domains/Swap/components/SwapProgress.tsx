@@ -1,4 +1,5 @@
-import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import { db } from "@core/db"
+import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
@@ -6,11 +7,12 @@ import {
   ProcessAnimation,
   type ProcessAnimationStatus,
 } from "@ui/components/ProcessAnimation/ProcessAnimation"
-import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useAnyNetwork } from "@ui/state/chaindata"
-import { useTransaction } from "@ui/state/transactions"
-import { type FC, useMemo } from "react"
+import { useLiveQuery } from "dexie-react-hooks"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { getSwapStatus$ } from "../hooks/useSwapStatus"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
   if (!network) return null
@@ -46,6 +48,32 @@ const getSwapStatusId = (
   }
 }
 
+type SwapStatus = Parameters<typeof getSwapStatus$>[0] extends infer _
+  ? ReturnType<typeof getSwapStatus$> extends import("rxjs").Observable<infer T>
+    ? T
+    : never
+  : never
+
+/** Non-suspending hook — subscribes to the swap status observable via useEffect. */
+const useSwapStatusLocal = (protocol?: string, id?: string): SwapStatus | undefined => {
+  const protocolAndId = protocol && id ? `${protocol}::${id}` : undefined
+  const [status, setStatus] = useState<SwapStatus | undefined>(undefined)
+
+  useEffect(() => {
+    const sub = getSwapStatus$(protocolAndId).subscribe(setStatus)
+    return () => sub.unsubscribe()
+  }, [protocolAndId])
+
+  return status
+}
+
+/** Non-suspending hook — uses Dexie's useLiveQuery (returns undefined while loading). */
+const useTransactionLocal = (hash: string): WalletTransaction | null | undefined =>
+  useLiveQuery(async () => {
+    if (!hash) return undefined
+    return (await db.transactionsV2.get(hash)) ?? null
+  }, [hash])
+
 type SwapStatusPhase = "submitting" | "exchange-in-progress" | "success" | "failure" | "unknown"
 
 type SwapStatusDetails = {
@@ -62,9 +90,9 @@ const useSwapProgressStatus = (
 ): SwapStatusDetails => {
   const { t } = useTranslation()
 
-  const tx = useTransaction(txHash)
+  const tx = useTransactionLocal(txHash)
   const statusId = useMemo(() => getSwapStatusId(txInfo, txHash), [txInfo, txHash])
-  const swapStatus = useSwapStatus(statusId?.protocol, statusId?.id)
+  const swapStatus = useSwapStatusLocal(statusId?.protocol, statusId?.id)
 
   return useMemo<SwapStatusDetails>(() => {
     // Phase 1: On-chain tx is still pending/processing
@@ -189,7 +217,7 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
   const { t } = useTranslation()
   const { title, subtitle, animStatus } = useSwapProgressStatus(hash, networkId, txInfo)
 
-  const tx = useTransaction(hash)
+  const tx = useTransactionLocal(hash)
   const network = useAnyNetwork(networkId)
 
   const blockNumber = useMemo(() => {
@@ -234,23 +262,6 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
           )}
         </div>
       </div>
-      <Button fullWidth onClick={onClose}>
-        {t("Close")}
-      </Button>
-    </div>
-  )
-}
-
-export const SwapProgressFallback: FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { t } = useTranslation()
-
-  return (
-    <div className="flex h-full w-full flex-col items-center p-12">
-      <div className="mt-8 font-bold text-body text-lg">{t("Swap in progress")}</div>
-      <div className="mt-12 text-center font-light text-base text-body-secondary">
-        {t("Submitting your transaction to the network.")}
-      </div>
-      <ProcessAnimation status="processing" className="mt-[7.5rem] mb-8 h-[14.5rem]" />
       <Button fullWidth onClick={onClose}>
         {t("Close")}
       </Button>

@@ -27,35 +27,37 @@ export const useSwapStatus = (protocol?: string, id?: string): SwapStatus | unde
   return useStateObservable(getSwapStatus$(protocolAndId))
 }
 
-const getSwapStatus$ = state((protocolAndId?: string): Observable<SwapStatus | undefined> => {
-  if (!protocolAndId) return of(undefined)
+export const getSwapStatus$ = state(
+  (protocolAndId?: string): Observable<SwapStatus | undefined> => {
+    if (!protocolAndId) return of(undefined)
 
-  return completedSwapsCache$.pipe(
-    switchMap((cache) => {
-      // if value is cached, return it from the cache
-      if (cache[protocolAndId]) return of(cache[protocolAndId])
+    return completedSwapsCache$.pipe(
+      switchMap((cache) => {
+        // if value is cached, return it from the cache
+        if (cache[protocolAndId]) return of(cache[protocolAndId])
 
-      // otherwise fetch it from the api
-      return getStatus$(protocolAndId).pipe(
-        tap((status) => {
-          // don't update cache if status isn't one of these
-          if (
-            status !== "failed" &&
-            status !== "finished" &&
-            status !== "expired" &&
-            status !== "invalid" &&
-            status !== "refunded"
-          )
-            return
+        // otherwise fetch it from the api
+        return getStatus$(protocolAndId).pipe(
+          tap((status) => {
+            // don't update cache if status isn't one of these
+            if (
+              status !== "failed" &&
+              status !== "finished" &&
+              status !== "expired" &&
+              status !== "invalid" &&
+              status !== "refunded"
+            )
+              return
 
-          // update cache with latest value
-          // this will prevent further api requests for this swap
-          cacheSwapStatus$.next({ protocolAndId, status })
-        })
-      )
-    })
-  )
-})
+            // update cache with latest value
+            // this will prevent further api requests for this swap
+            cacheSwapStatus$.next({ protocolAndId, status })
+          })
+        )
+      })
+    )
+  }
+)
 
 const getStatus$ = state((protocolAndId: string): Observable<SwapStatus | undefined> => {
   const [protocol, id] = protocolAndId.split("::")
@@ -78,9 +80,13 @@ const completedSwapsCache$ = new ReplaySubject<Record<string, CachedSwapStatus>>
 completedSwapsCache$.next(JSON.parse(localStorage.getItem(completedSwapsCacheKey) ?? "{}"))
 
 // save cache changes to localstorage
-completedSwapsCache$.subscribe((cache) =>
-  localStorage.setItem(completedSwapsCacheKey, JSON.stringify(cache ?? {}))
-)
+completedSwapsCache$.subscribe((cache) => {
+  try {
+    localStorage.setItem(completedSwapsCacheKey, JSON.stringify(cache ?? {}))
+  } catch {
+    // localStorage may be full — silently ignore
+  }
+})
 
 // cacheSwapStatus$ makes sure that there's no race condition when saving new swap statuses to the cache.
 // it prevents this specific timing issue:

@@ -181,6 +181,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
+    enabled: swapView !== "submitted",
   })
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet

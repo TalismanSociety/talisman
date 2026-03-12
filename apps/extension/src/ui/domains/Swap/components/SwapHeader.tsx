@@ -1,17 +1,14 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
 
 export const SwapHeader = () => {
   const { t } = useTranslation()
-  const { isOpen, close: closeSwapTokensModal } = useSwapTokensModal()
+  const { close: closeSwapTokensModal } = useSwapTokensModal()
 
   const { swapView, setSwapView, resetForm } = useSwap()
-  useEffect(() => {
-    isOpen && setSwapView("form")
-  }, [isOpen, setSwapView])
 
   const title = useMemo(() => {
     if (swapView === "confirm") return t("Confirm")

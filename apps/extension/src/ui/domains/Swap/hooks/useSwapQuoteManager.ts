@@ -26,6 +26,7 @@ export const useSwapQuoteManager = (params: {
   selectedProtocol: SupportedSwapProtocol | null
   selectedSubProtocol: string | undefined
   quoteSorting: "decentalised" | "cheapest" | "fastest" | "bestRate"
+  enabled?: boolean
 }) => {
   const {
     fromTokenId,
@@ -37,11 +38,12 @@ export const useSwapQuoteManager = (params: {
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
+    enabled: enabledProp = true,
   } = params
 
   const tokenRates = useTokenRatesMap()
 
-  const enabled = Boolean(fromTokenId && toTokenId && fromAmount)
+  const enabled = enabledProp && Boolean(fromTokenId && toTokenId && fromAmount)
 
   const applicableModules = useMemo(
     () =>
