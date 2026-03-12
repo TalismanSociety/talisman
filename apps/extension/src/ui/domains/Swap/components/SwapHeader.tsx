@@ -13,7 +13,6 @@ export const SwapHeader = () => {
     isOpen && setSwapView("form")
   }, [isOpen, setSwapView])
   const title = useMemo(() => {
-    if (swapView === "approve-erc20") return t("Approve")
     if (swapView === "confirm") return t("Confirm")
     return t("Swap")
   }, [swapView, t])

@@ -112,9 +112,9 @@ export const useSwapErc20Approval = (params: {
     return {
       chain: null,
       to: approval.tokenAddress as `0x${string}`,
+      from: fromAddress as `0x${string}`,
       data,
       value: 0n,
-      account: fromAddress as `0x${string}`,
     }
   }, [allowanceQuery.data, fromAddress])
 

@@ -1,5 +1,4 @@
 import { useSwap } from "../SwapProvider"
-import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm } from "./SwapForm"
 import { SwapFormShimmer } from "./SwapFormShimmer"
@@ -16,8 +15,6 @@ export const SwapTokensWizard = () => {
           case "form":
           case "approve-recipient":
             return isInitializing ? <SwapFormShimmer /> : <SwapForm />
-          case "approve-erc20":
-            return <SwapApproveErc20 />
           case "confirm":
             return <SwapConfirm />
         }

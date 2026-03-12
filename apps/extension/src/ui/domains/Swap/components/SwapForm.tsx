@@ -48,7 +48,7 @@ export const SwapForm = () => {
     sortedQuotes,
     hasQuoteError,
     reverse,
-    erc20Approval: { data: approvalData, loading: approvalLoading },
+    erc20Approval: { loading: approvalLoading },
     setFromAddress,
     setToAddress,
   } = useSwap()
@@ -258,16 +258,7 @@ export const SwapForm = () => {
       <SwapProviderPickerButton />
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {fromNetworkType && approvalData && (
-          <Button className="!w-full !rounded" primary onClick={() => setSwapView("approve-erc20")}>
-            {t(`Allow {{protocolName}} to spend {{symbol}}`, {
-              protocolName: approvalData.protocolName,
-              symbol: fromToken?.symbol,
-            })}
-          </Button>
-        )}
-
-        {fromNetworkType && !approvalData && (
+        {fromNetworkType && (
           <Button
             className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
             primary
@@ -351,8 +342,13 @@ const AvailableBalance: FC<{
         className
       )}
     >
-      <div>{t("Bal:")}</div>
-      <Tokens amount={balance.transferable.tokens} symbol={balance.token.symbol} noCountUp />
+      <div className="text-body-disabled">{t("Bal:")}</div>
+      <Tokens
+        amount={balance.transferable.tokens}
+        symbol={balance.token.symbol}
+        noCountUp
+        className="text-body-disabled"
+      />
       {!!onMaxClick && (
         <button
           type="button"
@@ -546,7 +542,7 @@ const InputFromAmount = () => {
               <ArrowUpDownIcon className="size-[8px] text-body-secondary" />
             </button>
           )}
-          <p className="truncate text-[12px] text-body-secondary leading-none">
+          <p className="truncate text-[12px] text-body-inactive leading-none">
             {editFiat ? formattedTokenValue : formattedFiat}
           </p>
         </div>

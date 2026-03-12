@@ -52,7 +52,7 @@ export const FeeEstimateEvm = ({
       {transaction?.type === undefined || transaction?.type === "eip1559" ? (
         <div className="flex h-10 items-center justify-between">
           <div className="text-body-secondary text-xs">{t("Priority")}</div>
-          {!isLoading && !isError && transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
+          {!!transaction && !!txDetails && fromEvmNetwork && (
             <EthFeeSelect
               className="h-10"
               tx={transaction}
@@ -66,10 +66,6 @@ export const FeeEstimateEvm = ({
               networkUsage={networkUsage}
               drawerContainerId="swap-modal"
             />
-          ) : (
-            <div className={"h-10 animate-pulse rounded-xs bg-body-disabled text-body-disabled"}>
-              0.0000 TKN ($0.00)
-            </div>
           )}
         </div>
       ) : null}
