@@ -7,6 +7,53 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 
+const INPUT_SYNC_DELAY = 300
+
+type ParsedAmountState =
+  | { kind: "empty" | "invalid" | "unavailable"; amount: null }
+  | { kind: "valid"; amount: bigint }
+
+const parseAmountInput = ({
+  value,
+  decimals,
+  editFiat,
+  tokenRate,
+}: {
+  value: string
+  decimals: number | undefined
+  editFiat: boolean
+  tokenRate: number | undefined
+}): ParsedAmountState => {
+  if (!value || decimals === undefined) return { kind: "empty", amount: null }
+
+  if (editFiat) {
+    if (!tokenRate) return { kind: "unavailable", amount: null }
+
+    try {
+      const fiatAmount = Number.parseFloat(value)
+      if (Number.isNaN(fiatAmount)) return { kind: "invalid", amount: null }
+
+      const tokens = (fiatAmount / tokenRate).toFixed(Math.ceil(decimals / 3))
+      const planck = tokensToPlanck(tokens, decimals)
+
+      return isNotNil(planck)
+        ? { kind: "valid", amount: BigInt(planck) }
+        : { kind: "invalid", amount: null }
+    } catch {
+      return { kind: "invalid", amount: null }
+    }
+  }
+
+  try {
+    const amount = tokensToPlanck(value === "0." ? "0" : value, decimals)
+    return isNotNil(amount)
+      ? { kind: "valid", amount: BigInt(amount) }
+      : { kind: "invalid", amount: null }
+  } catch {
+    return { kind: "invalid", amount: null }
+  }
+}
+
 export const InputFromAmount = () => {
   const currency = useSelectedCurrency()
   const { t } = useTranslation()
@@ -21,6 +68,7 @@ export const InputFromAmount = () => {
   const [editFiat, setEditFiat] = useState(false)
   const [value, setValue] = useState("")
   const refSkipSync = useRef(false)
+  const tokenRate = tokenRates?.[currency]?.price
 
   // Reset to token mode if fiat editing becomes unavailable
   useEffect(() => {
@@ -48,64 +96,54 @@ export const InputFromAmount = () => {
     [editFiat, fromToken?.decimals]
   )
 
-  // Sync fromAmount with input value
+  const parsedAmount = useMemo(
+    () =>
+      parseAmountInput({
+        value,
+        decimals: fromToken?.decimals,
+        editFiat,
+        tokenRate,
+      }),
+    [editFiat, fromToken?.decimals, tokenRate, value]
+  )
+
+  // Sync fromAmount with input value after typing settles so quote queries do not refire per keystroke.
   useEffect(() => {
     if (refSkipSync.current) {
       refSkipSync.current = false
       return
     }
 
-    if (!fromToken) {
+    if (parsedAmount.kind !== "valid") {
       setFromAmount(null)
       return
     }
 
-    if (!value) {
-      setFromAmount(null)
-      return
-    }
+    const timeout = setTimeout(() => setFromAmount(parsedAmount.amount), INPUT_SYNC_DELAY)
 
-    if (editFiat) {
-      const tokenRate = tokenRates?.[currency]?.price
-      if (!tokenRate) return
-      try {
-        const fiatAmount = Number.parseFloat(value)
-        if (Number.isNaN(fiatAmount)) {
-          setFromAmount(null)
-          return
-        }
-        const tokens = (fiatAmount / tokenRate).toFixed(Math.ceil(fromToken.decimals / 3))
-        const planck = tokensToPlanck(tokens, fromToken.decimals)
-        if (isNotNil(planck)) setFromAmount(BigInt(planck))
-        else setFromAmount(null)
-      } catch {
-        setFromAmount(null)
-      }
-    } else {
-      try {
-        const amount = tokensToPlanck(value === "0." ? "0" : value, fromToken.decimals)
-        if (isNotNil(amount)) setFromAmount(BigInt(amount))
-        else setFromAmount(null)
-      } catch {
-        setFromAmount(null)
-      }
-    }
-  }, [value, fromToken, setFromAmount, editFiat, tokenRates, currency])
+    return () => clearTimeout(timeout)
+  }, [parsedAmount, setFromAmount])
+
+  const previewFromAmount = parsedAmount.kind === "valid" ? parsedAmount.amount : null
 
   // Fiat value for display (token mode) and toggle conversion
   const fiatValue = useMemo(() => {
-    if (!fromAmount || !fromToken || !tokenRates) return null
+    if (!previewFromAmount || !fromToken || !tokenRates) return null
     const rate = tokenRates[currency]?.price
     if (!rate) return null
-    const tokenAmount = Number(planckToTokens(fromAmount.toString(), fromToken.decimals) ?? "0")
+    const tokenAmount = Number(
+      planckToTokens(previewFromAmount.toString(), fromToken.decimals) ?? "0"
+    )
     return tokenAmount * rate
-  }, [fromAmount, fromToken, tokenRates, currency])
+  }, [previewFromAmount, fromToken, tokenRates, currency])
 
   // Token display string for fiat mode second row
   const tokenDisplayValue = useMemo(
     () =>
-      fromAmount && fromToken ? planckToTokens(fromAmount.toString(), fromToken.decimals) : null,
-    [fromAmount, fromToken]
+      previewFromAmount && fromToken
+        ? planckToTokens(previewFromAmount.toString(), fromToken.decimals)
+        : null,
+    [previewFromAmount, fromToken]
   )
 
   const toggleEditMode = useCallback(() => {
@@ -120,11 +158,15 @@ export const InputFromAmount = () => {
   }, [editFiat, fiatValue, tokenDisplayValue])
 
   const [errorClassName, errorMessage] = useMemo(() => {
-    if (!!value && fromAmount === null) return ["text-alert-error", t("Invalid amount")]
-    if (!!fromAmount && fromBalance && fromAmount > fromBalance.transferable.planck)
+    if (!!value && parsedAmount.kind === "invalid") return ["text-alert-error", t("Invalid amount")]
+    if (
+      parsedAmount.kind === "valid" &&
+      fromBalance &&
+      parsedAmount.amount > fromBalance.transferable.planck
+    )
       return ["text-alert-error", t("Insufficient balance")]
     return [undefined, undefined]
-  }, [value, fromAmount, fromBalance, t])
+  }, [value, parsedAmount, fromBalance, t])
 
   const formattedFiat = useMemo(
     () => (fiatValue ?? 0).toLocaleString(undefined, { currency, style: "currency" }),

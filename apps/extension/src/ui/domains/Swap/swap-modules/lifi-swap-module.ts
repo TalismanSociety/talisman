@@ -36,6 +36,9 @@ const DECENTRALISATION_SCORE = 2
 
 lifiSdk.createConfig({ integrator: "talisman", apiUrl })
 
+const isAbortError = (cause: unknown): boolean =>
+  cause instanceof Error && cause.name === "AbortError"
+
 // --- Helper to get a viem PublicClient for an EVM network ---
 const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
   if (!evmNetworkId) return undefined
@@ -132,10 +135,14 @@ const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Pr
   return assets.map((a) => a.tokenId)
 }
 
-const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | null> => {
+const getRoutes = async (
+  params: QuoteParams,
+  signal: AbortSignal
+): Promise<lifiSdk.RoutesResponse | null> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
     if (!fromTokenId || !toTokenId || !fromAmount) return null
+    if (signal.aborted) return null
 
     const fromAsset = resolveAsset(fromTokenId)
     const toAsset = resolveAsset(toTokenId)
@@ -152,17 +159,23 @@ const getRoutes = async (params: QuoteParams): Promise<lifiSdk.RoutesResponse | 
     if (!evmNetwork) return null
 
     const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
-    return await lifiSdk.getRoutes({
-      fromAddress: effectiveFromAddress,
-      toAddress: effectiveToAddress,
-      fromChainId: +fromAsset.chainId,
-      toChainId: +toAsset.chainId,
-      fromAmount: fromAmount.toString(),
-      fromTokenAddress: fromAsset.contractAddress ?? zeroAddress,
-      toTokenAddress: toAsset.contractAddress ?? zeroAddress,
-      options: { integrator: "talisman", fee },
-    })
+    if (signal.aborted) return null
+    return await lifiSdk.getRoutes(
+      {
+        fromAddress: effectiveFromAddress,
+        toAddress: effectiveToAddress,
+        fromChainId: +fromAsset.chainId,
+        toChainId: +toAsset.chainId,
+        fromAmount: fromAmount.toString(),
+        fromTokenAddress: fromAsset.contractAddress ?? zeroAddress,
+        toTokenAddress: toAsset.contractAddress ?? zeroAddress,
+        options: { integrator: "talisman", fee },
+      },
+      { signal }
+    )
   } catch (cause) {
+    if (signal.aborted || isAbortError(cause)) return null
+
     // biome-ignore lint/suspicious/noConsole: legacy
     console.warn("Failed to fetch lifi routes", cause)
     return {
@@ -252,16 +265,17 @@ const getRouteQuote = async (
   }
 }
 
-const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote[] | null> => {
+const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQuote[] | null> => {
   const { fromTokenId, toTokenId } = params
-  if (!fromTokenId) return null
+  if (!fromTokenId || signal.aborted) return null
 
-  const routes = await getRoutes(params)
-  if (!routes) return null
+  const routes = await getRoutes(params, signal)
+  if (!routes || signal.aborted) return null
 
   const quotes = await Promise.allSettled(
     routes.routes.map((route) => getRouteQuote(route, fromTokenId, toTokenId))
   )
+  if (signal.aborted) return null
 
   // Filter out nulls and failed promises
   const validQuotes = quotes
