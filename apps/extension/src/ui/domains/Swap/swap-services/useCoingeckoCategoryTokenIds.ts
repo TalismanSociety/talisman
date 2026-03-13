@@ -40,9 +40,10 @@ export const mapCoingeckoCategoryTokenIds = ({
 const fetchCoingeckoCategoryTokenIds = async (
   categoryId: string,
   tokenIds: string[],
-  tokensMap: Record<string, Token | undefined>
+  tokensMap: Record<string, Token | undefined>,
+  signal?: AbortSignal
 ): Promise<string[]> => {
-  const categoryCoins = await fetchCoingeckoCoinsByCategory(categoryId)
+  const categoryCoins = await fetchCoingeckoCoinsByCategory(categoryId, signal)
 
   return mapCoingeckoCategoryTokenIds({
     tokenIds,
@@ -64,9 +65,9 @@ export const useCoingeckoCategoryTokenIds = ({
 }: UseCoingeckoCategoryTokenIdsParams) => {
   return useQuery({
     queryKey: ["swap-coingecko-category-token-ids-v2", categoryId ?? null, tokenIds ?? []],
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       if (!categoryId || !tokenIds?.length) return []
-      return fetchCoingeckoCategoryTokenIds(categoryId, tokenIds, tokensMap)
+      return fetchCoingeckoCategoryTokenIds(categoryId, tokenIds, tokensMap, signal)
     },
     enabled: Boolean(categoryId && tokenIds?.length),
     placeholderData: keepPreviousData,

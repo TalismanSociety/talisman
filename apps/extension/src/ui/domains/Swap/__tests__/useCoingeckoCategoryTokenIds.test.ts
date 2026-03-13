@@ -1,6 +1,18 @@
 import type { Token } from "@talismn/chaindata-provider"
-import { describe, expect, it } from "vitest"
-import { mapCoingeckoCategoryTokenIds } from "../swap-services/useCoingeckoCategoryTokenIds"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { renderHook, waitFor } from "@testing-library/react"
+import { createElement, type PropsWithChildren } from "react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+
+import * as coingecko from "../swap-services/coingecko"
+import {
+  mapCoingeckoCategoryTokenIds,
+  useCoingeckoCategoryTokenIds,
+} from "../swap-services/useCoingeckoCategoryTokenIds"
+
+vi.mock("@ui/hooks/queryStoragePersister", () => ({
+  createQueryStoragePersister: () => undefined,
+}))
 
 function makeEvmErc20Token({
   id,
@@ -87,5 +99,60 @@ describe("mapCoingeckoCategoryTokenIds", () => {
     })
 
     expect(result).toEqual([])
+  })
+})
+
+describe("useCoingeckoCategoryTokenIds", () => {
+  let queryClient: QueryClient
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    })
+  })
+
+  afterEach(() => {
+    queryClient.clear()
+    vi.restoreAllMocks()
+  })
+
+  it("passes query abort signal to CoinGecko fetch helper", async () => {
+    let receivedSignal: AbortSignal | undefined
+    const fetchByCategorySpy = vi
+      .spyOn(coingecko, "fetchCoingeckoCoinsByCategory")
+      .mockImplementation(async (_category, signal) => {
+        receivedSignal = signal
+        return [{ id: "dogecoin", symbol: "doge" }]
+      })
+
+    const wrapper = ({ children }: PropsWithChildren) =>
+      createElement(QueryClientProvider, { client: queryClient }, children)
+
+    const { result } = renderHook(
+      () =>
+        useCoingeckoCategoryTokenIds({
+          categoryId: "meme-token",
+          tokenIds: ["bittensor:substrate-native:doge"],
+          tokensMap: {
+            "bittensor:substrate-native:doge": {
+              id: "bittensor:substrate-native:doge",
+              symbol: "DOGE",
+              coingeckoId: "dogecoin",
+              networkId: "bittensor",
+              decimals: 9,
+              type: "substrate-native",
+              name: "DOGE",
+            } as unknown as Token,
+          },
+        }),
+      { wrapper }
+    )
+
+    await waitFor(() => expect(result.current.data).toEqual(["bittensor:substrate-native:doge"]))
+
+    expect(fetchByCategorySpy).toHaveBeenCalledTimes(1)
+    expect(receivedSignal).toBeInstanceOf(AbortSignal)
   })
 })
