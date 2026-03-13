@@ -3,18 +3,20 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
+import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
 import type { TFunction } from "i18next"
 import { useCallback, useRef } from "react"
-
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
+import { buildAssetRegistry, filterAndSortTokens } from "./swap-services/token-filtering"
 import {
-  type AssetRegistry,
-  buildAssetRegistry,
-  filterAndSortTokens,
-} from "./swap-services/token-filtering"
+  deserializeAssetRegistry,
+  deserializeSafeTokens,
+  serializeAssetRegistry,
+  serializeSafeTokens,
+} from "./swaps.api.serialization"
 
 // ─── Constants ──────────────────────────────────────────────────────
 
@@ -60,7 +62,7 @@ export const useSwapAssets = (
   const tokensCount = Object.keys(tokensMap).length
 
   const fromAssetsQuery = useQuery({
-    queryKey: ["swap-from-assets", tokenTab, safeTokens.size, tokensCount],
+    queryKey: ["swap-from-assets-v2", tokenTab, safeTokens.size, tokensCount],
     queryFn: async ({ signal }) => {
       const moduleResults: Array<[SupportedSwapProtocol, string[]]> = await Promise.all(
         swapModules.map(async (m) => {
@@ -77,10 +79,12 @@ export const useSwapAssets = (
         tokenTab,
         t
       )
-      return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
+      return serializeAssetRegistry({ tokenIds: sorted, supportMap: registry.supportMap })
     },
+    select: deserializeAssetRegistry,
     enabled: tokensCount > 0,
     placeholderData: keepPreviousData,
+    persister: createQueryStoragePersister(),
   })
 
   // Use fromAssetsQuery's support map to filter modules for toAssetsQuery
@@ -90,7 +94,7 @@ export const useSwapAssets = (
 
   const toAssetsQuery = useQuery({
     queryKey: [
-      "swap-to-assets",
+      "swap-to-assets-v2",
       fromTokenId,
       tokenTab,
       safeTokens.size,
@@ -118,10 +122,12 @@ export const useSwapAssets = (
         tokenTab,
         t
       )
-      return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
+      return serializeAssetRegistry({ tokenIds: sorted, supportMap: registry.supportMap })
     },
+    select: deserializeAssetRegistry,
     enabled: tokensCount > 0,
     placeholderData: keepPreviousData,
+    persister: createQueryStoragePersister(),
   })
 
   return {
@@ -139,7 +145,7 @@ export const useSwapAssets = (
  */
 export const useSafeTokens = () => {
   return useQuery({
-    queryKey: ["swap-safe-tokens"],
+    queryKey: ["swap-safe-tokens-v2"],
     queryFn: async () => {
       const [uniswapSafe, uniswapExtended, talismanSafe] = await Promise.all([
         fetch("https://tokens.uniswap.org/")
@@ -164,9 +170,11 @@ export const useSafeTokens = () => {
           )
         }),
       ])
-      return new Set([...uniswapSafe, ...uniswapExtended, ...talismanSafe])
+      return serializeSafeTokens(new Set([...uniswapSafe, ...uniswapExtended, ...talismanSafe]))
     },
+    select: deserializeSafeTokens,
     staleTime: Infinity,
+    persister: createQueryStoragePersister(),
   })
 }
 
