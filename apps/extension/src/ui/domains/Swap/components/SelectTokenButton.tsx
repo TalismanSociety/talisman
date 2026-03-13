@@ -1,5 +1,5 @@
 import type { Token } from "@talismn/chaindata-provider"
-import { AlertTriangleIcon } from "@talismn/icons"
+import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -128,9 +128,17 @@ const OpenSelectorButton = ({
 
   if (!token) {
     return (
-      <BaseButton className="text-body-secondary text-sm hover:text-body" onClick={onClick}>
-        <TokenLogo className="size-16" />
-        {t("Select Token")}
+      <BaseButton
+        className="group overflow-hidden text-body-secondary text-sm hover:border-primary/20 hover:bg-primary/5 hover:text-body"
+        onClick={onClick}
+      >
+        <div className="flex size-16 shrink-0 items-center justify-center rounded-full border border-transparent bg-grey-800 text-primary group-hover:border-primary/20">
+          <PlusIcon className="size-9" />
+        </div>
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="truncate">{t("Select Token")}</div>
+          <ChevronDownIcon className="shrink-0" />
+        </div>
       </BaseButton>
     )
   }
@@ -144,10 +152,11 @@ const OpenSelectorButton = ({
           className="absolute -right-[2px] -bottom-[2px] h-[14px] w-[14px] rounded-full border-[1.5px] border-grey-900"
         />
       </div>
-      <div className="flex flex-col items-start gap-1">
-        <div className="text-body text-sm">{token.symbol}</div>
-        <div className="text-body-secondary text-xs">{network?.name}</div>
+      <div className="flex flex-col items-start gap-1 overflow-hidden">
+        <div className="w-full truncate text-left text-body text-sm">{token.symbol}</div>
+        <div className="w-full truncate text-left text-body-secondary text-xs">{network?.name}</div>
       </div>
+      <ChevronDownIcon className="shrink-0" />
     </BaseButton>
   )
 }
@@ -157,7 +166,7 @@ const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ classNa
     type="button"
     aria-haspopup="dialog"
     className={cn(
-      "flex h-24 items-center gap-4 rounded-sm bg-grey-800 px-4 hover:bg-grey-750",
+      "flex h-[44px] max-w-full items-center gap-4 overflow-hidden rounded-full border border-transparent px-2 text-body-secondary hover:bg-grey-750",
       className
     )}
     {...props}

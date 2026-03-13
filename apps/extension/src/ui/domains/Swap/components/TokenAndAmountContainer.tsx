@@ -11,15 +11,15 @@ export const TokenAndAmountContainer: FC<{
   return (
     <div
       className={cn(
-        "relative flex w-full flex-col gap-8 overflow-hidden rounded bg-grey-900 px-6 py-8"
+        "relative flex w-full flex-col gap-8 overflow-hidden rounded bg-grey-900 px-6 py-8 pl-4"
       )}
     >
       <div className="flex w-full items-center justify-between overflow-hidden">
-        <div className="shrink-0">{tokenButton}</div>
+        <div className="max-w-[50%] shrink-0 overflow-hidden">{tokenButton}</div>
         <div className="grow text-right">{tokenAmount}</div>
       </div>
-      <div className="flex w-full items-center justify-between overflow-hidden">
-        <div className="shrink-0">{accountButton}</div>
+      <div className="flex w-full items-center justify-between overflow-hidden pl-2">
+        <div className="max-w-[50%] shrink-0 overflow-hidden">{accountButton}</div>
         <div className="grow text-right">{accountBalance}</div>
       </div>
       <div
