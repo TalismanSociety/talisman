@@ -107,6 +107,44 @@ export const InputFromAmount = () => {
     [editFiat, fromToken?.decimals, tokenRate, value]
   )
 
+  // Keep input text in sync when amount is changed externally (e.g. Max/reverse).
+  useEffect(() => {
+    const decimals = fromToken?.decimals
+    if (decimals === undefined) {
+      setValue((prev) => {
+        if (prev === "") return prev
+        refSkipSync.current = true
+        return ""
+      })
+      return
+    }
+
+    const tokenValue =
+      fromAmount === null ? "" : (planckToTokens(fromAmount.toString(), decimals) ?? "")
+
+    if (editFiat) {
+      if (!tokenRate) return
+
+      const tokenAmount = Number.parseFloat(tokenValue || "0")
+      if (!Number.isFinite(tokenAmount)) return
+
+      const nextFiatValue = fromAmount === null ? "" : (tokenAmount * tokenRate).toFixed(2)
+
+      setValue((prev) => {
+        if (prev === nextFiatValue) return prev
+        refSkipSync.current = true
+        return nextFiatValue
+      })
+      return
+    }
+
+    setValue((prev) => {
+      if (prev === tokenValue) return prev
+      refSkipSync.current = true
+      return tokenValue
+    })
+  }, [editFiat, fromAmount, fromToken?.decimals, tokenRate])
+
   // Sync fromAmount with input value after typing settles so quote queries do not refire per keystroke.
   useEffect(() => {
     if (refSkipSync.current) {

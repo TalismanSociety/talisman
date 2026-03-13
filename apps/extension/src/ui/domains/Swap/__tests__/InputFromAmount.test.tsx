@@ -111,4 +111,57 @@ describe("InputFromAmount", () => {
     expect(screen.getByRole("alert").textContent).toContain("Insufficient balance")
     expect(setFromAmount).not.toHaveBeenCalled()
   })
+
+  it("reflects provider-driven amount updates in token mode", async () => {
+    const swapState = {
+      fromBalance: null,
+      fromTokenId: "1:native:eth",
+      fromAmount: null as bigint | null,
+      setFromAmount,
+    }
+    useSwapMock.mockImplementation(() => swapState)
+
+    const { rerender } = render(<InputFromAmount />)
+    const input = screen.getByLabelText("Amount to swap") as HTMLInputElement
+
+    expect(input.value).toBe("")
+
+    setFromAmount.mockClear()
+    swapState.fromAmount = BigInt(tokensToPlanck("2.5", 18) ?? "0")
+    rerender(<InputFromAmount />)
+
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync()
+    })
+
+    expect((screen.getByLabelText("Amount to swap") as HTMLInputElement).value).toBe("2.5")
+    expect(setFromAmount).not.toHaveBeenCalled()
+  })
+
+  it("keeps fiat mode and shows equivalent value for provider-driven amount updates", async () => {
+    const swapState = {
+      fromBalance: null,
+      fromTokenId: "1:native:eth",
+      fromAmount: null as bigint | null,
+      setFromAmount,
+    }
+    useSwapMock.mockImplementation(() => swapState)
+
+    const { rerender } = render(<InputFromAmount />)
+    const input = screen.getByLabelText("Amount to swap") as HTMLInputElement
+
+    fireEvent.click(screen.getByRole("button"))
+    expect(input.value).toBe("")
+
+    setFromAmount.mockClear()
+    swapState.fromAmount = BigInt(tokensToPlanck("1", 18) ?? "0")
+    rerender(<InputFromAmount />)
+
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync()
+    })
+
+    expect((screen.getByLabelText("Amount to swap") as HTMLInputElement).value).toBe("2000.00")
+    expect(setFromAmount).not.toHaveBeenCalled()
+  })
 })

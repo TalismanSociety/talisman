@@ -35,6 +35,7 @@ export const SwapForm = () => {
     fromTokenId,
     setFromTokenId,
     fromAmount,
+    onMaxFromAmountClick,
     toAddress,
     toTokenId,
     setToTokenId,
@@ -120,7 +121,9 @@ export const SwapForm = () => {
               onAccountChange={setFromAddress}
             />
           }
-          accountBalance={<AvailableBalance balance={fromBalance} />}
+          accountBalance={
+            <AvailableBalance balance={fromBalance} onMaxClick={onMaxFromAmountClick} />
+          }
           isError={!!insufficientBalance}
         />
 

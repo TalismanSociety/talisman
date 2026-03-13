@@ -1,4 +1,5 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import { isTokenInTypes } from "@talismn/chaindata-provider"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,6 +13,11 @@ import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
 export type { SwapView } from "./swap-modules/common.swap-module"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
+const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"> = [
+  "evm-native",
+  "substrate-native",
+  "sol-native",
+]
 
 type SwapProviderProps = {
   stateInit: SwapInit | null
@@ -216,6 +222,15 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
   const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
   const toBalance = useBalanceByParams({ address: toAddress, tokenId: toTokenId })
+  const isFromTokenNative = useMemo(
+    () => isTokenInTypes(fromBalance?.token, NATIVE_TOKEN_TYPES),
+    [fromBalance?.token]
+  )
+
+  const onMaxFromAmountClick = useCallback(() => {
+    if (isFromTokenNative || !fromBalance?.transferable.planck) return
+    setFromAmount(fromBalance.transferable.planck)
+  }, [fromBalance, isFromTokenNative])
 
   return {
     fromTokenId,
@@ -224,6 +239,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setToTokenId,
     fromAmount,
     setFromAmount,
+    onMaxFromAmountClick: isFromTokenNative ? undefined : onMaxFromAmountClick,
     fromAddress,
     setFromAddress,
     toAddress,
