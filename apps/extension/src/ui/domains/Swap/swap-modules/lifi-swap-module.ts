@@ -1,7 +1,13 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
-import type { EthNetworkId } from "@talismn/chaindata-provider"
-import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
+import { VersionedTransaction } from "@solana/web3.js"
+import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  solNativeTokenId,
+  solSplTokenId,
+} from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
@@ -34,6 +40,31 @@ const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
+
+const LIFI_SOLANA_CHAIN_ID = 1151111081099710
+const SOLANA_NETWORK_ID: SolNetworkId = "solana-mainnet"
+// Native SOL addresses in LI.FI (treat any of these as native SOL, not SPL)
+const SOLANA_NATIVE_ADDRESSES = new Set([
+  "11111111111111111111111111111111",
+  "So11111111111111111111111111111111111111112",
+])
+
+const toLifiChainId = (chainId: string | number): number => {
+  if (chainId === SOLANA_NETWORK_ID) return LIFI_SOLANA_CHAIN_ID
+  return +chainId
+}
+
+/** Resolve a LI.FI fee/gas token to a Talisman token ID, handling both EVM and Solana chains. */
+const feeTokenId = (token: { address: string; chainId: number }): string => {
+  if (token.chainId === LIFI_SOLANA_CHAIN_ID) {
+    return SOLANA_NATIVE_ADDRESSES.has(token.address)
+      ? solNativeTokenId(SOLANA_NETWORK_ID)
+      : solSplTokenId(SOLANA_NETWORK_ID, token.address)
+  }
+  return token.address === zeroAddress
+    ? evmNativeTokenId(token.chainId.toString())
+    : evmErc20TokenId(token.chainId.toString(), token.address as `0x${string}`)
+}
 
 lifiSdk.createConfig({ integrator: "talisman", apiUrl })
 
@@ -84,10 +115,11 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
 
   for (const talismanTokenId of (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []) {
     const [chainId, type, contractAddress] = talismanTokenId.split(":")
-    if (type !== "evm-erc20") continue
+    if (type !== "evm-erc20" && type !== "sol-spl") continue
 
     try {
-      const token = await lifiSdk.getToken(parseInt(chainId, 10), contractAddress)
+      const lifiChainId = type === "sol-spl" ? LIFI_SOLANA_CHAIN_ID : parseInt(chainId, 10)
+      const token = await lifiSdk.getToken(lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
       // biome-ignore lint/suspicious/noConsole: legacy
@@ -95,29 +127,59 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
     }
   }
 
-  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
-  const knownTokens = await firstValueFrom(getTokensMap$({ platform: "ethereum" }))
+  const [knownEvmNetworks] = await Promise.all([
+    firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
+    firstValueFrom(getNetworksMapById$({ platform: "solana" })),
+  ])
+  const [knownEvmTokens, knownSolTokens] = await Promise.all([
+    firstValueFrom(getTokensMap$({ platform: "ethereum" })),
+    firstValueFrom(getTokensMap$({ platform: "solana" })),
+  ])
+  const knownTokens = { ...knownEvmTokens, ...knownSolTokens }
 
   const result = Object.entries(allSdkTokens)
-    .filter(([chainId]) => knownEvmNetworks[chainId])
-    .flatMap(([chainId, tokens]): LifiInternalAsset[] =>
-      tokens.flatMap((sdkToken) => {
-        const contractAddress = sdkToken.address === zeroAddress ? undefined : sdkToken.address
-        const id = getTokenIdForSwappableAsset("evm", chainId, contractAddress)
+    .filter(([chainId]) => knownEvmNetworks[chainId] || Number(chainId) === LIFI_SOLANA_CHAIN_ID)
+    .flatMap(([chainId, tokens]): LifiInternalAsset[] => {
+      const isEvmChain = !!knownEvmNetworks[chainId]
+      const isSolChain = Number(chainId) === LIFI_SOLANA_CHAIN_ID
+
+      return tokens.flatMap((sdkToken) => {
+        let id: string
+        if (isEvmChain) {
+          const contractAddress = sdkToken.address === zeroAddress ? undefined : sdkToken.address
+          id = getTokenIdForSwappableAsset("evm", chainId, contractAddress)
+        } else if (isSolChain) {
+          const isNative = SOLANA_NATIVE_ADDRESSES.has(sdkToken.address)
+          id = isNative
+            ? solNativeTokenId(SOLANA_NETWORK_ID)
+            : solSplTokenId(SOLANA_NETWORK_ID, sdkToken.address)
+        } else {
+          return []
+        }
 
         const token = knownTokens[id]
         if (!token) return []
 
-        return {
-          tokenId: id,
-          chainId,
-          contractAddress,
-          decimals: token.decimals,
-          symbol: token.symbol,
-          lifiToken: sdkToken,
-        }
+        const contractAddress = isEvmChain
+          ? sdkToken.address === zeroAddress
+            ? undefined
+            : sdkToken.address
+          : isSolChain && !SOLANA_NATIVE_ADDRESSES.has(sdkToken.address)
+            ? sdkToken.address
+            : undefined
+
+        return [
+          {
+            tokenId: id,
+            chainId: isSolChain ? SOLANA_NETWORK_ID : chainId,
+            contractAddress,
+            decimals: token.decimals,
+            symbol: token.symbol,
+            lifiToken: sdkToken,
+          },
+        ]
       })
-    )
+    })
 
   // Populate the lookup cache
   assetsByTokenId.clear()
@@ -150,14 +212,31 @@ const getRoutes = async (
     if (!fromAsset || !toAsset) return null
 
     const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
-    const effectiveFromAddress = fromAddress ?? SWAP_PLACEHOLDER_ADDRESS
-    const effectiveToAddress = toAddress ?? SWAP_PLACEHOLDER_ADDRESS
+    const SOLANA_PLACEHOLDER_ADDRESS = "11111111111111111111111111111111"
+
+    const isSolanaFrom =
+      fromAsset.chainId === SOLANA_NETWORK_ID || Number(fromAsset.chainId) === LIFI_SOLANA_CHAIN_ID
+    const isSolanaTo =
+      toAsset.chainId === SOLANA_NETWORK_ID || Number(toAsset.chainId) === LIFI_SOLANA_CHAIN_ID
+
+    const effectiveFromAddress =
+      fromAddress ?? (isSolanaFrom ? SOLANA_PLACEHOLDER_ADDRESS : SWAP_PLACEHOLDER_ADDRESS)
+    const effectiveToAddress =
+      toAddress ?? (isSolanaTo ? SOLANA_PLACEHOLDER_ADDRESS : SWAP_PLACEHOLDER_ADDRESS)
+
     const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
 
     if (fromAmount === 0n) return null
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
     // network not supported
-    if (!evmNetwork) return null
+    if (!evmNetwork && !isSolanaFrom) return null
+
+    const fromTokenAddress = isSolanaFrom
+      ? fromAsset.lifiToken.address
+      : (fromAsset.contractAddress ?? zeroAddress)
+    const toTokenAddress = isSolanaTo
+      ? toAsset.lifiToken.address
+      : (toAsset.contractAddress ?? zeroAddress)
 
     const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
     if (signal.aborted) return null
@@ -165,11 +244,11 @@ const getRoutes = async (
       {
         fromAddress: effectiveFromAddress,
         toAddress: effectiveToAddress,
-        fromChainId: +fromAsset.chainId,
-        toChainId: +toAsset.chainId,
+        fromChainId: toLifiChainId(fromAsset.chainId),
+        toChainId: toLifiChainId(toAsset.chainId),
         fromAmount: fromAmount.toString(),
-        fromTokenAddress: fromAsset.contractAddress ?? zeroAddress,
-        toTokenAddress: toAsset.contractAddress ?? zeroAddress,
+        fromTokenAddress,
+        toTokenAddress,
         options: { integrator: "talisman", fee },
       },
       { signal }
@@ -203,10 +282,7 @@ const getRouteQuote = async (
     step.estimate.feeCosts?.map((fee) => ({
       amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
       name: fee.name,
-      tokenId:
-        fee.token.address === zeroAddress
-          ? evmNativeTokenId(fee.token.chainId.toString())
-          : evmErc20TokenId(fee.token.chainId.toString(), fee.token.address as `0x${string}`),
+      tokenId: feeTokenId(fee.token),
     })) ?? []
 
   if (step.estimate.gasCosts) {
@@ -214,10 +290,7 @@ const getRouteQuote = async (
       fees.push({
         amount: BigNumber(c.amount).times(10 ** -c.token.decimals),
         name: "Gas",
-        tokenId:
-          c.token.address === zeroAddress
-            ? evmNativeTokenId(c.token.chainId.toString())
-            : evmErc20TokenId(c.token.chainId.toString(), c.token.address as `0x${string}`),
+        tokenId: feeTokenId(c.token),
       })
     })
   }
@@ -335,8 +408,26 @@ const getTransaction = async (
     // Fetch fresh transaction calldata from LiFi at confirmation time
     const stepTransaction = await lifiSdk.getStepTransaction(step)
     const txRequest = stepTransaction?.transactionRequest
+    if (!txRequest) throw new Error("Unknown error, please try again")
+
+    // Solana transaction handling
+    if (txRequest.chainId === LIFI_SOLANA_CHAIN_ID) {
+      if (!txRequest.data) throw new Error("Missing Solana transaction data")
+
+      // LI.FI may return Solana transactions as base64 or hex-encoded
+      let txBytes: Uint8Array
+      try {
+        txBytes = Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
+      } catch {
+        txBytes = Buffer.from(txRequest.data.replace("0x", ""), "hex")
+      }
+
+      const transaction = VersionedTransaction.deserialize(txBytes)
+      return { platform: "solana", transaction }
+    }
+
+    // EVM transaction handling
     if (
-      !txRequest ||
       txRequest.to === undefined ||
       txRequest.data === undefined ||
       txRequest.chainId === undefined ||

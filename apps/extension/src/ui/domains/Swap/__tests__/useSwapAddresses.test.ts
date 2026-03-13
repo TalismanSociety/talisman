@@ -33,12 +33,14 @@ vi.mock("@core/domains/keyring/exports", () => ({
   isAccountPlatformPolkadot: vi.fn(
     (a: { address: string } | null) => a != null && !a.address?.startsWith("0x")
   ),
+  isAccountPlatformSolana: vi.fn(() => false),
 }))
 
 vi.mock("@talismn/crypto", () => ({
   isAddressEqual: vi.fn(
     (a: string | undefined, b: string | undefined) => a?.toLowerCase() === b?.toLowerCase()
   ),
+  isSolanaAddress: vi.fn(() => false),
 }))
 
 // ── Import after mocks ────────────────────────────────────────────

@@ -7,6 +7,7 @@ import {
   isAccountAddressSs58,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
+  isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
 import { isAddressEqual } from "@talismn/crypto"
 import { useAccounts } from "@ui/state/accounts"
@@ -19,6 +20,7 @@ const getNetworkType = (token: { type: string; platform?: string } | null | unde
   if (!token) return null
   if (token.platform === "ethereum") return "evm" as const
   if (token.platform === "polkadot") return "substrate" as const
+  if (token.platform === "solana") return "solana" as const
   return null
 }
 
@@ -69,6 +71,10 @@ export function useSwapAddresses({
     [ownedAccounts]
   )
   const ethAccounts = useMemo(() => ownedAccounts.filter(isAccountAddressEthereum), [ownedAccounts])
+  const solanaAccounts = useMemo(
+    () => ownedAccounts.filter(isAccountPlatformSolana),
+    [ownedAccounts]
+  )
 
   const fromAccount = useMemo(
     () =>
@@ -86,6 +92,10 @@ export function useSwapAddresses({
     () => substrateAccounts.find((a) => a.address.toLowerCase() === fromAddress?.toLowerCase()),
     [fromAddress, substrateAccounts]
   )
+  const fromSolanaAccount = useMemo(
+    () => solanaAccounts.find((a) => a.address === fromAddress),
+    [solanaAccounts, fromAddress]
+  )
 
   // ─── Auto-select from address based on largest token balance ────
   useEffect(() => {
@@ -97,6 +107,8 @@ export function useSwapAddresses({
           return ethAccounts
         case "substrate":
           return substrateAccounts
+        case "solana":
+          return solanaAccounts
         default:
           return []
       }
@@ -122,7 +134,15 @@ export function useSwapAddresses({
 
     const best = accountsWithBalance[0]
     setFromAddress(best?.address ?? null)
-  }, [fromTokenId, fromNetworkType, ethAccounts, substrateAccounts, balances, setFromAddress])
+  }, [
+    fromTokenId,
+    fromNetworkType,
+    ethAccounts,
+    substrateAccounts,
+    solanaAccounts,
+    balances,
+    setFromAddress,
+  ])
 
   // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {
@@ -146,6 +166,13 @@ export function useSwapAddresses({
         )
           return setToAddress(null)
 
+        return setToAddress(fromAddress)
+      }
+      case "solana": {
+        if (toAddress && (!toNetwork || isAddressCompatibleWithNetwork(toNetwork, toAddress)))
+          return
+
+        if (!isAccountPlatformSolana(fromAccount)) return setToAddress(null)
         return setToAddress(fromAddress)
       }
       default: {
@@ -180,8 +207,10 @@ export function useSwapAddresses({
     setToAddress,
     ethAccounts,
     substrateAccounts,
+    solanaAccounts,
     fromEvmAccount,
     fromSubstrateAccount,
+    fromSolanaAccount,
     fromAccount,
     resetFromAddressManuallySet,
   }

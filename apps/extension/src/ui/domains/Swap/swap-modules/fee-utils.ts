@@ -2,7 +2,7 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 
 // === StealthEX fee logic ===
 
-export type FeeRouteAsset = { networkType: "evm" | "substrate" }
+export type FeeRouteAsset = { networkType: "evm" | "substrate" | "solana" }
 export type FeeRouteProps = { fromAsset: FeeRouteAsset; toAsset: FeeRouteAsset }
 
 // StealthEX always includes an affiliate fee of 0.4%

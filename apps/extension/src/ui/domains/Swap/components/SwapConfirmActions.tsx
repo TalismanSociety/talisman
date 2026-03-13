@@ -13,6 +13,7 @@ import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
@@ -115,6 +116,10 @@ export const SwapConfirmActions = () => {
     fromToken?.platform === "polkadot" ? fromToken.networkId : null
   )
 
+  const solanaConnection = useSolanaConnection(
+    fromToken?.platform === "solana" ? fromToken.networkId : null
+  )
+
   const exchangeAndTransactionQuery = useQuery({
     queryKey: [
       "swap-exchange-transaction",
@@ -143,11 +148,16 @@ export const SwapConfirmActions = () => {
 
       if (signal.aborted) throw new Error("Aborted")
 
+      const context = {
+        ...(sapi ? { polkadot: { sapi, allowReap } } : undefined),
+        ...(solanaConnection ? { solana: { connection: solanaConnection } } : undefined),
+      }
+
       const transaction = await swapModule.getTransaction({
         fromTokenId,
         fromAddress,
         exchange: exchange ?? selectedQuote,
-        context: sapi ? { polkadot: { sapi, allowReap } } : undefined,
+        context: Object.keys(context).length > 0 ? context : undefined,
       })
 
       if (signal.aborted) throw new Error("Aborted")
@@ -165,7 +175,8 @@ export const SwapConfirmActions = () => {
       isReady &&
       !approvalLoading &&
       !needsApproval &&
-      (fromToken?.platform !== "polkadot" || !!sapi),
+      (fromToken?.platform !== "polkadot" || !!sapi) &&
+      (fromToken?.platform !== "solana" || !!solanaConnection),
     retry: false,
   })
 
@@ -276,6 +287,9 @@ export const SwapConfirmActions = () => {
         )
       case "polkadot":
         return substrateFee.data?.toString() ?? null
+      case "solana":
+        // Solana base fee is 5000 lamports per signature, predictable and very low
+        return "5000"
       default:
         return null
     }

@@ -4,12 +4,19 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token"
+import type { Connection } from "@solana/web3.js"
+import { PublicKey, Transaction as SolTransaction, SystemProgram } from "@solana/web3.js"
+import {
   evmErc20TokenId,
   evmNativeTokenId,
   subAssetTokenId,
   subNativeTokenId,
 } from "@talismn/balances-react"
-import type { EthNetworkId } from "@talismn/chaindata-provider"
+import { type EthNetworkId, solNativeTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
@@ -82,6 +89,9 @@ type SimpleSwapCurrency = {
 type SimpleSwapAssetContext = {
   symbol: string
 }
+
+const SOLANA_NETWORK_KEY = "sol"
+const SOLANA_NETWORK_ID = "solana-mainnet"
 
 const supportedEvmNetworkIds: Record<string, EthNetworkId | undefined> = {
   arbitrum: "42161",
@@ -251,6 +261,13 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     symbol: "AVAIL",
     chainId: "avail",
     networkType: "substrate",
+  },
+  sol: {
+    id: solNativeTokenId("solana-mainnet"),
+    name: "Solana",
+    symbol: "SOL",
+    chainId: "solana-mainnet",
+    networkType: "solana",
   },
 }
 
@@ -457,10 +474,14 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
   const supportedTokens = allCurrencies.filter((currency) => {
     if (currency.isFiat) return false
     const isEvmNetwork = !!supportedEvmNetworkIds[currency.network]
+    const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
     const isSpecialAsset = specialAssets[currency.symbol]
 
     // evm assets must be whitelisted as a special asset or have a contract address
     if (isEvmNetwork) return isSpecialAsset || !!currency.contract_address
+
+    // Solana assets: must be a special asset OR have a contract_address (mint address)
+    if (isSolNetwork) return isSpecialAsset || !!currency.contract_address
 
     // substrate assets must be whitelisted as a special asset
     return isSpecialAsset
@@ -471,6 +492,7 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
     supportedTokens.reduce(
       (acc, currency) => {
         const evmNetworkId = supportedEvmNetworkIds[currency.network]
+        const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
         const polkadotAsset = specialAssets[currency.symbol]
 
         const id = evmNetworkId
@@ -479,8 +501,18 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
               evmNetworkId,
               currency.contract_address ? currency.contract_address : undefined
             )
-          : polkadotAsset?.id
-        const chainId = evmNetworkId ? Number(evmNetworkId) : polkadotAsset?.chainId
+          : isSolNetwork
+            ? getTokenIdForSwappableAsset(
+                "solana",
+                SOLANA_NETWORK_ID,
+                currency.contract_address || undefined
+              )
+            : polkadotAsset?.id
+        const chainId = evmNetworkId
+          ? Number(evmNetworkId)
+          : isSolNetwork
+            ? SOLANA_NETWORK_ID
+            : polkadotAsset?.chainId
         if (!id || !chainId) return acc
 
         const token = knownTokens[id]
@@ -494,7 +526,11 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image: (token.logo !== UNKNOWN_TOKEN_URL ? token.logo : undefined) ?? currency.image,
-          networkType: evmNetworkId ? "evm" : (polkadotAsset?.networkType ?? "substrate"),
+          networkType: evmNetworkId
+            ? "evm"
+            : isSolNetwork
+              ? "solana"
+              : (polkadotAsset?.networkType ?? "substrate"),
           assetHubAssetId: polkadotAsset?.assetHubAssetId,
           context: {
             simpleswap: {
@@ -932,6 +968,60 @@ const getSubstratePayload = async (params: {
   }
 }
 
+const getSolanaTransaction = async (
+  params: Pick<GetTransactionParams, "fromTokenId" | "fromAddress" | "exchange"> & {
+    connection: Connection
+  }
+): Promise<SolTransaction | undefined> => {
+  try {
+    const { fromTokenId, fromAddress, exchange: exchangeData, connection } = params
+    const exchange = exchangeData as Exchange
+    const fromAsset = resolveAsset(fromTokenId)
+    if (!fromAddress) throw new Error("Missing from address")
+    if (!fromAsset) throw new Error("Missing from asset")
+    if (!exchange) throw new Error("Missing exchange")
+    if (fromAsset.networkType !== "solana") return
+
+    const depositAmount = parseUserInputToPlanck(exchange.expected_amount, fromAsset.decimals)
+    const fromPubkey = new PublicKey(fromAddress)
+    const toPubkey = new PublicKey(exchange.address_from)
+
+    const transaction = new SolTransaction()
+
+    if (!fromAsset.contractAddress) {
+      // Native SOL transfer
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports: depositAmount,
+        })
+      )
+    } else {
+      // SPL token transfer
+      const mintPubkey = new PublicKey(fromAsset.contractAddress)
+      const sourceAta = getAssociatedTokenAddressSync(mintPubkey, fromPubkey)
+      const destAta = getAssociatedTokenAddressSync(mintPubkey, toPubkey, true)
+
+      // Create destination ATA if it doesn't exist
+      transaction.add(
+        createAssociatedTokenAccountIdempotentInstruction(fromPubkey, destAta, toPubkey, mintPubkey)
+      )
+      transaction.add(createTransferInstruction(sourceAta, destAta, fromPubkey, depositAmount))
+    }
+
+    const { blockhash } = await connection.getLatestBlockhash()
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = fromPubkey
+
+    return transaction
+  } catch (cause) {
+    // biome-ignore lint/suspicious/noConsole: error logging
+    console.error(new Error("Failed to create solana transaction", { cause }))
+    throw cause
+  }
+}
+
 const getTransaction = async (
   params: GetTransactionParams
 ): Promise<SwapModuleTransaction | null> => {
@@ -957,6 +1047,18 @@ const getTransaction = async (
       return payload
         ? { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
         : null
+    }
+    case "solana": {
+      const connection = params.context?.solana?.connection
+      if (!connection) return null
+
+      const transaction = await getSolanaTransaction({
+        fromTokenId: params.fromTokenId,
+        fromAddress: params.fromAddress,
+        exchange: params.exchange,
+        connection,
+      })
+      return transaction ? { platform: "solana", transaction } : null
     }
     default:
       return null

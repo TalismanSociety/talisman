@@ -2,8 +2,15 @@ import { UNKNOWN_TOKEN_URL } from "@common/constants"
 import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import { MultiAddress } from "@polkadot-api/descriptors"
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token"
+import type { Connection } from "@solana/web3.js"
+import { PublicKey, Transaction as SolTransaction, SystemProgram } from "@solana/web3.js"
 import { evmNativeTokenId, subAssetTokenId, subNativeTokenId } from "@talismn/balances-react"
-import type { EthNetworkId } from "@talismn/chaindata-provider"
+import { type EthNetworkId, solNativeTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
@@ -95,6 +102,9 @@ const supportedEvmNetworkIds: Record<string, EthNetworkId | undefined> = {
   vana: "1480",
   zksync: "324",
 }
+
+const SOLANA_NETWORK_KEY = "sol"
+const SOLANA_NETWORK_ID = "solana-mainnet"
 
 /**
  * specialAssets list defines a mappings of assets from stealthex to our internal asset representation.
@@ -225,6 +235,13 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     symbol: "ACA",
     chainId: "acala",
     networkType: "substrate",
+  },
+  "sol::sol": {
+    id: solNativeTokenId("solana-mainnet"),
+    name: "Solana",
+    symbol: "SOL",
+    chainId: "solana-mainnet",
+    networkType: "solana",
   },
 }
 
@@ -413,6 +430,10 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
     // evm assets must be whitelisted as a special asset or have a contract address
     if (isEvmNetwork) return isSpecialAsset || !!currency.contract_address
 
+    // solana assets must be whitelisted as a special asset or have a contract address (SPL tokens)
+    const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
+    if (isSolNetwork) return isSpecialAsset || !!currency.contract_address
+
     // substrate assets must be whitelisted as a special asset
     return isSpecialAsset
   })
@@ -423,6 +444,7 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
       (acc, currency) => {
         const evmNetworkId = supportedEvmNetworkIds[currency.network]
         const specialAsset = specialAssets[`${currency.network}::${currency.symbol}`]
+        const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
 
         const id = evmNetworkId
           ? getTokenIdForSwappableAsset(
@@ -430,8 +452,18 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
               evmNetworkId,
               currency.contract_address ? currency.contract_address : undefined
             )
-          : specialAsset?.id
-        const chainId = evmNetworkId ? Number(evmNetworkId) : specialAsset?.chainId
+          : isSolNetwork
+            ? getTokenIdForSwappableAsset(
+                "solana",
+                SOLANA_NETWORK_ID,
+                currency.contract_address ? currency.contract_address : undefined
+              )
+            : specialAsset?.id
+        const chainId = evmNetworkId
+          ? Number(evmNetworkId)
+          : isSolNetwork
+            ? SOLANA_NETWORK_ID
+            : specialAsset?.chainId
         if (!id || !chainId) return acc
 
         const token = knownTokens[id]
@@ -445,7 +477,11 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image: (token.logo !== UNKNOWN_TOKEN_URL ? token.logo : undefined) ?? currency.icon_url,
-          networkType: evmNetworkId ? "evm" : (specialAsset?.networkType ?? "substrate"),
+          networkType: evmNetworkId
+            ? "evm"
+            : isSolNetwork
+              ? "solana"
+              : (specialAsset?.networkType ?? "substrate"),
           assetHubAssetId: specialAsset?.assetHubAssetId,
           context: {
             stealthex: {
@@ -864,6 +900,60 @@ const getSubstratePayload = async (params: {
   }
 }
 
+const getSolanaTransaction = async (
+  params: Pick<GetTransactionParams, "fromTokenId" | "fromAddress" | "exchange"> & {
+    connection: Connection
+  }
+): Promise<SolTransaction | undefined> => {
+  try {
+    const { fromTokenId, fromAddress, exchange: exchangeData, connection } = params
+    const exchange = exchangeData as StealthexExchange
+    const fromAsset = resolveAsset(fromTokenId)
+    if (!fromAddress) throw new Error("Missing from address")
+    if (!fromAsset) throw new Error("Missing from asset")
+    if (!exchange) throw new Error("Missing exchange")
+    if (fromAsset.networkType !== "solana") return
+
+    const depositAmount = parseUserInputToPlanck(
+      BigNumber(exchange.deposit.expected_amount).toFixed(),
+      fromAsset.decimals
+    )
+    const fromPubkey = new PublicKey(fromAddress)
+    const toPubkey = new PublicKey(exchange.deposit.address)
+
+    const transaction = new SolTransaction()
+
+    if (!fromAsset.contractAddress) {
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports: depositAmount,
+        })
+      )
+    } else {
+      const mintPubkey = new PublicKey(fromAsset.contractAddress)
+      const sourceAta = getAssociatedTokenAddressSync(mintPubkey, fromPubkey)
+      const destAta = getAssociatedTokenAddressSync(mintPubkey, toPubkey, true)
+
+      transaction.add(
+        createAssociatedTokenAccountIdempotentInstruction(fromPubkey, destAta, toPubkey, mintPubkey)
+      )
+      transaction.add(createTransferInstruction(sourceAta, destAta, fromPubkey, depositAmount))
+    }
+
+    const { blockhash } = await connection.getLatestBlockhash()
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = fromPubkey
+
+    return transaction
+  } catch (cause) {
+    // biome-ignore lint/suspicious/noConsole: legacy
+    console.error(new Error("Failed to create solana transaction", { cause }))
+    throw cause
+  }
+}
+
 const getTransaction = async (
   params: GetTransactionParams
 ): Promise<SwapModuleTransaction | null> => {
@@ -889,6 +979,18 @@ const getTransaction = async (
       return payload
         ? { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
         : null
+    }
+    case "solana": {
+      const connection = params.context?.solana?.connection
+      if (!connection) return null
+
+      const transaction = await getSolanaTransaction({
+        fromTokenId: params.fromTokenId,
+        fromAddress: params.fromAddress,
+        exchange: params.exchange,
+        connection,
+      })
+      return transaction ? { platform: "solana", transaction } : null
     }
     default:
       return null

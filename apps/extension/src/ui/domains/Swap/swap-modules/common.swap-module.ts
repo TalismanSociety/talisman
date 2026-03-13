@@ -5,17 +5,19 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
-import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
+import { isAccountPlatformEthereum, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
   type Network,
+  solNativeTokenId,
+  solSplTokenId,
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
+import { isEthereumAddress, isSolanaAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
@@ -99,6 +101,9 @@ export type GetTransactionParams = {
       sapi: ScaleApi
       allowReap?: boolean
     }
+    solana?: {
+      connection: Connection
+    }
   }
 }
 
@@ -150,7 +155,7 @@ export const validateAddress = (
   account: Account | undefined,
   address: string,
   network: Network | undefined,
-  networkType: "evm" | "substrate"
+  networkType: "evm" | "substrate" | "solana"
 ) => {
   if (network) {
     if (account) return isAccountCompatibleWithNetwork(network, account)
@@ -164,6 +169,8 @@ export const validateAddress = (
       return account
         ? network && isAccountCompatibleWithNetwork(network, account)
         : isSs58Address(address)
+    case "solana":
+      return account ? isAccountPlatformSolana(account) : isSolanaAddress(address)
     default:
       throw new Error("Invalid network type")
   }
@@ -172,7 +179,7 @@ export const validateAddress = (
 // helpers — module-internal use only
 
 export const getTokenIdForSwappableAsset = (
-  chainType: "substrate" | "evm",
+  chainType: "substrate" | "evm" | "solana",
   chainId: number | string,
   contractAddress?: string
 ) => {
@@ -183,6 +190,10 @@ export const getTokenIdForSwappableAsset = (
         : evmNativeTokenId(chainId.toString())
     case "substrate":
       return subNativeTokenId(chainId.toString())
+    case "solana":
+      return contractAddress
+        ? solSplTokenId(chainId.toString(), contractAddress)
+        : solNativeTokenId(chainId.toString())
     default:
       return "not-supported"
   }
@@ -200,7 +211,7 @@ export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtoc
   contractAddress?: string
   assetHubAssetId?: string
   image?: string
-  networkType: "evm" | "substrate"
+  networkType: "evm" | "substrate" | "solana"
   /** protocol modules can store context here, like any special identifier */
   context: TContext
   decimals?: number
