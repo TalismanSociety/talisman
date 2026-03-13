@@ -1,6 +1,6 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
+import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 
 import { type CoingeckoCategoryItem, fetchCoingeckoCoinsByCategory } from "./coingecko"
 
@@ -71,6 +71,6 @@ export const useCoingeckoCategoryTokenIds = ({
     },
     enabled: Boolean(categoryId && tokenIds?.length),
     placeholderData: keepPreviousData,
-    persister: createQueryStoragePersister(),
+    persister: createQueryStoragePersister({ maxAge: PERSIST_AGE_ONE_YEAR }),
   })
 }

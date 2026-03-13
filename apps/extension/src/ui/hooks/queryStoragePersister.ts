@@ -20,6 +20,8 @@ export type QueryStorageConfig = {
 
 const DEFAULT_MAX_AGE = 86_400_000 // 24 hours
 
+export const PERSIST_AGE_ONE_YEAR = 1000 * 60 * 60 * 24 * 365
+
 /**
  * Creates a TanStack Query per-query `persister` that reads/writes through
  * the background-script query cache API.

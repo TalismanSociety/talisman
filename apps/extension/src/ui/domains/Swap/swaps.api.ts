@@ -3,7 +3,7 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
-import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
+import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import type { TFunction } from "i18next"
@@ -87,7 +87,7 @@ export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: T
     select: deserializeAssetRegistry,
     enabled: tokensCount > 0,
     placeholderData: keepPreviousData,
-    persister: createQueryStoragePersister(),
+    persister: createQueryStoragePersister({ maxAge: PERSIST_AGE_ONE_YEAR }),
   })
 
   // Use fromAssetsQuery's support map to filter modules for toAssetsQuery
@@ -123,7 +123,7 @@ export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: T
     select: deserializeAssetRegistry,
     enabled: tokensCount > 0,
     placeholderData: keepPreviousData,
-    persister: createQueryStoragePersister(),
+    persister: createQueryStoragePersister(), // default 1 day is fine, dont cache longer as there is one result set per fromTokenId
   })
 
   const filteredFromAssetIds = useMemo(() => {
@@ -194,7 +194,7 @@ export const useSafeTokens = () => {
     },
     select: deserializeSafeTokens,
     staleTime: Infinity,
-    persister: createQueryStoragePersister(),
+    persister: createQueryStoragePersister({ maxAge: PERSIST_AGE_ONE_YEAR }),
   })
 }
 
