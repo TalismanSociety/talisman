@@ -3,6 +3,7 @@ import { useNetwork } from "@talismn/balances-react"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
@@ -259,6 +260,8 @@ export const SwapConfirmActions = () => {
   }, [approveTx, needsApproval, transaction])
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
+  const isActiveEthereumTransaction = needsApproval || transaction?.platform === "ethereum"
+  const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
   const feePlanck = useMemo(() => {
     if (!activeTransaction) return null
@@ -326,6 +329,32 @@ export const SwapConfirmActions = () => {
     <>
       <div className="relative flex min-h-[4.48rem] w-full flex-col gap-4 rounded bg-grey-900 px-8 py-6">
         <QuoteProvider />
+        {isActiveEthereumTransaction &&
+        (activeEthTx.transaction?.type === undefined ||
+          activeEthTx.transaction?.type === "eip1559") ? (
+          <div className="flex h-10 items-center justify-between gap-8">
+            <div className="text-body-secondary text-xs">{t("Priority")}</div>
+            <div>
+              {activeEthTx.transaction &&
+                activeEthTx.txDetails &&
+                activeFeeTokenId &&
+                activeEthTx.priority && (
+                  <EthFeeSelect
+                    className="h-10"
+                    tx={activeEthTx.transaction}
+                    tokenId={activeFeeTokenId}
+                    drawerContainerId="swap-modal"
+                    gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
+                    priority={activeEthTx.priority}
+                    txDetails={activeEthTx.txDetails}
+                    networkUsage={activeEthTx.networkUsage}
+                    setCustomSettings={activeEthTx.setCustomSettings}
+                    onChange={activeEthTx.setPriority}
+                  />
+                )}
+            </div>
+          </div>
+        ) : null}
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap text-body-secondary text-xs">
             {t("Estimated TX Fee")}
