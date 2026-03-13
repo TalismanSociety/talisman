@@ -19,6 +19,7 @@ import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwap } from "../SwapProvider"
 import type { SwapModuleTransaction } from "../swap-modules/common.swap-module"
+import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions = () => {
   const { t } = useTranslation()
@@ -260,7 +261,6 @@ export const SwapConfirmActions = () => {
   }, [approveTx, needsApproval, transaction])
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
-  const isActiveEthereumTransaction = needsApproval || transaction?.platform === "ethereum"
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
   const feePlanck = useMemo(() => {
@@ -310,7 +310,11 @@ export const SwapConfirmActions = () => {
     if (!activeTransaction) return false
     switch (activeTransaction.platform) {
       case "ethereum":
-        return Boolean((needsApproval ? approvalEthTx.error : swapEthTx.error) || exchangeError)
+        return hasEthFeeEstimateError({
+          exchangeError,
+          ethError: needsApproval ? approvalEthTx.error : swapEthTx.error,
+          txDetails: needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails,
+        })
       case "polkadot":
         return Boolean(substrateFee.error || exchangeError)
       default:
@@ -319,20 +323,20 @@ export const SwapConfirmActions = () => {
   }, [
     activeTransaction,
     approvalEthTx.error,
+    approvalEthTx.txDetails,
     exchangeError,
     needsApproval,
     substrateFee.error,
     swapEthTx.error,
+    swapEthTx.txDetails,
   ])
 
   return (
     <>
       <div className="relative flex min-h-[4.48rem] w-full flex-col gap-4 rounded bg-grey-900 px-8 py-6">
         <QuoteProvider />
-        {isActiveEthereumTransaction &&
-        (activeEthTx.transaction?.type === undefined ||
-          activeEthTx.transaction?.type === "eip1559") ? (
-          <div className="flex h-10 items-center justify-between gap-8">
+        {fromToken?.platform === "ethereum" ? (
+          <div className="flex h-11 items-center justify-between gap-8">
             <div className="text-body-secondary text-xs">{t("Priority")}</div>
             <div>
               {activeEthTx.transaction &&
@@ -355,7 +359,7 @@ export const SwapConfirmActions = () => {
             </div>
           </div>
         ) : null}
-        <div className="flex items-center justify-between gap-8">
+        <div className="flex h-11 items-center justify-between gap-8">
           <div className="whitespace-nowrap text-body-secondary text-xs">
             {t("Estimated TX Fee")}
           </div>

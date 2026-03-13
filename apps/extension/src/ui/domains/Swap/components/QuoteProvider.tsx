@@ -9,7 +9,7 @@ export const QuoteProvider = () => {
   const isLoading = !selectedQuote
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex h-11 items-center justify-between">
       <div className="text-body-secondary text-xs">{t("Provider")}</div>
 
       <div className="flex items-center justify-end gap-4">

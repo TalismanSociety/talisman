@@ -3,6 +3,7 @@ import {
   getGasLimit,
   getGasSettingsEip1559,
   getTotalFeesFromGasSettings,
+  normalizeTransactionFeeModel,
   prepareTransaction,
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
@@ -531,7 +532,8 @@ export const useEthTransaction = (
 
   const liveUpdatingTransaction = useMemo(() => {
     if (!publicClient || !tx || !gasSettings || nonce === undefined) return undefined
-    return prepareTransaction(tx, gasSettings, nonce)
+    const preparedTransaction = prepareTransaction(tx, gasSettings, nonce)
+    return normalizeTransactionFeeModel(preparedTransaction, gasSettings)
   }, [gasSettings, publicClient, tx, nonce])
 
   // transaction may be locked once sent to hardware device for signing

@@ -370,6 +370,31 @@ export const prepareTransaction = (
   nonce,
 })
 
+/**
+ * Ensures that the transaction request has the correct fee fields according to the gas settings type, and removes any incompatible fields.
+ * This was introduced to workaround issues in swaps, with Lifi provider on BSC chain.
+ */
+export const normalizeTransactionFeeModel = (
+  tx: TransactionRequest,
+  gasSettings: EthGasSettings
+): TransactionRequest => {
+  const normalizedTx = { ...tx }
+
+  if (gasSettings.type === "eip1559") {
+    // on eip1559 tx, ensure we dont have any legacy fee field, and type is set to eip1559
+    delete normalizedTx.gasPrice
+    normalizedTx.type = "eip1559"
+    return normalizedTx
+  }
+
+  // on legacy tx, ensure we dont have any eip1559 fee field, and type is not set or set to legacy
+  delete normalizedTx.maxFeePerGas
+  delete normalizedTx.maxPriorityFeePerGas
+  if (normalizedTx.type === "eip1559") delete normalizedTx.type
+
+  return normalizedTx
+}
+
 const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")
 
 const schemaAddEthereumRequest = yup.object().shape({
