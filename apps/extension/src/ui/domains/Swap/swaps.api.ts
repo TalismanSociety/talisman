@@ -1,7 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { useTokensMap } from "@ui/state/chaindata"
 import type { TFunction } from "i18next"
@@ -80,12 +80,13 @@ export const useSwapAssets = (
       return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
     },
     enabled: tokensCount > 0,
+    placeholderData: keepPreviousData,
   })
 
   // Use fromAssetsQuery's support map to filter modules for toAssetsQuery
   const fromSupportMapInternal = fromAssetsQuery.data?.supportMap ?? null
 
-  const fromSupportMapSize = fromSupportMapInternal?.size ?? 0
+  const hasFromSupportMap = fromSupportMapInternal !== null && fromSupportMapInternal.size > 0
 
   const toAssetsQuery = useQuery({
     queryKey: [
@@ -94,7 +95,7 @@ export const useSwapAssets = (
       tokenTab,
       safeTokens.size,
       tokensCount,
-      fromSupportMapSize,
+      hasFromSupportMap,
     ],
     queryFn: async ({ signal }) => {
       const modules = swapModules.filter((m) =>
@@ -120,6 +121,7 @@ export const useSwapAssets = (
       return { tokenIds: sorted, supportMap: registry.supportMap } as AssetRegistry
     },
     enabled: tokensCount > 0,
+    placeholderData: keepPreviousData,
   })
 
   return {
