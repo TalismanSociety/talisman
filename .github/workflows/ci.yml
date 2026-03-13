@@ -18,8 +18,10 @@ jobs:
   # This job will build and test the talisman wallet
   build:
     name: "Build and test the wallet"
-    timeout-minutes: 15
+    timeout-minutes: 20
     runs-on: ubuntu-latest
+    env:
+      E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
 
     steps:
       - name: Checkout repo
@@ -96,39 +98,9 @@ jobs:
           path: ./apps/extension/dist/*.zip
           retention-days: 5
 
-  # This job will use the files from the build job to run Playwright tests
-  playwright:
-    name: "E2E test the wallet with Playwright"
-    needs: build
-    timeout-minutes: 15
-    runs-on: ubuntu-latest
-    env:
-      E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Build papi descriptors
-        run: pnpm papi
-      - name: Download build artifact # download wallet that was built in the build job
-        uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: ./build-artifact
-      - name: Unzip build artifact to the playwright extension path
-        run: |
-          mkdir -p ./apps/extension/dist/chrome-mv3
-          unzip ./build-artifact/*.zip -d ./apps/extension/dist/chrome-mv3
+      # E2E tests with Playwright
+      # The built extension is already at apps/extension/dist/chrome-mv3/ (wxt zip keeps the unzipped output)
+      # papi descriptors are already generated via postinstall (papi:once)
       - name: Cache playwright browsers
         uses: actions/cache@v3
         with:
