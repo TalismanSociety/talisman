@@ -5,12 +5,19 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import type { TFunction } from "i18next"
-import { useCallback, useRef } from "react"
+import { useCallback, useMemo, useRef } from "react"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
-import { buildAssetRegistry, filterAndSortTokens } from "./swap-services/token-filtering"
+import {
+  buildAssetRegistry,
+  filterAndSortTokensByTab,
+  getCoingeckoCategoryId,
+  getTokenTabs,
+} from "./swap-services/token-filtering"
+import { useCoingeckoCategoryTokenIds } from "./swap-services/useCoingeckoCategoryTokenIds"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -52,17 +59,18 @@ const withRetry = async <T>(
  * Fetches from/to assets from all swap modules.
  * Returns tokenId arrays and support maps.
  */
-export const useSwapAssets = (
-  fromTokenId: string | null,
-  tokenTab: string,
-  t: TFunction,
-  safeTokens: Set<string>
-) => {
+export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: TFunction) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
+  const coingeckoCategoryId = getCoingeckoCategoryId(tokenTab)
+  const remoteConfig = useRemoteConfig()
+  const tokenTabs = useMemo(() => {
+    const { curatedTokens = [] } = remoteConfig.swaps
+    return getTokenTabs({ t, curatedTokens })
+  }, [remoteConfig.swaps, t])
 
   const fromAssetsQuery = useQuery({
-    queryKey: ["swap-from-assets-v2", tokenTab, safeTokens.size, tokensCount],
+    queryKey: ["swap-from-assets-v3", tokensCount],
     queryFn: async ({ signal }) => {
       const moduleResults: Array<[SupportedSwapProtocol, string[]]> = await Promise.all(
         swapModules.map(async (m) => {
@@ -71,15 +79,10 @@ export const useSwapAssets = (
         })
       )
       const registry = buildAssetRegistry(moduleResults, tokensMap)
-      const sorted = await filterAndSortTokens(
-        registry.tokenIds,
-        tokensMap,
-        "",
-        safeTokens,
-        tokenTab,
-        t
-      )
-      return serializeAssetRegistry({ tokenIds: sorted, supportMap: registry.supportMap })
+      return serializeAssetRegistry({
+        tokenIds: registry.tokenIds,
+        supportMap: registry.supportMap,
+      })
     },
     select: deserializeAssetRegistry,
     enabled: tokensCount > 0,
@@ -91,16 +94,14 @@ export const useSwapAssets = (
   const fromSupportMapInternal = fromAssetsQuery.data?.supportMap ?? null
 
   const hasFromSupportMap = fromSupportMapInternal !== null && fromSupportMapInternal.size > 0
+  const toAssetsSupportMapState = fromTokenId
+    ? hasFromSupportMap
+      ? "ready"
+      : "pending"
+    : "not-needed"
 
   const toAssetsQuery = useQuery({
-    queryKey: [
-      "swap-to-assets-v2",
-      fromTokenId,
-      tokenTab,
-      safeTokens.size,
-      tokensCount,
-      hasFromSupportMap,
-    ],
+    queryKey: ["swap-to-assets-v3", fromTokenId, tokensCount, toAssetsSupportMapState],
     queryFn: async ({ signal }) => {
       const modules = swapModules.filter((m) =>
         fromTokenId && fromSupportMapInternal
@@ -114,15 +115,10 @@ export const useSwapAssets = (
         })
       )
       const registry = buildAssetRegistry(moduleResults, tokensMap)
-      const sorted = await filterAndSortTokens(
-        registry.tokenIds,
-        tokensMap,
-        "",
-        safeTokens,
-        tokenTab,
-        t
-      )
-      return serializeAssetRegistry({ tokenIds: sorted, supportMap: registry.supportMap })
+      return serializeAssetRegistry({
+        tokenIds: registry.tokenIds,
+        supportMap: registry.supportMap,
+      })
     },
     select: deserializeAssetRegistry,
     enabled: tokensCount > 0,
@@ -130,13 +126,37 @@ export const useSwapAssets = (
     persister: createQueryStoragePersister(),
   })
 
+  const filteredFromAssetIds = useMemo(() => {
+    if (!fromAssetsQuery.data?.tokenIds) return undefined
+    return filterAndSortTokensByTab(fromAssetsQuery.data.tokenIds, tokenTab, tokenTabs)
+  }, [fromAssetsQuery.data?.tokenIds, tokenTab, tokenTabs])
+
+  const filteredToAssetIds = useMemo(() => {
+    if (!toAssetsQuery.data?.tokenIds) return undefined
+    return filterAndSortTokensByTab(toAssetsQuery.data.tokenIds, tokenTab, tokenTabs)
+  }, [toAssetsQuery.data?.tokenIds, tokenTab, tokenTabs])
+
+  const fromCategoryTokenIdsQuery = useCoingeckoCategoryTokenIds({
+    categoryId: coingeckoCategoryId,
+    tokenIds: fromAssetsQuery.data?.tokenIds,
+    tokensMap,
+  })
+  const toCategoryTokenIdsQuery = useCoingeckoCategoryTokenIds({
+    categoryId: coingeckoCategoryId,
+    tokenIds: toAssetsQuery.data?.tokenIds,
+    tokensMap,
+  })
+  const isCategoryTab = !!coingeckoCategoryId
+
   return {
-    fromAssetIds: fromAssetsQuery.data?.tokenIds,
-    toAssetIds: toAssetsQuery.data?.tokenIds,
+    fromAssetIds: isCategoryTab ? fromCategoryTokenIdsQuery.data : filteredFromAssetIds,
+    toAssetIds: isCategoryTab ? toCategoryTokenIdsQuery.data : filteredToAssetIds,
     fromSupportMap: fromAssetsQuery.data?.supportMap ?? null,
     toSupportMap: toAssetsQuery.data?.supportMap ?? null,
-    isLoadingFromAssets: fromAssetsQuery.isLoading,
-    isLoadingToAssets: toAssetsQuery.isLoading,
+    isLoadingFromAssets:
+      fromAssetsQuery.isLoading || (isCategoryTab && fromCategoryTokenIdsQuery.isLoading),
+    isLoadingToAssets:
+      toAssetsQuery.isLoading || (isCategoryTab && toCategoryTokenIdsQuery.isLoading),
   }
 }
 

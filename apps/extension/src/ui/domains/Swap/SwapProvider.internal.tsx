@@ -113,7 +113,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     toSupportMap,
     isLoadingFromAssets,
     isLoadingToAssets,
-  } = useSwapAssets(fromTokenId, tokenTab, t, safeTokens)
+  } = useSwapAssets(fromTokenId, tokenTab, t)
 
   // Merge from+to support maps for quote manager routing
   const combinedSupportMap = useMemo(() => {

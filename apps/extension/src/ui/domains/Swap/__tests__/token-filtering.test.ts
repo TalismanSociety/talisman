@@ -1,7 +1,12 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
-import { buildAssetRegistry, getTokenTabs } from "../swap-services/token-filtering"
+import {
+  buildAssetRegistry,
+  filterAndSortTokensByTab,
+  getCoingeckoCategoryId,
+  getTokenTabs,
+} from "../swap-services/token-filtering"
 
 // ─── Test helpers ───────────────────────────────────────────────────
 
@@ -122,5 +127,25 @@ describe("getTokenTabs", () => {
     for (const tab of coingeckoTabs) {
       expect(tab.coingecko).toBe(true)
     }
+  })
+})
+
+describe("tab filtering helpers", () => {
+  const tokenIds = ["tok-1", "tok-3", "tok-2"]
+  const tabs = getTokenTabs({ t: stubT, curatedTokens: ["tok-2", "tok-1"] })
+
+  it("applies popular tab filter and sort", () => {
+    const filtered = filterAndSortTokensByTab(tokenIds, "popular", tabs)
+    expect(filtered).toEqual(["tok-2", "tok-1"])
+  })
+
+  it("applies all tab curated sort order", () => {
+    const filtered = filterAndSortTokensByTab(tokenIds, "all", tabs)
+    expect(filtered).toEqual(["tok-2", "tok-1", "tok-3"])
+  })
+
+  it("returns coingecko category id only for coingecko tabs", () => {
+    expect(getCoingeckoCategoryId("meme-token")).toBe("meme-token")
+    expect(getCoingeckoCategoryId("all")).toBeUndefined()
   })
 })

@@ -6,7 +6,6 @@ import { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
-import { QuoteCountdown } from "./QuoteCountdown"
 import { SwapProviderPickerModal } from "./SwapProviderPickerModal"
 
 export const SwapProviderPickerButton = () => {
@@ -96,10 +95,7 @@ const Details = () => {
           ? t("Loading quotes...")
           : t("{{count}} quotes found", { count: sortedQuotes.length })}
       </span>
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-[14px] text-white/60">{t("Provider")}</span>
-        <QuoteCountdown isLoading={isLoadingQuotes} />
-      </div>
+      <div className="text-body-secondary text-sm">{t("Provider")}</div>
       <SwapProviderButton
         quote={displayQuote.quote}
         showBestRate={isBestRate}
