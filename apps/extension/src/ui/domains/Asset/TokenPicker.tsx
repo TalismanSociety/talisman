@@ -25,6 +25,7 @@ import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
 import { TokenTypePill } from "./TokenTypePill"
+import { getSearchTerms, matchesSearchTerms } from "./tokenSearch"
 
 type TokenRowProps = {
   token: Token
@@ -366,17 +367,19 @@ const TokensList: FC<TokensListProps> = ({
   const tokens = useMemo(() => {
     if (!search) return tokensWithBalances
 
-    const ls = search?.toLowerCase()
+    const normalizedSearch = search.toLowerCase().trim()
+    const searchTerms = getSearchTerms(normalizedSearch)
+    if (!searchTerms.length) return tokensWithBalances
+
     return tokensWithBalances
-      .filter(
-        (t) =>
-          !ls || [t.token.symbol, t.token.name, t.chainNameSearch].join().toLowerCase().includes(ls)
+      .filter((t) =>
+        matchesSearchTerms(searchTerms, [t.token.symbol, t.token.name, t.chainNameSearch])
       )
       .sort((t1, t2) => {
         const s1 = t1.token.symbol.toLowerCase()
         const s2 = t2.token.symbol.toLowerCase()
-        if (s1 === ls && s2 !== ls) return -1
-        if (s1 !== ls && s2 === ls) return 1
+        if (s1 === normalizedSearch && s2 !== normalizedSearch) return -1
+        if (s1 !== normalizedSearch && s2 === normalizedSearch) return 1
         return 0
       })
   }, [search, tokensWithBalances])
