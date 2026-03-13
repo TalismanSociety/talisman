@@ -5,6 +5,8 @@ import type { TFunction } from "i18next"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { useSwapAssets } from "../swaps.api"
+
 const getFromAssetsMock = vi.fn()
 const getToAssetsMock = vi.fn()
 
@@ -21,6 +23,7 @@ vi.mock("@ui/state/remoteConfig", () => ({
 
 vi.mock("@ui/hooks/queryStoragePersister", () => ({
   createQueryStoragePersister: () => undefined,
+  PERSIST_AGE_ONE_YEAR: 1000 * 60 * 60 * 24 * 365,
 }))
 
 vi.mock("../swap-services/useCoingeckoCategoryTokenIds", () => ({
@@ -53,9 +56,6 @@ vi.mock("../swap-modules/stealthex-swap-module", () => ({
       getToAssetsMock("stealthex", fromTokenId, signal),
   },
 }))
-
-// eslint-disable-next-line import/first
-import { useSwapAssets } from "../swaps.api"
 
 const makeToken = (id: string, symbol: string) => ({ id, symbol, decimals: 18 }) as unknown as Token
 

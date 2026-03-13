@@ -12,6 +12,7 @@ import {
 
 vi.mock("@ui/hooks/queryStoragePersister", () => ({
   createQueryStoragePersister: () => undefined,
+  PERSIST_AGE_ONE_YEAR: 1000 * 60 * 60 * 24 * 365,
 }))
 
 function makeEvmErc20Token({
