@@ -7,6 +7,7 @@ import {
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -89,19 +90,32 @@ export type ExchangeParams = {
   toAddress: string | null
 }
 
-export type EvmTxParams = {
+export type GetTransactionParams = {
   fromTokenId: TokenId
   fromAddress: string
   exchange: unknown // specific exchange type varies per module
+  context?: {
+    polkadot?: {
+      sapi: ScaleApi
+      allowReap?: boolean
+    }
+  }
 }
 
-export type SubstrateTxParams = {
-  fromTokenId: TokenId
-  fromAddress: string
-  exchange: unknown // specific exchange type varies per module
-  sapi: ScaleApi
-  allowReap?: boolean
-}
+export type SwapModuleTransaction =
+  | {
+      platform: "ethereum"
+      transaction: TransactionRequest
+    }
+  | {
+      platform: "polkadot"
+      payload: SignerPayloadJSON
+      txMetadata?: Uint8Array
+    }
+  | {
+      platform: "solana"
+      transaction: Transaction | VersionedTransaction
+    }
 
 export type ApprovalInfo = {
   contractAddress: string
@@ -124,10 +138,7 @@ export type SwapModule = {
   createExchange: (
     params: ExchangeParams
   ) => Promise<SimpleswapExchange | StealthexExchange | undefined>
-  getEvmTransaction: (params: EvmTxParams) => Promise<TransactionRequest | undefined>
-  getSubstratePayload: (
-    params: SubstrateTxParams
-  ) => Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>
+  getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
 
   getApprovalInfo?: (
     params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }

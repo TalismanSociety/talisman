@@ -8,8 +8,7 @@ import { useNetworkById, useToken } from "@ui/state/chaindata"
 import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
-import { SwapConfirmEvm } from "./SwapConfirmEvm"
-import { SwapConfirmSubstrate } from "./SwapConfirmSubstrate"
+import { SwapConfirmActions } from "./SwapConfirmActions"
 
 export const SwapConfirm = () => {
   const { t } = useTranslation()
@@ -41,8 +40,7 @@ export const SwapConfirm = () => {
         <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
       </div>
 
-      {fromToken.platform === "ethereum" && <SwapConfirmEvm />}
-      {fromToken.platform === "polkadot" && <SwapConfirmSubstrate />}
+      <SwapConfirmActions />
     </div>
   )
 }

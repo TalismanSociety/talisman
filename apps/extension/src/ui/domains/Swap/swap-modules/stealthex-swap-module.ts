@@ -5,7 +5,7 @@ import { MultiAddress } from "@polkadot-api/descriptors"
 import { evmNativeTokenId, subAssetTokenId, subNativeTokenId } from "@talismn/balances-react"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import { getScaleApi } from "@talismn/sapi"
+import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
 import { api as extensionApi } from "@ui/api"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
@@ -35,14 +35,14 @@ import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type BaseQuote,
-  type EvmTxParams,
   type ExchangeParams,
+  type GetTransactionParams,
   getTokenIdForSwappableAsset,
   type QuoteFee,
   type QuoteParams,
-  type SubstrateTxParams,
   type SupportedSwapProtocol,
   type SwapModule,
+  type SwapModuleTransaction,
   type SwappableAssetBaseType,
   validateAddress,
 } from "./common.swap-module"
@@ -758,7 +758,9 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
   }
 }
 
-const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
+const getEvmTransaction = async (
+  params: Pick<GetTransactionParams, "fromTokenId" | "fromAddress" | "exchange">
+): Promise<TransactionRequest | undefined> => {
   try {
     const { fromTokenId, fromAddress, exchange: exchangeData } = params
     const exchange = exchangeData as StealthexExchange
@@ -808,9 +810,13 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
   }
 }
 
-const getSubstratePayload = async (
-  params: SubstrateTxParams
-): Promise<{
+const getSubstratePayload = async (params: {
+  fromTokenId: string
+  fromAddress: string
+  exchange: unknown
+  sapi: ScaleApi
+  allowReap?: boolean
+}): Promise<{
   payload: import("@core/domains/signing/types").SignerPayloadJSON
   txMetadata?: Uint8Array
 } | null> => {
@@ -858,6 +864,37 @@ const getSubstratePayload = async (
   }
 }
 
+const getTransaction = async (
+  params: GetTransactionParams
+): Promise<SwapModuleTransaction | null> => {
+  const fromAsset = resolveAsset(params.fromTokenId)
+  if (!fromAsset) throw new Error("Missing from asset")
+
+  switch (fromAsset.networkType) {
+    case "evm": {
+      const transaction = await getEvmTransaction(params)
+      return transaction ? { platform: "ethereum", transaction } : null
+    }
+    case "substrate": {
+      const sapi = params.context?.polkadot?.sapi
+      if (!sapi) return null
+
+      const payload = await getSubstratePayload({
+        fromTokenId: params.fromTokenId,
+        fromAddress: params.fromAddress,
+        exchange: params.exchange,
+        sapi,
+        allowReap: params.context?.polkadot?.allowReap,
+      })
+      return payload
+        ? { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
+        : null
+    }
+    default:
+      return null
+  }
+}
+
 export const stealthexSwapModule: SwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
@@ -865,8 +902,7 @@ export const stealthexSwapModule: SwapModule = {
   getToAssets: getToAssets,
   getQuote: getQuote,
   createExchange: createExchange,
-  getEvmTransaction: getEvmTransaction,
-  getSubstratePayload: getSubstratePayload,
+  getTransaction: getTransaction,
 }
 
 export const swapStatus$ = (id: string): Observable<StealthexExchange["status"] | undefined> =>

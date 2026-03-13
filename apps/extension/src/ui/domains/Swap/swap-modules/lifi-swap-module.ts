@@ -17,15 +17,16 @@ import {
   switchMap,
   takeWhile,
 } from "rxjs"
-import { type TransactionRequest, zeroAddress } from "viem"
+import { zeroAddress } from "viem"
 import {
   type ApprovalInfo,
   type BaseQuote,
-  type EvmTxParams,
+  type GetTransactionParams,
   getTokenIdForSwappableAsset,
   type QuoteParams,
   type SupportedSwapProtocol,
   type SwapModule,
+  type SwapModuleTransaction,
 } from "./common.swap-module"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 
@@ -314,7 +315,9 @@ const getApprovalInfo = (
   }
 }
 
-const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionRequest | undefined> => {
+const getTransaction = async (
+  params: GetTransactionParams
+): Promise<SwapModuleTransaction | null> => {
   try {
     const { fromTokenId, fromAddress, exchange: quoteData } = params
     const selectedQuote = quoteData as BaseQuote<lifiSdk.Route> | undefined
@@ -330,8 +333,8 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
     if (!step) throw new Error("No step found in route")
 
     // Fetch fresh transaction calldata from LiFi at confirmation time
-    const transaction = await lifiSdk.getStepTransaction(step)
-    const txRequest = transaction?.transactionRequest
+    const stepTransaction = await lifiSdk.getStepTransaction(step)
+    const txRequest = stepTransaction?.transactionRequest
     if (
       !txRequest ||
       txRequest.to === undefined ||
@@ -353,7 +356,7 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
     const publicClient = await getPublicClient(evmNetwork.id)
     if (!publicClient) throw new Error("Missing public client")
 
-    return publicClient.prepareTransactionRequest({
+    const transaction = await publicClient.prepareTransactionRequest({
       chain: null,
       to: txRequest.to as `0x${string}`,
       value: BigInt(txRequest.value),
@@ -361,6 +364,8 @@ const getEvmTransaction = async (params: EvmTxParams): Promise<TransactionReques
       gasLimit: txRequest.gasLimit,
       account: txRequest.from as `0x${string}`,
     })
+
+    return { platform: "ethereum", transaction }
   } catch (cause) {
     // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create evm transaction", { cause }))
@@ -375,8 +380,7 @@ export const lifiSwapModule: SwapModule = {
   getToAssets: getToAssets,
   getQuote: getQuote,
   createExchange: async () => undefined,
-  getEvmTransaction: getEvmTransaction,
-  getSubstratePayload: async () => null,
+  getTransaction: getTransaction,
   getApprovalInfo: getApprovalInfo,
 }
 
