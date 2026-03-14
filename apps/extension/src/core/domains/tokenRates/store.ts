@@ -1,3 +1,4 @@
+import { COINS_API_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { TokenList } from "@talismn/chaindata-provider"
 import {
@@ -17,12 +18,10 @@ import {
   map,
   ReplaySubject,
 } from "rxjs"
-
 import { getBlobStore } from "../../db"
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { Port } from "../../types/base"
-import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
 
@@ -168,12 +167,12 @@ export class TokenRatesStore {
     this.#lastUpdateKey = updateKey
 
     try {
-      const coinsApiConfig = await remoteConfigStore.get("coinsApi")
-
       // force usd to be included, because hide small balances feature requires it
       const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencies, "usd"])
 
-      const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, coinsApiConfig)
+      const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, {
+        apiUrl: COINS_API_URL,
+      })
       const putTokenRates: TokenRatesStorage = { tokenRates }
 
       // update external subscriptions

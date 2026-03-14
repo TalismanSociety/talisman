@@ -39,7 +39,7 @@ export const useGetSeekStaked = (): {
       const balancePromises = ethAccounts.map(async (account) => {
         try {
           const balance = await publicClient.readContract({
-            address: stakingContractAddress,
+            address: stakingContractAddress as `0x${string}`,
             abi: seekSinglePoolStakingAbi,
             functionName: "balanceOf",
             args: [account.address],

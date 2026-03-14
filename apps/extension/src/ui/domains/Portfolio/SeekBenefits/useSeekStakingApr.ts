@@ -17,12 +17,12 @@ export const useSeekStakingApr = () => {
       const [totalStaked, rewardsPerSecond] = await Promise.all([
         publicClient.readContract({
           abi: abiSeekStaking,
-          address: remoteConfig.seek.stakingContractAddress,
+          address: remoteConfig.seek.stakingContractAddress as `0x${string}`,
           functionName: "totalStaked",
         }),
         publicClient.readContract({
           abi: abiSeekStaking,
-          address: remoteConfig.seek.stakingContractAddress,
+          address: remoteConfig.seek.stakingContractAddress as `0x${string}`,
           functionName: "rewardRate",
         }),
       ])

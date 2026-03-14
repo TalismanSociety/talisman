@@ -1,28 +1,39 @@
 import { DEBUG, TEST } from "@common/constants"
 import { log } from "@common/log"
-import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
-import { fetchRemoteConfig } from "../../util/fetchRemoteConfig"
+import { fetchRemoteConfig } from "./remote-config/fetchRemoteConfig"
 import type { RemoteConfigStoreData } from "./types"
 
+// default value so code doesnt break if remote config cannot be fetched after install.
 const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
-  featureFlags: {},
+  featureFlags: {
+    BUY_CRYPTO: true,
+    LINK_TX_HISTORY: true,
+    LINK_STAKING: true,
+    I18N: false,
+    USE_ONFINALITY_API_KEY: false,
+    SWAPS: true,
+    QUEST_LINK: true,
+    UNIFIED_ADDRESS_BANNER: false,
+    RISK_ANALYSIS_V2: true,
+    AUTONOMYS_QUEST_BANNER: false,
+    NFTS_V2: true,
+    SEEK_TAO_DISCOUNT: true,
+    SEEK_BENEFITS: true,
+    SEEK_PRESALE: false,
+    BLOCKAID_DAPP_SCAN: false,
+    ASSET_HUB_MIGRATION_BANNER: false,
+    BITTENSOR_MEV_SHIELD: true,
+  },
   ramps: {
-    coinbaseProjectId: "63080e24-dc8e-45d0-9618-467b8c222f9e",
-    pinnedTokens: [
-      subNativeTokenId("polkadot"),
-      evmNativeTokenId("1"),
-      subNativeTokenId("bittensor"),
-    ],
-    rampNetworks: {
-      POLKADOT: "polkadot",
-      ETH: "1",
-    },
+    rampApiKey: "",
+    coinbaseProjectId: "",
+    pinnedTokens: [],
+    rampNetworks: {},
   },
   swaps: {
-    questApi: "",
     lifiTalismanTokens: [],
     lifiCustomFeeTokens: {},
     simpleswapApiKey: "",
@@ -31,20 +42,15 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     curatedTokens: [],
     promotedBuyTokens: [],
     promotedSellTokens: [],
+    lifiApiKey: "",
   },
   coingecko: {
-    apiUrl: "https://api.coingecko.com",
+    apiUrl: "https://cgp.talisman.xyz",
   },
-  postHogUrl: "https://us.i.posthog.com/batch/",
-  nominationPools: {
-    // uncomment for testing on testnets
-    // "avail-turing-testnet": [1],
-    // "vara-testnet": [1],
-  },
+  nominationPools: {},
   stakingPools: {},
   documentation: {
-    unifiedAddressDocsUrl:
-      "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
+    unifiedAddressDocsUrl: "",
   },
   seek: {
     tokenId: "",
@@ -58,12 +64,7 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     discountTiers: [],
   },
   earn: {
-    yieldxyzNetworks: {
-      // ethereum: "1",
-      // polygon: "137",
-      // optimism: "10",
-      // solana: "solana-mainnet",
-    },
+    yieldxyzNetworks: {},
   },
   bittensor: {
     fee: {
@@ -71,6 +72,8 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       sell: {},
     },
   },
+  recommendedNetworks: [],
+  postHogUrl: "https://us.i.posthog.com/batch/",
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -85,22 +88,14 @@ class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         // safety measure, most likely always an object
         if (!config) return
 
-        // as per 2.8.0 we dont want this address to be the default validator anymore.
-        // versions prior to 2.8.0 expect a value there so GH config file cant be altered, we need to remove it at runtime
-        config.stakingPools.bittensor = config.stakingPools.bittensor?.filter(
-          (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh"
-        )
-
         if (DEBUG) {
-          config.featureFlags.SEEK_BENEFITS = true
-          config.featureFlags.SEEK_TAO_DISCOUNT = true
-          config.featureFlags.BITTENSOR_MEV_SHIELD = false // TODO remove after testing
+          // tweak config for testing purposes
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
       } catch (err) {
-        log.error("Unable to fetch config.toml", { cause: err })
+        log.error("Unable to fetch remote config", { cause: err })
       }
     }
 
@@ -113,13 +108,3 @@ class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 }
 
 export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)
-
-const _isFeatureFlagEnabled = async (flag: keyof RemoteConfigStoreData["featureFlags"]) => {
-  try {
-    const featureFlags = await remoteConfigStore.get("featureFlags")
-    return !!featureFlags[flag]
-  } catch (err) {
-    log.error("Error checking feature flag:", { flag, err })
-    return false
-  }
-}

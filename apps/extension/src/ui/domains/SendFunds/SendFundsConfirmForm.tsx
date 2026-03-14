@@ -132,7 +132,7 @@ const ExternalRecipientWarning = () => {
   if (warningType === "none") return null
 
   return (
-    <div className="w-full rounded border border-alert-warn text-xs">
+    <div className="w-full rounded border border-alert-warn/25 text-xs">
       <div className="flex items-center gap-4 p-4 text-alert-warn">
         <AlertCircleIcon className="shrink-0 text-[2rem]" />
         {warningType === "network" && network && token && (
@@ -150,7 +150,7 @@ const ExternalRecipientWarning = () => {
           </div>
         )}
       </div>
-      <hr className="border-alert-warn" />
+      <hr className="border-alert-warn/25" />
       {warningType === "network" && network && token && (
         <div className="space-y-2 p-4 text-body">
           <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>

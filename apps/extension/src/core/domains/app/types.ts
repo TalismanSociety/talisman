@@ -1,69 +1,11 @@
-import type { DotNetworkId, EthNetworkId, NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 
 import type { ValidRequests } from "../../libs/requests/types"
 import type { Address } from "../../types/base"
 import type { PostHogCaptureProperties } from "../analytics/types"
+import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
-export type RemoteConfigStoreData = {
-  featureFlags: FeatureFlags
-  ramps: {
-    coinbaseProjectId: string
-    pinnedTokens: TokenId[]
-    rampNetworks: Record<string, string> // maps a Ramp network ID to an NetworkId
-  }
-  swaps: {
-    questApi?: string
-    lifiTalismanTokens?: string[]
-    lifiCustomFeeTokens?: Record<string, number>
-    simpleswapApiKey?: string
-    simpleswapApiKeyDiscounted?: string
-    simpleswapDiscountedCurrencies?: string[]
-    curatedTokens?: string[]
-    promotedBuyTokens?: string[]
-    promotedSellTokens?: string[]
-  }
-  coingecko: {
-    apiUrl: string
-    apiKeyName?: string
-    apiKeyValue?: string
-  }
-  coinsApi?: {
-    apiUrl: string
-  }
-  nominationPools: Record<DotNetworkId, number[]>
-  stakingPools: Record<DotNetworkId | EthNetworkId, (number | string)[]>
-  postHogUrl: string
-  documentation: {
-    unifiedAddressDocsUrl: string
-  }
-  recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
-  seek: {
-    tokenId: string
-    stakingUrl: string
-    docsUrl: string
-    tradeUrl: string
-    stakingContractNetworkId: string
-    stakingContractAddress: `0x${string}`
-    stakingEarlyRewardBoost: string
-    webAppStakingPath: string
-    discountTiers: Array<{
-      tier: number
-      min: string
-      discount: number
-    }>
-  }
-  earn: {
-    /** Yield.xyz network ID => Talisman NetworkId */
-    yieldxyzNetworks: Record<string, NetworkId>
-  }
-
-  bittensor: {
-    fee: {
-      buy: Record<number, number>
-      sell: Record<number, number>
-    }
-  }
-}
+export type RemoteConfigStoreData = RemoteConfigData
 
 export interface RequestOnboardCreatePassword {
   pass: string
@@ -90,19 +32,7 @@ export interface AnalyticsCaptureRequest {
   options?: PostHogCaptureProperties
 }
 
-// values must match the flags defined in config repository
-export type FeatureFlags = Partial<{
-  BUY_CRYPTO: boolean
-  LINK_STAKING: boolean
-  RISK_ANALYSIS_V2: boolean
-  NEW_FEATURES_HOME_BANNER: boolean
-  QUEST_LINK: boolean
-  NFTS_V2: boolean
-  SEEK_BENEFITS: boolean
-  SEEK_TAO_DISCOUNT: boolean
-  BITTENSOR_MEV_SHIELD: boolean
-}>
-export type FeatureFlag = keyof FeatureFlags
+export type FeatureFlag = keyof RemoteConfigStoreData["featureFlags"]
 
 type FALSE = "FALSE"
 type TRUE = "TRUE"

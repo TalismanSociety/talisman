@@ -1,5 +1,5 @@
+import { COINS_API_URL } from "@common/constants"
 import { log } from "@common/log"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { bind } from "@react-rxjs/core"
 import type { TokenId, TokenList } from "@talismn/chaindata-provider"
@@ -40,15 +40,12 @@ const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
 // use this to prevent multiple fetches for the same token list
 const safeFetchTokenRates = async (tokenList: TokenList) => {
   const cacheKey = Object.keys(tokenList).join(",")
-  const config = await remoteConfigStore.get("coinsApi")
   const selectedCurrency = await settingsStore.get("selectedCurrency")
 
   if (!FETCH_TOKEN_RATES_CACHE[cacheKey]) {
-    FETCH_TOKEN_RATES_CACHE[cacheKey] = fetchTokenRates(
-      tokenList,
-      [selectedCurrency],
-      config
-    ).finally(() => {
+    FETCH_TOKEN_RATES_CACHE[cacheKey] = fetchTokenRates(tokenList, [selectedCurrency], {
+      apiUrl: COINS_API_URL,
+    }).finally(() => {
       delete FETCH_TOKEN_RATES_CACHE[cacheKey]
     })
   }

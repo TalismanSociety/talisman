@@ -94,6 +94,14 @@
 - Add relevant tests along with any new development.
 - Before completing work, ensure `pnpm check --fix`, `pnpm typecheck` and `pnpm knip` pass.
 
-## Temporary files
+## Dev Mode 
 
-- Temporary files can be stored in the `.tmp` folder at the root of the project, it is not tracked by git. Delete them once they are no longer needed.
+When the extension is running in dev mode, agent-browser can connect to it on CDP 9223. 
+
+| Property       | Value                                      |
+| -------------- | ------------------------------------------ |
+| Extension ID   | `akcdepjilgckjbngkhjghfnmnnkdnmno`        |
+| CDP endpoint   | `http://127.0.0.1:9223`                    |
+| Popup URL      | `chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/popup.html`   |
+| Dashboard URL  | `chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/dashboard.html` |
+| Onboarding URL | `chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/onboarding.html` |
