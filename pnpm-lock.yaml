@@ -439,9 +439,6 @@ importers:
       '@talismn/balances':
         specifier: workspace:*
         version: link:../../packages/balances
-      '@talismn/balances-react':
-        specifier: workspace:*
-        version: link:../../packages/balances-react
       '@talismn/chain-connectors':
         specifier: workspace:*
         version: link:../../packages/chain-connectors
@@ -9598,7 +9595,7 @@ snapshots:
       clsx: 1.2.1
       eth-block-tracker: 7.1.0
       eth-json-rpc-filters: 6.0.1
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       keccak: 3.0.4
       preact: 10.28.0
       sha.js: 2.4.12
@@ -9610,7 +9607,7 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
       clsx: 1.2.1
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       preact: 10.28.0
     optional: true
 
@@ -12364,7 +12361,7 @@ snapshots:
       '@solana/web3.js': 1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@wallet-standard/base': 1.1.0
       '@wallet-standard/features': 1.1.0
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
 
   '@solana/wallet-standard-chains@1.1.1':
     dependencies:
