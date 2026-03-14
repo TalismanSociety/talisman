@@ -142,7 +142,7 @@ export const SwapForm = () => {
 
       <SwapProviderPickerButton />
 
-      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
+      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8 pb-12">
         <Button
           className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
           primary

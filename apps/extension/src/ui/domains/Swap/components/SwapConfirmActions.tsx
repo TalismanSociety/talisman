@@ -408,7 +408,7 @@ export const SwapConfirmActions = () => {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
+      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8 pb-12">
         {!needsApproval && exchangeError && (
           <div
             role="alert"
