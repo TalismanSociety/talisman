@@ -49,7 +49,7 @@ const SOLANA_NATIVE_ADDRESSES = new Set([
   "So11111111111111111111111111111111111111112",
 ])
 
-const toLifiChainId = (chainId: string | number): number => {
+export const toLifiChainId = (chainId: string | number): number => {
   if (chainId === SOLANA_NETWORK_ID) return LIFI_SOLANA_CHAIN_ID
   return +chainId
 }
@@ -531,7 +531,15 @@ export const swapStatus$ = (id: string): Observable<LifiStatus | undefined> =>
 
 const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
   defer(async () => {
-    const status = (await lifiSdk.getStatus({ txHash: id })).status
+    // id may be "txHash::fromChainId::toChainId" (new) or just "txHash" (legacy)
+    const [txHash, fromChain, toChain] = id.split("::")
+    const status = (
+      await lifiSdk.getStatus({
+        txHash,
+        ...(fromChain ? { fromChain: Number(fromChain) } : {}),
+        ...(toChain ? { toChain: Number(toChain) } : {}),
+      })
+    ).status
     return statusMap[status] ?? "unknown"
   }).pipe(
     // retry up to 10 times, wait 5s between each retry

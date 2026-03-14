@@ -41,8 +41,14 @@ const getSwapStatusId = (
       return txInfo.exchangeId ? { protocol: txInfo.type, id: txInfo.exchangeId } : null
     case "swap-stealthex":
       return txInfo.exchangeId ? { protocol: txInfo.type, id: txInfo.exchangeId } : null
-    case "swap-lifi":
-      return { protocol: txInfo.type, id: txHash }
+    case "swap-lifi": {
+      // Encode chain IDs in the status ID so the LiFi status poller can pass them to the API.
+      // Format: "txHash::fromChainId::toChainId" — retryStatus$ parses this.
+      const parts = [txHash]
+      if (txInfo.fromLifiChainId) parts.push(String(txInfo.fromLifiChainId))
+      if (txInfo.fromLifiChainId && txInfo.toLifiChainId) parts.push(String(txInfo.toLifiChainId))
+      return { protocol: txInfo.type, id: parts.join("::") }
+    }
     default:
       return null
   }
@@ -182,7 +188,6 @@ const useSwapProgressStatus = (
       case "failed":
       case "expired":
       case "refunded":
-      case "invalid":
         return {
           phase: "failure",
           title: t("Swap failed"),
@@ -192,6 +197,18 @@ const useSwapProgressStatus = (
               : swapStatus === "expired"
                 ? t("The exchange has expired.")
                 : t("The exchange failed to complete your swap."),
+          animStatus: "failure",
+        }
+      case "invalid":
+        // LiFi's status API sometimes fails to parse transactions (especially Solana)
+        // even though the on-chain tx succeeded. Show an ambiguous status instead of
+        // a definitive "Swap failed" since the user's funds may have been swapped.
+        return {
+          phase: "unknown",
+          title: t("Swap status unknown"),
+          subtitle: t(
+            "Your transaction succeeded on-chain but the swap tracker couldn't confirm the result. Please check your balance."
+          ),
           animStatus: "failure",
         }
       default:

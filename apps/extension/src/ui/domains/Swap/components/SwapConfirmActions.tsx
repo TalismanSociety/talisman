@@ -23,6 +23,7 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { toLifiChainId } from "../swap-modules/lifi-swap-module"
 import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions = () => {
@@ -210,6 +211,14 @@ export const SwapConfirmActions = () => {
     toAddress,
     protocol: swapModule?.protocol,
     subProtocol,
+    fromLifiChainId:
+      swapModule?.protocol === "lifi" && fromToken?.networkId
+        ? toLifiChainId(fromToken.networkId)
+        : undefined,
+    toLifiChainId:
+      swapModule?.protocol === "lifi" && toToken?.networkId
+        ? toLifiChainId(toToken.networkId)
+        : undefined,
   })
 
   const swapTx = useMemo<TxSubmitButtonTransaction | null>(() => {

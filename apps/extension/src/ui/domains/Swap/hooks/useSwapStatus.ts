@@ -60,7 +60,10 @@ export const getSwapStatus$ = state(
 )
 
 const getStatus$ = state((protocolAndId: string): Observable<SwapStatus | undefined> => {
-  const [protocol, id] = protocolAndId.split("::")
+  // Split on the first "::" only — the remainder may contain chain IDs (e.g. "txHash::fromChain::toChain")
+  const sepIdx = protocolAndId.indexOf("::")
+  const protocol = protocolAndId.slice(0, sepIdx)
+  const id = protocolAndId.slice(sepIdx + 2)
   const swapStatus$ = (() => {
     if (protocol === "swap-simpleswap") return simpleswapStatus$
     if (protocol === "swap-stealthex") return stealthexStatus$
@@ -96,6 +99,7 @@ completedSwapsCache$.subscribe((cache) => {
 // 4. swap2 stores new cached value (deleting swap1's cached value)
 //
 // instead, each new cached value is emitted from the cacheSwapStatus$ subject and processed in sequence using concatMap, like a queue.
+const MAX_CACHED_SWAPS = 100
 const cacheSwapStatus$ = new Subject<{ protocolAndId: string; status: CachedSwapStatus }>()
 cacheSwapStatus$
   .pipe(
@@ -103,6 +107,15 @@ cacheSwapStatus$
     concatMap((newValue) =>
       firstValueFrom(completedSwapsCache$).then((cache) => {
         cache[newValue.protocolAndId] = newValue.status
+
+        // evict oldest entries if cache exceeds limit
+        const keys = Object.keys(cache)
+        if (keys.length > MAX_CACHED_SWAPS) {
+          for (const key of keys.slice(0, keys.length - MAX_CACHED_SWAPS)) {
+            delete cache[key]
+          }
+        }
+
         return completedSwapsCache$.next(cache)
       })
     )

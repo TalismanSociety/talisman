@@ -13,7 +13,7 @@ export const SwapHeader = () => {
   const title = useMemo(() => {
     if (swapView === "confirm") return t("Confirm")
     if (swapView === "submitted") return null
-    return t("Swap")
+    return t("Multi-chain Swap")
   }, [swapView, t])
 
   const onBack = useMemo(

@@ -33,7 +33,12 @@ export const addSolTransaction = async (
     const { signature, address: account } = parseTransactionInfo(transaction)
     if (!networkId || !signature || !account) throw new Error("Invalid transaction")
 
-    await db.transactionsV2.add({
+    // Use .put() so retries of the same transaction don't throw ConstraintError,
+    // but guard against overwriting a terminal status with "pending".
+    const existing = await db.transactionsV2.get(signature)
+    if (existing && ["success", "error", "replaced"].includes(existing.status)) return
+
+    await db.transactionsV2.put({
       id: signature,
       platform: "solana",
       networkId,
@@ -74,7 +79,12 @@ export const addEvmTransaction = async (
         )
         .count()) > 0
 
-    await db.transactionsV2.add({
+    // Use .put() so retries of the same transaction don't throw ConstraintError,
+    // but guard against overwriting a terminal status with "pending".
+    const existingEvm = await db.transactionsV2.get(hash)
+    if (existingEvm && ["success", "error", "replaced"].includes(existingEvm.status)) return
+
+    await db.transactionsV2.put({
       id: hash,
       hash,
       platform: "ethereum",
@@ -107,7 +117,12 @@ export const addSubstrateTransaction = async (
     if (!payload.genesisHash || !payload.nonce || !payload.address)
       throw new Error("Invalid transaction")
 
-    await db.transactionsV2.add({
+    // Use .put() so retries of the same transaction don't throw ConstraintError,
+    // but guard against overwriting a terminal status with "pending".
+    const existingSub = await db.transactionsV2.get(hash)
+    if (existingSub && ["success", "error", "replaced"].includes(existingSub.status)) return
+
+    await db.transactionsV2.put({
       id: hash,
       platform: "polkadot",
       hash,

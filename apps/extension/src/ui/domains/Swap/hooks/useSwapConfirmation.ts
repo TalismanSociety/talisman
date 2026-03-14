@@ -34,6 +34,8 @@ export function useSwapTxInfo({
   toAddress,
   protocol,
   subProtocol,
+  fromLifiChainId,
+  toLifiChainId,
 }: {
   exchange: { id: string } | undefined
   fromTokenId: string | null
@@ -43,6 +45,8 @@ export function useSwapTxInfo({
   toAddress: string | null
   protocol: string | undefined
   subProtocol?: string
+  fromLifiChainId?: number
+  toLifiChainId?: number
 }): WalletTransactionInfo | undefined {
   return useMemo(() => {
     if (!fromTokenId || !toTokenId || !toAmount || !fromAmount || toAddress === null) return
@@ -80,10 +84,23 @@ export function useSwapTxInfo({
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
+          fromLifiChainId,
+          toLifiChainId,
         }
     }
     throw new Error(`swapModule ${protocol} not supported`)
-  }, [exchange, fromAmount, fromTokenId, protocol, subProtocol, toAddress, toAmount, toTokenId])
+  }, [
+    exchange,
+    fromAmount,
+    fromLifiChainId,
+    fromTokenId,
+    protocol,
+    subProtocol,
+    toAddress,
+    toAmount,
+    toLifiChainId,
+    toTokenId,
+  ])
 }
 
 /**

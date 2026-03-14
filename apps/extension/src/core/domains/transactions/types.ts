@@ -57,6 +57,10 @@ export type WalletTransactionInfo =
       fromAmount: string
       toAmount: string
       to: Address
+      /** LiFi numeric chain ID for the source chain (used for status tracking) */
+      fromLifiChainId?: number
+      /** LiFi numeric chain ID for the destination chain (used for status tracking) */
+      toLifiChainId?: number
     }
   | {
       type: "bittensor-staking"
