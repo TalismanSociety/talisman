@@ -1,4 +1,3 @@
-import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { useAccountsMap } from "@ui/state/accounts"
@@ -52,8 +51,6 @@ export const SwapForm = () => {
   const toAccount = toAddress ? accountsMap[toAddress] : null
   const toIsWatched = toAccount?.type === "watch-only"
   const toIsExternal = !toAccount || toAccount.type === "contact"
-
-  useSyncSwapsChaindata()
 
   const isApproveRecipient = swapView === "approve-recipient"
 

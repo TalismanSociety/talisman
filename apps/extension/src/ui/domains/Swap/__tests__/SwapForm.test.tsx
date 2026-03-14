@@ -15,10 +15,6 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (value: string) => value }),
 }))
 
-vi.mock("@talismn/balances-react", () => ({
-  useSyncSwapsChaindata: vi.fn(),
-}))
-
 vi.mock("@core/domains/keyring/exports", () => ({}))
 
 vi.mock("@ui/components/Button", () => ({

@@ -1,5 +1,4 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { useNetwork } from "@talismn/balances-react"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -108,7 +107,7 @@ export const SwapConfirmActions = () => {
     [incrementApprovalCounter, publicClient, t]
   )
 
-  const substrateNetwork = useNetwork(fromToken?.networkId ?? undefined)
+  const substrateNetwork = useNetworkById(fromToken?.networkId ?? undefined)
   const existentialDeposit = useExistentialDeposit(substrateNetwork?.nativeTokenId)
   const allowReap = useMemo(
     () =>
