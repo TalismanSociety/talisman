@@ -45,7 +45,6 @@ export const SwapForm = () => {
     setToAddress,
   } = useSwap()
 
-  const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
   const toNetwork = useNetworkById(toToken?.networkId)
 
@@ -75,13 +74,6 @@ export const SwapForm = () => {
     return fromAmount > fromBalance.transferable.planck
   }, [fromBalance, fromAmount])
 
-  const _shouldShowToAccount = !!fromTokenId && !!toTokenId
-  const fromNetworkType =
-    fromToken?.platform === "ethereum"
-      ? "evm"
-      : fromToken?.platform === "polkadot"
-        ? "substrate"
-        : null
   const hasError =
     insufficientBalance === true ||
     (hasQuoteError && sortedQuotes.length === 0) ||
@@ -151,39 +143,38 @@ export const SwapForm = () => {
       <SwapProviderPickerButton />
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {fromNetworkType && (
-          <Button
-            className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
-            primary
-            disabled={
-              !toAmount ||
-              toAmount === 0n ||
-              !fromAddress ||
-              !toAddress ||
-              insufficientBalance !== false ||
-              isLoadingQuotes ||
-              !isAllQuotesSettled ||
-              approvalLoading
-            }
-            onClick={() => {
-              if (!selectedQuote) return
-              if (!fromBalance?.transferable?.planck) return
+        <Button
+          className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
+          primary
+          disabled={
+            !toAmount ||
+            toAmount === 0n ||
+            !fromAddress ||
+            !toAddress ||
+            insufficientBalance !== false ||
+            isLoadingQuotes ||
+            !isAllQuotesSettled ||
+            approvalLoading
+          }
+          onClick={() => {
+            if (!selectedQuote) return
+            if (!fromBalance?.transferable?.planck) return
 
-              // if toAddress isn't an owned account, show a warning to the user
-              if (toIsExternal || toIsWatched) return setSwapView("approve-recipient")
+            // if toAddress isn't an owned account, show a warning to the user
+            if (toIsExternal || toIsWatched) return setSwapView("approve-recipient")
 
-              setSwapView("confirm")
-            }}
-          >
-            {approvalLoading ? (
-              <LoaderIcon className="animate-spin-slow text-body-disabled" />
-            ) : (
-              t("Review")
-            )}
-          </Button>
-        )}
+            setSwapView("confirm")
+          }}
+        >
+          {approvalLoading ? (
+            <LoaderIcon className="animate-spin-slow text-body-disabled" />
+          ) : (
+            t("Review")
+          )}
+        </Button>
 
         {isApproveRecipient && (
+          // TODO use a drawer
           <div className="absolute bottom-0 left-0 m-8 flex animate-slide-in-up flex-col gap-8 rounded bg-black-tertiary p-8">
             <div className="flex items-center gap-3 text-orange-400 text-sm">
               {toIsWatched && (

@@ -238,7 +238,13 @@ const getRoutes = async (
       ? toAsset.lifiToken.address
       : (toAsset.contractAddress ?? zeroAddress)
 
-    const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
+    // TODO: Re-enable fees for Solana routes once the "talisman" integrator has a
+    // Solana fee wallet configured on the LI.FI portal (https://portal.li.fi/).
+    // Without it the API returns HTTP 400 (code 1011) and no routes are found.
+    const isSolanaRoute = isSolanaFrom || isSolanaTo
+    const fee = isSolanaRoute
+      ? 0
+      : await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
     if (signal.aborted) return null
     return await lifiSdk.getRoutes(
       {
@@ -296,10 +302,19 @@ const getRouteQuote = async (
   }
 
   // add talisman fee
-  const talismanFee = await getTalismanFee({
-    fromAssetId: fromTokenId,
-    toAssetId: toTokenId ?? undefined,
-  })
+  // TODO: Re-enable once Solana fee wallet is configured on the LI.FI portal
+  const toAsset = toTokenId ? resolveAsset(toTokenId) : null
+  const isSolanaRoute =
+    fromAsset.chainId === SOLANA_NETWORK_ID ||
+    Number(fromAsset.chainId) === LIFI_SOLANA_CHAIN_ID ||
+    toAsset?.chainId === SOLANA_NETWORK_ID ||
+    Number(toAsset?.chainId) === LIFI_SOLANA_CHAIN_ID
+  const talismanFee = isSolanaRoute
+    ? 0
+    : await getTalismanFee({
+        fromAssetId: fromTokenId,
+        toAssetId: toTokenId ?? undefined,
+      })
   fees.push({
     amount: BigNumber(step.estimate.fromAmount.toString())
       .times(10 ** -fromAsset.decimals)
@@ -392,7 +407,7 @@ const getTransaction = async (
   params: GetTransactionParams
 ): Promise<SwapModuleTransaction | null> => {
   try {
-    const { fromTokenId, fromAddress, exchange: quoteData } = params
+    const { fromTokenId, fromAddress, exchange: quoteData, context } = params
     const selectedQuote = quoteData as BaseQuote<lifiSdk.Route> | undefined
     if (!selectedQuote?.data) {
       throw new Error("Please select the quote again")
@@ -410,8 +425,10 @@ const getTransaction = async (
     const txRequest = stepTransaction?.transactionRequest
     if (!txRequest) throw new Error("Unknown error, please try again")
 
-    // Solana transaction handling
-    if (txRequest.chainId === LIFI_SOLANA_CHAIN_ID) {
+    // Solana transaction handling — txRequest for Solana may omit chainId,
+    // so detect via the step's fromChainId instead.
+    const isSolanaStep = step.action.fromChainId === LIFI_SOLANA_CHAIN_ID
+    if (isSolanaStep) {
       if (!txRequest.data) throw new Error("Missing Solana transaction data")
 
       // LI.FI may return Solana transactions as base64 or hex-encoded
@@ -423,6 +440,15 @@ const getTransaction = async (
       }
 
       const transaction = VersionedTransaction.deserialize(txBytes)
+
+      // Refresh the blockhash — the one from getStepTransaction may expire before the user
+      // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
+      const connection = context?.solana?.connection
+      if (connection) {
+        const { blockhash } = await connection.getLatestBlockhash()
+        transaction.message.recentBlockhash = blockhash
+      }
+
       return { platform: "solana", transaction }
     }
 
