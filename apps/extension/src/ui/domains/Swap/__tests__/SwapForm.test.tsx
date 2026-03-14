@@ -37,14 +37,22 @@ vi.mock("@ui/components/Button", () => ({
   ),
 }))
 
-vi.mock("@ui/state/accounts", () => ({
-  useAccountsMap: vi.fn(() => ({})),
-}))
+vi.mock("@ui/state/accounts", async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAccountsMap: vi.fn(() => ({})),
+  }
+})
 
-vi.mock("@ui/state/chaindata", () => ({
-  useNetworkById: vi.fn(() => ({ name: "Ethereum" })),
-  useToken: (...args: unknown[]) => useTokenMock(...args),
-}))
+vi.mock("@ui/state/chaindata", async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useNetworkById: vi.fn(() => ({ name: "Ethereum" })),
+    useToken: (...args: unknown[]) => useTokenMock(...args),
+  }
+})
 
 vi.mock("../SwapProvider", () => ({
   useSwap: () => useSwapMock(),

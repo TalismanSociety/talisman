@@ -368,15 +368,21 @@ describe("useSwapTxInfo", () => {
 
   describe("unsupported protocol", () => {
     it("throws for an unknown protocol when all params present", () => {
-      expect(() =>
-        renderHook(() =>
-          useSwapTxInfo({
-            ...baseParams,
-            exchange: { id: "x" },
-            protocol: "unknown-protocol",
-          })
-        )
-      ).toThrow("swapModule unknown-protocol not supported")
+      // Suppress React's console.error for the expected render-phase throw
+      const spy = vi.spyOn(console, "error").mockImplementation(() => {})
+      try {
+        expect(() =>
+          renderHook(() =>
+            useSwapTxInfo({
+              ...baseParams,
+              exchange: { id: "x" },
+              protocol: "unknown-protocol",
+            })
+          )
+        ).toThrow("swapModule unknown-protocol not supported")
+      } finally {
+        spy.mockRestore()
+      }
     })
   })
 
