@@ -45,7 +45,7 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     lifiApiKey: "",
   },
   coingecko: {
-    apiUrl: "",
+    apiUrl: "https://cgp.talisman.xyz",
   },
   nominationPools: {},
   stakingPools: {},
