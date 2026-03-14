@@ -36,6 +36,7 @@ export const SwapForm = () => {
     fromAssetIds,
     toAssetIds,
     isLoadingQuotes,
+    isQuoteDataCurrent,
     isAllQuotesSettled,
     sortedQuotes,
     hasQuoteError,
@@ -151,7 +152,8 @@ export const SwapForm = () => {
             !fromAddress ||
             !toAddress ||
             insufficientBalance !== false ||
-            isLoadingQuotes
+            isLoadingQuotes ||
+            !isQuoteDataCurrent
           }
           onClick={() => {
             if (!selectedQuote) return

@@ -170,6 +170,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
 
   const {
     isLoadingQuotes,
+    isQuoteDataCurrent,
     isAllQuotesSettled,
     hasQuoteError,
     sortedQuotes,
@@ -278,6 +279,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedQuoteFees,
     selectedModule,
     isLoadingQuotes,
+    isQuoteDataCurrent,
     isAllQuotesSettled,
     hasQuoteError,
     toAmount,

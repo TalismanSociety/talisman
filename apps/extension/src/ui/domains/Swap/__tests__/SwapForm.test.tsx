@@ -113,6 +113,7 @@ const createSwapState = (overrides: Record<string, unknown> = {}) => ({
   fromAssetIds: [],
   toAssetIds: [],
   isLoadingQuotes: false,
+  isQuoteDataCurrent: true,
   isAllQuotesSettled: true,
   sortedQuotes: [{}],
   hasQuoteError: false,
@@ -165,6 +166,7 @@ describe("SwapForm", () => {
     useSwapMock.mockReturnValue(
       createSwapState({
         isLoadingQuotes: false,
+        isQuoteDataCurrent: true,
         isAllQuotesSettled: false,
       })
     )
@@ -173,6 +175,21 @@ describe("SwapForm", () => {
     const reviewButton = getByRole("button", { name: "Review" })
 
     expect(reviewButton.getAttribute("disabled")).toBeNull()
+  })
+
+  it("keeps Review disabled while current quote inputs are unsettled", () => {
+    useSwapMock.mockReturnValue(
+      createSwapState({
+        isLoadingQuotes: false,
+        isQuoteDataCurrent: false,
+        isAllQuotesSettled: false,
+      })
+    )
+
+    const { getByRole } = render(<SwapForm />)
+    const reviewButton = getByRole("button", { name: "Review" })
+
+    expect(reviewButton.getAttribute("disabled")).not.toBeNull()
   })
 
   it("keeps Review enabled while approval state is still loading", () => {
@@ -192,6 +209,7 @@ describe("SwapForm", () => {
     useSwapMock.mockReturnValue(
       createSwapState({
         isLoadingQuotes: true,
+        isQuoteDataCurrent: false,
         isAllQuotesSettled: false,
       })
     )

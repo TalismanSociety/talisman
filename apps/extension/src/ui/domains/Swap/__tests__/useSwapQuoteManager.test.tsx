@@ -107,21 +107,27 @@ describe("useSwapQuoteManager", () => {
     const { result, rerender } = renderHook(() => useSwapQuoteManager(params), { wrapper })
 
     await waitFor(() => expect(getQuoteMock).toHaveBeenCalledTimes(1))
+    expect(result.current.isLoadingQuotes).toBe(true)
 
     pendingQuotes[0]?.resolve([makeQuote(100n)])
 
     await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(100n))
+    expect(result.current.isQuoteDataCurrent).toBe(true)
 
     params = { ...params, fromAmount: 2n }
     rerender()
 
     await waitFor(() => expect(getQuoteMock).toHaveBeenCalledTimes(2))
 
+    expect(result.current.isLoadingQuotes).toBe(false)
+    expect(result.current.isQuoteDataCurrent).toBe(false)
     expect(result.current.isAllQuotesSettled).toBe(false)
     expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(100n)
+    expect(result.current.toAmount).toBe(100n)
 
     pendingQuotes[1]?.resolve([makeQuote(200n)])
 
     await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(200n))
+    expect(result.current.isQuoteDataCurrent).toBe(true)
   })
 })

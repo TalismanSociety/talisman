@@ -66,6 +66,18 @@ export const useSwapQuoteManager = (params: {
   const tokenRates = useTokenRatesMap()
 
   const enabled = enabledProp && Boolean(fromTokenId && toTokenId && fromAmount)
+  const quoteInputKey = useMemo(
+    () =>
+      [
+        fromTokenId ?? "",
+        toTokenId ?? "",
+        fromAmount?.toString() ?? "",
+        fromAddress ?? "",
+        toAddress ?? "",
+        selectedSubProtocol ?? "",
+      ].join("|"),
+    [fromAmount, fromAddress, fromTokenId, selectedSubProtocol, toAddress, toTokenId]
+  )
 
   const applicableModules = useMemo(
     () =>
@@ -110,8 +122,6 @@ export const useSwapQuoteManager = (params: {
     })),
   })
 
-  // Per-module loading states
-  const isLoadingQuotes = queryResults.some((r) => r.isLoading)
   const isAllQuotesSettled =
     queryResults.every((r) => !r.isLoading && !r.isFetching) ||
     (!enabled && queryResults.length === 0)
@@ -149,6 +159,23 @@ export const useSwapQuoteManager = (params: {
   }, [enabled, liveSortedQuotes, isAllQuotesSettled])
 
   const sortedQuotes = liveSortedQuotes.length > 0 ? liveSortedQuotes : staleSortedQuotes
+  const isLoadingQuotes = queryResults.some((r) => r.isLoading) && sortedQuotes.length === 0
+  const [lastSettledQuoteInputKey, setLastSettledQuoteInputKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!enabled) {
+      setLastSettledQuoteInputKey(null)
+      return
+    }
+
+    if (isAllQuotesSettled) {
+      setLastSettledQuoteInputKey((previous) =>
+        previous === quoteInputKey ? previous : quoteInputKey
+      )
+    }
+  }, [enabled, isAllQuotesSettled, quoteInputKey])
+
+  const isQuoteDataCurrent = !enabled || lastSettledQuoteInputKey === quoteInputKey
 
   // Selected quote
   const selectedQuote: BaseQuote | null = useMemo(
@@ -175,6 +202,7 @@ export const useSwapQuoteManager = (params: {
 
   return {
     isLoadingQuotes,
+    isQuoteDataCurrent,
     isAllQuotesSettled,
     hasQuoteError,
     sortedQuotes,

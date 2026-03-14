@@ -40,6 +40,7 @@ vi.mock("../hooks/useSwapAddresses", () => ({
 vi.mock("../hooks/useSwapQuoteManager", () => ({
   useSwapQuoteManager: () => ({
     isLoadingQuotes: false,
+    isQuoteDataCurrent: true,
     isAllQuotesSettled: true,
     hasQuoteError: false,
     sortedQuotes: [],
