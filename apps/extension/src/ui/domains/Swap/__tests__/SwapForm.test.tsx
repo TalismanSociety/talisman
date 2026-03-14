@@ -160,4 +160,32 @@ describe("SwapForm", () => {
     const fromBalanceProps = availableBalanceMock.mock.calls[0]?.[0]
     expect(fromBalanceProps.onMaxClick).toBeUndefined()
   })
+
+  it("keeps Review enabled while quotes are refetching in the background", () => {
+    useSwapMock.mockReturnValue(
+      createSwapState({
+        isLoadingQuotes: false,
+        isAllQuotesSettled: false,
+      })
+    )
+
+    const { getByRole } = render(<SwapForm />)
+    const reviewButton = getByRole("button", { name: "Review" })
+
+    expect(reviewButton.getAttribute("disabled")).toBeNull()
+  })
+
+  it("keeps Review disabled during the initial quote load", () => {
+    useSwapMock.mockReturnValue(
+      createSwapState({
+        isLoadingQuotes: true,
+        isAllQuotesSettled: false,
+      })
+    )
+
+    const { getByRole } = render(<SwapForm />)
+    const reviewButton = getByRole("button", { name: "Review" })
+
+    expect(reviewButton.getAttribute("disabled")).not.toBeNull()
+  })
 })

@@ -153,7 +153,6 @@ export const SwapForm = () => {
             !toAddress ||
             insufficientBalance !== false ||
             isLoadingQuotes ||
-            !isAllQuotesSettled ||
             approvalLoading
           }
           onClick={() => {
