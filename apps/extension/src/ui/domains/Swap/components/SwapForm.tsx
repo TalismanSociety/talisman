@@ -1,5 +1,5 @@
 import { useSyncSwapsChaindata } from "@talismn/balances-react"
-import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import { AlertCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -40,7 +40,6 @@ export const SwapForm = () => {
     sortedQuotes,
     hasQuoteError,
     reverse,
-    erc20Approval: { loading: approvalLoading },
     setFromAddress,
     setToAddress,
   } = useSwap()
@@ -152,8 +151,7 @@ export const SwapForm = () => {
             !fromAddress ||
             !toAddress ||
             insufficientBalance !== false ||
-            isLoadingQuotes ||
-            approvalLoading
+            isLoadingQuotes
           }
           onClick={() => {
             if (!selectedQuote) return
@@ -165,11 +163,7 @@ export const SwapForm = () => {
             setSwapView("confirm")
           }}
         >
-          {approvalLoading ? (
-            <LoaderIcon className="animate-spin-slow text-body-disabled" />
-          ) : (
-            t("Review")
-          )}
+          {t("Review")}
         </Button>
 
         {isApproveRecipient && (

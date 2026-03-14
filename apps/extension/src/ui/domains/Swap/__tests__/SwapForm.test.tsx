@@ -175,6 +175,19 @@ describe("SwapForm", () => {
     expect(reviewButton.getAttribute("disabled")).toBeNull()
   })
 
+  it("keeps Review enabled while approval state is still loading", () => {
+    useSwapMock.mockReturnValue(
+      createSwapState({
+        erc20Approval: { loading: true },
+      })
+    )
+
+    const { getByRole } = render(<SwapForm />)
+    const reviewButton = getByRole("button", { name: "Review" })
+
+    expect(reviewButton.getAttribute("disabled")).toBeNull()
+  })
+
   it("keeps Review disabled during the initial quote load", () => {
     useSwapMock.mockReturnValue(
       createSwapState({
