@@ -41,9 +41,8 @@ const fetchJsonFromGithubUrl = async <T>(
   if (schema) {
     const start = performance.now()
     const result = schema.safeParse(data)
-    const end = performance.now()
     log.debug(
-      `[ChaindataProvider] Schema validation for ${url?.split("/").pop()} took ${end - start} ms`
+      `[ChaindataProvider] Validating downloaded ${url?.split("/").pop()} took ${performance.now() - start} ms`
     )
     if (!result.success) {
       log.error("Failed to parse data from", url, { error: result.error })
