@@ -17,8 +17,8 @@ export const useGetSubnetFee = ({
   } = remoteConfig
 
   if (direction === "alphaToTao") {
-    return fee.sell[netuid] ?? TALISMAN_FEE_BITTENSOR
+    return fee.sell?.[netuid] ?? TALISMAN_FEE_BITTENSOR
   }
 
-  return fee.buy[netuid] ?? TALISMAN_FEE_BITTENSOR
+  return fee.buy?.[netuid] ?? TALISMAN_FEE_BITTENSOR
 }
