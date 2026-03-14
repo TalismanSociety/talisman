@@ -10,7 +10,7 @@ import { AvailableBalance } from "./AvailableBalance"
 import { InputFromAmount } from "./InputFromAmount"
 import { ReverseButton } from "./ReverseButton"
 import { SelectTokenButton } from "./SelectTokenButton"
-import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
+import { SwapAccountPicker } from "./SwapAccountPicker"
 import { SwapProviderPickerButton } from "./SwapProviderPickerButton"
 import { ToAmountDisplay } from "./ToAmountDisplay"
 import { TokenAndAmountContainer } from "./TokenAndAmountContainer"
@@ -101,7 +101,7 @@ export const SwapForm = () => {
           }
           tokenAmount={<InputFromAmount />}
           accountButton={
-            <SeparatedAccountSelector
+            <SwapAccountPicker
               compact
               title={t("Sender")}
               subtitle={t("From")}
@@ -127,7 +127,7 @@ export const SwapForm = () => {
           }
           tokenAmount={<ToAmountDisplay />}
           accountButton={
-            <SeparatedAccountSelector
+            <SwapAccountPicker
               compact
               title={t("Recipient")}
               subtitle={t("To")}

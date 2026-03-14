@@ -26,7 +26,7 @@ type Props = {
   compact?: boolean
 }
 
-export const SeparatedAccountSelector = memo(
+export const SwapAccountPicker = memo(
   ({
     title,
     subtitle,
