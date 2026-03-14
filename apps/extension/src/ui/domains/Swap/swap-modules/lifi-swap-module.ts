@@ -190,12 +190,12 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
 
 const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
   const assets = await getLifiAssets(signal)
-  return assets.map((a) => a.tokenId)
+  return [...new Set(assets.map((a) => a.tokenId))]
 }
 
 const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
   const assets = await getLifiAssets(signal)
-  return assets.map((a) => a.tokenId)
+  return [...new Set(assets.map((a) => a.tokenId))]
 }
 
 const getRoutes = async (

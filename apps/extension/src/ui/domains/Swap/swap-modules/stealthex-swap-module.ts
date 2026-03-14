@@ -236,7 +236,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     chainId: "acala",
     networkType: "substrate",
   },
-  "sol::sol": {
+  "mainnet::sol": {
     id: solNativeTokenId("solana-mainnet"),
     name: "Solana",
     symbol: "SOL",
