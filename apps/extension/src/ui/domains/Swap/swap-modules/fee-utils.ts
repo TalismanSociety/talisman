@@ -2,7 +2,7 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 
 // === StealthEX fee logic ===
 
-export type FeeRouteAsset = { networkType: "evm" | "substrate" | "solana" }
+export type FeeRouteAsset = { platform: "ethereum" | "polkadot" | "solana" }
 export type FeeRouteProps = { fromAsset: FeeRouteAsset; toAsset: FeeRouteAsset }
 
 // StealthEX always includes an affiliate fee of 0.4%
@@ -10,16 +10,16 @@ export const STEALTHEX_BUILT_IN_FEE = 0.004
 
 export const getStealthexTalismanTotalFee = ({ fromAsset, toAsset }: FeeRouteProps): number => {
   const isSubToOrFromEvm =
-    (fromAsset.networkType === "substrate" && toAsset.networkType === "evm") ||
-    (fromAsset.networkType === "evm" && toAsset.networkType === "substrate")
+    (fromAsset.platform === "polkadot" && toAsset.platform === "ethereum") ||
+    (fromAsset.platform === "ethereum" && toAsset.platform === "polkadot")
 
   const isSubToOrFromSub =
-    (fromAsset.networkType === "substrate" && toAsset.networkType === "substrate") ||
-    (fromAsset.networkType === "substrate" && toAsset.networkType === "substrate")
+    (fromAsset.platform === "polkadot" && toAsset.platform === "polkadot") ||
+    (fromAsset.platform === "polkadot" && toAsset.platform === "polkadot")
 
   const isEvmToOrFromEvm =
-    (fromAsset.networkType === "evm" && toAsset.networkType === "evm") ||
-    (fromAsset.networkType === "evm" && toAsset.networkType === "evm")
+    (fromAsset.platform === "ethereum" && toAsset.platform === "ethereum") ||
+    (fromAsset.platform === "ethereum" && toAsset.platform === "ethereum")
 
   if (isSubToOrFromEvm) return 0.006 // 0.6% total fee for sub<>evm
   if (isSubToOrFromSub) return 0.005 // 0.5% total fee for sub<>sub

@@ -15,15 +15,6 @@ import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
-/** Derive networkType from a Talisman Token type */
-const getNetworkType = (token: { type: string; platform?: string } | null | undefined) => {
-  if (!token) return null
-  if (token.platform === "ethereum") return "evm" as const
-  if (token.platform === "polkadot") return "substrate" as const
-  if (token.platform === "solana") return "solana" as const
-  return null
-}
-
 /** Derive networkId (chainId) for useNetworkById from a Token */
 const getNetworkId = (token: { type: string; networkId?: string } | null | undefined) => {
   if (!token) return ""
@@ -59,13 +50,14 @@ export function useSwapAddresses({
   const toToken = useToken(toTokenId ?? undefined)
   const toNetworkId = getNetworkId(toToken)
   const toNetwork = useNetworkById(toNetworkId)
-  const fromNetworkType = getNetworkType(fromToken)
-  const toNetworkType = getNetworkType(toToken)
+  const fromPlatform = fromToken?.platform ?? null
+  const toPlatform = toToken?.platform ?? null
 
   // Track whether the user has explicitly picked an account via the account picker.
   // When true, auto-selection is suppressed to respect the user's choice.
   const fromAddressManuallySet = useRef(false)
 
+  // TODO we should not care about account types, this is inaccurate. we should check if they are compatible with a given network using isAccountCompatibleWithNetwork instead. This is currently needed to work with the old address management logic, but should be refactored out together with it.
   const substrateAccounts = useMemo(
     () => ownedAccounts.filter(isAccountAddressSs58),
     [ownedAccounts]
@@ -99,13 +91,14 @@ export function useSwapAddresses({
 
   // ─── Auto-select from address based on largest token balance ────
   useEffect(() => {
-    if (!fromTokenId || !fromNetworkType || fromAddressManuallySet.current) return
+    if (!fromTokenId || !fromPlatform || fromAddressManuallySet.current) return
 
+    // TODO fix this, need to use isAccountCompatibleWithNetwork instead
     const compatibleAccounts = (() => {
-      switch (fromNetworkType) {
-        case "evm":
+      switch (fromPlatform) {
+        case "ethereum":
           return ethAccounts
-        case "substrate":
+        case "polkadot":
           return substrateAccounts
         case "solana":
           return solanaAccounts
@@ -136,7 +129,7 @@ export function useSwapAddresses({
     setFromAddress(best?.address ?? null)
   }, [
     fromTokenId,
-    fromNetworkType,
+    fromPlatform,
     ethAccounts,
     substrateAccounts,
     solanaAccounts,
@@ -146,17 +139,18 @@ export function useSwapAddresses({
 
   // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {
-    if (!toTokenId || !toNetworkType) return
+    if (!toTokenId || !toPlatform) return
 
-    switch (toNetworkType) {
-      case "evm": {
+    // TODO: looks like this can be simplified by just checking if the currently set toAddress is compatible with the new token's network, and if not, try to set it to the fromAddress if that is compatible, and if not just set it to null.
+    switch (toPlatform) {
+      case "ethereum": {
         if (toAddress && (!toNetwork || isAddressCompatibleWithNetwork(toNetwork, toAddress)))
           return
 
         if (!isAccountPlatformEthereum(fromAccount)) return setToAddress(null)
         return setToAddress(fromAddress)
       }
-      case "substrate": {
+      case "polkadot": {
         if (toAddress && (!toNetwork || isAddressCompatibleWithNetwork(toNetwork, toAddress)))
           return
 
@@ -177,13 +171,11 @@ export function useSwapAddresses({
       }
       default: {
         // biome-ignore lint/suspicious/noConsole: legacy
-        console.error(
-          `networkType ${toNetworkType} not handled in updateSelectedAccountsOnAssetChange`
-        )
+        console.error(`platform ${toPlatform} not handled in updateSelectedAccountsOnAssetChange`)
         return setToAddress(null)
       }
     }
-  }, [fromAccount, fromAddress, setToAddress, toTokenId, toNetworkType, toAddress, toNetwork])
+  }, [fromAccount, fromAddress, setToAddress, toTokenId, toPlatform, toAddress, toNetwork])
 
   // ─── Callbacks for FromToAccountSelector ──────────────────────────
 

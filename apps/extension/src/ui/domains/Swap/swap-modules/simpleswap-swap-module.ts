@@ -4,17 +4,11 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import {
-  evmErc20TokenId,
-  evmNativeTokenId,
-  subAssetTokenId,
-  subNativeTokenId,
-} from "@talismn/balances-react"
-import { type EthNetworkId, solNativeTokenId } from "@talismn/chaindata-provider"
+import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { accounts$ } from "@ui/state/accounts"
-import { getNetworks$, getTokensMap$ } from "@ui/state/chaindata"
+import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import {
   catchError,
@@ -34,6 +28,7 @@ import {
   type ExchangeParams,
   type GetTransactionParams,
   getTokenIdForSwappableAsset,
+  platformFromTokenId,
   type QuoteFee,
   type QuoteParams,
   type SupportedSwapProtocol,
@@ -77,187 +72,6 @@ type SimpleSwapCurrency = {
 
 type SimpleSwapAssetContext = {
   symbol: string
-}
-
-const SOLANA_NETWORK_KEY = "sol"
-const SOLANA_NETWORK_ID = "solana-mainnet"
-
-const supportedEvmNetworkIds: Record<string, EthNetworkId | undefined> = {
-  arbitrum: "42161",
-  arbnova: "42170",
-  base: "8453",
-  blast: "81457",
-  bsc: "56",
-  eth: "1",
-  glmr: "1284",
-  manta: "169",
-  matic: "137",
-  movr: "1285",
-  opbnb: "204",
-  optimism: "10",
-  polygon: "137",
-  s: "146",
-  vana: "1480",
-  zksync: "324",
-}
-
-/**
- * specialAssets list defines a mappings of assets from simpleswap
- * to our internal asset representation. Many assets on simpleswap are not tradeable
- * in an onchain context because they dont come with contract addresses.
- * To avoid displaying a token which we dont have contract address for (which could result in a bunch of issues like, not being able to display the token balance, not being able to transfer the token for swapping and etc),
- * We support mainly 2 types of assets:
- * - ERC20 tokens: we only support ERC20 tokens from Simpleswap that comes with contract addresses
- * - Special assets: all substrate and evm native assets from simpleswap are whitelisted as special assets
- */
-const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
-  dot: {
-    id: subNativeTokenId("polkadot-asset-hub"),
-    name: "Polkadot Asset Hub",
-    symbol: "DOT",
-    chainId: "polkadot-asset-hub",
-    networkType: "substrate",
-  },
-  ksmassethub: {
-    id: subNativeTokenId("kusama-asset-hub"),
-    name: "Kusama Asset Hub",
-    symbol: "KSM",
-    chainId: "kusama-asset-hub",
-    networkType: "substrate",
-  },
-  usdtdot: {
-    id: subAssetTokenId("polkadot-asset-hub", "1984"),
-    name: "USDT (Polkadot)",
-    chainId: "polkadot-asset-hub",
-    symbol: "USDT",
-    networkType: "substrate",
-    assetHubAssetId: "1984",
-  },
-  usdcdot: {
-    id: subAssetTokenId("polkadot-asset-hub", "1337"),
-    name: "USDC (Polkadot)",
-    chainId: "polkadot-asset-hub",
-    symbol: "USDC",
-    networkType: "substrate",
-    assetHubAssetId: "1337",
-  },
-  eth: {
-    id: evmNativeTokenId("1"),
-    name: "Ethereum",
-    chainId: 1,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  etharb: {
-    id: evmNativeTokenId("42161"),
-    name: "Ethereum",
-    chainId: 42161,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  ethop: {
-    id: evmNativeTokenId("10"),
-    name: "Ethereum",
-    chainId: 10,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  s: {
-    id: evmNativeTokenId("146"),
-    name: "Sonic",
-    chainId: 146,
-    symbol: "S",
-    networkType: "evm",
-  },
-  vana: {
-    id: evmNativeTokenId("1480"),
-    name: "Vana",
-    chainId: 1480,
-    symbol: "VANA",
-    networkType: "evm",
-  },
-  ethmanta: {
-    id: evmNativeTokenId("169"),
-    name: "Ethereum (Manta Pacific)",
-    chainId: 169,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  manta: {
-    id: evmErc20TokenId("169", "0x95cef13441be50d20ca4558cc0a27b601ac544e5"),
-    name: "Manta Network",
-    chainId: 169,
-    symbol: "MANTA",
-    networkType: "evm",
-    contractAddress: "0x95cef13441be50d20ca4558cc0a27b601ac544e5",
-  },
-  tao: {
-    id: subNativeTokenId("bittensor"),
-    name: "Bittensor",
-    chainId: "bittensor",
-    symbol: "TAO",
-    networkType: "substrate",
-  },
-  anlog: {
-    id: subNativeTokenId("analog-timechain"),
-    name: "Analog",
-    chainId: "analog-timechain",
-    symbol: "ANLOG",
-    networkType: "substrate",
-  },
-  /** SS expects substrate address when swapping ASTR */
-  astr: {
-    id: subNativeTokenId("astar"),
-    name: "Astar",
-    symbol: "ASTR",
-    chainId: "astar",
-    networkType: "substrate",
-  },
-  azero: {
-    id: subNativeTokenId("aleph-zero"),
-    name: "Aleph Zero",
-    symbol: "AZERO",
-    chainId: "aleph-zero",
-    networkType: "substrate",
-  },
-  /** SS expects substrate address when swapping ACA */
-  aca: {
-    id: subNativeTokenId("acala"),
-    name: "ACALA",
-    symbol: "ACA",
-    chainId: "acala",
-    networkType: "substrate",
-  },
-  /** SS expects EVM address when swapping GLMR */
-  glmr: {
-    id: evmNativeTokenId("1284"),
-    name: "Moonbeam",
-    symbol: "GLMR",
-    chainId: "moonbeam",
-    networkType: "evm",
-  },
-  /** SS expects EVM address when swapping MOVR */
-  movr: {
-    id: evmNativeTokenId("1285"),
-    name: "Moonriver",
-    symbol: "MOVR",
-    chainId: "moonriver",
-    networkType: "evm",
-  },
-  avail: {
-    id: subNativeTokenId("avail"),
-    name: "Avail",
-    symbol: "AVAIL",
-    chainId: "avail",
-    networkType: "substrate",
-  },
-  sol: {
-    id: solNativeTokenId("solana-mainnet"),
-    name: "Solana",
-    symbol: "SOL",
-    chainId: "solana-mainnet",
-    networkType: "solana",
-  },
 }
 
 type Exchange = {
@@ -448,54 +262,50 @@ const getSimpleswapAssets = async (_signal: AbortSignal): Promise<SimpleswapInte
 }
 
 const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
-  const allCurrencies = await simpleSwapSdk.getAllCurrencies()
+  const [allCurrencies, { simpleswap: mappings }, knownEvmNetworks, knownTokens] =
+    await Promise.all([
+      simpleSwapSdk.getAllCurrencies(),
+      remoteConfigStore.get("swaps"),
+      firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
+      firstValueFrom(getTokensMap$()),
+    ])
+  const { networks, tokens } = mappings
 
   const supportedTokens = allCurrencies.filter((currency) => {
     if (currency.isFiat) return false
-    const isEvmNetwork = !!supportedEvmNetworkIds[currency.network]
-    const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
-    const isSpecialAsset = specialAssets[currency.symbol]
+    const networkId = networks[currency.network]
+    const isSpecialAsset = !!tokens[currency.symbol]
 
-    // evm assets must be whitelisted as a special asset or have a contract address
-    if (isEvmNetwork) return isSpecialAsset || !!currency.contract_address
+    // network-mapped assets must be whitelisted as a special asset or have a contract address
+    if (networkId) return isSpecialAsset || !!currency.contract_address
 
-    // Solana assets: must be a special asset OR have a contract_address (mint address)
-    if (isSolNetwork) return isSpecialAsset || !!currency.contract_address
-
-    // substrate assets must be whitelisted as a special asset
+    // other assets (substrate etc.) must be whitelisted as a special asset
     return isSpecialAsset
   })
-  const knownTokens = await firstValueFrom(getTokensMap$())
 
   const result = Object.values(
     supportedTokens.reduce(
       (acc, currency) => {
-        const evmNetworkId = supportedEvmNetworkIds[currency.network]
-        const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
-        const polkadotAsset = specialAssets[currency.symbol]
+        const networkId = networks[currency.network]
+        const specialTokenId = tokens[currency.symbol]
 
-        const id = evmNetworkId
+        // Resolve the Talisman token ID
+        const contractAddress = currency.contract_address || undefined
+        const id = networkId
           ? getTokenIdForSwappableAsset(
-              "evm",
-              evmNetworkId,
-              currency.contract_address ? currency.contract_address : undefined
+              knownEvmNetworks[networkId] ? "ethereum" : "solana",
+              networkId,
+              contractAddress
             )
-          : isSolNetwork
-            ? getTokenIdForSwappableAsset(
-                "solana",
-                SOLANA_NETWORK_ID,
-                currency.contract_address || undefined
-              )
-            : polkadotAsset?.id
-        const chainId = evmNetworkId
-          ? Number(evmNetworkId)
-          : isSolNetwork
-            ? SOLANA_NETWORK_ID
-            : polkadotAsset?.chainId
-        if (!id || !chainId) return acc
+          : specialTokenId
+        if (!id) return acc
 
         const token = knownTokens[id]
         if (!token) return acc
+
+        const parsed = specialTokenId ? parseTokenId(specialTokenId) : undefined
+        const chainId = networkId ?? parsed?.networkId
+        if (!chainId) return acc
 
         const asset: SimpleswapInternalAsset = {
           id,
@@ -503,14 +313,13 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
           symbol: token.symbol,
           decimals: token.decimals,
           chainId,
-          contractAddress: currency.contract_address ? currency.contract_address : undefined,
+          contractAddress,
           image: (token.logo !== UNKNOWN_TOKEN_URL ? token.logo : undefined) ?? currency.image,
-          networkType: evmNetworkId
-            ? "evm"
-            : isSolNetwork
-              ? "solana"
-              : (polkadotAsset?.networkType ?? "substrate"),
-          assetHubAssetId: polkadotAsset?.assetHubAssetId,
+          platform: platformFromTokenId(id),
+          assetHubAssetId:
+            parsed?.type === "substrate-assets"
+              ? parseTokenId<"substrate-assets">(specialTokenId!).assetId
+              : undefined,
           context: {
             simpleswap: {
               symbol: currency.symbol,
@@ -660,7 +469,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
     const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
     const formatAddress = (address: string | null, asset: SimpleswapInternalAsset | undefined) => {
       if (!address) return address
-      if (asset?.networkType !== "substrate") return address
+      if (asset?.platform !== "polkadot") return address
 
       const substrateChain = substrateChains.find(
         (c) => c.id.toString() === asset.chainId.toString()

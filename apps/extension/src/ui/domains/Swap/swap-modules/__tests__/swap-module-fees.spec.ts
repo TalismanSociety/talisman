@@ -28,8 +28,8 @@ const {
 
 // --- Test helpers ---
 
-const subAsset: FeeRouteAsset = { networkType: "substrate" }
-const evmAsset: FeeRouteAsset = { networkType: "evm" }
+const subAsset: FeeRouteAsset = { platform: "polkadot" }
+const evmAsset: FeeRouteAsset = { platform: "ethereum" }
 
 // === StealthEX fee tests ===
 

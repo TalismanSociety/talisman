@@ -13,6 +13,7 @@ import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,7 +24,6 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
-import { toLifiChainId } from "../swap-modules/lifi-swap-module"
 import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions = () => {
@@ -49,6 +49,9 @@ export const SwapConfirmActions = () => {
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
+  const {
+    swaps: { lifi: lifiConfig },
+  } = useRemoteConfig()
 
   const needsApproval = !approvalLoading && approvalData !== null
   const isReady = useConfirmReadiness(swapView)
@@ -213,11 +216,15 @@ export const SwapConfirmActions = () => {
     subProtocol,
     fromLifiChainId:
       swapModule?.protocol === "lifi" && fromToken?.networkId
-        ? toLifiChainId(fromToken.networkId)
+        ? fromToken.networkId === "solana-mainnet"
+          ? lifiConfig.solanaChainId
+          : +fromToken.networkId
         : undefined,
     toLifiChainId:
       swapModule?.protocol === "lifi" && toToken?.networkId
-        ? toLifiChainId(toToken.networkId)
+        ? toToken.networkId === "solana-mainnet"
+          ? lifiConfig.solanaChainId
+          : +toToken.networkId
         : undefined,
   })
 

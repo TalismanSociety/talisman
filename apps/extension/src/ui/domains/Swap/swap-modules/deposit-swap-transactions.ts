@@ -34,7 +34,7 @@ export type DepositInfo = {
 
 export type DepositSwapAsset = {
   chainId: number | string
-  networkType: "evm" | "substrate" | "solana"
+  platform: "ethereum" | "polkadot" | "solana"
   contractAddress?: string
   assetHubAssetId?: string
   decimals: number
@@ -57,7 +57,7 @@ export async function estimateDepositGas(
   fromAsset: DepositSwapAsset,
   fromAddress: string
 ): Promise<QuoteFee | null> {
-  if (fromAsset.networkType === "evm") {
+  if (fromAsset.platform === "ethereum") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
     const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
     const network = knownEvmNetworks[fromAsset.chainId]
@@ -87,7 +87,7 @@ export async function estimateDepositGas(
     return null
   }
 
-  if (fromAsset.networkType === "substrate") {
+  if (fromAsset.platform === "polkadot") {
     try {
       const knownSubstrateNetworks = await firstValueFrom(
         getNetworksMapById$({ platform: "polkadot" })
@@ -152,7 +152,7 @@ async function buildEvmDepositTransaction(params: {
     const { fromAsset, fromAddress, deposit } = params
     if (!fromAddress) throw new Error("Missing from address")
 
-    if (fromAsset.networkType !== "evm") return
+    if (fromAsset.platform !== "ethereum") return
 
     const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
@@ -203,7 +203,7 @@ async function buildSubstrateDepositPayload(params: {
 
     if (!fromAddress) throw new Error("Missing from address")
 
-    if (fromAsset.networkType !== "substrate") return null
+    if (fromAsset.platform !== "polkadot") return null
 
     const depositAmount = parseUserInputToPlanck(deposit.depositAmount, fromAsset.decimals)
 
@@ -243,7 +243,7 @@ async function buildSolanaDepositTransaction(params: {
   try {
     const { fromAsset, fromAddress, deposit, connection } = params
     if (!fromAddress) throw new Error("Missing from address")
-    if (fromAsset.networkType !== "solana") return
+    if (fromAsset.platform !== "solana") return
 
     const depositAmount = parseUserInputToPlanck(deposit.depositAmount, fromAsset.decimals)
     const fromPubkey = new PublicKey(fromAddress)
@@ -290,12 +290,12 @@ export async function buildDepositTransaction(params: {
 }): Promise<SwapModuleTransaction | null> {
   const { fromAsset, context } = params
 
-  switch (fromAsset.networkType) {
-    case "evm": {
+  switch (fromAsset.platform) {
+    case "ethereum": {
       const transaction = await buildEvmDepositTransaction(params)
       return transaction ? { platform: "ethereum", transaction } : null
     }
-    case "substrate": {
+    case "polkadot": {
       if (context.platform !== "polkadot") return null
       const payload = await buildSubstrateDepositPayload({
         ...params,

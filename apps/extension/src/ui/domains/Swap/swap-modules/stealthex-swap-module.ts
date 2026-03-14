@@ -3,12 +3,12 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { evmNativeTokenId, subAssetTokenId, subNativeTokenId } from "@talismn/balances-react"
-import { type EthNetworkId, solNativeTokenId } from "@talismn/chaindata-provider"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { accounts$ } from "@ui/state/accounts"
-import { getNetworks$, getTokensMap$ } from "@ui/state/chaindata"
+import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import createClient from "openapi-fetch"
 import {
@@ -29,6 +29,7 @@ import {
   type ExchangeParams,
   type GetTransactionParams,
   getTokenIdForSwappableAsset,
+  platformFromTokenId,
   type QuoteFee,
   type QuoteParams,
   type SupportedSwapProtocol,
@@ -75,164 +76,6 @@ const getTalismanTotalFee = (feeProps: FeeProps) => getStealthexTalismanTotalFee
 const getAdditionalFeePercent = (feeProps: FeeProps) => getStealthexAdditionalFeePercent(feeProps)
 
 const LOGO = stealthexLogo
-
-const supportedEvmNetworkIds: Record<string, EthNetworkId | undefined> = {
-  arbitrum: "42161",
-  arbnova: "42170",
-  base: "8453",
-  bsc: "56",
-  eth: "1",
-  glmr: "1284",
-  manta: "169",
-  matic: "137",
-  opbnb: "204",
-  optimism: "10",
-  theta: "361",
-  vana: "1480",
-  zksync: "324",
-}
-
-const SOLANA_NETWORK_KEY = "sol"
-const SOLANA_NETWORK_ID = "solana-mainnet"
-
-/**
- * specialAssets list defines a mappings of assets from stealthex to our internal asset representation.
- * Many assets on stealthex are not tradeable in an onchain context because they dont come with contract addresses.
- * To avoid displaying a token which we dont have contract address for (which could result in a bunch of issues like, not being able to display the token balance, not being able to transfer the token for swapping and etc),
- * We support mainly 2 types of assets:
- * - ERC20 tokens: we only support ERC20 tokens from stealthex that comes with contract addresses
- * - Special assets: all substrate and evm native assets from stealthex are whitelisted as special assets
- */
-const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
-  "mainnet::dot": {
-    id: subNativeTokenId("polkadot-asset-hub"),
-    name: "Polkadot Asset Hub",
-    symbol: "DOT",
-    chainId: "polkadot-asset-hub",
-    networkType: "substrate",
-  },
-  "polkadot::ksm": {
-    id: subNativeTokenId("kusama-asset-hub"),
-    name: "Kusama Asset Hub",
-    symbol: "KSM",
-    chainId: "kusama-asset-hub",
-    networkType: "substrate",
-  },
-  "polkadot::usdt": {
-    id: subAssetTokenId("polkadot-asset-hub", "1984"),
-    name: "USDT (Polkadot)",
-    chainId: "polkadot-asset-hub",
-    symbol: "USDT",
-    networkType: "substrate",
-    assetHubAssetId: "1984",
-  },
-  "polkadot::usdc": {
-    id: subAssetTokenId("polkadot-asset-hub", "1337"),
-    name: "USDC (Polkadot)",
-    chainId: "polkadot-asset-hub",
-    symbol: "USDC",
-    networkType: "substrate",
-    assetHubAssetId: "1337",
-  },
-  "mainnet::eth": {
-    id: evmNativeTokenId("1"),
-    name: "Ethereum",
-    chainId: 1,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "arbitrum::eth": {
-    id: evmNativeTokenId("42161"),
-    name: "Ethereum",
-    chainId: 42161,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "arbnova::eth": {
-    id: evmNativeTokenId("42170"),
-    name: "Ethereum",
-    chainId: 42170,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "base::eth": {
-    id: evmNativeTokenId("8453"),
-    name: "Ethereum",
-    chainId: 8453,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "bsc::eth": {
-    id: evmNativeTokenId("56"),
-    name: "Ethereum",
-    chainId: 56,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "optimism::eth": {
-    id: evmNativeTokenId("10"),
-    name: "Ethereum",
-    chainId: 10,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "mainnet::vana": {
-    id: evmNativeTokenId("1480"),
-    name: "Vana",
-    chainId: 1480,
-    symbol: "VANA",
-    networkType: "evm",
-  },
-  "manta::eth": {
-    id: evmNativeTokenId("169"),
-    name: "Ethereum (Manta Pacific)",
-    chainId: 169,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "zksync::eth": {
-    id: evmNativeTokenId("324"),
-    name: "Ethereum",
-    chainId: 324,
-    symbol: "ETH",
-    networkType: "evm",
-  },
-  "mainnet::tao": {
-    id: subNativeTokenId("bittensor"),
-    name: "Bittensor",
-    chainId: "bittensor",
-    symbol: "TAO",
-    networkType: "substrate",
-  },
-  "mainnet::astr": {
-    id: subNativeTokenId("astar"),
-    name: "Astar",
-    symbol: "ASTR",
-    chainId: "astar",
-    networkType: "substrate",
-  },
-  "mainnet::azero": {
-    id: subNativeTokenId("aleph-zero"),
-    name: "Aleph Zero",
-    symbol: "AZERO",
-    chainId: "aleph-zero",
-    networkType: "substrate",
-  },
-  "mainnet::aca": {
-    id: subNativeTokenId("acala"),
-    name: "ACALA",
-    symbol: "ACA",
-    chainId: "acala",
-    networkType: "substrate",
-  },
-  "mainnet::sol": {
-    id: solNativeTokenId("solana-mainnet"),
-    name: "Solana",
-    symbol: "SOL",
-    chainId: "solana-mainnet",
-    networkType: "solana",
-  },
-}
 
 const api = createClient<StealthexApi>({ baseUrl: apiUrl })
 const stealthexSdk = {
@@ -400,53 +243,52 @@ const getStealthexAssets = async (_signal: AbortSignal): Promise<StealthexIntern
 }
 
 const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
-  const allCurrencies = await stealthexSdk.getAllCurrencies()
+  const [allCurrencies, { stealthex: mappings }, knownEvmNetworks, knownTokens] = await Promise.all(
+    [
+      stealthexSdk.getAllCurrencies(),
+      remoteConfigStore.get("swaps"),
+      firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
+      firstValueFrom(getTokensMap$()),
+    ]
+  )
+  const { networks, tokens } = mappings
 
   const supportedTokens = allCurrencies.filter((currency) => {
-    const isEvmNetwork = !!supportedEvmNetworkIds[currency.network]
-    const isSpecialAsset = !!specialAssets[`${currency.network}::${currency.symbol}`]
+    const networkId = networks[currency.network]
+    const tokenKey = `${currency.network}::${currency.symbol}`
+    const isSpecialAsset = !!tokens[tokenKey]
 
-    // evm assets must be whitelisted as a special asset or have a contract address
-    if (isEvmNetwork) return isSpecialAsset || !!currency.contract_address
+    // network-mapped assets must be whitelisted as a special asset or have a contract address
+    if (networkId) return isSpecialAsset || !!currency.contract_address
 
-    // solana assets must be whitelisted as a special asset or have a contract address (SPL tokens)
-    const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
-    if (isSolNetwork) return isSpecialAsset || !!currency.contract_address
-
-    // substrate assets must be whitelisted as a special asset
+    // other assets (substrate etc.) must be whitelisted as a special asset
     return isSpecialAsset
   })
-  const knownTokens = await firstValueFrom(getTokensMap$())
 
   const result = Object.values(
     supportedTokens.reduce(
       (acc, currency) => {
-        const evmNetworkId = supportedEvmNetworkIds[currency.network]
-        const specialAsset = specialAssets[`${currency.network}::${currency.symbol}`]
-        const isSolNetwork = currency.network === SOLANA_NETWORK_KEY
+        const networkId = networks[currency.network]
+        const tokenKey = `${currency.network}::${currency.symbol}`
+        const specialTokenId = tokens[tokenKey]
 
-        const id = evmNetworkId
+        // Resolve the Talisman token ID
+        const contractAddress = currency.contract_address || undefined
+        const id = networkId
           ? getTokenIdForSwappableAsset(
-              "evm",
-              evmNetworkId,
-              currency.contract_address ? currency.contract_address : undefined
+              knownEvmNetworks[networkId] ? "ethereum" : "solana",
+              networkId,
+              contractAddress
             )
-          : isSolNetwork
-            ? getTokenIdForSwappableAsset(
-                "solana",
-                SOLANA_NETWORK_ID,
-                currency.contract_address ? currency.contract_address : undefined
-              )
-            : specialAsset?.id
-        const chainId = evmNetworkId
-          ? Number(evmNetworkId)
-          : isSolNetwork
-            ? SOLANA_NETWORK_ID
-            : specialAsset?.chainId
-        if (!id || !chainId) return acc
+          : specialTokenId
+        if (!id) return acc
 
         const token = knownTokens[id]
         if (!token) return acc
+
+        const parsed = specialTokenId ? parseTokenId(specialTokenId) : undefined
+        const chainId = networkId ?? parsed?.networkId
+        if (!chainId) return acc
 
         const asset: StealthexInternalAsset = {
           id,
@@ -454,14 +296,13 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
           symbol: token.symbol,
           decimals: token.decimals,
           chainId,
-          contractAddress: currency.contract_address ? currency.contract_address : undefined,
+          contractAddress,
           image: (token.logo !== UNKNOWN_TOKEN_URL ? token.logo : undefined) ?? currency.icon_url,
-          networkType: evmNetworkId
-            ? "evm"
-            : isSolNetwork
-              ? "solana"
-              : (specialAsset?.networkType ?? "substrate"),
-          assetHubAssetId: specialAsset?.assetHubAssetId,
+          platform: platformFromTokenId(id),
+          assetHubAssetId:
+            parsed?.type === "substrate-assets"
+              ? parseTokenId<"substrate-assets">(specialTokenId!).assetId
+              : undefined,
           context: {
             stealthex: {
               network: currency.network,
@@ -605,7 +446,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
     const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
     const formatAddress = (address: string | null, asset: StealthexInternalAsset | undefined) => {
       if (!address) return address
-      if (asset?.networkType !== "substrate") return address
+      if (asset?.platform !== "polkadot") return address
 
       const substrateChain = substrateChains.find(
         (c) => c.id.toString() === asset.chainId.toString()

@@ -5,6 +5,8 @@ import type { Connection, Transaction, VersionedTransaction } from "@solana/web3
 import {
   evmErc20TokenId,
   evmNativeTokenId,
+  type NetworkPlatform,
+  parseTokenId,
   solNativeTokenId,
   solSplTokenId,
   subNativeTokenId,
@@ -143,12 +145,21 @@ export type SwapModule = {
 
 // helpers — module-internal use only
 
+type SwapChainType = "substrate" | "evm" | "solana"
+
+const PLATFORM_TO_CHAIN_TYPE: Record<NetworkPlatform, SwapChainType> = {
+  ethereum: "evm",
+  polkadot: "substrate",
+  solana: "solana",
+}
+
 export const getTokenIdForSwappableAsset = (
-  chainType: "substrate" | "evm" | "solana",
+  chainType: SwapChainType | NetworkPlatform,
   chainId: number | string,
   contractAddress?: string
 ) => {
-  switch (chainType) {
+  const resolved = PLATFORM_TO_CHAIN_TYPE[chainType as NetworkPlatform] ?? chainType
+  switch (resolved) {
     case "evm":
       return contractAddress
         ? evmErc20TokenId(chainId.toString(), contractAddress as `0x${string}`)
@@ -164,6 +175,15 @@ export const getTokenIdForSwappableAsset = (
   }
 }
 
+/** Derive the network platform from a Talisman token ID. */
+export const platformFromTokenId = (tokenId: string): NetworkPlatform => {
+  const { type } = parseTokenId(tokenId)
+  if (type.startsWith("evm-")) return "ethereum"
+  if (type.startsWith("substrate-")) return "polkadot"
+  if (type.startsWith("sol-")) return "solana"
+  throw new Error(`Unknown token type: ${type}`)
+}
+
 /**
  * Internal type used by swap modules to cache their provider-specific asset data.
  * Not exposed outside the module layer — the public API only uses tokenIds (string).
@@ -176,7 +196,7 @@ export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtoc
   contractAddress?: string
   assetHubAssetId?: string
   image?: string
-  networkType: "evm" | "substrate" | "solana"
+  platform: NetworkPlatform
   /** protocol modules can store context here, like any special identifier */
   context: TContext
   decimals?: number
