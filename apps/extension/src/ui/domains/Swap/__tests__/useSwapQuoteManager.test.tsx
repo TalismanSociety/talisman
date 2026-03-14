@@ -24,7 +24,7 @@ vi.mock("../swaps.api", () => ({
       getToAssets: async () => [],
       getQuote: (params: Parameters<SwapModule["getQuote"]>[0], signal: AbortSignal) =>
         getQuoteMock(params, signal),
-      createExchange: async () => undefined,
+      createExchange: async () => null,
       getTransaction: async () => null,
     } satisfies SwapModule,
   ],

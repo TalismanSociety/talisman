@@ -1,29 +1,14 @@
 import { UNKNOWN_TOKEN_URL } from "@common/constants"
-import { log } from "@common/log"
-import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
-import { MultiAddress } from "@polkadot-api/descriptors"
 import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  createTransferInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token"
-import type { Connection } from "@solana/web3.js"
-import { PublicKey, Transaction as SolTransaction, SystemProgram } from "@solana/web3.js"
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { evmNativeTokenId, subAssetTokenId, subNativeTokenId } from "@talismn/balances-react"
 import { type EthNetworkId, solNativeTokenId } from "@talismn/chaindata-provider"
-import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import { getScaleApi, type ScaleApi } from "@talismn/sapi"
+import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
-import { api as extensionApi } from "@ui/api"
-import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { accounts$ } from "@ui/state/accounts"
-import {
-  getNetworkById$,
-  getNetworks$,
-  getNetworksMapById$,
-  getToken$,
-  getTokensMap$,
-} from "@ui/state/chaindata"
+import { getNetworks$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import createClient from "openapi-fetch"
 import {
@@ -38,7 +23,6 @@ import {
   switchMap,
   takeWhile,
 } from "rxjs"
-import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type BaseQuote,
@@ -48,11 +32,16 @@ import {
   type QuoteFee,
   type QuoteParams,
   type SupportedSwapProtocol,
+  type SwapExchange,
   type SwapModule,
   type SwapModuleTransaction,
   type SwappableAssetBaseType,
-  validateAddress,
 } from "./common.swap-module"
+import {
+  buildDepositTransaction,
+  type DepositInfo,
+  estimateDepositGas,
+} from "./deposit-swap-transactions"
 import {
   STEALTHEX_BUILT_IN_FEE as BUILT_IN_FEE,
   getStealthexAdditionalFeePercent,
@@ -391,16 +380,6 @@ const stealthexSdk = {
   },
 }
 
-// --- Helper to get a viem PublicClient for an EVM network ---
-const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
-  if (!evmNetworkId) return undefined
-  const evmNetwork = await firstValueFrom(getNetworkById$(evmNetworkId))
-  const nativeToken = await firstValueFrom(getToken$(evmNetwork?.nativeTokenId))
-  if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
-    return undefined
-  return getExtensionPublicClient(evmNetwork)
-}
-
 // --- Internal lookup cache keyed by tokenId ---
 const assetsByTokenId = new Map<string, StealthexInternalAsset>()
 
@@ -555,97 +534,6 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
   return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
-const estimateGas = async (
-  fromAsset: StealthexInternalAsset,
-  fromAddress: string,
-  _fromAmount: bigint
-): Promise<QuoteFee | null> => {
-  if (fromAsset.networkType === "evm") {
-    if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
-    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
-    const network = knownEvmNetworks[fromAsset.chainId]
-    const nativeToken = await firstValueFrom(getToken$(network?.nativeTokenId))
-
-    const data = fromAsset.contractAddress
-      ? encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [fromAddress, 0n] })
-      : undefined
-
-    if (network && nativeToken) {
-      const client = await getPublicClient(network.id)
-      if (!client) return null
-      const gasPrice = await client.getGasPrice()
-      // the to address and amount dont matter, we just need to place any address here for the estimation
-      const gasLimit = await client.estimateGas({
-        account: fromAddress as `0x${string}`,
-        data,
-        to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
-        value: 0n,
-      })
-      const amount = BigNumber(gasPrice.toString())
-        .times(gasLimit.toString())
-        .times(10 ** -(nativeToken.decimals ?? 0))
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
-    }
-
-    return null
-  }
-
-  if (fromAsset.networkType === "substrate") {
-    try {
-      const knownSubstrateNetworks = await firstValueFrom(
-        getNetworksMapById$({ platform: "polkadot" })
-      )
-      const network = knownSubstrateNetworks[fromAsset.chainId]
-      if (!network || !("genesisHash" in network)) return null
-
-      const nativeToken = await firstValueFrom(getToken$(network.nativeTokenId))
-      if (!nativeToken) return null
-
-      const metadataDef = await extensionApi.subChainMetadata(network.genesisHash)
-      if (!metadataDef?.metadataRpc) return null
-
-      const metadataRpc = getMetadataRpcFromDef(metadataDef)
-      if (!metadataRpc) return null
-
-      const sapi = getScaleApi(
-        {
-          chainId: network.id,
-          send: (...args) => extensionApi.subSend(network.id, ...args),
-        },
-        metadataRpc as `0x${string}`,
-        nativeToken,
-        network.hasCheckMetadataHash,
-        network.signedExtensions,
-        network.registryTypes
-      )
-
-      // Create a dummy transfer payload for fee estimation (amount/recipient don't affect the fee)
-      const isAssetHubToken = fromAsset.assetHubAssetId !== undefined
-      const { payload } = await sapi.getExtrinsicPayload(
-        isAssetHubToken ? "Assets" : "Balances",
-        "transfer_keep_alive",
-        isAssetHubToken
-          ? {
-              id: fromAsset.assetHubAssetId,
-              target: MultiAddress.Id(fromAddress),
-              amount: 0n,
-            }
-          : { dest: MultiAddress.Id(fromAddress), value: 0n },
-        { address: fromAddress }
-      )
-
-      const fee = await sapi.getFeeEstimate(payload)
-      const amount = BigNumber(fee.toString()).times(10 ** -nativeToken.decimals)
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
-    } catch (err) {
-      log.error(new Error("Failed to estimate substrate gas", { cause: err }))
-      return null
-    }
-  }
-
-  return null
-}
-
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
   if (!fromTokenId || !toTokenId) return null
@@ -674,7 +562,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       additional_fee_percent,
     })
 
-    const gasFee = fromAddress ? await estimateGas(fromAsset, fromAddress, fromAmount) : null
+    const gasFee = fromAddress ? await estimateDepositGas(fromAsset, fromAddress) : null
     // relative fee, multiply by fromAmount to get planck fee
     const talismanFee = Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE)
     // add talisman fee
@@ -707,7 +595,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
 
 export type { StealthexExchange }
 
-const createExchange = async (params: ExchangeParams): Promise<StealthexExchange | undefined> => {
+const createExchange = async (params: ExchangeParams): Promise<SwapExchange | null> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
@@ -741,23 +629,37 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
     if (!from) throw new Error("Missing route from")
     if (!to) throw new Error("Missing route to")
 
+    const allNetworks = await firstValueFrom(getNetworks$())
+
     // validate from address for the source chain
     const fromAccount = allAccounts.find((account) =>
       isAddressEqual(account.address, formattedFromAddress)
     )
-    const fromChain = substrateChains.find((c) => c.id.toString() === String(fromAsset.chainId))
-    if (!validateAddress(fromAccount, formattedFromAddress, fromChain, fromAsset.networkType))
+    const fromNetwork = allNetworks.find((n) => n.id.toString() === String(fromAsset.chainId))
+    if (fromAccount) {
+      if (fromNetwork && !isAccountCompatibleWithNetwork(fromNetwork, fromAccount))
+        throw new Error(
+          `Cannot swap from ${fromAsset.chainId} chain with address: ${formattedFromAddress}`
+        )
+    } else if (fromNetwork && !isAddressCompatibleWithNetwork(fromNetwork, formattedFromAddress)) {
       throw new Error(
         `Cannot swap from ${fromAsset.chainId} chain with address: ${formattedFromAddress}`
       )
+    }
 
     // validate to address for the target chain
     const toAccount = allAccounts.find((account) =>
       isAddressEqual(account.address, formattedToAddress)
     )
-    const toChain = substrateChains.find((c) => c.id.toString() === String(toAsset.chainId))
-    if (!validateAddress(toAccount, formattedToAddress, toChain, toAsset.networkType))
+    const toNetwork = allNetworks.find((n) => n.id.toString() === String(toAsset.chainId))
+    if (toAccount) {
+      if (toNetwork && !isAccountCompatibleWithNetwork(toNetwork, toAccount))
+        throw new Error(
+          `Cannot swap to ${toAsset.chainId} chain with address: ${formattedToAddress}`
+        )
+    } else if (toNetwork && !isAddressCompatibleWithNetwork(toNetwork, formattedToAddress)) {
       throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${formattedToAddress}`)
+    }
 
     const routeHasCustomFee = await getRouteHasCustomFee(fromTokenId, toTokenId)
 
@@ -786,170 +688,10 @@ const createExchange = async (params: ExchangeParams): Promise<StealthexExchange
     if (exchange.withdrawal.address !== formattedToAddress)
       throw new Error("Incorrect destination address from provider. Please try again later")
 
-    return exchange
+    return { protocol: "stealthex", data: exchange }
   } catch (cause) {
     // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create exchange", { cause }))
-    throw cause
-  }
-}
-
-const getEvmTransaction = async (
-  params: Pick<GetTransactionParams, "fromTokenId" | "fromAddress" | "exchange">
-): Promise<TransactionRequest | undefined> => {
-  try {
-    const { fromTokenId, fromAddress, exchange: exchangeData } = params
-    const exchange = exchangeData as StealthexExchange
-    const fromAsset = resolveAsset(fromTokenId)
-    if (!fromAddress) throw new Error("Missing from address")
-    if (!fromAsset) throw new Error("Missing from asset")
-    if (!exchange) throw new Error("Missing exchange")
-
-    if (fromAsset.networkType !== "evm") return
-
-    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
-    const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
-    if (!evmNetwork) throw new Error("Network not supported")
-
-    const depositAmount = parseUserInputToPlanck(
-      BigNumber(exchange.deposit.expected_amount).toFixed(),
-      fromAsset.decimals
-    )
-
-    const publicClient = await getPublicClient(evmNetwork.id)
-    if (!publicClient) throw new Error("Missing public client")
-
-    if (!fromAsset.contractAddress)
-      return publicClient.prepareTransactionRequest({
-        chain: null,
-        to: exchange.deposit.address as `0x${string}`,
-        value: depositAmount,
-        account: fromAddress as `0x${string}`,
-      })
-
-    const data = encodeFunctionData({
-      abi: erc20Abi,
-      functionName: "transfer",
-      args: [exchange.deposit.address as `0x${string}`, depositAmount],
-    })
-    return publicClient.prepareTransactionRequest({
-      chain: null,
-      to: fromAsset.contractAddress as `0x${string}`,
-      data,
-      value: 0n,
-      account: fromAddress as `0x${string}`,
-    })
-  } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create evm transaction", { cause }))
-    throw cause
-  }
-}
-
-const getSubstratePayload = async (params: {
-  fromTokenId: string
-  fromAddress: string
-  exchange: unknown
-  sapi: ScaleApi
-  allowReap?: boolean
-}): Promise<{
-  payload: import("@core/domains/signing/types").SignerPayloadJSON
-  txMetadata?: Uint8Array
-} | null> => {
-  try {
-    const { fromTokenId, fromAddress, exchange: exchangeData, sapi, allowReap } = params
-    const exchange = exchangeData as StealthexExchange
-    const fromAsset = resolveAsset(fromTokenId)
-    if (!sapi) return null
-
-    if (!fromAddress) throw new Error("Missing from address")
-    if (!fromAsset) throw new Error("Missing from asset")
-    if (!exchange) throw new Error("Missing exchange")
-
-    if (fromAsset.networkType !== "substrate") return null
-
-    const depositAmount = parseUserInputToPlanck(
-      BigNumber(exchange.deposit.expected_amount).toFixed(),
-      fromAsset.decimals
-    )
-
-    const payload =
-      fromAsset.assetHubAssetId !== undefined
-        ? await sapi.getExtrinsicPayload(
-            "Assets",
-            allowReap ? "transfer" : "transfer_keep_alive",
-            {
-              id: fromAsset.assetHubAssetId,
-              target: MultiAddress.Id(exchange.deposit.address),
-              amount: depositAmount,
-            },
-            { address: fromAddress }
-          )
-        : await sapi.getExtrinsicPayload(
-            "Balances",
-            allowReap ? "transfer_allow_death" : "transfer_keep_alive",
-            { dest: MultiAddress.Id(exchange.deposit.address), value: depositAmount },
-            { address: fromAddress }
-          )
-
-    return payload
-  } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create substrate payload", { cause }))
-    throw cause
-  }
-}
-
-const getSolanaTransaction = async (
-  params: Pick<GetTransactionParams, "fromTokenId" | "fromAddress" | "exchange"> & {
-    connection: Connection
-  }
-): Promise<SolTransaction | undefined> => {
-  try {
-    const { fromTokenId, fromAddress, exchange: exchangeData, connection } = params
-    const exchange = exchangeData as StealthexExchange
-    const fromAsset = resolveAsset(fromTokenId)
-    if (!fromAddress) throw new Error("Missing from address")
-    if (!fromAsset) throw new Error("Missing from asset")
-    if (!exchange) throw new Error("Missing exchange")
-    if (fromAsset.networkType !== "solana") return
-
-    const depositAmount = parseUserInputToPlanck(
-      BigNumber(exchange.deposit.expected_amount).toFixed(),
-      fromAsset.decimals
-    )
-    const fromPubkey = new PublicKey(fromAddress)
-    const toPubkey = new PublicKey(exchange.deposit.address)
-
-    const transaction = new SolTransaction()
-
-    if (!fromAsset.contractAddress) {
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports: depositAmount,
-        })
-      )
-    } else {
-      const mintPubkey = new PublicKey(fromAsset.contractAddress)
-      const sourceAta = getAssociatedTokenAddressSync(mintPubkey, fromPubkey)
-      const destAta = getAssociatedTokenAddressSync(mintPubkey, toPubkey, true)
-
-      transaction.add(
-        createAssociatedTokenAccountIdempotentInstruction(fromPubkey, destAta, toPubkey, mintPubkey)
-      )
-      transaction.add(createTransferInstruction(sourceAta, destAta, fromPubkey, depositAmount))
-    }
-
-    const { blockhash } = await connection.getLatestBlockhash()
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = fromPubkey
-
-    return transaction
-  } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create solana transaction", { cause }))
     throw cause
   }
 }
@@ -960,41 +702,20 @@ const getTransaction = async (
   const fromAsset = resolveAsset(params.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 
-  switch (fromAsset.networkType) {
-    case "evm": {
-      const transaction = await getEvmTransaction(params)
-      return transaction ? { platform: "ethereum", transaction } : null
-    }
-    case "substrate": {
-      const sapi = params.context?.polkadot?.sapi
-      if (!sapi) return null
+  const exchange = params.exchange as StealthexExchange | undefined
+  if (!exchange?.deposit?.address) throw new Error("Missing exchange")
 
-      const payload = await getSubstratePayload({
-        fromTokenId: params.fromTokenId,
-        fromAddress: params.fromAddress,
-        exchange: params.exchange,
-        sapi,
-        allowReap: params.context?.polkadot?.allowReap,
-      })
-      return payload
-        ? { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
-        : null
-    }
-    case "solana": {
-      const connection = params.context?.solana?.connection
-      if (!connection) return null
-
-      const transaction = await getSolanaTransaction({
-        fromTokenId: params.fromTokenId,
-        fromAddress: params.fromAddress,
-        exchange: params.exchange,
-        connection,
-      })
-      return transaction ? { platform: "solana", transaction } : null
-    }
-    default:
-      return null
+  const deposit: DepositInfo = {
+    depositAddress: exchange.deposit.address,
+    depositAmount: BigNumber(exchange.deposit.expected_amount).toFixed(),
   }
+
+  return buildDepositTransaction({
+    fromAsset,
+    fromAddress: params.fromAddress,
+    deposit,
+    context: params.context,
+  })
 }
 
 export const stealthexSwapModule: SwapModule = {

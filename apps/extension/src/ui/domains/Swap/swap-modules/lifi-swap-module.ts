@@ -443,7 +443,7 @@ const getTransaction = async (
 
       // Refresh the blockhash — the one from getStepTransaction may expire before the user
       // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
-      const connection = context?.solana?.connection
+      const connection = context.platform === "solana" ? context.connection : undefined
       if (connection) {
         const { blockhash } = await connection.getLatestBlockhash()
         transaction.message.recentBlockhash = blockhash
@@ -496,7 +496,7 @@ export const lifiSwapModule: SwapModule = {
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,
-  createExchange: async () => undefined,
+  createExchange: async () => null,
   getTransaction: getTransaction,
   getApprovalInfo: getApprovalInfo,
 }

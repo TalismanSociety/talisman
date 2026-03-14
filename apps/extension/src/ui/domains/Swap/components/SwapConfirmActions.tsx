@@ -19,7 +19,10 @@ import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwap } from "../SwapProvider"
-import type { SwapModuleTransaction } from "../swap-modules/common.swap-module"
+import type {
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "../swap-modules/common.swap-module"
 import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions = () => {
@@ -148,16 +151,17 @@ export const SwapConfirmActions = () => {
 
       if (signal.aborted) throw new Error("Aborted")
 
-      const context = {
-        ...(sapi ? { polkadot: { sapi, allowReap } } : undefined),
-        ...(solanaConnection ? { solana: { connection: solanaConnection } } : undefined),
-      }
+      const context: SwapTransactionContext = sapi
+        ? { platform: "polkadot", sapi, allowReap }
+        : solanaConnection
+          ? { platform: "solana", connection: solanaConnection }
+          : { platform: "ethereum" }
 
       const transaction = await swapModule.getTransaction({
         fromTokenId,
         fromAddress,
-        exchange: exchange ?? selectedQuote,
-        context: Object.keys(context).length > 0 ? context : undefined,
+        exchange: exchange?.data ?? selectedQuote,
+        context,
       })
 
       if (signal.aborted) throw new Error("Aborted")
@@ -198,7 +202,7 @@ export const SwapConfirmActions = () => {
   })
 
   const txInfo = useSwapTxInfo({
-    exchange,
+    exchange: exchange?.data as { id: string } | undefined,
     fromTokenId,
     toTokenId,
     fromAmount,

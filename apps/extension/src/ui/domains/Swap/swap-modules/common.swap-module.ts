@@ -1,23 +1,15 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
-import {
-  isAccountCompatibleWithNetwork,
-  isAddressCompatibleWithNetwork,
-} from "@core/domains/accounts/helpers"
-import type { Account } from "@core/domains/keyring/exports"
-import { isAccountPlatformEthereum, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  type Network,
   solNativeTokenId,
   solSplTokenId,
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { isEthereumAddress, isSolanaAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
@@ -28,6 +20,10 @@ type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
 type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
 
 export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
+
+export type SwapExchange =
+  | { protocol: "simpleswap"; data: SimpleswapExchange }
+  | { protocol: "stealthex"; data: StealthexExchange }
 
 export type QuoteFee = {
   name: string
@@ -92,19 +88,16 @@ export type ExchangeParams = {
   toAddress: string | null
 }
 
+export type SwapTransactionContext =
+  | { platform: "ethereum" }
+  | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
+  | { platform: "solana"; connection: Connection }
+
 export type GetTransactionParams = {
   fromTokenId: TokenId
   fromAddress: string
   exchange: unknown // specific exchange type varies per module
-  context?: {
-    polkadot?: {
-      sapi: ScaleApi
-      allowReap?: boolean
-    }
-    solana?: {
-      connection: Connection
-    }
-  }
+  context: SwapTransactionContext
 }
 
 export type SwapModuleTransaction =
@@ -140,40 +133,12 @@ export type SwapModule = {
 
   getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
 
-  createExchange: (
-    params: ExchangeParams
-  ) => Promise<SimpleswapExchange | StealthexExchange | undefined>
+  createExchange: (params: ExchangeParams) => Promise<SwapExchange | null>
   getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
 
   getApprovalInfo?: (
     params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
   ) => ApprovalInfo
-}
-
-// atoms shared between swap module
-export const validateAddress = (
-  account: Account | undefined,
-  address: string,
-  network: Network | undefined,
-  networkType: "evm" | "substrate" | "solana"
-) => {
-  if (network) {
-    if (account) return isAccountCompatibleWithNetwork(network, account)
-    if (address) return isAddressCompatibleWithNetwork(network, address)
-  }
-
-  switch (networkType) {
-    case "evm":
-      return account ? isAccountPlatformEthereum(account) : isEthereumAddress(address)
-    case "substrate":
-      return account
-        ? network && isAccountCompatibleWithNetwork(network, account)
-        : isSs58Address(address)
-    case "solana":
-      return account ? isAccountPlatformSolana(account) : isSolanaAddress(address)
-    default:
-      throw new Error("Invalid network type")
-  }
 }
 
 // helpers — module-internal use only
