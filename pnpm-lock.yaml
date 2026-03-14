@@ -326,8 +326,8 @@ importers:
         specifier: 6.29.8
         version: 6.29.8
       '@lifi/sdk':
-        specifier: ^3.12.8
-        version: 3.12.11(@solana/wallet-adapter-base@0.9.27(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)))(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))(@types/react@18.3.12)(bufferutil@4.0.8)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(viem@2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
+        specifier: ^3.16.0
+        version: 3.16.0(@solana/wallet-adapter-base@0.9.27(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)))(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))(@types/react@18.3.12)(bufferutil@4.0.8)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(viem@2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
       '@metamask/browser-passworder':
         specifier: 5.0.1
         version: 5.0.1
@@ -1437,8 +1437,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@bigmi/core@0.5.4':
-    resolution: {integrity: sha512-AfV+pgFe7N6KoyU0OWPrVstrxMJSL5nLODeyGGbYVfi7u6jPjOZ9b7KsOxNDlQp8ZCuQS46263VJyNiG3IsPaA==}
+  '@bigmi/core@0.7.0':
+    resolution: {integrity: sha512-77br/G4rr4LFgLwYPQs/TZUlB/XVljgSrsseb0J6xCSs3DxomfnKQuKqTksN7IcwuDDEL22xBpyt9JZpoO+lQg==}
     peerDependencies:
       bs58: ^6.0.0
 
@@ -2315,15 +2315,15 @@ packages:
   '@ledgerhq/types-live@6.70.0':
     resolution: {integrity: sha512-xJ9VKf5AQpROIhM2Tm8U4/5V50u6PZhvv9zVkemZvJPw7eqzW3VUq5wLEN6TJWN4JII3D5YDc75x8ws5w9ma1A==}
 
-  '@lifi/sdk@3.12.11':
-    resolution: {integrity: sha512-shjb2fxP7I9gtAqJ+ZuIyAPUpIy4G+iDl1J2FZN6R/I2Dj3Gp62utM3RqxBXIMTCo4qg6HOg7PverTRDa3PKSA==}
+  '@lifi/sdk@3.16.0':
+    resolution: {integrity: sha512-fCklZ2eUzhWH5c22bqpqRyArllNLq48yFk+dVVWkrpFVahbD9KvKbB5ho8RKfPyjNEyju2cjeINmjoKSCLsWSQ==}
     peerDependencies:
       '@solana/wallet-adapter-base': ^0.9.0
       '@solana/web3.js': ^1.98.0
       viem: ^2.21.0
 
-  '@lifi/types@17.38.0':
-    resolution: {integrity: sha512-dZFy/cVCr6WyBjbqpXFol9Fyo0U+mR6FlWK4URgvTQwhH0E6e+aBn6ivPndxYvLPccAiNKJlQzQvSh6ort0+rw==}
+  '@lifi/types@17.65.0':
+    resolution: {integrity: sha512-2COF1WimbFiPv51x4T1lvXSs8sRB6CP0SzOTCt7xCwaaeMBLczuuJmF0r10pY9JPxdzbJtVMM83Za3uCslqlWA==}
 
   '@lit-labs/ssr-dom-shim@1.4.0':
     resolution: {integrity: sha512-ficsEARKnmmW5njugNYKipTm4SFnbik7CXtoencDZzmzo/dQ+2Q0bgkzJuoJP20Aj0F+izzJjOqsnkd6F/o1bw==}
@@ -2477,18 +2477,18 @@ packages:
     resolution: {integrity: sha512-z10PF9JV6SbjFq+/rYabM+8CVlMokgl8RFGvieSGNTmrkQanfHn+15XBrhG3BgUfvmTeSeyShfOHpG0i9zEdcg==}
     deprecated: Motion One for Vue is deprecated. Use Oku Motion instead https://oku-ui.com/motion
 
-  '@mysten/bcs@1.8.0':
-    resolution: {integrity: sha512-bDoLN1nN+XPONsvpNyNyqYHndM3PKWS419GLeRnbLoWyNm4bnyD1X4luEpJLLDq400hBuXiCan4RWjofvyTUIQ==}
+  '@mysten/bcs@1.9.2':
+    resolution: {integrity: sha512-kBk5xrxV9OWR7i+JhL/plQrgQ2/KJhB2pB5gj+w6GXhbMQwS3DPpOvi/zN0Tj84jwPvHMllpEl0QHj6ywN7/eQ==}
 
-  '@mysten/sui@1.38.0':
-    resolution: {integrity: sha512-tH6V4BJsYi5d97MOiLoOhyldrYxkm/cu8dYV52asqh1i88HrSVMbPAJ9sVoeWN2Ju+QsJ/Go4ldSjdCkaBCyJQ==}
+  '@mysten/sui@1.45.2':
+    resolution: {integrity: sha512-gftf7fNpFSiXyfXpbtP2afVEnhc7p2m/MEYc/SO5pov92dacGKOpQIF7etZsGDI1Wvhv+dpph+ulRNpnYSs7Bg==}
     engines: {node: '>=18'}
 
   '@mysten/utils@0.2.0':
     resolution: {integrity: sha512-CM6kJcJHX365cK6aXfFRLBiuyXc5WSBHQ43t94jqlCAIRw8umgNcTb5EnEA9n31wPAQgLDGgbG/rCUISCTJ66w==}
 
-  '@mysten/wallet-standard@0.17.0':
-    resolution: {integrity: sha512-UQ6tvqQ/lDKZhQm2d3ajky/xl+NgpYpNXYIpWfYGOLvGe4GyK6GHysMNHsRpFa+xA2yVa6w3nWO2RQ8WIy7ivA==}
+  '@mysten/wallet-standard@0.19.9':
+    resolution: {integrity: sha512-jHFt+62os7x7y+4ZVMLck8WSanEO9b8deCD+VApUQkdAHA99TuxbREaujQTjnGQN5DaGEz8wQgeBPqxRY/vKQA==}
 
   '@napi-rs/wasm-runtime@1.1.1':
     resolution: {integrity: sha512-p64ah1M1ld8xjWv3qbvFwHiFVWrq1yFvV4f7w+mzaqiR4IlSgkqhcRdHwsGgomwzBH51sRY4NEowLxnaBjcW/A==}
@@ -2514,6 +2514,10 @@ packages:
 
   '@noble/curves@1.9.2':
     resolution: {integrity: sha512-HxngEd2XUcg9xi20JkwlLCtYwfoFw4JGkuZpT+WlsPD4gB/cxkvTD8fSsoAnphGZhFdZYKeQIPCuFlWPm1uE0g==}
+    engines: {node: ^14.21.3 || >=16}
+
+  '@noble/curves@1.9.4':
+    resolution: {integrity: sha512-2bKONnuM53lINoDrSmK8qP8W271ms7pygDhZt4SiLOoLwBtoHqeCFi6RG42V8zd3mLHuJFhU/Bmaqo4nX0/kBw==}
     engines: {node: ^14.21.3 || >=16}
 
   '@noble/curves@1.9.7':
@@ -2989,6 +2993,15 @@ packages:
   '@polkadot/x-ws@13.5.3':
     resolution: {integrity: sha512-vIi9im6Zeo0eAagPSUF8WhdFBI1oomj4jF1R2jepiKmBVkT5HVn39MK2mix5fNjLESSa2K79iWYzS5VoVi0gxA==}
     engines: {node: '>=18'}
+
+  '@protobuf-ts/grpcweb-transport@2.11.1':
+    resolution: {integrity: sha512-1W4utDdvOB+RHMFQ0soL4JdnxjXV+ddeGIUg08DvZrA8Ms6k5NN6GBFU2oHZdTOcJVpPrDJ02RJlqtaoCMNBtw==}
+
+  '@protobuf-ts/runtime-rpc@2.11.1':
+    resolution: {integrity: sha512-4CqqUmNA+/uMz00+d3CYKgElXO9VrEbucjnBFEjqI4GuDrEQ32MaI3q+9qPBvIGOlL4PmHXrzM32vBPWRhQKWQ==}
+
+  '@protobuf-ts/runtime@2.11.1':
+    resolution: {integrity: sha512-KuDaT1IfHkugM2pyz+FwiY80ejWrkH1pAtOBOZFuR6SXEFTsnb/jiQWQ1rCIrcKx2BtyxnxW6BWwsVSA/Ie+WQ==}
 
   '@react-aria/focus@3.18.4':
     resolution: {integrity: sha512-91J35077w9UNaMK1cpMUEFRkNNz0uZjnSwiyBCFuRdaVuivO53wNC9XtWSDNDdcO5cGy87vfJRVAiyoCn/mjqA==}
@@ -4455,15 +4468,15 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bip174@3.0.0-rc.1:
-    resolution: {integrity: sha512-+8P3BpSairVNF2Nee6Ksdc1etIjWjBOi/MH0MwKtq9YaYp+S2Hk2uvup0e8hCT4IKlS58nXJyyQVmW92zPoD4Q==}
+  bip174@3.0.0:
+    resolution: {integrity: sha512-N3vz3rqikLEu0d6yQL8GTrSkpYb35NQKWMR7Hlza0lOj6ZOlvQ3Xr7N9Y+JPebaCVoEUHdBeBSuLxcHr71r+Lw==}
     engines: {node: '>=18.0.0'}
 
   bip32-path@0.4.2:
     resolution: {integrity: sha512-ZBMCELjJfcNMkz5bDuJ1WrYvjlhEF5k6mQ8vUr4N7MbVRsXei7ZOg8VhhwMfNiW68NWmLkgkc6WvTickrLGprQ==}
 
-  bitcoinjs-lib@7.0.0-rc.0:
-    resolution: {integrity: sha512-7CQgOIbREemKR/NT2uc3uO/fkEy+6CM0sLxboVVY6bv6DbZmPt3gg5Y/hhWgQFeZu5lfTbtVAv32MIxf7lMh4g==}
+  bitcoinjs-lib@7.0.1:
+    resolution: {integrity: sha512-vwEmpL5Tpj0I0RBdNkcDMXePoaYSTeKY6mL6/l5esbnTs+jGdPDuLp4NY1hSh6Zk5wSgePygZ4Wx5JJao30Pww==}
     engines: {node: '>=18.0.0'}
 
   bl@5.1.0:
@@ -5449,6 +5462,9 @@ packages:
 
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
+
+  eventemitter3@5.0.4:
+    resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
 
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
@@ -9130,8 +9146,8 @@ packages:
       use-sync-external-store:
         optional: true
 
-  zustand@5.0.8:
-    resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
+  zustand@5.0.11:
+    resolution: {integrity: sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@types/react': '>=18.0.0'
@@ -9167,8 +9183,7 @@ snapshots:
 
   '@adraffy/ens-normalize@1.11.0': {}
 
-  '@adraffy/ens-normalize@1.11.1':
-    optional: true
+  '@adraffy/ens-normalize@1.11.1': {}
 
   '@aklinker1/rollup-plugin-visualizer@5.12.0(rollup@4.52.5)':
     dependencies:
@@ -9374,14 +9389,14 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@bigmi/core@0.5.4(@types/react@18.3.12)(bs58@6.0.0)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))':
+  '@bigmi/core@0.7.0(@types/react@18.3.12)(bs58@6.0.0)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))':
     dependencies:
       '@noble/hashes': 1.8.0
       bech32: 2.0.0
-      bitcoinjs-lib: 7.0.0-rc.0(typescript@5.8.3)
+      bitcoinjs-lib: 7.0.1(typescript@5.8.3)
       bs58: 6.0.0
-      eventemitter3: 5.0.1
-      zustand: 5.0.8(@types/react@18.3.12)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
+      eventemitter3: 5.0.4
+      zustand: 5.0.11(@types/react@18.3.12)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -10501,18 +10516,18 @@ snapshots:
       bignumber.js: 9.1.2
       rxjs: 7.8.2
 
-  '@lifi/sdk@3.12.11(@solana/wallet-adapter-base@0.9.27(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)))(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))(@types/react@18.3.12)(bufferutil@4.0.8)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(viem@2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)':
+  '@lifi/sdk@3.16.0(@solana/wallet-adapter-base@0.9.27(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)))(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))(@types/react@18.3.12)(bufferutil@4.0.8)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(viem@2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)':
     dependencies:
-      '@bigmi/core': 0.5.4(@types/react@18.3.12)(bs58@6.0.0)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))
+      '@bigmi/core': 0.7.0(@types/react@18.3.12)(bs58@6.0.0)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@18.3.1))
       '@bitcoinerlab/secp256k1': 1.2.0
-      '@lifi/types': 17.38.0(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@mysten/sui': 1.38.0(typescript@5.8.3)
-      '@mysten/wallet-standard': 0.17.0(typescript@5.8.3)
+      '@lifi/types': 17.65.0(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@mysten/sui': 1.45.2(typescript@5.8.3)
+      '@mysten/wallet-standard': 0.19.9(typescript@5.8.3)
       '@noble/curves': 1.9.7
       '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@solana/web3.js': 1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)
       bech32: 2.0.0
-      bitcoinjs-lib: 7.0.0-rc.0(typescript@5.8.3)
+      bitcoinjs-lib: 7.0.1(typescript@5.8.3)
       bs58: 6.0.0
       viem: 2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
@@ -10527,9 +10542,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@lifi/types@17.38.0(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@lifi/types@17.65.0(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      viem: 2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      viem: 2.41.2(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -10854,18 +10869,21 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@mysten/bcs@1.8.0':
+  '@mysten/bcs@1.9.2':
     dependencies:
       '@mysten/utils': 0.2.0
       '@scure/base': 1.2.6
 
-  '@mysten/sui@1.38.0(typescript@5.8.3)':
+  '@mysten/sui@1.45.2(typescript@5.8.3)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.11.0)
-      '@mysten/bcs': 1.8.0
+      '@mysten/bcs': 1.9.2
       '@mysten/utils': 0.2.0
-      '@noble/curves': 1.9.7
+      '@noble/curves': 1.9.4
       '@noble/hashes': 1.8.0
+      '@protobuf-ts/grpcweb-transport': 2.11.1
+      '@protobuf-ts/runtime': 2.11.1
+      '@protobuf-ts/runtime-rpc': 2.11.1
       '@scure/base': 1.2.6
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
@@ -10882,9 +10900,9 @@ snapshots:
     dependencies:
       '@scure/base': 1.2.6
 
-  '@mysten/wallet-standard@0.17.0(typescript@5.8.3)':
+  '@mysten/wallet-standard@0.19.9(typescript@5.8.3)':
     dependencies:
-      '@mysten/sui': 1.38.0(typescript@5.8.3)
+      '@mysten/sui': 1.45.2(typescript@5.8.3)
       '@wallet-standard/core': 1.1.1
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
@@ -10915,6 +10933,10 @@ snapshots:
       '@noble/hashes': 1.8.0
 
   '@noble/curves@1.9.2':
+    dependencies:
+      '@noble/hashes': 1.8.0
+
+  '@noble/curves@1.9.4':
     dependencies:
       '@noble/hashes': 1.8.0
 
@@ -11835,6 +11857,17 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@protobuf-ts/grpcweb-transport@2.11.1':
+    dependencies:
+      '@protobuf-ts/runtime': 2.11.1
+      '@protobuf-ts/runtime-rpc': 2.11.1
+
+  '@protobuf-ts/runtime-rpc@2.11.1':
+    dependencies:
+      '@protobuf-ts/runtime': 2.11.1
+
+  '@protobuf-ts/runtime@2.11.1': {}
 
   '@react-aria/focus@3.18.4(react@18.3.1)':
     dependencies:
@@ -13843,18 +13876,18 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
-  bip174@3.0.0-rc.1:
+  bip174@3.0.0:
     dependencies:
       uint8array-tools: 0.0.9
       varuint-bitcoin: 2.0.0
 
   bip32-path@0.4.2: {}
 
-  bitcoinjs-lib@7.0.0-rc.0(typescript@5.8.3):
+  bitcoinjs-lib@7.0.1(typescript@5.8.3):
     dependencies:
       '@noble/hashes': 1.8.0
       bech32: 2.0.0
-      bip174: 3.0.0-rc.1
+      bip174: 3.0.0
       bs58check: 4.0.0
       uint8array-tools: 0.0.9
       valibot: 1.2.0(typescript@5.8.3)
@@ -15072,6 +15105,8 @@ snapshots:
     optional: true
 
   eventemitter3@5.0.1: {}
+
+  eventemitter3@5.0.4: {}
 
   events@3.3.0: {}
 
@@ -16788,7 +16823,6 @@ snapshots:
       typescript: 5.8.3
     transitivePeerDependencies:
       - zod
-    optional: true
 
   oxc-resolver@11.16.2:
     optionalDependencies:
@@ -18635,7 +18669,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
       - zod
-    optional: true
 
   vinyl-contents@2.0.0:
     dependencies:
@@ -19244,7 +19277,7 @@ snapshots:
       use-sync-external-store: 1.5.0(react@18.3.1)
     optional: true
 
-  zustand@5.0.8(@types/react@18.3.12)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1)):
+  zustand@5.0.11(@types/react@18.3.12)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1)):
     optionalDependencies:
       '@types/react': 18.3.12
       react: 18.3.1

@@ -19,7 +19,7 @@
     "@ledgerhq/hw-transport": "6.31.8",
     "@ledgerhq/hw-transport-webhid": "^6.30.4",
     "@ledgerhq/hw-transport-webusb": "6.29.8",
-    "@lifi/sdk": "^3.12.8",
+    "@lifi/sdk": "^3.16.0",
     "@metamask/browser-passworder": "5.0.1",
     "@metamask/eth-sig-util": "8.0.0",
     "@noble/curves": "1.9.2",
