@@ -38,7 +38,7 @@ vi.mock("@ui/components/Button", () => ({
 }))
 
 vi.mock("@ui/state/accounts", async (importOriginal) => {
-  const actual = await importOriginal()
+  const actual = await importOriginal<typeof import("@ui/state/accounts")>()
   return {
     ...actual,
     useAccountsMap: vi.fn(() => ({})),
@@ -46,7 +46,7 @@ vi.mock("@ui/state/accounts", async (importOriginal) => {
 })
 
 vi.mock("@ui/state/chaindata", async (importOriginal) => {
-  const actual = await importOriginal()
+  const actual = await importOriginal<typeof import("@ui/state/chaindata")>()
   return {
     ...actual,
     useNetworkById: vi.fn(() => ({ name: "Ethereum" })),
