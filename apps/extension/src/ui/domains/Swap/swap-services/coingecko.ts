@@ -34,7 +34,7 @@ export async function fetchCoingeckoCoinsByCategory(
 ): Promise<CoingeckoCategoryItem[]> {
   const { apiUrl, apiKeyName, apiKeyValue } = await getCoingeckoConfig()
   return fetchCoingeckoJson(
-    `${apiUrl}/api/v3/coins/markets?category=${category}`,
+    `${apiUrl}/api/v3/coins/markets?category=${category}&vs_currency=usd`,
     apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {},
     signal
   )
