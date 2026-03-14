@@ -265,9 +265,9 @@ export const InputFromAmount = () => {
             <button
               type="button"
               onClick={toggleEditMode}
-              className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-white/5 backdrop-blur-[2px]"
+              className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-grey-750 hover:text-body"
             >
-              <ArrowUpDownIcon className="size-[8px] text-body-secondary" />
+              <ArrowUpDownIcon className="size-[8px]" />
             </button>
           )}
           <p className="truncate text-[12px] text-body-inactive leading-none">

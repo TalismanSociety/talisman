@@ -30,7 +30,7 @@ export const AvailableBalance: FC<{
       {!!onMaxClick && (
         <button
           type="button"
-          className="rounded-xs border px-1 hover:bg-gray-750"
+          className="rounded-full bg-grey-800 px-3 py-1 hover:bg-grey-750 hover:text-body"
           onClick={onMaxClick}
         >
           {t("Max")}
