@@ -1,7 +1,7 @@
 import { REMOTE_CONFIG_API_URL } from "@common/constants"
 import { RemoteConfigApi } from "./RemoteConfigApi"
 
-export const remoteConfigApi = new RemoteConfigApi({
+const remoteConfigApi = new RemoteConfigApi({
   baseUrl: REMOTE_CONFIG_API_URL,
 })
 

@@ -33,6 +33,7 @@ const config: KnipConfig = {
     // Generated API clients export everything by design
     "**/bittensor/sn45/Sn45Api.ts": ["exports", "types"],
     "**/bittensor/tao-data/TaoDataApi.ts": ["exports", "types"],
+    "**/app/remote-config/RemoteConfigApi.ts": ["exports", "types"],
   },
 
   workspaces: {
