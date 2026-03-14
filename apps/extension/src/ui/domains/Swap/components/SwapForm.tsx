@@ -1,4 +1,3 @@
-import { isAccountOwned } from "@core/domains/keyring/exports"
 import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
@@ -15,12 +14,6 @@ import { SeparatedAccountSelector } from "./SeparatedAccountSelector"
 import { SwapProviderPickerButton } from "./SwapProviderPickerButton"
 import { ToAmountDisplay } from "./ToAmountDisplay"
 import { TokenAndAmountContainer } from "./TokenAndAmountContainer"
-
-const tokenAccountsType = (token: { platform?: string; id?: string } | null | undefined) => {
-  if (!token) return "all"
-  if (token.platform === "ethereum") return "ethereum"
-  return "substrate"
-}
 
 export const SwapForm = () => {
   const { t } = useTranslation()
@@ -113,10 +106,6 @@ export const SwapForm = () => {
               title={t("Sender")}
               subtitle={t("From")}
               tokenId={fromTokenId}
-              accountsType={tokenAccountsType(fromToken)}
-              substrateAccountPrefix={0}
-              substrateAccountsFilter={isAccountOwned}
-              evmAccountsFilter={isAccountOwned}
               value={fromAddress}
               onAccountChange={setFromAddress}
             />
@@ -145,10 +134,6 @@ export const SwapForm = () => {
               allowInput
               allowZeroBalance
               tokenId={toTokenId}
-              accountsType={tokenAccountsType(toToken)}
-              substrateAccountPrefix={0}
-              substrateAccountsFilter={isAccountOwned}
-              evmAccountsFilter={isAccountOwned}
               value={toAddress}
               onAccountChange={setToAddress}
             />

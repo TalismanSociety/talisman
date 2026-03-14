@@ -19,9 +19,7 @@ vi.mock("@talismn/balances-react", () => ({
   useSyncSwapsChaindata: vi.fn(),
 }))
 
-vi.mock("@core/domains/keyring/exports", () => ({
-  isAccountOwned: vi.fn(() => true),
-}))
+vi.mock("@core/domains/keyring/exports", () => ({}))
 
 vi.mock("@ui/components/Button", () => ({
   Button: ({

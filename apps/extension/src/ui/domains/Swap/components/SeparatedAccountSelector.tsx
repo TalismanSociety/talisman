@@ -1,17 +1,8 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
-import {
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountPlatformEthereum,
-} from "@core/domains/keyring/exports"
 import { isValidAddress } from "@ethereumjs/util"
-import {
-  detectAddressEncoding,
-  encodeAnyAddress,
-  isAddressEqual,
-  normalizeAddress,
-} from "@talismn/crypto"
+import { getNetworkGenesisHash, type Network } from "@talismn/chaindata-provider"
+import { detectAddressEncoding, isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -24,19 +15,13 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSwap } from "../SwapProvider"
-
 type Props = {
   title: string
   subtitle: string
   allowInput?: boolean
   allowZeroBalance?: boolean
   tokenId: string | null
-  accountsType?: "substrate" | "ethereum" | "all"
   onAccountChange?: (address: string | null) => void
-  evmAccountsFilter?: (account: Account) => boolean
-  substrateAccountsFilter?: (account: Account) => boolean
-  substrateAccountPrefix?: number
   value?: string | null
   compact?: boolean
 }
@@ -46,13 +31,9 @@ export const SeparatedAccountSelector = memo(
     title,
     subtitle,
     tokenId,
-    accountsType = "substrate",
     allowInput = false,
     allowZeroBalance = false,
     onAccountChange,
-    evmAccountsFilter,
-    substrateAccountsFilter,
-    substrateAccountPrefix,
     value,
     compact = false,
   }: Props) => {
@@ -62,15 +43,18 @@ export const SeparatedAccountSelector = memo(
     const allAccounts = useAccounts(allowInput ? "all" : "owned")
 
     const token = useToken(tokenId ?? undefined)
-    const chain = useNetworkById(token?.networkId, "polkadot")
-
-    const defaultSubstrateAccounts = allAccounts.filter(
-      (a) => chain && isAccountCompatibleWithNetwork(chain, a)
-    )
-    const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
+    const network = useNetworkById(token?.networkId)
 
     const [query, setQuery] = useState("")
     const deferredQuery = useDeferredValue(query)
+
+    const compatibleAccounts = useMemo(
+      () =>
+        allAccounts.filter(
+          (account) => network && isAccountCompatibleWithNetwork(network, account)
+        ),
+      [allAccounts, network]
+    )
 
     const accountFromInput = useMemo((): Account | null => {
       if (!allowInput) return null
@@ -96,71 +80,32 @@ export const SeparatedAccountSelector = memo(
       return null
     }, [allowInput, deferredQuery])
 
-    const evmAccounts = useMemo(() => {
-      const filtered = evmAccountsFilter
-        ? defaultEvmAccounts.filter(evmAccountsFilter)
-        : defaultEvmAccounts
+    const filteredAccounts = useMemo(() => {
+      const lowerQuery = deferredQuery.trim().toLowerCase()
+
+      let results = !lowerQuery
+        ? compatibleAccounts
+        : compatibleAccounts.filter(
+            (account) =>
+              account.name?.toLowerCase().includes(lowerQuery) ||
+              account.address.toLowerCase().includes(lowerQuery)
+          )
+
+      // Prepend manually entered address if it doesn't match an existing account
       if (
-        !accountFromInput ||
-        !isAccountAddressEthereum(accountFromInput) ||
-        filtered.find((a) => a.address.toLowerCase() === accountFromInput?.address.toLowerCase())
-      )
-        return filtered
-      return [accountFromInput, ...filtered]
-    }, [accountFromInput, defaultEvmAccounts, evmAccountsFilter])
+        accountFromInput &&
+        !results.some((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
+      ) {
+        results = [accountFromInput, ...results]
+      }
 
-    const substrateAccounts = useMemo(() => {
-      const filtered = substrateAccountsFilter
-        ? defaultSubstrateAccounts.filter(substrateAccountsFilter)
-        : defaultSubstrateAccounts
-      if (
-        !accountFromInput ||
-        !isAccountAddressSs58(accountFromInput) ||
-        filtered.find((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
-      )
-        return filtered
-      return [accountFromInput, ...filtered]
-    }, [accountFromInput, substrateAccountsFilter, defaultSubstrateAccounts])
-
-    const queriedEvmAccounts = useMemo(() => {
-      if (deferredQuery.trim() === "") return evmAccounts
-      return evmAccounts.filter(
-        (account) =>
-          account.address?.toLowerCase().includes(deferredQuery.toLowerCase()) ||
-          account.name?.toLowerCase().includes(deferredQuery.toLowerCase())
-      )
-    }, [deferredQuery, evmAccounts])
-
-    const queriedSubstrateAccounts = useMemo(() => {
-      if (deferredQuery.trim() === "") return substrateAccounts
-      return substrateAccounts.filter(
-        (account) =>
-          account.address?.toLowerCase().includes(deferredQuery.toLowerCase()) ||
-          encodeAnyAddress(account.address, { ss58Format: substrateAccountPrefix })
-            .toLowerCase()
-            .includes(deferredQuery.toLowerCase()) ||
-          account.name?.toLowerCase().includes(deferredQuery.toLowerCase())
-      )
-    }, [deferredQuery, substrateAccountPrefix, substrateAccounts])
+      return results
+    }, [compatibleAccounts, deferredQuery, accountFromInput])
 
     const selectedAccount = useMemo(() => {
       if (value === null || value === undefined) return
-
-      const accounts = (() => {
-        switch (accountsType) {
-          case "all":
-            return [...evmAccounts, ...substrateAccounts]
-          case "ethereum":
-            return evmAccounts
-          case "substrate":
-            return substrateAccounts
-          default:
-            return []
-        }
-      })()
-
-      return accounts.find((account) => isAddressEqual(account.address, value))
-    }, [accountsType, evmAccounts, substrateAccounts, value])
+      return compatibleAccounts.find((account) => isAddressEqual(account.address, value))
+    }, [compatibleAccounts, value])
 
     const onSelectAccount = useCallback(
       (address: string | null) => {
@@ -177,15 +122,6 @@ export const SeparatedAccountSelector = memo(
         setQuery("")
       }
     }, [onAccountChange, selectedAccount, value])
-
-    const accounts: Account[] = useMemo(() => {
-      if (accountsType === "all") return [...queriedEvmAccounts, ...queriedSubstrateAccounts]
-      if (accountsType === "ethereum")
-        return accountFromInput ? [accountFromInput] : queriedEvmAccounts
-      if (accountsType === "substrate")
-        return accountFromInput ? [accountFromInput] : queriedSubstrateAccounts
-      return []
-    }, [accountFromInput, accountsType, queriedEvmAccounts, queriedSubstrateAccounts])
 
     const triggerButton = compact ? (
       <button
@@ -215,11 +151,9 @@ export const SeparatedAccountSelector = memo(
         {selectedAccount && (
           <div className="flex shrink-0 items-center gap-4">
             <AccountIcon className="text-lg" address={selectedAccount.address} />
-            <AccountRow
-              substrateAccountPrefix={substrateAccountPrefix}
-              address={selectedAccount.address}
-              name={selectedAccount.name}
-            />
+            <div className="truncate">
+              {selectedAccount.name ?? shortenAddress(selectedAccount.address)}
+            </div>
           </div>
         )}
         {!selectedAccount && (
@@ -236,10 +170,10 @@ export const SeparatedAccountSelector = memo(
         {triggerButton}
 
         <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
-          <AccountPicker
+          <AccountPickerDialog
             title={title}
             subtitle={subtitle}
-            accounts={accounts}
+            accounts={filteredAccounts}
             selectedAccount={selectedAccount}
             query={query}
             setQuery={setQuery}
@@ -247,6 +181,8 @@ export const SeparatedAccountSelector = memo(
             allowZeroBalance={allowZeroBalance}
             onAccountChange={onSelectAccount}
             onClose={() => setOpen(false)}
+            tokenId={tokenId}
+            network={network}
           />
         </Modal>
       </>
@@ -254,7 +190,7 @@ export const SeparatedAccountSelector = memo(
   }
 )
 
-const AccountPicker = memo(
+const AccountPickerDialog = memo(
   ({
     title,
     subtitle,
@@ -266,6 +202,8 @@ const AccountPicker = memo(
     allowZeroBalance,
     onAccountChange,
     onClose,
+    tokenId,
+    network,
   }: {
     title: string
     subtitle: string
@@ -277,16 +215,10 @@ const AccountPicker = memo(
     allowZeroBalance?: boolean
     onAccountChange?: (address: string | null) => void
     onClose: () => void
+    tokenId: string | null
+    network: Network | null
   }) => {
     const { t } = useTranslation()
-
-    const { fromTokenId, toTokenId } = useSwap()
-
-    const fromToken = useToken(fromTokenId ?? undefined)
-    const fromChain = useNetworkById(fromToken?.networkId, "polkadot")
-
-    const toToken = useToken(toTokenId ?? undefined)
-    const toChain = useNetworkById(toToken?.networkId, "polkadot")
 
     return (
       <WizardModalDialog
@@ -309,10 +241,10 @@ const AccountPicker = memo(
         <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
           <SendFundsAccountsList
             accounts={accounts}
-            genesisHash={!allowInput ? fromChain?.genesisHash : toChain?.genesisHash}
+            genesisHash={getNetworkGenesisHash(network)}
             selected={selectedAccount?.address}
             onSelect={onAccountChange}
-            tokenId={!allowInput ? fromToken?.id : toToken?.id}
+            tokenId={tokenId ?? undefined}
             showBalances
             showIfEmpty
             allowZeroBalance={allowZeroBalance}
@@ -323,21 +255,3 @@ const AccountPicker = memo(
     )
   }
 )
-
-const AccountRow = ({
-  address,
-  name,
-  substrateAccountPrefix,
-}: {
-  name?: string
-  address: string
-  substrateAccountPrefix?: number
-}) => {
-  const formattedAddress = useMemo(() => {
-    if (address.startsWith("0x") || substrateAccountPrefix === undefined) return address
-
-    return encodeAnyAddress(address, { ss58Format: substrateAccountPrefix })
-  }, [address, substrateAccountPrefix])
-
-  return <div className="truncate">{name ?? shortenAddress(formattedAddress)}</div>
-}
