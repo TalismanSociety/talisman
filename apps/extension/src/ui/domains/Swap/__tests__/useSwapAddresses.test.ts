@@ -14,13 +14,23 @@ vi.mock("@ui/state/balances", () => ({
 }))
 
 const mockUseToken = vi.fn()
+const mockUseNetworkById = vi.fn()
 vi.mock("@ui/state/chaindata", () => ({
-  useNetworkById: vi.fn(() => null),
+  useNetworkById: (...args: unknown[]) => mockUseNetworkById(...args),
   useToken: (...args: unknown[]) => mockUseToken(...args),
 }))
 
+/** Returns a realistic mock: EVM accounts for ethereum networks, substrate for polkadot */
+const mockIsAccountCompatibleWithNetwork = vi.fn(
+  (network: { platform: string }, account: { address: string }) => {
+    if (network.platform === "ethereum") return account.address.startsWith("0x")
+    if (network.platform === "polkadot") return !account.address.startsWith("0x")
+    return false
+  }
+)
 vi.mock("@core/domains/accounts/helpers", () => ({
-  isAccountCompatibleWithNetwork: vi.fn(() => true),
+  isAccountCompatibleWithNetwork: (network: { platform: string }, account: { address: string }) =>
+    mockIsAccountCompatibleWithNetwork(network, account),
   isAddressCompatibleWithNetwork: vi.fn(() => true),
 }))
 
@@ -91,6 +101,14 @@ function mockTokenForId(tokenId: string | undefined) {
   return null
 }
 
+/** Mock network data returned by useNetworkById */
+function mockNetworkForId(networkId: string | undefined) {
+  if (!networkId) return null
+  if (networkId === "1") return { id: "1", platform: "ethereum" }
+  if (networkId === "polkadot") return { id: "polkadot", platform: "polkadot" }
+  return null
+}
+
 /**
  * Creates a mock Balances object.
  * @param balanceMap Maps address → tokenId → transferable planck value
@@ -134,6 +152,14 @@ describe("useSwapAddresses — auto-select from address", () => {
     mockUseAccounts.mockImplementation(() => ALL_ACCOUNTS)
     mockUseBalances.mockReturnValue(createMockBalances({}))
     mockUseToken.mockImplementation(mockTokenForId)
+    mockUseNetworkById.mockImplementation(mockNetworkForId)
+    mockIsAccountCompatibleWithNetwork.mockImplementation(
+      (network: { platform: string }, account: { address: string }) => {
+        if (network.platform === "ethereum") return account.address.startsWith("0x")
+        if (network.platform === "polkadot") return !account.address.startsWith("0x")
+        return false
+      }
+    )
   })
 
   it("does nothing when fromTokenId is null", () => {

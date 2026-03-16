@@ -85,11 +85,10 @@ export function useSwapAddresses({
 
   // ─── Auto-select from address based on largest token balance ────
   useEffect(() => {
-    if (!fromTokenId || !fromPlatform || fromAddressManuallySet.current) return
+    if (!fromTokenId || !fromPlatform || !fromNetwork || fromAddressManuallySet.current) return
 
-    // Filter by network compatibility when possible, otherwise fall back to platform buckets
-    const compatibleAccounts = ownedAccounts.filter(
-      (a) => fromNetwork && isAccountCompatibleWithNetwork(fromNetwork, a)
+    const compatibleAccounts = ownedAccounts.filter((a) =>
+      isAccountCompatibleWithNetwork(fromNetwork, a)
     )
 
     if (compatibleAccounts.length === 0) {
