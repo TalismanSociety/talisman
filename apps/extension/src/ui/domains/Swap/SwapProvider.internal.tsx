@@ -53,6 +53,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     fromEvmAccount,
     fromSubstrateAccount,
     resetFromAddressManuallySet,
+    setFromAddressManuallySet,
   } = useSwapAddresses({
     fromAddress: fromAddressRaw,
     setFromAddress: setFromAddressRaw,
@@ -121,24 +122,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     isLoadingToAssets,
   } = useSwapAssets(fromTokenId, tokenTab, t)
 
-  // Merge from+to support maps for quote manager routing
-  const combinedSupportMap = useMemo(() => {
-    if (!fromSupportMap && !toSupportMap) return null
-    const merged = new Map<string, Set<SupportedSwapProtocol>>()
-    for (const map of [fromSupportMap, toSupportMap]) {
-      if (!map) continue
-      for (const [tokenId, protocols] of map) {
-        const existing = merged.get(tokenId)
-        if (existing) {
-          for (const p of protocols) existing.add(p)
-        } else {
-          merged.set(tokenId, new Set(protocols))
-        }
-      }
-    }
-    return merged
-  }, [fromSupportMap, toSupportMap])
-
   // -- Initialize form from stateInit (one-shot per mount) --
   const fromInitDone = useRef(false)
   const toInitDone = useRef(false)
@@ -166,7 +149,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   useEffect(() => {
     if (!stateInit?.fromAddress) return
     setFromAddressRaw(stateInit.fromAddress)
-  }, [stateInit?.fromAddress])
+    setFromAddressManuallySet(true)
+  }, [stateInit?.fromAddress, setFromAddressManuallySet])
 
   const {
     isLoadingQuotes,
@@ -181,7 +165,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   } = useSwapQuoteManager({
     fromTokenId,
     toTokenId,
-    supportMap: combinedSupportMap,
+    fromSupportMap,
+    toSupportMap,
     fromAmount,
     fromAddress,
     toAddress,
@@ -197,7 +182,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       (stateInit?.toTokenId && !toTokenId && !toAssetIds)
   )
 
-  const reverse = useReverse(
+  const reverseRaw = useReverse(
     fromTokenId,
     setFromTokenId,
     toTokenId,
@@ -205,6 +190,11 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setFromAmount,
     toAmount
   )
+
+  const reverse = useCallback(() => {
+    reverseRaw()
+    resetFromAddressManuallySet()
+  }, [reverseRaw, resetFromAddressManuallySet])
 
   const erc20Approval = useSwapErc20Approval({
     selectedModule,

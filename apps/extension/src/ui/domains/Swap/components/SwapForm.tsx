@@ -66,6 +66,14 @@ export const SwapForm = () => {
     [fromTokenId, reverse, setToTokenId]
   )
 
+  const handleChangeFromToken = useCallback(
+    (tokenId: string | null) => {
+      if (tokenId && toTokenId && tokenId === toTokenId) reverse()
+      else setFromTokenId(tokenId)
+    },
+    [toTokenId, reverse, setFromTokenId]
+  )
+
   const insufficientBalance = useMemo(() => {
     if (!fromBalance || !fromAmount) return undefined
     return fromAmount > fromBalance.transferable.planck
@@ -82,7 +90,7 @@ export const SwapForm = () => {
         <TokenAndAmountContainer
           tokenButton={
             <SelectTokenButton
-              onSelectTokenId={setFromTokenId}
+              onSelectTokenId={handleChangeFromToken}
               selectedTokenId={fromTokenId}
               assetIds={fromAssetIds}
               priorityMode="sell"
@@ -91,7 +99,6 @@ export const SwapForm = () => {
           tokenAmount={<InputFromAmount />}
           accountButton={
             <SwapAccountPicker
-              compact
               title={t("Sender")}
               subtitle={t("From")}
               tokenId={fromTokenId}
@@ -117,7 +124,6 @@ export const SwapForm = () => {
           tokenAmount={<ToAmountDisplay />}
           accountButton={
             <SwapAccountPicker
-              compact
               title={t("Recipient")}
               subtitle={t("To")}
               allowInput

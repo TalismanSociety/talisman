@@ -58,10 +58,11 @@ const makeQuote = (outputAmountBN: bigint): BaseQuote => ({
   providerName: "LI.FI",
 })
 
-const supportMap = new Map<string, Set<SupportedSwapProtocol>>([
+const fromSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
   ["from-token", new Set(["lifi"])],
-  ["to-token", new Set(["lifi"])],
 ])
+
+const toSupportMap = new Map<string, Set<SupportedSwapProtocol>>([["to-token", new Set(["lifi"])]])
 
 describe("useSwapQuoteManager", () => {
   let queryClient: QueryClient
@@ -95,7 +96,8 @@ describe("useSwapQuoteManager", () => {
     let params = {
       fromTokenId: "from-token",
       toTokenId: "to-token",
-      supportMap,
+      fromSupportMap,
+      toSupportMap,
       fromAmount: 1n,
       fromAddress: "0x111",
       toAddress: "0x222",

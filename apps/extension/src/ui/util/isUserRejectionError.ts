@@ -18,7 +18,11 @@ export const isUserRejectionError = (error: unknown): boolean => {
 
   if (typeof message === "string") {
     const lower = message.toLowerCase()
-    return lower.includes("cancelled") || lower.includes("rejected") || lower.includes("denied")
+    return (
+      lower.includes("cancelled") ||
+      lower.includes("rejected") ||
+      (lower.includes("denied") && !lower.includes("permission denied"))
+    )
   }
 
   return false

@@ -34,6 +34,7 @@ vi.mock("../hooks/useSwapAddresses", () => ({
     fromEvmAccount: null,
     fromSubstrateAccount: null,
     resetFromAddressManuallySet: vi.fn(),
+    setFromAddressManuallySet: vi.fn(),
   }),
 }))
 

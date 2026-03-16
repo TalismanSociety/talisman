@@ -444,12 +444,9 @@ const getTransaction = async (
       if (!txRequest.data) throw new Error("Missing Solana transaction data")
 
       // LI.FI may return Solana transactions as base64 or hex-encoded
-      let txBytes: Uint8Array
-      try {
-        txBytes = Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
-      } catch {
-        txBytes = Buffer.from(txRequest.data.replace("0x", ""), "hex")
-      }
+      const txBytes = txRequest.data.startsWith("0x")
+        ? Buffer.from(txRequest.data.slice(2), "hex")
+        : Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
 
       const transaction = VersionedTransaction.deserialize(txBytes)
 

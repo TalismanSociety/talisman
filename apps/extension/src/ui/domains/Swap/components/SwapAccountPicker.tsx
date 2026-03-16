@@ -1,6 +1,5 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
-import { isValidAddress } from "@ethereumjs/util"
 import { getNetworkGenesisHash, type Network } from "@talismn/chaindata-provider"
 import { detectAddressEncoding, isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { Modal } from "@ui/components/Modal"
@@ -12,7 +11,7 @@ import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsLi
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
@@ -23,7 +22,6 @@ type Props = {
   tokenId: string | null
   onAccountChange?: (address: string | null) => void
   value?: string | null
-  compact?: boolean
 }
 
 export const SwapAccountPicker = memo(
@@ -35,7 +33,6 @@ export const SwapAccountPicker = memo(
     allowZeroBalance = false,
     onAccountChange,
     value,
-    compact = false,
   }: Props) => {
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
@@ -44,6 +41,7 @@ export const SwapAccountPicker = memo(
 
     const token = useToken(tokenId ?? undefined)
     const network = useNetworkById(token?.networkId)
+    const prevNetworkRef = useRef(network)
 
     const [query, setQuery] = useState("")
     const deferredQuery = useDeferredValue(query)
@@ -57,8 +55,10 @@ export const SwapAccountPicker = memo(
     )
 
     const accountFromInput = useMemo((): Account | null => {
-      if (!allowInput) return null
-      if (!deferredQuery) return null
+      if (!allowInput || !deferredQuery) return null
+
+      const encoding = detectAddressEncoding(deferredQuery)
+      if (!encoding) return null
 
       const accountCommon = {
         type: "watch-only" as const,
@@ -66,18 +66,12 @@ export const SwapAccountPicker = memo(
         createdAt: 0,
       }
 
-      if (isValidAddress(deferredQuery)) {
-        const encoding = detectAddressEncoding(deferredQuery)
-        switch (encoding) {
-          case "ss58": {
-            const address = normalizeAddress(deferredQuery)
-            return { ...accountCommon, name: shortenAddress(address), address }
-          }
-          default:
-            return { ...accountCommon, name: shortenAddress(deferredQuery), address: deferredQuery }
-        }
+      if (encoding === "ss58") {
+        const address = normalizeAddress(deferredQuery)
+        return { ...accountCommon, name: shortenAddress(address), address }
       }
-      return null
+
+      return { ...accountCommon, name: shortenAddress(deferredQuery), address: deferredQuery }
     }, [allowInput, deferredQuery])
 
     const filteredAccounts = useMemo(() => {
@@ -115,59 +109,39 @@ export const SwapAccountPicker = memo(
       [onAccountChange]
     )
 
-    // selected account is invalid, clear it
+    // Clear address only when a network change makes it incompatible,
+    // not just because the address isn't in the accounts store (external addresses).
     useEffect(() => {
-      if (!selectedAccount && value) {
+      const networkChanged = prevNetworkRef.current !== network
+      prevNetworkRef.current = network
+
+      if (networkChanged && !selectedAccount && value) {
         onAccountChange?.(null)
         setQuery("")
       }
-    }, [onAccountChange, selectedAccount, value])
-
-    const triggerButton = compact ? (
-      <button
-        type="button"
-        className="flex h-[26px] items-center gap-3 rounded-[13px] bg-[#262626] pr-[8px] pl-[5px] transition-colors hover:bg-[#363636]"
-        onClick={() => setOpen(true)}
-      >
-        {selectedAccount ? (
-          <>
-            <AccountIcon className="!text-[16px]" address={selectedAccount.address} />
-            <span className="max-w-[100px] truncate text-white text-xs leading-none">
-              {selectedAccount.name || shortenAddress(selectedAccount.address)}
-            </span>
-          </>
-        ) : (
-          <span className="whitespace-nowrap text-body-secondary text-xs leading-none">
-            {t("Select Account")}
-          </span>
-        )}
-      </button>
-    ) : (
-      <button
-        type="button"
-        className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
-        onClick={() => setOpen(true)}
-      >
-        {selectedAccount && (
-          <div className="flex shrink-0 items-center gap-4">
-            <AccountIcon className="text-lg" address={selectedAccount.address} />
-            <div className="truncate">
-              {selectedAccount.name ?? shortenAddress(selectedAccount.address)}
-            </div>
-          </div>
-        )}
-        {!selectedAccount && (
-          <div className="flex shrink-0 items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-body-inactive"></div>
-            <div>{t("Select account")}</div>
-          </div>
-        )}
-      </button>
-    )
+    }, [onAccountChange, selectedAccount, value, network])
 
     return (
       <>
-        {triggerButton}
+        <button
+          type="button"
+          className="flex h-[26px] items-center gap-3 rounded-[13px] bg-[#262626] pr-[8px] pl-[5px] transition-colors enabled:hover:bg-[#363636] disabled:opacity-80"
+          onClick={() => setOpen(true)}
+          disabled={!token}
+        >
+          {selectedAccount ? (
+            <>
+              <AccountIcon className="!text-[16px]" address={selectedAccount.address} />
+              <span className="max-w-[100px] truncate text-white text-xs leading-none">
+                {selectedAccount.name || shortenAddress(selectedAccount.address)}
+              </span>
+            </>
+          ) : (
+            <span className="whitespace-nowrap px-3 pr-2 text-body-secondary text-xs leading-none">
+              {t("Select Account")}
+            </span>
+          )}
+        </button>
 
         <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
           <AccountPickerDialog

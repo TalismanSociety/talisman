@@ -41,7 +41,8 @@ const normalizeQuoteData = (value: unknown): QuoteQueryData | undefined => {
 export const useSwapQuoteManager = (params: {
   fromTokenId: string | null
   toTokenId: string | null
-  supportMap: Map<string, Set<SupportedSwapProtocol>> | null
+  fromSupportMap: Map<string, Set<SupportedSwapProtocol>> | null
+  toSupportMap: Map<string, Set<SupportedSwapProtocol>> | null
   fromAmount: bigint | null
   fromAddress: string | null
   toAddress: string | null
@@ -53,7 +54,8 @@ export const useSwapQuoteManager = (params: {
   const {
     fromTokenId,
     toTokenId,
-    supportMap,
+    fromSupportMap,
+    toSupportMap,
     fromAmount,
     fromAddress,
     toAddress,
@@ -81,14 +83,14 @@ export const useSwapQuoteManager = (params: {
 
   const applicableModules = useMemo(
     () =>
-      fromTokenId && toTokenId && supportMap
+      fromTokenId && toTokenId && fromSupportMap && toSupportMap
         ? swapModules.filter(
             (m) =>
-              supportMap.get(fromTokenId)?.has(m.protocol) &&
-              supportMap.get(toTokenId)?.has(m.protocol)
+              fromSupportMap.get(fromTokenId)?.has(m.protocol) &&
+              toSupportMap.get(toTokenId)?.has(m.protocol)
           )
         : [],
-    [fromTokenId, toTokenId, supportMap]
+    [fromTokenId, toTokenId, fromSupportMap, toSupportMap]
   )
 
   const queryResults = useQueries({

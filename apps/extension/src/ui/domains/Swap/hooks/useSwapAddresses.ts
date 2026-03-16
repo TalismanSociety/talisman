@@ -192,6 +192,10 @@ export function useSwapAddresses({
     fromAddressManuallySet.current = false
   }, [])
 
+  const setFromAddressManuallySetCb = useCallback((v: boolean) => {
+    fromAddressManuallySet.current = v
+  }, [])
+
   return {
     fromAddress,
     toAddress,
@@ -205,5 +209,6 @@ export function useSwapAddresses({
     fromSolanaAccount,
     fromAccount,
     resetFromAddressManuallySet,
+    setFromAddressManuallySet: setFromAddressManuallySetCb,
   }
 }

@@ -79,6 +79,7 @@ describe("isUserRejectionError", () => {
       expect(isUserRejectionError({ message: "nonce too low" })).toBe(false)
       expect(isUserRejectionError({ message: "execution reverted" })).toBe(false)
       expect(isUserRejectionError({ message: "gas required exceeds allowance" })).toBe(false)
+      expect(isUserRejectionError({ message: "Permission denied" })).toBe(false)
     })
 
     it("returns false when message is not a string", () => {
