@@ -43,25 +43,30 @@ const DECENTRALISATION_SCORE = 2
 
 const SOLANA_NETWORK_ID: SolNetworkId = "solana-mainnet"
 
-const getLifiConfig = async () => {
+// Solana protocol constants for native SOL representations used by LI.FI.
+// System program (native SOL) and wSOL mint — these are protocol-level and will never change.
+const SOLANA_NATIVE_TOKEN_ADDRESS = "11111111111111111111111111111111"
+const SOLANA_NATIVE_ADDRESSES = new Set([
+  SOLANA_NATIVE_TOKEN_ADDRESS,
+  "So11111111111111111111111111111111111111112",
+])
+
+const getLifiSolanaChainId = async () => {
   const { lifi } = await remoteConfigStore.get("swaps")
-  return {
-    solanaChainId: lifi.solanaChainId,
-    solanaNativeAddresses: new Set(lifi.solanaNativeAddresses),
-  }
+  return lifi.solanaChainId
 }
 
 /** Convert a Talisman chain ID to a LI.FI numeric chain ID. */
 const toLifiChainId = async (chainId: string | number): Promise<number> => {
-  if (chainId === SOLANA_NETWORK_ID) return (await getLifiConfig()).solanaChainId
+  if (chainId === SOLANA_NETWORK_ID) return getLifiSolanaChainId()
   return +chainId
 }
 
 /** Resolve a LI.FI fee/gas token to a Talisman token ID, handling both EVM and Solana chains. */
 const feeTokenId = async (token: { address: string; chainId: number }): Promise<string> => {
-  const { solanaChainId, solanaNativeAddresses } = await getLifiConfig()
+  const solanaChainId = await getLifiSolanaChainId()
   if (token.chainId === solanaChainId) {
-    return solanaNativeAddresses.has(token.address)
+    return SOLANA_NATIVE_ADDRESSES.has(token.address)
       ? solNativeTokenId(SOLANA_NETWORK_ID)
       : solSplTokenId(SOLANA_NETWORK_ID, token.address)
   }
@@ -113,11 +118,11 @@ const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]>
 }
 
 const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
-  const [allSdkTokens, { solanaChainId, solanaNativeAddresses }] = await Promise.all([
+  const [allSdkTokens, solanaChainId] = await Promise.all([
     lifiSdk
       .getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
       .then((r) => r?.tokens),
-    getLifiConfig(),
+    getLifiSolanaChainId(),
   ])
 
   for (const talismanTokenId of (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []) {
@@ -156,7 +161,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
           const contractAddress = sdkToken.address === zeroAddress ? undefined : sdkToken.address
           id = getTokenIdForSwappableAsset("evm", chainId, contractAddress)
         } else if (isSolChain) {
-          const isNative = solanaNativeAddresses.has(sdkToken.address)
+          const isNative = SOLANA_NATIVE_ADDRESSES.has(sdkToken.address)
           id = isNative
             ? solNativeTokenId(SOLANA_NETWORK_ID)
             : solSplTokenId(SOLANA_NETWORK_ID, sdkToken.address)
@@ -171,7 +176,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
           ? sdkToken.address === zeroAddress
             ? undefined
             : sdkToken.address
-          : isSolChain && !solanaNativeAddresses.has(sdkToken.address)
+          : isSolChain && !SOLANA_NATIVE_ADDRESSES.has(sdkToken.address)
             ? sdkToken.address
             : undefined
 
@@ -221,7 +226,7 @@ const getRoutes = async (
     const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
     const SOLANA_PLACEHOLDER_ADDRESS = "11111111111111111111111111111111"
 
-    const { solanaChainId } = await getLifiConfig()
+    const solanaChainId = await getLifiSolanaChainId()
 
     const isSolanaFrom =
       fromAsset.chainId === SOLANA_NETWORK_ID || Number(fromAsset.chainId) === solanaChainId
@@ -245,7 +250,6 @@ const getRoutes = async (
     // LI.FI treats So11…112 (wSOL) as a DIFFERENT token — if we send wSOL here,
     // LI.FI builds a transaction that assumes the user already owns wSOL and skips
     // the native-SOL wrapping instructions, causing on-chain InvalidAccountData errors.
-    const SOLANA_NATIVE_TOKEN_ADDRESS = "11111111111111111111111111111111"
     const fromTokenAddress = isSolanaFrom
       ? (fromAsset.contractAddress ?? SOLANA_NATIVE_TOKEN_ADDRESS)
       : (fromAsset.contractAddress ?? zeroAddress)
@@ -320,7 +324,7 @@ const getRouteQuote = async (
   // add talisman fee
   // TODO: Re-enable once Solana fee wallet is configured on the LI.FI portal
   const toAsset = toTokenId ? resolveAsset(toTokenId) : null
-  const { solanaChainId } = await getLifiConfig()
+  const solanaChainId = await getLifiSolanaChainId()
   const isSolanaRoute =
     fromAsset.chainId === SOLANA_NETWORK_ID ||
     Number(fromAsset.chainId) === solanaChainId ||
@@ -444,7 +448,7 @@ const getTransaction = async (
 
     // Solana transaction handling — txRequest for Solana may omit chainId,
     // so detect via the step's fromChainId instead.
-    const { solanaChainId: lifiSolanaChainId } = await getLifiConfig()
+    const lifiSolanaChainId = await getLifiSolanaChainId()
     const isSolanaStep = step.action.fromChainId === lifiSolanaChainId
     if (isSolanaStep) {
       if (!txRequest.data) throw new Error("Missing Solana transaction data")

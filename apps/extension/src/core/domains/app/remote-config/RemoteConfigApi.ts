@@ -375,8 +375,6 @@ export class RemoteConfigApi<
             lifi: {
               /** LI.FI's internal chain ID for Solana */
               solanaChainId: number;
-              /** Addresses that LI.FI uses to represent native SOL (system program and wrapped SOL) */
-              solanaNativeAddresses: string[];
             };
           };
           /** Maps Substrate chain IDs to arrays of recommended nomination pool IDs for staking (e.g. 'polkadot-asset-hub': [282, 12, 16]) */
