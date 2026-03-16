@@ -240,11 +240,17 @@ const getRoutes = async (
     // network not supported
     if (!evmNetwork && !isSolanaFrom) return null
 
+    // For native tokens, use the canonical "zero" address that each ecosystem expects.
+    // EVM uses 0x000...000. Solana uses 111...111 (the System program address).
+    // LI.FI treats So11…112 (wSOL) as a DIFFERENT token — if we send wSOL here,
+    // LI.FI builds a transaction that assumes the user already owns wSOL and skips
+    // the native-SOL wrapping instructions, causing on-chain InvalidAccountData errors.
+    const SOLANA_NATIVE_TOKEN_ADDRESS = "11111111111111111111111111111111"
     const fromTokenAddress = isSolanaFrom
-      ? fromAsset.lifiToken.address
+      ? (fromAsset.contractAddress ?? SOLANA_NATIVE_TOKEN_ADDRESS)
       : (fromAsset.contractAddress ?? zeroAddress)
     const toTokenAddress = isSolanaTo
-      ? toAsset.lifiToken.address
+      ? (toAsset.contractAddress ?? SOLANA_NATIVE_TOKEN_ADDRESS)
       : (toAsset.contractAddress ?? zeroAddress)
 
     // TODO: Re-enable fees for Solana routes once the "talisman" integrator has a
