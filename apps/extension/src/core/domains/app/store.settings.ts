@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   hideDust: false,
   allowNotifications: true,
   autoLockMinutes: 15,
-  selectableCurrencies: ["usd", "dot", "eth"],
+  selectableCurrencies: ["usd", "tao", "eth"],
   selectedCurrency: "usd",
   newFeaturesDismissed: "0",
   nftsViewMode: "tiles",
