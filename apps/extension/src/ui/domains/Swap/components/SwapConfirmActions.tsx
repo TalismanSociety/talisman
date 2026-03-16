@@ -15,7 +15,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
-import { useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
@@ -26,7 +26,7 @@ import type {
 } from "../swap-modules/common.swap-module"
 import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
-export const SwapConfirmActions = () => {
+export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
   const { t } = useTranslation()
   const {
     swapView,
@@ -382,7 +382,7 @@ export const SwapConfirmActions = () => {
                     className="h-10"
                     tx={activeEthTx.transaction}
                     tokenId={activeFeeTokenId}
-                    drawerContainerId="swap-modal"
+                    drawerContainerId={containerId}
                     gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
                     priority={activeEthTx.priority}
                     txDetails={activeEthTx.txDetails}
@@ -431,7 +431,7 @@ export const SwapConfirmActions = () => {
 
         {needsApproval ? (
           <TxSubmitButton
-            containerId="swap-modal"
+            containerId={containerId}
             tx={approvalTx}
             label={t("Approve ERC20")}
             onSubmit={onApprovalSubmitted}
@@ -440,7 +440,7 @@ export const SwapConfirmActions = () => {
           />
         ) : (
           <TxSubmitButton
-            containerId="swap-modal"
+            containerId={containerId}
             tx={swapTx}
             label={t("Confirm Swap")}
             onSubmit={onSwapSubmitted}

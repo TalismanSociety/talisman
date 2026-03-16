@@ -1,30 +1,21 @@
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirm } from "./SwapConfirm"
-import { SwapForm } from "./SwapForm"
-import { SwapFormShimmer } from "./SwapFormShimmer"
-import { SwapHeader } from "./SwapHeader"
+import { SwapForm, SwapFormShimmer } from "./SwapForm"
 import { SwapProgress } from "./SwapProgress"
 
 export const SwapTokensWizard = () => {
   const { swapView, isInitializing } = useSwap()
 
-  return (
-    <div className="relative flex h-full w-full flex-col gap-4">
-      <SwapHeader />
-      {(() => {
-        switch (swapView) {
-          case "form":
-          case "approve-recipient":
-            return isInitializing ? <SwapFormShimmer /> : <SwapForm />
-          case "confirm":
-            return <SwapConfirm />
-          case "submitted":
-            return <SwapSubmitted />
-        }
-      })()}
-    </div>
-  )
+  switch (swapView) {
+    case "form":
+    case "approve-recipient":
+      return isInitializing ? <SwapFormShimmer /> : <SwapForm />
+    case "confirm":
+      return <SwapConfirm />
+    case "submitted":
+      return <SwapSubmitted />
+  }
 }
 
 const SwapSubmitted = () => {

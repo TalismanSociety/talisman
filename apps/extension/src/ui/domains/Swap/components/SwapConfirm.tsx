@@ -1,5 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon } from "@talismn/icons"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -7,13 +8,18 @@ import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirmActions } from "./SwapConfirmActions"
 
+const CONTAINER_ID = "swap-modal-confirm"
+
 export const SwapConfirm = () => {
   const { t } = useTranslation()
+  const { close } = useSwapTokensModal()
 
-  const { fromTokenId, toTokenId, fromAmount, toAmount, fromAddress, toAddress } = useSwap()
+  const { fromTokenId, toTokenId, fromAmount, toAmount, fromAddress, toAddress, setSwapView } =
+    useSwap()
   const fromToken = useToken(fromTokenId)
   const toToken = useToken(toTokenId)
 
@@ -28,20 +34,29 @@ export const SwapConfirm = () => {
     return null
 
   return (
-    <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
-      <div className="flex w-full flex-col gap-[12px] overflow-hidden">
-        <TokenRow tokenId={fromToken.id} value={fromAmount} />
-        <ArrowDownIcon className="text-[16px] opacity-60" />
-        <TokenRow tokenId={toToken.id} value={toAmount} />
-      </div>
+    <WizardModalDialog
+      className="size-full border-none"
+      title={t("Confirm")}
+      onBackClick={() => setSwapView("form")}
+      onCloseClick={close}
+      contentClassName="relative !overflow-hidden !p-0"
+      id={CONTAINER_ID}
+    >
+      <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
+        <div className="flex w-full flex-col gap-[12px] overflow-hidden">
+          <TokenRow tokenId={fromToken.id} value={fromAmount} />
+          <ArrowDownIcon className="text-[16px] opacity-60" />
+          <TokenRow tokenId={toToken.id} value={toAmount} />
+        </div>
 
-      <div className="flex w-full flex-col gap-6 rounded-lg bg-grey-900 px-8 py-6">
-        <AddressRow label={t("Sender")} address={fromAddress} networkId={fromToken.networkId} />
-        <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
-      </div>
+        <div className="flex w-full flex-col gap-6 rounded-lg bg-grey-900 px-8 py-6">
+          <AddressRow label={t("Sender")} address={fromAddress} networkId={fromToken.networkId} />
+          <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
+        </div>
 
-      <SwapConfirmActions />
-    </div>
+        <SwapConfirmActions containerId={CONTAINER_ID} />
+      </div>
+    </WizardModalDialog>
   )
 }
 

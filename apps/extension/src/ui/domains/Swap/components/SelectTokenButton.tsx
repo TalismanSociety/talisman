@@ -1,4 +1,4 @@
-import type { Token } from "@talismn/chaindata-provider"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { Button } from "@ui/components/Button"
@@ -8,112 +8,134 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
-import { type FC, memo, startTransition, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, memo, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import { getTokenTabs } from "../swap-services/token-filtering"
 
+const PICKER_CONTAINER_ID = "swap-modal-token-picker"
+
 type Props = {
-  assetIds?: string[]
+  allowedTokenIds: string[] | undefined // todo rename, these are tokenIds
   selectedTokenId?: string | null
-  onSelectTokenId: (tokenId: string | null) => void
+  onSelectTokenId: (tokenId: string) => void
   /** Used to determine which tokens should be prioritized to the top of the list */
   priorityMode?: "buy" | "sell"
 }
 
 export const SelectTokenButton: React.FC<Props> = memo(
-  ({ assetIds, selectedTokenId, onSelectTokenId, priorityMode }) => {
-    const { t } = useTranslation()
-    const [open, setOpen] = useState(false)
-    const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
-    const { safeTokens } = useSwap()
-    const tokensMap = useTokensMap()
+  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, priorityMode }) => {
+    const { open, close, isOpen } = useOpenClose()
 
-    const handleSelectTokenId = useCallback(
-      (tokenId: string, hideWarning?: boolean) => {
-        if (!hideWarning) {
-          const token = tokensMap[tokenId]
-          const erc20Address =
-            token && "contractAddress" in token ? (token.contractAddress as string) : undefined
-          const networkId = token?.networkId
-          const isSafe = safeTokens.has(`${networkId}:${erc20Address?.toLowerCase()}`)
-          const shouldShowWarning = !isSafe && erc20Address !== undefined
-          if (shouldShowWarning) return setWarningTokenId(tokenId)
-        }
-
-        setWarningTokenId(null)
-        setOpen(false)
-        startTransition(() => {
-          onSelectTokenId(tokenId)
-        })
+    const handleSelect = useCallback(
+      (tokenId: TokenId) => {
+        onSelectTokenId(tokenId)
+        close()
       },
-      [onSelectTokenId, safeTokens, tokensMap]
+      [onSelectTokenId, close]
     )
-    const assetIdSet = useMemo(() => new Set(assetIds), [assetIds])
-    const handleSelectFromPicker = useCallback(
-      (tokenId: string | undefined) => {
-        if (!tokenId || !assetIdSet.has(tokenId)) return onSelectTokenId(null)
-        handleSelectTokenId(tokenId)
-      },
-      [assetIdSet, handleSelectTokenId, onSelectTokenId]
-    )
-
-    const remoteConfig = useRemoteConfig()
-    const promotedTokens = useCallback(
-      (token: Token) => {
-        const promotedTokens =
-          priorityMode === "buy"
-            ? remoteConfig.swaps.promotedBuyTokens
-            : priorityMode === "sell"
-              ? remoteConfig.swaps.promotedSellTokens
-              : undefined
-        return promotedTokens?.includes(token.id) || false
-      },
-      [priorityMode, remoteConfig]
-    )
-
-    const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
-      useTokenFilterOptions()
-
-    const tokenFilter = useCallback((token: Token) => assetIdSet.has(token.id), [assetIdSet])
 
     return (
       <>
-        <OpenSelectorButton selectedTokenId={selectedTokenId} onClick={() => setOpen(true)} />
-
-        <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
-          <WizardModalDialog
-            className="border-none"
-            contentClassName="!p-0 relative"
-            title={t("Select a token")}
-            onBackClick={() => setOpen(false)}
-          >
-            <TokenPicker
-              selected={selectedTokenId ?? undefined}
-              allowUntransferable
-              ownedOnly
-              isInitializing={!assetIds}
-              priorityTokens={promotedTokens}
-              tokenFilter={tokenFilter}
-              tokenFilterOptions={tokenFilterOptions}
-              tokenFilterDefaultOption={defaultTokenFilterOption}
-              onTokenFilterOptionChange={onSelectTokenFilterOption}
-              onSelect={handleSelectFromPicker}
-              showEmptyBalances
-            />
-            <SelectTokenWarningDrawer
-              tokenId={warningTokenId}
-              onBack={() => setWarningTokenId(null)}
-              onAccept={(id) => handleSelectTokenId(id, true)}
-            />
-          </WizardModalDialog>
-        </Modal>
+        <OpenSelectorButton selectedTokenId={selectedTokenId} onClick={open} />
+        <TokenPickerModal
+          isOpen={isOpen}
+          tokenId={selectedTokenId ?? null}
+          allowedTokenIds={allowedTokenIds}
+          priorityMode={priorityMode}
+          onSelect={handleSelect}
+          onDismiss={close}
+        />
       </>
     )
   }
 )
+
+const TokenPickerModal: FC<{
+  isOpen: boolean
+  tokenId: TokenId | null
+  allowedTokenIds: string[] | undefined
+  priorityMode?: "buy" | "sell"
+  onSelect: (tokenId: TokenId) => void
+  onDismiss: () => void
+}> = ({ isOpen, tokenId, allowedTokenIds, priorityMode, onSelect, onDismiss }) => {
+  const { t } = useTranslation()
+  const remoteConfig = useRemoteConfig()
+
+  const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
+  const { safeTokens } = useSwap()
+  const tokensMap = useTokensMap()
+
+  const priorityTokens = useCallback(
+    (token: Token) => {
+      const promotedTokens =
+        priorityMode === "buy"
+          ? remoteConfig.swaps.promotedBuyTokens
+          : priorityMode === "sell"
+            ? remoteConfig.swaps.promotedSellTokens
+            : undefined
+      return promotedTokens?.includes(token.id) || false
+    },
+    [priorityMode, remoteConfig]
+  )
+
+  const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
+    useTokenFilterOptions()
+
+  const handleSelectTokenId = useCallback(
+    (tokenId: string, acceptWarning?: boolean) => {
+      if (!acceptWarning) {
+        const token = tokensMap[tokenId]
+        const erc20Address =
+          token && "contractAddress" in token ? (token.contractAddress as string) : undefined
+        const networkId = token?.networkId
+        const isSafe = safeTokens.has(`${networkId}:${erc20Address?.toLowerCase()}`)
+        const shouldShowWarning = !isSafe && erc20Address !== undefined
+        if (shouldShowWarning) return setWarningTokenId(tokenId)
+      }
+
+      onSelect(tokenId)
+    },
+    [safeTokens, tokensMap, onSelect]
+  )
+
+  const assetIdSet = useMemo(() => new Set(allowedTokenIds), [allowedTokenIds])
+  const tokenFilter = useCallback((token: Token) => assetIdSet.has(token.id), [assetIdSet])
+
+  return (
+    <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={onDismiss}>
+      <WizardModalDialog
+        className="border-none"
+        contentClassName="!p-0 relative"
+        title={t("Select a token")}
+        onBackClick={onDismiss}
+        id={PICKER_CONTAINER_ID}
+      >
+        <TokenPicker
+          selected={tokenId ?? undefined}
+          allowUntransferable
+          ownedOnly
+          isInitializing={!allowedTokenIds}
+          priorityTokens={priorityTokens}
+          tokenFilter={tokenFilter}
+          tokenFilterOptions={tokenFilterOptions}
+          tokenFilterDefaultOption={defaultTokenFilterOption}
+          onTokenFilterOptionChange={onSelectTokenFilterOption}
+          onSelect={handleSelectTokenId}
+          showEmptyBalances
+        />
+        <SelectTokenWarningDrawer
+          tokenId={warningTokenId}
+          onBack={() => setWarningTokenId(null)}
+          onAccept={() => handleSelectTokenId(warningTokenId!, true)}
+        />
+      </WizardModalDialog>
+    </Modal>
+  )
+}
 
 const OpenSelectorButton = ({
   selectedTokenId,
@@ -209,10 +231,10 @@ const SelectTokenWarningDrawer: FC<{
       anchor="bottom"
       isOpen={!!tokenId}
       onDismiss={onBack}
-      containerId="swap-modal"
+      containerId={PICKER_CONTAINER_ID}
       // make it appear above the modal's picker
-      overlayClassName="z-20"
-      className="z-20"
+      // overlayClassName="z-20"
+      // className="z-20"
     >
       {safeTokenId && token && (
         <div className="flex flex-col items-center gap-12 rounded-t-xl bg-grey-800 p-12">
@@ -249,11 +271,9 @@ const SelectTokenWarningDrawer: FC<{
               </a>
             </div>
           </div>
-          <div className="grid w-full grid-cols-2 gap-5">
-            <Button className="w-full" onClick={onBack}>
-              {t("Back")}
-            </Button>
-            <Button primary onClick={() => onAccept(safeTokenId)} className="w-full">
+          <div className="grid w-full grid-cols-2 gap-8">
+            <Button onClick={onBack}>{t("Back")}</Button>
+            <Button primary onClick={() => onAccept(safeTokenId)}>
               {t("I Understand")}
             </Button>
           </div>
