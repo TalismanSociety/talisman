@@ -8,6 +8,7 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
+import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
@@ -366,8 +367,9 @@ export const SwapConfirmActions = () => {
 
   return (
     <>
-      <div className="relative flex min-h-[4.48rem] w-full flex-col gap-4 rounded bg-grey-900 px-8 py-6">
+      <div className="relative flex min-h-[4.48rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
         <QuoteProvider />
+        <QuoteExchangeRate />
         {fromToken?.platform === "ethereum" ? (
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="text-body-secondary text-xs">{t("Priority")}</div>
@@ -399,7 +401,10 @@ export const SwapConfirmActions = () => {
           {hasFeeError ? (
             <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
           ) : isFeeLoading ? (
-            <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled text-xs">
+            <div
+              aria-hidden="true"
+              className="animate-pulse rounded-xs bg-body-disabled text-body-disabled text-xs"
+            >
               0.0000 TKN ($0.00)
             </div>
           ) : feePlanck && activeFeeTokenId ? (
