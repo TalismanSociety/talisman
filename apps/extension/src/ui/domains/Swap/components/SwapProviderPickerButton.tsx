@@ -39,24 +39,32 @@ const Details = () => {
   const closeModal = useCallback(() => setIsModalOpen(false), [])
 
   useEffect(() => {
-    const isSelectedProtocolAvailable = sortedQuotes.some(
-      ({ quote }) => quote.protocol === selectedProtocol
-    )
-    if (!isSelectedProtocolAvailable) {
-      setSelectedProtocol(null)
-      setSelectedSubProtocol(undefined)
+    // When a protocol is already selected, only clear it if no longer available
+    if (selectedProtocol !== null) {
+      const isAvailable = sortedQuotes.some(
+        ({ quote }) =>
+          quote.protocol === selectedProtocol &&
+          (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
+      )
+      if (!isAvailable) {
+        setSelectedProtocol(null)
+        setSelectedSubProtocol(undefined)
+      }
+      return
     }
-    if ((!selectedSubProtocol || !selectedProtocol) && sortedQuotes.length > 0) {
+
+    // Auto-select the best quote when nothing is selected
+    if (sortedQuotes.length > 0) {
       const defaultQuote = sortedQuotes[0]
-      if (!selectedProtocol) setSelectedProtocol(defaultQuote.quote.protocol)
-      if (defaultQuote?.quote.subProtocol) setSelectedSubProtocol(defaultQuote.quote.subProtocol)
+      setSelectedProtocol(defaultQuote.quote.protocol)
+      setSelectedSubProtocol(defaultQuote.quote.subProtocol)
     }
   }, [
     selectedProtocol,
-    setSelectedProtocol,
-    sortedQuotes,
-    setSelectedSubProtocol,
     selectedSubProtocol,
+    setSelectedProtocol,
+    setSelectedSubProtocol,
+    sortedQuotes,
   ])
 
   const { displayQuote, isBestRate } = useMemo(() => {

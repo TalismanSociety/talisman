@@ -76,9 +76,8 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString() ?? "",
         fromAddress ?? "",
         toAddress ?? "",
-        selectedSubProtocol ?? "",
       ].join("|"),
-    [fromAmount, fromAddress, fromTokenId, selectedSubProtocol, toAddress, toTokenId]
+    [fromAmount, fromAddress, fromTokenId, toAddress, toTokenId]
   )
 
   const applicableModules = useMemo(
@@ -103,7 +102,6 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString(),
         fromAddress,
         toAddress,
-        selectedSubProtocol,
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(
