@@ -82,6 +82,10 @@ vi.mock("../components/ToAmountDisplay", () => ({
   ToAmountDisplay: () => <div />,
 }))
 
+vi.mock("../hooks/useSwapTokensModal", () => ({
+  useSwapTokensModal: () => ({ isOpen: false, args: null, open: vi.fn(), close: vi.fn() }),
+}))
+
 vi.mock("../components/TokenAndAmountContainer", () => ({
   TokenAndAmountContainer: ({ accountBalance }: { accountBalance: ReactNode }) => (
     <div>{accountBalance}</div>
