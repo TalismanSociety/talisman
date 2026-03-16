@@ -69,6 +69,7 @@ export const useSwapErc20Approval = (params: {
       approvalInfo?.fromAddress,
       approvalInfo?.contractAddress,
       approvalInfo?.chainId,
+      approvalInfo?.amount?.toString(),
       params.approvalCounter,
     ],
     queryFn: async () => {

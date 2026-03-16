@@ -48,10 +48,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     toAddress,
     setFromAddress,
     setToAddress,
-    ethAccounts,
-    substrateAccounts,
-    fromEvmAccount,
-    fromSubstrateAccount,
     resetFromAddressManuallySet,
     setFromAddressManuallySet,
   } = useSwapAddresses({
@@ -174,6 +170,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedSubProtocol,
     quoteSorting,
     enabled: swapView !== "submitted",
+    freezeQuote: swapView === "confirm",
   })
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet
@@ -254,10 +251,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     isLoadingToAssets,
     fromBalance,
     toBalance,
-    ethAccounts,
-    substrateAccounts,
-    fromEvmAccount,
-    fromSubstrateAccount,
     isInitializing,
     stateInit,
     approvalCounter,

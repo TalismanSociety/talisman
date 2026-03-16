@@ -9,22 +9,28 @@ export type FeeRouteProps = { fromAsset: FeeRouteAsset; toAsset: FeeRouteAsset }
 export const STEALTHEX_BUILT_IN_FEE = 0.004
 
 export const getStealthexTalismanTotalFee = ({ fromAsset, toAsset }: FeeRouteProps): number => {
-  const isSubToOrFromEvm =
-    (fromAsset.platform === "polkadot" && toAsset.platform === "ethereum") ||
-    (fromAsset.platform === "ethereum" && toAsset.platform === "polkadot")
+  const from = fromAsset.platform
+  const to = toAsset.platform
 
-  const isSubToOrFromSub =
-    (fromAsset.platform === "polkadot" && toAsset.platform === "polkadot") ||
-    (fromAsset.platform === "polkadot" && toAsset.platform === "polkadot")
+  const isSamePlatform = from === to
+  if (isSamePlatform) {
+    switch (from) {
+      case "ethereum":
+        return STEALTHEX_BUILT_IN_FEE // 0.4% for evm↔evm
+      case "polkadot":
+        return 0.005 // 0.5% for sub↔sub
+      case "solana":
+        return 0.005 // 0.5% for sol↔sol
+    }
+  }
 
-  const isEvmToOrFromEvm =
-    (fromAsset.platform === "ethereum" && toAsset.platform === "ethereum") ||
-    (fromAsset.platform === "ethereum" && toAsset.platform === "ethereum")
+  // Cross-platform routes
+  const platforms = new Set([from, to])
+  if (platforms.has("polkadot") && platforms.has("ethereum")) return 0.006 // 0.6% for sub↔evm
+  if (platforms.has("solana") && platforms.has("ethereum")) return 0.006 // 0.6% for sol↔evm
+  if (platforms.has("solana") && platforms.has("polkadot")) return 0.006 // 0.6% for sol↔sub
 
-  if (isSubToOrFromEvm) return 0.006 // 0.6% total fee for sub<>evm
-  if (isSubToOrFromSub) return 0.005 // 0.5% total fee for sub<>sub
-  if (isEvmToOrFromEvm) return STEALTHEX_BUILT_IN_FEE // evm<>evm: 0.4% (minimum StealthEX affiliate fee)
-  return 0.01 // 1.0% total fee by default
+  return 0.01 // 1.0% fallback for unknown platforms
 }
 
 export const getStealthexAdditionalFee = (feeProps: FeeRouteProps): number =>

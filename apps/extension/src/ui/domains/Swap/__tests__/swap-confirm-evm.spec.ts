@@ -17,7 +17,7 @@ vi.mock("@core/domains/balances/store.activeTokens", () => ({
 }))
 
 vi.mock("../swap-modules/simpleswap-swap-module", () => ({
-  saveIdForMonitoring: (...args: unknown[]) => mockSaveIdForMonitoring(...args),
+  saveIdForMonitoring: (...args: unknown[]) => Promise.resolve(mockSaveIdForMonitoring(...args)),
 }))
 
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"

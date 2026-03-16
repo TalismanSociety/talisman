@@ -80,8 +80,9 @@ export const SwapForm = () => {
 
   const insufficientBalance = useMemo(() => {
     if (!fromBalance || !fromAmount) return undefined
-    return fromAmount > fromBalance.transferable.planck
-  }, [fromBalance, fromAmount])
+    const gasBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
+    return fromAmount + gasBuffer > fromBalance.transferable.planck
+  }, [fromBalance, fromAmount, selectedQuote?.maxNativeTokenGasBuffer])
 
   const hasError =
     insufficientBalance === true ||

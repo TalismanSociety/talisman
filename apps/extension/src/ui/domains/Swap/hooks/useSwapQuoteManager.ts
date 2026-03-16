@@ -50,6 +50,8 @@ export const useSwapQuoteManager = (params: {
   selectedSubProtocol: string | undefined
   quoteSorting: "decentalised" | "cheapest" | "fastest" | "bestRate"
   enabled?: boolean
+  /** When true, background refetching is paused to freeze the quote (e.g. on the confirm screen) */
+  freezeQuote?: boolean
 }) => {
   const {
     fromTokenId,
@@ -63,6 +65,7 @@ export const useSwapQuoteManager = (params: {
     selectedSubProtocol,
     quoteSorting,
     enabled: enabledProp = true,
+    freezeQuote = false,
   } = params
 
   const tokenRates = useTokenRatesMap()
@@ -117,7 +120,7 @@ export const useSwapQuoteManager = (params: {
         ),
       enabled,
       placeholderData: keepPreviousData,
-      refetchInterval: 20_000,
+      refetchInterval: freezeQuote ? (false as const) : 20_000,
       retry: false,
     })),
   })

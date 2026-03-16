@@ -126,7 +126,8 @@ export function useSwapPostSubmit({
 }): (hash: string) => void {
   return useCallback(
     (hash: string) => {
-      if (txInfo?.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
+      if (txInfo?.type === "swap-simpleswap")
+        saveIdForMonitoring(txInfo.exchangeId, hash).catch(() => {})
       if (toNetworkId) activeNetworksStore.setActive(toNetworkId, true)
       if (toTokenId) activeTokensStore.setActive(toTokenId, true)
       if (txInfo && fromNetworkId) gotoSubmitted({ hash, networkId: fromNetworkId, txInfo })

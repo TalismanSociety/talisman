@@ -30,6 +30,7 @@ const {
 
 const subAsset: FeeRouteAsset = { platform: "polkadot" }
 const evmAsset: FeeRouteAsset = { platform: "ethereum" }
+const solAsset: FeeRouteAsset = { platform: "solana" }
 
 // === StealthEX fee tests ===
 
@@ -78,6 +79,35 @@ describe("StealthEX fee logic", () => {
       const subToSub = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: subAsset })
       const crossType = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: evmAsset })
       expect(subToSub).toBeLessThan(crossType)
+    })
+
+    it("returns 0.005 (0.5%) for solana → solana", () => {
+      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: solAsset })).toBe(0.005)
+    })
+
+    it("returns 0.006 (0.6%) for solana → evm", () => {
+      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: evmAsset })).toBe(0.006)
+    })
+
+    it("returns 0.006 (0.6%) for evm → solana", () => {
+      expect(getStealthexTalismanTotalFee({ fromAsset: evmAsset, toAsset: solAsset })).toBe(0.006)
+    })
+
+    it("returns 0.006 (0.6%) for solana → substrate", () => {
+      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: subAsset })).toBe(0.006)
+    })
+
+    it("returns 0.006 (0.6%) for substrate → solana", () => {
+      expect(getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: solAsset })).toBe(0.006)
+    })
+
+    it("is symmetric for solana cross-platform routes", () => {
+      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: evmAsset })).toBe(
+        getStealthexTalismanTotalFee({ fromAsset: evmAsset, toAsset: solAsset })
+      )
+      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: subAsset })).toBe(
+        getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: solAsset })
+      )
     })
   })
 
@@ -188,8 +218,13 @@ describe("StealthEX fee logic", () => {
       const routes = [
         { fromAsset: subAsset, toAsset: subAsset },
         { fromAsset: evmAsset, toAsset: evmAsset },
+        { fromAsset: solAsset, toAsset: solAsset },
         { fromAsset: subAsset, toAsset: evmAsset },
         { fromAsset: evmAsset, toAsset: subAsset },
+        { fromAsset: solAsset, toAsset: evmAsset },
+        { fromAsset: evmAsset, toAsset: solAsset },
+        { fromAsset: solAsset, toAsset: subAsset },
+        { fromAsset: subAsset, toAsset: solAsset },
       ] as const
       for (const route of routes) {
         expect(getStealthexTalismanTotalFee(route)).toBeGreaterThanOrEqual(STEALTHEX_BUILT_IN_FEE)
@@ -200,8 +235,13 @@ describe("StealthEX fee logic", () => {
       const routes = [
         { fromAsset: subAsset, toAsset: subAsset },
         { fromAsset: evmAsset, toAsset: evmAsset },
+        { fromAsset: solAsset, toAsset: solAsset },
         { fromAsset: subAsset, toAsset: evmAsset },
         { fromAsset: evmAsset, toAsset: subAsset },
+        { fromAsset: solAsset, toAsset: evmAsset },
+        { fromAsset: evmAsset, toAsset: solAsset },
+        { fromAsset: solAsset, toAsset: subAsset },
+        { fromAsset: subAsset, toAsset: solAsset },
       ] as const
       for (const route of routes) {
         const totalFee = getStealthexTalismanTotalFee(route)

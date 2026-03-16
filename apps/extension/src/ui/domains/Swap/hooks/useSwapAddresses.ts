@@ -15,12 +15,6 @@ import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
-/** Derive networkId (chainId) for useNetworkById from a Token */
-const getNetworkId = (token: { type: string; networkId?: string } | null | undefined) => {
-  if (!token) return ""
-  return token.networkId ?? ""
-}
-
 /**
  * Unified address management for swaps.
  *
@@ -48,8 +42,8 @@ export function useSwapAddresses({
   const balances = useBalances()
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
-  const toNetworkId = getNetworkId(toToken)
-  const toNetwork = useNetworkById(toNetworkId)
+  const fromNetwork = useNetworkById(fromToken?.networkId)
+  const toNetwork = useNetworkById(toToken?.networkId)
   const fromPlatform = fromToken?.platform ?? null
   const toPlatform = toToken?.platform ?? null
 
@@ -57,7 +51,7 @@ export function useSwapAddresses({
   // When true, auto-selection is suppressed to respect the user's choice.
   const fromAddressManuallySet = useRef(false)
 
-  // TODO we should not care about account types, this is inaccurate. we should check if they are compatible with a given network using isAccountCompatibleWithNetwork instead. This is currently needed to work with the old address management logic, but should be refactored out together with it.
+  // Platform-specific account lists are still needed for derived values (fromEvmAccount, etc.)
   const substrateAccounts = useMemo(
     () => ownedAccounts.filter(isAccountAddressSs58),
     [ownedAccounts]
@@ -93,19 +87,10 @@ export function useSwapAddresses({
   useEffect(() => {
     if (!fromTokenId || !fromPlatform || fromAddressManuallySet.current) return
 
-    // TODO fix this, need to use isAccountCompatibleWithNetwork instead
-    const compatibleAccounts = (() => {
-      switch (fromPlatform) {
-        case "ethereum":
-          return ethAccounts
-        case "polkadot":
-          return substrateAccounts
-        case "solana":
-          return solanaAccounts
-        default:
-          return []
-      }
-    })()
+    // Filter by network compatibility when possible, otherwise fall back to platform buckets
+    const compatibleAccounts = ownedAccounts.filter(
+      (a) => fromNetwork && isAccountCompatibleWithNetwork(fromNetwork, a)
+    )
 
     if (compatibleAccounts.length === 0) {
       setFromAddress(null)
@@ -127,21 +112,15 @@ export function useSwapAddresses({
 
     const best = accountsWithBalance[0]
     setFromAddress(best?.address ?? null)
-  }, [
-    fromTokenId,
-    fromPlatform,
-    ethAccounts,
-    substrateAccounts,
-    solanaAccounts,
-    balances,
-    setFromAddress,
-  ])
+  }, [fromTokenId, fromPlatform, fromNetwork, ownedAccounts, balances, setFromAddress])
 
   // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {
+    if (!toNetwork && toAddress) return setToAddress(null) // if we don't know the toNetwork, we can't verify compatibility, so we reset toAddress to be safe
     if (!toTokenId || !toPlatform) return
 
     // TODO: looks like this can be simplified by just checking if the currently set toAddress is compatible with the new token's network, and if not, try to set it to the fromAddress if that is compatible, and if not just set it to null.
+    // Keeping this for now because no bug found, but it's smelly
     switch (toPlatform) {
       case "ethereum": {
         if (toAddress && (!toNetwork || isAddressCompatibleWithNetwork(toNetwork, toAddress)))
@@ -201,9 +180,6 @@ export function useSwapAddresses({
     toAddress,
     setFromAddress: setFromAddressWithReset,
     setToAddress,
-    ethAccounts,
-    substrateAccounts,
-    solanaAccounts,
     fromEvmAccount,
     fromSubstrateAccount,
     fromSolanaAccount,

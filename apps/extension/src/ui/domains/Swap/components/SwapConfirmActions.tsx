@@ -15,7 +15,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
-import { type FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
@@ -55,6 +55,12 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const needsApproval = !approvalLoading && approvalData !== null
   const isReady = useConfirmReadiness(swapView)
+
+  // Increments each time the confirm view is entered, forcing a fresh exchange query
+  const confirmEntryCounter = useRef(0)
+  useEffect(() => {
+    if (swapView === "confirm") confirmEntryCounter.current++
+  }, [swapView])
 
   const publicClient = usePublicClient(approvalData?.chainId?.toString())
   const [isApproving, setIsApproving] = useState(false)
@@ -114,8 +120,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     () =>
       !!fromBalance &&
       fromAmount !== null &&
-      (!existentialDeposit ||
-        fromBalance.transferable.planck - fromAmount < existentialDeposit.planck),
+      !!existentialDeposit &&
+      fromBalance.transferable.planck - fromAmount < existentialDeposit.planck,
     [existentialDeposit, fromAmount, fromBalance]
   )
 
@@ -140,6 +146,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       subProtocol,
       allowReap,
       approvalCounter,
+      confirmEntryCounter.current,
     ],
     queryFn: async ({ signal }) => {
       if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress || !fromAmount)
@@ -270,8 +277,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const isInsufficientBalance = useMemo(() => {
     if (!fromBalance?.transferable.planck || !fromAmount) return undefined
-    return fromAmount > fromBalance.transferable.planck
-  }, [fromAmount, fromBalance?.transferable.planck])
+    const gasBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
+    return fromAmount + gasBuffer > fromBalance.transferable.planck
+  }, [fromAmount, fromBalance?.transferable.planck, selectedQuote?.maxNativeTokenGasBuffer])
 
   const isDisabled = useMemo(
     () =>
@@ -307,15 +315,21 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         )
       case "polkadot":
         return substrateFee.data?.toString() ?? null
-      case "solana":
-        // Solana base fee is 5000 lamports per signature, predictable and very low
-        return "5000"
+      case "solana": {
+        // Base fee: 5000 lamports per signature
+        // SPL token transfers may also need ATA creation (~2,039,280 lamports rent)
+        const baseFee = 5000n
+        const isSplToken = fromToken?.platform === "solana" && fromToken.type !== "sol-native"
+        const ataRent = isSplToken ? 2_039_280n : 0n
+        return (baseFee + ataRent).toString()
+      }
       default:
         return null
     }
   }, [
     activeTransaction,
     approvalEthTx.txDetails,
+    fromToken,
     needsApproval,
     substrateFee.data,
     swapEthTx.txDetails,
