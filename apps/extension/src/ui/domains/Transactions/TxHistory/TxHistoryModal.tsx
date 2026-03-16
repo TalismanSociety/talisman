@@ -126,8 +126,7 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
       return `https://simpleswap.io/exchange?id=${swapInfo.exchangeId}`
     if (swapInfo.type === "swap-stealthex" && swapInfo.exchangeId)
       return `https://stealthex.io/exchange?id=${swapInfo.exchangeId}`
-    if (swapInfo.type === "swap-lifi" && tx.platform === "ethereum")
-      return `https://scan.li.fi/tx/${tx.hash}`
+    if (swapInfo.type === "swap-lifi") return `https://scan.li.fi/tx/${getTransactionId(tx)}`
     return undefined
   }, [swapInfo, tx])
 

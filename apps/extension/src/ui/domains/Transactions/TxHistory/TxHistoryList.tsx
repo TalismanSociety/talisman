@@ -257,8 +257,10 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const swapExchangeId =
     isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined
   const swapLifiHash =
-    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi" && tx.platform === "ethereum"
-      ? tx.hash
+    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi"
+      ? tx.platform === "solana"
+        ? tx.signature
+        : tx.hash
       : undefined
   const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
 
