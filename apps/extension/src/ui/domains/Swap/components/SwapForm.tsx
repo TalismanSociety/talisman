@@ -1,5 +1,6 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo } from "react"
@@ -171,38 +172,35 @@ export const SwapForm = () => {
           {t("Review")}
         </Button>
 
-        {isApproveRecipient && (
-          // TODO use a drawer
-          <div className="absolute bottom-0 left-0 m-8 flex animate-slide-in-up flex-col gap-8 rounded bg-black-tertiary p-8">
-            <div className="flex items-center gap-3 text-orange-400 text-sm">
+        <Drawer
+          isOpen={isApproveRecipient}
+          onDismiss={() => setSwapView("form")}
+          anchor="bottom"
+          containerId="swap-modal"
+        >
+          <div className="flex animate-slide-in-up flex-col gap-12 rounded bg-black-tertiary p-12">
+            <div className="flex items-center gap-4 text-orange-400 text-sm">
               {toIsWatched && (
                 <Trans t={t}>
-                  <AlertCircleIcon /> Sending {toToken?.symbol} to a watch-only account on{" "}
-                  {toNetwork?.name}.
+                  <AlertCircleIcon className="size-16" /> Sending {toToken?.symbol} to a watch-only
+                  account on {toNetwork?.name}.
                 </Trans>
               )}
               {toIsExternal && (
                 <Trans t={t}>
-                  <AlertCircleIcon /> Sending {toToken?.symbol} to an external account on{" "}
-                  {toNetwork?.name}.
+                  <AlertCircleIcon className="size-16" /> Sending {toToken?.symbol} to an external
+                  account on {toNetwork?.name}.
                 </Trans>
               )}
             </div>
-            <div className="flex gap-8">
-              <Button className="!w-full !rounded" small onClick={() => setSwapView("form")}>
-                {t("Cancel")}
-              </Button>
-              <Button
-                className="!w-full !rounded"
-                small
-                primary
-                onClick={() => setSwapView("confirm")}
-              >
+            <div className="grid grid-cols-2 gap-8">
+              <Button onClick={() => setSwapView("form")}>{t("Cancel")}</Button>
+              <Button primary onClick={() => setSwapView("confirm")}>
                 {t("Proceed")}
               </Button>
             </div>
           </div>
-        )}
+        </Drawer>
       </div>
     </div>
   )

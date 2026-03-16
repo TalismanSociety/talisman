@@ -7,6 +7,7 @@ import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -129,11 +130,14 @@ export const SwapAccountPicker = memo(
           onClick={() => setOpen(true)}
           disabled={!token}
         >
-          {selectedAccount ? (
+          {selectedAccount || value ? (
             <>
-              <AccountIcon className="!text-[16px]" address={selectedAccount.address} />
+              <AccountIcon
+                className="!text-[16px]"
+                address={selectedAccount?.address || value || ""}
+              />
               <span className="max-w-[100px] truncate text-white text-xs leading-none">
-                {selectedAccount.name || shortenAddress(selectedAccount.address)}
+                {selectedAccount?.name || <Address address={value || ""} />}
               </span>
             </>
           ) : (
