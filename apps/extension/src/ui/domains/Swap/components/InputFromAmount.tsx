@@ -68,6 +68,8 @@ export const InputFromAmount = () => {
   const [editFiat, setEditFiat] = useState(false)
   const [value, setValue] = useState("")
   const refSkipSync = useRef(false)
+  const refValue = useRef(value)
+  refValue.current = value
   const tokenRate = tokenRates?.[currency]?.price
 
   // Reset to token mode if fiat editing becomes unavailable
@@ -118,6 +120,16 @@ export const InputFromAmount = () => {
       })
       return
     }
+
+    // If the current input already parses to the same amount, don't overwrite.
+    // This prevents reformatting while the user is typing (e.g. "0.00" → "0").
+    const currentParsed = parseAmountInput({
+      value: refValue.current,
+      decimals,
+      editFiat,
+      tokenRate,
+    })
+    if (currentParsed.amount === fromAmount) return
 
     const tokenValue =
       fromAmount === null ? "" : (planckToTokens(fromAmount.toString(), decimals) ?? "")
