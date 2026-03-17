@@ -40,9 +40,6 @@ export const SwapForm = () => {
     toAssetIds,
     isLoadingQuotes,
     isQuoteDataCurrent,
-    isAllQuotesSettled,
-    sortedQuotes,
-    hasQuoteError,
     reverse,
     setFromAddress,
     setToAddress,
@@ -83,11 +80,6 @@ export const SwapForm = () => {
     const gasBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
     return fromAmount + gasBuffer > fromBalance.transferable.planck
   }, [fromBalance, fromAmount, selectedQuote?.maxNativeTokenGasBuffer])
-
-  const hasError =
-    insufficientBalance === true ||
-    (hasQuoteError && sortedQuotes.length === 0) ||
-    (sortedQuotes.length === 0 && isAllQuotesSettled && !!fromAmount && !!toTokenId)
 
   return (
     <WizardModalDialog
@@ -148,10 +140,7 @@ export const SwapForm = () => {
             isError={false}
           />
 
-          <ReverseButton
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            hasError={hasError}
-          />
+          <ReverseButton className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
 
         <SwapProviderPickerButton />
