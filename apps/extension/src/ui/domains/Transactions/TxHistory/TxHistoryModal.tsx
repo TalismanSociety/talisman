@@ -154,7 +154,7 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
         buttonsCount === 2 && "grid grid-cols-2 gap-4"
       )}
     >
-      {swapHref && tx.status === "success" && (
+      {swapHref && (
         <Button
           primary
           iconLeft={ExternalLinkIcon}
