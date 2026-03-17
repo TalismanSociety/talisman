@@ -84,10 +84,28 @@ const SwapProviderQuoteButton: FC<{
     if (!fromAmount || !fromToken || !toToken) return undefined
     const toNum = Number(planckToTokens(quote.outputAmountBN.toString(), toToken.decimals) ?? "0")
     const fromNum = Number(planckToTokens(fromAmount.toString(), fromToken.decimals) ?? "1")
-    const res = toNum / (fromNum || 1)
-    if (res < 0.0001) return "0"
-    return res.toString()
-  }, [fromAmount, fromToken, toToken, quote.outputAmountBN])
+    if (!toNum) return t("N/A")
+    const rate = fromNum / toNum
+    const formatted = Intl.NumberFormat(undefined, {
+      style: "decimal",
+      minimumSignificantDigits: 3,
+      maximumSignificantDigits: rate < 1 ? 3 : 4,
+      roundingPriority: "morePrecision",
+      notation: "compact",
+    }).format(rate)
+
+    return `1 ${toToken.symbol} = ${formatted} ${fromToken.symbol}`
+    // const display = Intl.NumberFormat(undefined, { maximumSignificantDigits: 4 }).format(res)
+    // return display
+  }, [fromAmount, fromToken, toToken, quote.outputAmountBN, t])
+
+  const duration = useMemo(() => {
+    const sec = quote.timeInSec
+    if (sec < 60) return sec <= 0 ? t("Instant") : `${sec}s`
+    const m = Math.floor(sec / 60)
+    const s = sec % 60
+    return s > 0 ? `${m}m ${s}s` : `${m}m`
+  }, [quote.timeInSec, t])
 
   if (!toToken || !fromToken) return null
 
@@ -95,7 +113,10 @@ const SwapProviderQuoteButton: FC<{
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full flex-col justify-between gap-5 rounded bg-grey-900 px-6 py-5 transition-colors hover:bg-grey-800"
+      className={cn(
+        "flex w-full flex-col justify-between gap-4 rounded bg-grey-900 px-6 py-5 transition-colors hover:bg-grey-800",
+        isSelected && "bg-grey-800"
+      )}
     >
       {/* Top row: provider info + badge + radio */}
       <div className="flex w-full items-center justify-between">
@@ -109,7 +130,6 @@ const SwapProviderQuoteButton: FC<{
               <span className="whitespace-nowrap text-[#ddff76] text-[11px]">{t("Best Rate")}</span>
             </div>
           )}
-          <RadioIndicator selected={isSelected} />
         </div>
       </div>
 
@@ -121,7 +141,7 @@ const SwapProviderQuoteButton: FC<{
           noCountUp
         />
         {toFiat !== null && (
-          <span className="text-[12px] text-body-secondary">
+          <span className="text-body-secondary text-xs">
             ≈ <Fiat amount={toFiat} noCountUp />
           </span>
         )}
@@ -130,64 +150,21 @@ const SwapProviderQuoteButton: FC<{
       {/* Bottom row: rate, fee, time */}
       <div className="mt-[10px] flex w-full items-center gap-[24px]">
         <div className="flex flex-col items-start gap-[2px]">
-          <span className="text-[10px] text-body-disabled">{t("Rate")}</span>
-          <span className="text-[10px] text-white">
-            1 {fromToken.symbol} ={" "}
-            <Tokens amount={exchangeRate} symbol={toToken.symbol} noCountUp />
-          </span>
+          <span className="text-body-disabled text-xs">{t("Rate")}</span>
+          <span className="text-white text-xs">{exchangeRate}</span>
         </div>
         <div className="flex flex-col items-start gap-[2px]">
-          <span className="text-[10px] text-body-disabled">{t("Fee")}</span>
-          <span className="text-[10px] text-white">
+          <span className="text-body-disabled text-xs">{t("Fee")}</span>
+          <span className="text-white text-xs">
             <Fiat amount={fees} noCountUp />
           </span>
         </div>
         <div className="flex flex-col items-start gap-[2px]">
-          <span className="text-[10px] text-body-disabled">{t("Time")}</span>
-          <SpeedIndicator timeInSec={quote.timeInSec} />
+          <span className="text-body-disabled text-xs">{t("Time")}</span>
+          <span className="text-white text-xs">{duration}</span>
+          {/* <SpeedIndicator timeInSec={quote.timeInSec} /> */}
         </div>
       </div>
     </button>
   )
 })
-
-const RadioIndicator: FC<{ selected: boolean }> = ({ selected }) => (
-  <div className="flex size-[20px] items-center justify-center">
-    {selected ? (
-      <div className="flex size-[20px] items-center justify-center rounded-full bg-primary">
-        <div className="size-[8px] rounded-full bg-black" />
-      </div>
-    ) : (
-      <div className="size-[20px] rounded-full border-[2px] border-body-disabled" />
-    )}
-  </div>
-)
-
-const SpeedIndicator: FC<{
-  timeInSec: number
-  className?: string
-}> = ({ timeInSec, className }) => {
-  const activeBars = useMemo(() => {
-    if (timeInSec < 60) return 3
-    if (timeInSec < 300) return 2
-    return 1
-  }, [timeInSec])
-
-  return (
-    <div className={cn("flex items-end gap-[3px]", className)}>
-      <div className={cn("h-[5px] w-[4px] rounded-[16px] bg-[#cbfe60]/60")} />
-      <div
-        className={cn(
-          "h-[8px] w-[4px] rounded-[16px] bg-[#cbfe60]/80",
-          activeBars < 2 && "opacity-20 grayscale"
-        )}
-      />
-      <div
-        className={cn(
-          "h-[10px] w-[4px] rounded-[16px] bg-[#cbfe60]",
-          activeBars < 3 && "opacity-20 grayscale"
-        )}
-      />
-    </div>
-  )
-}
