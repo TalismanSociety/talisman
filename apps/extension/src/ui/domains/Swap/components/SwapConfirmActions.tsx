@@ -472,7 +472,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           <TxSubmitButton
             containerId={containerId}
             tx={approvalTx}
-            label={t("Approve ERC20")}
+            label={t("Approve Send")}
             onSubmit={onApprovalSubmitted}
             disabled={!isReady || !approvalTx}
             isProcessing={isApproving}
