@@ -132,11 +132,19 @@ export const useSwapQuoteManager = (params: {
   const isAllQuotesSettled =
     queryResults.every((r) => !r.isLoading && !r.isFetching) ||
     (!enabled && queryResults.length === 0)
-  const hasQuoteError = queryResults.length > 0 && queryResults.every((r) => r.isError)
+  const hasQuoteErrorLive = queryResults.length > 0 && queryResults.every((r) => r.isError)
 
-  // Stable dependency: only changes when actual query data updates
+  // Stable dependencies: only change when actual query data/error state updates
   // (useQueries returns a new array reference every render, so we can't use it directly)
   const quotesDataKey = queryResults.map((r) => r.dataUpdatedAt).join(",")
+  const errorsDataKey = queryResults.map((r) => r.errorUpdatedAt).join(",")
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: errorsDataKey is an intentional stable proxy for queryResults error state
+  const liveQuoteErrorMessages: string[] = useMemo(
+    () =>
+      queryResults.filter((r) => r.error instanceof Error).map((r) => (r.error as Error).message),
+    [errorsDataKey]
+  )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
   const liveSortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
@@ -165,8 +173,37 @@ export const useSwapQuoteManager = (params: {
     }
   }, [enabled, liveSortedQuotes, isAllQuotesSettled])
 
+  // Persist error state across refetches (same pattern as staleSortedQuotes)
+  const [staleQuoteErrorMessages, setStaleQuoteErrorMessages] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!enabled) {
+      setStaleQuoteErrorMessages((prev) => (prev.length === 0 ? prev : []))
+      return
+    }
+
+    if (liveQuoteErrorMessages.length > 0) {
+      setStaleQuoteErrorMessages((prev) =>
+        prev.length === liveQuoteErrorMessages.length &&
+        prev.every((m, i) => m === liveQuoteErrorMessages[i])
+          ? prev
+          : liveQuoteErrorMessages
+      )
+      return
+    }
+
+    if (isAllQuotesSettled) {
+      setStaleQuoteErrorMessages((prev) => (prev.length === 0 ? prev : []))
+    }
+  }, [enabled, liveQuoteErrorMessages, isAllQuotesSettled])
+
   const sortedQuotes = liveSortedQuotes.length > 0 ? liveSortedQuotes : staleSortedQuotes
-  const isLoadingQuotes = queryResults.some((r) => r.isLoading) && sortedQuotes.length === 0
+  const quoteErrorMessages =
+    liveQuoteErrorMessages.length > 0 ? liveQuoteErrorMessages : staleQuoteErrorMessages
+  const hasQuoteError =
+    hasQuoteErrorLive || (sortedQuotes.length === 0 && quoteErrorMessages.length > 0)
+  const isLoadingQuotes =
+    queryResults.some((r) => r.isLoading) && sortedQuotes.length === 0 && !hasQuoteError
   const [lastSettledQuoteInputKey, setLastSettledQuoteInputKey] = useState<string | null>(null)
 
   useEffect(() => {
@@ -212,6 +249,7 @@ export const useSwapQuoteManager = (params: {
     isQuoteDataCurrent,
     isAllQuotesSettled,
     hasQuoteError,
+    quoteErrorMessages,
     sortedQuotes,
     selectedQuote,
     selectedQuoteFees,

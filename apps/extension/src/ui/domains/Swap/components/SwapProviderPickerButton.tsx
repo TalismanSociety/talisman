@@ -29,6 +29,7 @@ const Details = () => {
     isLoadingQuotes,
     hasQuoteError,
     isAllQuotesSettled,
+    quoteErrorMessages,
     selectedProtocol,
     setSelectedProtocol,
     selectedSubProtocol,
@@ -78,11 +79,41 @@ const Details = () => {
     return { displayQuote: sortedQuotes[idx], isBestRate: idx === 0 }
   }, [sortedQuotes, selectedProtocol, selectedSubProtocol])
 
+  // Extract the lowest provider minimum from error messages (e.g. "SimpleSwap minimum is 0.001 BTC")
+  const minimumHint = useMemo(() => {
+    let lowest: { amount: number; display: string; symbol: string } | null = null
+    for (const msg of quoteErrorMessages) {
+      const match = msg.match(/minimum is (\S+) (\S+)/)
+      if (!match) continue
+      const amount = Number(match[1])
+      if (Number.isNaN(amount)) continue
+      if (!lowest || amount < lowest.amount) {
+        lowest = { amount, display: match[1], symbol: match[2] }
+      }
+    }
+    return lowest
+  }, [quoteErrorMessages])
+
   if (hasQuoteError && sortedQuotes.length === 0) {
-    return <SwapProviderError message={t("No route found. Try larger amount.")} />
+    return (
+      <SwapProviderError
+        message={
+          minimumHint
+            ? t("No route found. Try at least {{amount}} {{symbol}}.", minimumHint)
+            : t("No route found for this pair.")
+        }
+      />
+    )
   }
-  if (sortedQuotes.length === 0 && isAllQuotesSettled)
-    return <SwapProviderError message={t("Pair is unavailable.")} />
+  if (sortedQuotes.length === 0 && isAllQuotesSettled) {
+    if (minimumHint)
+      return (
+        <SwapProviderError
+          message={t("No route found. Try at least {{amount}} {{symbol}}.", minimumHint)}
+        />
+      )
+    return <SwapProviderError message={t("No route found for this pair.")} />
+  }
 
   if (sortedQuotes.length === 0 && isLoadingQuotes)
     return (
