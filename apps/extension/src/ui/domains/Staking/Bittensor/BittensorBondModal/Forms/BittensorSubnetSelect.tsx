@@ -32,6 +32,7 @@ import { BittensorStakingModalHeader } from "../../components/BittensorModalHead
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { ROOT_NETUID } from "../../utils/constants"
 import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
@@ -279,7 +280,7 @@ const SubnetRow: FC<{
 
   const emission = useMemo(
     () =>
-      option.netuid === 0
+      option.netuid === ROOT_NETUID
         ? "-"
         : // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
           // so we multiply by 2 to get the total emission rate.

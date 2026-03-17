@@ -17,6 +17,8 @@ const compareName = (a: BondOption, b: BondOption) => {
 const compareYieldAvailability = (a: BondOption, b: BondOption) =>
   Number(Boolean(b.validatorYield)) - Number(Boolean(a.validatorYield))
 
+// TODO: This composite metric is dominated by totalStaked (large absolute value) making
+// apr and totalStakers nearly irrelevant. Consider normalizing the values before combining.
 const getFeaturedSortMetric = (validator: BondOption) => {
   return validator.apr + validator.totalStaked + validator.totalStakers
 }

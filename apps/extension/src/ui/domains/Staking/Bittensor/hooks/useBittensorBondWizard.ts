@@ -119,6 +119,7 @@ const useBittensorBondWizardProvider = () => {
   const { allBalances } = usePortfolioBalances()
   const {
     bittensor: { defaultValidators, defaultValidatorsBySubnet },
+    stakingPools,
   } = useRemoteConfig()
 
   const [
@@ -245,10 +246,14 @@ const useBittensorBondWizardProvider = () => {
         ...prev,
         netuid,
         stakeType: netuid ? "subnet" : "root",
-        hotkey: defaultValidatorsBySubnet[netuid] ?? defaultValidators[0] ?? prev.hotkey,
+        hotkey:
+          defaultValidatorsBySubnet[netuid] ??
+          defaultValidators[0] ??
+          (stakingPools.bittensor?.[0] as string | undefined) ??
+          prev.hotkey,
       }))
     },
-    [defaultValidators, defaultValidatorsBySubnet]
+    [defaultValidators, defaultValidatorsBySubnet, stakingPools.bittensor]
   )
 
   const setPlancks = useCallback(

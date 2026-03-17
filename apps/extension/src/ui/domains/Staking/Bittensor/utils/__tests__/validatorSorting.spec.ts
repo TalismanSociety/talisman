@@ -88,4 +88,52 @@ describe("sortValidatorOptions", () => {
 
     expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5A", "5C"])
   })
+
+  test("sorts by totalStaked descending with name tiebreaker", () => {
+    const validators: BondOption[] = [
+      createOption({ hotkey: "5A", name: "Alpha", totalStaked: 100 }),
+      createOption({ hotkey: "5B", name: "Beta", totalStaked: 300 }),
+      createOption({ hotkey: "5C", name: "Charlie", totalStaked: 100 }),
+    ]
+
+    const sorted = sortValidatorOptions(validators, "totalStaked")
+
+    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5A", "5C"])
+  })
+
+  test("sorts by totalStakers descending", () => {
+    const validators: BondOption[] = [
+      createOption({ hotkey: "5A", name: "A", totalStakers: 10 }),
+      createOption({ hotkey: "5B", name: "B", totalStakers: 50 }),
+      createOption({ hotkey: "5C", name: "C", totalStakers: 30 }),
+    ]
+
+    const sorted = sortValidatorOptions(validators, "totalStakers")
+
+    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5C", "5A"])
+  })
+
+  test("sorts by apr descending", () => {
+    const validators: BondOption[] = [
+      createOption({ hotkey: "5A", name: "A", apr: 0.05 }),
+      createOption({ hotkey: "5B", name: "B", apr: 0.2 }),
+      createOption({ hotkey: "5C", name: "C", apr: 0.1 }),
+    ]
+
+    const sorted = sortValidatorOptions(validators, "apr")
+
+    expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5B", "5C", "5A"])
+  })
+
+  test("does not mutate original array", () => {
+    const validators: BondOption[] = [
+      createOption({ hotkey: "5B", name: "B" }),
+      createOption({ hotkey: "5A", name: "A" }),
+    ]
+    const original = [...validators]
+
+    sortValidatorOptions(validators, "name")
+
+    expect(validators.map(({ hotkey }) => hotkey)).toEqual(original.map(({ hotkey }) => hotkey))
+  })
 })
