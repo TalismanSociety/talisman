@@ -29,6 +29,7 @@ const Details = () => {
     isLoadingQuotes,
     hasQuoteError,
     isAllQuotesSettled,
+    isQuoteDataCurrent,
     quoteErrorMessages,
     selectedProtocol,
     setSelectedProtocol,
@@ -40,6 +41,19 @@ const Details = () => {
   const closeModal = useCallback(() => setIsModalOpen(false), [])
 
   useEffect(() => {
+    // When inputs change (amount, tokens, etc.), clear selection so we
+    // re-pick the best provider once all new quotes arrive.
+    if (!isQuoteDataCurrent) {
+      if (selectedProtocol !== null) {
+        setSelectedProtocol(null)
+        setSelectedSubProtocol(undefined)
+      }
+      return
+    }
+
+    // Wait for ALL providers to respond before auto-selecting
+    if (!isAllQuotesSettled) return
+
     // When a protocol is already selected, only clear it if no longer available
     if (selectedProtocol !== null) {
       const isAvailable = sortedQuotes.some(
@@ -54,13 +68,15 @@ const Details = () => {
       return
     }
 
-    // Auto-select the best quote when nothing is selected
+    // Auto-select the best quote once all providers have settled
     if (sortedQuotes.length > 0) {
       const defaultQuote = sortedQuotes[0]
       setSelectedProtocol(defaultQuote.quote.protocol)
       setSelectedSubProtocol(defaultQuote.quote.subProtocol)
     }
   }, [
+    isQuoteDataCurrent,
+    isAllQuotesSettled,
     selectedProtocol,
     selectedSubProtocol,
     setSelectedProtocol,
@@ -93,6 +109,9 @@ const Details = () => {
     }
     return lowest
   }, [quoteErrorMessages])
+
+  // Show shimmer when inputs changed and new quotes are still loading
+  if (!isQuoteDataCurrent) return <LoadingUI />
 
   if (hasQuoteError && sortedQuotes.length === 0) {
     return (
