@@ -43,13 +43,13 @@ export const SwapConfirm = () => {
       id={CONTAINER_ID}
     >
       <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
-        <div className="flex w-full flex-col gap-[12px] overflow-hidden">
+        <div className="flex w-full flex-col gap-2 overflow-hidden">
           <TokenRow tokenId={fromToken.id} value={fromAmount} />
-          <ArrowDownIcon className="text-[16px] opacity-60" />
+          <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
           <TokenRow tokenId={toToken.id} value={toAmount} />
         </div>
 
-        <div className="flex w-full flex-col gap-6 rounded-lg bg-grey-900 px-8 py-6">
+        <div className="flex w-full flex-col gap-2 rounded-lg bg-grey-900 px-8 py-6 text-xs">
           <AddressRow label={t("Sender")} address={fromAddress} networkId={fromToken.networkId} />
           <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
         </div>
@@ -67,7 +67,14 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
   if (!token || !network) return null
 
   return (
-    <div className="flex w-full items-start justify-between gap-8 overflow-hidden">
+    <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
+      <div className="relative shrink-0">
+        <TokenLogo tokenId={tokenId} className="h-[32px] w-[32px] min-w-[32px] rounded-full" />
+        <NetworkLogo
+          className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-900 text-[12px]"
+          networkId={token.networkId}
+        />
+      </div>
       <div className="flex w-full flex-col gap-[8px] overflow-hidden">
         <TokensAndFiat
           tokenId={tokenId}
@@ -83,13 +90,6 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
           </div>
         </div>
       </div>
-      <div className="relative mr-1 shrink-0">
-        <TokenLogo tokenId={tokenId} className="h-[32px] w-[32px] min-w-[32px] rounded-full" />
-        <NetworkLogo
-          className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-900 text-[12px]"
-          networkId={token.networkId}
-        />
-      </div>
     </div>
   )
 }
@@ -99,8 +99,13 @@ const AddressRow: FC<{ label: ReactNode; address: string; networkId: string }> =
   address,
   networkId,
 }) => (
-  <div className="flex items-center justify-between gap-4">
+  <div className="flex h-11 items-center justify-between gap-4">
     <div className="text-body-secondary">{label}</div>
-    <AddressDisplay address={address} networkId={networkId} />
+    <AddressDisplay
+      address={address}
+      networkId={networkId}
+      className="text-xs"
+      accountIconClassName="!text-md"
+    />
   </div>
 )
