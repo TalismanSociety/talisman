@@ -112,24 +112,8 @@ const Details = () => {
   // Show shimmer when inputs changed and new quotes are still loading
   if (!isQuoteDataCurrent) return <LoadingUI />
 
-  if (hasQuoteError && sortedQuotes.length === 0) {
-    return (
-      <SwapProviderError
-        message={
-          minimumHint
-            ? t("No route found. Try at least {{amount}} {{symbol}}.", minimumHint)
-            : t("No route found for this pair.")
-        }
-      />
-    )
-  }
-  if (sortedQuotes.length === 0 && isAllQuotesSettled) {
-    if (minimumHint)
-      return (
-        <SwapProviderError
-          message={t("No route found. Try at least {{amount}} {{symbol}}.", minimumHint)}
-        />
-      )
+  if (sortedQuotes.length === 0 && (isAllQuotesSettled || hasQuoteError)) {
+    if (minimumHint) return <SwapProviderErrorAmountTooLow minimumHint={minimumHint} />
     return <SwapProviderError message={t("No route found for this pair.")} />
   }
 
@@ -147,6 +131,29 @@ const Details = () => {
       />
       <SwapProviderPickerModal isOpen={isModalOpen} onClose={closeModal} />
     </div>
+  )
+}
+
+const SwapProviderErrorAmountTooLow = ({
+  minimumHint,
+}: {
+  minimumHint: { amount: number; symbol: string }
+}) => {
+  const { t } = useTranslation()
+
+  const min = useMemo(() => {
+    const formatted = Intl.NumberFormat(undefined, {
+      style: "decimal",
+      minimumSignificantDigits: 3,
+      maximumSignificantDigits: minimumHint.amount < 1 ? 3 : 4,
+      roundingPriority: "morePrecision",
+      notation: "compact",
+    }).format(minimumHint.amount)
+    return `${formatted} ${minimumHint.symbol}`
+  }, [minimumHint])
+
+  return (
+    <SwapProviderError message={t("No route found. Try at least {{amount}}.", { amount: min })} />
   )
 }
 
