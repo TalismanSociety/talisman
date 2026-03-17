@@ -115,25 +115,12 @@ const Details = () => {
     return <SwapProviderError message={t("No route found for this pair.")} />
   }
 
-  if (sortedQuotes.length === 0 && isLoadingQuotes)
-    return (
-      <>
-        <LoadingUI />
-        <span className="sr-only" aria-live="polite">
-          {t("Loading quotes...")}
-        </span>
-      </>
-    )
+  if (sortedQuotes.length === 0 && isLoadingQuotes) return <LoadingUI />
 
   if (!displayQuote) return null
 
   return (
     <div className="flex w-full flex-col gap-[8px]">
-      <span className="sr-only" aria-live="polite">
-        {isLoadingQuotes
-          ? t("Loading quotes...")
-          : t("{{count}} quotes found", { count: sortedQuotes.length })}
-      </span>
       <div className="text-body-secondary text-sm">{t("Provider")}</div>
       <SwapProviderButton
         quote={displayQuote.quote}
@@ -149,7 +136,7 @@ const LoadingUI = () => {
   const { t } = useTranslation()
   return (
     <div className="flex w-full flex-col gap-[8px]">
-      <span className="font-semibold text-[14px] text-white/60">{t("Provider")}</span>
+      <span className="text-body-secondary text-sm">{t("Provider")}</span>
       <SwapProviderButtonSkeleton />
     </div>
   )
