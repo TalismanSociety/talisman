@@ -17,7 +17,15 @@ export const ToAmountDisplay = () => {
     return new BalanceFormatter(toAmount, toToken.decimals, tokenRates)
   }, [toAmount, toToken, tokenRates])
 
-  if (!toAmount || !toToken || !formatter) return null
+  if (!toAmount || !toToken || !formatter)
+    return (
+      <div className="flex flex-col items-end gap-2">
+        <div className="text-body-secondary">{toToken ? `0 ${toToken.symbol}` : "0"}</div>
+        <div aria-hidden="true" className="invisible text-body-secondary text-xs">
+          0
+        </div>
+      </div>
+    )
 
   return (
     <div className="flex flex-col items-end gap-2">

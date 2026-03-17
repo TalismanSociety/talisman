@@ -55,6 +55,14 @@ export const SwapForm = () => {
 
   const isApproveRecipient = swapView === "approve-recipient"
 
+  const focusAmountInput = useCallback(() => {
+    // Defer to let the token picker modal close and the input re-enable
+    setTimeout(() => {
+      const el = document.getElementById("swap-amount-input")
+      if (el instanceof HTMLInputElement && !el.disabled) el.focus()
+    }, 100)
+  }, [])
+
   useEffect(() => {
     if (isApproveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
   }, [isApproveRecipient, setSwapView, toIsExternal, toIsWatched])
@@ -63,16 +71,18 @@ export const SwapForm = () => {
     (tokenId: string | null) => {
       if (tokenId && fromTokenId && tokenId === fromTokenId) reverse()
       else setToTokenId(tokenId)
+      focusAmountInput()
     },
-    [fromTokenId, reverse, setToTokenId]
+    [fromTokenId, reverse, setToTokenId, focusAmountInput]
   )
 
   const handleChangeFromToken = useCallback(
     (tokenId: string | null) => {
       if (tokenId && toTokenId && tokenId === toTokenId) reverse()
       else setFromTokenId(tokenId)
+      focusAmountInput()
     },
-    [toTokenId, reverse, setFromTokenId]
+    [toTokenId, reverse, setFromTokenId, focusAmountInput]
   )
 
   const insufficientBalance = useMemo(() => {
