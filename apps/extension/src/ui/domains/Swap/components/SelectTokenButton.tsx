@@ -119,6 +119,7 @@ const TokenPickerModal: FC<{
           allowUntransferable
           ownedOnly
           isInitializing={!allowedTokenIds}
+          networkFilterContainerId={PICKER_CONTAINER_ID}
           priorityTokens={priorityTokens}
           tokenFilter={tokenFilter}
           tokenFilterOptions={tokenFilterOptions}

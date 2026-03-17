@@ -1,13 +1,19 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Address } from "@core/types/base"
 import { Balances } from "@talismn/balances"
-import { subNativeTokenId, type Token, type TokenId } from "@talismn/chaindata-provider"
-import { CheckCircleIcon } from "@talismn/icons"
+import {
+  type Network,
+  subNativeTokenId,
+  type Token,
+  type TokenId,
+} from "@talismn/chaindata-provider"
+import { CheckCircleIcon, GlobeIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { OptionSwitch } from "@ui/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
@@ -15,13 +21,13 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash-es/sortBy"
-import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
+import { type FC, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkName } from "../Networks/NetworkName"
 import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { Fiat } from "./Fiat"
+import { NetworkFilterPicker } from "./NetworkFilterPicker"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
 import { TokenTypePill } from "./TokenTypePill"
@@ -225,6 +231,7 @@ type TokensListProps = {
   address?: Address
   selected?: TokenId
   search?: string
+  selectedNetworkId?: string | null
   allowUntransferable?: boolean
   ownedOnly?: boolean
   activeOnly?: boolean
@@ -233,6 +240,7 @@ type TokensListProps = {
   /** these tokens will always be sorted to the top of the list */
   priorityTokens?: (token: Token) => boolean
   tokenFilter?: (token: Token) => boolean
+  onAvailableNetworksChange?: (networks: Network[]) => void
   onSelect?: (tokenId: TokenId) => void
 }
 
@@ -240,6 +248,7 @@ const TokensList: FC<TokensListProps> = ({
   address,
   selected,
   search,
+  selectedNetworkId,
   allowUntransferable,
   ownedOnly,
   activeOnly = true,
@@ -247,6 +256,7 @@ const TokensList: FC<TokensListProps> = ({
   isInitializing,
   priorityTokens,
   tokenFilter = DEFAULT_FILTER,
+  onAvailableNetworksChange,
   onSelect,
 }) => {
   const { t } = useTranslation()
@@ -363,15 +373,36 @@ const TokensList: FC<TokensListProps> = ({
     sortTokens,
   ])
 
+  // Derive available networks from the base token list (before network/search filters)
+  const availableNetworks = useMemo(() => {
+    const networkIds = new Set(tokensWithBalances.map((t) => t.token.networkId))
+    return sortBy(
+      Array.from(networkIds)
+        .map((id) => networksMap[id])
+        .filter(Boolean),
+      "name"
+    )
+  }, [tokensWithBalances, networksMap])
+
+  useEffect(() => {
+    onAvailableNetworksChange?.(availableNetworks)
+  }, [availableNetworks, onAvailableNetworksChange])
+
+  // Apply network filter
+  const networkFilteredTokens = useMemo(() => {
+    if (!selectedNetworkId) return tokensWithBalances
+    return tokensWithBalances.filter((t) => t.token.networkId === selectedNetworkId)
+  }, [tokensWithBalances, selectedNetworkId])
+
   // apply user search
   const tokens = useMemo(() => {
-    if (!search) return tokensWithBalances
+    if (!search) return networkFilteredTokens
 
     const normalizedSearch = search.toLowerCase().trim()
     const searchTerms = getSearchTerms(normalizedSearch)
-    if (!searchTerms.length) return tokensWithBalances
+    if (!searchTerms.length) return networkFilteredTokens
 
-    return tokensWithBalances
+    return networkFilteredTokens
       .filter((t) =>
         matchesSearchTerms(searchTerms, [t.token.symbol, t.token.name, t.chainNameSearch])
       )
@@ -382,7 +413,7 @@ const TokensList: FC<TokensListProps> = ({
         if (s1 !== normalizedSearch && s2 === normalizedSearch) return 1
         return 0
       })
-  }, [search, tokensWithBalances])
+  }, [search, networkFilteredTokens])
 
   const handleTokenClick = useCallback(
     (tokenId: string) => {
@@ -438,6 +469,8 @@ type TokenPickerProps = {
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
+  /** When provided, enables a network filter button next to the search input. Value is the container element ID for the network picker modal. */
+  networkFilterContainerId?: string
   /** these tokens will always be sorted to the top of the list */
   priorityTokens?: (token: Token) => boolean
   tokenFilter?: (token: Token) => boolean
@@ -456,6 +489,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   isInitializing,
   className,
   showEmptyBalances,
+  networkFilterContainerId,
   priorityTokens,
   tokenFilter,
   tokenFilterOptions,
@@ -467,17 +501,41 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   const [search, setSearch] = useState(initialSearch)
   const deferredSearch = useDeferredValue(search)
 
+  const [selectedNetworkId, setSelectedNetworkId] = useState<string | null>(null)
+  const [availableNetworks, setAvailableNetworks] = useState<Network[]>([])
+  const {
+    isOpen: isNetworkPickerOpen,
+    open: openNetworkPicker,
+    close: closeNetworkPicker,
+  } = useOpenClose()
+
+  const handleNetworkSelect = useCallback(
+    (networkId: string | null) => {
+      setSelectedNetworkId(networkId)
+      closeNetworkPicker()
+    },
+    [closeNetworkPicker]
+  )
+
   return (
     <div
       className={classNames("flex h-full min-h-full w-full flex-col overflow-hidden", className)}
     >
       <div className="flex min-h-fit w-full flex-col items-center gap-2 px-12 pb-8">
-        <SearchInput
-          onChange={setSearch}
-          placeholder={t("Search by token or network name")}
-          initialValue={initialSearch}
-          autoFocus={!initialSearch}
-        />
+        <div className="flex w-full items-center gap-4">
+          <SearchInput
+            onChange={setSearch}
+            placeholder={t("Search by token or network name")}
+            initialValue={initialSearch}
+            autoFocus={!initialSearch}
+          />
+          {!!networkFilterContainerId && (
+            <NetworkFilterButton
+              selectedNetworkId={selectedNetworkId}
+              onClick={openNetworkPicker}
+            />
+          )}
+        </div>
         {tokenFilterOptions !== undefined && (
           <div className="no-scrollbar max-w-full overflow-x-scroll">
             <OptionSwitch
@@ -495,16 +553,52 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           address={address}
           selected={selected}
           search={deferredSearch}
+          selectedNetworkId={selectedNetworkId}
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}
           isInitializing={isInitializing}
           priorityTokens={priorityTokens}
           tokenFilter={tokenFilter}
+          onAvailableNetworksChange={networkFilterContainerId ? setAvailableNetworks : undefined}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
           activeOnly={!showEmptyBalances}
         />
       </ScrollContainer>
+      {!!networkFilterContainerId && (
+        <NetworkFilterPicker
+          isOpen={isNetworkPickerOpen}
+          containerId={networkFilterContainerId}
+          networks={availableNetworks}
+          selectedNetworkId={selectedNetworkId}
+          onSelect={handleNetworkSelect}
+          onDismiss={closeNetworkPicker}
+        />
+      )}
     </div>
+  )
+}
+
+const NetworkFilterButton: FC<{
+  selectedNetworkId: string | null
+  onClick: () => void
+}> = ({ selectedNetworkId, onClick }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={classNames(
+        "flex size-[4.6rem] shrink-0 items-center justify-center rounded-sm border",
+        selectedNetworkId
+          ? "border-body/20 text-body"
+          : "border-body/10 text-body-secondary hover:text-body"
+      )}
+    >
+      {selectedNetworkId ? (
+        <NetworkLogo networkId={selectedNetworkId} className="text-lg" />
+      ) : (
+        <GlobeIcon className="text-lg" />
+      )}
+    </button>
   )
 }
