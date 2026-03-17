@@ -213,7 +213,7 @@ const TxIconContainer = ({
         {!!networkId && (
           <NetworkLogo
             networkId={networkId}
-            className="!absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border border-grey-800"
+            className="!absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border border-grey-800 bg-grey-900"
           />
         )}
       </div>
@@ -274,14 +274,13 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
     case "sending":
     case "verifying":
       return (
-        <>
+        <span className="animate-pulse">
           {swapStatus === "waiting" ? <span>{t("Depositing funds")} </span> : null}
           {swapStatus === "confirming" ? <span>{t("Confirming")} </span> : null}
           {swapStatus === "exchanging" ? <span>{t("Exchanging")} </span> : null}
           {swapStatus === "sending" ? <span>{t("Sending")} </span> : null}
           {swapStatus === "verifying" ? <span>{t("Verifying")} </span> : null}
-          <LoaderIcon className="animate-spin-slow text-body-disabled" />
-        </>
+        </span>
       )
     case "failed":
     case "refunded":
@@ -295,14 +294,13 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   }
 }
 const SwapTransactionStatusLabelFallback = () => {
-  const { t } = useTranslation()
   return (
-    <>
-      <span className="select-none rounded bg-body-disabled text-transparent">
-        {t("Submitting")}{" "}
-      </span>
-      <LoaderIcon className="animate-spin-slow text-body-disabled" />
-    </>
+    <span
+      aria-hidden="true"
+      className="animate-pulse select-none rounded-xs bg-grey-800 text-grey-800"
+    >
+      Unknown
+    </span>
   )
 }
 
