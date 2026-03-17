@@ -43,7 +43,7 @@ export const SwapConfirm = () => {
       id={CONTAINER_ID}
     >
       <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
-        <div className="flex w-full flex-col gap-2 overflow-hidden">
+        <div className="flex w-full flex-col gap-2 overflow-hidden pl-6">
           <TokenRow tokenId={fromToken.id} value={fromAmount} />
           <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
           <TokenRow tokenId={toToken.id} value={toAmount} />
@@ -75,15 +75,15 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
           networkId={token.networkId}
         />
       </div>
-      <div className="flex w-full flex-col gap-[8px] overflow-hidden">
+      <div className="flex w-full flex-col gap-1 overflow-hidden">
         <TokensAndFiat
           tokenId={tokenId}
           planck={value}
-          className="text-body-secondary text-md"
+          className="text-body-secondary text-sm"
           tokensClassName="text-body font-bold"
         />
-        <div className="flex w-full items-center gap-4 overflow-hidden">
-          <span className="truncate text-body-secondary">{token.name || token.symbol}</span>
+        <div className="flex w-full items-center gap-4 overflow-hidden text-sm">
+          <div className="truncate text-body-secondary">{token.name || token.symbol}</div>
           <div className="flex shrink-0 items-center gap-[5px] rounded-full bg-grey-800 py-[4px] pr-[8px] pl-[5px]">
             <NetworkLogo className="text-[16px]" networkId={network.id} />
             <span className="truncate text-xs opacity-60">{network.name}</span>
