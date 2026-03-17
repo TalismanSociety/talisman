@@ -1,3 +1,31 @@
+import { planckToTokens } from "@talismn/util"
+
+/**
+ * Format a swap exchange rate as "1 toSymbol = X fromSymbol".
+ * Returns undefined when the rate cannot be computed (e.g. zero output).
+ */
+export function formatSwapExchangeRate(params: {
+  fromAmount: bigint
+  fromDecimals: number
+  fromSymbol: string
+  toDecimals: number
+  toSymbol: string
+  outputAmountBN: bigint
+}): string | undefined {
+  const { fromAmount, fromDecimals, fromSymbol, toDecimals, toSymbol, outputAmountBN } = params
+  const toNum = Number(planckToTokens(outputAmountBN.toString(), toDecimals) ?? "0")
+  const fromNum = Number(planckToTokens(fromAmount.toString(), fromDecimals) ?? "1")
+  if (!toNum) return undefined
+  const rate = fromNum / toNum
+  return `1 ${toSymbol} = ${Intl.NumberFormat(undefined, {
+    style: "decimal",
+    minimumSignificantDigits: 3,
+    maximumSignificantDigits: rate < 1 ? 3 : 4,
+    roundingPriority: "morePrecision",
+    notation: "compact",
+  }).format(rate)} ${fromSymbol}`
+}
+
 /**
  * Parse a user-typed token amount string into a planck bigint value.
  * E.g. "1.5" with 18 decimals → 1500000000000000000n

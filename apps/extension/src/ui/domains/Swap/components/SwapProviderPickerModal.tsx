@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
+import { formatSwapExchangeRate } from "../swap-utils"
 
 export const SwapProviderPickerModal: FC<{
   isOpen: boolean
@@ -82,21 +83,16 @@ const SwapProviderQuoteButton: FC<{
 
   const exchangeRate = useMemo(() => {
     if (!fromAmount || !fromToken || !toToken) return undefined
-    const toNum = Number(planckToTokens(quote.outputAmountBN.toString(), toToken.decimals) ?? "0")
-    const fromNum = Number(planckToTokens(fromAmount.toString(), fromToken.decimals) ?? "1")
-    if (!toNum) return t("N/A")
-    const rate = fromNum / toNum
-    const formatted = Intl.NumberFormat(undefined, {
-      style: "decimal",
-      minimumSignificantDigits: 3,
-      maximumSignificantDigits: rate < 1 ? 3 : 4,
-      roundingPriority: "morePrecision",
-      notation: "compact",
-    }).format(rate)
-
-    return `1 ${toToken.symbol} = ${formatted} ${fromToken.symbol}`
-    // const display = Intl.NumberFormat(undefined, { maximumSignificantDigits: 4 }).format(res)
-    // return display
+    return (
+      formatSwapExchangeRate({
+        fromAmount,
+        fromDecimals: fromToken.decimals,
+        fromSymbol: fromToken.symbol,
+        toDecimals: toToken.decimals,
+        toSymbol: toToken.symbol,
+        outputAmountBN: quote.outputAmountBN,
+      }) ?? t("N/A")
+    )
   }, [fromAmount, fromToken, toToken, quote.outputAmountBN, t])
 
   const duration = useMemo(() => {

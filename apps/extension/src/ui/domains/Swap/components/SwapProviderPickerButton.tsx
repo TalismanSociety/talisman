@@ -1,11 +1,10 @@
 import { AlertCircleIcon, ChevronRightIcon } from "@talismn/icons"
-import { planckToTokens } from "@talismn/util"
-import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state/chaindata"
 import { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
+import { formatSwapExchangeRate } from "../swap-utils"
 import { SwapProviderPickerModal } from "./SwapProviderPickerModal"
 
 export const SwapProviderPickerButton = () => {
@@ -178,16 +177,17 @@ const SwapProviderButton = memo(
     const fromToken = useToken(fromTokenId ?? undefined)
     const toToken = useToken(toTokenId ?? undefined)
 
-    const amount = quote.outputAmountBN
-
-    const toQuote = useMemo(() => {
-      if (!amount || !fromAmount || !toToken || !fromToken) return undefined
-      const toNum = Number(planckToTokens(amount.toString(), toToken.decimals) ?? "0")
-      const fromNum = Number(planckToTokens(fromAmount.toString(), fromToken.decimals) ?? "1")
-      const res = toNum / (fromNum || 1)
-      if (res < 0.0001) return "0"
-      return res.toString()
-    }, [fromAmount, fromToken, amount, toToken])
+    const exchangeRate = useMemo(() => {
+      if (!fromAmount || !fromToken || !toToken) return undefined
+      return formatSwapExchangeRate({
+        fromAmount,
+        fromDecimals: fromToken.decimals,
+        fromSymbol: fromToken.symbol,
+        toDecimals: toToken.decimals,
+        toSymbol: toToken.symbol,
+        outputAmountBN: quote.outputAmountBN,
+      })
+    }, [fromAmount, fromToken, toToken, quote.outputAmountBN])
 
     if (!toToken) return null
 
@@ -207,9 +207,7 @@ const SwapProviderButton = memo(
           <span className="truncate font-semibold text-[14px] text-white">
             {quote.providerName}
           </span>
-          <span className="truncate text-[12px] text-body-secondary">
-            1 {fromToken?.symbol} = <Tokens amount={toQuote} symbol={toToken?.symbol} noCountUp />
-          </span>
+          <span className="truncate text-[12px] text-body-secondary">{exchangeRate}</span>
         </div>
         {showBestRate && (
           <div className="shrink-0 whitespace-nowrap rounded-full bg-primary/10 px-4 py-2 text-primary text-xs">
