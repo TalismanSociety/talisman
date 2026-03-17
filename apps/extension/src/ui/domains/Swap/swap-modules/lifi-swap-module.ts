@@ -24,6 +24,7 @@ import {
   takeWhile,
 } from "rxjs"
 import { zeroAddress } from "viem"
+import { getSwapLifiSlippageDecimal } from "../hooks/useSwapLifiSlippage"
 import {
   type ApprovalInfo,
   type BaseQuote,
@@ -264,6 +265,7 @@ const getRoutes = async (
     const fee = isSolanaRoute
       ? 0
       : await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
+    const slippage = await getSwapLifiSlippageDecimal()
     if (signal.aborted) return null
     return await lifiSdk.getRoutes(
       {
@@ -274,7 +276,7 @@ const getRoutes = async (
         fromAmount: fromAmount.toString(),
         fromTokenAddress,
         toTokenAddress,
-        options: { integrator: "talisman", fee },
+        options: { integrator: "talisman", fee, slippage },
       },
       { signal }
     )
@@ -321,21 +323,10 @@ const getRouteQuote = async (
     }
   }
 
-  // add talisman fee
-  // TODO: Re-enable once Solana fee wallet is configured on the LI.FI portal
-  const toAsset = toTokenId ? resolveAsset(toTokenId) : null
-  const solanaChainId = await getLifiSolanaChainId()
-  const isSolanaRoute =
-    fromAsset.chainId === SOLANA_NETWORK_ID ||
-    Number(fromAsset.chainId) === solanaChainId ||
-    toAsset?.chainId === SOLANA_NETWORK_ID ||
-    Number(toAsset?.chainId) === solanaChainId
-  const talismanFee = isSolanaRoute
-    ? 0
-    : await getTalismanFee({
-        fromAssetId: fromTokenId,
-        toAssetId: toTokenId ?? undefined,
-      })
+  const talismanFee = await getTalismanFee({
+    fromAssetId: fromTokenId,
+    toAssetId: toTokenId ?? undefined,
+  })
   fees.push({
     amount: BigNumber(step.estimate.fromAmount.toString())
       .times(10 ** -fromAsset.decimals)

@@ -1,4 +1,5 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import { EditIcon } from "@talismn/icons"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -12,6 +13,7 @@ import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
@@ -19,11 +21,13 @@ import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "reac
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
+import { useSwapLifiSlippage } from "../hooks/useSwapLifiSlippage"
 import { useSwap } from "../SwapProvider"
 import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { SwapLifiSlippageDrawer } from "./SwapLifiSlippageDrawer"
 import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
@@ -55,6 +59,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const needsApproval = !approvalLoading && approvalData !== null
   const isReady = useConfirmReadiness(swapView)
+  const [lifiSlippagePercent] = useSwapLifiSlippage()
+  const slippageDrawer = useOpenClose()
+  const isLifiSelected = swapModule?.protocol === "lifi"
 
   // Increments each time the confirm view is entered, forcing a fresh exchange query
   const confirmEntryCounter = useRef(0)
@@ -143,9 +150,12 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       toAddress,
       fromAmount?.toString(),
       selectedQuote?.protocol,
+      selectedQuote?.subProtocol,
+      selectedQuote?.outputAmountBN?.toString(),
       subProtocol,
       allowReap,
       approvalCounter,
+      isLifiSelected ? lifiSlippagePercent.toString() : "",
       confirmEntryCounter.current,
     ],
     queryFn: async ({ signal }) => {
@@ -408,6 +418,21 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             </div>
           </div>
         ) : null}
+        {isLifiSelected ? (
+          <div className="flex h-11 items-center justify-between gap-8">
+            <div className="whitespace-nowrap text-body-secondary text-xs">
+              {t("Slippage Tolerance")}
+            </div>
+            <button
+              type="button"
+              onClick={slippageDrawer.open}
+              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
+            >
+              <EditIcon />
+              <div>{lifiSlippagePercent.toFixed(2)}%</div>
+            </button>
+          </div>
+        ) : null}
         <div className="flex h-11 items-center justify-between gap-8">
           <div className="whitespace-nowrap text-body-secondary text-xs">
             {t("Estimated TX Fee")}
@@ -463,6 +488,13 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           />
         )}
       </div>
+      {isLifiSelected ? (
+        <SwapLifiSlippageDrawer
+          containerId={containerId}
+          isOpen={slippageDrawer.isOpen}
+          onClose={slippageDrawer.close}
+        />
+      ) : null}
     </>
   )
 }
