@@ -55,7 +55,7 @@ export const SwapBuyInput: FC = () => {
         </div>
         <div
           className={cn(
-            "invisible w-full truncate text-alert-error text-sm",
+            "invisible w-full truncate text-alert-error text-xs",
             inputErrorMessage && "visible"
           )}
         >
@@ -168,7 +168,7 @@ const TokenInput: FC<{
       step="any"
       value={inputValue}
       className={
-        "peer inline-block grow text-ellipsis bg-transparent text-[2rem] text-body placeholder:text-body-disabled"
+        "peer inline-block grow text-ellipsis bg-transparent text-[20px] text-body placeholder:text-body-disabled"
       }
       onChange={handleChange}
     />

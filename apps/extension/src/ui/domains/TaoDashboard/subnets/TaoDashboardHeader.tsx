@@ -45,9 +45,11 @@ export const TaoDashboardHeader = () => {
 
   const isInitializing = useIsBalanceInitializing()
 
-  const isBalanceLoading = useMemo(() => {
-    return isInitializing || taoBalances.each.some((b) => b.status === "cache")
-  }, [isInitializing, taoBalances])
+  const hasCachedBalances = useMemo(
+    () => taoBalances.each.some((b) => b.status === "cache"),
+    [taoBalances]
+  )
+  const isBalanceRefetching = hasCachedBalances && !isInitializing
 
   const isStatsLoading = isTaoPriceLoading || isLeaderboardLoading
   const isStatsRefetching = isTaoPriceRefetching || isLeaderboardRefetching
@@ -82,14 +84,16 @@ export const TaoDashboardHeader = () => {
           label={t("Total Tao Balance")}
           tokenId={tao?.id}
           planck={taoBalances.sum.planck.transferable}
-          isLoading={isBalanceLoading}
+          isLoading={isInitializing}
+          isRefetching={isBalanceRefetching}
           className="pr-8"
         />
         <BalanceStat
           label={t("Staked Tao Balance")}
           tokenId={tao?.id}
           planck={totalStakedPlanck}
-          isLoading={isBalanceLoading || isTaoPriceLoading}
+          isLoading={isInitializing || isTaoPriceLoading}
+          isRefetching={isBalanceRefetching || isTaoPriceRefetching}
           className="pr-8"
         />
       </div>
@@ -128,8 +132,9 @@ const BalanceStat: FC<{
   tokenId: string | undefined
   planck: bigint
   isLoading: boolean
+  isRefetching?: boolean
   className?: string
-}> = ({ label, tokenId, planck, isLoading, className }) => {
+}> = ({ label, tokenId, planck, isLoading, isRefetching, className }) => {
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <span className="text-body-secondary text-xs">{label}</span>
@@ -137,7 +142,12 @@ const BalanceStat: FC<{
         {isLoading ? (
           <Skeleton className="h-[38px] w-48" />
         ) : (
-          <span className="whitespace-nowrap font-semibold text-[32px] text-body leading-[1.2]">
+          <span
+            className={cn(
+              "whitespace-nowrap font-semibold text-[32px] text-body leading-[1.2]",
+              isRefetching && "animate-pulse"
+            )}
+          >
             <TokensAndFiat tokenId={tokenId} planck={planck} noFiat noCountUp noSymbol isBalance />
             {" τ"}
           </span>
@@ -174,22 +184,26 @@ const MarketStat: FC<{
           {value}
         </span>
       )}
-      {showSkeleton ? (
-        <Skeleton className="h-[17px] w-16" />
-      ) : change !== undefined ? (
-        <span
-          className={cn(
-            "text-xs",
-            isPositive && "text-green",
-            isNegative && "text-red-500",
-            !isPositive && !isNegative && "text-body-secondary",
-            isRefetching && "animate-pulse"
-          )}
-        >
-          {change > 0 ? "+" : ""}
-          {change.toFixed(2)}%
-        </span>
-      ) : null}
+      <span
+        className={cn(
+          "text-xs",
+          showSkeleton && "invisible",
+          change === undefined && "invisible",
+          isPositive && "text-green",
+          isNegative && "text-red-500",
+          !isPositive && !isNegative && "text-body-secondary",
+          isRefetching && "animate-pulse"
+        )}
+      >
+        {change !== undefined ? (
+          <>
+            {change > 0 ? "+" : ""}
+            {change.toFixed(2)}%
+          </>
+        ) : (
+          "\u00A0"
+        )}
+      </span>
     </div>
   )
 }
