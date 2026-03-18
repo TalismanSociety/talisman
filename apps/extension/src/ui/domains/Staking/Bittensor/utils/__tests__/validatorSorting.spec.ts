@@ -58,7 +58,7 @@ describe("sortValidatorOptions", () => {
 
     const sorted = sortValidatorOptions(validators, "featured")
 
-    // featured first in config order (A=0, C=1), then non-featured by metric desc (B=250.4, D=130.3)
+    // featured first in config order (A=0, C=1), then non-featured by APR desc (B=0.4, D=0.3)
     expect(sorted.map(({ hotkey }) => hotkey)).toEqual(["5A", "5C", "5B", "5D"])
   })
 

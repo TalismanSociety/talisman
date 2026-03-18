@@ -39,7 +39,7 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
           apr: Number(validatorYield?.thirty_day_apy ?? 0),
           subnets: validator.active_subnets,
           rank: validator.rank,
-          isFeatured: featuredHotkeyOrder.has(validator.hotkey.toLowerCase()),
+          isFeatured: featuredHotkeyOrder.has(validator.hotkey.toLowerCase()) && !!validatorYield,
           featuredOrder: featuredHotkeyOrder.get(validator.hotkey.toLowerCase()) ?? -1,
           hasData: !!validator,
           isError: status === "error",
