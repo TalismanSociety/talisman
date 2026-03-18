@@ -14,7 +14,7 @@ import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { type FC, memo, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
-import { getTokenTabs } from "../swap-services/token-filtering"
+import { filterAndSortTokensByTab, getTokenTabs } from "../swap-services/token-filtering"
 import { useRecentTokenIds } from "../swap-services/useRecentTokenIds"
 
 const PICKER_CONTAINER_ID = "swap-modal-token-picker"
@@ -83,8 +83,13 @@ const TokenPickerModal: FC<{
     [priorityMode, remoteConfig]
   )
 
-  const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
+  const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption, filterByTab } =
     useTokenFilterOptions()
+
+  const filteredTokenIds = useMemo(
+    () => filterByTab(allowedTokenIds),
+    [filterByTab, allowedTokenIds]
+  )
 
   const handleSelectTokenId = useCallback(
     (tokenId: string, acceptWarning?: boolean) => {
@@ -107,7 +112,7 @@ const TokenPickerModal: FC<{
     [safeTokens, tokensMap, onSelect, acknowledgedTokenIds, acknowledgeToken]
   )
 
-  const assetIdSet = useMemo(() => new Set(allowedTokenIds), [allowedTokenIds])
+  const assetIdSet = useMemo(() => new Set(filteredTokenIds), [filteredTokenIds])
   const tokenFilter = useCallback((token: Token) => assetIdSet.has(token.id), [assetIdSet])
 
   return (
@@ -217,16 +222,29 @@ const useTokenFilterOptions = () => {
     [tabs]
   )
 
-  const { tokenTab: defaultTokenFilterOption, setTokenTab: onSelectTokenFilterOption } = useSwap()
+  const [tokenTab, setTokenTab] = useState("all")
 
   // Reset to "all" if the currently selected tab is no longer visible
   useEffect(() => {
-    if (!tabs.some((tab) => tab.value === defaultTokenFilterOption)) {
-      onSelectTokenFilterOption("all")
+    if (!tabs.some((tab) => tab.value === tokenTab)) {
+      setTokenTab("all")
     }
-  }, [tabs, defaultTokenFilterOption, onSelectTokenFilterOption])
+  }, [tabs, tokenTab])
 
-  return { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption }
+  const filterByTab = useCallback(
+    (tokenIds: string[] | undefined) => {
+      if (!tokenIds) return undefined
+      return filterAndSortTokensByTab(tokenIds, tokenTab, tabs)
+    },
+    [tokenTab, tabs]
+  )
+
+  return {
+    tokenFilterOptions,
+    defaultTokenFilterOption: tokenTab,
+    onSelectTokenFilterOption: setTokenTab,
+    filterByTab,
+  }
 }
 
 const SelectTokenWarningDrawer: FC<{

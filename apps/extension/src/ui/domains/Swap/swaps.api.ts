@@ -5,18 +5,11 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
-import { useRemoteConfig } from "@ui/state/remoteConfig"
-import type { TFunction } from "i18next"
-import { useCallback, useMemo, useRef } from "react"
+import { useCallback, useRef } from "react"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
-import {
-  buildAssetRegistry,
-  filterAndSortTokensByTab,
-  getTokenTabs,
-} from "./swap-services/token-filtering"
-import { useRecentTokenIds } from "./swap-services/useRecentTokenIds"
+import { buildAssetRegistry } from "./swap-services/token-filtering"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -58,15 +51,9 @@ const withRetry = async <T>(
  * Fetches from/to assets from all swap modules.
  * Returns tokenId arrays and support maps.
  */
-export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: TFunction) => {
+export const useSwapAssets = (fromTokenId: string | null) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
-  const remoteConfig = useRemoteConfig()
-  const recentTokenIds = useRecentTokenIds()
-  const tokenTabs = useMemo(() => {
-    const { curatedTokens = [] } = remoteConfig.swaps
-    return getTokenTabs({ t, curatedTokens, recentTokenIds })
-  }, [remoteConfig.swaps, t, recentTokenIds])
 
   const fromAssetsQuery = useQuery({
     queryKey: ["swap-from-assets-v3", tokensCount],
@@ -125,19 +112,9 @@ export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: T
     persister: createQueryStoragePersister(), // default 1 day is fine, dont cache longer as there is one result set per fromTokenId
   })
 
-  const filteredFromAssetIds = useMemo(() => {
-    if (!fromAssetsQuery.data?.tokenIds) return undefined
-    return filterAndSortTokensByTab(fromAssetsQuery.data.tokenIds, tokenTab, tokenTabs)
-  }, [fromAssetsQuery.data?.tokenIds, tokenTab, tokenTabs])
-
-  const filteredToAssetIds = useMemo(() => {
-    if (!toAssetsQuery.data?.tokenIds) return undefined
-    return filterAndSortTokensByTab(toAssetsQuery.data.tokenIds, tokenTab, tokenTabs)
-  }, [toAssetsQuery.data?.tokenIds, tokenTab, tokenTabs])
-
   return {
-    fromAssetIds: filteredFromAssetIds,
-    toAssetIds: filteredToAssetIds,
+    fromAssetIds: fromAssetsQuery.data?.tokenIds,
+    toAssetIds: toAssetsQuery.data?.tokenIds,
     fromSupportMap: fromAssetsQuery.data?.supportMap ?? null,
     toSupportMap: toAssetsQuery.data?.supportMap ?? null,
     isLoadingFromAssets: fromAssetsQuery.isLoading,

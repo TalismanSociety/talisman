@@ -2,7 +2,6 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import { useSwapLifiSlippage } from "./hooks/useSwapLifiSlippage"
@@ -10,8 +9,6 @@ import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
 import type { SwapInit } from "./hooks/useSwapTokensModal"
 import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
 import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
-
-export type { SwapView } from "./swap-modules/common.swap-module"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
 const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"> = [
@@ -24,9 +21,9 @@ type SwapProviderProps = {
   stateInit: SwapInit | null
 }
 
-export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
-  const { t } = useTranslation()
+export type { SwapView } from "./swap-modules/common.swap-module"
 
+export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   // -- View --
   const [swapView, setSwapView] = useState<SwapView>("form")
 
@@ -59,9 +56,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     fromTokenId,
     toTokenId,
   })
-
-  // -- Token tab --
-  const [tokenTab, setTokenTab] = useState("all")
 
   // -- Submitted swap state --
   const [submittedTxHash, setSubmittedTxHash] = useState<string | null>(null)
@@ -108,8 +102,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setSelectedSubProtocol(undefined)
     setQuoteSorting("bestRate")
     setFromAddressRaw(null)
-    setToAddressRaw(null)
-    setTokenTab("all")
     setApprovalCounter(0)
     setAcknowledgedTokenIds(new Set())
     resetFromAddressManuallySet()
@@ -127,7 +119,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     toSupportMap,
     isLoadingFromAssets,
     isLoadingToAssets,
-  } = useSwapAssets(fromTokenId, tokenTab, t)
+  } = useSwapAssets(fromTokenId)
 
   // -- Initialize form from stateInit (one-shot per mount) --
   const fromInitDone = useRef(false)
@@ -253,8 +245,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setSelectedSubProtocol,
     quoteSorting,
     setQuoteSorting,
-    tokenTab,
-    setTokenTab,
     reverse,
     resetForm,
     fromAssetIds,

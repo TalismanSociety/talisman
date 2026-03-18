@@ -1,7 +1,6 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
-import type { TFunction } from "i18next"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -11,14 +10,9 @@ const getFromAssetsMock = vi.fn()
 const getToAssetsMock = vi.fn()
 
 const mockUseTokensMap = vi.fn()
-const mockUseRemoteConfig = vi.fn()
 
 vi.mock("@ui/state/chaindata", () => ({
   useTokensMap: () => mockUseTokensMap(),
-}))
-
-vi.mock("@ui/state/remoteConfig", () => ({
-  useRemoteConfig: () => mockUseRemoteConfig(),
 }))
 
 vi.mock("@ui/state/transactions", () => ({
@@ -59,8 +53,6 @@ vi.mock("../swap-modules/stealthex-swap-module", () => ({
 
 const makeToken = (id: string, symbol: string) => ({ id, symbol, decimals: 18 }) as unknown as Token
 
-const t = ((key: string) => key) as unknown as TFunction
-
 describe("useSwapAssets", () => {
   let queryClient: QueryClient
 
@@ -79,11 +71,6 @@ describe("useSwapAssets", () => {
       "tok-a": makeToken("tok-a", "AAA"),
       "tok-b": makeToken("tok-b", "BBB"),
     })
-    mockUseRemoteConfig.mockReturnValue({
-      swaps: {
-        curatedTokens: ["tok-b"],
-      },
-    })
 
     getFromAssetsMock.mockResolvedValue(["tok-a", "tok-b"])
     getToAssetsMock.mockResolvedValue(["tok-a", "tok-b"])
@@ -93,33 +80,18 @@ describe("useSwapAssets", () => {
     queryClient.clear()
   })
 
-  it("does not refetch provider assets when token tab changes, while still filtering results", async () => {
+  it("returns all asset ids without tab filtering", async () => {
     const wrapper = ({ children }: PropsWithChildren) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
 
-    const { result, rerender } = renderHook(
-      ({ tokenTab }: { tokenTab: string }) => useSwapAssets(null, tokenTab, t),
-      {
-        wrapper,
-        initialProps: { tokenTab: "all" },
-      }
-    )
+    const { result } = renderHook(() => useSwapAssets(null), {
+      wrapper,
+    })
 
     await waitFor(() => expect(result.current.isLoadingFromAssets).toBe(false))
     await waitFor(() => expect(result.current.isLoadingToAssets).toBe(false))
-    await waitFor(() => expect(result.current.fromAssetIds).toEqual(["tok-b", "tok-a"]))
-    await waitFor(() => expect(result.current.toAssetIds).toEqual(["tok-b", "tok-a"]))
-
-    const fromCallsBeforeTabChange = getFromAssetsMock.mock.calls.length
-    const toCallsBeforeTabChange = getToAssetsMock.mock.calls.length
-
-    rerender({ tokenTab: "popular" })
-
-    await waitFor(() => expect(result.current.fromAssetIds).toEqual(["tok-b"]))
-    await waitFor(() => expect(result.current.toAssetIds).toEqual(["tok-b"]))
-
-    expect(getFromAssetsMock).toHaveBeenCalledTimes(fromCallsBeforeTabChange)
-    expect(getToAssetsMock).toHaveBeenCalledTimes(toCallsBeforeTabChange)
+    await waitFor(() => expect(result.current.fromAssetIds).toEqual(["tok-a", "tok-b"]))
+    await waitFor(() => expect(result.current.toAssetIds).toEqual(["tok-a", "tok-b"]))
   })
 })
