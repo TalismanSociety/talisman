@@ -62,7 +62,21 @@ const TokenPickerModal: FC<{
   priorityMode?: "buy" | "sell"
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({ isOpen, tokenId, allowedTokenIds, priorityMode, onSelect, onDismiss }) => {
+}> = ({ isOpen, ...contentProps }) => {
+  return (
+    <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={contentProps.onDismiss}>
+      <TokenPickerModalContent {...contentProps} />
+    </Modal>
+  )
+}
+
+const TokenPickerModalContent: FC<{
+  tokenId: TokenId | null
+  allowedTokenIds: string[] | undefined
+  priorityMode?: "buy" | "sell"
+  onSelect: (tokenId: TokenId) => void
+  onDismiss: () => void
+}> = ({ tokenId, allowedTokenIds, priorityMode, onSelect, onDismiss }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
@@ -116,35 +130,33 @@ const TokenPickerModal: FC<{
   const tokenFilter = useCallback((token: Token) => assetIdSet.has(token.id), [assetIdSet])
 
   return (
-    <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={onDismiss}>
-      <WizardModalDialog
-        className="border-none"
-        contentClassName="!p-0 relative"
-        title={t("Select a token")}
-        onBackClick={onDismiss}
-        id={PICKER_CONTAINER_ID}
-      >
-        <TokenPicker
-          selected={tokenId ?? undefined}
-          allowUntransferable
-          ownedOnly
-          isInitializing={!allowedTokenIds}
-          networkFilterContainerId={PICKER_CONTAINER_ID}
-          priorityTokens={priorityTokens}
-          tokenFilter={tokenFilter}
-          tokenFilterOptions={tokenFilterOptions}
-          tokenFilterDefaultOption={defaultTokenFilterOption}
-          onTokenFilterOptionChange={onSelectTokenFilterOption}
-          onSelect={handleSelectTokenId}
-          showEmptyBalances
-        />
-        <SelectTokenWarningDrawer
-          tokenId={warningTokenId}
-          onBack={() => setWarningTokenId(null)}
-          onAccept={() => handleSelectTokenId(warningTokenId!, true)}
-        />
-      </WizardModalDialog>
-    </Modal>
+    <WizardModalDialog
+      className="border-none"
+      contentClassName="!p-0 relative"
+      title={t("Select a token")}
+      onBackClick={onDismiss}
+      id={PICKER_CONTAINER_ID}
+    >
+      <TokenPicker
+        selected={tokenId ?? undefined}
+        allowUntransferable
+        ownedOnly
+        isInitializing={!allowedTokenIds}
+        networkFilterContainerId={PICKER_CONTAINER_ID}
+        priorityTokens={priorityTokens}
+        tokenFilter={tokenFilter}
+        tokenFilterOptions={tokenFilterOptions}
+        tokenFilterDefaultOption={defaultTokenFilterOption}
+        onTokenFilterOptionChange={onSelectTokenFilterOption}
+        onSelect={handleSelectTokenId}
+        showEmptyBalances
+      />
+      <SelectTokenWarningDrawer
+        tokenId={warningTokenId}
+        onBack={() => setWarningTokenId(null)}
+        onAccept={() => handleSelectTokenId(warningTokenId!, true)}
+      />
+    </WizardModalDialog>
   )
 }
 
