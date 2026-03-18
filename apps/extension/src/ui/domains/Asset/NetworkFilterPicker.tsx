@@ -1,5 +1,5 @@
 import type { Network } from "@talismn/chaindata-provider"
-import { CheckCircleIcon, GlobeIcon } from "@talismn/icons"
+import { CheckmarkIcon, GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -153,9 +153,12 @@ const NetworkFilterRow: FC<{
           </div>
         )}
       </div>
-      <div className="flex size-12 shrink-0 items-center justify-center">
-        {selected && <CheckCircleIcon className="text-body" />}
-      </div>
+
+      {selected && (
+        <div className="flex size-12 shrink-0 items-center justify-center">
+          <CheckmarkIcon className="size-10" />
+        </div>
+      )}
     </button>
   )
 }
