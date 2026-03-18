@@ -129,30 +129,37 @@ export const useSafeTokens = () => {
   return useQuery({
     queryKey: ["swap-safe-tokens-v2"],
     queryFn: async () => {
-      const [uniswapSafe, uniswapExtended, talismanSafe] = await Promise.all([
-        fetch("https://tokens.uniswap.org/")
+      const fetchTokenSet = (url: string) =>
+        fetch(url)
           .then((r) => r.json())
           .then(
             (data: { tokens: { chainId: number; address: string }[] }) =>
               new Set(data.tokens.map((tk) => `${tk.chainId}:${tk.address.toLowerCase()}`))
-          ),
-        fetch("https://extendedtokens.uniswap.org/")
-          .then((r) => r.json())
-          .then(
-            (data: { tokens: { chainId: number; address: string }[] }) =>
-              new Set(data.tokens.map((tk) => `${tk.chainId}:${tk.address.toLowerCase()}`))
-          ),
-        remoteConfigStore.get("swaps").then((swapsConfig) => {
-          const lifiTalismanTokens = swapsConfig?.lifiTalismanTokens ?? []
-          return new Set(
-            lifiTalismanTokens.map((tokenId: string) => {
-              const [chainId, _type, contractAddress] = tokenId.split(":")
-              return `${chainId}:${contractAddress}`
-            })
           )
-        }),
+          .catch(() => new Set<string>())
+
+      const results = await Promise.allSettled([
+        fetchTokenSet("https://tokens.uniswap.org/"),
+        fetchTokenSet("https://extendedtokens.uniswap.org/"),
+        remoteConfigStore
+          .get("swaps")
+          .then((swapsConfig) => {
+            const lifiTalismanTokens = swapsConfig?.lifiTalismanTokens ?? []
+            return new Set(
+              lifiTalismanTokens.map((tokenId: string) => {
+                const [chainId, _type, contractAddress] = tokenId.split(":")
+                return `${chainId}:${contractAddress}`
+              })
+            )
+          })
+          .catch(() => new Set<string>()),
       ])
-      return serializeSafeTokens(new Set([...uniswapSafe, ...uniswapExtended, ...talismanSafe]))
+
+      const merged = new Set<string>()
+      for (const result of results)
+        if (result.status === "fulfilled") for (const v of result.value) merged.add(v)
+
+      return serializeSafeTokens(merged)
     },
     select: deserializeSafeTokens,
     staleTime: Infinity,

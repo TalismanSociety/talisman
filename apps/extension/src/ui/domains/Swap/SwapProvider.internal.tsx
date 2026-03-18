@@ -212,9 +212,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     approvalCounter,
   })
 
-  // Derive fast balance params from the Token type
-  // const fromToken = useToken(fromTokenId ?? undefined)
-
   const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
   const toBalance = useBalanceByParams({ address: toAddress, tokenId: toTokenId })
   const isFromTokenNative = useMemo(

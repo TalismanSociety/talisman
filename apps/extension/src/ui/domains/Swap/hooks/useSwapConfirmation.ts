@@ -1,8 +1,8 @@
-import { log } from "@common/log"
 import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 
 /**
@@ -43,7 +43,7 @@ export function useSwapTxInfo({
   fromAmount: bigint | null
   toAmount: bigint | null
   toAddress: string | null
-  protocol: string | undefined
+  protocol: SupportedSwapProtocol | (string & {}) | undefined
   subProtocol?: string
   fromLifiChainId?: number
   toLifiChainId?: number
@@ -87,9 +87,9 @@ export function useSwapTxInfo({
           fromLifiChainId,
           toLifiChainId,
         }
+      default:
+        throw new Error(`swapModule ${protocol as string} not supported`)
     }
-    log.warn(`useSwapTxInfo: unknown swap protocol "${protocol}"`)
-    return undefined
   }, [
     exchange,
     fromAmount,

@@ -9,17 +9,6 @@
  * - Substrate signing "Cancelled" from the signing handler
  * - Common rejection message patterns across wallets/providers
  */
-// Known user-rejection messages from wallets/providers.
-// A trailing "*" means "startsWith"; otherwise exact match (case-insensitive).
-const USER_REJECTION_MESSAGES: string[] = [
-  "cancelled", // Talisman signing handler
-  "user rejected the request", // MetaMask / EIP-1193
-  "user denied transaction signature", // legacy providers
-  "the user rejected the request", // WalletConnect
-  "user rejected*", // generic wallet pattern
-  "user denied*", // generic wallet pattern
-]
-
 export const isUserRejectionError = (error: unknown): boolean => {
   if (!error || typeof error !== "object") return false
 
@@ -29,9 +18,12 @@ export const isUserRejectionError = (error: unknown): boolean => {
 
   if (typeof message === "string") {
     const lower = message.toLowerCase()
-    return USER_REJECTION_MESSAGES.some((pattern) =>
-      pattern.endsWith("*") ? lower.startsWith(pattern.slice(0, -1)) : lower === pattern
-    )
+
+    // "cancelled" and "rejected" unambiguously indicate user rejection
+    if (lower.includes("cancelled") || lower.includes("rejected")) return true
+
+    // "denied" requires user-context to avoid false-positives like "Permission denied"
+    if (lower.includes("denied")) return lower.includes("user") || lower === "denied"
   }
 
   return false
