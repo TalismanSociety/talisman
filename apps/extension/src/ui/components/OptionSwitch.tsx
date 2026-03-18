@@ -54,6 +54,7 @@ type OptionSwitchProps<O extends string> = {
   options: Array<[O, string]>
   className?: string
   optionButtonClassName?: string
+  overlayButtonClassName?: string
   onChange?: (option: O) => void
 }
 
@@ -62,6 +63,7 @@ export const OptionSwitch = <O extends string>({
   options,
   className,
   optionButtonClassName,
+  overlayButtonClassName,
   onChange,
 }: OptionSwitchProps<O>) => {
   const [selected, setSelected] = useState<O | undefined>(defaultOption)
@@ -110,7 +112,10 @@ export const OptionSwitch = <O extends string>({
         {selectionOverlay && (
           <FadeIn>
             <div
-              className="absolute top-0 h-full rounded-full bg-primary transition-all duration-150 ease-in-out"
+              className={classNames(
+                "absolute top-0 h-full rounded-full bg-primary transition-all duration-150 ease-in-out",
+                overlayButtonClassName
+              )}
               style={selectionOverlay}
             />
           </FadeIn>

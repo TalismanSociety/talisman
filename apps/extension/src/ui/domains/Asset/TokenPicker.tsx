@@ -539,10 +539,11 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           )}
         </div>
         {tokenFilterOptions !== undefined && (
-          <div className="no-scrollbar max-w-full overflow-x-scroll">
+          <div className="no-scrollbar -mb-4 w-full max-w-full overflow-x-scroll">
             <OptionSwitch
               className="text-xs"
-              optionButtonClassName="px-3"
+              optionButtonClassName="px-3 rounded-xs"
+              overlayButtonClassName="rounded-xs"
               options={tokenFilterOptions}
               defaultOption={tokenFilterDefaultOption}
               onChange={onTokenFilterOptionChange}
