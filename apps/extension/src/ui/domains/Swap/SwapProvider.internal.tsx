@@ -90,6 +90,15 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const [approvalCounter, setApprovalCounter] = useState(0)
   const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
 
+  // -- Acknowledged unsafe tokens (in-memory only, survives modal open/close) --
+  const [acknowledgedTokenIds, setAcknowledgedTokenIds] = useState<Set<string>>(
+    () => new Set<string>()
+  )
+  const acknowledgeToken = useCallback(
+    (tokenId: string) => setAcknowledgedTokenIds((prev) => new Set(prev).add(tokenId)),
+    []
+  )
+
   const resetForm = useCallback(() => {
     setSwapView("form")
     setFromTokenId(null)
@@ -102,6 +111,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setToAddressRaw(null)
     setTokenTab("all")
     setApprovalCounter(0)
+    setAcknowledgedTokenIds(new Set())
     resetFromAddressManuallySet()
     setSubmittedTxHash(null)
     setSubmittedNetworkId(null)
@@ -252,6 +262,8 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     fromSupportMap,
     toSupportMap,
     safeTokens,
+    acknowledgedTokenIds,
+    acknowledgeToken,
     isLoadingFromAssets,
     isLoadingToAssets,
     fromBalance,

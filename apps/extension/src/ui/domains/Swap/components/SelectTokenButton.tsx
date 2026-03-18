@@ -66,7 +66,7 @@ const TokenPickerModal: FC<{
   const remoteConfig = useRemoteConfig()
 
   const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
-  const { safeTokens } = useSwap()
+  const { safeTokens, acknowledgedTokenIds, acknowledgeToken } = useSwap()
   const tokensMap = useTokensMap()
 
   const priorityTokens = useCallback(
@@ -87,7 +87,7 @@ const TokenPickerModal: FC<{
 
   const handleSelectTokenId = useCallback(
     (tokenId: string, acceptWarning?: boolean) => {
-      if (!acceptWarning) {
+      if (!acceptWarning && !acknowledgedTokenIds.has(tokenId)) {
         const token = tokensMap[tokenId]
         const erc20Address =
           token && "contractAddress" in token ? (token.contractAddress as string) : undefined
@@ -97,9 +97,13 @@ const TokenPickerModal: FC<{
         if (shouldShowWarning) return setWarningTokenId(tokenId)
       }
 
+      if (acceptWarning) {
+        acknowledgeToken(tokenId)
+        setWarningTokenId(null)
+      }
       onSelect(tokenId)
     },
-    [safeTokens, tokensMap, onSelect]
+    [safeTokens, tokensMap, onSelect, acknowledgedTokenIds, acknowledgeToken]
   )
 
   const assetIdSet = useMemo(() => new Set(allowedTokenIds), [allowedTokenIds])
