@@ -18,7 +18,7 @@ const compareYieldAvailability = (a: BondOption, b: BondOption) =>
   Number(Boolean(b.validatorYield)) - Number(Boolean(a.validatorYield))
 
 const getFeaturedSortMetric = (validator: BondOption) => {
-  return validator.apr
+  return validator.totalStaked
 }
 
 export const sortValidatorOptions = (
