@@ -4,8 +4,8 @@ import {
   ArrowUpRightIcon,
   ChevronRightIcon,
   InfoIcon,
-  ZapIcon,
   ZapOffIcon,
+  ZapPlusIcon,
 } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -602,25 +602,23 @@ const SubnetRow: FC<{
             type="button"
             aria-label={t("Stake")}
             onClick={handleStakeClick}
-            className="inline-flex size-[28px] items-center justify-center rounded-full text-body-secondary hover:bg-grey-700 hover:text-primary"
+            className="inline-flex size-[28px] items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
           >
-            <ZapIcon className="size-[16px]" />
+            <ZapPlusIcon className="size-[16px]" />
           </button>
           <button
             type="button"
             aria-label={t("Unstake")}
             onClick={handleUnstakeClick}
-            className="inline-flex size-[28px] items-center justify-center rounded-full text-body-secondary hover:bg-grey-700 hover:text-primary"
+            className="inline-flex size-[28px] items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
           >
             <ZapOffIcon className="size-[16px]" />
           </button>
         </div>
       </DataCell>
 
-      {/* Chevron */}
-      <DataCell>
-        <ChevronRightIcon className="size-[16px] opacity-60" />
-      </DataCell>
+      {/* Chevron — only for navigable subnets */}
+      <DataCell>{!isRoot && <ChevronRightIcon className="size-[16px] opacity-60" />}</DataCell>
     </div>
   )
 })
