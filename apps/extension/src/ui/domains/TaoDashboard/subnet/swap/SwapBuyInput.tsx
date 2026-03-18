@@ -1,6 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
-import { ChevronDownIcon } from "@talismn/icons"
 import { cn, tokensToPlanck } from "@talismn/util"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -8,7 +7,6 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsBalanceInitializing } from "@ui/state/balances"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useTaoDashboardSubnetPickerModal } from "../TaoDashboardSubnetPickerModal"
 import { SelectSenderAccountPill } from "./SelectSenderAccountPill"
 import { useSwapBuy } from "./SwapBuyProvider"
 
@@ -71,22 +69,14 @@ export const SwapBuyInput: FC = () => {
 
 const TokenDisplay: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { t } = useTranslation()
-  const { netuid } = useSwapBuy()
-  const { open } = useTaoDashboardSubnetPickerModal()
-
-  const handleClick = useCallback(() => {
-    open({ netuid })
-  }, [open, netuid])
-
   return (
-    <button type="button" onClick={handleClick} className="flex items-center gap-4">
+    <div className="flex items-center gap-4">
       <TokenLogo className="text-xl" tokenId={tokenId} />
-      <div className="flex flex-col items-start gap-1">
+      <div>
         <TokenDisplaySymbol tokenId={tokenId} />
         <div className="text-body-secondary text-xs">{t("Native")}</div>
       </div>
-      <ChevronDownIcon className="size-[16px]" />
-    </button>
+    </div>
   )
 }
 

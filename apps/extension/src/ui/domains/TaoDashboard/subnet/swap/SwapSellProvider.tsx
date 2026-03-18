@@ -36,8 +36,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     // preselect position straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { positionId: subnetPositions[0]?.id ?? null })
   )
-  const [editingField, setEditingField] = useState<"input" | "output">("input")
-
   useEffect(() => {
     if (!subnetPositions.length) {
       setState((prev) => (prev.positionId ? { ...prev, positionId: null } : prev))
@@ -95,7 +93,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   }, [balanceTokenIn])
 
   const onValueChange = useCallback((value: bigint | null) => {
-    setEditingField("input")
     setState((prev) => ({ ...prev, valueIn: value }))
   }, [])
 
@@ -104,7 +101,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   }, [])
 
   const resetValueIn = useCallback(() => {
-    setEditingField("input")
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
@@ -131,7 +127,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     minAlphaUnstake,
     swapPrice,
     talismanFee,
-    alphaPrice,
   } = useBittensorStakingPayload({
     netuid,
     amountIn: state.valueIn,
@@ -160,23 +155,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
-
-  // When user edits the output field, estimate the required input using the reference alpha price
-  const onValueOutChange = useCallback(
-    (value: bigint | null) => {
-      setEditingField("output")
-      if (value === null) {
-        setState((prev) => ({ ...prev, valueIn: null }))
-        return
-      }
-      const price = alphaPrice
-      if (!price || price === 0n) return
-      // alphaPrice = TAO * 10^9 / Alpha, so Alpha = TAO * 10^9 / alphaPrice
-      const estimatedInput = (value * 1_000_000_000n) / price
-      setState((prev) => ({ ...prev, valueIn: estimatedInput }))
-    },
-    [alphaPrice]
-  )
 
   const inputErrorMessage = useMemo(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
@@ -249,8 +227,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     onSubmit,
 
     onValueChange,
-    onValueOutChange,
-    editingField,
   }
 }
 

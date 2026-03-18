@@ -20,25 +20,26 @@ export const TaoDashboardSubnetsPage = () => {
       <TaoDashboardHeader />
 
       <div className="sticky top-0 z-10 flex flex-col gap-6 bg-black-primary pt-6">
-        <div className="mb-6 flex w-full items-center justify-between overflow-x-clip">
-          <div className="flex-shrink-0">
-            <EarnTabsDashboard />
-          </div>
-          <div className="flex w-[36rem] gap-2">
-            <SearchInput
-              containerClassName="h-[3.6rem] grow rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
-              className="text-sm"
-              placeholder={t("Search")}
-              onChange={setSearch}
-              initialValue={search}
-            />
-            <div>
-              <TaoDashboardPeriodTabs
-                selected={period}
-                onSelect={setPeriod}
-                className="h-full gap-2 rounded-sm p-2 [&>button]:size-[3.2rem]"
-              />
+        <EarnTabsDashboard />
+
+        <div className="flex w-full items-center gap-4">
+          <SearchInput
+            containerClassName="h-[3.6rem] grow rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+            className="text-sm"
+            placeholder={t("Search Subnet")}
+            onChange={setSearch}
+            initialValue={search}
+          />
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="flex items-center gap-2 text-body-secondary text-sm">
+              <div className="size-[6px] rounded-full bg-green" />
+              <span>{t("Live")}</span>
             </div>
+            <TaoDashboardPeriodTabs
+              selected={period}
+              onSelect={setPeriod}
+              className="h-full gap-2 rounded-sm p-2 [&>button]:size-[3.2rem]"
+            />
           </div>
         </div>
 

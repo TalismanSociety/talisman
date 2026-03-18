@@ -1,8 +1,8 @@
 import { ChevronDownIcon } from "@talismn/icons"
-import { cn, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { cn, planckToTokens } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useTaoDashboardSubnetPickerModal } from "../TaoDashboardSubnetPickerModal"
 import { SelectValidatorPill } from "./SelectValidatorPill"
@@ -31,60 +31,26 @@ const TokenOutValidatorPill = () => {
 }
 
 const ValueOutEstimate = () => {
-  const { tokenOutGeneric, valueOut, isLoading, valueIn, editingField, onValueOutChange } =
-    useSwapBuy()
-  const { t } = useTranslation()
+  const { tokenOutGeneric, valueOut, isLoading, valueIn } = useSwapBuy()
 
-  const formattedValueOut = useMemo(() => {
-    if (!valueIn && editingField !== "output") return ""
+  // TODO fix existing bug where valueOut is 0n while recomputing, in useBittensorStakingPayload.ts
+  const displayValue = useMemo(() => {
+    if (!valueIn) return "0"
     return tokenOutGeneric && typeof valueOut === "bigint"
       ? planckToTokens(String(valueOut), tokenOutGeneric.decimals)
-      : ""
-  }, [tokenOutGeneric, valueOut, valueIn, editingField])
-
-  const [inputValue, setInputValue] = useState(formattedValueOut)
-
-  useEffect(() => {
-    if (editingField !== "output") {
-      setInputValue(formattedValueOut)
-    }
-  }, [formattedValueOut, editingField])
-
-  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      const nextValue = e.target.value
-      setInputValue(nextValue)
-
-      if (!tokenOutGeneric || !nextValue.trim()) return onValueOutChange(null)
-
-      try {
-        const plancks = tokensToPlanck(nextValue, tokenOutGeneric.decimals)
-        onValueOutChange(BigInt(plancks))
-      } catch {
-        onValueOutChange(null)
-      }
-    },
-    [onValueOutChange, tokenOutGeneric]
-  )
+      : "123.123456789" // placeholder while loading, not visible (see below)
+  }, [tokenOutGeneric, valueOut, valueIn])
 
   return (
-    <input
-      type="text"
-      inputMode="decimal"
-      placeholder={t("Enter Amount")}
-      step="any"
-      value={inputValue}
+    <span
       className={cn(
-        "inline-block w-full text-ellipsis bg-transparent text-[2rem] text-body-disabled placeholder:text-body-disabled",
-        editingField !== "output" &&
-          !!valueIn &&
-          isLoading &&
-          "animate-pulse rounded-xs bg-body-disabled",
-        editingField !== "output" && !!valueIn && !isLoading && "text-white",
-        editingField === "output" && "text-white"
+        "text-body-disabled",
+        !!valueIn && isLoading && "animate-pulse rounded-xs bg-body-disabled",
+        !!valueIn && !isLoading && "text-white"
       )}
-      onChange={handleChange}
-    />
+    >
+      {displayValue} {tokenOutGeneric?.symbol}
+    </span>
   )
 }
 

@@ -2,23 +2,16 @@ import { bind } from "@react-rxjs/core"
 import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
+  ChevronRightIcon,
   InfoIcon,
-  MoreVerticalIcon,
-  ZapFastIcon,
+  ZapIcon,
+  ZapOffIcon,
 } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/components/ContextMenu"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
-import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -306,7 +299,7 @@ const HeaderRow: FC<{
     // biome-ignore lint/a11y/useFocusableInteractive: child buttons are focusable
     <div
       role="row"
-      className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),auto] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
+      className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),16px] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
     >
       <HeaderCell
         sortOrder={getSortOrder("netuid")}
@@ -391,19 +384,7 @@ const SubnetRow: FC<{
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { open: openBondModal } = useBittensorBondModal()
-  const { open: openChangeValidatorModal } = useBittensorChangeValidatorModal()
-  const { selectedAccount, selectedAccounts } = usePortfolioNavigation()
-  const positions = useBittensorStakingPositions(subnet.token.networkId)
-  const hasPosition = useMemo(
-    () =>
-      positions.some((p) => {
-        const netuidMatch = p.token.netuid === subnet.token.netuid
-        const addressMatch =
-          !selectedAccount?.address || p.balance.address === selectedAccount.address
-        return netuidMatch && addressMatch
-      }),
-    [positions, subnet.token.netuid, selectedAccount?.address]
-  )
+  const { selectedAccounts } = usePortfolioNavigation()
   const isRoot = subnet.netuid === 0
 
   // Compare last price to first price in 7d data to determine chart color
@@ -443,27 +424,6 @@ const SubnetRow: FC<{
     [openBondModal, subnet.token.networkId, subnet.netuid, selectedAccounts]
   )
 
-  // Find the first position for this subnet, scoped to the selected account if one is chosen
-  const firstPosition = useMemo(() => {
-    const subnetPositions = positions.filter((p) => p.token.netuid === subnet.token.netuid)
-    if (selectedAccount?.address)
-      return subnetPositions.find((p) => p.balance.address === selectedAccount.address)
-    return subnetPositions[0]
-  }, [positions, subnet.token.netuid, selectedAccount?.address])
-
-  const handleChangeValidatorClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation()
-      if (!firstPosition) return
-      openChangeValidatorModal({
-        tokenId: firstPosition.token.id,
-        address: firstPosition.balance.address,
-        netuid: subnet.token.netuid,
-      })
-    },
-    [openChangeValidatorModal, firstPosition, subnet.token.netuid]
-  )
-
   return (
     // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
     <div
@@ -484,7 +444,7 @@ const SubnetRow: FC<{
         }
       }}
       className={cn(
-        "grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),auto] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors",
+        "group grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),16px] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors",
         !isRoot && "cursor-pointer hover:bg-grey-800"
       )}
     >
@@ -628,40 +588,40 @@ const SubnetRow: FC<{
         )}
       </DataCell>
 
-      {/* Chart */}
+      {/* Chart / Stake+Unstake on hover (root always shows buttons) */}
       <DataCell>
-        {!loading.chart && !!subnet.chartData && (
-          <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+        {!isRoot && (
+          <div className="group-hover:hidden">
+            {!loading.chart && !!subnet.chartData && (
+              <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+            )}
+          </div>
         )}
+        <div
+          className={cn(
+            "items-center justify-center gap-2",
+            isRoot ? "flex" : "hidden group-hover:flex"
+          )}
+        >
+          <button
+            type="button"
+            onClick={handleStakeClick}
+            className="inline-flex size-[28px] items-center justify-center rounded-full text-body-secondary hover:bg-grey-700 hover:text-primary"
+          >
+            <ZapIcon className="size-[16px]" />
+          </button>
+          <button
+            type="button"
+            onClick={handleUnstakeClick}
+            className="inline-flex size-[28px] items-center justify-center rounded-full text-body-secondary hover:bg-grey-700 hover:text-primary"
+          >
+            <ZapOffIcon className="size-[16px]" />
+          </button>
+        </div>
       </DataCell>
 
-      {/* Stake + More menu */}
-      <DataCell className="w-full flex-row items-center gap-4">
-        <button
-          type="button"
-          onClick={handleStakeClick}
-          className="flex items-center gap-2 rounded-[28px] bg-primary px-4 py-3 font-light text-black text-sm hover:bg-primary/90"
-        >
-          <ZapFastIcon className="shrink-0 text-base" />
-          <span>{t("Stake")}</span>
-        </button>
-        <ContextMenu placement="bottom-end">
-          <ContextMenuTrigger
-            onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
-            className="opacity-60 hover:opacity-100"
-          >
-            <MoreVerticalIcon className="size-[16px]" />
-          </ContextMenuTrigger>
-          <ContextMenuContent>
-            <ContextMenuItem onClick={handleUnstakeClick}>{t("Unstake")}</ContextMenuItem>
-            {hasPosition && (
-              <ContextMenuItem onClick={handleChangeValidatorClick}>
-                {t("Change Validator")}
-              </ContextMenuItem>
-            )}
-          </ContextMenuContent>
-        </ContextMenu>
-      </DataCell>
+      {/* Chevron */}
+      <ChevronRightIcon className="size-[16px] opacity-60" />
     </div>
   )
 })
