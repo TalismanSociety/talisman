@@ -258,13 +258,7 @@ const getRoutes = async (
       ? (toAsset.contractAddress ?? SOLANA_NATIVE_TOKEN_ADDRESS)
       : (toAsset.contractAddress ?? zeroAddress)
 
-    // TODO: Re-enable fees for Solana routes once the "talisman" integrator has a
-    // Solana fee wallet configured on the LI.FI portal (https://portal.li.fi/).
-    // Without it the API returns HTTP 400 (code 1011) and no routes are found.
-    const isSolanaRoute = isSolanaFrom || isSolanaTo
-    const fee = isSolanaRoute
-      ? 0
-      : await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
+    const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
     const slippage = await getSwapLifiSlippageDecimal()
     if (signal.aborted) return null
     return await lifiSdk.getRoutes(
