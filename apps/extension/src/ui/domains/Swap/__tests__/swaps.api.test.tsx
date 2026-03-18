@@ -21,13 +21,13 @@ vi.mock("@ui/state/remoteConfig", () => ({
   useRemoteConfig: () => mockUseRemoteConfig(),
 }))
 
+vi.mock("@ui/state/transactions", () => ({
+  useTransactions: () => [],
+}))
+
 vi.mock("@ui/hooks/queryStoragePersister", () => ({
   createQueryStoragePersister: () => undefined,
   PERSIST_AGE_ONE_YEAR: 1000 * 60 * 60 * 24 * 365,
-}))
-
-vi.mock("../swap-services/useCoingeckoCategoryTokenIds", () => ({
-  useCoingeckoCategoryTokenIds: () => ({ data: undefined, isLoading: false }),
 }))
 
 vi.mock("../swap-modules/lifi-swap-module", () => ({

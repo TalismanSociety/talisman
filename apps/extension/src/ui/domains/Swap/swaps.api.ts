@@ -14,10 +14,9 @@ import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import {
   buildAssetRegistry,
   filterAndSortTokensByTab,
-  getCoingeckoCategoryId,
   getTokenTabs,
 } from "./swap-services/token-filtering"
-import { useCoingeckoCategoryTokenIds } from "./swap-services/useCoingeckoCategoryTokenIds"
+import { useRecentTokenIds } from "./swap-services/useRecentTokenIds"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -62,12 +61,12 @@ const withRetry = async <T>(
 export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: TFunction) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
-  const coingeckoCategoryId = getCoingeckoCategoryId(tokenTab)
   const remoteConfig = useRemoteConfig()
+  const recentTokenIds = useRecentTokenIds()
   const tokenTabs = useMemo(() => {
     const { curatedTokens = [] } = remoteConfig.swaps
-    return getTokenTabs({ t, curatedTokens })
-  }, [remoteConfig.swaps, t])
+    return getTokenTabs({ t, curatedTokens, recentTokenIds })
+  }, [remoteConfig.swaps, t, recentTokenIds])
 
   const fromAssetsQuery = useQuery({
     queryKey: ["swap-from-assets-v3", tokensCount],
@@ -136,27 +135,13 @@ export const useSwapAssets = (fromTokenId: string | null, tokenTab: string, t: T
     return filterAndSortTokensByTab(toAssetsQuery.data.tokenIds, tokenTab, tokenTabs)
   }, [toAssetsQuery.data?.tokenIds, tokenTab, tokenTabs])
 
-  const fromCategoryTokenIdsQuery = useCoingeckoCategoryTokenIds({
-    categoryId: coingeckoCategoryId,
-    tokenIds: fromAssetsQuery.data?.tokenIds,
-    tokensMap,
-  })
-  const toCategoryTokenIdsQuery = useCoingeckoCategoryTokenIds({
-    categoryId: coingeckoCategoryId,
-    tokenIds: toAssetsQuery.data?.tokenIds,
-    tokensMap,
-  })
-  const isCategoryTab = !!coingeckoCategoryId
-
   return {
-    fromAssetIds: isCategoryTab ? fromCategoryTokenIdsQuery.data : filteredFromAssetIds,
-    toAssetIds: isCategoryTab ? toCategoryTokenIdsQuery.data : filteredToAssetIds,
+    fromAssetIds: filteredFromAssetIds,
+    toAssetIds: filteredToAssetIds,
     fromSupportMap: fromAssetsQuery.data?.supportMap ?? null,
     toSupportMap: toAssetsQuery.data?.supportMap ?? null,
-    isLoadingFromAssets:
-      fromAssetsQuery.isLoading || (isCategoryTab && fromCategoryTokenIdsQuery.isLoading),
-    isLoadingToAssets:
-      toAssetsQuery.isLoading || (isCategoryTab && toCategoryTokenIdsQuery.isLoading),
+    isLoadingFromAssets: fromAssetsQuery.isLoading,
+    isLoadingToAssets: toAssetsQuery.isLoading,
   }
 }
 

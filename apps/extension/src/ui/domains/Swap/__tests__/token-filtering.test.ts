@@ -4,7 +4,6 @@ import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import {
   buildAssetRegistry,
   filterAndSortTokensByTab,
-  getCoingeckoCategoryId,
   getTokenTabs,
 } from "../swap-services/token-filtering"
 
@@ -74,13 +73,11 @@ describe("buildAssetRegistry", () => {
 // ─── getTokenTabs ───────────────────────────────────────────────────
 
 describe("getTokenTabs", () => {
-  it("returns all expected tabs", () => {
+  it("returns only 'all' tab when no curated or recent tokens", () => {
     const tabs = getTokenTabs({ t: stubT })
 
-    expect(tabs.length).toBeGreaterThanOrEqual(8)
-    expect(tabs.map((t) => t.value)).toContain("all")
-    expect(tabs.map((t) => t.value)).toContain("popular")
-    expect(tabs.map((t) => t.value)).toContain("meme-token")
+    expect(tabs).toHaveLength(1)
+    expect(tabs[0]!.value).toBe("all")
   })
 
   it("has no filter/sort on 'all' tab without curated tokens", () => {
@@ -99,13 +96,24 @@ describe("getTokenTabs", () => {
     expect(allTab.filter).toBeUndefined()
   })
 
+  it("shows popular tab when curatedTokens are provided", () => {
+    const tabs = getTokenTabs({ t: stubT, curatedTokens: ["tok-1"] })
+
+    expect(tabs.map((t) => t.value)).toContain("popular")
+  })
+
+  it("hides popular tab when curatedTokens is empty", () => {
+    const tabs = getTokenTabs({ t: stubT, curatedTokens: [] })
+
+    expect(tabs.map((t) => t.value)).not.toContain("popular")
+  })
+
   it("popular tab filters by curated tokenIds", () => {
     const curatedTokens = ["tok-1", "tok-2"]
     const tabs = getTokenTabs({ t: stubT, curatedTokens })
     const popularTab = tabs.find((tb) => tb.value === "popular")!
 
     expect(popularTab.filter).toBeDefined()
-
     expect(popularTab.filter!("tok-1")).toBe(true)
     expect(popularTab.filter!("tok-99")).toBe(false)
   })
@@ -119,20 +127,65 @@ describe("getTokenTabs", () => {
     expect(popularTab.sort!("tok-2", "tok-1")).toBeLessThan(0)
   })
 
-  it("coingecko tabs are flagged", () => {
-    const tabs = getTokenTabs({ t: stubT })
-    const coingeckoTabs = tabs.filter((tb) => tb.coingecko)
+  it("popular tab label has no emoji", () => {
+    const tabs = getTokenTabs({ t: stubT, curatedTokens: ["tok-1"] })
+    const popularTab = tabs.find((tb) => tb.value === "popular")!
 
-    expect(coingeckoTabs.length).toBeGreaterThanOrEqual(6)
-    for (const tab of coingeckoTabs) {
-      expect(tab.coingecko).toBe(true)
-    }
+    expect(popularTab.label).toBe("Popular")
+    expect(popularTab.label).not.toContain("🔥")
+  })
+
+  it("shows recent tab when recentTokenIds are provided", () => {
+    const tabs = getTokenTabs({ t: stubT, recentTokenIds: ["tok-1"] })
+
+    expect(tabs.map((t) => t.value)).toContain("recent")
+  })
+
+  it("hides recent tab when recentTokenIds is empty", () => {
+    const tabs = getTokenTabs({ t: stubT, recentTokenIds: [] })
+
+    expect(tabs.map((t) => t.value)).not.toContain("recent")
+  })
+
+  it("recent tab filters to only recent tokens", () => {
+    const recentTokenIds = ["tok-3", "tok-1"]
+    const tabs = getTokenTabs({ t: stubT, recentTokenIds })
+    const recentTab = tabs.find((tb) => tb.value === "recent")!
+
+    expect(recentTab.filter!("tok-3")).toBe(true)
+    expect(recentTab.filter!("tok-1")).toBe(true)
+    expect(recentTab.filter!("tok-99")).toBe(false)
+  })
+
+  it("recent tab sorts by most recently used first", () => {
+    const recentTokenIds = ["tok-3", "tok-1", "tok-2"]
+    const tabs = getTokenTabs({ t: stubT, recentTokenIds })
+    const recentTab = tabs.find((tb) => tb.value === "recent")!
+
+    // tok-3 (index 0) should come before tok-1 (index 1)
+    expect(recentTab.sort!("tok-3", "tok-1")).toBeLessThan(0)
+    // tok-2 (index 2) should come after tok-1 (index 1)
+    expect(recentTab.sort!("tok-2", "tok-1")).toBeGreaterThan(0)
+  })
+
+  it("tab order is All → Recent → Popular", () => {
+    const tabs = getTokenTabs({
+      t: stubT,
+      curatedTokens: ["tok-1"],
+      recentTokenIds: ["tok-2"],
+    })
+
+    expect(tabs.map((t) => t.value)).toEqual(["all", "recent", "popular"])
   })
 })
 
 describe("tab filtering helpers", () => {
   const tokenIds = ["tok-1", "tok-3", "tok-2"]
-  const tabs = getTokenTabs({ t: stubT, curatedTokens: ["tok-2", "tok-1"] })
+  const tabs = getTokenTabs({
+    t: stubT,
+    curatedTokens: ["tok-2", "tok-1"],
+    recentTokenIds: ["tok-3", "tok-1"],
+  })
 
   it("applies popular tab filter and sort", () => {
     const filtered = filterAndSortTokensByTab(tokenIds, "popular", tabs)
@@ -144,8 +197,8 @@ describe("tab filtering helpers", () => {
     expect(filtered).toEqual(["tok-2", "tok-1", "tok-3"])
   })
 
-  it("returns coingecko category id only for coingecko tabs", () => {
-    expect(getCoingeckoCategoryId("meme-token")).toBe("meme-token")
-    expect(getCoingeckoCategoryId("all")).toBeUndefined()
+  it("applies recent tab filter and sort", () => {
+    const filtered = filterAndSortTokensByTab(tokenIds, "recent", tabs)
+    expect(filtered).toEqual(["tok-3", "tok-1"])
   })
 })

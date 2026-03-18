@@ -15,6 +15,7 @@ import { type FC, memo, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import { getTokenTabs } from "../swap-services/token-filtering"
+import { useRecentTokenIds } from "../swap-services/useRecentTokenIds"
 
 const PICKER_CONTAINER_ID = "swap-modal-token-picker"
 
@@ -202,13 +203,28 @@ const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ classNa
 
 const useTokenFilterOptions = () => {
   const { t } = useTranslation()
+  const remoteConfig = useRemoteConfig()
+  const recentTokenIds = useRecentTokenIds()
 
-  const tokenFilterOptions = getTokenTabs({ t }).map((tab): [string, string] => [
-    tab.value,
-    tab.label,
-  ])
+  const { curatedTokens = [] } = remoteConfig.swaps
+  const tabs = useMemo(
+    () => getTokenTabs({ t, curatedTokens, recentTokenIds }),
+    [t, curatedTokens, recentTokenIds]
+  )
+
+  const tokenFilterOptions = useMemo(
+    () => tabs.map((tab): [string, string] => [tab.value, tab.label]),
+    [tabs]
+  )
 
   const { tokenTab: defaultTokenFilterOption, setTokenTab: onSelectTokenFilterOption } = useSwap()
+
+  // Reset to "all" if the currently selected tab is no longer visible
+  useEffect(() => {
+    if (!tabs.some((tab) => tab.value === defaultTokenFilterOption)) {
+      onSelectTokenFilterOption("all")
+    }
+  }, [tabs, defaultTokenFilterOption, onSelectTokenFilterOption])
 
   return { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption }
 }

@@ -3,34 +3,11 @@ import type { TFunction } from "i18next"
 
 import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 
-// ─── Constants ──────────────────────────────────────────────────────
-
-// const COINGECKO_CATEGORY_TABS = [
-//   { value: "meme-token", label: "Memes" },
-//   { value: "liquid-staking-tokens", label: "LSTs" },
-//   { value: "artificial-intelligence", label: "AI" },
-//   { value: "depin", label: "DePIN" },
-//   { value: "decentralized-finance-defi", label: "Defi" },
-//   { value: "layer-2", label: "L2s" },
-// ] as const
-
-const COINGECKO_CATEGORY_TAB_VALUES = [
-  "meme-token",
-  "liquid-staking-tokens",
-  "artificial-intelligence",
-  "depin",
-  "decentralized-finance-defi",
-  "layer-2",
-] as const
-
-type CoingeckoCategoryTabValue = (typeof COINGECKO_CATEGORY_TAB_VALUES)[number]
-
 // ─── Token tab definitions ──────────────────────────────────────────
 
 export type TokenTab = {
   value: string
   label: string
-  coingecko?: boolean
   filter?: (tokenId: string) => boolean
   sort?: (a: string, b: string) => number
 }
@@ -38,20 +15,13 @@ export type TokenTab = {
 export const getTokenTabs = ({
   t,
   curatedTokens,
+  recentTokenIds,
 }: {
   t: TFunction
   curatedTokens?: string[]
+  recentTokenIds?: string[]
 }): TokenTab[] => {
-  const COINGECKO_CATEGORY_TABS: Record<CoingeckoCategoryTabValue, string> = {
-    "meme-token": t("Memes"),
-    "liquid-staking-tokens": t("LSTs"),
-    "artificial-intelligence": t("AI"),
-    "depin": t("DePIN"),
-    "decentralized-finance-defi": t("Defi"),
-    "layer-2": t("L2s"),
-  }
-
-  return [
+  const tabs: TokenTab[] = [
     {
       value: "all",
       label: t("All tokens"),
@@ -66,20 +36,30 @@ export const getTokenTabs = ({
           }
         : undefined,
     },
-    {
-      value: "popular",
-      label: t("🔥 Popular"),
-      filter: curatedTokens ? (tokenId) => curatedTokens.includes(tokenId) ?? false : undefined,
-      sort: curatedTokens
-        ? (a, b) => curatedTokens.indexOf(a) - curatedTokens.indexOf(b)
-        : undefined,
-    },
-    ...Object.entries(COINGECKO_CATEGORY_TABS).map(([value, label]) => ({
-      value,
-      label,
-      coingecko: true,
-    })),
   ]
+
+  // Recent tab: hidden when no transaction history
+  if (recentTokenIds && recentTokenIds.length > 0) {
+    const recentSet = new Set(recentTokenIds)
+    tabs.push({
+      value: "recent",
+      label: t("Recent"),
+      filter: (tokenId) => recentSet.has(tokenId),
+      sort: (a, b) => recentTokenIds.indexOf(a) - recentTokenIds.indexOf(b),
+    })
+  }
+
+  // Popular tab: hidden when curatedTokens is empty
+  if (curatedTokens && curatedTokens.length > 0) {
+    tabs.push({
+      value: "popular",
+      label: t("Popular"),
+      filter: (tokenId) => curatedTokens.includes(tokenId),
+      sort: (a, b) => curatedTokens.indexOf(a) - curatedTokens.indexOf(b),
+    })
+  }
+
+  return tabs
 }
 
 // ─── Asset registry (replaces enrichAssets) ─────────────────────────
@@ -120,12 +100,6 @@ export function buildAssetRegistry(
   })
 
   return { tokenIds, supportMap }
-}
-
-export const getCoingeckoCategoryId = (tokenTab: string): string | undefined => {
-  if (!COINGECKO_CATEGORY_TAB_VALUES.includes(tokenTab as CoingeckoCategoryTabValue))
-    return undefined
-  return tokenTab
 }
 
 export const filterAndSortTokensByTab = (

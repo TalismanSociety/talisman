@@ -67,6 +67,15 @@ export const OptionSwitch = <O extends string>({
   const [selected, setSelected] = useState<O | undefined>(defaultOption)
   const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties | null>(null)
 
+  // Sync selected state when options change dynamically (e.g., tabs hidden/shown)
+  useEffect(() => {
+    if (selected && !options.some(([o]) => o === selected)) {
+      const fallback = defaultOption ?? options[0]?.[0]
+      setSelected(fallback)
+      if (fallback && onChange) onChange(fallback)
+    }
+  }, [options, selected, defaultOption, onChange])
+
   const handleChange = useCallback(
     (option: O, buttonRef: RefObject<HTMLButtonElement>) => {
       setSelected(option)
