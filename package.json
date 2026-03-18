@@ -55,13 +55,13 @@
     "knip:production": "knip --production"
   },
   "dependencies": {
-    "polkadot-api": "1.13.1"
+    "polkadot-api": "1.23.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
     "@changesets/cli": "^2.27.9",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@biomejs/biome": "^2.0.0",
     "@noble/hashes": "1.8.0",
     "@playwright/test": "^1.51.1",
     "@polkadot/util-crypto": "13.5.3",
@@ -89,10 +89,6 @@
       ]
     },
     "overrides": {
-      "@polkadot-api/merkleize-metadata": "1.1.18",
-      "@polkadot-api/metadata-builders": "0.12.2",
-      "@polkadot-api/substrate-bindings": "0.14.0",
-      "@polkadot-api/utils": "0.2.0",
       "@polkadot/api": "16.1.2",
       "@polkadot/api-augment": "16.1.2",
       "@polkadot/api-base": "16.1.2",
