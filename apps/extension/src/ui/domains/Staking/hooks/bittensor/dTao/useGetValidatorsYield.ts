@@ -4,12 +4,12 @@ import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 
 import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
 
-export function useGetValidatorsYield({ netuid }: { netuid: number }) {
+export function useGetValidatorsYield({ netuid }: { netuid: number | null | undefined }) {
   return useQuery({
     queryKey: ["taoData", "validatorsYield", netuid] as const,
     queryFn: async ({ signal }) => {
       try {
-        return (await taoDataApi.subnets.listSubnetValidators(String(netuid), { signal })).data
+        return (await taoDataApi.subnets.listSubnetValidators(String(netuid!), { signal })).data
       } catch (error) {
         throw toTaoDataApiError(error, "Failed to load subnet validators")
       }

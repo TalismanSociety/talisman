@@ -141,7 +141,7 @@ const useBittensorBondWizardProvider = () => {
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
   // subnet validators — React Query dedupes with the same call in useCombinedBittensorValidatorsData
-  const { data: subnetValidators } = useGetValidatorsYield({ netuid: netuid || 0 })
+  const { data: subnetValidators } = useGetValidatorsYield({ netuid })
   const activeHotkeys = useMemo(
     () => new Set(subnetValidators?.map((v) => v.hotkey.toLowerCase())),
     [subnetValidators]
@@ -258,10 +258,16 @@ const useBittensorBondWizardProvider = () => {
 
   // resolve and apply the default validator from config once subnet validator data loads
   useEffect(() => {
-    if (!activeHotkeys.size || !isHotkeyAutoSelected.current || stakeDirection !== "bond") return
+    if (
+      typeof netuid !== "number" ||
+      !activeHotkeys.size ||
+      !isHotkeyAutoSelected.current ||
+      stakeDirection !== "bond"
+    )
+      return
 
     // subnet-specific override takes priority
-    if (typeof netuid === "number" && defaultValidatorsBySubnet[netuid]) {
+    if (defaultValidatorsBySubnet[netuid]) {
       const subnetDefault = defaultValidatorsBySubnet[netuid]
       if (activeHotkeys.has(subnetDefault.toLowerCase())) {
         setWizardState((prev) =>
