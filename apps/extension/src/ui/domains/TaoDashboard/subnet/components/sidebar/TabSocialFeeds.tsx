@@ -15,6 +15,7 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
+import { type Tweet, useSetChartOverlay } from "../chart-overlay/ChartOverlayContext"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 export const TabSocialFeeds: FC<{ netuid: number }> = ({ netuid }) => {
@@ -123,9 +124,6 @@ const SentimentSummaryBar: FC<{ sentiment: SubnetSentimentData }> = ({ sentiment
   )
 }
 
-type TweetsData = ReturnType<typeof useSubnetTweets>["data"]
-type Tweet = NonNullable<TweetsData>[number]
-
 const TweetsList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
   const { data: tweets, isLoading } = useSubnetTweets(netuid, period)
@@ -158,6 +156,7 @@ const TweetsList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period
 
 const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
   const { t } = useTranslation()
+  const setHoveredItem = useSetChartOverlay()
 
   return (
     <a
@@ -166,6 +165,14 @@ const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
       target="_blank"
       rel="noopener noreferrer"
       className="group flex flex-col gap-6 rounded p-6 transition-colors hover:bg-grey-800"
+      onMouseEnter={() =>
+        setHoveredItem({
+          type: "tweet",
+          timestamp: Math.floor(new Date(tweet.createdAt).getTime() / 1000),
+          tweet,
+        })
+      }
+      onMouseLeave={() => setHoveredItem(null)}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">

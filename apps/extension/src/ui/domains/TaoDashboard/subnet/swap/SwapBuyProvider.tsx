@@ -46,6 +46,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     // preselect account straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
   )
+  const [editingField, setEditingField] = useState<"input" | "output">("input")
 
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
@@ -106,6 +107,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   }, [balanceTokenIn, existentialDeposit])
 
   const onValueChange = useCallback((value: bigint | null) => {
+    setEditingField("input")
     setState((s) => ({ ...s, valueIn: value }))
   }, [])
 
@@ -118,6 +120,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   }, [])
 
   const resetValueIn = useCallback(() => {
+    setEditingField("input")
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
@@ -167,6 +170,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     slippage,
     talismanFee,
     swapPrice,
+    alphaPrice,
   } = useBittensorStakingPayload({
     netuid,
     amountIn: valueIn,
@@ -175,6 +179,23 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     address,
     networkId: BITTENSOR_NETWORK_ID,
   })
+
+  // When user edits the output field, estimate the required input using the reference alpha price
+  const onValueOutChange = useCallback(
+    (value: bigint | null) => {
+      setEditingField("output")
+      if (value === null) {
+        setState((s) => ({ ...s, valueIn: null }))
+        return
+      }
+      const price = alphaPrice
+      if (!price || price === 0n) return
+      // alphaPrice = TAO * 10^9 / Alpha, so TAO = Alpha * alphaPrice / 10^9
+      const estimatedInput = (value * price) / 1_000_000_000n
+      setState((s) => ({ ...s, valueIn: estimatedInput }))
+    },
+    [alphaPrice]
+  )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
@@ -254,6 +275,8 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     onAccountChange,
     onHotkeyChange,
     onValueChange,
+    onValueOutChange,
+    editingField,
   }
 }
 

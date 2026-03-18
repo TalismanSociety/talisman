@@ -1,7 +1,9 @@
-import { cn, planckToTokens } from "@talismn/util"
+import { ChevronDownIcon } from "@talismn/icons"
+import { cn, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useMemo } from "react"
+import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useTaoDashboardSubnetPickerModal } from "../TaoDashboardSubnetPickerModal"
 import { useSwapSell } from "./SwapSellProvider"
 
 export const SwapSellOutput = () => (
@@ -18,41 +20,81 @@ export const SwapSellOutput = () => (
 )
 
 const ValueOutEstimate = () => {
-  const { tokenOut, valueOut, isLoading, valueIn } = useSwapSell()
+  const { tokenOut, valueOut, isLoading, valueIn, editingField, onValueOutChange } = useSwapSell()
+  const { t } = useTranslation()
 
-  const displayValue = useMemo(() => {
-    if (!valueIn) return "0"
+  const formattedValueOut = useMemo(() => {
+    if (!valueIn && editingField !== "output") return ""
     return tokenOut && typeof valueOut === "bigint"
       ? planckToTokens(String(valueOut), tokenOut.decimals)
-      : "0"
-  }, [tokenOut, valueOut, valueIn])
+      : ""
+  }, [tokenOut, valueOut, valueIn, editingField])
+
+  const [inputValue, setInputValue] = useState(formattedValueOut)
+
+  useEffect(() => {
+    if (editingField !== "output") {
+      setInputValue(formattedValueOut)
+    }
+  }, [formattedValueOut, editingField])
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      const nextValue = e.target.value
+      setInputValue(nextValue)
+
+      if (!tokenOut || !nextValue.trim()) return onValueOutChange(null)
+
+      try {
+        const plancks = tokensToPlanck(nextValue, tokenOut.decimals)
+        onValueOutChange(BigInt(plancks))
+      } catch {
+        onValueOutChange(null)
+      }
+    },
+    [onValueOutChange, tokenOut]
+  )
 
   return (
-    <span
+    <input
+      type="text"
+      inputMode="decimal"
+      placeholder={t("Enter Amount")}
+      step="any"
+      value={inputValue}
       className={cn(
-        "text-body-disabled",
-        !!valueIn && isLoading && "animate-pulse rounded-xs bg-body-disabled",
-        !!valueIn && !isLoading && "text-white"
+        "inline-block w-full text-ellipsis bg-transparent text-[2rem] text-body-disabled placeholder:text-body-disabled",
+        editingField !== "output" &&
+          !!valueIn &&
+          isLoading &&
+          "animate-pulse rounded-xs bg-body-disabled",
+        editingField !== "output" && !!valueIn && !isLoading && "text-white",
+        editingField === "output" && "text-white"
       )}
-    >
-      {displayValue} {tokenOut?.symbol}
-    </span>
+      onChange={handleChange}
+    />
   )
 }
 
 const TokenOutDisplay = () => {
-  const { tokenOut } = useSwapSell()
+  const { tokenOut, netuid } = useSwapSell()
   const { t } = useTranslation()
+  const { open } = useTaoDashboardSubnetPickerModal()
+
+  const handleClick = useCallback(() => {
+    open({ netuid })
+  }, [open, netuid])
 
   if (!tokenOut) return null
 
   return (
-    <div className="flex items-center gap-4">
+    <button type="button" onClick={handleClick} className="flex items-center gap-4">
       <TokenLogo className="text-xl" tokenId={tokenOut.id} />
       <div className="flex flex-col items-start gap-1">
         <div className="text-base text-body">{tokenOut.symbol ?? t("TAO")}</div>
         <div className="text-body-secondary text-xs">{t("Native")}</div>
       </div>
-    </div>
+      <ChevronDownIcon className="size-[16px]" />
+    </button>
   )
 }

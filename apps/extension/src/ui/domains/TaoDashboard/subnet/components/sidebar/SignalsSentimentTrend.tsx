@@ -76,7 +76,7 @@ const SentimentTrend: FC<
           )}
           className={cn(flowChangeColor)}
         >
-          {flowChangeScore}
+          {flowChangeScore > 0 ? `+${flowChangeScore}` : flowChangeScore}
         </SentimentField>
         <SentimentField
           label={t("Volume Change")}
@@ -85,7 +85,7 @@ const SentimentTrend: FC<
           )}
           className={cn(volChangeColor)}
         >
-          {volChangeScore}
+          {volChangeScore > 0 ? `+${volChangeScore}` : volChangeScore}
         </SentimentField>
         <SentimentField
           label={t("Sentiment Change")}
@@ -94,7 +94,7 @@ const SentimentTrend: FC<
           )}
           className={cn(sentChangeColor)}
         >
-          {sentChangeScore ?? t("N/A")}
+          {sentChangeScore > 0 ? `+${sentChangeScore}` : (sentChangeScore ?? t("N/A"))}
         </SentimentField>
       </div>
     </div>

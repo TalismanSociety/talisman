@@ -22,7 +22,7 @@ export const DashboardLayout: FC<{
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
       <div className={cn("relative mx-auto w-full min-w-[90rem] max-w-[144rem]", className)}>
-        <div className={cn("flex w-full overflow-x-hidden", RESPONSIVE_FLEX_SPACING)}>
+        <div className={cn("flex w-full overflow-x-clip", RESPONSIVE_FLEX_SPACING)}>
           {/* Sidebar */}
           {sidebar !== "none" && (
             <div className="w-[29.6rem] shrink-0 pb-20">
@@ -37,7 +37,7 @@ export const DashboardLayout: FC<{
             </div>
           )}
           {/* Main area */}
-          <div className="grow overflow-hidden pb-20">
+          <div className="grow overflow-clip pb-20">
             <div className="flex w-full flex-col items-center">
               <div className="flex h-48 w-full shrink-0 items-center justify-center">
                 <HorizontalNav />

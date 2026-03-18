@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { SettingsIcon } from "@talismn/icons"
+import { ChevronDownIcon, SettingsIcon } from "@talismn/icons"
 import { cn, tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -175,6 +175,7 @@ const TokenPickerButton: FC<{
                 t("Subnet {{netuid}}", { netuid: position.token.netuid })}
             </div>
           </div>
+          <ChevronDownIcon className="size-[16px] shrink-0" />
         </div>
       ) : (
         <div className="text-body-secondary text-sm">{t("Select Position")}</div>

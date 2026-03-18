@@ -31,7 +31,6 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     return allTokens.filter(
       (token): token is SubDTaoToken =>
         token.type === "substrate-dtao" &&
-        !!token.netuid && // ignore root
         !token.hotkey && // ignore dynamic tokens
         token.networkId === BITTENSOR_NETWORK_ID // ignore testnet
     )

@@ -68,6 +68,23 @@ export const TaoDashboardHeader = () => {
     return { marketCap, marketCapChange24h, totalSubnetVolume, taoUsd, priceChange24h }
   }, [taoPrice, leaderboardData])
 
+  // Total staked across all subnets (dtao balances), converted to TAO equivalent
+  const totalStakedPlanck = useMemo(() => {
+    const taoUsd = taoPrice?.price ? parseFloat(taoPrice.price) : 0
+    if (taoUsd <= 0) return 0n
+
+    const stakedUsd = ownedBalances.each
+      .filter(
+        (b) =>
+          b.token?.type === "substrate-dtao" &&
+          b.token.networkId === BITTENSOR_NETWORK_ID &&
+          b.free.planck > 0n
+      )
+      .reduce((sum, b) => sum + (b.free.fiat("usd") ?? 0), 0)
+
+    return BigInt(Math.round((stakedUsd / taoUsd) * 1e9))
+  }, [ownedBalances, taoPrice])
+
   return (
     <div className="flex h-auto min-h-64 items-center justify-between rounded-[0.75rem] border border-grey-800 px-16 text-left text-base text-body-secondary">
       <StatItem
@@ -85,7 +102,24 @@ export const TaoDashboardHeader = () => {
             {" τ"}
           </span>
         }
-        className={cn("w-[17rem]", isBalanceLoading && "animate-pulse")}
+        className={cn("w-[15rem]", isBalanceLoading && "animate-pulse")}
+      />
+      <StatItem
+        label={t("Total Staked")}
+        value={
+          <span>
+            <TokensAndFiat
+              tokenId={tao?.id}
+              planck={totalStakedPlanck}
+              noFiat
+              noCountUp
+              noSymbol
+              isBalance
+            />
+            {" τ"}
+          </span>
+        }
+        className={cn("w-[15rem]", (isBalanceLoading || isTaoPriceLoading) && "animate-pulse")}
       />
 
       <div className="h-44 w-px shrink-0 bg-grey-800" />
@@ -96,13 +130,13 @@ export const TaoDashboardHeader = () => {
         change={stats.marketCapChange24h ?? undefined}
         isLoading={isStatsLoading}
         hasChange
-        className="w-[17rem]"
+        className="w-[15rem]"
       />
       <StatItem
         label={t("24h Trading Volume")}
         value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
         isLoading={isStatsLoading}
-        className="w-[17rem]"
+        className="w-[15rem]"
       />
       <StatItem
         label={t("TAO Price")}
@@ -110,7 +144,7 @@ export const TaoDashboardHeader = () => {
         change={stats.priceChange24h ?? undefined}
         isLoading={isStatsLoading}
         hasChange
-        className="w-[17rem]"
+        className="w-[15rem]"
       />
     </div>
   )
