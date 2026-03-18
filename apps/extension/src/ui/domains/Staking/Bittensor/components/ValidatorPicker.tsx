@@ -104,11 +104,8 @@ export const ValidatorRows: FC<{
       >
         {featuredBoundary !== null && (
           <div
-            className="absolute left-1/2 h-px -translate-x-1/2 rounded-full bg-white/10"
-            style={{
-              top: `${featuredBoundary * 58}px`,
-              width: "calc(100% - 48px)",
-            }}
+            className="absolute right-12 left-8 h-[2px] rounded-full bg-white/10"
+            style={{ top: `${featuredBoundary * 58}px` }}
           />
         )}
         {virtualizer.getVirtualItems().map((item) => {
@@ -204,8 +201,8 @@ const ValidatorRow: FC<{
                 <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
               )}
               {option.isFeatured && (
-                <EarnTypeBadge className="mx-0 inline-flex shrink-0 items-center gap-2 rounded border-none bg-primary/10 px-4 py-2 font-light text-primary text-xs normal-case">
-                  <TalismanHandIcon className="size-8" />
+                <EarnTypeBadge className="mx-0 inline-flex h-[18px] shrink-0 items-center gap-[4px] rounded-[12px] border-none bg-primary/10 px-[8px] font-light text-[10px] text-primary normal-case">
+                  <TalismanHandIcon className="size-[12px]" />
                   {t("Featured")}
                 </EarnTypeBadge>
               )}

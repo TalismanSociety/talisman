@@ -334,14 +334,18 @@ const SubnetRow: FC<{
                     noCountUp
                     noTooltip
                   />
-                  <div className="inline-block size-2 rounded-full bg-body-disabled" />{" "}
-                  <TokensAndFiat
-                    tokenId={tokenAlpha.id}
-                    planck={String(option.total_alpha)}
-                    noFiat
-                    noCountUp
-                    noTooltip
-                  />
+                  {!isRoot && (
+                    <>
+                      <div className="inline-block size-2 rounded-full bg-body-disabled" />
+                      <TokensAndFiat
+                        tokenId={tokenAlpha.id}
+                        planck={String(option.total_alpha)}
+                        noFiat
+                        noCountUp
+                        noTooltip
+                      />
+                    </>
+                  )}
                 </>
               )}
             </div>
