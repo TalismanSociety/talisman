@@ -97,11 +97,9 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
-        if (!isUserRejectionError(err)) {
-          log.error("Failed to submit", { payload, err })
-          // biome-ignore lint/suspicious/noExplicitAny: legacy
-          setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
-        }
+        log.error("Failed to submit", { payload, err })
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
+        setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
       }
     },
     [onSubmitted, sapi, lockedInputs]
@@ -156,11 +154,9 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
-        if (!isUserRejectionError(err)) {
-          log.error("Failed to submit", { payload, err })
-          // biome-ignore lint/suspicious/noExplicitAny: legacy
-          setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
-        }
+        log.error("Failed to submit", { payload, err })
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
+        setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
       }
     },
     [lockedInputs, onSubmitted, sapi]

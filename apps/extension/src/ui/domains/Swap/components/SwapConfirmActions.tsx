@@ -96,7 +96,12 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const onApprovalSubmitted = useCallback(
     async (txId: string) => {
-      if (!publicClient) return
+      if (!publicClient) {
+        // biome-ignore lint/suspicious/noConsole: intentional warning for debugging null publicClient
+        console.warn("publicClient unavailable for approval receipt polling, skipping wait")
+        incrementApprovalCounter()
+        return
+      }
 
       setIsApproving(true)
       try {
@@ -429,7 +434,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
               className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
             >
               <EditIcon />
-              <div>{lifiSlippagePercent.toFixed(2)}%</div>
+              <div className={lifiSlippagePercent === 0 ? "text-alert-warn" : undefined}>
+                {lifiSlippagePercent.toFixed(2)}%
+              </div>
             </button>
           </div>
         ) : null}
