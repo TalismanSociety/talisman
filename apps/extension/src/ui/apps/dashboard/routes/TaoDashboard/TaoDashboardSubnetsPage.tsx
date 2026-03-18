@@ -1,5 +1,7 @@
+import { cn } from "@talismn/util"
 import { SearchInput } from "@ui/components/SearchInput"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
+import { useSubnetLeaderboard, useTaoPrice } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TaoDashboardPeriodTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { TaoDashboardHeader } from "@ui/domains/TaoDashboard/subnets/TaoDashboardHeader"
@@ -7,13 +9,23 @@ import {
   TaoDashboardSubnetsTable,
   TaoDashboardSubnetsTableHeader,
 } from "@ui/domains/TaoDashboard/subnets/TaoDashboardSubnetsTable"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export const TaoDashboardSubnetsPage = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const [period, setPeriod] = useState<TimePeriod>("1w")
+
+  const { isRefetching: isTaoPriceRefetching, isError: isTaoPriceError } = useTaoPrice()
+  const { isRefetching: isLeaderboardRefetching, isError: isLeaderboardError } =
+    useSubnetLeaderboard("1d")
+
+  const dataStatus = useMemo(() => {
+    if (isTaoPriceError || isLeaderboardError) return "error"
+    if (isTaoPriceRefetching || isLeaderboardRefetching) return "refetching"
+    return "live"
+  }, [isTaoPriceError, isLeaderboardError, isTaoPriceRefetching, isLeaderboardRefetching])
 
   return (
     <div className="flex w-full min-w-[45rem] flex-col">
@@ -32,7 +44,14 @@ export const TaoDashboardSubnetsPage = () => {
           />
           <div className="flex shrink-0 items-center gap-3">
             <div className="flex items-center gap-2 text-body-secondary text-sm">
-              <div className="size-[6px] rounded-full bg-green" />
+              <div
+                className={cn(
+                  "size-[6px] rounded-full",
+                  dataStatus === "live" && "bg-green",
+                  dataStatus === "refetching" && "animate-pulse bg-amber-400",
+                  dataStatus === "error" && "bg-red-500"
+                )}
+              />
               <span>{t("Live")}</span>
             </div>
             <TaoDashboardPeriodTabs

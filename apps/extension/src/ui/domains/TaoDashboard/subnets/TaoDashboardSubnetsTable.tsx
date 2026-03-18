@@ -39,6 +39,12 @@ const DEFAULT_SORT_SETTING: SortSetting = { key: "netuid", order: "asc" }
 const sortSetting$ = new BehaviorSubject<SortSetting>(DEFAULT_SORT_SETTING)
 const [useSortSetting] = bind(sortSetting$)
 
+const useSetSortSetting = () =>
+  useCallback((updater: SortSetting | ((prev: SortSetting) => SortSetting)) => {
+    const next = typeof updater === "function" ? updater(sortSetting$.getValue()) : updater
+    sortSetting$.next(next)
+  }, [])
+
 // Format number with appropriate precision
 const formatNumber = (num: number, decimals = 2) => formatCompactNumber(num, decimals)
 
@@ -124,13 +130,7 @@ const PriceChange: FC<{ change: number | undefined }> = ({ change }) => {
 
 export const TaoDashboardSubnetsTableHeader: FC = () => {
   const sortSetting = useSortSetting()
-  const setSortSetting = useCallback(
-    (updater: SortSetting | ((prev: SortSetting) => SortSetting)) => {
-      const next = typeof updater === "function" ? updater(sortSetting$.getValue()) : updater
-      sortSetting$.next(next)
-    },
-    []
-  )
+  const setSortSetting = useSetSortSetting()
 
   return <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
 }
@@ -142,13 +142,7 @@ export const TaoDashboardSubnetsTable: FC<{
 }> = ({ search = "", period, hideHeader = false }) => {
   const { subnets, isLoading, loading, errors } = useTaoDashboardSubnets(period)
   const sortSetting = useSortSetting()
-  const setSortSetting = useCallback(
-    (updater: SortSetting | ((prev: SortSetting) => SortSetting)) => {
-      const next = typeof updater === "function" ? updater(sortSetting$.getValue()) : updater
-      sortSetting$.next(next)
-    },
-    []
-  )
+  const setSortSetting = useSetSortSetting()
 
   const filteredSubnets = useMemo(() => {
     const trimmedSearch = search.trim().toLowerCase()
@@ -350,7 +344,7 @@ const HeaderRow: FC<{
         {t("Em.")}
       </HeaderCell>
       <HeaderCell>{t("7d Price")}</HeaderCell>
-      <div />
+      <HeaderCell>{/* Chevron column */}</HeaderCell>
     </div>
   )
 }
@@ -385,6 +379,7 @@ const SubnetRow: FC<{
   const navigate = useNavigate()
   const { open: openBondModal } = useBittensorBondModal()
   const { selectedAccounts } = usePortfolioNavigation()
+  const selectedAddress = selectedAccounts[0]?.address
   const isRoot = subnet.netuid === 0
 
   // Compare last price to first price in 7d data to determine chart color
@@ -405,10 +400,10 @@ const SubnetRow: FC<{
         stakeDirection: "bond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
-        address: selectedAccounts[0]?.address,
+        address: selectedAddress,
       })
     },
-    [openBondModal, subnet.token.networkId, subnet.netuid, selectedAccounts]
+    [openBondModal, subnet.token.networkId, subnet.netuid, selectedAddress]
   )
 
   const handleUnstakeClick = useCallback(
@@ -418,10 +413,10 @@ const SubnetRow: FC<{
         stakeDirection: "unbond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
-        address: selectedAccounts[0]?.address,
+        address: selectedAddress,
       })
     },
-    [openBondModal, subnet.token.networkId, subnet.netuid, selectedAccounts]
+    [openBondModal, subnet.token.networkId, subnet.netuid, selectedAddress]
   )
 
   return (
@@ -605,6 +600,7 @@ const SubnetRow: FC<{
         >
           <button
             type="button"
+            aria-label={t("Stake")}
             onClick={handleStakeClick}
             className="inline-flex size-[28px] items-center justify-center rounded-full text-body-secondary hover:bg-grey-700 hover:text-primary"
           >
@@ -612,6 +608,7 @@ const SubnetRow: FC<{
           </button>
           <button
             type="button"
+            aria-label={t("Unstake")}
             onClick={handleUnstakeClick}
             className="inline-flex size-[28px] items-center justify-center rounded-full text-body-secondary hover:bg-grey-700 hover:text-primary"
           >
@@ -621,7 +618,9 @@ const SubnetRow: FC<{
       </DataCell>
 
       {/* Chevron */}
-      <ChevronRightIcon className="size-[16px] opacity-60" />
+      <DataCell>
+        <ChevronRightIcon className="size-[16px] opacity-60" />
+      </DataCell>
     </div>
   )
 })

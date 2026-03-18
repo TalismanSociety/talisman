@@ -17,13 +17,31 @@ export const TaoDashboardHeader = () => {
 
   const tao = useToken(subNativeTokenId(BITTENSOR_NETWORK_ID))
   const ownedBalances = useBalances("owned")
-  const { data: taoPrice, isLoading: isTaoPriceLoading } = useTaoPrice()
-  const { data: leaderboardData, isLoading: isLeaderboardLoading } = useSubnetLeaderboard("1d")
+  const {
+    data: taoPrice,
+    isLoading: isTaoPriceLoading,
+    isRefetching: isTaoPriceRefetching,
+  } = useTaoPrice()
+  const {
+    data: leaderboardData,
+    isLoading: isLeaderboardLoading,
+    isRefetching: isLeaderboardRefetching,
+  } = useSubnetLeaderboard("1d")
 
   const taoBalances = useMemo(() => {
     if (!tao) return new Balances([])
     return ownedBalances.find({ tokenId: tao.id })
   }, [ownedBalances, tao])
+
+  // Pre-filter to only dTAO balances on Bittensor so that totalStakedPlanck
+  // does not recalculate when unrelated balances change.
+  const dtaoBalances = useMemo(
+    () =>
+      ownedBalances.find(
+        (b) => b.token?.type === "substrate-dtao" && b.token.networkId === BITTENSOR_NETWORK_ID
+      ),
+    [ownedBalances]
+  )
 
   const isInitializing = useIsBalanceInitializing()
 
@@ -32,6 +50,7 @@ export const TaoDashboardHeader = () => {
   }, [isInitializing, taoBalances])
 
   const isStatsLoading = isTaoPriceLoading || isLeaderboardLoading
+  const isStatsRefetching = isTaoPriceRefetching || isLeaderboardRefetching
 
   const stats = useMemo(() => {
     const taoUsd = taoPrice?.price ? parseFloat(taoPrice.price) : 0
@@ -46,20 +65,15 @@ export const TaoDashboardHeader = () => {
   }, [taoPrice, leaderboardData])
 
   const totalStakedPlanck = useMemo(() => {
-    const taoUsd = taoPrice?.price ? parseFloat(taoPrice.price) : 0
-    if (taoUsd <= 0) return 0n
+    // Use fiat("tao") to get the TAO-equivalent value directly from each dTAO balance,
+    // avoiding the lossy USD round trip (alpha -> USD -> TAO). The "tao" rate is computed
+    // from the on-chain alpha price without an intermediate USD division.
+    const stakedTao = dtaoBalances.each
+      .filter((b) => b.free.planck > 0n)
+      .reduce((sum, b) => sum + (b.free.fiat("tao") ?? 0), 0)
 
-    const stakedUsd = ownedBalances.each
-      .filter(
-        (b) =>
-          b.token?.type === "substrate-dtao" &&
-          b.token.networkId === BITTENSOR_NETWORK_ID &&
-          b.free.planck > 0n
-      )
-      .reduce((sum, b) => sum + (b.free.fiat("usd") ?? 0), 0)
-
-    return BigInt(Math.round((stakedUsd / taoUsd) * 1e9))
-  }, [ownedBalances, taoPrice])
+    return BigInt(Math.round(stakedTao * 1e9))
+  }, [dtaoBalances])
 
   return (
     <div className="flex items-center rounded-[12px] border border-grey-800 px-3 py-4">
@@ -87,17 +101,20 @@ export const TaoDashboardHeader = () => {
             value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
             change={stats.marketCapChange24h ?? undefined}
             isLoading={isStatsLoading}
+            isRefetching={isStatsRefetching}
           />
           <MarketStat
             label={t("Total Subnet Volume")}
             value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
             isLoading={isStatsLoading}
+            isRefetching={isStatsRefetching}
           />
           <MarketStat
             label={t("TAO Price")}
             value={<FiatFromUsd amount={stats.taoUsd} noCountUp />}
             change={stats.priceChange24h ?? undefined}
             isLoading={isStatsLoading}
+            isRefetching={isStatsRefetching}
           />
         </div>
       </div>
@@ -136,19 +153,28 @@ const MarketStat: FC<{
   value: ReactNode
   change?: number
   isLoading?: boolean
-}> = ({ label, value, change, isLoading }) => {
+  isRefetching?: boolean
+}> = ({ label, value, change, isLoading, isRefetching }) => {
   const isPositive = change !== undefined && change > 0
   const isNegative = change !== undefined && change < 0
+  const showSkeleton = isLoading && !value
 
   return (
-    <div className="flex flex-col gap-[8px]">
+    <div className="flex flex-col gap-2">
       <span className="text-body-secondary text-xs">{label}</span>
-      {isLoading ? (
+      {showSkeleton ? (
         <Skeleton className="h-[29px] w-32" />
       ) : (
-        <span className="font-semibold text-[24px] text-body leading-[1.2]">{value}</span>
+        <span
+          className={cn(
+            "font-semibold text-[24px] text-body leading-[1.2]",
+            isRefetching && "animate-pulse"
+          )}
+        >
+          {value}
+        </span>
       )}
-      {isLoading ? (
+      {showSkeleton ? (
         <Skeleton className="h-[17px] w-16" />
       ) : change !== undefined ? (
         <span
@@ -156,7 +182,8 @@ const MarketStat: FC<{
             "text-xs",
             isPositive && "text-green",
             isNegative && "text-red-500",
-            !isPositive && !isNegative && "text-body-secondary"
+            !isPositive && !isNegative && "text-body-secondary",
+            isRefetching && "animate-pulse"
           )}
         >
           {change > 0 ? "+" : ""}

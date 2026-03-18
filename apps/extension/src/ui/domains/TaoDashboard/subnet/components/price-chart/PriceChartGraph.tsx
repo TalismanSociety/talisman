@@ -1,4 +1,4 @@
-import { Spinner } from "@ui/domains/TaoDashboard/shared/Spinner"
+import { LoaderIcon } from "@talismn/icons"
 import { useSocialFeedsMounted } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import type { IChartApi, ISeriesApi, SeriesType, UTCTimestamp } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -153,7 +153,7 @@ const PriceChartGraphSkeleton: FC<{
       />
     </div>
     <div className="absolute inset-0 flex items-center justify-center">
-      <Spinner />
+      <LoaderIcon className="animate-spin-slow text-[40px]" />
     </div>
   </div>
 )

@@ -176,62 +176,33 @@ const TransactionRow: FC<{
         </div>
       </div>
       <div className={cn("flex flex-col items-end gap-2", isFailed && "opacity-50")}>
-        {showPrice ? (
-          <>
-            <div className="flex items-baseline gap-4">
-              <div
-                className={cn(
-                  !isFailed && "text-primary",
-                  transaction.status !== "failed" &&
-                    transaction.status !== "indexed" &&
-                    transaction.direction === "buy" &&
-                    "animate-pulse"
-                )}
-              >
-                {isBuy ? "+ " : "- "}
-                <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
-              </div>
-              <div
-                className={cn(
-                  transaction.status !== "failed" &&
-                    transaction.status !== "indexed" &&
-                    transaction.direction === "sell" &&
-                    "animate-pulse"
-                )}
-              >
-                {taoDisplay}
-              </div>
-            </div>
-            {priceDisplay !== null && (
-              <div className="text-grey-500 text-xs">Price: {priceDisplay} τ</div>
+        <div className={cn(showPrice && "flex items-baseline gap-4")}>
+          <div
+            className={cn(
+              !isFailed && "text-primary",
+              transaction.status !== "failed" &&
+                transaction.status !== "indexed" &&
+                transaction.direction === "buy" &&
+                "animate-pulse"
             )}
-          </>
-        ) : (
-          <>
-            <div
-              className={cn(
-                !isFailed && "text-primary",
-                transaction.status !== "failed" &&
-                  transaction.status !== "indexed" &&
-                  transaction.direction === "buy" &&
-                  "animate-pulse"
-              )}
-            >
-              {isBuy ? "+ " : "- "}
-              <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
-            </div>
-            <div
-              className={cn(
-                "text-grey-500 text-xs",
-                transaction.status !== "failed" &&
-                  transaction.status !== "indexed" &&
-                  transaction.direction === "sell" &&
-                  "animate-pulse"
-              )}
-            >
-              {taoDisplay}
-            </div>
-          </>
+          >
+            {isBuy ? "+ " : "- "}
+            <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
+          </div>
+          <div
+            className={cn(
+              !showPrice && "text-grey-500 text-xs",
+              transaction.status !== "failed" &&
+                transaction.status !== "indexed" &&
+                transaction.direction === "sell" &&
+                "animate-pulse"
+            )}
+          >
+            {taoDisplay}
+          </div>
+        </div>
+        {showPrice && priceDisplay !== null && (
+          <div className="text-grey-500 text-xs">Price: {priceDisplay} τ</div>
         )}
       </div>
     </button>

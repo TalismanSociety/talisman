@@ -5,7 +5,7 @@ import type {
   SeriesType,
   UTCTimestamp,
 } from "lightweight-charts"
-import { type FC, type MutableRefObject, useEffect, useRef, useState } from "react"
+import { type FC, type MutableRefObject, useCallback, useEffect, useRef, useState } from "react"
 
 import { getSentimentColor } from "../price-chart/indicators"
 import type { OhlcvBar } from "../price-chart/types"
@@ -68,8 +68,8 @@ export const ChartOverlay: FC<ChartOverlayProps> = ({ chartRef, candlestickSerie
     }
   }, [hoveredItem])
 
-  // Resolve coordinates when debounced item changes
-  useEffect(() => {
+  // Resolve pixel coordinates from the current debounced item
+  const resolvePosition = useCallback(() => {
     if (!debouncedItem) {
       setPosition(null)
       return
@@ -96,6 +96,21 @@ export const ChartOverlay: FC<ChartOverlayProps> = ({ chartRef, candlestickSerie
     }
   }, [debouncedItem, bars, chartRef, candlestickSeriesRef])
 
+  // Resolve coordinates when debounced item changes, and re-resolve on chart scroll/zoom
+  useEffect(() => {
+    resolvePosition()
+
+    const chart = chartRef.current
+    if (!chart) return
+
+    const onRangeChange = () => resolvePosition()
+    chart.timeScale().subscribeVisibleLogicalRangeChange(onRangeChange)
+
+    return () => {
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onRangeChange)
+    }
+  }, [resolvePosition, chartRef])
+
   if (!position || !debouncedItem) return null
 
   // Determine dot color
@@ -104,7 +119,7 @@ export const ChartOverlay: FC<ChartOverlayProps> = ({ chartRef, candlestickSerie
       ? getSentimentColor(debouncedItem.tweet.sentiment)
       : debouncedItem.tx.transactionType === "StakeAdded"
         ? "#22c55e"
-        : "#f93c41"
+        : "#ef4444"
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
@@ -113,7 +128,7 @@ export const ChartOverlay: FC<ChartOverlayProps> = ({ chartRef, candlestickSerie
 
       {/* Colored dot at the intersection of vertical line and candle close price */}
       <div
-        className="absolute size-[12px] rounded-full border-[#171717] border-[1.4px]"
+        className="absolute size-[12px] rounded-full border-[1.4px] border-black-secondary"
         style={{
           left: position.x - 6,
           top: position.y - 6,
