@@ -13,6 +13,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { OptionSwitch } from "@ui/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
@@ -528,6 +529,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
             placeholder={t("Search by token or network name")}
             initialValue={initialSearch}
             autoFocus={!initialSearch}
+            containerClassName="rounded-sm"
           />
           {!!networkFilterContainerId && (
             <NetworkFilterButton
@@ -583,22 +585,24 @@ const NetworkFilterButton: FC<{
   selectedNetworkId: string | null
   onClick: () => void
 }> = ({ selectedNetworkId, onClick }) => {
+  const { t } = useTranslation()
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={classNames(
-        "flex size-[4.6rem] shrink-0 items-center justify-center rounded-sm border",
-        selectedNetworkId
-          ? "border-body/20 text-body"
-          : "border-body/10 text-body-secondary hover:text-body"
-      )}
-    >
-      {selectedNetworkId ? (
-        <NetworkLogo networkId={selectedNetworkId} className="text-lg" />
-      ) : (
-        <GlobeIcon className="text-lg" />
-      )}
-    </button>
+    <Tooltip placement="bottom-end">
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onClick}
+          className="flex size-[4.6rem] shrink-0 items-center justify-center rounded-sm border border-transparent bg-grey-800 text-body-secondary hover:bg-grey-750 focus-visible:border-grey-600"
+        >
+          {selectedNetworkId ? (
+            <NetworkLogo networkId={selectedNetworkId} className="text-lg" />
+          ) : (
+            <GlobeIcon className="text-lg" />
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{t("Filter by network")}</TooltipContent>
+    </Tooltip>
   )
 }
