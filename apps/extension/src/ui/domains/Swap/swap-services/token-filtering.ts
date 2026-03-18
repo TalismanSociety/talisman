@@ -24,7 +24,7 @@ export const getTokenTabs = ({
   const tabs: TokenTab[] = [
     {
       value: "all",
-      label: t("All tokens"),
+      label: t("All"),
       sort: curatedTokens
         ? (a, b) => {
             const ia = curatedTokens.indexOf(a)
