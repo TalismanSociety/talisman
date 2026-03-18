@@ -18,7 +18,7 @@ const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onCl
     <button
       type="button"
       className={classNames(
-        "h-[3.8rem] w-[3.8rem] rounded-full p-[0.3rem]",
+        "h-[2.375rem] w-[2.375rem] rounded-full p-[0.1875rem]",
         selected && "bg-primary"
       )}
       onClick={onClick}

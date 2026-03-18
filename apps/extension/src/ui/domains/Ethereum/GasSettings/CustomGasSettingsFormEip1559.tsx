@@ -40,7 +40,7 @@ import { usePublicClient } from "../usePublicClient"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {
-  className: "bg-grey-700 px-6 gap-6 h-[5rem]",
+  className: "bg-grey-700 px-6 gap-6 h-[3.125rem]",
 }
 
 type FormData = {
@@ -360,7 +360,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             )}
           </Tooltip>{" "}
           <WithTooltip
-            className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
+            className="inline-flex h-[0.9375rem] flex-col justify-center align-text-top"
             tooltip={t("The base fee is set by the network and changes depending on network usage")}
           >
             <InfoIcon />
@@ -434,7 +434,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       </FormFieldContainer>
       <MessageRow type="error" message={errorGasLimit} />
 
-      <div className="flex h-[5.2rem] w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
+      <div className="flex h-[3.25rem] w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
         <div>
           {t("Total Max Fee")}{" "}
           <WithTooltip

@@ -37,7 +37,7 @@ const LanguageDrawerContent = () => {
   const { close } = useLanguageDrawerOpenClose()
 
   return (
-    <div className="flex h-[60rem] w-[40rem] flex-col gap-10 bg-black pt-10 text-body-secondary">
+    <div className="flex h-[37.5rem] w-[25rem] flex-col gap-10 bg-black pt-10 text-body-secondary">
       <div className="flex items-center gap-3 px-8 font-bold text-base text-white">
         <IconButton onClick={close}>
           <ChevronLeftIcon />

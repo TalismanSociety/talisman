@@ -138,7 +138,7 @@ const FormatRow: FC<{
   const { t } = useTranslation()
 
   return (
-    <div className="flex h-[6.8rem] w-full items-center gap-6 rounded-lg border border-grey-700 px-8">
+    <div className="flex h-[4.25rem] w-full items-center gap-6 rounded-lg border border-grey-700 px-8">
       <div className="size-16 shrink-0">
         <NetworkLogo networkId={chainId} className="shrink-0 text-xl" />
       </div>

@@ -69,7 +69,7 @@ export const TaoDashboardHeader = () => {
   }, [taoPrice, leaderboardData])
 
   return (
-    <div className="flex h-auto min-h-64 items-center justify-between rounded-[0.75rem] border border-grey-800 px-16 text-left text-base text-body-secondary">
+    <div className="flex h-auto min-h-64 items-center justify-between rounded-[0.4688rem] border border-grey-800 px-16 text-left text-base text-body-secondary">
       <StatItem
         label={t("Available Tao")}
         value={
@@ -85,7 +85,7 @@ export const TaoDashboardHeader = () => {
             {" τ"}
           </span>
         }
-        className={cn("w-[17rem]", isBalanceLoading && "animate-pulse")}
+        className={cn("w-[10.625rem]", isBalanceLoading && "animate-pulse")}
       />
 
       <div className="h-44 w-px shrink-0 bg-grey-800" />
@@ -96,13 +96,13 @@ export const TaoDashboardHeader = () => {
         change={stats.marketCapChange24h ?? undefined}
         isLoading={isStatsLoading}
         hasChange
-        className="w-[17rem]"
+        className="w-[10.625rem]"
       />
       <StatItem
         label={t("24h Trading Volume")}
         value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
         isLoading={isStatsLoading}
-        className="w-[17rem]"
+        className="w-[10.625rem]"
       />
       <StatItem
         label={t("TAO Price")}
@@ -110,7 +110,7 @@ export const TaoDashboardHeader = () => {
         change={stats.priceChange24h ?? undefined}
         isLoading={isStatsLoading}
         hasChange
-        className="w-[17rem]"
+        className="w-[10.625rem]"
       />
     </div>
   )
@@ -132,7 +132,7 @@ const StatItem: FC<{
     <div className={cn("flex flex-col gap-2", className)}>
       <span className="text-body-secondary text-sm">{label}</span>
       {isLoading ? (
-        <Skeleton className="h-[3.9rem] w-64" />
+        <Skeleton className="h-[2.4375rem] w-64" />
       ) : (
         <span className="font-bold text-body text-xl">{value}</span>
       )}

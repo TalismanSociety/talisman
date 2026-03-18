@@ -227,7 +227,7 @@ const NetworkRow: FC<{
         </div>
         {network.isTestnet && <TestnetPill />}
         {isNetworkCustom(network) && <CustomPill />}
-        <div className="min-w-[4.4rem] shrink-0 grow"></div>
+        <div className="min-w-[2.75rem] shrink-0 grow"></div>
         <ChevronRightIcon className="text-lg transition-noneshrink-0" />
       </ListButton>
       <Toggle

@@ -184,7 +184,7 @@ const TokenButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-[3.625rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary"
       )}
     >
@@ -212,7 +212,7 @@ const TokenButtonRow: FC<{
 
 const TokenButtonRowSkeleton: FC = () => {
   return (
-    <div className="flex h-[5.8rem] w-full select-none items-center gap-4 px-12 text-left">
+    <div className="flex h-[3.625rem] w-full select-none items-center gap-4 px-12 text-left">
       <div className="flex items-center gap-8">
         <div className="flex-shrink-0">
           <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>

@@ -5,74 +5,70 @@ description: Integrate UI from Figma
 
 # Figma-to-Code Conversion Rules for Talisman Extension
 
-When converting Figma designs to React/Tailwind code in this project, you MUST apply the following conversion rules. The project uses a non-standard root font size and a fully custom Tailwind theme — raw Figma pixel values must be translated.
+When converting Figma designs to React/Tailwind code in this project, you MUST apply the following conversion rules. The project uses a fully custom Tailwind theme — raw Figma pixel values must be translated.
 
 Before writing any new UI component, **always check existing components** in `apps/extension/src/ui` first. Reuse what already exists rather than hand-coding equivalents from Figma.
 
 ## Root Font Size
 
-```css
-html { font-size: 10px; }
-```
-
-This means **1rem = 10px** (not the browser default 16px). All Tailwind spacing, font-size, border-radius, and line-height values in the config are expressed in rem based on this 10px root.
+The project uses the **browser-default 16px root** (`1rem = 16px`). The Tailwind theme has a custom spacing/font-size/radius scale calibrated to this base, so Figma pixel values still need conversion through the tables below.
 
 ## Figma Pixel → Tailwind Class Conversion Table
 
 ### Spacing (padding, margin, gap, width, height, inset)
 
-**Quick formula**: `tailwind_key = figma_px ÷ 2`. For arbitrary values not in the scale, convert to rem first (px ÷ 10) and use bracket notation: e.g. 15px → `p-[1.5rem]`.
+**Quick formula**: `tailwind_key = figma_px ÷ 4`. For arbitrary values not in the scale, convert to rem first (px ÷ 16) and use bracket notation: e.g. 15px → `p-[0.9375rem]`.
 
 | Figma px | Tailwind key | rem value | Usage example |
 |----------|-------------|-----------|---------------|
 | 1px | `px` | 1px | `gap-px`, `p-px` |
-| 1 | `0.5` | 0.1rem | `p-0.5` |
-| 2 | `1` | 0.2rem | `gap-1`, `p-1` |
-| 3 | `1.5` | 0.3rem | `gap-1.5` |
-| 4 | `2` | 0.4rem | `p-2`, `gap-2` |
-| 5 | `2.5` | 0.5rem | `p-2.5` |
-| 6 | `3` | 0.6rem | `gap-3`, `p-3` |
-| 7 | `3.5` | 0.7rem | `gap-3.5` |
-| 8 | `4` | 0.8rem | `p-4`, `gap-4` |
-| 10 | `5` | 1rem | `p-5`, `gap-5` |
-| 12 | `6` | 1.2rem | `p-6`, `gap-6` |
-| 14 | `7` | 1.4rem | `gap-7` |
-| 16 | `8` | 1.6rem | `p-8`, `gap-8`, `size-8` |
-| 18 | `9` | 1.8rem | `size-9` |
-| 20 | `10` | 2rem | `size-10`, `w-10` |
-| 22 | `11` | 2.2rem | `size-11` |
-| 24 | `12` | 2.4rem | `size-12`, `p-12` |
-| 28 | `14` | 2.8rem | `size-14` |
-| 32 | `16` | 3.2rem | `size-16`, `h-16` |
-| 40 | `20` | 4rem | `size-20` |
-| 48 | `24` | 4.8rem | `size-24` |
-| 56 | `28` | 5.6rem | `size-28` |
-| 64 | `32` | 6.4rem | `size-32`, `h-32` |
-| 72 | `36` | 7.2rem | `size-36` |
-| 80 | `40` | 8rem | `size-40` |
-| 88 | `44` | 8.8rem | `size-44` |
-| 96 | `48` | 9.6rem | `size-48` |
-| 104 | `52` | 10.4rem | `size-52` |
-| 112 | `56` | 11.2rem | `size-56` |
-| 120 | `60` | 12rem | `size-60` |
-| 128 | `64` | 12.8rem | `size-64` |
-| 144 | `72` | 14.4rem | `size-72` |
-| 160 | `80` | 16rem | `size-80` |
-| 192 | `96` | 19.2rem | `size-96` |
+| 1 | `0.5` | 0.0625rem | `p-0.5` |
+| 2 | `1` | 0.125rem | `gap-1`, `p-1` |
+| 3 | `1.5` | 0.1875rem | `gap-1.5` |
+| 4 | `2` | 0.25rem | `p-2`, `gap-2` |
+| 5 | `2.5` | 0.3125rem | `p-2.5` |
+| 6 | `3` | 0.375rem | `gap-3`, `p-3` |
+| 7 | `3.5` | 0.4375rem | `gap-3.5` |
+| 8 | `4` | 0.5rem | `p-4`, `gap-4` |
+| 10 | `5` | 0.625rem | `p-5`, `gap-5` |
+| 12 | `6` | 0.75rem | `p-6`, `gap-6` |
+| 14 | `7` | 0.875rem | `gap-7` |
+| 16 | `8` | 1rem | `p-8`, `gap-8`, `size-8` |
+| 18 | `9` | 1.125rem | `size-9` |
+| 20 | `10` | 1.25rem | `size-10`, `w-10` |
+| 22 | `11` | 1.375rem | `size-11` |
+| 24 | `12` | 1.5rem | `size-12`, `p-12` |
+| 28 | `14` | 1.75rem | `size-14` |
+| 32 | `16` | 2rem | `size-16`, `h-16` |
+| 40 | `20` | 2.5rem | `size-20` |
+| 48 | `24` | 3rem | `size-24` |
+| 56 | `28` | 3.5rem | `size-28` |
+| 64 | `32` | 4rem | `size-32`, `h-32` |
+| 72 | `36` | 4.5rem | `size-36` |
+| 80 | `40` | 5rem | `size-40` |
+| 88 | `44` | 5.5rem | `size-44` |
+| 96 | `48` | 6rem | `size-48` |
+| 104 | `52` | 6.5rem | `size-52` |
+| 112 | `56` | 7rem | `size-56` |
+| 120 | `60` | 7.5rem | `size-60` |
+| 128 | `64` | 8rem | `size-64` |
+| 144 | `72` | 9rem | `size-72` |
+| 160 | `80` | 10rem | `size-80` |
+| 192 | `96` | 12rem | `size-96` |
 
 ### Font Size
 
 | Figma px | Tailwind class | rem value |
 |----------|---------------|-----------|
-| 10 | `text-tiny` | 1.0rem |
-| 12 | `text-xs` | 1.2rem |
-| 14 | `text-sm` | 1.4rem |
-| 16 | `text-base` | 1.6rem |
-| 18 | `text-md` | 1.8rem |
-| 24 | `text-lg` | 2.4rem |
-| 32 | `text-xl` | 3.2rem |
-| 36 | `text-2xl` | 3.6rem |
-| 40 | `text-3xl` | 4rem |
+| 10 | `text-tiny` | 0.625rem |
+| 12 | `text-xs` | 0.75rem |
+| 14 | `text-sm` | 0.875rem |
+| 16 | `text-base` | 1rem |
+| 18 | `text-md` | 1.125rem |
+| 24 | `text-lg` | 1.5rem |
+| 32 | `text-xl` | 2rem |
+| 36 | `text-2xl` | 2.25rem |
+| 40 | `text-3xl` | 2.5rem |
 
 ### Font Family
 
@@ -92,13 +88,13 @@ The project uses custom fonts. Default body text is **Surt** (`font-sans`), appl
 | Figma px | Tailwind class | rem value |
 |----------|---------------|-----------|
 | 0 | `rounded-none` | 0 |
-| 4 | `rounded-xs` | 0.4rem |
-| 8 | `rounded-sm` | 0.8rem |
-| 12 | `rounded` (default) | 1.2rem |
-| 16 | `rounded-lg` | 1.6rem |
-| 24 | `rounded-xl` | 2.4rem |
-| 32 | `rounded-2xl` | 3.2rem |
-| 48 | `rounded-3xl` | 4.8rem |
+| 4 | `rounded-xs` | 0.25rem |
+| 8 | `rounded-sm` | 0.5rem |
+| 12 | `rounded` (default) | 0.75rem |
+| 16 | `rounded-lg` | 1rem |
+| 24 | `rounded-xl` | 1.5rem |
+| 32 | `rounded-2xl` | 2rem |
+| 48 | `rounded-3xl` | 3rem |
 | 9999 | `rounded-full` | 9999px |
 
 ### Line Height
@@ -109,7 +105,7 @@ The project uses custom fonts. Default body text is **Surt** (`font-sans`), appl
 | 1.2 (120%) | `leading-base` |
 | 1.4 (140%) | `leading-paragraph` |
 
-For absolute line-height values in Figma, use numeric keys: `leading-3` (6px) through `leading-10` (20px), following the same `÷ 2` formula as spacing.
+For absolute line-height values in Figma, use numeric keys: `leading-3` (6px) through `leading-10` (20px), following the same `÷ 4` formula as spacing.
 
 ## Color Palette (use these Tailwind names, NOT hex codes)
 
@@ -427,14 +423,14 @@ The general rule: the skeleton block should be **1–2 grey shades lighter** tha
 
 ## Common Mistakes to Avoid
 
-1. **NEVER use raw Figma pixel values directly** in Tailwind classes. A 16px Figma gap is `gap-8` (not `gap-16` or `gap-4`).
+1. **NEVER use raw Figma pixel values directly** in Tailwind classes. A 16px Figma gap is `gap-4` (not `gap-16` or `gap-8`).
 2. **NEVER use arbitrary hex colors** like `text-[#a5a5a5]` when a semantic token exists (`text-body-secondary`).
-3. **NEVER use `px` units in custom bracket values** — always convert to `rem` first (divide by 10). E.g. 15px → `[1.5rem]`, not `[15px]`.
+3. **NEVER use `px` units in custom bracket values** — always convert to `rem` first (divide by 16). E.g. 15px → `[0.9375rem]`, not `[15px]`.
 4. **NEVER recreate UI components** that already exist in `talisman-ui` (Button, Modal, Toggle, Drawer, etc.). Always check existing components first.
 5. **NEVER hardcode English strings** — always wrap in `t()` or `<Trans>`.
 6. **NEVER format numbers manually** — use `Fiat`, `Tokens`, or `TokensAndFiat` components.
 7. **DO use the spacing scale** — almost every Figma measurement will map to a scale value. The scale is dense enough that arbitrary values should be rare.
-8. **DO remember** that `size-16` in this project is 32px (3.2rem), not 64px as in default Tailwind.
+8. **DO remember** that `size-16` in this project is 32px (2rem), not 64px as in default Tailwind.
 9. **DO use semantic color names** (`text-body-secondary`, `bg-field`, `text-primary`) over raw grey scale names when both exist.
 10. **DO add `transition-none`** to icons inside interactive elements to prevent them inheriting parent transitions.
 11. **DO use `classNames`/`cn`** from `@talismn/util` for conditional classes — it's `twMerge`, so conflicting classes resolve correctly.

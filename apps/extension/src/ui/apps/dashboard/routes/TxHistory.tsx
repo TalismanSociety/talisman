@@ -89,7 +89,7 @@ export const TxHistory = () => {
       <DashboardLayout sidebar="accounts">
         <TxHistoryProvider>
           <TxHistoryAccountFilter />
-          <div className="min-w-[60rem]">
+          <div className="min-w-[37.5rem]">
             <Header />
             <div className="h-8"></div>
             <TxHistoryList />

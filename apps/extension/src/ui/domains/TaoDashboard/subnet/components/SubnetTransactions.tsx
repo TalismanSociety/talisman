@@ -187,7 +187,7 @@ const TransactionRowSkeleton: FC = () => {
   return (
     <div className="flex h-28 animate-pulse items-center justify-between pr-8 pl-12 text-sm">
       <div className="flex items-center gap-8">
-        <div className="size-[3.6rem] rounded-full bg-grey-800"></div>
+        <div className="size-[2.25rem] rounded-full bg-grey-800"></div>
         <div className="flex flex-col gap-3">
           <div>
             <div className="h-7 w-48 rounded-xs bg-grey-800"></div>

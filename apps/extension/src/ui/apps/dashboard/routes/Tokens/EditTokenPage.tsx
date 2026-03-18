@@ -180,11 +180,11 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                     <LinkToExplorerIconButton
                       networkId={token.networkId}
                       target={{ type: token.type, address: token.contractAddress }}
-                      className="text-[2rem]]"
+                      className="text-[1.25rem]]"
                     />
                     <CopyAddressIconButton
                       address={token.contractAddress}
-                      className="text-[2rem]"
+                      className="text-[1.25rem]"
                     />
                   </div>
                 }
@@ -271,7 +271,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   small
                   before={
                     <AssetLogo
-                      className="mr-2 rounded-full text-[3rem]"
+                      className="mr-2 rounded-full text-[1.875rem]"
                       url={field.form.getFieldValue("logo")}
                     />
                   }
@@ -360,7 +360,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
         <div className="flex justify-end gap-8 py-8">
           {isTokenCustom(token) && (
             <Button
-              className="h-24 w-[24rem] text-base"
+              className="h-24 w-[15rem] text-base"
               type="button"
               onClick={ocConfirmRemove.open}
             >
@@ -373,7 +373,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               <Button
                 primary
                 icon={SaveIcon}
-                className="h-24 w-[24rem] text-base"
+                className="h-24 w-[15rem] text-base"
                 type="submit"
                 processing={isSubmitting}
                 disabled={!isSubmitting && (!canSubmit || !isDirty)}

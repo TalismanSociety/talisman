@@ -98,8 +98,8 @@ const ViewDetailsContent: FC<{
   }, [genericEvent])
 
   return (
-    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
-      <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[2rem]">
+    <div className="flex max-h-[37.5rem] w-full flex-col gap-12 bg-grey-850 p-12">
+      <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[1.25rem]">
         <div className="text-body-secondary">{t("Details")}</div>
         <ViewDetailsAddress label={t("From")} address={payload.address} network={chain} />
 

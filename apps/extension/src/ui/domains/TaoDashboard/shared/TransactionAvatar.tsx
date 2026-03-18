@@ -9,7 +9,7 @@ export const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?
   className,
 }) => (
   <div className={cn("relative shrink-0", className)}>
-    <AccountIcon address={address} className="size-[3.6rem] text-[3.6rem]" />
+    <AccountIcon address={address} className="size-[2.25rem] text-[2.25rem]" />
     <div className="absolute -right-2 -bottom-2 flex size-10 items-center justify-center rounded-full bg-grey-850 p-px">
       <div
         className={cn(

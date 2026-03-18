@@ -126,7 +126,7 @@ const NetworkForm: FC = () => {
                   autoComplete="off"
                   small
                   containerProps={{ className: "pr-8" }}
-                  after={<CopyChainIdButton chainId={network.id} className="text-[2rem]" />}
+                  after={<CopyChainIdButton chainId={network.id} className="text-[1.25rem]" />}
                 />
               </FormFieldContainer>
             </div>
@@ -217,7 +217,7 @@ const NetworkForm: FC = () => {
                   small
                   before={
                     <AssetLogo
-                      className="mr-2 rounded-full text-[3rem]"
+                      className="mr-2 rounded-full text-[1.875rem]"
                       url={
                         field.state.value
                           ? getGithubTokenLogoUrlByCoingeckoId(field.state.value)
@@ -358,7 +358,7 @@ const NetworkForm: FC = () => {
           <div className="flex justify-end gap-8 py-8">
             {isNetworkCustom(network) && (
               <Button
-                className="h-24 w-[24rem] text-base"
+                className="h-24 w-[15rem] text-base"
                 type="button"
                 onClick={ocConfirmRemove.open}
               >
@@ -371,7 +371,7 @@ const NetworkForm: FC = () => {
                 <Button
                   primary
                   icon={SaveIcon}
-                  className="h-24 w-[24rem] text-base"
+                  className="h-24 w-[15rem] text-base"
                   type="submit"
                   processing={isSubmitting}
                   disabled={!isSubmitting && (!canSubmit || !isDirty)}

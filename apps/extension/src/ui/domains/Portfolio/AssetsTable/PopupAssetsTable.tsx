@@ -44,11 +44,11 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
       <div className="grow space-y-1">
         <div className="flex justify-between gap-1">
           <div className="h-7 w-20 animate-pulse rounded-xs bg-grey-700"></div>
-          <div className="h-7 w-[10rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-7 w-[6.25rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
         <div className="flex justify-between gap-1">
           <div className="h-7 w-10 animate-pulse rounded-xs bg-grey-700"></div>
-          <div className="h-7 w-[6rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-7 w-[3.75rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@ const AssetRow: FC<{
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <div className="whitespace-nowrap text-body-secondary text-xs">
                 <Fiat amount={tvl} noCountUp={noCountUp} />{" "}
-                <span className="text-[0.8rem]">TVL</span>
+                <span className="text-[0.5rem]">TVL</span>
               </div>
             )}
             {!isUniswapV2LpToken && (
@@ -143,7 +143,7 @@ const AssetRow: FC<{
           </div>
           <div
             className={classNames(
-              "flex min-w-[8rem] shrink-0 flex-col items-end gap-2 text-right",
+              "flex min-w-[5rem] shrink-0 flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
@@ -187,14 +187,14 @@ const AssetRow: FC<{
           <BondPillButton
             balances={balances}
             isPortfolio
-            className="text-base [>svg]:text-[2rem]"
+            className="text-base [>svg]:text-[1.25rem]"
           />
         </div>
       ) : canEarn ? (
         <div className="absolute top-0 right-4 hidden h-28 flex-col justify-center group-hover:flex">
           <PillButton
             onClick={openEarnModal}
-            className="h-16 rounded-[28px] bg-primary/10 px-4 font-light text-base text-primary hover:bg-primary/20 [>svg]:text-[2rem]"
+            className="h-16 rounded-[28px] bg-primary/10 px-4 font-light text-base text-primary hover:bg-primary/20 [>svg]:text-[1.25rem]"
           >
             <div className="flex items-center gap-4">
               <TrendingUpIcon className="shrink-0 text-base" />

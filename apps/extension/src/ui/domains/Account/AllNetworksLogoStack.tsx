@@ -66,7 +66,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
   )
 
   return (
-    <div className={classNames("h-[1em] shrink-0 pl-[0.25rem]", className)}>
+    <div className={classNames("h-[1em] shrink-0 pl-[0.1563rem]", className)}>
       {visibleNetworks.map((network, idx) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <AllNetworksLogoStackItem key={`${network}-${idx}`} network={network} />
@@ -80,7 +80,7 @@ function AllNetworksLogoStackItem({ network }: { network?: PortfolioNetwork }) {
   if (!network) return null
 
   return (
-    <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
+    <div className="ml-[-0.1563rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="size-[1em] shrink-0">
@@ -97,7 +97,7 @@ function AllNetworksLogoStackMore({ networks }: { networks: PortfolioNetwork[] }
   if (!networks.length) return null
 
   return (
-    <div className="ml-[-0.25rem] inline-block h-[1em] w-auto overflow-hidden">
+    <div className="ml-[-0.1563rem] inline-block h-[1em] w-auto overflow-hidden">
       <div className="relative flex h-[1em] w-auto flex-col justify-center rounded-full bg-grey-750 px-2 text-center text-body-secondary">
         <div className="font-bold text-[0.5em] leading-[1em]">{networks.length}+</div>
       </div>

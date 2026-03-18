@@ -4,7 +4,6 @@
 
 @layer base {
   html {
-    font-size: 10px;
     @apply min-h-screen;
   }
 

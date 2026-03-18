@@ -170,7 +170,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
     <div className="flex h-full w-full flex-col items-center">
       <div className="mt-8 font-bold text-body text-lg">{title}</div>
       <div className="mt-12 text-center font-light text-base text-body-secondary">{subtitle}</div>
-      <ProcessAnimation status={animStatus} className="mt-[7.5rem] mb-8 h-[14.5rem]" />
+      <ProcessAnimation status={animStatus} className="mt-[4.6875rem] mb-8 h-[9.0625rem]" />
       <div className="flex w-full grow flex-col justify-center gap-10 px-10 text-center text-body-secondary">
         <div>
           {blockNumber ? (
@@ -194,12 +194,12 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
             </Trans>
           ) : null}
         </div>
-        <div className="h-[3.6rem]">
+        <div className="h-[2.25rem]">
           {tx?.status === "pending" && (
             <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />
           )}
           {tx?.status === "success" && !tx?.confirmed && (
-            <div className="h-[3.6rem] animate-pulse text-secondary">
+            <div className="h-[2.25rem] animate-pulse text-secondary">
               {t("You may close this window or wait for the transaction to be confirmed")}
             </div>
           )}

@@ -151,7 +151,7 @@ export const ChangeValidatorSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "!bg-field !px-4 h-[2.25rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
                 "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search validators")}
@@ -164,7 +164,7 @@ export const ChangeValidatorSelect = () => {
           <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
+          <div className="flex justify-between pr-12 pl-[3.75rem] text-body-disabled text-sm">
             <div>{t("Validator")}</div>
             <div>{t("APY")}</div>
           </div>
@@ -305,7 +305,7 @@ const ValidatorRows: FC<{
 
 const ValidatorRowSkeleton = () => {
   return (
-    <div className="flex h-[5.8rem] w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
+    <div className="flex h-[3.625rem] w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
       <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
       <div className="grow space-y-[5px]">
         <div className={"flex w-full justify-between font-bold text-body text-sm"}>
@@ -345,7 +345,7 @@ const ValidatorRow: FC<{
       key={option.hotkey}
       onClick={onClick}
       className={classNames(
-        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-[3.625rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800 text-body-secondary"
       )}

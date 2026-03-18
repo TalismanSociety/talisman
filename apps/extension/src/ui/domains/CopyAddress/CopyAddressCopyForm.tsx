@@ -228,7 +228,7 @@ export const CopyAddressCopyForm = () => {
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
-          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8">
+          <div className="h-[13.125rem] w-[13.125rem] rounded-lg bg-[#ffffff] p-8">
             {isLogoLoaded && (
               <FadeIn>
                 <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />

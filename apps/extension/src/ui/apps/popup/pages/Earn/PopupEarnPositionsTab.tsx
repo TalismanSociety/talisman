@@ -14,7 +14,7 @@ const PopupStakingTile = () => {
   return (
     <button
       type="button"
-      className="mb-4 flex h-[5.2rem] w-full cursor-pointer items-center justify-between rounded bg-grey-850 pr-8 pl-6 text-left transition-colors hover:bg-grey-800"
+      className="mb-4 flex h-[3.25rem] w-full cursor-pointer items-center justify-between rounded bg-grey-850 pr-8 pl-6 text-left transition-colors hover:bg-grey-800"
       onClick={handleStakingClick}
     >
       <div className="flex items-center gap-4">

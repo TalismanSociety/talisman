@@ -45,9 +45,9 @@ const ConfirmDrawer = ({
       <div className="items-center rounded-t-xl bg-grey-800 p-12 pt-12">
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">
-            <AlertTriangleIcon className="text-[4.8rem] text-brand-orange" />
+            <AlertTriangleIcon className="text-[3rem] text-brand-orange" />
           </div>
-          <div className="max-w-[30rem] font-bold text-white leading-[2.2rem]">
+          <div className="max-w-[18.75rem] font-bold text-white leading-[1.375rem]">
             {t("Are you sure you want to reset your Talisman wallet?")}
           </div>
         </div>
@@ -103,7 +103,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
       </div>
       <PopupContent>
         <div className="flex h-full flex-col items-center justify-end gap-16 pb-8">
-          <LockIcon className="text-[4.8rem] text-primary-500" />
+          <LockIcon className="text-[3rem] text-primary-500" />
           <div className="font-bold text-lg">{t("Forgot your password?")}</div>
           <div className="space-y-12 text-body-secondary">
             <p className="text-center">

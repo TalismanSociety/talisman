@@ -191,7 +191,7 @@ export const ProtocolOptionsModal: FC<{
       isOpen={isOpen}
       onDismiss={onClose}
       className={classNames(
-        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black",
+        "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}

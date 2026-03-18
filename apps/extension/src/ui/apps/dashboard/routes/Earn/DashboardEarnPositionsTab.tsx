@@ -14,7 +14,7 @@ const StakingTile = () => {
   return (
     <button
       type="button"
-      className="mb-4 flex h-[6.6rem] w-full cursor-pointer items-center justify-between rounded bg-grey-850 pr-10 pl-8 text-left transition-colors hover:bg-grey-800"
+      className="mb-4 flex h-[4.125rem] w-full cursor-pointer items-center justify-between rounded bg-grey-850 pr-10 pl-8 text-left transition-colors hover:bg-grey-800"
       onClick={handleStakingClick}
     >
       <div className="flex items-center gap-6">
@@ -35,7 +35,7 @@ export const DashboardEarnPositionsTab: FC<{ search: string }> = ({ search }) =>
   const { t } = useTranslation()
 
   return (
-    <div className="min-w-[45rem] text-left text-base text-body-secondary">
+    <div className="min-w-[28.125rem] text-left text-base text-body-secondary">
       <div className="mb-4">
         <h2 className="mb-4 font-medium text-body-secondary text-sm">{t("Staking")}</h2>
         <StakingTile />

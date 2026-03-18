@@ -90,7 +90,7 @@ const RampsProviderButtonAvailable: FC<
     <button
       type="button"
       className={classNames(
-        "flex h-[9.2rem] flex-col justify-between gap-8 rounded border bg-grey-900 p-6 text-left leading-paragraph",
+        "flex h-[5.75rem] flex-col justify-between gap-8 rounded border bg-grey-900 p-6 text-left leading-paragraph",
         isSelected
           ? "border-body bg-grey-850 text-body"
           : "border-grey-700 text-body-secondary enabled:hover:border-grey-500 enabled:hover:bg-grey-850"
@@ -121,7 +121,7 @@ const RampsProviderButtonAvailable: FC<
 }
 
 const RampsProviderButtonSkeleton: FC<RampsProviderPropsLoading> = ({ provider }) => (
-  <div className="flex h-[9.2rem] flex-col justify-between gap-8 rounded border border-grey-700 p-6 text-left text-body-disabled leading-paragraph">
+  <div className="flex h-[5.75rem] flex-col justify-between gap-8 rounded border border-grey-700 p-6 text-left text-body-disabled leading-paragraph">
     <div className="flex justify-between">
       <div className="flex flex-col gap-2">
         <div className="animate-pulse rounded-xs bg-body-disabled font-bold text-sm">
@@ -147,7 +147,7 @@ const RampsProviderButtonError: FC<RampsProviderPropsError> = ({
   title,
   description,
 }) => (
-  <div className="flex h-[9.2rem] flex-col justify-between gap-8 rounded border border-grey-700 p-6 text-left text-body-secondary leading-paragraph">
+  <div className="flex h-[5.75rem] flex-col justify-between gap-8 rounded border border-grey-700 p-6 text-left text-body-secondary leading-paragraph">
     <div className="flex justify-between">
       <div className="flex flex-col gap-2">
         <div className="text-sm">{title}</div>

@@ -231,7 +231,7 @@ export const AddLedgerSelectNetwork = () => {
                           </span>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="z-20 max-w-[32rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow">
+                      <TooltipContent className="z-20 max-w-[20rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow">
                         <Trans
                           t={t}
                           defaults={
@@ -255,7 +255,7 @@ export const AddLedgerSelectNetwork = () => {
                       extra={
                         <span
                           className={classNames(
-                            "rounded-[1.2rem] bg-green/10 px-4 py-1 text-green",
+                            "rounded-[0.75rem] bg-green/10 px-4 py-1 text-green",
                             chain?.hasCheckMetadataHash ? "visible" : "invisible"
                           )}
                         >
@@ -289,12 +289,12 @@ export const AddLedgerSelectNetwork = () => {
             )}
           </>
         )}
-        <div className={classNames("mt-16 h-[12rem]", showConnect ? "visible" : "invisible")}>
+        <div className={classNames("mt-16 h-[7.5rem]", showConnect ? "visible" : "invisible")}>
           {showConnect && platform === "polkadot" && chainId && (
             <>
               {substrateAppType === AddSubstrateLedgerAppType.Legacy && (
                 <ConnectLedgerSubstrateLegacy
-                  className="min-h-[11rem]"
+                  className="min-h-[6.875rem]"
                   onReadyChanged={setIsLedgerReady}
                   chainId={chainId}
                 />
@@ -303,14 +303,14 @@ export const AddLedgerSelectNetwork = () => {
               {substrateAppType === AddSubstrateLedgerAppType.Generic && (
                 <ConnectLedgerSubstrateGeneric
                   curve={curve}
-                  className="min-h-[11rem]"
+                  className="min-h-[6.875rem]"
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
               {substrateAppType === AddSubstrateLedgerAppType.Migration && (
                 <ConnectLedgerSubstrateGeneric
                   curve={curve}
-                  className="min-h-[11rem]"
+                  className="min-h-[6.875rem]"
                   onReadyChanged={setIsLedgerReady}
                   legacyAppName={chain?.ledgerAppName}
                 />
@@ -328,7 +328,7 @@ export const AddLedgerSelectNetwork = () => {
       {!!platform && (
         <div className="flex justify-end">
           <Button
-            className="w-[24rem]"
+            className="w-[15rem]"
             type="submit"
             primary
             disabled={!isLedgerReady || !isValid}

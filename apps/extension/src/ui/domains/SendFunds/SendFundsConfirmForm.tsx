@@ -91,7 +91,7 @@ const TotalAmountRow = () => {
   if (!totalValue) return null
 
   return (
-    <div className="mt-4 flex h-[1.7rem] justify-between text-xs">
+    <div className="mt-4 flex h-[1.0625rem] justify-between text-xs">
       <div className="text-body-secondary">{t("Total Amount")}</div>
       <div className="text-body">
         {totalValue ? (
@@ -134,7 +134,7 @@ const ExternalRecipientWarning = () => {
   return (
     <div className="w-full rounded border border-alert-warn/25 text-xs">
       <div className="flex items-center gap-4 p-4 text-alert-warn">
-        <AlertCircleIcon className="shrink-0 text-[2rem]" />
+        <AlertCircleIcon className="shrink-0 text-[1.25rem]" />
         {warningType === "network" && network && token && (
           <div>
             {t(
@@ -299,12 +299,12 @@ const EthFeeSummary = () => {
           )}
         </div>
       </div>
-      <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
+      <div className="mt-4 flex h-[1.0625rem] items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div className="text-body">
-          <div className="inline-flex h-[1.7rem] items-center">
+          <div className="inline-flex h-[1.0625rem] items-center">
             {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
             {!!txDetails?.estimatedFee && network && (
               <TokensAndFiat
@@ -330,23 +330,23 @@ const DefaultFeeSummary = () => {
   return (
     <>
       {!!tip && !!tipToken && tip.planck > 0n && (
-        <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
+        <div className="mt-4 flex h-[1.0625rem] items-center justify-between gap-8 text-xs">
           <div className="text-body-secondary">{t("Tip")}</div>
           <div className="text-body">
-            <div className={classNames("inline-flex h-[1.7rem] items-center")}>
+            <div className={classNames("inline-flex h-[1.0625rem] items-center")}>
               <TokensAndFiat planck={tip.planck} tokenId={tipToken.id} />
             </div>
           </div>
         </div>
       )}
-      <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
+      <div className="mt-4 flex h-[1.0625rem] items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div className="text-body">
           <div
             className={classNames(
-              "inline-flex h-[1.7rem] items-center",
+              "inline-flex h-[1.0625rem] items-center",
               isRefetching && "animate-pulse"
             )}
           >

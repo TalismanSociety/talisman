@@ -72,7 +72,7 @@ const PopupEarnHeader = () => {
   }, [currency, tokenProducts])
 
   return (
-    <div className="flex justify-between rounded-[0.75rem] border border-grey-800 bg-grey-850 text-left text-base text-body-secondary">
+    <div className="flex justify-between rounded-[0.4688rem] border border-grey-800 bg-grey-850 text-left text-base text-body-secondary">
       <div className="flex flex-col gap-4 px-6 py-8">
         <div className="text-body-secondary text-xs">{t("Yield-Eligible Capital")}</div>
         <div className="font-bold text-body text-xl">

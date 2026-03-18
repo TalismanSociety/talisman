@@ -69,7 +69,7 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
   }, [providerType, t])
 
   return (
-    <div className="flex gap-[0.5rem] text-grey-500 text-xs">
+    <div className="flex gap-[0.3125rem] text-grey-500 text-xs">
       <BatchActionButton
         confirmTitle={t("Forget All Sites")}
         confirmDescription={

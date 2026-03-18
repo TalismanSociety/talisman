@@ -17,7 +17,7 @@ export const WizardModalDialog: FC<{
     <div
       id={id}
       className={classNames(
-        "flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border border-grey-850 bg-black",
+        "flex max-h-[100dvh] w-[26.25rem] max-w-[100dvw] flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal

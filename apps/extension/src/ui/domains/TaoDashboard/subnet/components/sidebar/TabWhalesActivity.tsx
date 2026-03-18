@@ -68,7 +68,7 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
 
   if (isLoading)
     return (
-      <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
+      <div className="flex h-[6.875rem] w-full shrink-0 flex-col justify-center px-12">
         <div>
           <Skeleton className="mb-3 h-8 w-48 font-medium text-white" />
         </div>
@@ -82,13 +82,13 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
 
   if (isError)
     return (
-      <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
+      <div className="flex h-[6.875rem] w-full shrink-0 flex-col justify-center px-12">
         <div className="text-center text-body-secondary">{t("Failed to fetch data")}</div>
       </div>
     )
 
   return (
-    <div className="flex h-[11rem] w-full shrink-0 flex-col justify-center px-12">
+    <div className="flex h-[6.875rem] w-full shrink-0 flex-col justify-center px-12">
       <div className="mb-3 font-medium text-white">{t("Whale Trade Flow")}</div>
       {inflowPercent !== null ? (
         <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full">
@@ -237,7 +237,7 @@ const WhaleActivityItemSkeleton = () => {
     <div className="flex h-28 shrink-0 items-center justify-between px-12 text-left text-sm">
       <div className="flex items-center gap-8">
         <div className="relative shrink-0">
-          <Skeleton className="size-[3.6rem] rounded-full" />
+          <Skeleton className="size-[2.25rem] rounded-full" />
         </div>
         <div className="flex flex-col gap-2">
           <Skeleton className="h-8 w-56" />

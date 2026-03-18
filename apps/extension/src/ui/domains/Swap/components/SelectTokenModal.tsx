@@ -127,7 +127,7 @@ export const SelectTokenModal: React.FC<Props> = ({
                     className="absolute top-0 left-0 h-full w-full"
                     onClick={() => setAssetWithWarning(null)}
                   />
-                  <div className="relative mx-auto flex w-[calc(100%-0.8rem)] flex-col items-center rounded bg-black-tertiary px-4 py-8">
+                  <div className="relative mx-auto flex w-[calc(100%-0.5rem)] flex-col items-center rounded bg-black-tertiary px-4 py-8">
                     <div className="mb-4 flex items-center gap-2">
                       <div className="w-max rounded bg-red-600/20 p-4 text-red-500">
                         <AlertTriangleIcon />

@@ -46,7 +46,7 @@ export const FeeEstimateSubstrate = ({
   })
 
   return (
-    <div className="relative flex min-h-[4.48rem] w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8 text-body-secondary text-sm">
+    <div className="relative flex min-h-[2.8rem] w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8 text-body-secondary text-sm">
       <QuoteProvider />
 
       <div className="flex items-center justify-between gap-8">

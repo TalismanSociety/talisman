@@ -48,7 +48,7 @@ export const FeeEstimateEvm = ({
 
   if (loadableState === "hasError") return null
   return (
-    <div className="relative flex min-h-[4.48rem] w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8">
+    <div className="relative flex min-h-[2.8rem] w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8">
       <QuoteProvider />
 
       {transaction?.type === undefined || transaction?.type === "eip1559" ? (

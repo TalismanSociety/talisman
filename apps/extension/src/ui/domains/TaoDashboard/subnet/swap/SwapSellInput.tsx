@@ -274,7 +274,7 @@ const TokenInput: FC<{
       value={inputValue}
       disabled={disabled}
       className={
-        "peer inline-block h-20 w-full text-ellipsis bg-transparent text-[2rem] text-body placeholder:text-body-disabled"
+        "peer inline-block h-20 w-full text-ellipsis bg-transparent text-[1.25rem] text-body placeholder:text-body-disabled"
       }
       onChange={handleChange}
     />

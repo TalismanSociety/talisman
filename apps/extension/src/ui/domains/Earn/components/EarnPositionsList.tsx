@@ -45,7 +45,7 @@ const YieldPositionRow: FC<{
       <YieldxyzProviderLogo providerId={position.product.providerId} className="size-16" />
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
-          <div className="h-[1.8rem] w-full truncate text-body">
+          <div className="h-[1.125rem] w-full truncate text-body">
             {position.product.metadata.name}{" "}
             <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
               {position.product.mechanics?.type}
@@ -175,7 +175,7 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
       )}
     >
       <div>
-        <div className="flex h-[6.6rem]">
+        <div className="flex h-[4.125rem]">
           <div className="p-8 text-xl">
             <div className="h-16 w-16 animate-pulse rounded-full bg-grey-700"></div>
           </div>
@@ -187,8 +187,8 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
       <div></div>
       <div>
         <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-          <div className="h-8 w-[10rem] animate-pulse rounded-xs bg-grey-700"></div>
-          <div className="h-8 w-[6rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-8 w-[6.25rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-8 w-[3.75rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -278,7 +278,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
 
   if (!displayPositions.length && !isInitialising && !isLoading) {
     return (
-      <div className="mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
+      <div className="mb-4 flex h-[4.125rem] flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
         {selectedAccount
           ? t("No earning positions found for this account.")
           : selectedFolder

@@ -264,7 +264,7 @@ export const TokenAmountInput: FC<Props> = ({
           <button
             type="button"
             className={classNames(
-              "rounded-xs border border-current px-3 py-1 text-[1rem] text-body-secondary",
+              "rounded-xs border border-current px-3 py-1 text-[0.625rem] text-body-secondary",
               !maxAfterGas && "animate-pulse text-body-disabled",
               maxAfterGas && maxAfterGas.planck <= 0 && "text-body-disabled",
               maxAfterGas && maxAfterGas.planck > 0 && "hover:text-white"

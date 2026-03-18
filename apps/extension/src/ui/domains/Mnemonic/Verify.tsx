@@ -116,7 +116,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
           </span>
           <div className="group relative overflow-hidden rounded bg-black-secondary p-2">
             <div
-              className={`grid min-h-[12.6rem] grid-cols-4 ${
+              className={`grid min-h-[7.875rem] grid-cols-4 ${
                 mnemonicWords!.length > 12 && "lg:grid-cols-6"
               } gap-4 p-2`}
             >

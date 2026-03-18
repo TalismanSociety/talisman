@@ -27,13 +27,13 @@ export const SignParamAccountButton: FC<SignParamAccountButtonProps> = ({
       iconPrefix={
         account ? (
           <AccountIcon
-            className="!h-[1.65rem] !text-[1.65rem] !leading-none"
+            className="!h-[1.0313rem] !text-[1.0313rem] !leading-none"
             address={account.address}
           />
         ) : (
           <AccountIcon
             type="polkadot-identicon"
-            className="!h-[1.65rem] !text-[1.65rem] !leading-none"
+            className="!h-[1.0313rem] !text-[1.0313rem] !leading-none"
             address={address}
           />
         )

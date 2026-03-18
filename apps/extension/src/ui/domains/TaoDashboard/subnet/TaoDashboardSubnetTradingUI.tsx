@@ -12,7 +12,7 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
   return (
     <SwapTxWatcherProvider>
       <RealtimeStakeEventsProvider netuid={netuid}>
-        <div className="flex h-[115rem] w-full flex-col gap-6 overflow-hidden">
+        <div className="flex h-[71.875rem] w-full flex-col gap-6 overflow-hidden">
           {/* Main Content Grid - Fixed height layout */}
           <div className="flex w-full grow flex-row gap-6 overflow-hidden">
             {/* Left Column - Charts and Trading */}
@@ -35,7 +35,7 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
             </div>
 
             {/* Right Column - Analytics Sidebar */}
-            <div className="h-full w-[38rem] shrink-0 overflow-hidden">
+            <div className="h-full w-[23.75rem] shrink-0 overflow-hidden">
               <TaoDashboardSidebar netuid={netuid} />
               {/* <SubnetRightSidebar netuid={netuid} className="h-full" /> */}
             </div>

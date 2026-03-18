@@ -7,7 +7,7 @@ import { useSwapSell } from "./SwapSellProvider"
 export const SwapSellOutput = () => (
   <div className="flex w-full flex-col gap-5 overflow-hidden">
     <div className="flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6">
-      <div className="flex h-20 w-full items-center justify-between gap-6 overflow-hidden text-[2rem]">
+      <div className="flex h-20 w-full items-center justify-between gap-6 overflow-hidden text-[1.25rem]">
         <div className="grow truncate">
           <ValueOutEstimate />
         </div>

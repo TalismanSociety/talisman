@@ -193,7 +193,7 @@ export const AccountExportModal = () => {
   const { isOpen, close } = useAccountExportModal()
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Export account JSON")} className="w-[50.3rem]" onClose={close}>
+      <ModalDialog title={t("Export account JSON")} className="w-[31.4375rem]" onClose={close}>
         <PasswordUnlock
           title={
             <div className="mb-8 text-body-secondary">

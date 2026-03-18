@@ -111,7 +111,7 @@ const SpenderValue = () => {
 
   if (!address) return null
 
-  return <AccountDisplay ss58Format={42} address={address} iconClassName="text-[2rem]" />
+  return <AccountDisplay ss58Format={42} address={address} iconClassName="text-[1.25rem]" />
 }
 
 const SubnetValue = () => {

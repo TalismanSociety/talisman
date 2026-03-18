@@ -5,8 +5,6 @@
 /* The base layer is for things like reset rules or default styles applied to plain HTML elements. */
 @layer base {
   html {
-    /* this defines the root font size, on which 'rem' units are based */
-    font-size: 10px;
     scrollbar-color: theme("colors.grey.700") transparent;
     @apply min-h-screen;
   }

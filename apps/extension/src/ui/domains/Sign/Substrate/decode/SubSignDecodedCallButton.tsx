@@ -16,7 +16,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
         "border-grey-700 bg-grey-850 text-body-secondary hover:bg-grey-800",
         "group left-align flex w-full items-center gap-4 overflow-x-hidden truncate rounded border pr-4 pl-8 text-left font-normal",
         mode === "multiline" && "py-4 leading-paragraph",
-        mode === "compact" && "h-[3.6rem]"
+        mode === "compact" && "h-[2.25rem]"
       )}
       onClick={onClick}
     >

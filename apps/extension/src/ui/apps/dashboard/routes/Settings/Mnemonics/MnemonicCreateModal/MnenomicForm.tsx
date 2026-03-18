@@ -74,7 +74,7 @@ export const MnemonicCreateForm = () => {
   const { t } = useTranslation()
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
-      <div className={"flex w-full min-w-[58rem] flex-col"}>
+      <div className={"flex w-full min-w-[36.25rem] flex-col"}>
         <div className="text-body-secondary text-sm">
           {t(
             "Your recovery phrase gives you access to your wallet and funds. Write it down and store it in a secure location."

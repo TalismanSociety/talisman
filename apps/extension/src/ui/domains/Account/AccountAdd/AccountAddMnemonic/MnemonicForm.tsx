@@ -307,7 +307,7 @@ export const AccountAddMnemonicForm = () => {
         <div className="mt-1 flex w-full justify-between">
           <BackToAddAccountButton methodType="import" />
           <Button
-            className="w-[24rem]"
+            className="w-[15rem]"
             type="submit"
             primary
             disabled={!isValid}

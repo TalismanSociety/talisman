@@ -17,7 +17,7 @@ import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/P
 
 const FakePill: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <span className="inline-flex h-[2.6rem] items-center gap-2 rounded-3xl bg-grey-850 px-3 font-light text-body">
+    <span className="inline-flex h-[1.625rem] items-center gap-2 rounded-3xl bg-grey-850 px-3 font-light text-body">
       {children}
     </span>
   )

@@ -130,7 +130,7 @@ export const QrSubstrate = ({
     >
       {/* don't show header on UPDATE_METADATA view */}
       {scanState.page !== "UPDATE_METADATA" && (
-        <header className="flex h-32 min-h-[6.4rem] w-full items-center px-12 text-body-secondary">
+        <header className="flex h-32 min-h-[4rem] w-full items-center px-12 text-body-secondary">
           <button
             type="button"
             className="flex h-16 w-16 cursor-pointer items-center p-2 text-lg hover:text-white"
@@ -413,7 +413,7 @@ const SendPage = ({
         <div className="flex flex-col items-center rounded-t bg-black-tertiary p-12">
           <div className="mb-16 font-bold">{t("Add network")}</div>
 
-          <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
+          <div className="relative flex aspect-square w-full max-w-[10rem] items-center justify-center rounded bg-white p-7">
             <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 text-body-secondary">
               <LoaderIcon className="animate-spin-slow text-xl" />
             </div>

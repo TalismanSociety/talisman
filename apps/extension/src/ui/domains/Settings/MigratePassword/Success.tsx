@@ -10,7 +10,7 @@ export const MigratePasswordSuccess = () => {
   const { onComplete } = useMigratePassword()
   return (
     <ModalDialog title={t("Security Upgrade Complete")}>
-      <ProcessAnimation status="success" className="my-20 h-[14rem]" />
+      <ProcessAnimation status="success" className="my-20 h-[8.75rem]" />
       <Button onClick={onComplete} fullWidth>
         {t("Close")}
       </Button>

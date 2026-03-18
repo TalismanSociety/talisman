@@ -64,7 +64,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
             className={classNames(
               "pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
+              currencyConfig[currency]?.symbol?.length > 2 && "text-[0.625rem]"
             )}
             onClick={(event) => {
               event.stopPropagation()
@@ -75,7 +75,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           </button>
           <Fiat
             className={classNames(
-              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[3.2rem] leading-[3.6rem] tracking-[0.016px]",
+              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[2rem] leading-[2.25rem] tracking-[0.016px]",
               disabled && "text-body-secondary"
             )}
             amount={portfolioTotal}
@@ -129,7 +129,7 @@ const Action: FC<ActionProps> = ({
         <button
           type="button"
           className={classNames(
-            "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[1rem] text-body-secondary opacity-90 backdrop-blur-sm",
+            "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[0.625rem] text-body-secondary opacity-90 backdrop-blur-sm",
             "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}
           onClick={handleClick}
