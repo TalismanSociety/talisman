@@ -78,6 +78,13 @@ export const ValidatorRows: FC<{
 }> = ({ taoTokenId, validators, selectedHotkey, isLoading, onSelect }) => {
   const { ref: refContainer } = useScrollContainer()
 
+  const featuredBoundary = useMemo(() => {
+    const idx = validators.findIndex((v) => !v.isFeatured)
+    // only show divider if there are both featured and non-featured validators
+    if (idx <= 0) return null
+    return idx
+  }, [validators])
+
   const virtualizer = useVirtualizer({
     count: validators.length,
     estimateSize: () => 58,
@@ -95,6 +102,15 @@ export const ValidatorRows: FC<{
           height: `${virtualizer.getTotalSize()}px`,
         }}
       >
+        {featuredBoundary !== null && (
+          <div
+            className="absolute left-1/2 h-px -translate-x-1/2 rounded-full bg-white/10"
+            style={{
+              top: `${featuredBoundary * 58}px`,
+              width: "calc(100% - 48px)",
+            }}
+          />
+        )}
         {virtualizer.getVirtualItems().map((item) => {
           const validator = validators[item.index]
           if (!validator) return null
@@ -174,13 +190,13 @@ const ValidatorRow: FC<{
     >
       <AccountIcon address={option.hotkey} className="size-16 shrink-0 text-xl" />
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
-        <div className="flex w-full justify-between text-body text-sm">
-          <div className={cn(option.isRecommended && "font-bold text-primary")}>
+        <div className="flex w-full justify-between gap-8 text-body text-sm">
+          <div className={cn("min-w-0", option.isRecommended && "font-bold text-primary")}>
             <div className="flex items-center gap-2">
               {option.name ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div>{option.name}</div>
+                    <div className="truncate">{option.name}</div>
                   </TooltipTrigger>
                   <TooltipContent>{option.hotkey}</TooltipContent>
                 </Tooltip>
@@ -188,14 +204,14 @@ const ValidatorRow: FC<{
                 <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
               )}
               {option.isFeatured && (
-                <EarnTypeBadge className="mx-0 inline-flex items-center gap-2 rounded border-none bg-primary/10 px-4 py-2 font-light text-primary text-xs normal-case">
+                <EarnTypeBadge className="mx-0 inline-flex shrink-0 items-center gap-2 rounded border-none bg-primary/10 px-4 py-2 font-light text-primary text-xs normal-case">
                   <TalismanHandIcon className="size-8" />
                   {t("Featured")}
                 </EarnTypeBadge>
               )}
             </div>
           </div>
-          <div className={cn(isLoading && "animate-pulse")}>
+          <div className={cn("shrink-0", isLoading && "animate-pulse")}>
             {option.validatorYield?.thirty_day_apy
               ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
               : t("N/A")}
