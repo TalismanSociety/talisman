@@ -277,13 +277,24 @@ const useBittensorBondWizardProvider = () => {
       }
     }
 
-    // randomly pick from default validators active on this subnet
-    const activeDefaults = defaultValidators.filter((key) => activeHotkeys.has(key.toLowerCase()))
+    // pick the default validator with the highest stake on this subnet
+    const defaultHotkeySet = new Set(defaultValidators.map((key) => key.toLowerCase()))
+    const activeDefaults = (subnetValidators ?? [])
+      .filter((v) => defaultHotkeySet.has(v.hotkey.toLowerCase()))
+      .sort((a, b) => b.stake - a.stake)
+
     if (activeDefaults.length) {
-      const picked = activeDefaults[Math.floor(Math.random() * activeDefaults.length)]
+      const picked = activeDefaults[0].hotkey
       setWizardState((prev) => (prev.hotkey === picked ? prev : { ...prev, hotkey: picked }))
     }
-  }, [activeHotkeys, netuid, defaultValidators, defaultValidatorsBySubnet, stakeDirection])
+  }, [
+    activeHotkeys,
+    netuid,
+    defaultValidators,
+    defaultValidatorsBySubnet,
+    stakeDirection,
+    subnetValidators,
+  ])
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
