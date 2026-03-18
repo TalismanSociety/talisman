@@ -72,22 +72,23 @@ export const BittensorSubnetBondForm = () => {
           <div className="font-bold text-body">{t("Subnet Alpha Price Risk")}</div>
           <p className="text-center text-body-secondary text-sm">
             {t(
-              "When staking to a dTAO subnet, your TAO is converted into the subnet's alpha token. The alpha price will change during the staking period, which can increase or decrease the value of your rewards."
+              "When staking dTAO, your TAO is converted to the subnet's alpha token. The alpha price will change during the staking period, which can increase or decrease the value of your rewards."
             )}
           </p>
-          <div className="flex w-full justify-center text-body-secondary text-sm">
+          <div className="w-full text-body-secondary text-sm">
             <Checkbox
               checked={dontRemindAgain}
               onChange={(e) => setDontRemindAgain(e.target.checked)}
-              className="justify-center"
-              childProps={{ className: "text-center" }}
             >
-              {t("Don't remind me again for subnet staking.")}
+              {t("Don't show this again")}
             </Checkbox>
           </div>
-          <Button primary fullWidth onClick={handleCloseSubnetRiskDrawer}>
-            {t("Continue")}
-          </Button>
+          <div className="grid w-full grid-cols-2 gap-8">
+            <Button onClick={closeSubnetRiskDrawer}>{t("Close")}</Button>
+            <Button primary onClick={handleCloseSubnetRiskDrawer}>
+              {t("I Understand")}
+            </Button>
+          </div>
         </div>
       </Drawer>
     </>
