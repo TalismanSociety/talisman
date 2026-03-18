@@ -278,17 +278,19 @@ const SubnetRow: FC<{
   )
   const tokenAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
+  const isRoot = option.netuid === ROOT_NETUID
+
   const emission = useMemo(
     () =>
-      option.netuid === ROOT_NETUID
-        ? "-"
+      isRoot
+        ? null
         : // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
           // so we multiply by 2 to get the total emission rate.
           option.emission
           ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
             "%"
           : t("N/A"),
-    [option.emission, option.netuid, t]
+    [isRoot, option.emission, t]
   )
 
   if (!tokenAlpha) return null
@@ -343,17 +345,19 @@ const SubnetRow: FC<{
                 </>
               )}
             </div>
-            <div className="shrink-0">
-              {isLoading ? (
-                <Skeleton>0.0000 TAO 0.0%</Skeleton>
-              ) : (
-                <BittensorAlphaPrice
-                  taoTokenId={taoTokenId}
-                  price={option.price}
-                  priceChange24h={option.price_change_1_day}
-                />
-              )}
-            </div>
+            {!isRoot && (
+              <div className="shrink-0">
+                {isLoading ? (
+                  <Skeleton>0.0000 TAO 0.0%</Skeleton>
+                ) : (
+                  <BittensorAlphaPrice
+                    taoTokenId={taoTokenId}
+                    price={option.price}
+                    priceChange24h={option.price_change_1_day}
+                  />
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
