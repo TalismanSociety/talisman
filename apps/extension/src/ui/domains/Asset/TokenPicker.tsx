@@ -477,7 +477,7 @@ const TokenFilterOptions: FC<TokenFilterOptionsProps> = ({
         key={option}
         type="button"
         className={cn(
-          "h-14 rounded-sm border border-transparent text-body-secondary hover:bg-grey-900 focus-visible:border-grey-600",
+          "h-14 truncate rounded-sm border border-transparent text-body-secondary hover:bg-grey-900 focus-visible:border-grey-600",
           defaultOption === option && "bg-grey-800 text-primary"
         )}
         onClick={() => onOptionChange?.(option)}
