@@ -8,9 +8,8 @@ import {
   type TokenId,
 } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, GlobeIcon } from "@talismn/icons"
-import { classNames, planckToTokens } from "@talismn/util"
+import { classNames, cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { OptionSwitch } from "@ui/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -461,6 +460,34 @@ const TokensList: FC<TokensListProps> = ({
   )
 }
 
+type TokenFilterOptionsProps = {
+  options: Array<[string, string]>
+  defaultOption?: string
+  onOptionChange?: (option: string) => void
+}
+
+const TokenFilterOptions: FC<TokenFilterOptionsProps> = ({
+  options,
+  defaultOption,
+  onOptionChange,
+}) => (
+  <div className="-mb-3 grid w-full grid-cols-3 gap-4 overflow-hidden text-xs">
+    {options.map(([option, label]) => (
+      <button
+        key={option}
+        type="button"
+        className={cn(
+          "h-16 rounded-sm border border-transparent bg-grey-800 text-body-secondary focus-visible:border-grey-600",
+          defaultOption === option && "bg-primary text-black focus-visible:border-white"
+        )}
+        onClick={() => onOptionChange?.(option)}
+      >
+        {label}
+      </button>
+    ))}
+  </div>
+)
+
 type TokenPickerProps = {
   address?: string
   selected?: TokenId
@@ -522,7 +549,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
     <div
       className={classNames("flex h-full min-h-full w-full flex-col overflow-hidden", className)}
     >
-      <div className="flex min-h-fit w-full flex-col items-center gap-2 px-12 pb-8">
+      <div className="flex min-h-fit w-full flex-col items-center gap-3 px-12 pb-8">
         <div className="flex w-full items-center gap-4">
           <SearchInput
             onChange={setSearch}
@@ -539,16 +566,11 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           )}
         </div>
         {tokenFilterOptions !== undefined && (
-          <div className="no-scrollbar -mb-4 w-full max-w-full overflow-x-scroll">
-            <OptionSwitch
-              className="text-xs"
-              optionButtonClassName="px-3 rounded-xs"
-              overlayButtonClassName="rounded-xs"
-              options={tokenFilterOptions}
-              defaultOption={tokenFilterDefaultOption}
-              onChange={onTokenFilterOptionChange}
-            />
-          </div>
+          <TokenFilterOptions
+            options={tokenFilterOptions}
+            defaultOption={tokenFilterDefaultOption}
+            onOptionChange={onTokenFilterOptionChange}
+          />
         )}
       </div>
       <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
