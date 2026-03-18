@@ -143,7 +143,7 @@ const useBittensorBondWizardProvider = () => {
   // subnet validators — React Query dedupes with the same call in useCombinedBittensorValidatorsData
   const { data: subnetValidators } = useGetValidatorsYield({ netuid: netuid || 0 })
   const activeHotkeys = useMemo(
-    () => new Set(subnetValidators?.map((v) => v.hotkey)),
+    () => new Set(subnetValidators?.map((v) => v.hotkey.toLowerCase())),
     [subnetValidators]
   )
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
@@ -256,32 +256,28 @@ const useBittensorBondWizardProvider = () => {
     }))
   }, [])
 
-  // resolve the default validator from config, picking only hotkeys active on this subnet
-  const resolvedDefaultHotkey = useMemo(() => {
-    if (!activeHotkeys.size) return null
+  // resolve and apply the default validator from config once subnet validator data loads
+  useEffect(() => {
+    if (!activeHotkeys.size || !isHotkeyAutoSelected.current || stakeDirection !== "bond") return
 
     // subnet-specific override takes priority
     if (typeof netuid === "number" && defaultValidatorsBySubnet[netuid]) {
       const subnetDefault = defaultValidatorsBySubnet[netuid]
-      if (activeHotkeys.has(subnetDefault)) return subnetDefault
+      if (activeHotkeys.has(subnetDefault.toLowerCase())) {
+        setWizardState((prev) =>
+          prev.hotkey === subnetDefault ? prev : { ...prev, hotkey: subnetDefault }
+        )
+        return
+      }
     }
 
     // randomly pick from default validators active on this subnet
-    const activeDefaults = defaultValidators.filter((key) => activeHotkeys.has(key))
-    if (activeDefaults.length)
-      return activeDefaults[Math.floor(Math.random() * activeDefaults.length)]
-
-    return null
-  }, [activeHotkeys, netuid, defaultValidators, defaultValidatorsBySubnet])
-
-  useEffect(() => {
-    if (resolvedDefaultHotkey && isHotkeyAutoSelected.current && stakeDirection === "bond") {
-      setWizardState((prev) => {
-        if (prev.hotkey === resolvedDefaultHotkey) return prev
-        return { ...prev, hotkey: resolvedDefaultHotkey }
-      })
+    const activeDefaults = defaultValidators.filter((key) => activeHotkeys.has(key.toLowerCase()))
+    if (activeDefaults.length) {
+      const picked = activeDefaults[Math.floor(Math.random() * activeDefaults.length)]
+      setWizardState((prev) => (prev.hotkey === picked ? prev : { ...prev, hotkey: picked }))
     }
-  }, [resolvedDefaultHotkey, stakeDirection])
+  }, [activeHotkeys, netuid, defaultValidators, defaultValidatorsBySubnet, stakeDirection])
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
