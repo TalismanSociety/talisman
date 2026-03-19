@@ -58,6 +58,8 @@ export const getFeeHistoryAnalysis = async (
 
     // last entry of the array is the base fee for next block, exclude it from further averages
     // warning: on neuroweb nextBaseFee is lower than the others even when network is idle
+    if (!feeHistory.baseFeePerGas.length)
+      throw new Error("Fee history returned empty baseFeePerGas")
     const nextBaseFee = feeHistory.baseFeePerGas.pop() as bigint
 
     const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee, _i, arr) => fee === arr[0])

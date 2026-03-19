@@ -143,15 +143,22 @@ const useBlockFeeData = (
         withFeeOptions ? publicClient.estimateMaxPriorityFeePerGas() : 0n,
       ])
 
+      let adjustedFeeHistoryAnalysis = feeHistoryAnalysis
       if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
-        if (!feeHistoryAnalysis.isValid) {
+        // clone to avoid mutating the object returned by getFeeHistoryAnalysis
+        adjustedFeeHistoryAnalysis = {
+          ...feeHistoryAnalysis,
+          maxPriorityPerGasOptions: { ...feeHistoryAnalysis.maxPriorityPerGasOptions },
+        }
+
+        if (!adjustedFeeHistoryAnalysis.isValid) {
           // network inactive: use minimumMaxPriorityFeePerGas for all options
-          feeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
-          feeHistoryAnalysis.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
-          feeHistoryAnalysis.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
+          adjustedFeeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
+          adjustedFeeHistoryAnalysis.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
+          adjustedFeeHistoryAnalysis.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
         } else {
           // use eth_maxPriorityFeePerGas as floor for all tiers to prevent underpricing
-          const { maxPriorityPerGasOptions } = feeHistoryAnalysis
+          const { maxPriorityPerGasOptions } = adjustedFeeHistoryAnalysis
           if (maxPriorityPerGasOptions.low < minimumMaxPriorityFeePerGas)
             maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
           if (maxPriorityPerGasOptions.medium < minimumMaxPriorityFeePerGas)
@@ -171,7 +178,7 @@ const useBlockFeeData = (
         baseFeePerGas: allPossibleBaseFees.length ? bigIntMax(...allPossibleBaseFees) : 0n,
         blockGasLimit,
         networkUsage,
-        feeHistoryAnalysis,
+        feeHistoryAnalysis: adjustedFeeHistoryAnalysis,
       }
     },
     enabled: !!tx && !!publicClient && withFeeOptions !== undefined,
@@ -510,11 +517,10 @@ export const useEthTransaction = (
   }, [evmNetworkId])
 
   // set default priority based on EIP1559 support
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
     setPriority(hasEip1559Support ? "medium" : "recommended")
-  }, [hasEip1559Support, isReplacement, priority])
+  }, [hasEip1559Support, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({
     evmNetworkId,

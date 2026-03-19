@@ -234,6 +234,7 @@ export const getTransactionSerializable = (
         nonce: txRequest.nonce,
         to: txRequest.to,
         value: txRequest.value,
+        accessList: txRequest.accessList,
       }
       return res
     }
