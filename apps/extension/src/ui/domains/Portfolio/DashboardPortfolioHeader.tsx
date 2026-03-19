@@ -9,6 +9,7 @@ import {
   RepeatIcon,
   SeekEyeIcon,
   SendIcon,
+  TaoIcon,
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames, isNotNil } from "@talismn/util"
@@ -35,8 +36,6 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
-import { TokenLogo } from "../Asset/TokenLogo"
-import { BITTENSOR_TOKEN_ID } from "../Staking/Bittensor/utils/constants"
 import { useIsBittensorEnabled } from "../TaoDashboard/hooks/useIsBittensorEnabled"
 import { useSeekBenefitsModal } from "./SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
@@ -304,8 +303,8 @@ const TopActions: FC = () => {
           ? {
               analyticsName: "Goto" as const,
               analyticsAction: "open tao dashboard",
-              label: t("Stake TAO"),
-              icon: BittensorIcon,
+              label: t("Trade TAO"),
+              icon: TaoIcon,
               onClick: () => api.dashboardOpen("/bittensor/subnets"),
               disabled: false,
             }
@@ -339,10 +338,6 @@ const TopActions: FC = () => {
     </div>
   )
 }
-
-const BittensorIcon: FC<{ className?: string }> = ({ className }) => (
-  <TokenLogo tokenId={BITTENSOR_TOKEN_ID} className={className} />
-)
 
 const SeekBenefitsLink = () => {
   const { open } = useSeekBenefitsModal()
