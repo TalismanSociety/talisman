@@ -262,7 +262,8 @@ const useBittensorBondWizardProvider = () => {
       typeof netuid !== "number" ||
       !activeHotkeys.size ||
       !isHotkeyAutoSelected.current ||
-      stakeDirection !== "bond"
+      stakeDirection !== "bond" ||
+      hotkey
     )
       return
 
@@ -289,6 +290,7 @@ const useBittensorBondWizardProvider = () => {
     }
   }, [
     activeHotkeys,
+    hotkey,
     netuid,
     defaultValidators,
     defaultValidatorsBySubnet,
