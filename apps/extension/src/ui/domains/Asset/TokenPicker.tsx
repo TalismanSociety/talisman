@@ -179,10 +179,15 @@ const TokenRow: FC<TokenRowProps> = ({
           )}
         >
           <div className="flex grow items-center gap-2 overflow-hidden">
-            <div data-testid="picker-token-name">{token.symbol}</div>
+            <div data-testid="picker-token-name" className="truncate">
+              {token.symbol}
+            </div>
             <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
             {!!token.name && token.name !== token.symbol && (
-              <div className="truncate font-normal text-body-inactive">{token.name}</div>
+              // shrink-[9999] makes it so token.name is the primary thing that truncates, instead of the symbol
+              <div className="min-w-0 shrink-[9999] truncate font-normal text-body-inactive">
+                {token.name}
+              </div>
             )}
             {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
           </div>
@@ -193,7 +198,7 @@ const TokenRow: FC<TokenRowProps> = ({
               symbol={isUniswapV2LpToken ? "" : token.symbol}
               isBalance
               noCountUp
-              className="text-nowrap"
+              className="w-full truncate text-nowrap"
             />
           </div>
         </div>
