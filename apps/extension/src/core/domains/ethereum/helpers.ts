@@ -433,7 +433,6 @@ export const isValidAddEthereumRequestParam = (obj: unknown) =>
 // For example, only the HTTPS protocol scheme should be used.
 // Furthermore, private IP ranges and hostnames should be forbidden.
 // Finally, only specific whitelisted image extensions should be allowed.
-/** @knipignore used in __tests__ */
 export const isSafeImageUrl = (url?: string) => {
   if (!url) return true
   try {
