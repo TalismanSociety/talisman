@@ -74,6 +74,17 @@ export function parseUserInputToPlanck(input: string, decimals: number): bigint 
   return BigInt(quantity)
 }
 
+/**
+ * Format a swap duration in seconds into a human-readable string.
+ * E.g. 0 → "Instant", 45 → "45s", 90 → "1m 30s", 120 → "2m"
+ */
+export function formatSwapDuration(sec: number, instantLabel = "Instant"): string {
+  if (sec < 60) return sec <= 0 ? instantLabel : `${sec}s`
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return s > 0 ? `${m}m ${s}s` : `${m}m`
+}
+
 export function parseUserInputToPlanckOrUndefined(
   input: string,
   decimals: number

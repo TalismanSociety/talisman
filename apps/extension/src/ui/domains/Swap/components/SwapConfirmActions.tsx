@@ -9,6 +9,7 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
+import { QuoteDuration } from "@ui/domains/Swap/components/QuoteDuration"
 import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -398,6 +399,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     <>
       <div className="relative flex min-h-[4.48rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
         <QuoteProvider />
+        <QuoteDuration />
         <QuoteExchangeRate />
         {fromToken?.platform === "ethereum" ? (
           <div className="flex h-11 items-center justify-between gap-8">

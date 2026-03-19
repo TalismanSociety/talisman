@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
-import { formatSwapExchangeRate } from "../swap-utils"
+import { formatSwapDuration, formatSwapExchangeRate } from "../swap-utils"
 
 export const SwapProviderPickerModal: FC<{
   isOpen: boolean
@@ -93,13 +93,10 @@ const SwapProviderQuoteButton: FC<{
     )
   }, [fromAmount, fromToken, toToken, quote.outputAmountBN, t])
 
-  const duration = useMemo(() => {
-    const sec = quote.timeInSec
-    if (sec < 60) return sec <= 0 ? t("Instant") : `${sec}s`
-    const m = Math.floor(sec / 60)
-    const s = sec % 60
-    return s > 0 ? `${m}m ${s}s` : `${m}m`
-  }, [quote.timeInSec, t])
+  const duration = useMemo(
+    () => formatSwapDuration(quote.timeInSec, t("Instant")),
+    [quote.timeInSec, t]
+  )
 
   if (!toToken || !fromToken) return null
 
