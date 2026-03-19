@@ -19,7 +19,7 @@ import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
@@ -49,22 +49,101 @@ export const SwapAccountPicker = memo(
 
     const token = useToken(tokenId ?? undefined)
     const network = useNetworkById(token?.networkId)
-    const prevNetworkRef = useRef(network)
-
-    const [query, setQuery] = useState("")
-    const deferredQuery = useDeferredValue(query)
-
-    const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(
-      allowInput ? deferredQuery : undefined,
-      { ens: isNetworkEth(network) }
-    )
-
     const compatibleAccounts = useMemo(
       () =>
         allAccounts.filter(
           (account) => network && isAccountCompatibleWithNetwork(network, account)
         ),
       [allAccounts, network]
+    )
+
+    const selectedAccount = useMemo(() => {
+      if (value === null || value === undefined) return
+      return compatibleAccounts.find((account) => isAddressEqual(account.address, value))
+    }, [compatibleAccounts, value])
+
+    const onSelectAccount = useCallback(
+      (address: string | null) => {
+        setOpen(false)
+        onAccountChange?.(address)
+      },
+      [onAccountChange]
+    )
+
+    return (
+      <>
+        <button
+          type="button"
+          className="flex h-[26px] items-center gap-3 rounded-[13px] bg-[#262626] pr-[8px] pl-[5px] transition-colors enabled:hover:bg-[#363636] disabled:opacity-80"
+          onClick={() => setOpen(true)}
+          disabled={!token}
+        >
+          {selectedAccount || value ? (
+            <>
+              <AccountIcon
+                className="!text-[16px]"
+                address={selectedAccount?.address || value || ""}
+              />
+              <span className="max-w-[100px] truncate text-white text-xs leading-none">
+                {selectedAccount?.name || <Address address={value || ""} />}
+              </span>
+            </>
+          ) : (
+            <span className="whitespace-nowrap px-3 pr-2 text-body-secondary text-xs leading-none">
+              {t("Select Account")}
+            </span>
+          )}
+        </button>
+
+        <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
+          <SwapAccountPickerModalContent
+            title={title}
+            subtitle={subtitle}
+            allowInput={allowInput}
+            allowZeroBalance={allowZeroBalance}
+            tokenId={tokenId}
+            network={network}
+            compatibleAccounts={compatibleAccounts}
+            selectedAccount={selectedAccount}
+            onSelectAccount={onSelectAccount}
+            onClose={() => setOpen(false)}
+          />
+        </Modal>
+      </>
+    )
+  }
+)
+
+const SwapAccountPickerModalContent = memo(
+  ({
+    title,
+    subtitle,
+    allowInput,
+    allowZeroBalance,
+    tokenId,
+    network,
+    compatibleAccounts,
+    selectedAccount,
+    onSelectAccount,
+    onClose,
+  }: {
+    title: string
+    subtitle: string
+    allowInput: boolean
+    allowZeroBalance: boolean
+    tokenId: string | null
+    network: Network | null
+    compatibleAccounts: Account[]
+    selectedAccount?: Account
+    onSelectAccount: (address: string | null) => void
+    onClose: () => void
+  }) => {
+    const [query, setQuery] = useState("")
+    const deferredQuery = useDeferredValue(query)
+
+    const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(
+      allowInput ? deferredQuery : undefined,
+      { ens: isNetworkEth(network) }
     )
 
     const accountFromInput = useMemo((): Account | null => {
@@ -106,7 +185,6 @@ export const SwapAccountPicker = memo(
               account.address.toLowerCase().includes(lowerQuery)
           )
 
-      // Prepend manually entered address if it doesn't match an existing account
       if (
         accountFromInput &&
         !results.some((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
@@ -117,75 +195,23 @@ export const SwapAccountPicker = memo(
       return results
     }, [compatibleAccounts, deferredQuery, accountFromInput])
 
-    const selectedAccount = useMemo(() => {
-      if (value === null || value === undefined) return
-      return compatibleAccounts.find((account) => isAddressEqual(account.address, value))
-    }, [compatibleAccounts, value])
-
-    const onSelectAccount = useCallback(
-      (address: string | null) => {
-        setOpen(false)
-        onAccountChange?.(address)
-      },
-      [onAccountChange]
-    )
-
-    // Clear address only when a network change makes it incompatible,
-    // not just because the address isn't in the accounts store (external addresses).
-    useEffect(() => {
-      const networkChanged = prevNetworkRef.current !== network
-      prevNetworkRef.current = network
-
-      if (networkChanged && !selectedAccount && value) {
-        onAccountChange?.(null)
-        setQuery("")
-      }
-    }, [onAccountChange, selectedAccount, value, network])
-
     return (
-      <>
-        <button
-          type="button"
-          className="flex h-[26px] items-center gap-3 rounded-[13px] bg-[#262626] pr-[8px] pl-[5px] transition-colors enabled:hover:bg-[#363636] disabled:opacity-80"
-          onClick={() => setOpen(true)}
-          disabled={!token}
-        >
-          {selectedAccount || value ? (
-            <>
-              <AccountIcon
-                className="!text-[16px]"
-                address={selectedAccount?.address || value || ""}
-              />
-              <span className="max-w-[100px] truncate text-white text-xs leading-none">
-                {selectedAccount?.name || <Address address={value || ""} />}
-              </span>
-            </>
-          ) : (
-            <span className="whitespace-nowrap px-3 pr-2 text-body-secondary text-xs leading-none">
-              {t("Select Account")}
-            </span>
-          )}
-        </button>
-
-        <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
-          <AccountPickerDialog
-            title={title}
-            subtitle={subtitle}
-            accounts={filteredAccounts}
-            selectedAccount={selectedAccount}
-            query={query}
-            setQuery={setQuery}
-            allowInput={allowInput}
-            allowZeroBalance={allowZeroBalance}
-            isNsLookup={isNsLookup}
-            isNsFetching={isNsFetching}
-            onAccountChange={onSelectAccount}
-            onClose={() => setOpen(false)}
-            tokenId={tokenId}
-            network={network}
-          />
-        </Modal>
-      </>
+      <AccountPickerDialog
+        title={title}
+        subtitle={subtitle}
+        accounts={filteredAccounts}
+        selectedAccount={selectedAccount}
+        query={query}
+        setQuery={setQuery}
+        allowInput={allowInput}
+        allowZeroBalance={allowZeroBalance}
+        isNsLookup={isNsLookup}
+        isNsFetching={isNsFetching}
+        onAccountChange={onSelectAccount}
+        onClose={onClose}
+        tokenId={tokenId}
+        network={network}
+      />
     )
   }
 )

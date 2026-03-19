@@ -113,6 +113,16 @@ export function useSwapAddresses({
     setFromAddress(best?.address ?? null)
   }, [fromTokenId, fromPlatform, fromNetwork, ownedAccounts, balances, setFromAddress])
 
+  // ─── Clear from address if it becomes incompatible with the network ─
+  // Handles manually-set addresses that the auto-select effect skips.
+  useEffect(() => {
+    if (!fromAddress || !fromNetwork) return
+    if (!isAddressCompatibleWithNetwork(fromNetwork, fromAddress)) {
+      fromAddressManuallySet.current = false
+      setFromAddress(null)
+    }
+  }, [fromAddress, fromNetwork, setFromAddress])
+
   // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {
     if (!toNetwork && toAddress) return setToAddress(null) // if we don't know the toNetwork, we can't verify compatibility, so we reset toAddress to be safe
