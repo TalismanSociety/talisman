@@ -7,6 +7,7 @@ import {
   ValidatorRows,
   ValidatorSortMethodButton,
 } from "@ui/domains/Staking/Bittensor/components/ValidatorPicker"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import {
   sortValidatorOptions,
   type ValidatorSortValue,
@@ -31,6 +32,8 @@ export const BittensorValidatorPicker: FC<{
   onSelect: (hotkey: string) => void
 }> = ({ networkId, netuid, hotkey, onSelect }) => {
   const { t } = useTranslation()
+  const isRoot = netuid === ROOT_NETUID
+  const apyColumnLabel = isRoot ? t("APR [30D]") : t("APY [30D]")
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
   const [sortMethod, setSortMethod] = useState<ValidatorSortValue>("featured")
@@ -98,7 +101,7 @@ export const BittensorValidatorPicker: FC<{
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
           <div>{t("Validator")}</div>
-          <div>{t("30 days APY")}</div>
+          <div>{apyColumnLabel}</div>
         </div>
         <ScrollContainer
           ref={scrollContainerRef}
