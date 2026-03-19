@@ -1,10 +1,8 @@
-import { planckToTokens } from "@talismn/util"
-import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state/chaindata"
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useSwap } from "../SwapProvider"
+import { formatSwapExchangeRate } from "../swap-utils"
 
 export const QuoteExchangeRate = () => {
   const { t } = useTranslation()
@@ -13,16 +11,21 @@ export const QuoteExchangeRate = () => {
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
 
+  const [reversed, setReversed] = useState(false)
+  const toggleReversed = useCallback(() => setReversed((r) => !r), [])
+
   const exchangeRate = useMemo(() => {
     if (!selectedQuote || !fromAmount || !fromToken || !toToken) return undefined
-    const toNum = Number(
-      planckToTokens(selectedQuote.outputAmountBN.toString(), toToken.decimals) ?? "0"
-    )
-    const fromNum = Number(planckToTokens(fromAmount.toString(), fromToken.decimals) ?? "1")
-    const res = toNum / (fromNum || 1)
-    if (res < 0.0001) return "0"
-    return res.toString()
-  }, [selectedQuote, fromAmount, fromToken, toToken])
+    return formatSwapExchangeRate({
+      fromAmount,
+      fromDecimals: fromToken.decimals,
+      fromSymbol: fromToken.symbol,
+      toDecimals: toToken.decimals,
+      toSymbol: toToken.symbol,
+      outputAmountBN: selectedQuote.outputAmountBN,
+      reversed,
+    })
+  }, [selectedQuote, fromAmount, fromToken, toToken, reversed])
 
   const isLoading = !selectedQuote
 
@@ -37,11 +40,14 @@ export const QuoteExchangeRate = () => {
           >
             1 TKN = 0.0000 TKN
           </span>
-        ) : exchangeRate !== undefined && fromToken && toToken ? (
-          <span>
-            1 {fromToken.symbol} ={" "}
-            <Tokens amount={exchangeRate} symbol={toToken.symbol} noCountUp />
-          </span>
+        ) : exchangeRate !== undefined ? (
+          <button
+            type="button"
+            className="flex cursor-pointer items-center gap-1 text-body-secondary hover:text-body"
+            onClick={toggleReversed}
+          >
+            {exchangeRate}
+          </button>
         ) : null}
       </div>
     </div>

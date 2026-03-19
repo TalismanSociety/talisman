@@ -1,7 +1,8 @@
 import { planckToTokens } from "@talismn/util"
 
 /**
- * Format a swap exchange rate as "1 toSymbol = X fromSymbol".
+ * Format a swap exchange rate as "1 fromSymbol = X toSymbol".
+ * When `reversed` is true, displays as "1 toSymbol = X fromSymbol".
  * Returns undefined when the rate cannot be computed (e.g. zero output).
  */
 export function formatSwapExchangeRate(params: {
@@ -11,19 +12,25 @@ export function formatSwapExchangeRate(params: {
   toDecimals: number
   toSymbol: string
   outputAmountBN: bigint
+  reversed?: boolean
 }): string | undefined {
-  const { fromAmount, fromDecimals, fromSymbol, toDecimals, toSymbol, outputAmountBN } = params
+  const { fromAmount, fromDecimals, fromSymbol, toDecimals, toSymbol, outputAmountBN, reversed } =
+    params
   const toNum = Number(planckToTokens(outputAmountBN.toString(), toDecimals) ?? "0")
   const fromNum = Number(planckToTokens(fromAmount.toString(), fromDecimals) ?? "1")
-  if (!toNum) return undefined
-  const rate = fromNum / toNum
-  return `1 ${toSymbol} = ${Intl.NumberFormat(undefined, {
+  if (!toNum || !fromNum) return undefined
+
+  const [baseSymbol, quoteSymbol, rate] = reversed
+    ? [toSymbol, fromSymbol, fromNum / toNum]
+    : [fromSymbol, toSymbol, toNum / fromNum]
+
+  return `1 ${baseSymbol} = ${Intl.NumberFormat(undefined, {
     style: "decimal",
     minimumSignificantDigits: 3,
     maximumSignificantDigits: rate < 1 ? 3 : 4,
     roundingPriority: "morePrecision",
     notation: "compact",
-  }).format(rate)} ${fromSymbol}`
+  }).format(rate)} ${quoteSymbol}`
 }
 
 /**
