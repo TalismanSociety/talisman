@@ -11,6 +11,7 @@ import {
 } from "@ui/components/ContextMenu"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
+import { Skeleton } from "@ui/components/Skeleton"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
@@ -27,7 +28,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
@@ -67,7 +67,7 @@ export const BittensorSubnetSelect = () => {
   const [search, setSearch] = useState<string>("")
   const deferredSearch = useDeferredValue(search)
 
-  const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
+  const { subnetData, isLoading } = useCombinedSubnetData(networkId)
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
     sortSubnetOptions(subnetData, sortMethod)
@@ -149,7 +149,7 @@ export const BittensorSubnetSelect = () => {
               networkId={networkId}
               subnets={displayedSubnets}
               selectedNetuid={netuid}
-              isLoading={isLoading || isSubnetsLoading}
+              isLoading={isLoading}
               onSelect={handleSubmit}
             />
           </ScrollContainer>
@@ -307,39 +307,49 @@ const SubnetRow: FC<{
           <div className="truncate">
             {tokenAlpha.netuid} | {tokenAlpha.subnetName} {tokenAlpha.symbol}
           </div>
-          <div className={cn("shrink-0", isLoading && "animate-pulse")}>{emission}</div>
+          <div className={cn("shrink-0", isLoading && "animate-pulse")}>
+            {isLoading ? <Skeleton className="">0.00%</Skeleton> : emission}
+          </div>
         </div>
-
-        {!!option.total_tao && (
+        {(isLoading || option.total_tao) && (
           <div
             className={cn(
-              "flex w-full items-center justify-between gap-8 overflow-hidden text-body-secondary text-xs",
-              isLoading && "animate-pulse"
+              "flex w-full items-center justify-between gap-8 overflow-hidden text-body-secondary text-xs"
             )}
           >
             <div className="flex grow items-center gap-2 overflow-hidden">
-              <TokensAndFiat
-                tokenId={taoTokenId}
-                planck={String(option.total_tao)}
-                noFiat
-                noCountUp
-                noTooltip
-              />
-              <div className="inline-block size-2 rounded-full bg-body-disabled" />
-              <TokensAndFiat
-                tokenId={tokenAlpha.id}
-                planck={String(option.total_alpha)}
-                noFiat
-                noCountUp
-                noTooltip
-              />
+              {isLoading ? (
+                <Skeleton>000.0K TAO x 000.0K a</Skeleton>
+              ) : (
+                <>
+                  <TokensAndFiat
+                    tokenId={taoTokenId}
+                    planck={String(option.total_tao)}
+                    noFiat
+                    noCountUp
+                    noTooltip
+                  />
+                  <div className="inline-block size-2 rounded-full bg-body-disabled" />{" "}
+                  <TokensAndFiat
+                    tokenId={tokenAlpha.id}
+                    planck={String(option.total_alpha)}
+                    noFiat
+                    noCountUp
+                    noTooltip
+                  />
+                </>
+              )}
             </div>
             <div className="shrink-0">
-              <BittensorAlphaPrice
-                taoTokenId={taoTokenId}
-                price={option.price}
-                priceChange24h={option.price_change_1_day}
-              />
+              {isLoading ? (
+                <Skeleton>0.0000 TAO 0.0%</Skeleton>
+              ) : (
+                <BittensorAlphaPrice
+                  taoTokenId={taoTokenId}
+                  price={option.price}
+                  priceChange24h={option.price_change_1_day}
+                />
+              )}
             </div>
           </div>
         )}
