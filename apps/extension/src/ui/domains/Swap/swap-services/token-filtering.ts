@@ -21,6 +21,7 @@ export const getTokenTabs = ({
   curatedTokens?: string[]
   recentTokenIds?: string[]
 }): TokenTab[] => {
+  const recentSet = new Set(recentTokenIds)
   const tabs: TokenTab[] = [
     {
       value: "all",
@@ -36,18 +37,13 @@ export const getTokenTabs = ({
           }
         : undefined,
     },
-  ]
-
-  // Recent tab: hidden when no transaction history
-  if (recentTokenIds && recentTokenIds.length > 0) {
-    const recentSet = new Set(recentTokenIds)
-    tabs.push({
+    {
       value: "recent",
       label: t("Recent"),
       filter: (tokenId) => recentSet.has(tokenId),
-      sort: (a, b) => recentTokenIds.indexOf(a) - recentTokenIds.indexOf(b),
-    })
-  }
+      sort: (a, b) => (recentTokenIds ?? []).indexOf(a) - (recentTokenIds ?? []).indexOf(b),
+    },
+  ]
 
   // Popular tab: hidden when curatedTokens is empty
   if (curatedTokens && curatedTokens.length > 0) {
