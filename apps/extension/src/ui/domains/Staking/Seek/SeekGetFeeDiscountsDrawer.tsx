@@ -5,7 +5,7 @@ import { cn } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
@@ -32,7 +32,7 @@ export const SeekGetFeeDiscountsDrawer = ({
 }: SeekGetFeeDiscountsDrawerProps) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapTokensModal } = useSwapModal()
   const { tokenId, webAppStakingPath, docsUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()

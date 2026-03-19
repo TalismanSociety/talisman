@@ -6,7 +6,7 @@ import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
+import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { AvailableBalance } from "./AvailableBalance"
 import { InputFromAmount } from "./InputFromAmount"
@@ -19,7 +19,7 @@ import { TokenAndAmountContainer } from "./TokenAndAmountContainer"
 
 export const SwapForm = () => {
   const { t } = useTranslation()
-  const { close } = useSwapTokensModal()
+  const { close } = useSwapModal()
 
   const {
     swapView,
@@ -218,7 +218,7 @@ export const SwapForm = () => {
 
 export const SwapFormShimmer = () => {
   const { t } = useTranslation()
-  const { close } = useSwapTokensModal()
+  const { close } = useSwapModal()
 
   return (
     <WizardModalDialog

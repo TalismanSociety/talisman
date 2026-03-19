@@ -8,4 +8,4 @@ export type SwapInit = {
   fromAddress?: string
 }
 
-export const [useSwapTokensModal] = createGlobalOpenClose<SwapInit>()
+export const [useSwapModal] = createGlobalOpenClose<SwapInit>()

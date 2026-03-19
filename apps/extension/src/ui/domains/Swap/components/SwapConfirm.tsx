@@ -8,7 +8,7 @@ import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
+import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirmActions } from "./SwapConfirmActions"
 
@@ -16,7 +16,7 @@ const CONTAINER_ID = "swap-modal-confirm"
 
 export const SwapConfirm = () => {
   const { t } = useTranslation()
-  const { close } = useSwapTokensModal()
+  const { close } = useSwapModal()
 
   const { fromTokenId, toTokenId, fromAmount, toAmount, fromAddress, toAddress, setSwapView } =
     useSwap()

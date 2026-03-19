@@ -17,7 +17,7 @@ import { BittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/Bitte
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
-import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
+import { SwapModal } from "@ui/domains/Swap/components/SwapModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { Suspense, useEffect, useState } from "react"
 
@@ -60,7 +60,7 @@ export const DashboardNotificationsAndModals = () => {
       <NomPoolWithdrawModal />
       <OnboardingToast />
       <RampsModal />
-      <SwapTokensModal />
+      <SwapModal />
       <UnbondModal />
       <SeekBenefitsModal />
       <YieldxyzEnterPositionModal />

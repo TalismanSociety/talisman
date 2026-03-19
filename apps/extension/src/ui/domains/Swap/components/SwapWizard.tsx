@@ -1,10 +1,10 @@
-import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
+import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm, SwapFormShimmer } from "./SwapForm"
 import { SwapProgress } from "./SwapProgress"
 
-export const SwapTokensWizard = () => {
+export const SwapWizard = () => {
   const { swapView, isInitializing } = useSwap()
 
   switch (swapView) {
@@ -20,7 +20,7 @@ export const SwapTokensWizard = () => {
 
 const SwapSubmitted = () => {
   const { submittedTxHash, submittedNetworkId, submittedTxInfo } = useSwap()
-  const { close: closeSwapTokensModal } = useSwapTokensModal()
+  const { close: closeSwapTokensModal } = useSwapModal()
 
   if (!submittedTxHash || !submittedNetworkId || !submittedTxInfo) return null
 

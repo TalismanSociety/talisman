@@ -1,19 +1,19 @@
 import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 
-import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
+import { useSwapModal } from "../hooks/useSwapModal"
 import { SwapProvider } from "../SwapProvider"
-import { SwapTokensWizard } from "./SwapTokensWizard"
+import { SwapWizard } from "./SwapWizard"
 
 // This control is injected directly in the layout of dashboard
-export const SwapTokensModal = () => {
-  const { isOpen, close, args } = useSwapTokensModal()
+export const SwapModal = () => {
+  const { isOpen, close, args } = useSwapModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="swap-modal">
         <SwapProvider stateInit={args}>
-          <SwapTokensWizard />
+          <SwapWizard />
         </SwapProvider>
       </PopupSizeModalContainer>
     </Modal>

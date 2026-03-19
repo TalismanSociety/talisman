@@ -21,7 +21,7 @@ import { Nav, NavItem } from "@ui/components/Nav"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts } from "@ui/state/accounts"
@@ -82,7 +82,7 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapTokensModal } = useSwapModal()
   const handleSwapClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
