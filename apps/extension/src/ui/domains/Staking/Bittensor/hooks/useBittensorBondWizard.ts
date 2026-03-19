@@ -277,11 +277,11 @@ const useBittensorBondWizardProvider = () => {
       }
     }
 
-    // pick the default validator with the highest stake on this subnet
+    // pick the default validator with the highest APR on this subnet
     const defaultHotkeySet = new Set(defaultValidators.map((key) => key.toLowerCase()))
     const activeDefaults = (subnetValidators ?? [])
       .filter((v) => defaultHotkeySet.has(v.hotkey.toLowerCase()))
-      .sort((a, b) => b.stake - a.stake)
+      .sort((a, b) => (b.thirty_day_apy ?? 0) - (a.thirty_day_apy ?? 0))
 
     if (activeDefaults.length) {
       const picked = activeDefaults[0].hotkey
