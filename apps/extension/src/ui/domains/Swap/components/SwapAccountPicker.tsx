@@ -1,12 +1,13 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
-import { getNetworkGenesisHash, type Network } from "@talismn/chaindata-provider"
+import { getNetworkGenesisHash, isNetworkEth, type Network } from "@talismn/chaindata-provider"
 import {
   detectAddressEncoding,
   isAddressEqual,
   isAddressValid,
   normalizeAddress,
 } from "@talismn/crypto"
+import { LoaderIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -14,6 +15,7 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -52,6 +54,11 @@ export const SwapAccountPicker = memo(
     const [query, setQuery] = useState("")
     const deferredQuery = useDeferredValue(query)
 
+    const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(
+      allowInput ? deferredQuery : undefined,
+      { ens: isNetworkEth(network) }
+    )
+
     const compatibleAccounts = useMemo(
       () =>
         allAccounts.filter(
@@ -61,10 +68,7 @@ export const SwapAccountPicker = memo(
     )
 
     const accountFromInput = useMemo((): Account | null => {
-      if (!allowInput || !deferredQuery || !isAddressValid(deferredQuery)) return null
-
-      const encoding = detectAddressEncoding(deferredQuery)
-      if (!encoding) return null
+      if (!allowInput || !deferredQuery) return null
 
       const accountCommon = {
         type: "contact" as const,
@@ -72,13 +76,24 @@ export const SwapAccountPicker = memo(
         createdAt: 0,
       }
 
-      if (encoding === "ss58") {
-        const address = normalizeAddress(deferredQuery)
-        return { ...accountCommon, name: shortenAddress(address), address }
+      if (isAddressValid(deferredQuery)) {
+        const encoding = detectAddressEncoding(deferredQuery)
+        if (!encoding) return null
+
+        if (encoding === "ss58") {
+          const address = normalizeAddress(deferredQuery)
+          return { ...accountCommon, name: shortenAddress(address), address }
+        }
+
+        return { ...accountCommon, name: shortenAddress(deferredQuery), address: deferredQuery }
       }
 
-      return { ...accountCommon, name: shortenAddress(deferredQuery), address: deferredQuery }
-    }, [allowInput, deferredQuery])
+      if (isNsLookup && nsLookup && isAddressValid(nsLookup)) {
+        return { ...accountCommon, name: deferredQuery, address: nsLookup }
+      }
+
+      return null
+    }, [allowInput, deferredQuery, isNsLookup, nsLookup])
 
     const filteredAccounts = useMemo(() => {
       const lowerQuery = deferredQuery.trim().toLowerCase()
@@ -162,6 +177,8 @@ export const SwapAccountPicker = memo(
             setQuery={setQuery}
             allowInput={allowInput}
             allowZeroBalance={allowZeroBalance}
+            isNsLookup={isNsLookup}
+            isNsFetching={isNsFetching}
             onAccountChange={onSelectAccount}
             onClose={() => setOpen(false)}
             tokenId={tokenId}
@@ -183,6 +200,8 @@ const AccountPickerDialog = memo(
     setQuery,
     allowInput,
     allowZeroBalance,
+    isNsLookup,
+    isNsFetching,
     onAccountChange,
     onClose,
     tokenId,
@@ -196,6 +215,8 @@ const AccountPickerDialog = memo(
     setQuery?: (query: string) => void
     allowInput?: boolean
     allowZeroBalance?: boolean
+    isNsLookup?: boolean
+    isNsFetching?: boolean
     onAccountChange?: (address: string | null) => void
     onClose: () => void
     tokenId: string | null
@@ -218,6 +239,11 @@ const AccountPickerDialog = memo(
               onChange={setQuery}
               placeholder={allowInput ? t("Enter address") : t("Search by account name")}
               autoFocus
+              after={
+                isNsLookup && isNsFetching ? (
+                  <LoaderIcon className="shrink-0 animate-spin-slow text-body-disabled" />
+                ) : null
+              }
             />
           </div>
         </div>
