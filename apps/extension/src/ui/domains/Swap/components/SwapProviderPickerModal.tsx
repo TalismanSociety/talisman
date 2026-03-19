@@ -37,7 +37,7 @@ export const SwapProviderPickerModal: FC<{
     <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={onClose}>
       <WizardModalDialog title={t("Provider")} onBackClick={onClose}>
         <div className="flex flex-col gap-[12px]">
-          {sortedQuotes.map(({ quote, fees }, idx) => {
+          {sortedQuotes.map(({ quote }, idx) => {
             const isSelected =
               selectedProtocol === quote.protocol &&
               (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
@@ -46,7 +46,6 @@ export const SwapProviderPickerModal: FC<{
               <SwapProviderQuoteButton
                 key={`${quote.protocol}-${quote.subProtocol ?? ""}`}
                 quote={quote}
-                fees={fees}
                 isSelected={isSelected}
                 isBestRate={idx === 0}
                 onClick={() => handleSelect(quote)}
@@ -61,11 +60,10 @@ export const SwapProviderPickerModal: FC<{
 
 const SwapProviderQuoteButton: FC<{
   quote: BaseQuote
-  fees: number
   isSelected: boolean
   isBestRate: boolean
   onClick: () => void
-}> = memo(({ quote, fees, isSelected, isBestRate, onClick }) => {
+}> = memo(({ quote, isSelected, isBestRate, onClick }) => {
   const { t } = useTranslation()
   const { fromTokenId, toTokenId, fromAmount } = useSwap()
   const fromToken = useToken(fromTokenId ?? undefined)
@@ -149,12 +147,7 @@ const SwapProviderQuoteButton: FC<{
           <span className="text-body-disabled text-xs">{t("Rate")}</span>
           <span className="text-white text-xs">{exchangeRate}</span>
         </div>
-        <div className="flex flex-col items-start gap-[2px]">
-          <span className="text-body-disabled text-xs">{t("Fee")}</span>
-          <span className="text-white text-xs">
-            <Fiat amount={fees} noCountUp />
-          </span>
-        </div>
+
         <div className="flex flex-col items-start gap-[2px]">
           <span className="text-body-disabled text-xs">{t("Time")}</span>
           <span className="text-white text-xs">{duration}</span>
