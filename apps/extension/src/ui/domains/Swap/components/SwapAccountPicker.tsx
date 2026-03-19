@@ -1,7 +1,12 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
 import { getNetworkGenesisHash, type Network } from "@talismn/chaindata-provider"
-import { detectAddressEncoding, isAddressEqual, normalizeAddress } from "@talismn/crypto"
+import {
+  detectAddressEncoding,
+  isAddressEqual,
+  isAddressValid,
+  normalizeAddress,
+} from "@talismn/crypto"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -56,13 +61,13 @@ export const SwapAccountPicker = memo(
     )
 
     const accountFromInput = useMemo((): Account | null => {
-      if (!allowInput || !deferredQuery) return null
+      if (!allowInput || !deferredQuery || !isAddressValid(deferredQuery)) return null
 
       const encoding = detectAddressEncoding(deferredQuery)
       if (!encoding) return null
 
       const accountCommon = {
-        type: "watch-only" as const,
+        type: "contact" as const,
         isPortfolio: false,
         createdAt: 0,
       }
