@@ -95,7 +95,7 @@ export const BittensorValidatorPicker: FC<{
         <ValidatorSortMethodButton
           method={sortMethod}
           onChange={setSortMethod}
-          apyLabel={t("30 days APY")}
+          apyLabel={t("Rewards")}
         />
       </div>
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
