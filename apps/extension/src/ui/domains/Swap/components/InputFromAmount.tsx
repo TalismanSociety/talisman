@@ -66,7 +66,10 @@ export const InputFromAmount = () => {
   const canEditFiat = useMemo(() => !!tokenRates?.[currency]?.price, [tokenRates, currency])
 
   const [editFiat, setEditFiat] = useState(false)
-  const [value, setValue] = useState("")
+  const [value, setValue] = useState(() => {
+    if (fromAmount === null || !fromToken) return ""
+    return planckToTokens(fromAmount.toString(), fromToken.decimals) ?? ""
+  })
   const refSkipSync = useRef(false)
   const refValue = useRef(value)
   refValue.current = value

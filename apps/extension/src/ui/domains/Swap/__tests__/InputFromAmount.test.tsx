@@ -164,4 +164,35 @@ describe("InputFromAmount", () => {
     expect((screen.getByLabelText("Amount to swap") as HTMLInputElement).value).toBe("2000.00")
     expect(setFromAmount).not.toHaveBeenCalled()
   })
+
+  it("preserves amount when remounting with an existing fromAmount (back from confirm)", async () => {
+    const existingAmount = BigInt(tokensToPlanck("1.5", 18) ?? "0")
+
+    useSwapMock.mockReturnValue({
+      fromBalance: null,
+      fromTokenId: "1:native:eth",
+      fromAmount: existingAmount,
+      setFromAmount,
+    })
+
+    const { unmount } = render(<InputFromAmount />)
+    const input = screen.getByLabelText("Amount to swap") as HTMLInputElement
+
+    // Input should initialise from the existing context amount
+    expect(input.value).toBe("1.5")
+
+    setFromAmount.mockClear()
+
+    // Simulate navigating to confirm (unmount) and back (remount)
+    unmount()
+    render(<InputFromAmount />)
+
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync()
+    })
+
+    expect((screen.getByLabelText("Amount to swap") as HTMLInputElement).value).toBe("1.5")
+    // fromAmount must never be called with null during the remount cycle
+    expect(setFromAmount).not.toHaveBeenCalledWith(null)
+  })
 })
