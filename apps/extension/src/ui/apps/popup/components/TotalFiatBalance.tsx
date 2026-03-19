@@ -200,7 +200,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           ? {
               analyticsName: "Goto" as const,
               analyticsAction: "open tao dashboard",
-              label: t("Stake TAO"),
+              label: t("Trade TAO"),
               icon: TaoIcon,
               onClick: () => api.dashboardOpen("/bittensor/subnets"),
               disabled: false,
