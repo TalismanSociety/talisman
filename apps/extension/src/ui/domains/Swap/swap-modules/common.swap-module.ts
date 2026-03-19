@@ -129,6 +129,7 @@ export type ApprovalInfo = {
 export type SwapModule = {
   protocol: SupportedSwapProtocol
   decentralisationScore: number
+  supportsSlippageSetting?: boolean
 
   getFromAssets: (signal: AbortSignal) => Promise<TokenId[]>
   getToAssets: (fromTokenId: TokenId | null, signal: AbortSignal) => Promise<TokenId[]>

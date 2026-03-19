@@ -4,8 +4,8 @@ import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
-import { useSwapLifiSlippage } from "./hooks/useSwapLifiSlippage"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
+import { useSwapSlippage } from "./hooks/useSwapSlippage"
 import type { SwapInit } from "./hooks/useSwapTokensModal"
 import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
 import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
@@ -151,7 +151,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setFromAddressManuallySet(true)
   }, [stateInit?.fromAddress, setFromAddressManuallySet])
 
-  const [lifiSlippagePercent] = useSwapLifiSlippage()
+  const [slippagePercent] = useSwapSlippage()
 
   const {
     isLoadingQuotes,
@@ -175,7 +175,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
-    lifiSlippagePercent,
+    slippagePercent,
     enabled: swapView !== "submitted",
     freezeQuote: swapView === "confirm",
   })

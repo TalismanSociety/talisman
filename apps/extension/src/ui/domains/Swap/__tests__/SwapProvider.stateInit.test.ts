@@ -60,8 +60,8 @@ vi.mock("../hooks/useFastBalance", () => ({
   useFastBalance: () => undefined,
 }))
 
-vi.mock("../hooks/useSwapLifiSlippage", () => ({
-  useSwapLifiSlippage: () => [0.5],
+vi.mock("../hooks/useSwapSlippage", () => ({
+  useSwapSlippage: () => [0.5],
 }))
 
 vi.mock("@ui/hooks/useBalancesByParams", () => ({

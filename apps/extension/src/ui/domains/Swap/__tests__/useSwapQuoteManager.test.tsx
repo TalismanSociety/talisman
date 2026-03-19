@@ -104,7 +104,7 @@ describe("useSwapQuoteManager", () => {
       selectedProtocol: null,
       selectedSubProtocol: undefined,
       quoteSorting: "bestRate" as const,
-      lifiSlippagePercent: 0.5,
+      slippagePercent: 0.5,
     }
 
     const { result, rerender } = renderHook(() => useSwapQuoteManager(params), { wrapper })

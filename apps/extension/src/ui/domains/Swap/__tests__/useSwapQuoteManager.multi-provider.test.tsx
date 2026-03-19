@@ -126,7 +126,7 @@ describe("useSwapQuoteManager – multi-provider", () => {
       selectedProtocol: null as SupportedSwapProtocol | null,
       selectedSubProtocol: undefined,
       quoteSorting: "bestRate" as const,
-      lifiSlippagePercent: 0.5,
+      slippagePercent: 0.5,
     }
 
     const { result } = renderHook(() => useSwapQuoteManager(params), { wrapper })
@@ -171,7 +171,7 @@ describe("useSwapQuoteManager – multi-provider", () => {
       selectedProtocol: null as SupportedSwapProtocol | null,
       selectedSubProtocol: undefined,
       quoteSorting: "bestRate" as const,
-      lifiSlippagePercent: 0.5,
+      slippagePercent: 0.5,
     }
 
     const { result } = renderHook(() => useSwapQuoteManager(params), { wrapper })
@@ -233,7 +233,7 @@ describe("useSwapQuoteManager – multi-provider", () => {
       selectedProtocol: null as SupportedSwapProtocol | null,
       selectedSubProtocol: undefined,
       quoteSorting: "bestRate" as const,
-      lifiSlippagePercent: 0.5,
+      slippagePercent: 0.5,
     }
 
     const { result, rerender } = renderHook(() => useSwapQuoteManager(params), { wrapper })

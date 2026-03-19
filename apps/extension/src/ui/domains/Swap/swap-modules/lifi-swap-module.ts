@@ -24,7 +24,7 @@ import {
   takeWhile,
 } from "rxjs"
 import { zeroAddress } from "viem"
-import { getSwapLifiSlippageDecimal } from "../hooks/useSwapLifiSlippage"
+import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
 import {
   type ApprovalInfo,
   type BaseQuote,
@@ -259,7 +259,7 @@ const getRoutes = async (
       : (toAsset.contractAddress ?? zeroAddress)
 
     const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
-    const slippage = await getSwapLifiSlippageDecimal()
+    const slippage = await getSwapSlippageDecimal()
     if (signal.aborted) return null
     return await lifiSdk.getRoutes(
       {
@@ -497,6 +497,7 @@ const getTransaction = async (
 export const lifiSwapModule: SwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
+  supportsSlippageSetting: true,
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,

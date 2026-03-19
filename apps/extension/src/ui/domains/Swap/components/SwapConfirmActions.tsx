@@ -21,13 +21,13 @@ import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "reac
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
-import { useSwapLifiSlippage } from "../hooks/useSwapLifiSlippage"
+import { useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
 import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
-import { SwapLifiSlippageDrawer } from "./SwapLifiSlippageDrawer"
+import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
@@ -59,9 +59,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const needsApproval = !approvalLoading && approvalData !== null
   const isReady = useConfirmReadiness(swapView)
-  const [lifiSlippagePercent] = useSwapLifiSlippage()
+  const [slippagePercent] = useSwapSlippage()
   const slippageDrawer = useOpenClose()
-  const isLifiSelected = swapModule?.protocol === "lifi"
+  const supportsSlippage = swapModule?.supportsSlippageSetting === true
 
   // Increments each time the confirm view is entered, forcing a fresh exchange query
   const confirmEntryCounter = useRef(0)
@@ -160,7 +160,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       subProtocol,
       allowReap,
       approvalCounter,
-      isLifiSelected ? lifiSlippagePercent.toString() : "",
+      supportsSlippage ? slippagePercent.toString() : "",
       confirmEntryCounter.current,
     ],
     queryFn: async ({ signal }) => {
@@ -423,7 +423,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             </div>
           </div>
         ) : null}
-        {isLifiSelected ? (
+        {supportsSlippage ? (
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary text-xs">
               {t("Slippage Tolerance")}
@@ -434,8 +434,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
               className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
             >
               <EditIcon />
-              <div className={lifiSlippagePercent === 0 ? "text-alert-warn" : undefined}>
-                {lifiSlippagePercent.toFixed(2)}%
+              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
+                {slippagePercent.toFixed(2)}%
               </div>
             </button>
           </div>
@@ -495,8 +495,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           />
         )}
       </div>
-      {isLifiSelected ? (
-        <SwapLifiSlippageDrawer
+      {supportsSlippage ? (
+        <SwapSlippageDrawer
           containerId={containerId}
           isOpen={slippageDrawer.isOpen}
           onClose={slippageDrawer.close}

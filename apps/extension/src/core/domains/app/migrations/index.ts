@@ -78,3 +78,14 @@ export const migrateEnabledTestnets: Migration = {
     await legacySettingsStore.delete("useTestnets")
   }),
 }
+
+export const migrateSwapSlippageKey: Migration = {
+  forward: new MigrationFunction(async (_) => {
+    const legacySettingsStore = new StorageProvider<{ swapLifiSlippage: number }>("settings")
+    const slippageValue = await legacySettingsStore.get("swapLifiSlippage")
+    if (slippageValue !== undefined) {
+      await settingsStore.set({ swapSlippage: slippageValue })
+      await legacySettingsStore.delete("swapLifiSlippage")
+    }
+  }),
+}

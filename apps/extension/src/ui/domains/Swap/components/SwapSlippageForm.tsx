@@ -5,25 +5,25 @@ import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
-  SWAP_LIFI_SLIPPAGE_DEFAULT,
-  SWAP_LIFI_SLIPPAGE_SCHEMA,
-  useSwapLifiSlippage,
-} from "../hooks/useSwapLifiSlippage"
+  SWAP_SLIPPAGE_DEFAULT,
+  SWAP_SLIPPAGE_SCHEMA,
+  useSwapSlippage,
+} from "../hooks/useSwapSlippage"
 
-export const SwapLifiSlippageForm: FC<{ onClose: () => void }> = ({ onClose }) => {
+export const SwapSlippageForm: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
-  const [slippagePercent, setSlippagePercent] = useSwapLifiSlippage()
+  const [slippagePercent, setSlippagePercent] = useSwapSlippage()
   const [slippageEdit, setSlippageEdit] = useState<string>(slippagePercent.toFixed(2))
 
   const isValid = useMemo(() => {
     if (slippageEdit.trim() === "") return false
-    return SWAP_LIFI_SLIPPAGE_SCHEMA.safeParse(Number(slippageEdit)).success
+    return SWAP_SLIPPAGE_SCHEMA.safeParse(Number(slippageEdit)).success
   }, [slippageEdit])
 
   return (
     <>
       <p className="text-body-secondary text-sm">
-        {t("Choose how much price movement is allowed before a LI.FI swap is reverted for safety.")}
+        {t("Choose how much price movement is allowed before a swap is reverted for safety.")}
       </p>
 
       <div className="mt-4 flex items-center gap-2 self-start text-body-secondary text-sm">
@@ -39,15 +39,15 @@ export const SwapLifiSlippageForm: FC<{ onClose: () => void }> = ({ onClose }) =
             <PillButton
               className="h-[3rem] px-4"
               onClick={() => {
-                setSlippagePercent(SWAP_LIFI_SLIPPAGE_DEFAULT)
-                setSlippageEdit(SWAP_LIFI_SLIPPAGE_DEFAULT.toFixed(2))
+                setSlippagePercent(SWAP_SLIPPAGE_DEFAULT)
+                setSlippageEdit(SWAP_SLIPPAGE_DEFAULT.toFixed(2))
               }}
             >
               {t("Reset")}
             </PillButton>
           </div>
         }
-        placeholder={SWAP_LIFI_SLIPPAGE_DEFAULT.toFixed(2)}
+        placeholder={SWAP_SLIPPAGE_DEFAULT.toFixed(2)}
         onChange={(e) => setSlippageEdit(e.target.value)}
         value={slippageEdit}
       />
