@@ -1,7 +1,7 @@
 import type { AccountType } from "@core/domains/keyring/exports"
 import type { Balance } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
-import { CheckCircleIcon, XIcon } from "@talismn/icons"
+import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -90,7 +90,6 @@ export const AccountRow = memo(
             </div>
             <Address className="text-body-secondary text-xs" address={displayAddress} />
           </div>
-          {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           {onClear && (
             // biome-ignore lint/a11y/useSemanticElements: legacy
             <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
