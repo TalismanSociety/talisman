@@ -10,6 +10,15 @@ import type { swapModules } from "../swaps.api"
 /**
  * Manages ERC20 approval state for the selected swap module.
  * Returns approval data (if approval is needed), loading state, and the prepared approval tx.
+ *
+ * Some ERC20 tokens (notably USDT on Ethereum mainnet) implement a non-standard `approve()`
+ * that reverts when changing a non-zero allowance to a different non-zero value — a safety
+ * measure against front-running attacks.
+ *
+ * When we detect a non-zero but insufficient existing allowance (`needsRevoke`), we first
+ * build an `approve(spender, 0)` transaction. After that revoke tx confirms and the
+ * `approvalCounter` increments, the allowance re-query finds 0 and we fall through to the
+ * normal `approve(spender, amount)` flow automatically.
  */
 export const useSwapErc20Approval = (params: {
   selectedModule: (typeof swapModules)[number] | undefined
@@ -92,10 +101,23 @@ export const useSwapErc20Approval = (params: {
       })
 
       if (allowance >= approvalInfo.amount) return null
-      return { ...approvalInfo }
+
+      // Track whether there's a non-zero but insufficient allowance.
+      // Some tokens (e.g. USDT) revert on approve() when current allowance is non-zero,
+      // requiring a reset to zero first. We surface this to the UI.
+      return { ...approvalInfo, existingAllowance: allowance }
     },
     enabled: !!approvalInfo,
   })
+
+  // When there's a non-zero but insufficient allowance, some tokens (e.g. USDT) require
+  // resetting to zero before setting a new value. We handle this by first building a revoke
+  // tx (approve to 0). After it confirms, the allowance query re-runs, finds 0, and the
+  // normal approve flow kicks in automatically.
+  const needsRevoke = useMemo(
+    () => (allowanceQuery.data?.existingAllowance ?? 0n) > 0n,
+    [allowanceQuery.data]
+  )
 
   // Prepare approval tx
   const approveTx = useMemo(() => {
@@ -105,7 +127,7 @@ export const useSwapErc20Approval = (params: {
     const data = encodeFunctionData({
       abi: erc20Abi,
       functionName: "approve",
-      args: [approval.contractAddress as `0x${string}`, approval.amount],
+      args: [approval.contractAddress as `0x${string}`, needsRevoke ? 0n : approval.amount],
     })
 
     return {
@@ -115,14 +137,15 @@ export const useSwapErc20Approval = (params: {
       data,
       value: 0n,
     }
-  }, [allowanceQuery.data, fromAddress])
+  }, [allowanceQuery.data, fromAddress, needsRevoke])
 
   return useMemo(
     () => ({
       data: allowanceQuery.data ?? null,
       loading: allowanceQuery.isLoading,
       approveTx,
+      needsRevoke,
     }),
-    [allowanceQuery.data, allowanceQuery.isLoading, approveTx]
+    [allowanceQuery.data, allowanceQuery.isLoading, approveTx, needsRevoke]
   )
 }

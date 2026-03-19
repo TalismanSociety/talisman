@@ -47,7 +47,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     gotoSubmitted,
     approvalCounter,
     incrementApprovalCounter,
-    erc20Approval: { data: approvalData, loading: approvalLoading, approveTx },
+    erc20Approval: { data: approvalData, loading: approvalLoading, approveTx, needsRevoke },
   } = useSwap()
 
   const fromToken = useToken(fromTokenId ?? undefined)
@@ -78,9 +78,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       type: "approve-erc20",
       tokenId: fromTokenId,
       contractAddress: approvalData.contractAddress,
-      amount: approvalData.amount.toString(),
+      amount: needsRevoke ? "0" : approvalData.amount.toString(),
     }
-  }, [approvalData, fromTokenId])
+  }, [approvalData, fromTokenId, needsRevoke])
 
   const approvalEthTx = useEthTransaction(approveTx ?? undefined, fromToken?.networkId, false)
 
@@ -469,9 +469,20 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         {!needsApproval && exchangeError && (
           <div
             role="alert"
-            className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny"
+            className="mb-10 w-full rounded bg-black-tertiary px-4 py-4 text-center text-red-400 text-tiny"
           >
             {t("Error loading transaction:")} {String(exchangeError)}
+          </div>
+        )}
+
+        {needsApproval && needsRevoke && (
+          <div
+            role="alert"
+            className="mb-10 w-full rounded bg-black-tertiary px-4 py-4 text-center text-body-secondary text-tiny"
+          >
+            {t(
+              "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
+            )}
           </div>
         )}
 
@@ -479,7 +490,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           <TxSubmitButton
             containerId={containerId}
             tx={approvalTx}
-            label={t("Approve Send")}
+            label={needsRevoke ? t("Revoke Approval") : t("Approve Send")}
             onSubmit={onApprovalSubmitted}
             disabled={!isReady || !approvalTx}
             isProcessing={isApproving}
