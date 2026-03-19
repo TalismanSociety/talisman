@@ -3,6 +3,7 @@ import { parseGwei } from "viem"
 import {
   getEthDerivationPath,
   getEthLedgerDerivationPath,
+  getGasLimit,
   getMaxFeePerGas,
   getTotalFeesFromGasSettings,
   isSafeImageUrl,
@@ -38,8 +39,10 @@ describe("Test ethereum helpers", () => {
       0n
     )
 
-    expect(estimatedFee).toEqual(42000000000000n)
-    expect(maxFee).toEqual(44000000000000n)
+    // effectiveFeePerGas = min(1.5 GWEI, 2 + 0.5 GWEI) = 1.5 GWEI (capped at maxFeePerGas)
+    expect(estimatedFee).toEqual(31500000000000n)
+    // maxFee = maxFeePerGas * gas = 1.5 GWEI * 22000
+    expect(maxFee).toEqual(33000000000000n)
   })
 
   test("getTotalFeesFromGasSettings - EIP1559 classic", () => {
@@ -55,8 +58,10 @@ describe("Test ethereum helpers", () => {
       0n
     )
 
+    // effectiveFeePerGas = min(3.5 GWEI, 2 + 0.5 GWEI) = 2.5 GWEI
     expect(estimatedFee).toEqual(52500000000000n)
-    expect(maxFee).toEqual(88000000000000n)
+    // maxFee = maxFeePerGas * gas = 3.5 GWEI * 22000
+    expect(maxFee).toEqual(77000000000000n)
   })
 
   test("getTotalFeesFromGasSettings - Legacy", () => {
@@ -89,6 +94,35 @@ describe("Test ethereum helpers", () => {
 
     expect(getEthLedgerDerivationPath("BIP44")).toEqual("m/44'/60'/0'/0/0")
     expect(getEthLedgerDerivationPath("BIP44", 3)).toEqual("m/44'/60'/0'/0/3")
+  })
+
+  test("getGasLimit - simple transfer (no buffer)", () => {
+    const result = getGasLimit(30000000n, 21000n, undefined, false)
+    expect(result).toEqual(21000n)
+  })
+
+  test("getGasLimit - contract call (1.5× buffer)", () => {
+    const result = getGasLimit(30000000n, 100000n, undefined, true)
+    // 100000 * 150 / 100 = 150000
+    expect(result).toEqual(150000n)
+  })
+
+  test("getGasLimit - dapp suggests higher gas than buffered estimate", () => {
+    const result = getGasLimit(30000000n, 50000n, { gas: 80000n } as never, true)
+    // buffered = 50000 * 1.5 = 75000, dapp suggests 80000 → use 80000
+    expect(result).toEqual(80000n)
+  })
+
+  test("getGasLimit - capped at 90% of block gas limit", () => {
+    const result = getGasLimit(100000n, 70000n, undefined, true)
+    // buffered = 70000 * 1.5 = 105000, 90% cap = 90000 → use 90000
+    expect(result).toEqual(90000n)
+  })
+
+  test("getGasLimit - below minimum falls back to default", () => {
+    const result = getGasLimit(30000000n, 100n, undefined, false)
+    // 100 < 21000 minimum → fallback to 250000
+    expect(result).toEqual(250000n)
   })
 
   test("isSafeImageUrl", () => {

@@ -3,16 +3,16 @@ import type { EthBaseFeeTrend } from "@core/domains/signing/types"
 import * as Sentry from "@sentry/browser"
 import { formatGwei, type PublicClient, parseGwei } from "viem"
 
-const BLOCKS_HISTORY_LENGTH = 5
-const REWARD_PERCENTILES = [10, 20, 30]
+const BLOCKS_HISTORY_LENGTH = 10
+const REWARD_PERCENTILES = [25, 50, 75]
 const LIVE_DEBUG = false
 
 type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", bigint>
 
 const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
-  low: parseGwei("1.5"),
-  medium: parseGwei("1.6"),
-  high: parseGwei("1.7"),
+  low: parseGwei("1"),
+  medium: parseGwei("2"),
+  high: parseGwei("5"),
 }
 
 export type FeeHistoryAnalysis = {
@@ -77,8 +77,8 @@ export const getFeeHistoryAnalysis = async (
     const result: FeeHistoryAnalysis = {
       maxPriorityPerGasOptions: {
         low: medMaxPriorityFeePerGas[0],
-        medium: (medMaxPriorityFeePerGas[1] * 102n) / 100n,
-        high: (medMaxPriorityFeePerGas[2] * 104n) / 100n,
+        medium: (medMaxPriorityFeePerGas[1] * 105n) / 100n,
+        high: (medMaxPriorityFeePerGas[2] * 110n) / 100n,
       },
       avgGasUsedRatio: avgGasUsedRatio,
       isValid: !feeHistory.gasUsedRatio.includes(0), // if a 0 is found, not all blocks contained a transaction

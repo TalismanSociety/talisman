@@ -144,21 +144,21 @@ const useBlockFeeData = (
       ])
 
       if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
-        // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
-        // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
-        // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
         if (!feeHistoryAnalysis.isValid) {
+          // network inactive: use minimumMaxPriorityFeePerGas for all options
           feeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
           feeHistoryAnalysis.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
           feeHistoryAnalysis.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
-        } else if (
-          feeHistoryAnalysis.avgGasUsedRatio !== null &&
-          feeHistoryAnalysis.avgGasUsedRatio < 0.8
-        )
-          feeHistoryAnalysis.maxPriorityPerGasOptions.low =
-            minimumMaxPriorityFeePerGas < feeHistoryAnalysis.maxPriorityPerGasOptions.low
-              ? minimumMaxPriorityFeePerGas
-              : feeHistoryAnalysis.maxPriorityPerGasOptions.low
+        } else {
+          // use eth_maxPriorityFeePerGas as floor for all tiers to prevent underpricing
+          const { maxPriorityPerGasOptions } = feeHistoryAnalysis
+          if (maxPriorityPerGasOptions.low < minimumMaxPriorityFeePerGas)
+            maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
+          if (maxPriorityPerGasOptions.medium < minimumMaxPriorityFeePerGas)
+            maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
+          if (maxPriorityPerGasOptions.high < minimumMaxPriorityFeePerGas)
+            maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
+        }
       }
 
       const networkUsage = Number((gasUsed * 100n) / blockGasLimit) / 100
@@ -513,7 +513,7 @@ export const useEthTransaction = (
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
-    setPriority(hasEip1559Support ? "low" : "recommended")
+    setPriority(hasEip1559Support ? "medium" : "recommended")
   }, [hasEip1559Support, isReplacement, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({

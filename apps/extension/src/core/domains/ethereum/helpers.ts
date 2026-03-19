@@ -245,7 +245,8 @@ export const getTransactionSerializable = (
 
 const TX_GAS_LIMIT_DEFAULT = 250000n
 const TX_GAS_LIMIT_MIN = 21000n
-const TX_GAS_LIMIT_SAFETY_RATIO = 2n
+const TX_GAS_LIMIT_SAFETY_RATIO = 50n // 50% buffer (1.5×, industry standard)
+const TX_GAS_LIMIT_MAX_BLOCK_PERCENT = 90n // cap at 90% of block gas limit
 
 export const getGasLimit = (
   blockGasLimit: bigint,
@@ -262,7 +263,11 @@ export const getGasLimit = (
   // so if dapp suggests higher gas limit as the estimate, use that
   const highestLimit = safeGasLimit > suggestedGasLimit ? safeGasLimit : suggestedGasLimit
 
-  let gasLimit = highestLimit
+  // cap at 90% of block gas limit to prevent rejection
+  const maxBlockGas = (blockGasLimit * TX_GAS_LIMIT_MAX_BLOCK_PERCENT) / 100n
+  const cappedLimit = highestLimit > maxBlockGas ? maxBlockGas : highestLimit
+
+  let gasLimit = cappedLimit
   if (gasLimit > blockGasLimit) {
     // probably bad formatting or error from the dapp, fallback to default value
     gasLimit = TX_GAS_LIMIT_DEFAULT
@@ -323,15 +328,18 @@ export const getTotalFeesFromGasSettings = (
   if (gasSettings.type === "eip1559") {
     if (!isBigInt(baseFeePerGas))
       throw new Error("baseFeePerGas argument is required for type 2 fee computation")
+
+    // EIP-1559: effective fee per gas = min(maxFeePerGas, baseFeePerGas + maxPriorityFeePerGas)
+    const sumBasePriority = baseFeePerGas + gasSettings.maxPriorityFeePerGas
+    const effectiveFeePerGas =
+      sumBasePriority < gasSettings.maxFeePerGas ? sumBasePriority : gasSettings.maxFeePerGas
+
     return {
       estimatedL1DataFee,
       estimatedFee:
-        (gasSettings.maxPriorityFeePerGas +
-          (baseFeePerGas < gasSettings.maxFeePerGas ? baseFeePerGas : gasSettings.maxFeePerGas)) *
-          (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas) +
+        effectiveFeePerGas * (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas) +
         l1Fee,
-      maxFee:
-        (gasSettings.maxFeePerGas + gasSettings.maxPriorityFeePerGas) * gasSettings.gas + maxL1Fee,
+      maxFee: gasSettings.maxFeePerGas * gasSettings.gas + maxL1Fee,
     }
   } else {
     return {
