@@ -1,13 +1,11 @@
-import { ArrowDownIcon, EyeIcon, EyeOffIcon, RepeatIcon, SendIcon } from "@talismn/icons"
+import { ArrowDownIcon, EyeIcon, EyeOffIcon, RepeatIcon, SendIcon, TaoIcon } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -203,7 +201,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
               analyticsName: "Goto" as const,
               analyticsAction: "open tao dashboard",
               label: t("Stake TAO"),
-              icon: BittensorIcon,
+              icon: TaoIcon,
               onClick: () => api.dashboardOpen("/bittensor/subnets"),
               disabled: false,
             }
@@ -230,7 +228,3 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
     </div>
   )
 }
-
-const BittensorIcon: FC<{ className?: string }> = ({ className }) => (
-  <TokenLogo tokenId={BITTENSOR_TOKEN_ID} className={className} />
-)
