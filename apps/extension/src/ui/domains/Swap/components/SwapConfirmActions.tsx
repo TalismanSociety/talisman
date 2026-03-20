@@ -467,24 +467,26 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8 pb-12">
+      <div className="absolute bottom-0 left-0 w-full bg-black/50 px-12 py-8 pb-12">
         {!needsApproval && exchangeError && (
           <div
             role="alert"
-            className="mb-10 w-full rounded bg-black-tertiary px-4 py-4 text-center text-red-400 text-tiny"
+            className="mb-10 w-full rounded-sm bg-black-tertiary px-4 py-4 text-center text-red-400 text-tiny"
           >
             {t("Error loading transaction:")} {String(exchangeError)}
           </div>
         )}
 
-        {needsApproval && needsRevoke && (
+        {needsApproval && (
           <div
             role="alert"
-            className="mb-10 w-full rounded bg-black-tertiary px-4 py-4 text-center text-body-secondary text-tiny"
+            className="mb-10 w-full rounded-sm bg-black-tertiary px-4 py-4 text-center text-body-secondary text-tiny"
           >
-            {t(
-              "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
-            )}
+            {needsRevoke
+              ? t(
+                  "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
+                )
+              : t("This token requires approval before it can be swapped.")}
           </div>
         )}
 
