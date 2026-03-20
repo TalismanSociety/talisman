@@ -90,10 +90,13 @@ export function createQueryStoragePersister(config?: QueryStorageConfig) {
     // No cached data or cache miss — run the real queryFn
     const data = await queryFn(context)
 
-    // Persist after TanStack has updated internal state
+    // Persist after TanStack has updated internal state.
+    // On successful revalidation we want a fresh persisted timestamp so maxAge
+    // is reset from the new data point rather than the original cached write.
     notifyManager.schedule(() => {
       const purgeAt = Date.now() + maxAge
-      api.queryCacheSet(key, data, purgeAt, query.state.dataUpdatedAt).catch(() => {})
+      const dataUpdatedAt = Math.max(query.state.dataUpdatedAt, Date.now())
+      api.queryCacheSet(key, data, purgeAt, dataUpdatedAt).catch(() => {})
     })
 
     return data
