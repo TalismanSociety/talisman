@@ -153,7 +153,7 @@ const PriceChartGraphSkeleton: FC<{
       />
     </div>
     <div className="absolute inset-0 flex items-center justify-center">
-      <LoaderIcon className="animate-spin-slow text-[40px]" />
+      <LoaderIcon className="animate-spin-slow text-[40px] text-body-inactive" />
     </div>
   </div>
 )

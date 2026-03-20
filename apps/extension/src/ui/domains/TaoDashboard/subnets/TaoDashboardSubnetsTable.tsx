@@ -10,7 +10,6 @@ import {
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -140,7 +139,7 @@ export const TaoDashboardSubnetsTable: FC<{
   period: TimePeriod
   hideHeader?: boolean
 }> = ({ search = "", period, hideHeader = false }) => {
-  const { subnets, isLoading, loading, errors } = useTaoDashboardSubnets(period)
+  const { subnets, stakeAddress, isLoading, loading, errors } = useTaoDashboardSubnets(period)
   const sortSetting = useSortSetting()
   const setSortSetting = useSetSortSetting()
 
@@ -214,7 +213,13 @@ export const TaoDashboardSubnetsTable: FC<{
       {!hideHeader && <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />}
       <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
         {sortedSubnets.map((subnet) => (
-          <SubnetRow key={subnet.netuid} subnet={subnet} loading={loading} errors={errors} />
+          <SubnetRow
+            key={subnet.netuid}
+            subnet={subnet}
+            loading={loading}
+            errors={errors}
+            stakeAddress={stakeAddress}
+          />
         ))}
       </div>
     </div>
@@ -374,13 +379,14 @@ const SubnetRow: FC<{
   subnet: TaoDashboardSubnet
   loading: TaoDashboardSubnetsLoading
   errors: TaoDashboardSubnetsErrors
-}> = memo(({ subnet, loading, errors }) => {
+  stakeAddress: string | undefined
+}> = memo(({ subnet, loading, errors, stakeAddress }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { open: openBondModal } = useBittensorBondModal()
-  const { selectedAccounts } = usePortfolioNavigation()
-  const selectedAddress = selectedAccounts[0]?.address
   const isRoot = subnet.netuid === 0
+  const canStake = !!stakeAddress
+  const canUnstake = !!subnet.unstakeAddress
 
   // Compare last price to first price in 7d data to determine chart color
   const firstPrice = !subnet.chartData ? 0 : (subnet.chartData[0] ?? 0)
@@ -396,27 +402,29 @@ const SubnetRow: FC<{
   const handleStakeClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
+      if (!canStake) return
       openBondModal({
         stakeDirection: "bond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
-        address: selectedAddress,
+        address: stakeAddress,
       })
     },
-    [openBondModal, subnet.token.networkId, subnet.netuid, selectedAddress]
+    [openBondModal, subnet.token.networkId, subnet.netuid, stakeAddress, canStake]
   )
 
   const handleUnstakeClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
+      if (!canUnstake) return
       openBondModal({
         stakeDirection: "unbond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
-        address: selectedAddress,
+        address: subnet.unstakeAddress,
       })
     },
-    [openBondModal, subnet.token.networkId, subnet.netuid, selectedAddress]
+    [openBondModal, subnet.token.networkId, subnet.netuid, subnet.unstakeAddress, canUnstake]
   )
 
   return (
@@ -601,16 +609,28 @@ const SubnetRow: FC<{
           <button
             type="button"
             aria-label={t("Stake")}
+            disabled={!canStake}
             onClick={handleStakeClick}
-            className="inline-flex size-[28px] items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+            className={cn(
+              "inline-flex size-[28px] items-center justify-center rounded-full",
+              canStake
+                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
+            )}
           >
             <ZapPlusIcon className="size-[16px]" />
           </button>
           <button
             type="button"
             aria-label={t("Unstake")}
+            disabled={!canUnstake}
             onClick={handleUnstakeClick}
-            className="inline-flex size-[28px] items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+            className={cn(
+              "inline-flex size-[28px] items-center justify-center rounded-full",
+              canUnstake
+                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
+            )}
           >
             <ZapOffIcon className="size-[16px]" />
           </button>

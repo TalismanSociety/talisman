@@ -162,6 +162,6 @@ const FlowChartGraphContent: FC<{
 
 const FlowChartGraphSkeleton = () => (
   <div className="flex size-full items-center justify-center">
-    <LoaderIcon className="animate-spin-slow text-[40px]" />
+    <LoaderIcon className="animate-spin-slow text-[40px] text-body-inactive" />
   </div>
 )
