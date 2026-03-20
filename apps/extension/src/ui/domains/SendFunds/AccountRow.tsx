@@ -5,7 +5,7 @@ import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { memo, useMemo } from "react"
+import { useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -36,80 +36,75 @@ type AccountRowProps = {
   onClear?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 }
 
-export const AccountRow = memo(
-  ({
-    account,
-    genesisHash,
-    noFormat,
-    selected,
-    onClick,
-    showBalances,
-    showTotalBalance,
-    token,
-    disabled,
-    className,
-    onClear,
-  }: AccountRowProps) => {
-    const formattedAddress = useFormattedAddress(
-      account?.address,
-      genesisHash ?? account.genesisHash
-    )
+export const AccountRow = ({
+  account,
+  genesisHash,
+  noFormat,
+  selected,
+  onClick,
+  showBalances,
+  showTotalBalance,
+  token,
+  disabled,
+  className,
+  onClear,
+}: AccountRowProps) => {
+  const formattedAddress = useFormattedAddress(account?.address, genesisHash ?? account.genesisHash)
 
-    const displayAddress = useMemo(
-      () => (noFormat ? account?.address : formattedAddress),
-      [noFormat, account?.address, formattedAddress]
-    )
+  const displayAddress = useMemo(
+    () => (noFormat ? account?.address : formattedAddress),
+    [noFormat, account?.address, formattedAddress]
+  )
 
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        tabIndex={0}
-        className={classNames(
-          "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
-          selected && "bg-grey-800 text-body-secondary",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
-        disabled={disabled}
-      >
-        <AccountIcon
-          address={account.address}
-          genesisHash={account.genesisHash}
-          className="!text-xl"
-        />
-        <div className="flex grow items-center justify-between overflow-hidden">
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="truncate">
-                {account.name ?? (
-                  <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
-                )}
-              </div>
-              <AccountTypeIcon type={account.type} className="text-primary" />
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      tabIndex={0}
+      className={classNames(
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        selected && "bg-grey-800 text-body-secondary",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      disabled={disabled}
+    >
+      <AccountIcon
+        address={account.address}
+        genesisHash={account.genesisHash}
+        className="!text-xl"
+      />
+      <div className="flex grow items-center justify-between overflow-hidden">
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="truncate">
+              {account.name ?? (
+                <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
+              )}
             </div>
-            <Address className="text-body-secondary text-xs" address={displayAddress} />
+            <AccountTypeIcon type={account.type} className="text-primary" />
           </div>
-          {onClear && (
-            // biome-ignore lint/a11y/useSemanticElements: legacy
-            <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
-              <XIcon className="shrink-0 text-[1.2em]" />
-            </div>
-          )}
+          <Address className="text-body-secondary text-xs" address={displayAddress} />
         </div>
-        {(showBalances || showTotalBalance) && (
-          <AccountTokenBalance
-            token={token}
-            balance={account.balance}
-            total={account.total}
-            showTotalBalance={showTotalBalance}
-            showBalances={showBalances}
-          />
+        {onClear && (
+          // biome-ignore lint/a11y/useSemanticElements: legacy
+          <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
+            <XIcon className="shrink-0 text-[1.2em]" />
+          </div>
         )}
-      </button>
-    )
-  }
-)
+      </div>
+      {(showBalances || showTotalBalance) && (
+        <AccountTokenBalance
+          token={token}
+          balance={account.balance}
+          total={account.total}
+          showTotalBalance={showTotalBalance}
+          showBalances={showBalances}
+        />
+      )}
+    </button>
+  )
+}
 
 const AccountTokenBalance = ({
   token,
