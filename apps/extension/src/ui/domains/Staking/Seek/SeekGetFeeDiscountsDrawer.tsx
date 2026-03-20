@@ -32,7 +32,7 @@ export const SeekGetFeeDiscountsDrawer = ({
 }: SeekGetFeeDiscountsDrawerProps) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
-  const { open: openSwapTokensModal } = useSwapModal()
+  const { open: openSwapModal } = useSwapModal()
   const { tokenId, webAppStakingPath, docsUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
@@ -142,7 +142,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             className="px-2"
             primary
             onClick={() => {
-              openSwapTokensModal({ toTokenId: remoteConfig.seek.tokenId })
+              openSwapModal({ toTokenId: remoteConfig.seek.tokenId })
             }}
           >
             {t("Buy")} {tokenSymbol}

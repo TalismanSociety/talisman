@@ -230,7 +230,7 @@ const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapModal()
+  const { open: openSwapModal } = useSwapModal()
   const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
@@ -284,7 +284,7 @@ const TopActions: FC = () => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal({}),
+          onClick: () => openSwapModal({}),
           disabled: disableActions,
           disabledReason,
         },
@@ -320,7 +320,7 @@ const TopActions: FC = () => {
       selectedAddress,
       symbol,
       openCopyAddressModal,
-      openSwapTokensModal,
+      openSwapModal,
       openRampsModal,
       isBittensorEnabled,
     ]

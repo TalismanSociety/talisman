@@ -156,7 +156,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapModal()
+  const { open: openSwapModal } = useSwapModal()
   const ownedAccounts = useAccounts("owned")
   const isBittensorEnabled = useIsBittensorEnabled()
 
@@ -192,7 +192,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal({}),
+          onClick: () => openSwapModal({}),
           disabled: disableActions,
           disabledReason,
         },
@@ -207,14 +207,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
             }
           : null,
       ].filter(isNotNil),
-    [
-      disableActions,
-      disabledReason,
-      openCopyAddressModal,
-      openSwapTokensModal,
-      t,
-      isBittensorEnabled,
-    ]
+    [disableActions, disabledReason, openCopyAddressModal, openSwapModal, t, isBittensorEnabled]
   )
 
   return (

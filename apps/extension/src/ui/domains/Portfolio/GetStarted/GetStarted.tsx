@@ -156,7 +156,7 @@ const useGetStarted = () => {
 
   const navigate = useNavigate()
   const { open: onCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapModal()
+  const { open: openSwapModal } = useSwapModal()
   const { open: openRamps } = useRampsModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
@@ -188,8 +188,8 @@ const useGetStarted = () => {
 
   const onSwapClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
-    openSwapTokensModal({})
-  }, [openSwapTokensModal])
+    openSwapModal({})
+  }, [openSwapModal])
 
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "open ramps" })

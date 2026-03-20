@@ -82,7 +82,7 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const { open: openSwapTokensModal } = useSwapModal()
+  const { open: openSwapModal } = useSwapModal()
   const handleSwapClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -90,10 +90,10 @@ export const NavigationDrawer: FC = () => {
       action: "Swap button",
     })
 
-    openSwapTokensModal({})
+    openSwapModal({})
     await sleep(150)
     close()
-  }, [openSwapTokensModal, close])
+  }, [openSwapModal, close])
 
   const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {

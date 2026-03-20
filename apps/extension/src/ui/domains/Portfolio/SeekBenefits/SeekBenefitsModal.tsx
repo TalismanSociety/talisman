@@ -49,7 +49,7 @@ export const SeekBenefitsModal = () => {
 const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
-  const { open: openSwapTokensModal } = useSwapModal()
+  const { open: openSwapModal } = useSwapModal()
 
   const handleClickLearnMore = useCallback(() => {
     window.open(remoteConfig.seek.docsUrl, "_blank", "noopener")
@@ -60,9 +60,9 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [remoteConfig.seek.stakingUrl])
 
   const handleClickSwap = useCallback(() => {
-    openSwapTokensModal({ toTokenId: remoteConfig.seek.tokenId })
+    openSwapModal({ toTokenId: remoteConfig.seek.tokenId })
     onClose()
-  }, [openSwapTokensModal, onClose, remoteConfig.seek.tokenId])
+  }, [openSwapModal, onClose, remoteConfig.seek.tokenId])
 
   const handleClickTrade = useCallback(() => {
     window.open(remoteConfig.seek.tradeUrl, "_blank", "noopener")
