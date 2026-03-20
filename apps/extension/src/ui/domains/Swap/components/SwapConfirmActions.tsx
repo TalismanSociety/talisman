@@ -29,7 +29,6 @@ import type {
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
-import { hasEthFeeEstimateError } from "./swapFeeEstimate"
 
 export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
   const { t } = useTranslation()
@@ -358,12 +357,14 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   const hasFeeError = useMemo(() => {
     if (!activeTransaction) return false
     switch (activeTransaction.platform) {
-      case "ethereum":
-        return hasEthFeeEstimateError({
-          exchangeError,
-          ethError: needsApproval ? approvalEthTx.error : swapEthTx.error,
-          txDetails: needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails,
-        })
+      case "ethereum": {
+        if (exchangeError) return true
+        const ethError = needsApproval ? approvalEthTx.error : swapEthTx.error
+        if (!ethError) return false
+        // Transaction validation errors can coexist with a computed fee.
+        // In that case we still want to display the fee estimate.
+        return !(needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails)
+      }
       case "polkadot":
         return Boolean(substrateFee.error || exchangeError)
       default:
