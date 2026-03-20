@@ -9,6 +9,8 @@ import { FINAL_SWAP_STATUSES, type SwapStatus, type WalletTransactionInfo } from
 const POLL_INTERVAL_MS = 20_000
 const MAX_RETRIES = 10
 const RETRY_DELAY_MS = 5_000
+const NOT_FOUND_GRACE_PERIOD_MS = 10 * 60 * 1_000 // 10 minutes
+const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
 
 // Track active watchers to prevent duplicate polling for the same transaction.
 const activeWatchers = new Set<string>()
@@ -42,6 +44,8 @@ export const watchSwapStatus = async (txId: string): Promise<void> => {
 }
 
 async function pollSwapStatus(txId: string, txInfo: WalletTransactionInfo): Promise<void> {
+  let notFoundSince: number | null = null
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const status = await fetchSwapStatusWithRetry(txId, txInfo)
@@ -54,6 +58,14 @@ async function pollSwapStatus(txId: string, txInfo: WalletTransactionInfo): Prom
     await updateSwapStatus(txId, status)
 
     if (FINAL_SWAP_STATUSES.includes(status)) return
+
+    // Allow a grace period for not_found — the tx may still be in the mempool
+    if (status === "not_found") {
+      notFoundSince ??= Date.now()
+      if (Date.now() - notFoundSince >= NOT_FOUND_GRACE_PERIOD_MS) return
+    } else {
+      notFoundSince = null
+    }
 
     await sleep(POLL_INTERVAL_MS)
   }
@@ -157,6 +169,8 @@ async function toLifiChainId(networkId: string): Promise<number | undefined> {
  */
 export const resumeSwapWatchers = async () => {
   try {
+    const now = Date.now()
+
     const successSwaps = await db.transactionsV2
       .where("status")
       .equals("success")
@@ -165,7 +179,16 @@ export const resumeSwapWatchers = async () => {
         if (tx.txInfo.type === "bittensor-staking") return false
         // Resume if swapStatus hasn't reached a terminal state
         if (!tx.swapStatus) return true
-        return !FINAL_SWAP_STATUSES.includes(tx.swapStatus)
+        if (FINAL_SWAP_STATUSES.includes(tx.swapStatus)) return false
+
+        // Don't resume not_found watchers past their grace period
+        if (tx.swapStatus === "not_found" && now - tx.timestamp >= NOT_FOUND_GRACE_PERIOD_MS)
+          return false
+
+        // Don't resume unknown watchers past the max age
+        if (tx.swapStatus === "unknown" && now - tx.timestamp >= UNKNOWN_MAX_AGE_MS) return false
+
+        return true
       })
       .toArray()
 

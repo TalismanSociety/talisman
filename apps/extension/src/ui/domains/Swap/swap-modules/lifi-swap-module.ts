@@ -318,14 +318,14 @@ const getRouteQuote = async (
     tokenId: fromTokenId,
   })
 
-  const totalGasLimit =
+  const maxNativeTokenGasBuffer =
     fromAsset.contractAddress === undefined
       ? route.steps
           .flatMap((step) =>
             (step.estimate.gasCosts ?? []).flatMap((gas) =>
               String(gas.token.chainId) === String(fromAsset.chainId) &&
               gas.token.address === zeroAddress
-                ? gas.limit
+                ? gas.amount
                 : "0"
             )
           )
@@ -345,7 +345,7 @@ const getRouteQuote = async (
     providerName: step.toolDetails.name,
     talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
     data: route,
-    maxNativeTokenGasBuffer: totalGasLimit,
+    maxNativeTokenGasBuffer: maxNativeTokenGasBuffer,
   }
 }
 
