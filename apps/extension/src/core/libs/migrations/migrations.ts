@@ -11,7 +11,6 @@ import {
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
   migrateEnabledTestnets,
-  migrateSwapSlippageKey,
 } from "../../domains/app/migrations"
 import {
   migrateAssetDiscoveryRollout,
@@ -48,7 +47,6 @@ export const migrations: Migrations = [
   migrateToChaindataV4,
   migrateTransactionsV2,
   migrateNftsV2,
-  migrateSwapSlippageKey,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
