@@ -114,6 +114,7 @@ export const useSwapErc20Approval = (params: {
   // resetting to zero before setting a new value. We handle this by first building a revoke
   // tx (approve to 0). After it confirms, the allowance query re-runs, finds 0, and the
   // normal approve flow kicks in automatically.
+  // Note: ideally we would check that a normal approve() would revert before forcing the user to go through a revoke first
   const needsRevoke = useMemo(
     () => (allowanceQuery.data?.existingAllowance ?? 0n) > 0n,
     [allowanceQuery.data]

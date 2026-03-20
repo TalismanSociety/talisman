@@ -22,6 +22,10 @@ import {
 
 type SwapStatus = SimpleswapExchange["status"] | StealthexExchange["status"] | LifiStatus
 
+/**
+ * // TODO this uses local storage and global observables, needs to be refactored
+ */
+
 export const useSwapStatus = (protocol?: string, id?: string): SwapStatus | undefined => {
   const protocolAndId = protocol && id && `${protocol}::${id}`
   return useStateObservable(getSwapStatus$(protocolAndId))
