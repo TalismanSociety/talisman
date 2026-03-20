@@ -7,6 +7,29 @@ import type { SignerPayloadJSON } from "../signing/types"
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
 
+// Exchange-level status for swap transactions, tracked by the background watcher.
+export type SwapStatus =
+  | "waiting"
+  | "confirming"
+  | "exchanging"
+  | "sending"
+  | "verifying"
+  | "finished"
+  | "failed"
+  | "expired"
+  | "refunded"
+  | "invalid"
+  | "not_found"
+  | "unknown"
+
+export const FINAL_SWAP_STATUSES: SwapStatus[] = [
+  "finished",
+  "failed",
+  "expired",
+  "refunded",
+  "invalid",
+]
+
 export type WatchTransactionOptions = {
   siteUrl?: string
   notifications?: boolean
@@ -114,6 +137,7 @@ export type WalletTransactionDot = {
   nonce: number
   timestamp: number
   txInfo?: WalletTransactionInfo
+  swapStatus?: SwapStatus
   blockNumber?: string
   extrinsicIndex?: number
 }
@@ -132,6 +156,7 @@ export type WalletTransactionEth = {
   nonce: number
   timestamp: number
   txInfo?: WalletTransactionInfo
+  swapStatus?: SwapStatus
   blockNumber?: string
   isReplacement?: boolean
 }
@@ -149,6 +174,7 @@ export type WalletTransactionSol = {
   label?: string
   timestamp: number
   txInfo?: WalletTransactionInfo
+  swapStatus?: SwapStatus
 }
 
 export type WalletTransaction = WalletTransactionDot | WalletTransactionEth | WalletTransactionSol

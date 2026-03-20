@@ -11,18 +11,7 @@ import { accounts$ } from "@ui/state/accounts"
 import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import createClient from "openapi-fetch"
-import {
-  catchError,
-  defer,
-  firstValueFrom,
-  interval,
-  type Observable,
-  of,
-  retry,
-  startWith,
-  switchMap,
-  takeWhile,
-} from "rxjs"
+import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type BaseQuote,
@@ -568,36 +557,3 @@ export const stealthexSwapModule: SwapModule = {
   createExchange: createExchange,
   getTransaction: getTransaction,
 }
-
-export const swapStatus$ = (id: string): Observable<StealthexExchange["status"] | undefined> =>
-  retryStatus$(id).pipe(
-    switchMap((status) => {
-      if (status === undefined) return of(undefined)
-
-      const shouldRefresh = (status: StealthexExchange["status"] | undefined) =>
-        !(status && ["finished", "failed", "expired", "refunded"].includes(status))
-
-      // refresh every 20s if status isn't final
-      if (shouldRefresh(status)) {
-        return interval(20_000).pipe(
-          startWith(-1),
-          switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
-          takeWhile((status) => shouldRefresh(status), true)
-        )
-      }
-      return of(status)
-    })
-  )
-
-const retryStatus$ = (id: string): Observable<StealthexExchange["status"] | undefined> =>
-  defer(() => stealthexSdk.getExchange(id).then((exchange) => exchange.status)).pipe(
-    // retry up to 10 times, wait 5s between each retry
-    retry({ count: 10, delay: 5_000 }),
-
-    // log when all retries failed, and return undefined
-    catchError((error) => {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(`Failed to fetch exchange status for '${id}'`, error)
-      return of(undefined)
-    })
-  )

@@ -23,6 +23,7 @@ import {
   updateTransactionStatus,
 } from "./helpers"
 import type { WatchTransactionOptions } from "./types"
+import { watchSwapStatus } from "./watchSwapStatus"
 
 const TX_WATCH_TIMEOUT = 90_000 // 90 seconds in milliseconds
 
@@ -282,6 +283,9 @@ export const watchSubstrateTransaction = async (
 
         if (result !== "included")
           await updateTransactionStatus(hash, result, blockNumber, finalized)
+
+        // Start watching exchange status for swap transactions
+        if (result === "success" && txInfo) watchSwapStatus(hash)
       }
     )
 

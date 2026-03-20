@@ -10,7 +10,7 @@ import type { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
-import type { TransactionStatus, WalletTransactionInfo } from "./types"
+import type { SwapStatus, TransactionStatus, WalletTransactionInfo } from "./types"
 
 type AddTransactionOptions = {
   label?: string
@@ -264,6 +264,14 @@ export const getExtrinsicHash = (
 }
 
 export const dismissTransaction = (hash: string) => db.transactionsV2.delete(hash)
+
+export const updateSwapStatus = async (id: string, swapStatus: SwapStatus) => {
+  try {
+    await db.transactionsV2.update(id, { swapStatus })
+  } catch (err) {
+    log.error("updateSwapStatus", { err, id, swapStatus })
+  }
+}
 
 const isTxInfoOfType = <T extends WalletTransactionInfo["type"]>(
   txInfo: WalletTransactionInfo | undefined | null,

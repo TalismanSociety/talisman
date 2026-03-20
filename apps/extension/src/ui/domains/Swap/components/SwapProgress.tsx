@@ -1,10 +1,10 @@
 import { db } from "@core/db"
-import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
-import {
-  getBlockExplorerUrls,
-  type Network,
-  networkIdFromTokenId,
-} from "@talismn/chaindata-provider"
+import type {
+  SwapStatus,
+  WalletTransaction,
+  WalletTransactionInfo,
+} from "@core/domains/transactions/types"
+import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import {
@@ -13,10 +13,8 @@ import {
 } from "@ui/components/ProcessAnimation/ProcessAnimation"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { useLiveQuery } from "dexie-react-hooks"
-import { type FC, useEffect, useMemo, useState } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { getSwapStatus$ } from "../hooks/useSwapStatus"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
   if (!network) return null
@@ -34,46 +32,6 @@ const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): strin
     default:
       return null
   }
-}
-
-const getSwapStatusId = (
-  txInfo: WalletTransactionInfo,
-  txHash: string
-): { protocol: string; id: string } | null => {
-  switch (txInfo.type) {
-    case "swap-simpleswap":
-      return txInfo.exchangeId ? { protocol: txInfo.type, id: txInfo.exchangeId } : null
-    case "swap-stealthex":
-      return txInfo.exchangeId ? { protocol: txInfo.type, id: txInfo.exchangeId } : null
-    case "swap-lifi": {
-      // Encode network IDs in the status ID so the LiFi status poller can resolve them to LiFi chain IDs.
-      // Format: "txHash::fromNetworkId::toNetworkId" — retryStatus$ parses and converts these.
-      const fromNetworkId = networkIdFromTokenId(txInfo.fromTokenId)
-      const toNetworkId = networkIdFromTokenId(txInfo.toTokenId)
-      return { protocol: txInfo.type, id: [txHash, fromNetworkId, toNetworkId].join("::") }
-    }
-    default:
-      return null
-  }
-}
-
-type SwapStatus = Parameters<typeof getSwapStatus$>[0] extends infer _
-  ? ReturnType<typeof getSwapStatus$> extends import("rxjs").Observable<infer T>
-    ? T
-    : never
-  : never
-
-/** Non-suspending hook — subscribes to the swap status observable via useEffect. */
-const useSwapStatusLocal = (protocol?: string, id?: string): SwapStatus | undefined => {
-  const protocolAndId = protocol && id ? `${protocol}::${id}` : undefined
-  const [status, setStatus] = useState<SwapStatus | undefined>(undefined)
-
-  useEffect(() => {
-    const sub = getSwapStatus$(protocolAndId).subscribe(setStatus)
-    return () => sub.unsubscribe()
-  }, [protocolAndId])
-
-  return status
 }
 
 /** Non-suspending hook — uses Dexie's useLiveQuery (returns undefined while loading). */
@@ -95,13 +53,12 @@ type SwapStatusDetails = {
 const useSwapProgressStatus = (
   txHash: string,
   _networkId: string,
-  txInfo: WalletTransactionInfo
+  _txInfo: WalletTransactionInfo
 ): SwapStatusDetails => {
   const { t } = useTranslation()
 
   const tx = useTransactionLocal(txHash)
-  const statusId = useMemo(() => getSwapStatusId(txInfo, txHash), [txInfo, txHash])
-  const swapStatus = useSwapStatusLocal(statusId?.protocol, statusId?.id)
+  const swapStatus: SwapStatus | undefined = tx?.swapStatus
 
   return useMemo<SwapStatusDetails>(() => {
     // Phase 1: On-chain tx is still pending/processing

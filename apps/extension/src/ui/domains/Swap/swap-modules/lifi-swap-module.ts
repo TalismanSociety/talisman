@@ -11,18 +11,7 @@ import {
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import {
-  catchError,
-  defer,
-  firstValueFrom,
-  interval,
-  type Observable,
-  of,
-  retry,
-  startWith,
-  switchMap,
-  takeWhile,
-} from "rxjs"
+import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
 import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
 import {
@@ -505,55 +494,3 @@ export const lifiSwapModule: SwapModule = {
   getTransaction: getTransaction,
   getApprovalInfo: getApprovalInfo,
 }
-
-export type LifiStatus = "unknown" | "not_found" | "exchanging" | "finished" | "failed" | "invalid"
-const statusMap: Record<lifiSdk.StatusResponse["status"], LifiStatus> = {
-  NOT_FOUND: "not_found",
-  INVALID: "invalid",
-  PENDING: "exchanging",
-  DONE: "finished",
-  FAILED: "failed",
-}
-export const swapStatus$ = (id: string): Observable<LifiStatus | undefined> =>
-  retryStatus$(id).pipe(
-    switchMap((status) => {
-      if (status === undefined) return of(undefined)
-
-      const shouldRefresh = (status: LifiStatus | undefined) =>
-        !(status && ["invalid", "finished", "failed"].includes(status))
-
-      // refresh every 20s if status isn't final
-      if (shouldRefresh(status)) {
-        return interval(20_000).pipe(
-          startWith(-1),
-          switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
-          takeWhile((status) => shouldRefresh(status), true)
-        )
-      }
-      return of(status)
-    })
-  )
-
-const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
-  defer(async () => {
-    // id may be "txHash::fromNetworkId::toNetworkId" (current), "txHash::numericChainId::numericChainId" (legacy), or just "txHash"
-    const [txHash, fromChain, toChain] = id.split("::")
-    const status = (
-      await lifiSdk.getStatus({
-        txHash,
-        ...(fromChain ? { fromChain: await toLifiChainId(fromChain) } : {}),
-        ...(toChain ? { toChain: await toLifiChainId(toChain) } : {}),
-      })
-    ).status
-    return statusMap[status] ?? "unknown"
-  }).pipe(
-    // retry up to 10 times, wait 5s between each retry
-    retry({ count: 10, delay: 5_000 }),
-
-    // log when all retries failed, and return undefined
-    catchError((error) => {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(`Failed to fetch exchange status for '${id}'`, error)
-      return of(undefined)
-    })
-  )

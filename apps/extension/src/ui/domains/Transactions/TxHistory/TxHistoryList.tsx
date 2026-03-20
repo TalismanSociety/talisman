@@ -17,22 +17,12 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { IS_POPUP } from "@ui/util/constants"
-import {
-  type FC,
-  type ReactNode,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { ReplacementCallbackArgs } from "../TxProgress"
 import { useTxHistory } from "./TxHistoryContext"
@@ -304,15 +294,7 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
 
 const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const { t } = useTranslation()
-  const swapExchangeId =
-    isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined
-  const swapLifiHash =
-    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi"
-      ? tx.platform === "solana"
-        ? tx.signature
-        : tx.hash
-      : undefined
-  const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
+  const swapStatus = tx.swapStatus
 
   switch (swapStatus) {
     case "waiting":
@@ -341,21 +323,11 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   }
 }
 
-// Wrapper that handles on-chain tx status before entering Suspense,
-// so pending/error states render immediately without suspension.
+// Wrapper that handles on-chain tx status before showing swap status.
 const SwapTransactionStatus = ({ tx }: { tx: WalletTransaction }) => {
   if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
 
-  return (
-    <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
-      <SwapTransactionStatusLabel tx={tx} />
-    </Suspense>
-  )
-}
-
-const SwapTransactionStatusLabelFallback = () => {
-  const { t } = useTranslation()
-  return <span className="animate-pulse">{t("Exchanging")} </span>
+  return <SwapTransactionStatusLabel tx={tx} />
 }
 
 const TransactionRowBase: FC<{
