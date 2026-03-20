@@ -5,7 +5,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
-import { useCallback, useRef } from "react"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
@@ -165,25 +164,4 @@ export const useSafeTokens = () => {
     staleTime: Infinity,
     persister: createQueryStoragePersister({ maxAge: PERSIST_AGE_ONE_YEAR }),
   })
-}
-
-/**
- * Returns a callback to swap from↔to tokenIds and amounts.
- */
-export const useReverse = (
-  fromTokenId: string | null,
-  setFromTokenId: (v: string | null) => void,
-  toTokenId: string | null,
-  setToTokenId: (v: string | null) => void,
-  setFromAmount: (v: bigint) => void,
-  toAmount: bigint | null
-) => {
-  const toAmountRef = useRef(toAmount)
-  toAmountRef.current = toAmount
-
-  return useCallback(() => {
-    if (toAmountRef.current) setFromAmount(toAmountRef.current)
-    setFromTokenId(toTokenId)
-    setToTokenId(fromTokenId)
-  }, [fromTokenId, setFromAmount, setFromTokenId, setToTokenId, toTokenId])
 }

@@ -8,7 +8,7 @@ import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
 import { useSwapSlippage } from "./hooks/useSwapSlippage"
 import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
-import { useReverse, useSafeTokens, useSwapAssets } from "./swaps.api"
+import { useSafeTokens, useSwapAssets } from "./swaps.api"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
 const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"> = [
@@ -186,14 +186,11 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
       (stateInit?.toTokenId && !toTokenId && !toAssetIds)
   )
 
-  const reverseRaw = useReverse(
-    fromTokenId,
-    setFromTokenId,
-    toTokenId,
-    setToTokenId,
-    setFromAmount,
-    toAmount
-  )
+  const reverseRaw = useCallback(() => {
+    setFromAmount(null)
+    setFromTokenId(toTokenId)
+    setToTokenId(fromTokenId)
+  }, [fromTokenId, toTokenId])
 
   const reverse = useCallback(() => {
     reverseRaw()
