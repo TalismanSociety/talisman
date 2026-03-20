@@ -16,16 +16,9 @@ import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
 
-// Forward references — these types are exported by the module files
-// We use dynamic import types to avoid circular dependencies at runtime
-type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
-type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
+import type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
 
-export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
-
-export type SwapExchange =
-  | { protocol: "simpleswap"; data: SimpleswapExchange }
-  | { protocol: "stealthex"; data: StealthexExchange }
+export type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
 
 export type QuoteFee = {
   name: string
