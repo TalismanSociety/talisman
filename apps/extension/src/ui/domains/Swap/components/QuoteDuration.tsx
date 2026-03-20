@@ -1,6 +1,6 @@
+import { Skeleton } from "@ui/components/Skeleton"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useSwap } from "../SwapProvider"
 import { formatSwapDuration } from "../swap-utils"
 
@@ -20,9 +20,7 @@ export const QuoteDuration = () => {
       <div className="text-body-secondary text-xs">{t("Duration")}</div>
       <div className="text-xs">
         {isLoading ? (
-          <span className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
-            0m 00s
-          </span>
+          <Skeleton>Instant</Skeleton>
         ) : (
           <span className="text-body-secondary">{duration}</span>
         )}

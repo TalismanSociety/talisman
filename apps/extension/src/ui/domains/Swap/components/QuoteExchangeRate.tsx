@@ -1,3 +1,4 @@
+import { Skeleton } from "@ui/components/Skeleton"
 import { useToken } from "@ui/state/chaindata"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,12 +35,7 @@ export const QuoteExchangeRate = () => {
       <div className="text-body-secondary text-xs">{t("Exchange Rate")}</div>
       <div className="text-body-secondary text-xs">
         {isLoading ? (
-          <span
-            aria-hidden="true"
-            className="animate-pulse rounded-xs bg-body-disabled text-body-disabled"
-          >
-            1 TKN = 0.0000 TKN
-          </span>
+          <Skeleton>1 TKN = 0.0000 TKN</Skeleton>
         ) : exchangeRate !== undefined ? (
           <button
             type="button"

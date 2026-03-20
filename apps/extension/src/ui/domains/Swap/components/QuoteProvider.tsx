@@ -1,5 +1,5 @@
+import { Skeleton } from "@ui/components/Skeleton"
 import { useTranslation } from "react-i18next"
-
 import { useSwap } from "../SwapProvider"
 
 export const QuoteProvider = () => {
@@ -15,10 +15,8 @@ export const QuoteProvider = () => {
       <div className="flex grow items-center justify-end gap-4 overflow-hidden">
         {isLoading ? (
           <>
-            <div className="mb-1 h-10 w-10 animate-pulse rounded-full bg-body-disabled" />
-            <p className="animate-pulse truncate rounded-xs bg-body-disabled font-semibold text-body-disabled text-xs">
-              SwapProvider
-            </p>
+            <Skeleton className="mb-1 h-10 w-10 rounded-full" />
+            <Skeleton className="text-xs">SwapProvider</Skeleton>
           </>
         ) : (
           <>

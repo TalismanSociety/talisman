@@ -148,7 +148,6 @@ const SwapProviderQuoteButton: FC<{
         <div className="flex flex-col items-start gap-[2px]">
           <span className="text-body-disabled text-xs">{t("Time")}</span>
           <span className="text-white text-xs">{duration}</span>
-          {/* <SpeedIndicator timeInSec={quote.timeInSec} /> */}
         </div>
       </div>
     </button>
