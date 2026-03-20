@@ -463,6 +463,7 @@ export default defineConfig({
   dev: {
     server: {
       port: 3000,
+      host: "0.0.0.0",
     },
     // Persist browser profile between restarts (keeps extension storage, logins, etc.)
     reloadCommand: "Alt+R",
@@ -471,6 +472,7 @@ export default defineConfig({
   // Browser startup configuration - persist browser data directory
   // Stored in ~/.talisman-dev/ outside the repo for security (contains extension data)
   webExt: {
+    disabled: !!process.env.NOBROWSER,
     chromiumProfile: resolve(homedir(), ".talisman-dev/chrome-data"),
     keepProfileChanges: true,
     chromiumArgs: ["--remote-debugging-port=9223"],
