@@ -264,9 +264,6 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
       : undefined
   const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
 
-  // show regular tx status while tx is still submitting
-  if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
-
   switch (swapStatus) {
     case "waiting":
     case "confirming":
@@ -293,15 +290,22 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
       return <TransactionStatusLabel status="unknown" />
   }
 }
-const SwapTransactionStatusLabelFallback = () => {
+
+// Wrapper that handles on-chain tx status before entering Suspense,
+// so pending/error states render immediately without suspension.
+const SwapTransactionStatus = ({ tx }: { tx: WalletTransaction }) => {
+  if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
+
   return (
-    <span
-      aria-hidden="true"
-      className="animate-pulse select-none rounded-xs bg-grey-800 text-grey-800"
-    >
-      Unknown
-    </span>
+    <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
+      <SwapTransactionStatusLabel tx={tx} />
+    </Suspense>
   )
+}
+
+const SwapTransactionStatusLabelFallback = () => {
+  const { t } = useTranslation()
+  return <span className="animate-pulse">{t("Exchanging")} </span>
 }
 
 const TransactionRowBase: FC<{
@@ -414,9 +418,7 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx }) => {
       status={
         <>
           {txSwap ? (
-            <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
-              <SwapTransactionStatusLabel tx={tx} />
-            </Suspense>
+            <SwapTransactionStatus tx={tx} />
           ) : (
             <TransactionStatusLabel status={tx.status} />
           )}
@@ -550,9 +552,7 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
       }
       status={
         isExternalSwap ? (
-          <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
-            <SwapTransactionStatusLabel tx={tx} />
-          </Suspense>
+          <SwapTransactionStatus tx={tx} />
         ) : (
           <TransactionStatusLabel status={tx.status} />
         )
@@ -664,13 +664,7 @@ const TransactionRowSol: FC<TransactionRowSolProps> = ({ tx, onSelectTx }) => {
         )
       }
       status={
-        txSwap ? (
-          <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
-            <SwapTransactionStatusLabel tx={tx} />
-          </Suspense>
-        ) : (
-          <TransactionStatusLabel status={tx.status} />
-        )
+        txSwap ? <SwapTransactionStatus tx={tx} /> : <TransactionStatusLabel status={tx.status} />
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
