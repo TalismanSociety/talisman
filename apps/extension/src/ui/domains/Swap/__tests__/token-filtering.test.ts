@@ -73,11 +73,12 @@ describe("buildAssetRegistry", () => {
 // ─── getTokenTabs ───────────────────────────────────────────────────
 
 describe("getTokenTabs", () => {
-  it("returns only 'all' tab when no curated or recent tokens", () => {
+  it("returns only 'all' and `recent` tabs when no curated", () => {
     const tabs = getTokenTabs({ t: stubT })
 
-    expect(tabs).toHaveLength(1)
+    expect(tabs).toHaveLength(2)
     expect(tabs[0]!.value).toBe("all")
+    expect(tabs[1]!.value).toBe("recent")
   })
 
   it("has no filter/sort on 'all' tab without curated tokens", () => {
@@ -133,18 +134,6 @@ describe("getTokenTabs", () => {
 
     expect(popularTab.label).toBe("Popular")
     expect(popularTab.label).not.toContain("🔥")
-  })
-
-  it("shows recent tab when recentTokenIds are provided", () => {
-    const tabs = getTokenTabs({ t: stubT, recentTokenIds: ["tok-1"] })
-
-    expect(tabs.map((t) => t.value)).toContain("recent")
-  })
-
-  it("hides recent tab when recentTokenIds is empty", () => {
-    const tabs = getTokenTabs({ t: stubT, recentTokenIds: [] })
-
-    expect(tabs.map((t) => t.value)).not.toContain("recent")
   })
 
   it("recent tab filters to only recent tokens", () => {
