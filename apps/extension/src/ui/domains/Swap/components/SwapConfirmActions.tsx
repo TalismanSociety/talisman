@@ -2,6 +2,7 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon } from "@talismn/icons"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
+import { Skeleton } from "@ui/components/Skeleton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
@@ -406,22 +407,24 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             <div className="text-body-secondary text-xs">{t("Priority")}</div>
             <div>
               {activeEthTx.transaction &&
-                activeEthTx.txDetails &&
-                activeFeeTokenId &&
-                activeEthTx.priority && (
-                  <EthFeeSelect
-                    className="h-10"
-                    tx={activeEthTx.transaction}
-                    tokenId={activeFeeTokenId}
-                    drawerContainerId={containerId}
-                    gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
-                    priority={activeEthTx.priority}
-                    txDetails={activeEthTx.txDetails}
-                    networkUsage={activeEthTx.networkUsage}
-                    setCustomSettings={activeEthTx.setCustomSettings}
-                    onChange={activeEthTx.setPriority}
-                  />
-                )}
+              activeEthTx.txDetails &&
+              activeFeeTokenId &&
+              activeEthTx.priority ? (
+                <EthFeeSelect
+                  className="h-10"
+                  tx={activeEthTx.transaction}
+                  tokenId={activeFeeTokenId}
+                  drawerContainerId={containerId}
+                  gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
+                  priority={activeEthTx.priority}
+                  txDetails={activeEthTx.txDetails}
+                  networkUsage={activeEthTx.networkUsage}
+                  setCustomSettings={activeEthTx.setCustomSettings}
+                  onChange={activeEthTx.setPriority}
+                />
+              ) : (
+                <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
+              )}
             </div>
           </div>
         ) : null}
@@ -448,14 +451,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           </div>
           {hasFeeError ? (
             <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
-          ) : isFeeLoading ? (
-            <div
-              aria-hidden="true"
-              className="animate-pulse rounded-xs bg-body-disabled text-body-disabled text-xs"
-            >
-              0.0000 TKN ($0.00)
-            </div>
-          ) : feePlanck && activeFeeTokenId ? (
+          ) : !isFeeLoading && feePlanck && activeFeeTokenId ? (
             <TokensAndFiat
               className="text-body-secondary text-xs"
               tokensClassName="text-body"
@@ -463,7 +459,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
               tokenId={activeFeeTokenId}
               planck={feePlanck}
             />
-          ) : null}
+          ) : (
+            <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
+          )}
         </div>
       </div>
 
