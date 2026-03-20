@@ -12,7 +12,7 @@ import type {
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
 import { BalanceFormatter } from "@talismn/balances"
-import type { NetworkId } from "@talismn/chaindata-provider"
+import type { NetworkId, Token } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, LoaderIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -225,6 +225,62 @@ const TxIconContainer = ({
     )}
   </Tooltip>
 )
+
+const TransactionLogo: FC<{
+  siteUrl?: string | null
+  networkId?: NetworkId
+  networkName?: string
+  swap?: {
+    fromToken: Token
+    fromTooltip?: string
+    toToken: Token
+    toTooltip?: string
+  }
+  transferToken?: Token
+}> = ({ siteUrl, networkId, networkName, swap, transferToken }) => {
+  if (siteUrl) {
+    return (
+      <TxIconContainer tooltip={siteUrl} networkId={networkId}>
+        <Favicon siteUrl={siteUrl} className="!size-16" />
+      </TxIconContainer>
+    )
+  }
+
+  if (swap) {
+    return (
+      <div className="flex items-center">
+        <TxIconContainer tooltip={swap.fromTooltip} networkId={swap.fromToken.networkId}>
+          <TokenLogo tokenId={swap.fromToken.id} className="!size-16" />
+        </TxIconContainer>
+        <TxIconContainer
+          className="-ml-4"
+          tooltip={swap.toTooltip}
+          networkId={swap.toToken.networkId}
+        >
+          <TokenLogo tokenId={swap.toToken.id} className="!size-16" />
+        </TxIconContainer>
+      </div>
+    )
+  }
+
+  if (transferToken) {
+    return (
+      <TxIconContainer
+        tooltip={networkName ? `${transferToken.symbol} on ${networkName}` : undefined}
+        networkId={networkId}
+      >
+        <TokenLogo tokenId={transferToken.id} className="!size-16" />
+      </TxIconContainer>
+    )
+  }
+
+  return (
+    <TxIconContainer tooltip={networkName}>
+      <NetworkLogo networkId={networkId} className="!size-16" />
+    </TxIconContainer>
+  )
+}
+
 const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
   const { t } = useTranslation()
 
@@ -389,31 +445,13 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx }) => {
   return (
     <TransactionRowBase
       logo={
-        tx.siteUrl ? (
-          <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
-            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
-          </TxIconContainer>
-        ) : txSwap ? (
-          <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
-              <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
-            </TxIconContainer>
-            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
-              <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
-            </TxIconContainer>
-          </div>
-        ) : isTransfer && token ? (
-          <TxIconContainer
-            tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
-            networkId={evmNetwork?.id}
-          >
-            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
-          </TxIconContainer>
-        ) : (
-          <TxIconContainer tooltip={evmNetwork?.name}>
-            <NetworkLogo networkId={evmNetwork?.id} className="!h-16 !w-16" />
-          </TxIconContainer>
-        )
+        <TransactionLogo
+          siteUrl={tx.siteUrl}
+          networkId={evmNetwork?.id}
+          networkName={evmNetwork?.name}
+          swap={txSwap && fromToken && toToken ? { fromToken, toToken } : undefined}
+          transferToken={isTransfer && token ? token : undefined}
+        />
       }
       status={
         <>
@@ -520,35 +558,22 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
     <TransactionRowBase
       onClick={handleRowClick}
       logo={
-        tx.siteUrl ? (
-          <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
-            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
-          </TxIconContainer>
-        ) : txSwap && fromToken && toToken ? (
-          <div className="flex items-center">
-            <TxIconContainer
-              tooltip={`${fromToken.name}${fromNetwork?.name ? ` on ${fromNetwork.name}` : ""}`}
-              networkId={fromToken.networkId}
-            >
-              <TokenLogo tokenId={fromToken.id} className="!h-16 !w-16" />
-            </TxIconContainer>
-            <TxIconContainer
-              className="-ml-4"
-              tooltip={`${toToken.name}${toNetwork?.name ? ` on ${toNetwork.name}` : ""}`}
-              networkId={toToken.networkId}
-            >
-              <TokenLogo tokenId={toToken.id} className="!h-16 !w-16" />
-            </TxIconContainer>
-          </div>
-        ) : isTransfer && token ? (
-          <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
-            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
-          </TxIconContainer>
-        ) : (
-          <TxIconContainer tooltip={chain?.name}>
-            <NetworkLogo networkId={chain?.id} className="!h-16 !w-16" />
-          </TxIconContainer>
-        )
+        <TransactionLogo
+          siteUrl={tx.siteUrl}
+          networkId={chain?.id}
+          networkName={chain?.name}
+          swap={
+            txSwap && fromToken && toToken
+              ? {
+                  fromToken,
+                  fromTooltip: `${fromToken.name}${fromNetwork?.name ? ` on ${fromNetwork.name}` : ""}`,
+                  toToken,
+                  toTooltip: `${toToken.name}${toNetwork?.name ? ` on ${toNetwork.name}` : ""}`,
+                }
+              : undefined
+          }
+          transferToken={isTransfer && token ? token : undefined}
+        />
       }
       status={
         isExternalSwap ? (
@@ -640,28 +665,13 @@ const TransactionRowSol: FC<TransactionRowSolProps> = ({ tx, onSelectTx }) => {
     <TransactionRowBase
       onClick={handleRowClick}
       logo={
-        tx.siteUrl ? (
-          <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
-            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
-          </TxIconContainer>
-        ) : txSwap ? (
-          <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
-              <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
-            </TxIconContainer>
-            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
-              <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
-            </TxIconContainer>
-          </div>
-        ) : isTransfer && token ? (
-          <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
-            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
-          </TxIconContainer>
-        ) : (
-          <TxIconContainer tooltip={chain?.name}>
-            <NetworkLogo networkId={chain?.id} className="!h-16 !w-16" />
-          </TxIconContainer>
-        )
+        <TransactionLogo
+          siteUrl={tx.siteUrl}
+          networkId={chain?.id}
+          networkName={chain?.name}
+          swap={txSwap && fromToken && toToken ? { fromToken, toToken } : undefined}
+          transferToken={isTransfer && token ? token : undefined}
+        />
       }
       status={
         txSwap ? <SwapTransactionStatus tx={tx} /> : <TransactionStatusLabel status={tx.status} />
