@@ -109,6 +109,7 @@ const createSwapState = (overrides: Record<string, unknown> = {}) => ({
   fromTokenId: "from-token",
   setFromTokenId: vi.fn(),
   fromAmount: 1n,
+  setFromAmount: vi.fn(),
   onMaxFromAmountClick: vi.fn(),
   toAddress: "0xto",
   toTokenId: "to-token",

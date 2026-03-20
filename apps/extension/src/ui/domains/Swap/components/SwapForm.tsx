@@ -31,6 +31,7 @@ export const SwapForm = () => {
     fromTokenId,
     setFromTokenId,
     fromAmount,
+    setFromAmount,
     onMaxFromAmountClick,
     toAddress,
     toTokenId,
@@ -78,11 +79,15 @@ export const SwapForm = () => {
 
   const handleChangeFromToken = useCallback(
     (tokenId: string | null) => {
-      if (tokenId && toTokenId && tokenId === toTokenId) reverse()
-      else setFromTokenId(tokenId)
+      if (tokenId && toTokenId && tokenId === toTokenId) {
+        reverse()
+      } else {
+        setFromAmount(null)
+        setFromTokenId(tokenId)
+      }
       focusAmountInput()
     },
-    [toTokenId, reverse, setFromTokenId, focusAmountInput]
+    [toTokenId, reverse, setFromTokenId, setFromAmount, focusAmountInput]
   )
 
   const insufficientBalance = useMemo(() => {
