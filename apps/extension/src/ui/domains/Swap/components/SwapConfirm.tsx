@@ -81,6 +81,7 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
           planck={value}
           className="text-body-secondary text-sm"
           tokensClassName="text-body font-bold"
+          noCountUp
         />
         <div className="flex w-full items-center gap-4 overflow-hidden text-sm">
           <div className="truncate text-body-secondary">{token.name || token.symbol}</div>
