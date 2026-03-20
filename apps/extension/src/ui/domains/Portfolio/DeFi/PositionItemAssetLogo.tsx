@@ -1,8 +1,13 @@
 import type { DefiPositionItem } from "@core/domains/defi/exports"
-import { evmErc20TokenId, useTokensById } from "@talismn/balances-react"
-import { evmNativeTokenId, solNativeTokenId, solSplTokenId } from "@talismn/chaindata-provider"
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  solNativeTokenId,
+  solSplTokenId,
+} from "@talismn/chaindata-provider"
 import { isHexString } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { useTokensMap } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 
 export const PositionItemAssetLogo: FC<{
@@ -10,7 +15,7 @@ export const PositionItemAssetLogo: FC<{
   item: DefiPositionItem
   className?: string
 }> = ({ networkId, item, className }) => {
-  const tokensById = useTokensById()
+  const tokensById = useTokensMap()
 
   // prioritize talisman logo for consistency
   const token = useMemo(() => {

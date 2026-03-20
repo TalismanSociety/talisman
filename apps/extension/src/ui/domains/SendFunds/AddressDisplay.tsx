@@ -76,9 +76,15 @@ type AddressDisplayProps = {
   address: TAddress | null | undefined
   networkId: string | null | undefined
   className?: string
+  accountIconClassName?: string
 }
 
-export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, className }) => {
+export const AddressDisplay: FC<AddressDisplayProps> = ({
+  address,
+  networkId,
+  className,
+  accountIconClassName,
+}) => {
   const chain = useNetworkById(networkId as string, "polkadot")
   const account = useAccountByAddress(address)
   const blockExplorerUrl = useBlockExplorerUrl(address, networkId, !!account)
@@ -117,7 +123,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
         )}
       >
         <AccountIcon
-          className="!text-lg"
+          className={classNames("!text-lg", accountIconClassName)}
           address={resolvedAddress}
           genesisHash={getAccountGenesisHash(account)}
         />

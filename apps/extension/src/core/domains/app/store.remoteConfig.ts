@@ -43,6 +43,11 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     promotedBuyTokens: [],
     promotedSellTokens: [],
     lifiApiKey: "",
+    simpleswap: { networks: {}, tokens: {} },
+    stealthex: { networks: {}, tokens: {} },
+    lifi: {
+      solanaChainId: 1151111081099710,
+    },
   },
   coingecko: {
     apiUrl: "https://cgp.talisman.xyz",

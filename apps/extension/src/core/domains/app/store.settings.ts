@@ -27,6 +27,7 @@ export interface SettingsStoreData {
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
   dtaoSlippage?: number
+  swapSlippage: number
 }
 
 class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -48,6 +49,7 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   developerMode: false,
   polkadotVaultSignWithProof: true,
   ledgerTransportType: "hid",
+  swapSlippage: 0.5,
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

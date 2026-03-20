@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
@@ -156,7 +156,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapModal } = useSwapModal()
   const ownedAccounts = useAccounts("owned")
   const isBittensorEnabled = useIsBittensorEnabled()
 
@@ -192,7 +192,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
+          onClick: () => openSwapModal({}),
           disabled: disableActions,
           disabledReason,
         },
@@ -207,14 +207,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
             }
           : null,
       ].filter(isNotNil),
-    [
-      disableActions,
-      disabledReason,
-      openCopyAddressModal,
-      openSwapTokensModal,
-      t,
-      isBittensorEnabled,
-    ]
+    [disableActions, disabledReason, openCopyAddressModal, openSwapModal, t, isBittensorEnabled]
   )
 
   return (

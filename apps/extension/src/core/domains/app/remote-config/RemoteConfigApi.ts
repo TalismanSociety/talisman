@@ -335,7 +335,7 @@ export class RemoteConfigApi<
             /** deprecated */
             apiKeyValue?: string;
           };
-          /** Token swap feature configuration including LI.FI and SimpleSwap integrations */
+          /** Token swap feature configuration including LI.FI, SimpleSwap, and StealthEX integrations */
           swaps: {
             /** deprecated */
             questApi?: string;
@@ -357,6 +357,25 @@ export class RemoteConfigApi<
             promotedSellTokens: string[];
             /** Map from token ID to custom Talisman fee amount (e.g. 0.2 = 0.2%). Tokens not listed use the default 0.2% fee */
             lifiCustomFeeTokens: Record<string, number>;
+            /** SimpleSwap network and token ID mappings */
+            simpleswap: {
+              /** Maps provider network identifiers to Talisman network IDs (e.g. 'arbitrum' → '42161', 'sol' → 'solana-mainnet') */
+              networks: Record<string, string>;
+              /** Maps provider asset keys to Talisman token IDs for tokens that cannot be auto-resolved (native tokens, substrate tokens). E.g. 'dot' → 'polkadot-asset-hub:substrate-native' */
+              tokens: Record<string, string>;
+            };
+            /** StealthEX network and token ID mappings */
+            stealthex: {
+              /** Maps provider network identifiers to Talisman network IDs (e.g. 'arbitrum' → '42161', 'sol' → 'solana-mainnet') */
+              networks: Record<string, string>;
+              /** Maps provider asset keys to Talisman token IDs for tokens that cannot be auto-resolved (native tokens, substrate tokens). E.g. 'dot' → 'polkadot-asset-hub:substrate-native' */
+              tokens: Record<string, string>;
+            };
+            /** LI.FI-specific configuration for Solana chain handling */
+            lifi: {
+              /** LI.FI's internal chain ID for Solana */
+              solanaChainId: number;
+            };
           };
           /** Maps Substrate chain IDs to arrays of recommended nomination pool IDs for staking (e.g. 'polkadot-asset-hub': [282, 12, 16]) */
           nominationPools: Record<string, number[]>;

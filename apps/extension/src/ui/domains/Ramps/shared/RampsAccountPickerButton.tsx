@@ -8,7 +8,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo } from "react"
@@ -33,7 +33,7 @@ export const RampsAccountPickerButton: FC<{
     return accounts.find((a) => isAddressEqual(a.address, selected)) ?? null
   }, [accounts, selected])
 
-  const balanceParams = useMemo<BalanceByParamsProps>(() => {
+  const balanceParams = useMemo<BalancesByParamsProps>(() => {
     if (!token || !accounts.length) return {}
     return {
       addressesAndTokens: { tokenIds: [token.id], addresses: accounts.map((a) => a.address) },

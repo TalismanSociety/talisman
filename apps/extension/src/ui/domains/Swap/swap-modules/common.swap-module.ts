@@ -1,58 +1,29 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
-import {
-  isAccountCompatibleWithNetwork,
-  isAddressCompatibleWithNetwork,
-} from "@core/domains/accounts/helpers"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import type { Account } from "@core/domains/keyring/exports"
-import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { SubmittableExtrinsic } from "@polkadot/api/types"
+import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  type Network,
+  type NetworkPlatform,
+  parseTokenId,
+  solNativeTokenId,
+  solSplTokenId,
   subNativeTokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
-import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type BigNumber from "bignumber.js"
-import type { Atom, Getter, SetStateAction, Setter } from "jotai"
-import { atom } from "jotai"
-import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
-import type { Loadable } from "jotai/vanilla/utils/loadable"
 import type { TransactionRequest } from "viem"
 
-import { Decimal } from "../swaps-port/Decimal"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import type { SimpleswapExchange } from "./simpleswap-swap-module"
-import type { StealthexExchange } from "./stealthex-swap-module"
+import type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
 
-export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
-
-export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
-  id: string
-  name: string
-  symbol: string
-  chainId: number | string
-  contractAddress?: string
-  assetHubAssetId?: string
-  image?: string
-  networkType: "evm" | "substrate" | "btc"
-  /** protocol modules can store context here, like any special identifier */
-  context: TContext
-  decimals?: number
-}
-
-export type SwappableAssetWithDecimals<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
-  decimals: number
-} & SwappableAssetBaseType<TContext>
+export type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
 
 export type QuoteFee = {
   name: string
   amount: BigNumber
-  tokenId: string
+  tokenId: TokenId
 }
 
 export type BaseQuote<TData = any> = {
@@ -91,222 +62,136 @@ export type QuoteResponse = {
   }
 }
 
-type SwapProps = {
-  allowReap?: boolean
-  toAmount: Decimal | null
+export type SwapView = "form" | "approve-recipient" | "confirm" | "submitted"
+
+// --- Param types for SwapModule methods ---
+
+export type QuoteParams = {
+  fromTokenId: TokenId | null
+  toTokenId: TokenId | null
+  fromAmount: bigint | null
+  fromAddress: string | null
+  toAddress: string | null
+  selectedSubProtocol?: string
 }
 
-export type SwapActivity<TData> = {
-  protocol: SupportedSwapProtocol
-  timestamp: number
-  data: TData
-  depositRes?: {
-    chainId: string | number
-    extrinsicId?: string
-    txHash?: string
-    error?: string
-  }
+export type ExchangeParams = {
+  fromTokenId: TokenId
+  toTokenId: TokenId
+  fromAmount: bigint
+  fromAddress: string | null
+  toAddress: string | null
 }
 
-type _EstimateGasTx =
+export type SwapTransactionContext =
+  | { platform: "ethereum" }
+  | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
+  | { platform: "solana"; connection: Connection }
+
+export type GetTransactionParams = {
+  fromTokenId: TokenId
+  fromAddress: string
+  exchange: unknown // specific exchange type varies per module
+  context: SwapTransactionContext
+}
+
+export type SwapModuleTransaction =
   | {
-      type: "evm"
-      chainId: number
-      tx: TransactionRequest
+      platform: "ethereum"
+      transaction: TransactionRequest
     }
   | {
-      type: "substrate"
-      fromAddress: string
-      tx: SubmittableExtrinsic<"promise">
+      platform: "polkadot"
+      payload: SignerPayloadJSON
+      txMetadata?: Uint8Array
+    }
+  | {
+      platform: "solana"
+      transaction: Transaction | VersionedTransaction
     }
 
-export type QuoteFunction<TData = any> = Atom<
-  Loadable<Promise<BaseQuote<TData> | Loadable<Promise<BaseQuote<TData> | null>>[] | null>>
->
-type _SwapFunction<TData> = (
-  get: Getter,
-  set: Setter,
-  props: SwapProps
-) => Promise<Omit<SwapActivity<TData>, "timestamp">>
-export type GetEstimateGasTxFunction = (get: Getter) => Promise<QuoteFee | null>
+export type ApprovalInfo = {
+  contractAddress: string
+  amount: bigint
+  tokenAddress: string
+  chainId: number
+  fromAddress: string
+  protocolName: string
+} | null
 
 export type SwapModule = {
   protocol: SupportedSwapProtocol
-  fromAssetsSelector: Atom<Promise<SwappableAssetBaseType[]>>
-  toAssetsSelector: Atom<Promise<SwappableAssetBaseType[]>>
-  quote: QuoteFunction
-
-  exchangeAtom: Atom<Promise<SimpleswapExchange | StealthexExchange | undefined>>
-  evmTransactionAtom: Atom<Promise<TransactionRequest | undefined>>
-  substratePayloadAtom: (
-    sapi?: ScaleApi | null,
-    allowReap?: boolean
-  ) => Atom<Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>>
-
-  // talisman curated data
   decentralisationScore: number
-  approvalAtom?: Atom<{
-    contractAddress: string
-    amount: bigint
-    tokenAddress: string
-    chainId: number
-    fromAddress: string
-    protocolName: string
-  } | null>
+  supportsSlippageSetting?: boolean
+
+  getFromAssets: (signal: AbortSignal) => Promise<TokenId[]>
+  getToAssets: (fromTokenId: TokenId | null, signal: AbortSignal) => Promise<TokenId[]>
+
+  getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
+
+  createExchange: (params: ExchangeParams) => Promise<SwapExchange | null>
+  getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
+
+  getApprovalInfo?: (
+    params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+  ) => ApprovalInfo
 }
 
-// atoms shared between swap module
-export const validateAddress = (
-  account: Account | undefined,
-  address: string,
-  network: Network | undefined,
-  networkType: "evm" | "substrate" | "btc"
-) => {
-  if (network) {
-    if (account) return isAccountCompatibleWithNetwork(network, account)
-    if (address) return isAddressCompatibleWithNetwork(network, address)
-  }
+// helpers — module-internal use only
 
-  switch (networkType) {
-    case "evm":
-      return account ? isAccountPlatformEthereum(account) : isEthereumAddress(address)
-    case "substrate":
-      return account
-        ? network && isAccountCompatibleWithNetwork(network, account)
-        : isSs58Address(address)
-    case "btc":
-      return isBitcoinAddress(address)
-    default:
-      throw new Error("Invalid network type")
-  }
+type SwapChainType = "substrate" | "evm" | "solana"
+
+const PLATFORM_TO_CHAIN_TYPE: Record<NetworkPlatform, SwapChainType> = {
+  ethereum: "evm",
+  polkadot: "substrate",
+  solana: "solana",
 }
-
-export const selectedProtocolAtom = atom<SupportedSwapProtocol | null>(null)
-export const selectedSubProtocolAtom = atom<string | undefined>(undefined)
-export const fromAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
-export const fromAmountAtom = atom<Decimal>(Decimal.fromPlanck(0n, 1))
-export const fromSubstrateAddressAtom = atom<string | null>(null)
-export const fromEvmAddressAtom = atom<string | null>(null)
-export const fromAddressAtom = atom((get) => {
-  const fromAsset = get(fromAssetAtom)
-  const evmAddress = get(fromEvmAddressAtom)
-  const substrateAddress = get(fromSubstrateAddressAtom)
-  if (!fromAsset) return null
-  return fromAsset.networkType === "evm" ? evmAddress : substrateAddress
-})
-
-// TODO: Make this select from the URL so we can link it to the button in the seek banner
-export const toAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
-export const toSubstrateAddressAtom = atom<string | null>(null)
-export const toEvmAddressAtom = atom<string | null>(null)
-export const toBtcAddressAtom = atom<string | null>(null)
-
-export const toAddressAtom = atom((get) => {
-  const toAsset = get(toAssetAtom)
-  const evmAddress = get(toEvmAddressAtom)
-  const substrateAddress = get(toSubstrateAddressAtom)
-  const btcAddress = get(toBtcAddressAtom)
-  if (!toAsset) return null
-  switch (toAsset.networkType) {
-    case "evm":
-      return evmAddress
-    case "substrate":
-      return substrateAddress
-    case "btc":
-      return btcAddress
-    default:
-      return null
-  }
-})
-
-const _swappingAtom = atom(false)
-export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
-  "bestRate"
-)
-export const swapQuoteRefresherAtom = atom(Date.now())
-
-export const resetSwapFormAtom = atom(null, (_, set) => {
-  set(fromEvmAddressAtom, null)
-  set(fromSubstrateAddressAtom, null)
-  set(toEvmAddressAtom, null)
-  set(toSubstrateAddressAtom, null)
-  set(fromAssetAtom, null)
-  set(toAssetAtom, null)
-  set(fromAmountAtom, Decimal.fromPlanck(0n, 0))
-  set(swapViewAtom, "form")
-})
-
-// swaps history related atoms
-
-type StoredSwaps = SwapActivity<any>[]
-
-const validateSwaps = (value: unknown): value is StoredSwaps => {
-  if (!Array.isArray(value)) return false
-  for (const swap of value) {
-    if (typeof swap?.protocol !== "string" || typeof swap?.timestamp !== "number" || !swap?.data)
-      return false
-  }
-  return true
-}
-
-const _swapsStorage = unstable_withStorageValidator(validateSwaps)(
-  createJSONStorage(() => globalThis.localStorage, {
-    reviver: (key, value) => {
-      if (key === "timestamp" && typeof value === "number") new Date(value)
-      return value
-    },
-  })
-)
-
-const filterAndSortStoredSwaps = (swaps: StoredSwaps) =>
-  swaps.toSorted((a, b) => b.timestamp - a.timestamp)
-
-const swapsStorage: typeof _swapsStorage = {
-  ..._swapsStorage,
-  getItem: (key, initialValue) =>
-    filterAndSortStoredSwaps(_swapsStorage.getItem(key, initialValue)),
-  setItem: (key, newValue) => _swapsStorage.setItem(key, filterAndSortStoredSwaps(newValue)),
-}
-
-const swapsStorageAtom = atomWithStorage("@talisman/swaps", [], swapsStorage)
-
-const _swapsAtom = atom(
-  (get) => filterAndSortStoredSwaps(get(swapsStorageAtom)),
-  (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps)
-)
-
-// helpers
 
 export const getTokenIdForSwappableAsset = (
-  chainType: "substrate" | "evm" | "btc",
+  chainType: SwapChainType | NetworkPlatform,
   chainId: number | string,
   contractAddress?: string
 ) => {
-  switch (chainType) {
+  const resolved = PLATFORM_TO_CHAIN_TYPE[chainType as NetworkPlatform] ?? chainType
+  switch (resolved) {
     case "evm":
       return contractAddress
         ? evmErc20TokenId(chainId.toString(), contractAddress as `0x${string}`)
         : evmNativeTokenId(chainId.toString())
     case "substrate":
       return subNativeTokenId(chainId.toString())
-    case "btc":
-      return "btc-native"
+    case "solana":
+      return contractAddress
+        ? solSplTokenId(chainId.toString(), contractAddress)
+        : solNativeTokenId(chainId.toString())
     default:
       return "not-supported"
   }
 }
 
-export const saveAddressForQuest = async (
-  swapId: string,
-  fromAddress: string,
-  provider: string
-) => {
-  const { questApi } = await remoteConfigStore.get("swaps")
-  if (!questApi) return
+/** Derive the network platform from a Talisman token ID. */
+export const platformFromTokenId = (tokenId: string): NetworkPlatform => {
+  const { type } = parseTokenId(tokenId)
+  if (type.startsWith("evm-")) return "ethereum"
+  if (type.startsWith("substrate-")) return "polkadot"
+  if (type.startsWith("sol-")) return "solana"
+  throw new Error(`Unknown token type: ${type}`)
+}
 
-  await fetch(`${questApi}/api/quests/swap`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ swapId, fromAddress, provider }),
-  })
+/**
+ * Internal type used by swap modules to cache their provider-specific asset data.
+ * Not exposed outside the module layer — the public API only uses tokenIds (string).
+ */
+export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
+  id: string
+  name: string
+  symbol: string
+  chainId: number | string
+  contractAddress?: string
+  assetHubAssetId?: string
+  image?: string
+  platform: NetworkPlatform
+  /** protocol modules can store context here, like any special identifier */
+  context: TContext
+  decimals?: number
 }

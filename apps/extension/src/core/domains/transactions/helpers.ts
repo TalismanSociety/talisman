@@ -10,7 +10,7 @@ import type { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
-import type { TransactionStatus, WalletTransactionInfo } from "./types"
+import type { SwapStatus, TransactionStatus, WalletTransactionInfo } from "./types"
 
 type AddTransactionOptions = {
   label?: string
@@ -33,19 +33,26 @@ export const addSolTransaction = async (
     const { signature, address: account } = parseTransactionInfo(transaction)
     if (!networkId || !signature || !account) throw new Error("Invalid transaction")
 
-    await db.transactionsV2.add({
-      id: signature,
-      platform: "solana",
-      networkId,
-      account,
-      signature,
-      payload: serializeTransaction(transaction),
-      status: "pending",
-      confirmed: false,
-      siteUrl,
-      label,
-      txInfo,
-      timestamp: Date.now(),
+    // Atomic read+write prevents a concurrent watcher from having its
+    // terminal status overwritten back to "pending".
+    await db.transaction("rw", db.transactionsV2, async () => {
+      const existing = await db.transactionsV2.get(signature)
+      if (existing && ["success", "error", "replaced"].includes(existing.status)) return
+
+      await db.transactionsV2.put({
+        id: signature,
+        platform: "solana",
+        networkId,
+        account,
+        signature,
+        payload: serializeTransaction(transaction),
+        status: "pending",
+        confirmed: false,
+        siteUrl,
+        label,
+        txInfo,
+        timestamp: Date.now(),
+      })
     })
   } catch (err) {
     log.error("addSolTransaction", { err, transaction, options })
@@ -74,21 +81,26 @@ export const addEvmTransaction = async (
         )
         .count()) > 0
 
-    await db.transactionsV2.add({
-      id: hash,
-      hash,
-      platform: "ethereum",
-      networkId,
-      account: payload.from,
-      nonce: payload.nonce,
-      isReplacement,
-      payload,
-      status: "pending",
-      siteUrl,
-      label,
-      confirmed: false,
-      txInfo,
-      timestamp: Date.now(),
+    await db.transaction("rw", db.transactionsV2, async () => {
+      const existingEvm = await db.transactionsV2.get(hash)
+      if (existingEvm && ["success", "error", "replaced"].includes(existingEvm.status)) return
+
+      await db.transactionsV2.put({
+        id: hash,
+        hash,
+        platform: "ethereum",
+        networkId,
+        account: payload.from!, // validated above
+        nonce: payload.nonce!, // validated above
+        isReplacement,
+        payload,
+        status: "pending",
+        siteUrl,
+        label,
+        confirmed: false,
+        txInfo,
+        timestamp: Date.now(),
+      })
     })
   } catch (err) {
     log.error("addEvmTransaction", { err, hash, payload, options })
@@ -107,20 +119,25 @@ export const addSubstrateTransaction = async (
     if (!payload.genesisHash || !payload.nonce || !payload.address)
       throw new Error("Invalid transaction")
 
-    await db.transactionsV2.add({
-      id: hash,
-      platform: "polkadot",
-      hash,
-      networkId,
-      account: payload.address,
-      nonce: Number(payload.nonce),
-      payload,
-      status: "pending",
-      siteUrl,
-      label,
-      txInfo,
-      timestamp: Date.now(),
-      confirmed: false,
+    await db.transaction("rw", db.transactionsV2, async () => {
+      const existingSub = await db.transactionsV2.get(hash)
+      if (existingSub && ["success", "error", "replaced"].includes(existingSub.status)) return
+
+      await db.transactionsV2.put({
+        id: hash,
+        platform: "polkadot",
+        hash,
+        networkId,
+        account: payload.address,
+        nonce: Number(payload.nonce),
+        payload,
+        status: "pending",
+        siteUrl,
+        label,
+        txInfo,
+        timestamp: Date.now(),
+        confirmed: false,
+      })
     })
   } catch (err) {
     // biome-ignore lint/suspicious/noConsole: legacy
@@ -247,6 +264,14 @@ export const getExtrinsicHash = (
 }
 
 export const dismissTransaction = (hash: string) => db.transactionsV2.delete(hash)
+
+export const updateSwapStatus = async (id: string, swapStatus: SwapStatus) => {
+  try {
+    await db.transactionsV2.update(id, { swapStatus })
+  } catch (err) {
+    log.error("updateSwapStatus", { err, id, swapStatus })
+  }
+}
 
 const isTxInfoOfType = <T extends WalletTransactionInfo["type"]>(
   txInfo: WalletTransactionInfo | undefined | null,

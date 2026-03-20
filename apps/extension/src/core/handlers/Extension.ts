@@ -29,6 +29,7 @@ import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
+import { resumeSwapWatchers } from "../domains/transactions/watchSwapStatus"
 import { talismanAnalytics } from "../libs/Analytics"
 import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
@@ -198,6 +199,9 @@ export default class Extension extends ExtensionHandler {
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
+
+    // resume background swap status watchers for in-progress swaps
+    resumeSwapWatchers()
 
     // periodically purge expired query cache entries
     queryCacheStore.purgeExpired()
