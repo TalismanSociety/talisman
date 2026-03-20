@@ -396,6 +396,13 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     swapEthTx.txDetails,
   ])
 
+  const errorMessage = useMemo(() => {
+    if (!exchangeError) return null
+    // biome-ignore lint/suspicious/noExplicitAny: error shape is unknown and may not extend Error
+    const anyError = exchangeError as any
+    return anyError?.shortMessage || anyError?.message || t("An unknown error occurred")
+  }, [exchangeError, t])
+
   return (
     <>
       <div className="relative flex min-h-[4.48rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
@@ -466,20 +473,20 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full bg-black/50 px-12 py-8 pb-12">
-        {!needsApproval && exchangeError && (
+      <div className="absolute bottom-0 left-0 w-full bg-black/40 px-12 py-8 pb-12">
+        {!needsApproval && errorMessage && (
           <div
             role="alert"
-            className="mb-10 w-full rounded-sm bg-black-tertiary px-4 py-4 text-center text-red-400 text-tiny"
+            className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
           >
-            {t("Error loading transaction:")} {String(exchangeError)}
+            {errorMessage}
           </div>
         )}
 
         {needsApproval && (
           <div
             role="alert"
-            className="mb-10 w-full rounded-sm bg-black-tertiary px-4 py-4 text-center text-body-secondary text-tiny"
+            className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-body-secondary text-tiny"
           >
             {needsRevoke
               ? t(
