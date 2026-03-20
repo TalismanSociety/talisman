@@ -72,7 +72,6 @@ type DrawerProps = {
   children: ReactNode
   isOpen?: boolean
   className?: string
-  overlayClassName?: string
   containerId?: string
   onDismiss?: () => void
 }
@@ -81,7 +80,6 @@ export const Drawer: FC<DrawerProps> = ({
   anchor,
   children,
   isOpen,
-  overlayClassName,
   className,
   containerId,
   onDismiss,
@@ -112,7 +110,6 @@ export const Drawer: FC<DrawerProps> = ({
         as="div"
         className={classNames(
           "top-0 left-0 z-10 h-full w-full bg-grey-900 bg-opacity-80",
-          overlayClassName,
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
           position
         )}
