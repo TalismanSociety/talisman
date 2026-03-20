@@ -1,6 +1,10 @@
 import { db } from "@core/db"
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
+import {
+  getBlockExplorerUrls,
+  type Network,
+  networkIdFromTokenId,
+} from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import {
@@ -42,12 +46,11 @@ const getSwapStatusId = (
     case "swap-stealthex":
       return txInfo.exchangeId ? { protocol: txInfo.type, id: txInfo.exchangeId } : null
     case "swap-lifi": {
-      // Encode chain IDs in the status ID so the LiFi status poller can pass them to the API.
-      // Format: "txHash::fromChainId::toChainId" — retryStatus$ parses this.
-      const parts = [txHash]
-      if (txInfo.fromLifiChainId) parts.push(String(txInfo.fromLifiChainId))
-      if (txInfo.fromLifiChainId && txInfo.toLifiChainId) parts.push(String(txInfo.toLifiChainId))
-      return { protocol: txInfo.type, id: parts.join("::") }
+      // Encode network IDs in the status ID so the LiFi status poller can resolve them to LiFi chain IDs.
+      // Format: "txHash::fromNetworkId::toNetworkId" — retryStatus$ parses and converts these.
+      const fromNetworkId = networkIdFromTokenId(txInfo.fromTokenId)
+      const toNetworkId = networkIdFromTokenId(txInfo.toTokenId)
+      return { protocol: txInfo.type, id: [txHash, fromNetworkId, toNetworkId].join("::") }
     }
     default:
       return null

@@ -536,13 +536,13 @@ export const swapStatus$ = (id: string): Observable<LifiStatus | undefined> =>
 
 const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
   defer(async () => {
-    // id may be "txHash::fromChainId::toChainId" (new) or just "txHash" (legacy)
+    // id may be "txHash::fromNetworkId::toNetworkId" (current), "txHash::numericChainId::numericChainId" (legacy), or just "txHash"
     const [txHash, fromChain, toChain] = id.split("::")
     const status = (
       await lifiSdk.getStatus({
         txHash,
-        ...(fromChain ? { fromChain: Number(fromChain) } : {}),
-        ...(toChain ? { toChain: Number(toChain) } : {}),
+        ...(fromChain ? { fromChain: await toLifiChainId(fromChain) } : {}),
+        ...(toChain ? { toChain: await toLifiChainId(toChain) } : {}),
       })
     ).status
     return statusMap[status] ?? "unknown"

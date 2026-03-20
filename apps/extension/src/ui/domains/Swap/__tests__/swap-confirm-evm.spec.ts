@@ -287,8 +287,6 @@ describe("useSwapTxInfo", () => {
         fromAmount: "1000000",
         toAmount: "999000",
         to: baseParams.toAddress,
-        fromLifiChainId: undefined,
-        toLifiChainId: undefined,
       })
     })
 

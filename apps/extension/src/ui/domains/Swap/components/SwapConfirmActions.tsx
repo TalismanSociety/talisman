@@ -17,7 +17,6 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -55,9 +54,6 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
-  const {
-    swaps: { lifi: lifiConfig },
-  } = useRemoteConfig()
 
   const needsApproval = !approvalLoading && approvalData !== null
   const isReady = useConfirmReadiness(swapView)
@@ -238,18 +234,6 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     toAddress,
     protocol: swapModule?.protocol,
     subProtocol,
-    fromLifiChainId:
-      swapModule?.protocol === "lifi" && fromToken?.networkId
-        ? fromToken.networkId === "solana-mainnet"
-          ? lifiConfig.solanaChainId
-          : +fromToken.networkId
-        : undefined,
-    toLifiChainId:
-      swapModule?.protocol === "lifi" && toToken?.networkId
-        ? toToken.networkId === "solana-mainnet"
-          ? lifiConfig.solanaChainId
-          : +toToken.networkId
-        : undefined,
   })
 
   const swapTx = useMemo<TxSubmitButtonTransaction | null>(() => {
