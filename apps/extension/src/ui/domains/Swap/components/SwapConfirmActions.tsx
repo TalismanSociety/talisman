@@ -412,6 +412,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
               activeEthTx.priority ? (
                 <EthFeeSelect
                   className="h-10"
+                  disabled={isApproving}
                   tx={activeEthTx.transaction}
                   tokenId={activeFeeTokenId}
                   drawerContainerId={containerId}
