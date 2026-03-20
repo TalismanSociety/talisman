@@ -283,7 +283,6 @@ const AccountPickerDialog = memo(
             showBalances
             showIfEmpty
             allowZeroBalance={allowZeroBalance}
-            virtualized
           />
         </ScrollContainer>
       </WizardModalDialog>
