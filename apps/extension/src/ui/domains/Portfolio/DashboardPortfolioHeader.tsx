@@ -1,23 +1,13 @@
 import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
-import { getAccountGenesisHash, isAccountOwned } from "@core/domains/keyring/exports"
-import {
-  ArrowDownIcon,
-  CreditCardIcon,
-  FolderIcon,
-  MoreHorizontalIcon,
-  RepeatIcon,
-  SeekEyeIcon,
-  SendIcon,
-  TaoIcon,
-} from "@talismn/icons"
+import { getAccountGenesisHash } from "@core/domains/keyring/exports"
+import { FolderIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
-import { classNames, isNotNil } from "@talismn/util"
-import { api } from "@ui/api"
-import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { classNames } from "@talismn/util"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardTopActions } from "@ui/apps/dashboard/DashboardTopActions"
 import { ContextMenuTrigger } from "@ui/components/ContextMenu"
 import { IconButton } from "@ui/components/IconButton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -25,19 +15,12 @@ import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { FolderContextMenu } from "@ui/domains/Account/FolderContextMenu"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
-import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useMatch } from "react-router-dom"
-import { useIsBittensorEnabled } from "../TaoDashboard/hooks/useIsBittensorEnabled"
-import { useSeekBenefitsModal } from "./SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }> = ({
@@ -155,67 +138,8 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <TopActions />
+      <DashboardTopActions analyticsPage={ANALYTICS_PAGE} className="z-[1]" />
     </div>
-  )
-}
-
-type ActionProps = {
-  analyticsName: AnalyticsEventName
-  analyticsAction?: string
-  label: string
-  tooltip?: string
-  icon: FC<{ className?: string }>
-  onClick: () => void
-  disabled: boolean
-  disabledReason?: string
-}
-
-const Action: FC<ActionProps> = ({
-  analyticsName,
-  analyticsAction,
-  label,
-  tooltip,
-  icon: Icon,
-  onClick,
-  disabled,
-  disabledReason,
-}) => {
-  const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-    (event) => {
-      event.stopPropagation()
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: analyticsName,
-        action: analyticsAction,
-      })
-      onClick()
-    },
-    [onClick, analyticsAction, analyticsName]
-  )
-
-  return (
-    <Tooltip placement="bottom-start">
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className={classNames(
-            "pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-sm disabled:opacity-70",
-            "enabled:hover:bg-white/10 enabled:hover:text-body"
-          )}
-          onClick={handleClick}
-          disabled={disabled}
-        >
-          <div>
-            <Icon className="size-8" />
-          </div>
-          <div>{label}</div>
-        </button>
-      </TooltipTrigger>
-      {(!!disabledReason || !!tooltip) && (
-        <TooltipContent>{disabledReason || tooltip}</TooltipContent>
-      )}
-    </Tooltip>
   )
 }
 
@@ -224,141 +148,4 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   feature: "Portfolio",
   featureVersion: 2,
   page: "Portfolio Home",
-}
-
-const TopActions: FC = () => {
-  const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
-  const { t } = useTranslation()
-  const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
-  const { open: openRampsModal } = useRampsModal()
-  const canBuy = useFeatureFlag("BUY_CRYPTO")
-  const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
-  const isBittensorEnabled = useIsBittensorEnabled()
-
-  const [disableActions, disabledReason] = useMemo(() => {
-    if (!!selectedAccount && !isAccountOwned(selectedAccount))
-      return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
-
-    if (!selectedAccounts.some(isAccountOwned))
-      return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
-
-    return [false, ""]
-  }, [selectedAccount, t, selectedAccounts])
-
-  const selectedAddress = useMemo(() => selectedAccount?.address, [selectedAccount?.address])
-
-  // this component is not located in the asset details route, so we can't use useParams
-  const match = useMatch("/portfolio/tokens/:symbol")
-  const symbol = useMemo(() => match?.params.symbol, [match])
-
-  const topActions = useMemo<ActionProps[]>(
-    () =>
-      [
-        {
-          analyticsName: "Goto" as const,
-          analyticsAction: "Send Funds button",
-          label: t("Send"),
-          icon: SendIcon,
-          onClick: () =>
-            api.sendFundsOpen({
-              from: selectedAddress,
-              tokenSymbol: symbol || undefined,
-            }),
-          disabled: disableActions,
-          disabledReason,
-        },
-        {
-          analyticsName: "Goto" as const,
-          analyticsAction: "open receive",
-          label: !!selectedAccount && !isAccountOwned(selectedAccount) ? t("Copy") : t("Receive"),
-          icon: ArrowDownIcon,
-          onClick: () =>
-            openCopyAddressModal({
-              address: selectedAddress,
-            }),
-          disabled: !selectedAccounts.length, // always allow, as long as there is at least one account
-        },
-        {
-          analyticsName: "Goto" as const,
-          analyticsAction: "open swap",
-          label: t("Swap"),
-          icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
-          disabled: disableActions,
-          disabledReason,
-        },
-        canBuy
-          ? {
-              analyticsName: "Goto" as const,
-              analyticsAction: "open ramps",
-              label: t("Buy/Sell"),
-              icon: CreditCardIcon,
-              onClick: () => openRampsModal(),
-              disabled: disableActions,
-              disabledReason,
-            }
-          : null,
-        isBittensorEnabled
-          ? {
-              analyticsName: "Goto" as const,
-              analyticsAction: "open tao dashboard",
-              label: t("Trade TAO"),
-              icon: TaoIcon,
-              onClick: () => api.dashboardOpen("/bittensor/subnets"),
-              disabled: false,
-            }
-          : null,
-      ].filter(isNotNil),
-    [
-      t,
-      disableActions,
-      disabledReason,
-      selectedAccount,
-      selectedAccounts.length,
-      canBuy,
-      selectedAddress,
-      symbol,
-      openCopyAddressModal,
-      openSwapTokensModal,
-      openRampsModal,
-      isBittensorEnabled,
-    ]
-  )
-
-  return (
-    <div className="z-[1] flex w-full items-center justify-between gap-8">
-      <div className="flex justify-center gap-4" data-testid="top-actions-buttons">
-        {topActions.map((action, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
-          <Action key={index} {...action} />
-        ))}
-      </div>
-      {!!showSeekLink && <SeekBenefitsLink />}
-    </div>
-  )
-}
-
-const SeekBenefitsLink = () => {
-  const { open } = useSeekBenefitsModal()
-
-  const handleSeekClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "SEEK" })
-    open()
-  }, [open])
-
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "flex shrink-0 items-center gap-3 text-base text-primary-700 hover:text-primary"
-      )}
-      onClick={handleSeekClick}
-    >
-      <div className="flex flex-col justify-center text-[2rem]">
-        <SeekEyeIcon />
-      </div>
-      <div>SEEK</div>
-    </button>
-  )
 }

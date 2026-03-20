@@ -1,20 +1,22 @@
-import { ArrowDownIcon, EyeIcon, EyeOffIcon, RepeatIcon, SendIcon, TaoIcon } from "@talismn/icons"
-import { classNames, isNotNil } from "@talismn/util"
-import { api } from "@ui/api"
-import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { EyeIcon, EyeOffIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { TopActions } from "@ui/apps/popup/components/TopActions"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import { useAccounts } from "@ui/state/accounts"
 import { useSelectedCurrency, useSetting } from "@ui/state/settings"
-import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
+import { type MouseEventHandler, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Portfolio",
+  featureVersion: 2,
+  page: "Portfolio Home",
+}
 
 type Props = {
   className?: string
@@ -82,149 +84,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           />
         </div>
       </div>
-      <TopActions disabled={disabled} />
-    </div>
-  )
-}
-
-type ActionProps = {
-  analyticsName: AnalyticsEventName
-  analyticsAction?: string
-  label: string
-  tooltip?: string
-  icon: FC<{ className?: string }>
-  onClick: () => void
-  disabled: boolean
-  disabledReason?: string
-}
-
-const Action: FC<ActionProps> = ({
-  analyticsName,
-  analyticsAction,
-  label,
-  tooltip,
-  icon: Icon,
-  onClick,
-  disabled,
-  disabledReason,
-}) => {
-  const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-    (event) => {
-      event.stopPropagation()
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: analyticsName,
-        action: analyticsAction,
-      })
-      onClick()
-    },
-    [onClick, analyticsAction, analyticsName]
-  )
-
-  return (
-    <Tooltip placement="bottom-start">
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className={classNames(
-            "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[1rem] text-body-secondary opacity-90 backdrop-blur-sm",
-            "enabled:hover:bg-white/10 enabled:hover:text-body"
-          )}
-          onClick={handleClick}
-          disabled={disabled}
-        >
-          <div>
-            <Icon className="size-6" />
-          </div>
-          <div>{label}</div>
-        </button>
-      </TooltipTrigger>
-      {(!!disabledReason || !!tooltip) && (
-        <TooltipContent>{disabledReason || tooltip}</TooltipContent>
-      )}
-    </Tooltip>
-  )
-}
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Portfolio Home",
-}
-
-const TopActions = ({ disabled }: { disabled?: boolean }) => {
-  const { t } = useTranslation()
-  const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
-  const ownedAccounts = useAccounts("owned")
-  const isBittensorEnabled = useIsBittensorEnabled()
-
-  const { disableActions, disabledReason } = useMemo(() => {
-    const disableActions = disabled || !ownedAccounts.length
-    const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
-    return { disableActions, disabledReason }
-  }, [disabled, ownedAccounts.length, t])
-
-  const topActions = useMemo<ActionProps[]>(
-    () =>
-      [
-        {
-          analyticsName: "Goto" as const,
-          analyticsAction: "Send Funds button",
-          label: t("Send"),
-          icon: SendIcon,
-          onClick: () => api.sendFundsOpen().then(() => window.close()),
-          disabled: disableActions,
-          disabledReason,
-        },
-        {
-          analyticsName: "Goto" as const,
-          analyticsAction: "open receive",
-          label: t("Receive"),
-          icon: ArrowDownIcon,
-          onClick: () => openCopyAddressModal(),
-          disabled: disableActions,
-          disabledReason,
-        },
-        {
-          analyticsName: "Goto" as const,
-          analyticsAction: "open swap",
-          label: t("Swap"),
-          icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
-          disabled: disableActions,
-          disabledReason,
-        },
-        isBittensorEnabled
-          ? {
-              analyticsName: "Goto" as const,
-              analyticsAction: "open tao dashboard",
-              label: t("Trade TAO"),
-              icon: TaoIcon,
-              onClick: () => api.dashboardOpen("/bittensor/subnets"),
-              disabled: false,
-            }
-          : null,
-      ].filter(isNotNil),
-    [
-      disableActions,
-      disabledReason,
-      openCopyAddressModal,
-      openSwapTokensModal,
-      t,
-      isBittensorEnabled,
-    ]
-  )
-
-  return (
-    <div className="flex w-full items-center justify-between">
-      <div className="flex justify-center gap-4">
-        {topActions.map((action, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static list
-          <Action key={index} {...action} />
-        ))}
-      </div>
+      <TopActions analyticsPage={ANALYTICS_PAGE} disabled={disabled} />
     </div>
   )
 }

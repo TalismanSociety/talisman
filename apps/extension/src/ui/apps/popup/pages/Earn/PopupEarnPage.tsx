@@ -2,6 +2,7 @@ import { log } from "@common/log"
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
 import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -24,8 +25,16 @@ import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
+import { TopActions } from "../../components/TopActions"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
 import { PopupEarnPositionsTab } from "./PopupEarnPositionsTab"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Earn",
+  featureVersion: 1,
+  page: "Earn Home",
+}
 
 type DashboardEarnOutletContext = {
   search: string
@@ -82,6 +91,7 @@ const PopupEarnHeader = () => {
             <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
           )}
         </div>
+        <TopActions analyticsPage={ANALYTICS_PAGE} />
       </div>
     </div>
   )
