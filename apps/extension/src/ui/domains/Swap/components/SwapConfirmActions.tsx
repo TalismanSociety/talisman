@@ -400,7 +400,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     if (!exchangeError) return null
     // biome-ignore lint/suspicious/noExplicitAny: error shape is unknown and may not extend Error
     const anyError = exchangeError as any
-    return anyError?.shortMessage || anyError?.message || t("An unknown error occurred")
+    return anyError?.shortMessage || anyError?.message || t("Transaction is likely to fail")
   }, [exchangeError, t])
 
   return (
