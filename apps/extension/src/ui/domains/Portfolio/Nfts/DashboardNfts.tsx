@@ -177,7 +177,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
   return (
     <div>
       <div className="mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-body-disabled text-sm">
-        <div className="pl-[4.4rem]">{t("Collection")}</div>
+        <div className="pl-[2.75rem]">{t("Collection")}</div>
         <div className="text-right">{t("Value")}</div>
         <div className="text-right">{t("Owned")}</div>
       </div>
@@ -246,15 +246,15 @@ const NftCollectionTile: FC<{
   })
 
   return (
-    <div ref={refContainer} className="h-[24.6rem] w-[21.9rem]">
+    <div ref={refContainer} className="h-61.5 w-54.75">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )
 }
 
 const NftCollectionTileSkeleton = () => (
-  <div className="w-[21.9rem]">
-    <div className="size-[21.9rem] animate-pulse rounded-sm bg-grey-800"></div>
+  <div className="w-54.75">
+    <div className="size-54.75 animate-pulse rounded-sm bg-grey-800"></div>
   </div>
 )
 
@@ -263,7 +263,7 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
   onNftClick,
 }) => {
   return (
-    <div className="flex flex-wrap gap-[2rem]">
+    <div className="flex flex-wrap gap-10">
       {data.collections.map((collection, i) => (
         <NftCollectionTile
           key={`${collection.id}-${i}`}

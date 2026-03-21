@@ -185,7 +185,7 @@ const Action: FC<ActionProps> = ({
         <button
           type="button"
           className={classNames(
-            "pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-sm disabled:opacity-70",
+            "pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-xs disabled:opacity-70",
             "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}
           onClick={handleClick}
@@ -218,7 +218,7 @@ const SeekBenefitsLink: FC<{ analyticsPage: AnalyticsPage }> = ({ analyticsPage 
       className="flex shrink-0 items-center gap-3 text-base text-primary-700 hover:text-primary"
       onClick={handleSeekClick}
     >
-      <div className="flex flex-col justify-center text-[2rem]">
+      <div className="flex flex-col justify-center text-[1.25rem]">
         <SeekEyeIcon />
       </div>
       <div>SEEK</div>

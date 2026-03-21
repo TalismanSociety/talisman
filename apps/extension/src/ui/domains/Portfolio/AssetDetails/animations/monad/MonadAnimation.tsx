@@ -32,8 +32,8 @@ export const MonadAnimation = () => {
     <div className={"absolute bottom-28 left-0 w-full"}>
       <div
         className={classNames(
-          "relative h-[9.3rem] w-[10.5rem] -translate-x-[100%] opacity-100 duration-[2s] ease-out",
-          step > 0 && "translate-x-[14.8rem]",
+          "relative h-23.25 w-26.25 -translate-x-full opacity-100 duration-[2s] ease-out",
+          step > 0 && "translate-x-37",
           step === 3 && "opacity-0 duration-500 ease-out"
         )}
       >

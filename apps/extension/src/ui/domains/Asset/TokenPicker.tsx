@@ -42,7 +42,7 @@ type TokenRowProps = {
 }
 
 const TokenRowSkeleton = () => (
-  <div className="flex h-[5.8rem] w-full items-center gap-4 px-12 text-left">
+  <div className="flex h-14.5 w-full items-center gap-4 px-12 text-left">
     <div className="h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
     <div className="grow space-y-[5px]">
       <div className={"flex w-full justify-between font-bold text-body text-sm"}>
@@ -163,13 +163,13 @@ const TokenRow: FC<TokenRowProps> = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary"
       )}
     >
       <div className="w-16 shrink-0">
-        <TokenLogo tokenId={token.id} className="!text-xl" />
+        <TokenLogo tokenId={token.id} className="text-xl!" />
       </div>
       <div className="flex grow flex-col gap-2.5 overflow-hidden">
         <div
@@ -184,8 +184,8 @@ const TokenRow: FC<TokenRowProps> = ({
             </div>
             <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
             {!!token.name && token.name !== token.symbol && (
-              // shrink-[9999] makes it so token.name is the primary thing that truncates, instead of the symbol
-              <div className="min-w-0 shrink-[9999] truncate font-normal text-body-inactive">
+              // shrink-9999 makes it so token.name is the primary thing that truncates, instead of the symbol
+              <div className="min-w-0 shrink-9999 truncate font-normal text-body-inactive">
                 {token.name}
               </div>
             )}
@@ -439,7 +439,7 @@ const TokensList: FC<TokensListProps> = ({
           />
 
           {!tokens?.length && (
-            <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+            <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
               {t("No token matches your search")}
             </div>
           )}
@@ -457,7 +457,7 @@ const TokensList: FC<TokensListProps> = ({
           <TokenRowSkeleton />
         </>
       ) : (
-        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+        <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
           {t("No tokens found")}
         </div>
       )}
@@ -621,7 +621,7 @@ const NetworkFilterButton: FC<{
         <button
           type="button"
           onClick={onClick}
-          className="flex size-[4.6rem] shrink-0 items-center justify-center rounded-sm border border-transparent bg-grey-800 text-body-secondary hover:bg-grey-750 focus-visible:border-grey-600"
+          className="flex size-11.5 shrink-0 items-center justify-center rounded-sm border border-transparent bg-grey-800 text-body-secondary hover:bg-grey-750 focus-visible:border-grey-600"
         >
           {selectedNetworkId ? (
             <NetworkLogo networkId={selectedNetworkId} className="text-lg" />

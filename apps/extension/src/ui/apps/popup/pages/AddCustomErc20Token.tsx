@@ -17,7 +17,7 @@ import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/P
 
 const FakePill: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <span className="inline-flex h-[2.6rem] items-center gap-2 rounded-3xl bg-grey-850 px-3 font-light text-body">
+    <span className="inline-flex h-6.5 items-center gap-2 rounded-3xl bg-grey-850 px-3 font-light text-body">
       {children}
     </span>
   )
@@ -96,7 +96,7 @@ export const AddCustomErc20Token = () => {
           <div className="mt-16">
             <CustomErc20TokenViewDetails token={request.token} network={network} />
           </div>
-          <div className="flex-grow"></div>
+          <div className="grow"></div>
           {!!request.warnings?.length && (
             <SignAlertMessage type="error" className="mt-8">
               {request.warnings.map((warning, i) => (

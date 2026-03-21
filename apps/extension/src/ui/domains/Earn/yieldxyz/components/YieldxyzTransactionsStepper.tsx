@@ -45,10 +45,10 @@ export const YieldxyzTransactionsStepper: FC<{
               transaction.status === "BROADCASTED" || (isSubmitting && index === clampedStepIndex)
 
             return (
-              <div key={transaction.id ?? index} className="z-[1] flex justify-center">
+              <div key={transaction.id ?? index} className="z-1 flex justify-center">
                 <div
                   className={classNames(
-                    "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full",
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
                     isActive ? "bg-primary-500" : "bg-grey-600"
                   )}
                 >

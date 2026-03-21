@@ -39,7 +39,7 @@ export const SwapConfirm = () => {
       title={t("Confirm")}
       onBackClick={() => setSwapView("form")}
       onCloseClick={close}
-      contentClassName="relative !overflow-hidden !p-0"
+      contentClassName="relative overflow-hidden! p-0!"
       id={CONTAINER_ID}
     >
       <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
@@ -106,7 +106,7 @@ const AddressRow: FC<{ label: ReactNode; address: string; networkId: string }> =
       address={address}
       networkId={networkId}
       className="text-xs"
-      accountIconClassName="!text-md"
+      accountIconClassName="text-md!"
     />
   </div>
 )

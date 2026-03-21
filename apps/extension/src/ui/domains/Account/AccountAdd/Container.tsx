@@ -94,7 +94,7 @@ function MethodTypeTab({
     <button
       type="button"
       className={classNames(
-        "flex items-center justify-start gap-4 rounded-t border border-transparent border-b-0 p-6 opacity-70 lg:flex-grow lg:[&:last-of-type]:rounded-br",
+        "flex items-center justify-start gap-4 rounded-t border border-transparent border-b-0 p-6 opacity-70 lg:grow lg:last-of-type:rounded-br",
         "hover:border-grey-750 hover:bg-grey-750 hover:opacity-100 focus:border-grey-750 focus:bg-grey-750 focus:opacity-100",
         isSelected && "border-grey-750 bg-grey-850 opacity-100",
         className
@@ -385,7 +385,7 @@ function AccountCreateMethodButton({
       <span className="w-full border-grey-800 border-b pb-3 text-start">{title}</span>
       <span className="flex items-center gap-2 pr-8 text-body-secondary text-sm">
         {networks?.map((network, i) => (
-          <span key={network} className={classNames(i + 1 < networks.length && "-mr-[0.8rem]")}>
+          <span key={network} className={classNames(i + 1 < networks.length && "-mr-4")}>
             {networkChoices[network]}
           </span>
         ))}

@@ -84,7 +84,7 @@ export const NetworkCombo: FC<{
           </div>
           <ComboboxOptions
             className={classNames(
-              "overflow-x-none absolute top-24 z-10 max-h-[28rem] min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
+              "overflow-x-none absolute top-24 z-10 max-h-70 min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
               "border border-grey-600",
               bgClassName
             )}
@@ -94,7 +94,7 @@ export const NetworkCombo: FC<{
                 key={option.id}
                 value={option}
                 className={classNames(
-                  `relative flex h-24 w-full items-center gap-4 px-8 text-body-secondary hover:bg-grey-750 [&[data-focus]]:bg-grey-750 [&[data-selected]]:bg-grey-700 [&[data-selected]]:text-body`
+                  `relative flex h-24 w-full items-center gap-4 px-8 text-body-secondary hover:bg-grey-750 data-focus:bg-grey-750 data-selected:bg-grey-700 data-selected:text-body`
                 )}
               >
                 <NetworkLogo networkId={option.id} className="size-12" />

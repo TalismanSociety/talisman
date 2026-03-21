@@ -75,13 +75,13 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
         </div>
         <div
           className={classNames(
-            "pointer-events-none absolute top-0 left-0 h-12 w-full bg-gradient-to-b from-black to-transparent",
+            "pointer-events-none absolute top-0 left-0 h-12 w-full bg-linear-to-b from-black to-transparent",
             more.top ? "opacity-100" : "opacity-0"
           )}
         ></div>
         <div
           className={classNames(
-            "pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-gradient-to-t from-black to-transparent",
+            "pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-linear-to-t from-black to-transparent",
             more.bottom ? "opacity-100" : "opacity-0"
           )}
         ></div>

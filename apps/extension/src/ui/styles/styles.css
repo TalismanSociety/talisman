@@ -1,18 +1,330 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/forms" {
+  strategy: class;
+}
+
+@source "../../../public";
+
+@theme {
+  /* ── Clear default namespaces (Talisman fully replaces these) ── */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --leading-*: initial;
+  --radius-*: initial;
+
+  /* ── Colors ── */
+  --color-white: #fafafa;
+  --color-black: #121212;
+  --color-black-primary: #121212;
+  --color-black-secondary: #1b1b1b;
+  --color-black-tertiary: #262626;
+
+  --color-body-disabled: #5a5a5a;
+  --color-body-inactive: #717171;
+  --color-body-secondary: #a5a5a5;
+  --color-body: #fafafa;
+  --color-body-black: #121212;
+
+  --color-field: #1b1b1b;
+  --color-pill: #262626;
+
+  --color-alert-success: #6cfc69;
+  --color-alert-warn: #f48f45;
+  --color-alert-error: #fd4848;
+
+  --color-green: #6cfc69;
+  --color-green-500: #6cfc69;
+
+  --color-orange: #f48f45;
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f48f45;
+
+  --color-red: #fd4848;
+  --color-red-400: #f87171;
+  --color-red-500: #fd4848;
+
+  --color-primary: #d5ff5c;
+  --color-primary-500: #d5ff5c;
+  --color-primary-700: #c8eb46;
+
+  --color-brand-blue: #005773;
+  --color-brand-pink: #fd8fff;
+  --color-brand-orange: #fd4848;
+
+  --color-grey-50: #fafafa;
+  --color-grey-100: #f2f2f2;
+  --color-grey-200: #e4e4e4;
+  --color-grey-300: #d4d4d4;
+  --color-grey-400: #a5a5a5;
+  --color-grey-500: #717171;
+  --color-grey-600: #5a5a5a;
+  --color-grey-700: #3f3f3f;
+  --color-grey-750: #2f2f2f;
+  --color-grey-800: #262626;
+  --color-grey-850: #1b1b1b;
+  --color-grey-900: #181818;
+
+  --color-price-up: #8aeb94;
+  --color-price-down: #ff5c5f;
+
+  --color-buy: #6cfc69;
+  --color-sell: #fd4848;
+
+  /* ── Font Sizes ── */
+  --text-tiny: 0.625rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.5rem;
+  --text-xl: 2rem;
+  --text-2xl: 2.25rem;
+  --text-3xl: 2.5rem;
+
+  /* ── Line Heights ── */
+  --leading-3: 0.375rem;
+  --leading-4: 0.5rem;
+  --leading-5: 0.625rem;
+  --leading-6: 0.75rem;
+  --leading-7: 0.875rem;
+  --leading-8: 1rem;
+  --leading-9: 1.125rem;
+  --leading-10: 1.25rem;
+  --leading-none: 1;
+  --leading-base: 1.2;
+  --leading-paragraph: 1.4;
+
+  /* ── Border Radius ── */
+  --radius-none: 0;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 3rem;
+  --radius-full: 9999px;
+
+  /* ── Spacing ── */
+  --spacing-px: 1px;
+  --spacing-0: 0;
+  --spacing-0_5: 0.0625rem;
+  --spacing-1: 0.125rem;
+  --spacing-1_5: 0.1875rem;
+  --spacing-2: 0.25rem;
+  --spacing-2_5: 0.3125rem;
+  --spacing-3: 0.375rem;
+  --spacing-3_5: 0.4375rem;
+  --spacing-4: 0.5rem;
+  --spacing-5: 0.625rem;
+  --spacing-6: 0.75rem;
+  --spacing-7: 0.875rem;
+  --spacing-8: 1rem;
+  --spacing-9: 1.125rem;
+  --spacing-10: 1.25rem;
+  --spacing-11: 1.375rem;
+  --spacing-12: 1.5rem;
+  --spacing-14: 1.75rem;
+  --spacing-16: 2rem;
+  --spacing-20: 2.5rem;
+  --spacing-24: 3rem;
+  --spacing-28: 3.5rem;
+  --spacing-32: 4rem;
+  --spacing-36: 4.5rem;
+  --spacing-40: 5rem;
+  --spacing-44: 5.5rem;
+  --spacing-48: 6rem;
+  --spacing-52: 6.5rem;
+  --spacing-56: 7rem;
+  --spacing-60: 7.5rem;
+  --spacing-64: 8rem;
+  --spacing-72: 9rem;
+  --spacing-80: 10rem;
+  --spacing-96: 12rem;
+
+  /* ── Font Families ── */
+  --font-sans:
+    Surt, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --font-surtExpanded:
+    SurtExpanded, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", sans-serif;
+  --font-whyteInkTrap:
+    WhyteInktrapMedium, ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  --font-inter:
+    Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", sans-serif;
+  --font-unbounded:
+    Unbounded, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", sans-serif;
+
+  /* ── Animations ── */
+  --animate-fade-in-fast: fade-in 0.1s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-fade-in-slow: fade-in 0.5s ease-out;
+  --animate-spin-slow: spin 2s linear infinite;
+  --animate-spin-once: spin 4s linear forwards;
+  --animate-scale-in-out-once: scale-in-out 1.5s forwards;
+  --animate-slide-in-up: slide-in-up 300ms ease-out;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in-out {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+
+  @keyframes slide-in-up {
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0%);
+    }
+  }
+}
+
+/* The components layer is for class-based styles that you want to be able to override with utilities. */
+/* Access to the (tailwind) theme is provided by theme() function if needed */
+@utility form-checkbox {
+  &:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
+  }
+
+  /* we want focus state only for keyboard nav, so we disable :focus and use only :focus-visible */
+  &:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+}
+
+/* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    display: none; /* chrome, safari, opera */
+  }
+  scrollbar-color: transparent transparent;
+  -ms-overflow-style: none; /* Edge */
+  scrollbar-width: none; /* Firefox */
+}
+@utility scrollable {
+  &::-webkit-scrollbar {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px currentColor;
+    border: solid 3px transparent;
+    border-radius: 25px;
+    cursor: pointer;
+  }
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  &::-webkit-resizer {
+    appearance: none;
+    display: none;
+  }
+  resize: none;
+  scrollbar-color: currentColor transparent;
+}
+@utility scrollable-500 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-500);
+  }
+  scrollbar-color: var(--color-grey-500) transparent;
+}
+@utility scrollable-600 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-600);
+  }
+  scrollbar-color: var(--color-grey-600) transparent;
+}
+@utility scrollable-700 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-700);
+  }
+  scrollbar-color: var(--color-grey-700) transparent;
+}
+@utility scrollable-800 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-800);
+  }
+  scrollbar-color: var(--color-grey-800) transparent;
+}
+@utility balance-revealable {
+  /*****************************************************************************
+   *                                Balances
+   ****************************************************************************/
+  @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent;
+
+  &.balance-reveal {
+    @apply overflow-visible rounded-none text-inherit;
+  }
+
+  &::after {
+    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden bg-cover bg-no-repeat opacity-15;
+    content: "";
+    /* ./blur.svg */
+    background-image: url("data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==");
+  }
+
+  &.balance-reveal::after {
+    @apply hidden;
+  }
+}
+@utility balance-reveal {
+  &.balance-revealable {
+    @apply overflow-visible rounded-none text-inherit;
+  }
+
+  &.balance-revealable::after {
+    @apply hidden;
+  }
+}
 
 /* The base layer is for things like reset rules or default styles applied to plain HTML elements. */
 @layer base {
+  /* Preserve v3 cursor:pointer behavior on buttons */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   html {
-    /* this defines the root font size, on which 'rem' units are based */
-    font-size: 10px;
-    scrollbar-color: theme("colors.grey.700") transparent;
+    scrollbar-color: var(--color-grey-700) transparent;
     @apply min-h-screen;
   }
 
   body {
-    @apply leading-base text-body bg-black-primary font-sans text-base antialiased;
+    @apply leading-base text-body bg-black-primary antialiased;
   }
 
   /* hides the content of the page while fonts are preloading (using webfontloader) */
@@ -74,101 +386,14 @@
   }
 }
 
-/* The components layer is for class-based styles that you want to be able to override with utilities. */
-/* Access to the (tailwind) theme is provided by theme() function if needed */
-@layer components {
-  input[type="checkbox"].form-checkbox:checked {
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
-  }
-
-  /* we want focus state only for keyboard nav, so we disable :focus and use only :focus-visible */
-  input[type="checkbox"].form-checkbox:focus:not(:focus-visible) {
-    box-shadow: none;
-  }
-}
-
-/* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    background-color: transparent;
-    display: none; /* chrome, safari, opera */
-  }
-  .no-scrollbar {
-    scrollbar-color: transparent transparent;
-    -ms-overflow-style: none; /* Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  .scrollable::-webkit-scrollbar {
-    background-color: transparent;
-  }
-  .scrollable::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px currentColor;
-    border: solid 3px transparent;
-    border-radius: 25px;
-    cursor: pointer;
-  }
-  .scrollable::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-  .scrollable::-webkit-resizer {
-    appearance: none;
-    display: none;
-  }
-  .scrollable {
-    resize: none;
-    scrollbar-color: currentColor transparent;
-  }
-
-  .scrollable-500::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.500");
-  }
-  .scrollable-500 {
-    scrollbar-color: theme("colors.grey.500") transparent;
-  }
-
-  .scrollable-600::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.600");
-  }
-  .scrollable-600 {
-    scrollbar-color: theme("colors.grey.600") transparent;
-  }
-
-  .scrollable-700::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.700");
-  }
-  .scrollable-700 {
-    scrollbar-color: theme("colors.grey.700") transparent;
-  }
-
-  .scrollable-800::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.800");
-  }
-  .scrollable-800 {
-    scrollbar-color: theme("colors.grey.800") transparent;
-  }
-
-  /*****************************************************************************
-   *                                Balances
-   ****************************************************************************/
-  .balance-revealable {
-    @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent;
-  }
-
-  .balance-revealable.balance-reveal {
-    @apply overflow-visible rounded-none text-inherit;
-  }
-
-  .balance-revealable::after {
-    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden bg-cover bg-no-repeat opacity-[15%];
-    content: "";
-    /* ./blur.svg */
-    background-image: url("data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==");
-  }
-
-  .balance-revealable.balance-reveal::after {
-    @apply hidden;
-  }
+/*
+ * Chrome extension pages apply un-layered font defaults (font-size: 75%, font-family: system-ui)
+ * that override @layer base rules (cascade layers have lower priority than un-layered styles).
+ * These must be outside @layer to win the cascade.
+ */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
 }
 
 @font-face {

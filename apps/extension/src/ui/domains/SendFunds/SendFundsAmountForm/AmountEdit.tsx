@@ -260,7 +260,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
     <div className="w-full grow">
       {!!token && (
         <>
-          <div className="flex h-[12rem] flex-col justify-end font-bold text-xl">
+          <div className="flex h-60 flex-col justify-end font-bold text-xl">
             {isTokenEdit ? <TokenInput onTokenClick={onTokenClick} /> : <FiatInput />}
           </div>
           <div
@@ -275,7 +275,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
                 <PillButton
                   onClick={toggleIsTokenEdit}
                   size="xs"
-                  className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
+                  className="h-11 w-11 rounded-full px-0! py-0!"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -285,7 +285,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
+              className={classNames("h-11 rounded-sm px-4! py-0!")}
             >
               {t("Max")}
             </PillButton>

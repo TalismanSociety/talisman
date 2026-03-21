@@ -47,7 +47,7 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
         ) : data ? (
           <HoldersOverviewContent data={data} />
         ) : (
-          <div className="flex h-[20rem] items-center justify-center text-body-secondary">
+          <div className="flex h-50 items-center justify-center text-body-secondary">
             {t("Failed to fetch data")}
           </div>
         )}
@@ -59,7 +59,7 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
 type SubnetHoldersData = NonNullable<ReturnType<typeof useSubnetHolders>["data"]>
 
 const HoldersOverviewSkeleton = () => (
-  <div className="flex h-[20rem] items-stretch gap-14">
+  <div className="flex h-50 items-stretch gap-14">
     <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
       <MetricsFieldSkeleton withExtra />
       <MetricsFieldSkeleton withExtra />
@@ -75,10 +75,10 @@ const HoldersOverviewSkeleton = () => (
           <span className="l text-white text-xs">
             <Skeleton className="w-56" />
           </span>
-          <span className="font-medium text-lg text-white leading-[1.2]">
+          <span className="font-medium text-lg text-white leading-base">
             <Skeleton className="w-20" />
           </span>
-          <span className="font-bold text-sm leading-[1.2]">
+          <span className="font-bold text-sm leading-base">
             <Skeleton className="w-36" />
           </span>
         </div>
@@ -91,7 +91,7 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex h-[20rem] items-stretch gap-14">
+    <div className="flex h-50 items-stretch gap-14">
       <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
         <MetricsField
           label={t("Total Holders")}
@@ -243,7 +243,7 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
               key={tier.key}
               role="button"
               tabIndex={0}
-              className="cursor-pointer outline-none"
+              className="cursor-pointer outline-hidden"
               onMouseEnter={() => handleHover(tier.key)}
               onFocus={() => handleHover(tier.key)}
             >
@@ -272,11 +272,11 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         <span className="l text-white text-xs">
           <TierLabel tier={activeTier} />
         </span>
-        <span className="font-medium text-lg text-white leading-[1.2]">
+        <span className="font-medium text-lg text-white leading-base">
           {formatCompactNumber(activeTierData.count)}
         </span>
         <span
-          className="font-bold text-sm leading-[1.2]"
+          className="font-bold text-sm leading-base"
           style={{ color: TIER_CONFIG[activeTier].color }}
         >
           {activeTierData.percent.toFixed(2)}%

@@ -137,8 +137,8 @@ const ToggleCurrency = () => {
       type="button"
       className={classNames(
         "pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-grey-750 bg-grey-800 text-center text-body-secondary text-sm transition-colors duration-100 ease-out hover:bg-grey-700",
-        currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",
-        currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]"
+        currencyConfig[currency]?.symbol?.length === 2 && "text-tiny",
+        currencyConfig[currency]?.symbol?.length > 2 && "text-[0.5rem]"
       )}
       onClick={(event) => {
         event.stopPropagation()
@@ -161,7 +161,7 @@ const DefiPositionRow: FC<{
   if (position.id === "SHIMMER")
     return (
       // Fade in to reduce flickering the first time tab is accessed
-      <FadeIn className="flex h-[6.6rem] w-full items-center gap-8 rounded-sm bg-grey-850 px-8">
+      <FadeIn className="flex h-16.5 w-full items-center gap-8 rounded-sm bg-grey-850 px-8">
         <div className="size-16 shrink-0 animate-pulse rounded-full bg-body-disabled"></div>
         <div className="flex grow flex-col gap-2">
           <div className="flex w-full animate-pulse items-center justify-between font-bold">
@@ -180,7 +180,7 @@ const DefiPositionRow: FC<{
     <button
       type="button"
       className={classNames(
-        "flex h-[6.6rem] w-full items-center gap-8 overflow-hidden rounded-sm bg-grey-850 px-8 hover:bg-grey-800"
+        "flex h-16.5 w-full items-center gap-8 overflow-hidden rounded-sm bg-grey-850 px-8 hover:bg-grey-800"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >

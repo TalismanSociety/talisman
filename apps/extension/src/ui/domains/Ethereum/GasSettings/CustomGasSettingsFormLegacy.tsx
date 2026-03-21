@@ -38,7 +38,7 @@ import { usePublicClient } from "../usePublicClient"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {
-  className: "bg-grey-700 px-6 gap-6 h-[5rem]",
+  className: "bg-grey-700 px-6 gap-6 h-12.5",
 }
 
 type FormData = {
@@ -301,7 +301,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         <Indicator label={t("Network Gas Price")}>
           {t("{{networkGasPrice}} GWEI", { networkGasPrice })}{" "}
           <WithTooltip
-            className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
+            className="inline-flex h-3.75 flex-col justify-center align-text-top"
             tooltip={t(
               "The Gas Price is set by the network and changes depending on network usage"
             )}
@@ -356,7 +356,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       </FormFieldContainer>
       <MessageRow type="error" message={errorGasLimit} />
 
-      <div className="flex h-[5.2rem] w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
+      <div className="flex h-13 w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
         <div>
           {t("Total Max Fee")}{" "}
           <WithTooltip

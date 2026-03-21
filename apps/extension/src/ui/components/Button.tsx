@@ -36,37 +36,37 @@ export const Button: FC<ButtonProps> = ({
     switch (effectiveColor) {
       case "default":
         return cn(
-          "border border-white bg-transparent text-white focus:border-2 focus:border-white focus:outline-none enabled:hover:bg-white enabled:hover:text-black enabled:hover:active:bg-black enabled:hover:active:text-white",
+          "border border-white bg-transparent text-white focus:border-2 focus:border-white focus:outline-hidden enabled:hover:bg-white enabled:hover:text-black enabled:hover:active:bg-black enabled:hover:active:text-white",
           "disabled:bg-black-tertiary disabled:text-body-disabled"
         )
 
       case "primary":
         return cn(
-          "border-2 border-transparent bg-primary-500 text-black focus:border-white focus:outline-none enabled:hover:bg-primary-700 enabled:hover:active:bg-primary",
+          "border-2 border-transparent bg-primary-500 text-black focus:border-white focus:outline-hidden enabled:hover:bg-primary-700 enabled:hover:active:bg-primary",
           "disabled:bg-primary/50"
         )
 
       case "orange":
         return cn(
-          "border-2 border-transparent bg-orange-500 text-black focus:border-white focus:outline-none enabled:hover:bg-orange/90 enabled:hover:active:bg-orange",
+          "border-2 border-transparent bg-orange-500 text-black focus:border-white focus:outline-hidden enabled:hover:bg-orange/90 enabled:hover:active:bg-orange",
           "disabled:bg-orange-500/50"
         )
 
       case "red":
         return cn(
-          "border-2 border-transparent bg-brand-orange text-black focus:border-white focus:outline-none enabled:hover:bg-brand-orange/90 enabled:hover:active:bg-brand-orange",
+          "border-2 border-transparent bg-brand-orange text-black focus:border-white focus:outline-hidden enabled:hover:bg-brand-orange/90 enabled:hover:active:bg-brand-orange",
           "disabled:bg-brand-orange/50"
         )
 
       case "buy":
         return cn(
-          "border-2 border-transparent bg-buy text-black focus:border-white focus:outline-none enabled:hover:bg-buy/90 enabled:hover:active:bg-buy",
+          "border-2 border-transparent bg-buy text-black focus:border-white focus:outline-hidden enabled:hover:bg-buy/90 enabled:hover:active:bg-buy",
           "disabled:bg-buy/50"
         )
 
       case "sell":
         return cn(
-          "border-2 border-transparent bg-sell text-black focus:border-white focus:outline-none enabled:hover:bg-sell/90 enabled:hover:active:bg-sell",
+          "border-2 border-transparent bg-sell text-black focus:border-white focus:outline-hidden enabled:hover:bg-sell/90 enabled:hover:active:bg-sell",
           "disabled:bg-sell/50"
         )
     }

@@ -32,7 +32,7 @@ export const PositionContextMenu: FC<{ position: DefiPosition; className?: strin
   return (
     <ContextMenu placement={"bottom-end"}>
       <ContextMenuTrigger className={classNames(className)} asChild>
-        <div className="flex size-[3.8rem] shrink-0 cursor-pointer items-center justify-center rounded text-body-secondary hover:bg-grey-750 hover:text-body">
+        <div className="flex size-9.5 shrink-0 cursor-pointer items-center justify-center rounded text-body-secondary hover:bg-grey-750 hover:text-body">
           <MoreHorizontalIcon className="shrink-0" />
         </div>
       </ContextMenuTrigger>

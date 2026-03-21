@@ -47,7 +47,7 @@ export const SeekAnimation = () => {
       )}
     >
       <button type="button" onClick={hide}>
-        <img src={imgAnimation} alt="" className="aspect-[4/6] size-full" />
+        <img src={imgAnimation} alt="" className="aspect-4/6 size-full" />
       </button>
     </div>,
     document.getElementById("main") as HTMLElement

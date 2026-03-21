@@ -48,7 +48,7 @@ const MnemonicFormInner = () => {
         <Checkbox
           disabled={!canConfirm}
           onChange={(e) => setConfirmed(e.target.checked)}
-          className="!gap-8 text-body-secondary text-sm hover:text-body [&>span]:leading-paragraph"
+          className="gap-8! text-body-secondary text-sm hover:text-body [&>span]:leading-paragraph"
         >
           {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>
@@ -74,7 +74,7 @@ export const MnemonicCreateForm = () => {
   const { t } = useTranslation()
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
-      <div className={"flex w-full min-w-[58rem] flex-col"}>
+      <div className={"flex w-full min-w-145 flex-col"}>
         <div className="text-body-secondary text-sm">
           {t(
             "Your recovery phrase gives you access to your wallet and funds. Write it down and store it in a secure location."

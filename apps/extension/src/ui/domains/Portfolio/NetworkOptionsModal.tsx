@@ -24,7 +24,7 @@ const NetworkOptionRow: FC<{
       className={classNames(
         "flex h-24 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
-        isSelected && "!bg-grey-700"
+        isSelected && "bg-grey-700!"
       )}
     >
       <NetworkLogo networkId={option.networkIds[0]} className="shrink-0 text-xl" />
@@ -168,8 +168,8 @@ export const NetworkOptionsModal: FC<{
       isOpen={isOpen}
       onDismiss={onClose}
       className={classNames(
-        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
+        "h-150 w-100 overflow-hidden border-grey-800 bg-black",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border border-grey-800 shadow-xs"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}
     >

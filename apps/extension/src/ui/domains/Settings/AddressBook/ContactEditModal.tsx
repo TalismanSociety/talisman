@@ -125,7 +125,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <div id="edit-contact-modal" className="h-[60rem] w-[40rem] overflow-hidden">
+      <div id="edit-contact-modal" className="h-150 w-100 overflow-hidden">
         <ModalDialog title={t("Edit contact")} className="size-full overflow-hidden">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
             <div className="grow">
@@ -143,7 +143,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
                   type="text"
                   value={address}
                   readOnly
-                  after={<CopyAddressIconButton address={address} className="text-[2rem]" />}
+                  after={<CopyAddressIconButton address={address} className="text-[1.25rem]" />}
                 />
               </FormFieldContainer>
               {isAddressSs58 && (

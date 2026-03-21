@@ -6,7 +6,7 @@ export const DashboardEarnDiscoverTab: FC<{ search: string }> = ({ search }) => 
   const { t } = useTranslation()
 
   return (
-    <div className="min-w-[45rem] text-left text-base text-body-secondary">
+    <div className="min-w-112.5 text-left text-base text-body-secondary">
       {/* Earn on your assets section */}
       <div className="mb-6">
         <h2 className="mb-4 font-medium text-body-secondary text-sm">{t("Earn on your assets")}</h2>

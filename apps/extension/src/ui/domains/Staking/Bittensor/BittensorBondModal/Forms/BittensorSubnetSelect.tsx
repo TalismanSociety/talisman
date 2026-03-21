@@ -157,7 +157,7 @@ export const BittensorSubnetSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
                 "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search subnets")}
@@ -171,7 +171,7 @@ export const BittensorSubnetSelect = () => {
         </div>
 
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
+          <div className="flex justify-between pr-12 pl-15 text-body-disabled text-sm">
             <div>{t("Name / Pool")}</div>
             <div>{t("Emissions / Alpha Price")}</div>
           </div>
@@ -335,7 +335,7 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={classNames(
-        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800 text-body-secondary"
       )}

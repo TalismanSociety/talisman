@@ -66,7 +66,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
     <div
       {...getRootProps()}
       className={classNames(
-        "flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-grey-700 border-dashed p-8 hover:bg-grey-900",
+        "flex h-80 cursor-pointer flex-col items-center gap-8 rounded border border-grey-700 border-dashed p-8 hover:bg-grey-900",
         isDragAccept && "bg-primary/10",
         (isInvalid || isDragReject) && "bg-alert-warn/10"
       )}
@@ -83,7 +83,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       />
       <div className="flex grow flex-col items-center justify-center gap-6">
         {file ? (
-          <div className="flex h-16 w-[24rem] max-w-full items-center rounded-sm bg-grey-800 pl-6 text-xs">
+          <div className="flex h-16 w-[15rem] max-w-full items-center rounded-sm bg-grey-800 pl-6 text-xs">
             <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">{file.name}</div>
             <button
               className="p-6 text-body-secondary hover:text-body"

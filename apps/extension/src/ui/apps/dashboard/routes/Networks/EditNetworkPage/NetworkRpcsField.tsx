@@ -131,7 +131,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
               before={
                 <button
                   type="button"
-                  className="allow-focus ml-[-1.2rem] px-2 text-md opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+                  className="allow-focus -ml-6 px-2 text-md opacity-80 outline-hidden hover:opacity-100 focus:opacity-100 disabled:opacity-50"
                   disabled={!canDrag}
                   {...dragHandleProps}
                 >
@@ -140,13 +140,13 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
               }
               after={
                 field.state.meta.isValidating ? (
-                  <div className="mr-[-1.2rem] shrink-0 px-2">
+                  <div className="-mr-6 shrink-0 px-2">
                     <LoaderIcon className="animate-spin-slow transition-none" />
                   </div>
                 ) : canDelete ? (
                   <button
                     type="button"
-                    className="allow-focus mr-[-1.2rem] shrink-0 px-2 text-md opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+                    className="allow-focus -mr-6 shrink-0 px-2 text-md opacity-80 outline-hidden hover:opacity-100 focus:opacity-100 disabled:opacity-50"
                     onClick={onDelete}
                   >
                     <TrashIcon className="transition-none" />

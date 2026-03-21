@@ -90,7 +90,7 @@ export const ConnectSignetSelectAccounts = () => {
       <HeaderBlock title="Confirm Import?" />
       <Spacer large />
 
-      <div className="grid w-full max-w-xl gap-[1rem]">
+      <div className="grid w-full max-w-xl gap-5">
         {vaults.map((vault) => (
           <button
             type="button"
@@ -112,7 +112,7 @@ export const ConnectSignetSelectAccounts = () => {
             <Checkbox
               checked={selectedAccounts?.[vault.address] ?? false}
               readOnly
-              className="[&>input]:!border-body-disabled ml-auto"
+              className="ml-auto [&>input]:border-body-disabled!"
             />
           </button>
         ))}

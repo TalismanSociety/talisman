@@ -36,8 +36,8 @@ export const SeekBenefitsModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black shadow",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border"
+        "h-150 w-100 overflow-hidden border-grey-800 bg-black shadow-xs",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border border-grey-800"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >
@@ -69,16 +69,16 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [remoteConfig.seek.tradeUrl])
 
   return (
-    <div className="relative size-full rounded-none border-none bg-gradient-to-b from-[#505F2E] to-40% to-transparent [&>header>h1]:text-md">
+    <div className="relative size-full rounded-none border-none bg-linear-to-b from-[#505F2E] to-40% to-transparent [&>header>h1]:text-md">
       <IconButton onClick={onClose} className="absolute top-6 right-6 z-10">
         <XIcon />
       </IconButton>
-      <Background className="absolute top-0 right-0 z-0 h-[20.7rem] w-[17rem]" />
+      <Background className="absolute top-0 right-0 z-0 h-51.75 w-42.5" />
       <div className="flex size-full flex-col p-8">
         <div className="grow">
           <div className="mt-7 flex h-80 flex-col justify-center gap-4">
-            <p className="text-[2.1rem]">{t("It's Time to SEEK")}</p>
-            <p className="max-w-[25rem] text-body-secondary text-sm">
+            <p className="text-[1.3125rem]">{t("It's Time to SEEK")}</p>
+            <p className="max-w-62.5 text-body-secondary text-sm">
               {t("Hold SEEK to unlock exclusive benefits.")}
               <br />
               <button
@@ -92,7 +92,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             </p>
             <UserSeekBalance />
           </div>
-          <div className="mt-8 flex h-[4.6rem] items-center justify-between rounded-t-sm bg-grey-800 px-8 text-base">
+          <div className="mt-8 flex h-11.5 items-center justify-between rounded-t-sm bg-grey-800 px-8 text-base">
             <div className="flex grow items-center justify-start gap-3 overflow-hidden">
               <div className="truncate">{t("Earn SEEK rewards")}</div>
             </div>
@@ -170,7 +170,7 @@ const UserSeekBalance = () => {
 
   return (
     <div>
-      <div className="inline-flex h-[2.6rem] items-center gap-1.5 rounded-sm bg-primary/10 px-6 text-sm">
+      <div className="inline-flex h-6.5 items-center gap-1.5 rounded-sm bg-primary/10 px-6 text-sm">
         <span>{t("You have")}</span>
         <Tokens className="text-primary" amount={totalOwned.tokens} decimals={token.decimals} />
         <span>{token.symbol}</span>

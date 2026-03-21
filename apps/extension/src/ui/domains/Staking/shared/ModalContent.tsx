@@ -14,7 +14,7 @@ export const ModalContent = ({ ModalHeader, ModalBody }: ModalContentProps) => {
     <div
       id={STAKING_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals
       className={classNames(
-        "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
+        "relative flex h-150 max-h-dvh w-100 max-w-dvw flex-col overflow-hidden bg-black",
         !IS_POPUP && "rounded border border-grey-850"
       )}
     >

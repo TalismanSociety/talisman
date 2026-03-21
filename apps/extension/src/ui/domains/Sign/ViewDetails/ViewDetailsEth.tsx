@@ -29,7 +29,7 @@ import { ViewDetailsAddress } from "./ViewDetailsAddress"
 import { ViewDetailsField } from "./ViewDetailsField"
 
 const ViewDetailsGrid: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid grid-cols-keyvalue gap-x-8 whitespace-nowrap">{children}</div>
+  <div className="grid grid-cols-[auto_1fr] gap-x-8 whitespace-nowrap">{children}</div>
 )
 
 const ViewDetailsGridRow: FC<{ left: ReactNode; right: ReactNode }> = ({ left, right }) => (
@@ -131,8 +131,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   if (!request) return null
 
   return (
-    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
-      <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-sm leading-[2rem]">
+    <div className="flex max-h-150 w-full flex-col gap-12 bg-grey-850 p-12">
+      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-sm leading-10">
         <div className="text-body-secondary">{t("Details")}</div>
         {!!decodedTx?.isContractCall && (
           <ViewDetailsField label={t("Contract type and method")}>

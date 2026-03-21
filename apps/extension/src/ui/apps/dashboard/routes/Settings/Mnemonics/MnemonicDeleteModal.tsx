@@ -109,7 +109,7 @@ export const MnemonicDeleteModal = () => {
             primary
             onClick={handleConfirmClick}
             disabled={disableDelete}
-            className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80 enabled:text-white"
+            className="enabled:bg-brand-orange! enabled:text-white hover:enabled:bg-brand-orange/80!"
           >
             {t("Delete")}
           </Button>

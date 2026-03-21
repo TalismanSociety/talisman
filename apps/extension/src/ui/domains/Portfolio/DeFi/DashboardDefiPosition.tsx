@@ -35,7 +35,7 @@ export const DashboardDefiPosition: FC<{ positionId: string | undefined }> = ({ 
 
 const DefiPositionActionRow: FC<{ position: DefiPosition }> = ({ position }) => {
   return (
-    <div className="flex h-[6.6rem] w-full items-center gap-8 overflow-hidden rounded border-transparent bg-grey-800 px-8">
+    <div className="flex h-16.5 w-full items-center gap-8 overflow-hidden rounded border-transparent bg-grey-800 px-8">
       <AssetLogo url={position.defiLogoUrl} className="size-16" />
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
         <div className="flex grow items-center gap-3">
@@ -88,7 +88,7 @@ const DefiPositionItemRow: FC<{
   item: DefiPositionItem
 }> = ({ networkId, item }) => {
   return (
-    <div className={"flex h-[6.6rem] w-full items-center gap-8 overflow-hidden px-8"}>
+    <div className={"flex h-16.5 w-full items-center gap-8 overflow-hidden px-8"}>
       <PositionItemAssetLogo networkId={networkId} item={item} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-8 overflow-hidden font-bold text-body">

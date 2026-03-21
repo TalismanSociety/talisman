@@ -140,7 +140,7 @@ export const ValidatorRows: FC<{
 
 export const ValidatorRowSkeleton = () => {
   return (
-    <div className="flex h-[5.8rem] w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
+    <div className="flex h-14.5 w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
       <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
       <div className="grow space-y-[5px]">
         <div className={"flex w-full justify-between font-bold text-body text-sm"}>
@@ -180,7 +180,7 @@ const ValidatorRow: FC<{
       key={option.hotkey}
       onClick={onClick}
       className={cn(
-        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800 text-body-secondary"
       )}

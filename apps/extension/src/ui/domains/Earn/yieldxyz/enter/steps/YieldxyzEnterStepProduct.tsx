@@ -89,7 +89,7 @@ const ProductsList: FC<{
         />
       ))}
       {!products?.length && (
-        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+        <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
           {t("No product matches your search")}
         </div>
       )}
@@ -109,12 +109,12 @@ const ProductRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={cn(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-sm hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full items-center gap-4 px-12 text-left text-sm hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
-      <YieldxyzProviderLogo providerId={product.providerId} className="!text-xl shrink-0" />
+      <YieldxyzProviderLogo providerId={product.providerId} className="shrink-0 text-xl!" />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex w-full flex-col gap-2 overflow-hidden">
           <div className="line-clamp-2">{product.metadata.name}</div>

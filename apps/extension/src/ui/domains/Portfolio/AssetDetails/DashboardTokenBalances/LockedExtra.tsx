@@ -52,7 +52,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
   if (!rowAddress) return null
 
   return (
-    <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
+    <div className="flex h-16.5 flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
       {rowMeta.unbonding ? (
         accountStatus?.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />

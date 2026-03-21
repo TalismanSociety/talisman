@@ -20,7 +20,7 @@ export const BondButton: FC<{
         <button
           type="button"
           onClick={onClick}
-          className="flex size-[3.8rem] shrink-0 items-center justify-center rounded-full bg-primary/10 text-[2rem] text-primary hover:bg-primary/20"
+          className="flex size-9.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[1.25rem] text-primary hover:bg-primary/20"
         >
           {isBonding ? <ZapPlusIcon /> : <ZapIcon />}
         </button>

@@ -29,10 +29,10 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
     <div className="max-h-screen bg-black-tertiary">
       <div className="flex h-screen flex-col items-center justify-center">
         <TalismanWhiteLogo className="my-16 h-16 w-4/12" />
-        <div className="flex flex-grow items-center">
+        <div className="flex grow items-center">
           <div className="scrollable scrollable-700 flex flex-col overflow-auto">
             <div className="flex max-w-3xl flex-col items-center gap-16 self-center rounded-lg bg-black-primary p-20 text-center text-body-secondary">
-              <AlertTriangleIcon className="inline-block text-[7.7rem] text-alert-warn" />
+              <AlertTriangleIcon className="inline-block text-[4.8125rem] text-alert-warn" />
               <h1 className="m-0 text-alert-warn text-bold text-xl">{t("Warning")}</h1>
               <div className="font-light text-lg text-white">
                 <Trans t={t}>

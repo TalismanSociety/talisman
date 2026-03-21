@@ -50,7 +50,7 @@ const HideBalancesToggle = () => {
           <div
             className={classNames(
               "peer h-14 w-28 shrink-0 rounded-full bg-grey-600",
-              "peer-focus:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-body"
+              "peer-focus:outline-hidden peer-focus-visible:ring-2 peer-focus-visible:ring-body"
             )}
           ></div>
           <div

@@ -78,7 +78,7 @@ export const BondAccountPicker = ({
       onDismiss={onBackClick}
       className="relative z-50 size-full"
     >
-      <div className="flex size-full flex-grow flex-col bg-black">
+      <div className="flex size-full grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
           <IconButton onClick={onBackClick} className={cn(!onBackClick && "invisible")}>
             <ChevronLeftIcon />

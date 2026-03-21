@@ -161,7 +161,7 @@ const CurrencyButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary"
       )}
     >
@@ -183,9 +183,9 @@ const CurrencyButtonRow: FC<{
 
 const CurrencyButtonRowSkeleton: FC = () => {
   return (
-    <div className="flex h-[5.8rem] w-full select-none items-center gap-4 px-12 text-left">
+    <div className="flex h-14.5 w-full select-none items-center gap-4 px-12 text-left">
       <div className="flex items-center gap-8">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
         </div>
         <div className="min-w-0 space-y-2 text-[16px]">

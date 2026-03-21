@@ -144,7 +144,7 @@ const BalanceStat: FC<{
         ) : (
           <span
             className={cn(
-              "whitespace-nowrap font-semibold text-[32px] text-body leading-[1.2]",
+              "whitespace-nowrap font-semibold text-[32px] text-body leading-base",
               isRefetching && "animate-pulse"
             )}
           >
@@ -177,7 +177,7 @@ const MarketStat: FC<{
       ) : (
         <span
           className={cn(
-            "font-semibold text-[24px] text-body leading-[1.2]",
+            "font-semibold text-[24px] text-body leading-base",
             isRefetching && "animate-pulse"
           )}
         >

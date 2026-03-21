@@ -160,11 +160,11 @@ export const TryTalismanContent: FC<{
       </div>
 
       <div className="flex w-full items-center gap-10">
-        <div className="h-[1px] flex-1 bg-grey-700" />
+        <div className="h-px flex-1 bg-grey-700" />
         <div className="text-grey-500 text-tiny">
           {t("Or follow some of the most popular accounts")}
         </div>
-        <div className="h-[1px] flex-1 bg-grey-700" />
+        <div className="h-px flex-1 bg-grey-700" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

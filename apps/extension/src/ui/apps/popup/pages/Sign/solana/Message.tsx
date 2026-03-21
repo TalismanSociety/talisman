@@ -83,10 +83,10 @@ export const SolSignMessageRequest: FC<{
       <PopupContent>
         <div className="flex h-full w-full flex-col items-center text-center text-body-secondary">
           <h1 className="my-12 font-bold text-body text-md leading-9">{t("Sign Request")}</h1>
-          <h2 className="mb-8 text-base leading-[3.2rem]">
+          <h2 className="mb-8 text-base leading-16">
             {t("You are signing a message with account")} <AccountPill account={account} />
           </h2>
-          <Message className="w-full flex-grow" text={decodedMessage} />
+          <Message className="w-full grow" text={decodedMessage} />
         </div>
       </PopupContent>
       <PopupFooter>

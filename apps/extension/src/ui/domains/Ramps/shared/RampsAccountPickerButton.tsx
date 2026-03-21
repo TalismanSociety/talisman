@@ -55,7 +55,7 @@ export const RampsAccountPickerButton: FC<{
     <>
       <button
         type="button"
-        className="h-[5.2rem] w-full overflow-hidden rounded border border-grey-700 bg-grey-900 text-left enabled:hover:border-grey-500 enabled:hover:bg-grey-850"
+        className="h-13 w-full overflow-hidden rounded border border-grey-700 bg-grey-900 text-left enabled:hover:border-grey-500 enabled:hover:bg-grey-850"
         onClick={open}
       >
         <AccountButtonContent account={account} genesisHash={chain?.genesisHash} />

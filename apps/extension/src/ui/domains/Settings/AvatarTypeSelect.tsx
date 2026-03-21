@@ -17,10 +17,7 @@ const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onCl
   return (
     <button
       type="button"
-      className={classNames(
-        "h-[3.8rem] w-[3.8rem] rounded-full p-[0.3rem]",
-        selected && "bg-primary"
-      )}
+      className={classNames("h-9.5 w-9.5 rounded-full p-1.5", selected && "bg-primary")}
       onClick={onClick}
     >
       <AccountIcon className="text-xl" address={address} type={type} />

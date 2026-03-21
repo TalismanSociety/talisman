@@ -24,7 +24,7 @@ const AccountTypeButton: FC<{
     onClick={onClick}
   >
     <div className="text-xl">{icon}</div>
-    <div className="flex flex-grow flex-col justify-center gap-2">
+    <div className="flex grow flex-col justify-center gap-2">
       <div className="text-base text-body">{title}</div>
       <div className="text-body-secondary text-xs">{subtitle}</div>
     </div>
@@ -57,7 +57,7 @@ export const AccountPlatformSelector = ({
     <div className={classNames("grid w-full grid-cols-2 gap-10", className)}>
       <AccountTypeButton
         className={classNames(
-          platform === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
+          platform === "ethereum" ? "border-body" : "border-body-secondary/20",
           "border"
         )}
         icon={<EthereumCircleLogo />}
@@ -71,7 +71,7 @@ export const AccountPlatformSelector = ({
       />
       <AccountTypeButton
         className={classNames(
-          platform === "polkadot" ? "border-body" : "border-body-secondary border-opacity-20",
+          platform === "polkadot" ? "border-body" : "border-body-secondary/20",
           "border"
         )}
         icon={<PolkadotCircleLogo />}
@@ -85,7 +85,7 @@ export const AccountPlatformSelector = ({
       />
       <AccountTypeButton
         className={classNames(
-          platform === "solana" ? "border-body" : "border-body-secondary border-opacity-20",
+          platform === "solana" ? "border-body" : "border-body-secondary/20",
           "border"
         )}
         icon={<SolanaLogo />}

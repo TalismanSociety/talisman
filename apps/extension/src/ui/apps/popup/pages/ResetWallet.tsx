@@ -45,9 +45,9 @@ const ConfirmDrawer = ({
       <div className="items-center rounded-t-xl bg-grey-800 p-12 pt-12">
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">
-            <AlertTriangleIcon className="text-[4.8rem] text-brand-orange" />
+            <AlertTriangleIcon className="text-[3rem] text-brand-orange" />
           </div>
-          <div className="max-w-[30rem] font-bold text-white leading-[2.2rem]">
+          <div className="max-w-75 font-bold text-white leading-11">
             {t("Are you sure you want to reset your Talisman wallet?")}
           </div>
         </div>
@@ -65,7 +65,7 @@ const ConfirmDrawer = ({
         <div className="mt-12 flex flex-col gap-8">
           <Button
             type="submit"
-            className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80 h-24 enabled:text-white"
+            className="h-24 enabled:bg-brand-orange! enabled:text-white hover:enabled:bg-brand-orange/80!"
             fullWidth
             onClick={handleReset}
             primary={isMatch}
@@ -96,14 +96,14 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
     <PopupLayout>
       <div className="flex h-32 items-center justify-center px-12 pr-[16px] text-body-secondary">
         <ChevronLeftIcon
-          className="flex-shrink cursor-pointer text-lg hover:text-white"
+          className="shrink cursor-pointer text-lg hover:text-white"
           onClick={closeResetWallet}
         />
-        <span className="flex-grow pr-[24px] text-center">{t("Reset Wallet")}</span>
+        <span className="grow pr-[24px] text-center">{t("Reset Wallet")}</span>
       </div>
       <PopupContent>
         <div className="flex h-full flex-col items-center justify-end gap-16 pb-8">
-          <LockIcon className="text-[4.8rem] text-primary-500" />
+          <LockIcon className="text-[3rem] text-primary-500" />
           <div className="font-bold text-lg">{t("Forgot your password?")}</div>
           <div className="space-y-12 text-body-secondary">
             <p className="text-center">

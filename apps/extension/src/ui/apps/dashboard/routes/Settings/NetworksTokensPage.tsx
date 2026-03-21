@@ -29,7 +29,7 @@ const Content = () => {
           subtitle={t("Scan for well-known tokens in your accounts and add them to Talisman")}
           to={`/settings/networks-tokens/asset-discovery`}
         />
-        <div className="my-4 h-0.5 bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
+        <div className="my-4 h-0.5 bg-linear-to-r from-transparent via-primary/10 to-transparent"></div>
         <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}

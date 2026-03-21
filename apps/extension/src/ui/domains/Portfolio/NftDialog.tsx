@@ -457,7 +457,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       className={classNames(
         "h-full w-full",
         "@2xl:overflow-hidden",
-        "bg-black shadow",
+        "bg-black shadow-xs",
         "@2xl:grid @2xl:grid-cols-2"
       )}
     >
@@ -492,7 +492,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             <NftContextMenu nft={nft} />
           </div>
         </div>
-        <div className="block @2xl:hidden h-[38.5rem] shrink-0 bg-grey-800 p-8">
+        <div className="block @2xl:hidden h-96.25 shrink-0 bg-grey-800 p-8">
           <Tooltip>
             <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
               <div className="relative size-full cursor-pointer">
@@ -547,8 +547,8 @@ const NftDialogInner: FC<{
       isOpen={isOpen}
       onDismiss={handleDismiss}
       className={classNames(
-        "@container h-[50rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg"
+        "@container h-125 w-100 overflow-hidden bg-black",
+        IS_POPUP ? "h-full w-full" : "lg:w-250 lg:rounded-lg"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >

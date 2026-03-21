@@ -17,7 +17,7 @@ export const WizardModalDialog: FC<{
     <div
       id={id}
       className={classNames(
-        "flex h-[60rem] max-h-full w-[40rem] max-w-full flex-col overflow-hidden rounded border border-grey-850 bg-black",
+        "flex h-150 max-h-full w-100 max-w-full flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
@@ -26,7 +26,7 @@ export const WizardModalDialog: FC<{
         <IconButton onClick={onBackClick} className={cn(onBackClick ? "visible" : "invisible")}>
           <ChevronLeftIcon />
         </IconButton>
-        <h1 className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-center font-bold text-base">
+        <h1 className="grow overflow-hidden text-ellipsis whitespace-nowrap text-center font-bold text-base">
           {title}
         </h1>
         <IconButton onClick={onCloseClick} className={cn(onCloseClick ? "visible" : "invisible")}>
@@ -34,10 +34,7 @@ export const WizardModalDialog: FC<{
         </IconButton>
       </header>
       <div
-        className={cn(
-          "scrollable scrollable-800 flex-grow overflow-auto p-10 pt-0",
-          contentClassName
-        )}
+        className={cn("scrollable scrollable-800 grow overflow-auto p-10 pt-0", contentClassName)}
       >
         {children}
       </div>

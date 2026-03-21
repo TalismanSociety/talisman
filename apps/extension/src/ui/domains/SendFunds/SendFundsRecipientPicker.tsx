@@ -76,7 +76,7 @@ const UnknownAddressDrawer = ({
 
   return (
     <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
-      <div className="flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
+      <div className="flex max-w-105 flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
         <div className="flex flex-col gap-4 text-center">
           <p className="px-10 font-bold text-white">
             {t("Sending to the wrong network will result in a loss of funds")}

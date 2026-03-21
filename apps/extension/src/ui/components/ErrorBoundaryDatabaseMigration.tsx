@@ -3,11 +3,11 @@ import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimati
 import { Component, type ErrorInfo, type ReactNode } from "react"
 
 const ErrorMessage = () => (
-  <div className="mx-auto flex h-[60rem] w-[40rem] flex-col px-12 py-16 text-center text-whit">
+  <div className="mx-auto flex h-150 w-100 flex-col px-12 py-16 text-center text-whit">
     <div className="flex grow flex-col justify-center font-bold">
       <div className="text-xl">Updating Talisman</div>
-      <div className="my-[4.4rem]">
-        <ProcessAnimation status="processing" className="h-[15rem]" />
+      <div className="my-[2.75rem]">
+        <ProcessAnimation status="processing" className="h-37.5" />
       </div>
       <div className="text-md">
         Adding new and improved

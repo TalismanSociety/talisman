@@ -19,11 +19,11 @@ const ConnectionStatusContainer: FC<{
   const colors = useMemo(() => {
     switch (status) {
       case "connected":
-        return "bg-gradient-to-r from-green-500/50 to-grey-800"
+        return "bg-linear-to-r from-green-500/50 to-grey-800"
       case "disconnected":
-        return "bg-gradient-to-r from-brand-orange/50 to-grey-800"
+        return "bg-linear-to-r from-brand-orange/50 to-grey-800"
       case "disabled":
-        return "bg-gradient-to-r from-grey-500/50 to-grey-800"
+        return "bg-linear-to-r from-grey-500/50 to-grey-800"
     }
   }, [status])
 

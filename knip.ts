@@ -14,6 +14,10 @@ const config: KnipConfig = {
   ignoreDependencies: [
     // Generated workspace package — imported via type-only paths by packages/balances and packages/sapi
     "@polkadot-api/descriptors",
+    // Loaded via @plugin directive in CSS (knip can't parse CSS imports)
+    "@tailwindcss/forms",
+    // Core framework — referenced via @tailwindcss/postcss, not direct JS imports
+    "tailwindcss",
   ],
 
   // Shell utilities used in package.json scripts — not npm binaries

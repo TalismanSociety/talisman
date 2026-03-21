@@ -127,9 +127,9 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
         )}
       </div>
       <div className="flex w-full grow flex-col justify-center gap-6">
-        <div className="!text-body flex w-full items-center gap-4">
+        <div className="flex w-full items-center gap-4 text-body!">
           <div>
-            <AccountIcon address={account.address} className="!text-lg" />
+            <AccountIcon address={account.address} className="text-lg!" />
           </div>
           <div className="overflow-hidden text-ellipsis whitespace-nowrap"> {account.name}</div>
         </div>
@@ -174,8 +174,8 @@ export const AccountExportPrivateKeyModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Export private key")} onClose={close} className="w-[50.3rem]">
-        <div className="h-[24.2rem]">
+      <ModalDialog title={t("Export private key")} onClose={close} className="w-125.75">
+        <div className="h-60.5">
           <PasswordUnlock
             className="h-full"
             title={

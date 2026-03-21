@@ -45,7 +45,7 @@ const WordOption = ({
     onClick={onClick}
     disabled={selected}
     className={classNames(
-      "rounded-xl bg-black-tertiary px-8 py-3 text-body enabled:hover:bg-grey-700 disabled:text-opacity-20"
+      "rounded-xl bg-black-tertiary px-8 py-3 text-body enabled:hover:bg-grey-700 disabled:text-body/20"
     )}
   >
     <span className="notranslate">{word}</span>
@@ -116,7 +116,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
           </span>
           <div className="group relative overflow-hidden rounded bg-black-secondary p-2">
             <div
-              className={`grid min-h-[12.6rem] grid-cols-4 ${
+              className={`grid min-h-31.5 grid-cols-4 ${
                 mnemonicWords!.length > 12 && "lg:grid-cols-6"
               } gap-4 p-2`}
             >

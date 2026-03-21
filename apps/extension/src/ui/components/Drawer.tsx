@@ -25,7 +25,7 @@ type AnchorClasses = {
 const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorClasses => {
   const position = withContainer ? "absolute" : "fixed"
   const leftRight = withContainer ? "h-full max-w-full" : "h-screen max-w-[100vw]"
-  const topBottom = withContainer ? "w-full max-h-full" : "w-screen max-h-[100vh]"
+  const topBottom = withContainer ? "w-full max-h-full" : "w-screen max-h-screen"
 
   switch (anchor) {
     case "right":
@@ -41,19 +41,19 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
       return {
         position,
         drawer: classNames("top-0 left-0", position, leftRight),
-        enterFrom: "translate-x-[-100%]",
+        enterFrom: "-translate-x-full",
         enterTo: "translate-x-0",
         leaveFrom: "translate-x-0",
-        leaveTo: "translate-x-[-100%]",
+        leaveTo: "-translate-x-full",
       }
     case "top":
       return {
         position,
         drawer: classNames("top-0 left-0", position, topBottom),
-        enterFrom: "translate-y-[-100%]",
+        enterFrom: "-translate-y-full",
         enterTo: "translate-y-0",
         leaveFrom: "translate-y-0",
-        leaveTo: "translate-y-[-100%]",
+        leaveTo: "-translate-y-full",
       }
     case "bottom":
       return {
@@ -109,7 +109,7 @@ export const Drawer: FC<DrawerProps> = ({
       <TransitionChild
         as="div"
         className={classNames(
-          "top-0 left-0 z-10 h-full w-full bg-grey-900 bg-opacity-80",
+          "top-0 left-0 z-10 h-full w-full bg-grey-900/80",
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
           position
         )}

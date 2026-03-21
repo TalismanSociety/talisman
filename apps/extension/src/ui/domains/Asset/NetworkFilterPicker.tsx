@@ -66,7 +66,7 @@ const NetworkFilterPickerContent: FC<{
   return (
     <WizardModalDialog
       className="border-none"
-      contentClassName="!p-0"
+      contentClassName="p-0!"
       title={t("Network Filter")}
       onBackClick={onDismiss}
     >
@@ -137,7 +137,7 @@ const NetworkFilterRow: FC<{
       className={classNames(
         "flex h-28 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
-        selected && "!bg-grey-700"
+        selected && "bg-grey-700!"
       )}
     >
       {network ? (

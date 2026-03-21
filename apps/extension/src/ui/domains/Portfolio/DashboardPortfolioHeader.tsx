@@ -34,7 +34,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
       <div className="flex h-14 w-full items-center gap-6 text-base">
         <div className="flex h-14 grow items-center gap-3 overflow-hidden">
           <AccountIcon
-            className="shrink-0 text-[2rem]"
+            className="shrink-0 text-[1.25rem]"
             address={account.address}
             genesisHash={getAccountGenesisHash(account)}
           />
@@ -81,7 +81,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
 
   return (
     <div className="flex h-14 items-center gap-3 text-base">
-      <AllAccountsIcon className="shrink-0 text-[2rem]" />
+      <AllAccountsIcon className="shrink-0 text-[1.25rem]" />
       <div>{t("All Accounts")}</div>
     </div>
   )
@@ -101,7 +101,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   return (
     <div
       className={classNames(
-        "relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
+        "relative z-0 flex h-96 flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
         className
       )}
     >
@@ -111,13 +111,13 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           className="absolute top-0 left-0 z-0 size-full select-none rounded-sm opacity-30"
         />
       )}
-      <div className="z-[1] flex w-full flex-col gap-4 overflow-hidden font-inter">
+      <div className="z-1 flex w-full flex-col gap-4 overflow-hidden font-inter">
         <SelectionScope folder={selectedFolder} account={selectedAccount} />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
             type="button"
             className={classNames(
-              "pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
+              "pointer-events-auto flex size-[2.75rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228/1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250/1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
               currencyConfig[currency]?.symbol?.length > 2 && "text-base"
             )}
@@ -130,7 +130,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           </button>
           <Fiat
             className={classNames(
-              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[4.8rem] leading-[4.8rem]"
+              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[3rem] leading-24"
             )}
             amount={selectedTotal}
             isBalance
@@ -138,7 +138,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <DashboardTopActions analyticsPage={ANALYTICS_PAGE} className="z-[1]" />
+      <DashboardTopActions analyticsPage={ANALYTICS_PAGE} className="z-1" />
     </div>
   )
 }

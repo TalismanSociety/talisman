@@ -57,7 +57,7 @@ const SquareButton = forwardRef<
     type="button"
     ref={ref}
     className={classNames(
-      "flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-sm enabled:cursor-pointer enabled:hover:bg-grey-700 enabled:hover:text-body-secondary disabled:cursor-not-allowed",
+      "flex h-16 w-16 items-center justify-center rounded-sm enabled:cursor-pointer enabled:hover:bg-grey-700 enabled:hover:text-body-secondary disabled:cursor-not-allowed",
       props.className
     )}
   ></button>
@@ -159,7 +159,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
               <ContextMenuItem
                 disabled={!canSendFunds}
                 onClick={openSendFundsPopup}
-                className="disabled:!text-body-disabled disabled:!cursor-not-allowed disabled:!bg-transparent"
+                className="disabled:cursor-not-allowed! disabled:bg-transparent! disabled:text-body-disabled!"
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -173,7 +173,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
               <ContextMenuItem
                 disabled={!canViewOnExplorer}
                 onClick={handleViewOnExplorer}
-                className="disabled:!text-body-disabled disabled:!cursor-not-allowed disabled:!bg-transparent"
+                className="disabled:cursor-not-allowed! disabled:bg-transparent! disabled:text-body-disabled!"
               >
                 {t("View on explorer")}
               </ContextMenuItem>
@@ -230,7 +230,7 @@ const Content = () => {
           />
         ))}
         {contactsToDisplay.length === 0 && (
-          <div className="flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded bg-black-secondary px-16 py-8 text-body-secondary">
+          <div className="flex h-80 w-full flex-col items-center justify-center gap-12 rounded bg-black-secondary px-16 py-8 text-body-secondary">
             <span>{t("You have no saved contacts yet.")}</span>
             <Button primary onClick={open} iconLeft={PlusIcon}>
               {t("Add a contact")}

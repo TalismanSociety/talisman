@@ -81,7 +81,7 @@ export const SwapAccountPicker = memo(
           {selectedAccount || value ? (
             <>
               <AccountIcon
-                className="!text-[16px]"
+                className="text-[16px]!"
                 address={selectedAccount?.address || value || ""}
               />
               <span className="max-w-[100px] truncate text-white text-xs leading-none">
@@ -253,7 +253,7 @@ const AccountPickerDialog = memo(
     return (
       <WizardModalDialog
         className="border-none"
-        contentClassName="!overflow-hidden !p-0 flex flex-col"
+        contentClassName="overflow-hidden! p-0! flex flex-col"
         title={title}
         onBackClick={onClose}
       >

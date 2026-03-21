@@ -48,18 +48,18 @@ export const LedgerConnectionStatus = ({
       )}
     >
       {status === "ready" && (
-        <CheckCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-success" />
+        <CheckCircleIcon className="min-w-[1em] shrink-0 text-[1.25rem] text-alert-success" />
       )}
       {status === "warning" && (
-        <XCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-warn" />
+        <XCircleIcon className="min-w-[1em] shrink-0 text-[1.25rem] text-alert-warn" />
       )}
       {status === "error" && (
-        <XCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-error" />
+        <XCircleIcon className="min-w-[1em] shrink-0 text-[1.25rem] text-alert-error" />
       )}
       {status === "connecting" && (
-        <LoaderIcon className="min-w-[1em] shrink-0 animate-spin-slow text-[2rem] text-white" />
+        <LoaderIcon className="min-w-[1em] shrink-0 animate-spin-slow text-[1.25rem] text-white" />
       )}
-      <div className="grow text-left leading-[2rem]">{wrapStrong(message)}</div>
+      <div className="grow text-left leading-10">{wrapStrong(message)}</div>
       {!!onRetryClick && (
         <button
           type="button"

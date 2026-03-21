@@ -101,7 +101,7 @@ export const SwapForm = () => {
       className="size-full border-none"
       title={t("Multi-chain Swap")}
       onCloseClick={close}
-      contentClassName="relative !overflow-hidden !p-0"
+      contentClassName="relative overflow-hidden! p-0!"
     >
       <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
         <div className="relative flex flex-col gap-6">
@@ -162,7 +162,7 @@ export const SwapForm = () => {
 
         <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8 pb-12">
           <Button
-            className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
+            className="rounded! w-full! disabled:bg-[#262626]! disabled:text-body-disabled!"
             primary
             disabled={
               !toAmount ||

@@ -21,7 +21,7 @@ import {
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   small: true,
-  className: "!px-8 h-[4.6rem] my-1 !bg-black-tertiary",
+  className: "px-8! h-11.5 my-1 bg-black-tertiary!",
 }
 
 type SearchInputProps = {

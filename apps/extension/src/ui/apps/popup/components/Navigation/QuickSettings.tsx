@@ -154,7 +154,7 @@ const CurrenciesRow = () => {
           />
         ))}
         {moreLabel && (
-          <div className="-ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-0.5 border-grey-800 bg-black align-middle text-[0.9rem] text-body-secondary">
+          <div className="-ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-0.5 border-grey-800 bg-black align-middle text-[0.5625rem] text-body-secondary">
             {moreLabel}
           </div>
         )}

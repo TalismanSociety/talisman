@@ -12,7 +12,7 @@ export const TaoDashboardRoutes = () => {
         <Route
           path="subnets/:netuid"
           element={
-            <DashboardLayout sidebar="none" className="min-w-[130rem]">
+            <DashboardLayout sidebar="none" className="min-w-325">
               <TaoDashboardSubnetPage />
             </DashboardLayout>
           }
@@ -20,7 +20,7 @@ export const TaoDashboardRoutes = () => {
         <Route
           path="subnets"
           element={
-            <DashboardLayout sidebar="accounts" className="min-w-[130rem]">
+            <DashboardLayout sidebar="accounts" className="min-w-325">
               <TaoDashboardSubnetsPage />
             </DashboardLayout>
           }

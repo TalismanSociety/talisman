@@ -14,7 +14,7 @@ export const Radio: FC<{
       className={classNames(
         "cursor-pointer p-0.5",
         "hover:text-grey-300",
-        "has-[:checked]:cursor-default has-[:checked]:text-body",
+        "has-checked:cursor-default has-checked:text-body",
         className
       )}
     >

@@ -19,8 +19,8 @@ export const MigrationProgress = () => {
         !IS_POPUP && "flex h-screen w-screen flex-col items-center justify-center"
       )}
     >
-      <div className="flex h-[60rem] w-[40rem] animate-fade-in-slow flex-col items-center justify-between overflow-hidden p-8">
-        <div className="flex h-[26.8rem] flex-col items-center justify-center gap-24 pt-4">
+      <div className="flex h-150 w-100 animate-fade-in-slow flex-col items-center justify-between overflow-hidden p-8">
+        <div className="flex h-67 flex-col items-center justify-center gap-24 pt-4">
           <TalismanHandIcon
             className={classNames("h-48 w-48", !migration.errors?.length && "animate-pulse")}
           />
@@ -28,7 +28,7 @@ export const MigrationProgress = () => {
             {migration.errors?.length ? t("Talisman update failed") : t("Talisman update")}
           </div>
         </div>
-        <div className="flex h-[26.8rem] max-h-[26.8rem] w-full flex-col items-center justify-center gap-12">
+        <div className="flex h-67 max-h-67 w-full flex-col items-center justify-center gap-12">
           {migration.errors?.length ? (
             <div className="flex h-full w-full flex-col gap-8 leading-paragraph">
               <div className="text-body-secondary">

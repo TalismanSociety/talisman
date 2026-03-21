@@ -165,7 +165,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
               {accountDef ? (
                 <>
                   <AccountIcon address={accountDef.address} className="text-xl" />
-                  <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+                  <div className="flex grow flex-col gap-2 overflow-hidden">
                     <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                       {accountDef.name}
                     </div>
@@ -181,7 +181,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
                   </div>
                   <div className="flex items-center justify-end gap-2">
                     {balances.status === "initialising" ? (
-                      <div className="h-[1.8rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750"></div>
+                      <div className="h-9 w-17 animate-pulse rounded-xs bg-grey-750"></div>
                     ) : (
                       <Tooltip placement="bottom-end">
                         <TooltipTrigger asChild>
@@ -202,8 +202,8 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
                 </>
               ) : connectionStatus.status === "connecting" ? (
                 <>
-                  <div className="size-[3.2rem] animate-pulse rounded-full bg-grey-750" />
-                  <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+                  <div className="size-16 animate-pulse rounded-full bg-grey-750" />
+                  <div className="flex grow flex-col gap-2 overflow-hidden">
                     <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                       <span className="animate-pulse select-none rounded-xs bg-grey-750 text-grey-750">
                         Account Name

@@ -35,12 +35,12 @@ const DefiPositionHeader: FC<{ positionId: string | undefined }> = ({ positionId
   if (!position) return null
 
   return (
-    <div className="flex h-[4.4rem] w-full items-center gap-8">
+    <div className="flex h-[2.75rem] w-full items-center gap-8">
       <div className="flex h-full grow items-center gap-4 overflow-hidden">
         <IconButton onClick={() => navigate(-1)}>
           <ChevronLeftIcon />
         </IconButton>
-        <AssetLogo url={position.defiLogoUrl} className="size-[3.6rem]" />
+        <AssetLogo url={position.defiLogoUrl} className="size-[2.25rem]" />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate font-bold text-body text-sm">{position.defiName}</div>
           <div className="truncate text-body-secondary text-xs">

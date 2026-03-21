@@ -321,7 +321,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
       <Modal isOpen={isOpenReady} anchor="center" onDismiss={onClose}>
         <div
           id="tx-main"
-          className="flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
+          className="flex h-150 max-h-dvh w-100 max-w-dvw flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
         >
           {data?.type && data?.tx?.platform === "ethereum" ? (
             <EvmDrawerContent

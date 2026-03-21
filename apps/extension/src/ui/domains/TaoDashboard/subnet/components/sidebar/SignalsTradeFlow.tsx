@@ -69,14 +69,14 @@ const TradeFlow: FC<PropsWithChildren<{ tradeFlow: SubnetTradeFlowData | null | 
 
   if (!tradeFlow)
     return (
-      <div className="flex h-[20rem] items-center justify-center text-body-secondary">
+      <div className="flex h-50 items-center justify-center text-body-secondary">
         {t("Failed to fetch data")}
       </div>
     )
 
   return (
-    <div className="flex h-[20rem] items-stretch gap-14">
-      <div className="flex h-full w-[16rem] flex-col items-center justify-between">
+    <div className="flex h-50 items-stretch gap-14">
+      <div className="flex h-full w-80 flex-col items-center justify-between">
         <ComparisonField
           labelLeft={t("Sells")}
           labelRight={t("Buys")}
@@ -216,8 +216,8 @@ const ComparisonBar: FC<{
 }
 
 const TradeFlowSkeleton = () => (
-  <div className="flex h-[20rem] items-stretch gap-14">
-    <div className="flex h-full w-[16rem] flex-col items-center justify-between">
+  <div className="flex h-50 items-stretch gap-14">
+    <div className="flex h-full w-80 flex-col items-center justify-between">
       <ComparisonFieldSkeleton />
       <ComparisonFieldSkeleton />
       <ComparisonFieldSkeleton />
@@ -237,10 +237,10 @@ const MetricFieldSkeleton = () => {
   return (
     <div className={cn("flex flex-col gap-1")}>
       <div className="text-body-inactive text-xs">
-        <Skeleton className="w-[8rem]" />
+        <Skeleton className="w-40" />
       </div>
       <div className={cn("text-md")}>
-        <Skeleton className="w-[5rem]" />
+        <Skeleton className="w-12.5" />
       </div>
     </div>
   )
@@ -251,18 +251,18 @@ const ComparisonFieldSkeleton = () => {
     <div className="flex w-full flex-col gap-1">
       <div className="flex w-full justify-between text-body-inactive text-xs">
         <div>
-          <Skeleton className="w-[3rem]" />
+          <Skeleton className="w-7.5" />
         </div>
         <div>
-          <Skeleton className="w-[3rem]" />
+          <Skeleton className="w-7.5" />
         </div>
       </div>
       <div className="flex w-full justify-between text-body text-md">
         <div>
-          <Skeleton className="w-[5rem]" />
+          <Skeleton className="w-12.5" />
         </div>
         <div>
-          <Skeleton className="w-[5rem]" />
+          <Skeleton className="w-12.5" />
         </div>
       </div>
       <Skeleton className="h-4 w-full rounded-full"></Skeleton>

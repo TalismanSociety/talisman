@@ -37,7 +37,7 @@ export const TxHistoryAccountPicker: FC<{
       onDismiss={onDismiss}
       className="relative z-50 size-full"
     >
-      <div className="flex size-full flex-grow flex-col bg-black">
+      <div className="flex size-full grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
           <IconButton onClick={onDismiss}>
             <ChevronLeftIcon />
@@ -110,7 +110,7 @@ const AccountRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-body-secondary hover:bg-grey-750 hover:text-body focus:bg-grey-700",
+        "flex h-14.5 w-full items-center gap-4 px-12 text-left text-body-secondary hover:bg-grey-750 hover:text-body focus:bg-grey-700",
         selected && "bg-grey-800",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}

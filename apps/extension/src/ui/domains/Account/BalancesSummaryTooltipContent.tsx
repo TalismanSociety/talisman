@@ -53,7 +53,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
 
   return (
     <TooltipContent>
-      <div className="flex max-w-[30rem] flex-col gap-3 overflow-hidden p-2">
+      <div className="flex max-w-75 flex-col gap-3 overflow-hidden p-2">
         {tokenBalances.slice(0, 5).map((b, i) => (
           <div key={`${b.tokenId}-${i}`} className="flex w-full items-center truncate">
             <TokenLogo tokenId={b.tokenId} className="h-8 w-8" />

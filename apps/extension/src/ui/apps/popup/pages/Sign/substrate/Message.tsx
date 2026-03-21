@@ -66,12 +66,12 @@ export const PolkadotSignMessageRequest = () => {
           <>
             <div className="flex h-full w-full flex-col items-center text-center text-body-secondary">
               <h1 className="my-12 font-bold text-body text-md leading-9">{t("Sign Request")}</h1>
-              <h2 className="mb-8 text-base leading-[3.2rem]">
+              <h2 className="mb-8 text-base leading-16">
                 {t("You are signing a message with account")}{" "}
                 <AccountPill account={account} ss58Format={chain?.prefix ?? undefined} />
                 {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
-              <Message className="w-full flex-grow" text={messageText} />
+              <Message className="w-full grow" text={messageText} />
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
           </>

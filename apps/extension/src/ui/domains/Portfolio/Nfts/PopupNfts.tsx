@@ -250,15 +250,15 @@ const NftCollectionTile: FC<{
   })
 
   return (
-    <div ref={refContainer} className="h-[19.6rem] w-[16.7rem]">
+    <div ref={refContainer} className="h-49 w-41.75">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )
 }
 
 const NftCollectionTileSkeleton = () => (
-  <div className="w-[16.7rem]">
-    <div className="size-[16.7rem] animate-pulse rounded-sm bg-grey-800"></div>
+  <div className="w-41.75">
+    <div className="size-41.75 animate-pulse rounded-sm bg-grey-800"></div>
   </div>
 )
 

@@ -201,7 +201,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps & { selected: boolean }> = ({
       to={to}
       className={classNames(
         "flex items-center gap-4 truncate font-normal hover:text-body-secondary",
-        selected && "!text-body-secondary font-medium"
+        selected && "font-medium text-body-secondary!"
       )}
     >
       {label}

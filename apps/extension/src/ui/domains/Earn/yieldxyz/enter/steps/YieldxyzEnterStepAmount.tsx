@@ -61,7 +61,7 @@ export const YieldxyzEnterStepAmount = () => {
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
             <AccountPillButton
-              className="!w-full"
+              className="w-full!"
               address={address}
               onClick={() => goTo("account")}
             />

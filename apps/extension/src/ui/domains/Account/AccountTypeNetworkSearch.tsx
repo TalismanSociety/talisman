@@ -140,7 +140,7 @@ export function AccountTypeNetworkSearch({
             value={search}
             autoComplete="off"
           />
-          <div className="flex-grow" />
+          <div className="grow" />
           <ComboboxButton>
             {!open && !selected && <ChevronDownIcon className="cursor-pointer text-base" />}
             {open && <ChevronUpIcon className="cursor-pointer text-base" />}
@@ -148,7 +148,7 @@ export function AccountTypeNetworkSearch({
           {selected && (
             <CloseIcon className="cursor-pointer text-base" onClick={() => setSelected(null)} />
           )}
-          <ComboboxOptions className="absolute top-24 left-0 z-10 h-[30rem] w-full overflow-scroll rounded-b bg-grey-850">
+          <ComboboxOptions className="absolute top-24 left-0 z-10 h-75 w-full overflow-scroll rounded-b bg-grey-850">
             {({ option: network }) =>
               network.id === "combobox-header" ? (
                 <ComboboxOption
@@ -163,13 +163,13 @@ export function AccountTypeNetworkSearch({
               ) : (
                 <ComboboxOption
                   key={network.id}
-                  className="flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800"
+                  className="flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base hover:bg-grey-800 focus:bg-grey-800 data-focus:bg-grey-800"
                   value={network}
                 >
                   <NetworkLogo networkId={network.id} className="text-md" />
                   <span className="text-white">{network.name}</span>
                   <span className="text-base text-body-secondary/50">{network.type}</span>
-                  <div className="flex-grow" />
+                  <div className="grow" />
                   <span className="text-white">{startCase(getAccountPlatform(network))}</span>
                 </ComboboxOption>
               )

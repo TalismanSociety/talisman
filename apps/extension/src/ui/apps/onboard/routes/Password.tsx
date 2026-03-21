@@ -115,9 +115,9 @@ export const PasswordPage = () => {
   )
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[60rem]">
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-150 min-w-150">
       {/* biome-ignore lint/a11y/useAltText: legacy */}
-      <img src={imgPassword} width="960" className="fixed top-[25rem] left-32 opacity-30" />
+      <img src={imgPassword} width="960" className="fixed top-62.5 left-32 opacity-30" />
       {passwordExists && (
         <OnboardDialog title={t("You've already set your password")}>
           <div className="flex flex-col gap-8 text-body-secondary">

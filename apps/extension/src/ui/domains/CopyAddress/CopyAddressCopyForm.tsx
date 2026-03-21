@@ -58,9 +58,9 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
   if (!address) return null
 
   return (
-    <PillButton className={classNames("!px-4 h-16 max-w-[240px]", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 max-w-[240px] px-4!", className)} onClick={onClick}>
       <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-        <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
+        <AccountIcon className="text-lg!" address={address} genesisHash={accountGenesisHash} />
         <div className="grow truncate leading-base">
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
@@ -89,10 +89,10 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   // substrate generic format
   if (chainId === null)
     return (
-      <PillButton className={classNames("!px-4 !py-2 h-16", className)} onClick={onClick}>
+      <PillButton className={classNames("h-16 px-4! py-2!", className)} onClick={onClick}>
         <div className="flex flex-nowrap items-center gap-4 text-base text-body">
           <div className="flex shrink-0 flex-col justify-center">
-            <AccountIcon type="polkadot-identicon" className="!text-lg" address={address} />
+            <AccountIcon type="polkadot-identicon" className="text-lg!" address={address} />
           </div>
           <div>Substrate ({t("Generic")})</div>
         </div>
@@ -102,10 +102,10 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   if (!chain) return null
 
   return (
-    <PillButton className={classNames("!px-4 !py-2 h-16", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 px-4! py-2!", className)} onClick={onClick}>
       <div className="flex flex-nowrap items-center gap-4 text-base text-body">
         <div className="shrink-0">
-          <NetworkLogo className="!text-lg" networkId={chain.id} />
+          <NetworkLogo className="text-lg!" networkId={chain.id} />
         </div>
         <div>{chain.name}</div>
       </div>
@@ -228,7 +228,7 @@ export const CopyAddressCopyForm = () => {
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
-          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8">
+          <div className="h-52.5 w-52.5 rounded-lg bg-[#ffffff] p-8">
             {isLogoLoaded && (
               <FadeIn>
                 <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
@@ -270,7 +270,7 @@ export const CopyAddressCopyForm = () => {
                 ) : (
                   <AccountIcon
                     type="polkadot-identicon"
-                    className="!text-lg [&>div]:block"
+                    className="text-lg! [&>div]:block"
                     address={formattedAddress}
                   />
                 )}

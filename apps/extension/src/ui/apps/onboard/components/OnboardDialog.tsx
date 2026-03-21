@@ -8,7 +8,7 @@ type OnboardDialogProps = {
 }
 
 export const OnboardDialog = ({ title, children, className }: OnboardDialogProps) => (
-  <div className={classNames("flex w-[60rem] flex-col items-center gap-12", className)}>
+  <div className={classNames("flex w-150 flex-col items-center gap-12", className)}>
     <div
       className={classNames(
         "transform-gpu bg-body/5 backdrop-blur-xl",

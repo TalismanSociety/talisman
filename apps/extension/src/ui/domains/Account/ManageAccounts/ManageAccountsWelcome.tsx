@@ -59,14 +59,14 @@ const Content: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="flex w-full max-w-[74rem] flex-col gap-8 rounded-t-xl border-grey-850 border-t bg-black p-12">
+    <div className="flex w-full max-w-185 flex-col gap-8 rounded-t-xl border-grey-850 border-t bg-black p-12">
       <div className="flex w-full justify-between py-4">
         <div className="font-bold text-body text-md">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>
           <XIcon />
         </IconButton>
       </div>
-      <img src={imgWelcome} alt="welcome" className="aspect-[705/232]" />
+      <img src={imgWelcome} alt="welcome" className="aspect-705/232" />
       <p className="text-body-secondary text-sm">
         {t(
           "Talisman lets you neatly organise and group your accounts into folders. Keep everything in one place for easy access and enhanced control over your assets."

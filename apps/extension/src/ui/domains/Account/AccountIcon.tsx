@@ -28,7 +28,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
   return chain ? (
     <NetworkLogo
       networkId={chain.id}
-      className="!absolute top-[-0.2em] right-[-0.2em] z-10 rounded-full bg-grey-800 text-[0.5em]"
+      className="absolute! top-[-0.2em] right-[-0.2em] z-10 rounded-full bg-grey-800 text-[0.5em]"
     />
   ) : null
 }
@@ -47,7 +47,7 @@ export const PolkadotAvatar = ({ seed }: { seed: string }) => {
     <IdentIcon
       value={seed}
       theme={theme}
-      className="!block overflow-hidden rounded-full [&>img]:h-[1em] [&>img]:w-[1em]"
+      className="block! overflow-hidden rounded-full [&>img]:h-[1em] [&>img]:w-[1em]"
       style={IDENTICON_STYLE}
     />
   )
@@ -79,7 +79,7 @@ const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHas
 const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
-      "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
+      "block! h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full bg-body-disabled!",
       className
     )}
   ></div>

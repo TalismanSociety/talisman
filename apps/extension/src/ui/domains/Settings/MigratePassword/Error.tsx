@@ -47,7 +47,7 @@ export const MigratePasswordError = () => {
             </Checkbox>
           </span>
         )}
-        <span className="my-2 flex justify-center rounded-sm bg-body-secondary bg-opacity-50 p-4 font-mono text-body">
+        <span className="my-2 flex justify-center rounded-sm bg-body-secondary/50 p-4 font-mono text-body">
           {statusMessage}
         </span>
       </p>

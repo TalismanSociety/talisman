@@ -115,7 +115,7 @@ const NetworkCreateForm: FC = () => {
               disabled={!platform}
               after={
                 field.state.meta.isValidating && (
-                  <div className="mr-[-1.2rem] shrink-0 px-2">
+                  <div className="-mr-6 shrink-0 px-2">
                     <LoaderIcon className="animate-spin-slow transition-none" />
                   </div>
                 )
@@ -303,7 +303,7 @@ const NetworkCreateForm: FC = () => {
                     disabled={!networkId}
                     before={
                       <AssetLogo
-                        className="mr-2 rounded-full text-[3rem]"
+                        className="mr-2 rounded-full text-[1.875rem]"
                         url={
                           field.state.value
                             ? getGithubTokenLogoUrlByCoingeckoId(field.state.value)
@@ -430,7 +430,7 @@ const NetworkCreateForm: FC = () => {
                   <Button
                     primary
                     icon={SaveIcon}
-                    className="h-24 w-[24rem] text-base"
+                    className="h-24 w-[15rem] text-base"
                     type="submit"
                     processing={isSubmitting || isValidating}
                     disabled={!isSubmitting && !isValidating && !canSubmit}

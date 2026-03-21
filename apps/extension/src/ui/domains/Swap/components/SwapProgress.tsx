@@ -210,7 +210,7 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
     <div className="flex h-full w-full flex-col items-center p-12">
       <div className="mt-8 font-bold text-body text-lg">{title}</div>
       <div className="mt-12 text-center font-light text-base text-body-secondary">{subtitle}</div>
-      <ProcessAnimation status={animStatus} className="mt-[7.5rem] mb-8 h-[14.5rem]" />
+      <ProcessAnimation status={animStatus} className="mt-18.75 mb-8 h-36.25" />
       <div className="flex w-full grow flex-col justify-center gap-10 px-10 text-center text-body-secondary">
         <div>
           {blockNumber ? (

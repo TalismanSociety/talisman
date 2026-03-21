@@ -111,7 +111,7 @@ const Content = () => {
           onChange={setPlatform}
         />
 
-        <div className="flex-grow" />
+        <div className="grow" />
 
         <TogglePill
           label={t("Active only")}

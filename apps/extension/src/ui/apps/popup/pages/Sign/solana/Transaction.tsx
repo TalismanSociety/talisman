@@ -138,7 +138,7 @@ export const SolSignTransactionRequest: FC<{
         <PopupContent>
           <div className="flex w-full flex-col items-center text-center text-body-secondary">
             <h1 className="my-12 font-bold text-body text-md leading-9">{t("Approve Request")}</h1>
-            <h2 className="mb-8 text-base leading-[3.2rem]">
+            <h2 className="mb-8 text-base leading-16">
               {t("You are signing a transaction with account")} <AccountPill account={account} />
             </h2>
             <RiskAnalysisPillButton />

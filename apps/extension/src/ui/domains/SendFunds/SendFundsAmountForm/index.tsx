@@ -116,12 +116,12 @@ export const SendFundsAmountForm = () => {
       onSubmit={handleSubmit}
       className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
     >
-      <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
+      <Container className="flex h-22.5 w-full flex-col justify-center gap-5 px-8">
         <div className="flex w-full items-center justify-between gap-4">
           <div>{t("From")}</div>
           <div>
             <AddressPillButton
-              className="!max-w-[260px]"
+              className="max-w-[260px]!"
               address={from}
               genesisHash={genesisHash}
               onClick={handleGotoClick("from")}
@@ -132,7 +132,7 @@ export const SendFundsAmountForm = () => {
           <div>{t("To")}</div>
           <div className="flex items-center gap-4">
             <AddressPillButton
-              className="!max-w-[260px]"
+              className="max-w-[260px]!"
               address={to}
               genesisHash={genesisHash}
               onClick={handleGotoClick("to")}

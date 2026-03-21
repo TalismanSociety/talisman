@@ -11,7 +11,7 @@ export const RampsPickerLayout: FC<{
 }> = ({ title, children, onBackClick, onCloseClick }) => (
   <div className="relative flex h-full w-full flex-col">
     <div className="flex items-center justify-between px-10">
-      <div className="flex h-32 min-h-[6.4rem] w-full items-center gap-4 text-body-secondary">
+      <div className="flex h-32 min-h-32 w-full items-center gap-4 text-body-secondary">
         <IconButton onClick={onBackClick} className={classNames(!onBackClick && "invisible")}>
           <ChevronLeftIcon />
         </IconButton>

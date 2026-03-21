@@ -74,7 +74,7 @@ export const EthSignBodyErc721Transfer: FC = () => {
         </div>
       )}
       {!!image && (
-        <div className="mt-12 mb-[-0.8rem] text-center">
+        <div className="mt-12 -mb-4 text-center">
           <UnsafeImage
             className="inline-block h-48 w-48 rounded bg-grey-800"
             src={image}

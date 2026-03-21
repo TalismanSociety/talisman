@@ -31,7 +31,7 @@ export const ErrorMessageDrawer: FC<{
       onDismiss={onDismiss}
     >
       <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-grey-800 p-12">
-        <XCircleIcon className={"text-[3rem] text-alert-error"} />
+        <XCircleIcon className={"text-[1.875rem] text-alert-error"} />
         <p className="mt-4 text-body-secondary">
           {name === "GenericAppRequired" ? <LedgerGenericRequired /> : wrapStrong(content)}
         </p>

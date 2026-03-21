@@ -44,8 +44,8 @@ export const ConnectedAccountsPill: FC = () => {
   const containerColors = useMemo(
     () =>
       count
-        ? "bg-gradient-to-r from-green-500/50 to-grey-800"
-        : "bg-gradient-to-r from-brand-orange/50 to-grey-800",
+        ? "bg-linear-to-r from-green-500/50 to-grey-800"
+        : "bg-linear-to-r from-brand-orange/50 to-grey-800",
     [count]
   )
 
@@ -66,7 +66,7 @@ export const ConnectedAccountsPill: FC = () => {
       <button
         type="button"
         className={classNames(
-          "group h-[3.6rem] w-full overflow-hidden rounded-full p-0.5",
+          "group h-[2.25rem] w-full overflow-hidden rounded-full p-0.5",
           containerColors,
           "text-body-secondary hover:text-grey-300"
         )}

@@ -12,7 +12,7 @@ import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
 
 const Title: FC<{ name: string; domain: string }> = ({ name, domain }) => (
   <div className="flex items-center gap-3 text-base">
-    <Favicon url={domain} className="text-[2rem]" />
+    <Favicon url={domain} className="text-[1.25rem]" />
     <div className="ml-2">{name || domain}</div>
   </div>
 )

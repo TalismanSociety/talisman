@@ -39,7 +39,7 @@ const AccountRowContainer: FC<
   const className = useMemo(
     () =>
       classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         isSelected && "bg-grey-800",
         "text-body-secondary hover:text-body"
       ),
@@ -158,7 +158,7 @@ const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSelect, hea
         />
       ))}
       {!accounts?.length && (
-        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+        <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
           {t("No account matches your search")}
         </div>
       )}

@@ -18,7 +18,7 @@ export const PortfolioAccount = ({
   return (
     <div className={classNames("flex items-center gap-3", className)}>
       <AccountIcon
-        className="!text-[1em]"
+        className="text-[1em]!"
         address={address}
         genesisHash={getAccountGenesisHash(account)}
       />

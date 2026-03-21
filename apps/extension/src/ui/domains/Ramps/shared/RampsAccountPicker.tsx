@@ -213,7 +213,7 @@ const AccountButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         isSelected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
@@ -221,7 +221,7 @@ const AccountButtonRow: FC<{
       <AccountIcon
         address={account.address}
         genesisHash={getAccountGenesisHash(account)}
-        className="!text-xl"
+        className="text-xl!"
       />
       <div className="flex grow items-center justify-between overflow-hidden">
         <div className="flex grow flex-col space-y-2 overflow-hidden">

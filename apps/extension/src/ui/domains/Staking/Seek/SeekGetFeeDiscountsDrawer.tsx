@@ -82,12 +82,12 @@ export const SeekGetFeeDiscountsDrawer = ({
               <ArrowRightIcon size={14} />
             </a>
           </div>
-          <div className="flex justify-between rounded-[10px] border-[1px] border-[text-body-disabled] border-solid p-6">
+          <div className="flex justify-between rounded-[10px] border border-[text-body-disabled] border-solid p-6">
             <div className="flex items-center gap-4">
               <img
                 src={token?.logo ?? seekLogo}
                 alt={"seek logo"}
-                className="inline-block size-[4rem] overflow-hidden"
+                className="inline-block size-20 overflow-hidden"
               />
               <div>
                 <div className="text-white">{tokenSymbol}</div>
@@ -110,12 +110,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             <div className="text-white">
               {hasSeekStaked ? t("Applied Discount") : t("Get Discounts")}
             </div>
-            <div
-              className={cn(
-                "rounded-[43px] px-4 py-2",
-                !hasSeekStaked && "bg-[#D5FF5C] bg-opacity-[0.1]"
-              )}
-            >
+            <div className={cn("rounded-[43px] px-4 py-2", !hasSeekStaked && "bg-[#D5FF5C]/10")}>
               <div className="text-[#D5FF5C] text-[14px]">
                 {hasSeekStaked ? discountPercent : t("Up to 25%")} {t("off fees")}
               </div>

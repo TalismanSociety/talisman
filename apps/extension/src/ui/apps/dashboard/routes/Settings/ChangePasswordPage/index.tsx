@@ -208,7 +208,7 @@ const Content = () => {
             <CapsLockWarningMessage />
           </div>
           <Button
-            className="w-[20rem]"
+            className="w-50"
             type="submit"
             primary
             disabled={!isValid || !allBackedUp}

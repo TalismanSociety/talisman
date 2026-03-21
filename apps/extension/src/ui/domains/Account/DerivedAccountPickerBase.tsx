@@ -31,16 +31,16 @@ const AccountButtonShimmer: FC<{ withBalances: boolean }> = ({ withBalances }) =
   <div className={"flex h-32 w-full items-center gap-8 rounded bg-grey-850 px-8"}>
     <div className="inline-block h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
     <div className="flex grow flex-col gap-2">
-      <div className="h-[1.6rem] w-[13rem] animate-pulse rounded-xs bg-grey-750"></div>
-      <div className="h-[1.4rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750"></div>
+      <div className="h-8 w-32.5 animate-pulse rounded-xs bg-grey-750"></div>
+      <div className="h-7 w-17 animate-pulse rounded-xs bg-grey-750"></div>
     </div>
     <div
       className={classNames(
-        "h-[1.8rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750",
+        "h-9 w-17 animate-pulse rounded-xs bg-grey-750",
         !withBalances && "invisible"
       )}
     ></div>
-    <div className="h-[2rem] w-[2rem] animate-pulse rounded-xs bg-grey-750"></div>
+    <div className="h-10 w-10 animate-pulse rounded-xs bg-grey-750"></div>
   </div>
 )
 
@@ -82,7 +82,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       onClick={onClick}
     >
       <AccountIcon address={formattedAddress} genesisHash={genesisHash} className="text-xl" />
-      <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+      <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</div>
         <div className="text-body-secondary text-sm">
           <Address address={formattedAddress} startCharCount={6} endCharCount={6} />
@@ -91,7 +91,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       <div className="flex items-center justify-end gap-2">
         {withBalances &&
           (isInitializing ? (
-            <div className="h-[1.8rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750"></div>
+            <div className="h-9 w-17 animate-pulse rounded-xs bg-grey-750"></div>
           ) : (
             <Tooltip placement="bottom-end">
               <TooltipTrigger asChild>
@@ -107,7 +107,7 @@ const AccountButton: FC<AccountButtonProps> = ({
         {connected ? (
           <CheckCircleIcon className="text-lg text-primary" />
         ) : (
-          <Checkbox checked={selected} readOnly className="[&>input]:!border-body-disabled" />
+          <Checkbox checked={selected} readOnly className="[&>input]:border-body-disabled!" />
         )}
       </div>
     </button>

@@ -30,9 +30,7 @@ export const BittensorSelectButton = ({
   if (isLoading)
     return (
       <div
-        className={
-          "my-[0.45rem] h-[1.6rem] w-40 animate-pulse rounded-xs bg-grey-700 text-grey-700"
-        }
+        className={"my-[0.2813rem] h-8 w-40 animate-pulse rounded-xs bg-grey-700 text-grey-700"}
       />
     )
 

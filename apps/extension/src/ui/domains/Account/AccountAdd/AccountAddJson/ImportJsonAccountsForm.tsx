@@ -95,11 +95,11 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
             )}
 
             {account.isExisting ? (
-              <div className="w-[1.92rem] shrink-0 text-center">
+              <div className="w-[1.2rem] shrink-0 text-center">
                 <CheckCircleIcon className="text-primary-500" />
               </div>
             ) : !account.isPrivateKeyAvailable ? (
-              <div className="w-[1.92rem] shrink-0 text-center">
+              <div className="w-[1.2rem] shrink-0 text-center">
                 <AlertCircleIcon className="text-alert-warn" />
               </div>
             ) : (
@@ -107,7 +107,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
                 readOnly
                 checked={account.selected}
                 disabled={!account.isPrivateKeyAvailable || account.isExisting}
-                className="[&>input]:!border-body-disabled"
+                className="[&>input]:border-body-disabled!"
               />
             )}
           </button>
@@ -230,7 +230,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
       </div>
       <div
         className={classNames(
-          "scrollable scrollable-800 mt-6 flex max-h-[28rem] flex-col gap-4 overflow-y-auto",
+          "scrollable scrollable-800 mt-6 flex max-h-70 flex-col gap-4 overflow-y-auto",
           accounts.length > 4 && "pr-4"
         )}
       >

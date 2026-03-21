@@ -28,7 +28,7 @@ const FormattedAddress = ({ address, className }: { address: string; className?:
   return (
     <Tooltip>
       <TooltipTrigger className={classNames("flex items-center gap-2", className)}>
-        <AccountIcon address={address} className="shrink-0 text-[2rem]" />
+        <AccountIcon address={address} className="shrink-0 text-[1.25rem]" />
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
       </TooltipTrigger>
       <TooltipContent>{address}</TooltipContent>
@@ -43,7 +43,7 @@ const NetworkAndAccount: FC<{ networkId: string; networkName: string; address: s
 }) => (
   <div className="flex w-[150px] flex-col items-center gap-5 overflow-hidden">
     <div className="flex w-full items-center justify-center gap-2">
-      <NetworkLogo networkId={networkId} className="!h-9 !w-9 shrink-0" />
+      <NetworkLogo networkId={networkId} className="h-9! w-9! shrink-0" />
       <div className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-body text-md">
         {networkName}
       </div>

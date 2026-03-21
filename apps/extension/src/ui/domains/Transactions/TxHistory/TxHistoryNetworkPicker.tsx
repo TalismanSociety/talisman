@@ -38,9 +38,9 @@ export const TxHistoryNetworkPicker: FC<{
       containerId="main"
       isOpen={isOpen}
       onDismiss={onDismiss}
-      className={classNames("relative z-50", IS_POPUP ? "size-full" : "h-[60rem] w-[40rem]")}
+      className={classNames("relative z-50", IS_POPUP ? "size-full" : "h-150 w-100")}
     >
-      <div className="flex size-full flex-grow flex-col bg-black">
+      <div className="flex size-full grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
           <IconButton onClick={onDismiss} className={IS_POPUP ? "visible" : "invisible"}>
             <ChevronLeftIcon />
@@ -110,7 +110,7 @@ const NetworkRow: FC<{
       className={classNames(
         "flex h-28 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
-        selected && "!bg-grey-700"
+        selected && "bg-grey-700!"
       )}
     >
       {network ? (

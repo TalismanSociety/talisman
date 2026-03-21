@@ -98,7 +98,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         />
       ))}
       {!accounts?.length && (
-        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+        <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
           {t("No account matches your search")}
         </div>
       )}
