@@ -13,7 +13,7 @@ export const NominationPoolName = ({ chainId, poolId }: NominationPoolNameProps)
   const defaultPoolName = "Talisman Pool"
 
   if (isLoading)
-    return <div className={"h-[1rem] w-40 animate-pulse rounded-xs bg-grey-700 text-grey-700"} />
+    return <div className={"h-8 w-40 animate-pulse rounded-xs bg-grey-700 text-grey-700"} />
 
   if (isError || !poolName) return <>{defaultPoolName}</>
 

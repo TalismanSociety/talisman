@@ -385,7 +385,7 @@ function AccountCreateMethodButton({
       <span className="w-full border-grey-800 border-b pb-3 text-start">{title}</span>
       <span className="flex items-center gap-2 pr-8 text-body-secondary text-sm">
         {networks?.map((network, i) => (
-          <span key={network} className={classNames(i + 1 < networks.length && "-mr-[0.5rem]")}>
+          <span key={network} className={classNames(i + 1 < networks.length && "-mr-4")}>
             {networkChoices[network]}
           </span>
         ))}

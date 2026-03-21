@@ -235,7 +235,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
       <AccountIconCopyAddressButton
         address={option.address}
         genesisHash={option.genesisHash}
-        className="absolute top-4 left-4 text-[2.5rem]"
+        className="absolute top-4 left-4 text-3xl"
         tooltipPlacement="bottom"
       />
     </div>
@@ -312,7 +312,7 @@ const SidebarButtonBase: FC<{
       )}
       onClick={onClick}
     >
-      <div className="size-20 text-[2.5rem]">{logo}</div>
+      <div className="size-20 text-3xl">{logo}</div>
       <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
         <div className="truncate text-grey-300">{label}</div>
         <div className="truncate text-grey-500 text-xs">{fiat}</div>

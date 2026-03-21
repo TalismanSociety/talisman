@@ -101,7 +101,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   return (
     <div
       className={classNames(
-        "relative z-0 flex h-[12rem] flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
+        "relative z-0 flex h-96 flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
         className
       )}
     >
@@ -130,7 +130,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           </button>
           <Fiat
             className={classNames(
-              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[3rem] leading-[3rem]"
+              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[3rem] leading-24"
             )}
             amount={selectedTotal}
             isBalance

@@ -302,7 +302,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
       )}
     >
       <Button
-        className={cn(!isGridLayout && "w-[10.9375rem] text-base")}
+        className={cn(!isGridLayout && "w-43.75 text-base")}
         disabled={!canEnter}
         onClick={onAddToPositionClick}
       >
@@ -312,7 +312,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[10.9375rem] text-base")}
+          className={cn(!isGridLayout && "w-43.75 text-base")}
           onClick={onWithdrawClick(withdrawableBalances[0])}
         >
           {t("Withdraw")}
@@ -322,7 +322,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[10.9375rem] text-base")}
+          className={cn(!isGridLayout && "w-43.75 text-base")}
           onClick={onClaimClick(claimableBalances[0])}
         >
           <div className="flex h-full flex-col gap-1">

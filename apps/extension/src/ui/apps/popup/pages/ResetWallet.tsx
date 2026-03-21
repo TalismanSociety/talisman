@@ -47,7 +47,7 @@ const ConfirmDrawer = ({
           <div className="text-3xl">
             <AlertTriangleIcon className="text-[3rem] text-brand-orange" />
           </div>
-          <div className="max-w-[18.75rem] font-bold text-white leading-[1.375rem]">
+          <div className="max-w-75 font-bold text-white leading-11">
             {t("Are you sure you want to reset your Talisman wallet?")}
           </div>
         </div>

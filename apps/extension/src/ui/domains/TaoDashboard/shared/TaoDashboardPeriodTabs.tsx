@@ -34,7 +34,7 @@ export const TaoDashboardPeriodTabs = ({
     <div
       role="tablist"
       className={cn(
-        "inline-flex h-[1.625rem] max-w-full items-center gap-1 overflow-hidden rounded-xs bg-grey-850 p-1 font-bold text-sm",
+        "inline-flex h-6.5 max-w-full items-center gap-1 overflow-hidden rounded-xs bg-grey-850 p-1 font-bold text-sm",
         className
       )}
     >

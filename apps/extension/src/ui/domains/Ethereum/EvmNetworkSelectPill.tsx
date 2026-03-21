@@ -38,7 +38,7 @@ export const EvmNetworkSelectPill = () => {
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="flex h-[2.25rem] w-[3.875rem] shrink-0 items-center gap-3 rounded-3xl border border-grey-800 bg-grey-850 pr-3 pl-2 text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
+            className="flex h-[2.25rem] w-15.5 shrink-0 items-center gap-3 rounded-3xl border border-grey-800 bg-grey-850 pr-3 pl-2 text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
             onClick={open}
           >
             <Suspense>

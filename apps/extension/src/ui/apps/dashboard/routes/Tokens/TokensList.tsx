@@ -109,7 +109,7 @@ export const TokensList: FC<{
     )
 
   return (
-    <div className="flex w-full min-w-[28.125rem] flex-col gap-4 text-left text-base text-body">
+    <div className="flex w-full min-w-112.5 flex-col gap-4 text-left text-base text-body">
       <div className="grid grid-cols-[40%_40%_20%] px-8 font-normal text-body-disabled text-sm">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>

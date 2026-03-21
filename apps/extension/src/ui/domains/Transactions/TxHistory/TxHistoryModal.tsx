@@ -74,7 +74,7 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
   return (
     <ModalDialog
       title={t("Transaction Details")}
-      className={cn("h-[37.5rem] w-[25rem]", tx.status === "pending" && "[&_header]:invisible")}
+      className={cn("h-150 w-100", tx.status === "pending" && "[&_header]:invisible")}
       onClose={onClose}
     >
       {children}

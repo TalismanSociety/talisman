@@ -135,7 +135,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
             <ChevronLeftIcon />
           </IconButton>
           <div className="flex flex-col justify-center">
-            <CurrentAccountAvatar className="text-[2.25rem]!" />
+            <CurrentAccountAvatar className="text-2xl!" />
           </div>
           <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">

@@ -46,14 +46,14 @@ const SentimentSummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, 
 
   if (!sentiment)
     return (
-      <div className="flex h-[7.25rem] items-center justify-center text-body-secondary text-sm">
+      <div className="flex h-29 items-center justify-center text-body-secondary text-sm">
         {t("Failed to fetch data")}
       </div>
     )
 
   return (
-    <div className="flex h-[7.25rem] flex-col justify-between gap-10 px-12 py-10">
-      <div className="flex h-[1.625rem] w-full shrink-0 items-center justify-between overflow-hidden">
+    <div className="flex h-29 flex-col justify-between gap-10 px-12 py-10">
+      <div className="flex h-6.5 w-full shrink-0 items-center justify-between overflow-hidden">
         <div className="text-md">{t("Market Sentiment")}</div>
         <div>
           <SentimentBadge sentiment={sentiment.sentiment} />
@@ -72,23 +72,23 @@ const SentimentSummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, 
 
 const SentimentSummarySkeleton = () => {
   return (
-    <div className="flex h-[7.25rem] flex-col justify-between gap-10 px-12 py-10">
-      <div className="flex h-[1.625rem] w-full shrink-0 items-center justify-between overflow-hidden">
+    <div className="flex h-29 flex-col justify-between gap-10 px-12 py-10">
+      <div className="flex h-6.5 w-full shrink-0 items-center justify-between overflow-hidden">
         <div className="text-md">
-          <Skeleton className="w-[9.375rem]" />
+          <Skeleton className="w-37.5" />
         </div>
         <div>
-          <Skeleton className="h-12 w-[3.75rem] rounded-full" />
+          <Skeleton className="h-12 w-15 rounded-full" />
         </div>
       </div>
       <div className="flex flex-col gap-5">
         <Skeleton className="h-2 w-full rounded-full" />
         <div className="flex h-8 w-full shrink-0 items-center justify-between overflow-hidden text-body-disabled text-xs">
           <div>
-            <Skeleton className="w-[3.125rem]" />
+            <Skeleton className="w-12.5" />
           </div>
           <div>
-            <Skeleton className="w-[3.125rem]" />
+            <Skeleton className="w-12.5" />
           </div>
         </div>
       </div>

@@ -36,14 +36,14 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-[0.1875rem] text-body">
-          <InfoIcon className="inline-block size-[0.75rem] align-sub" />
+        <div className="flex items-center gap-1.5 text-body">
+          <InfoIcon className="inline-block size-6 align-sub" />
           <span>{text}</span>
         </div>
       </TooltipTrigger>
       {!!rewards.length && (
         <TooltipContent>
-          <div className="flex min-w-[9.375rem] flex-col gap-2 text-body">
+          <div className="flex min-w-37.5 flex-col gap-2 text-body">
             {rewards.map((reward, idx) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: legacy
               <div key={idx}>

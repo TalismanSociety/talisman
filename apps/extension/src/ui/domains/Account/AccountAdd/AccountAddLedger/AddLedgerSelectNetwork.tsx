@@ -231,7 +231,7 @@ export const AddLedgerSelectNetwork = () => {
                           </span>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="z-20 max-w-[20rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow-xs">
+                      <TooltipContent className="z-20 max-w-xs rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow-xs">
                         <Trans
                           t={t}
                           defaults={
@@ -289,12 +289,12 @@ export const AddLedgerSelectNetwork = () => {
             )}
           </>
         )}
-        <div className={classNames("mt-16 h-[7.5rem]", showConnect ? "visible" : "invisible")}>
+        <div className={classNames("mt-16 h-60", showConnect ? "visible" : "invisible")}>
           {showConnect && platform === "polkadot" && chainId && (
             <>
               {substrateAppType === AddSubstrateLedgerAppType.Legacy && (
                 <ConnectLedgerSubstrateLegacy
-                  className="min-h-[6.875rem]"
+                  className="min-h-27.5"
                   onReadyChanged={setIsLedgerReady}
                   chainId={chainId}
                 />
@@ -303,14 +303,14 @@ export const AddLedgerSelectNetwork = () => {
               {substrateAppType === AddSubstrateLedgerAppType.Generic && (
                 <ConnectLedgerSubstrateGeneric
                   curve={curve}
-                  className="min-h-[6.875rem]"
+                  className="min-h-27.5"
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
               {substrateAppType === AddSubstrateLedgerAppType.Migration && (
                 <ConnectLedgerSubstrateGeneric
                   curve={curve}
-                  className="min-h-[6.875rem]"
+                  className="min-h-27.5"
                   onReadyChanged={setIsLedgerReady}
                   legacyAppName={chain?.ledgerAppName}
                 />

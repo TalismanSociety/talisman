@@ -59,7 +59,7 @@ export const LedgerConnectionStatus = ({
       {status === "connecting" && (
         <LoaderIcon className="min-w-[1em] shrink-0 animate-spin-slow text-[1.25rem] text-white" />
       )}
-      <div className="grow text-left leading-[1.25rem]">{wrapStrong(message)}</div>
+      <div className="grow text-left leading-10">{wrapStrong(message)}</div>
       {!!onRetryClick && (
         <button
           type="button"

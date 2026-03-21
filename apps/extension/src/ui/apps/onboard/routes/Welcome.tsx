@@ -38,11 +38,7 @@ const NetworkItem: FC<{ logo: string; label: string }> = ({ logo, label }) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <img
-          src={logo}
-          alt={label}
-          className="ml-[-0.625rem] inline-block size-20 overflow-hidden"
-        />
+        <img src={logo} alt={label} className="-ml-5 inline-block size-20 overflow-hidden" />
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
@@ -52,13 +48,13 @@ const NetworkItem: FC<{ logo: string; label: string }> = ({ logo, label }) => {
 const SupportedNetworks = () => {
   const { t } = useTranslation()
   return (
-    <div className={classNames("my-10 flex h-20 shrink-0 content-center pl-[0.625rem]")}>
+    <div className={classNames("my-10 flex h-20 shrink-0 content-center pl-5")}>
       <NetworkItem logo={logoMainnet} label="Ethereum Mainnet" />
       <NetworkItem logo={logoBase} label="Base" />
       <NetworkItem logo={logoSonic} label="Sonic" />
       <NetworkItem logo={logoBittensor} label="Bittensor" />
       <NetworkItem logo={logoPolkadot} label="Polkadot" />
-      <div className="ml-[-0.625rem] flex h-full w-auto p-1">
+      <div className="-ml-5 flex h-full w-auto p-1">
         <div className="relative flex w-auto flex-col justify-center rounded-full bg-grey-750 px-3 text-center text-grey-200 ring-1 ring-body-secondary">
           <div className="font-bold">1000+</div>
         </div>
@@ -94,10 +90,10 @@ export const WelcomePage = () => {
   }, [setStage])
 
   return (
-    <OnboardLayout analytics={ANALYTICS_PAGE} className="min-h-[37.5rem] min-w-[33.75rem]">
-      <div className="my-[5rem] flex flex-col items-center justify-center gap-20">
-        <div className="welcome-text flex select-none flex-col items-center gap-14 text-center xl:w-[47.5rem]">
-          <div className="flex flex-col items-center gap-10 text-white xl:w-[40.75rem]">
+    <OnboardLayout analytics={ANALYTICS_PAGE} className="min-h-150 min-w-135">
+      <div className="my-40 flex flex-col items-center justify-center gap-20">
+        <div className="welcome-text flex select-none flex-col items-center gap-14 text-center xl:w-190">
+          <div className="flex flex-col items-center gap-10 text-white xl:w-163">
             <LogoWithSupportPageRedirect />
             <div className="font-whyteInkTrap text-[5rem] leading-none tracking-tight lg:text-[7.5rem]">
               <Trans
@@ -116,7 +112,7 @@ export const WelcomePage = () => {
           </div>
           <SupportedNetworks />
         </div>
-        <div className="welcome-button flex w-[27.5rem] flex-col gap-8">
+        <div className="welcome-button flex w-110 flex-col gap-8">
           <Button
             primary
             icon={ArrowRightIcon}
@@ -125,7 +121,7 @@ export const WelcomePage = () => {
           >
             {t("Get Started")}
           </Button>
-          <div className="text-center text-body-secondary text-sm leading-[1.25rem]">
+          <div className="text-center text-body-secondary text-sm leading-10">
             <Trans t={t}>
               By continuing, you agree to the{" "}
               <a

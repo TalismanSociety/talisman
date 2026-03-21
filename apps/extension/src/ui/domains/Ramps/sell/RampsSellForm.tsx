@@ -71,7 +71,7 @@ export const RampsSellForm: FC<{
                           <input
                             ref={refInput}
                             type="number"
-                            className="peer w-[9.375rem] min-w-0 appearance-none border-none bg-transparent font-bold text-md text-white leading-none md:max-w-fit"
+                            className="peer w-37.5 min-w-0 appearance-none border-none bg-transparent font-bold text-md text-white leading-none md:max-w-fit"
                             value={field.state.value ?? ""}
                             onBlur={field.handleBlur}
                             placeholder="100"

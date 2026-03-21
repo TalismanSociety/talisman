@@ -31,16 +31,16 @@ const AccountButtonShimmer: FC<{ withBalances: boolean }> = ({ withBalances }) =
   <div className={"flex h-32 w-full items-center gap-8 rounded bg-grey-850 px-8"}>
     <div className="inline-block h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
     <div className="flex grow flex-col gap-2">
-      <div className="h-[1rem] w-[8.125rem] animate-pulse rounded-xs bg-grey-750"></div>
-      <div className="h-[0.875rem] w-[4.25rem] animate-pulse rounded-xs bg-grey-750"></div>
+      <div className="h-8 w-32.5 animate-pulse rounded-xs bg-grey-750"></div>
+      <div className="h-7 w-17 animate-pulse rounded-xs bg-grey-750"></div>
     </div>
     <div
       className={classNames(
-        "h-[1.125rem] w-[4.25rem] animate-pulse rounded-xs bg-grey-750",
+        "h-9 w-17 animate-pulse rounded-xs bg-grey-750",
         !withBalances && "invisible"
       )}
     ></div>
-    <div className="h-[1.25rem] w-[1.25rem] animate-pulse rounded-xs bg-grey-750"></div>
+    <div className="h-10 w-10 animate-pulse rounded-xs bg-grey-750"></div>
   </div>
 )
 
@@ -91,7 +91,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       <div className="flex items-center justify-end gap-2">
         {withBalances &&
           (isInitializing ? (
-            <div className="h-[1.125rem] w-[4.25rem] animate-pulse rounded-xs bg-grey-750"></div>
+            <div className="h-9 w-17 animate-pulse rounded-xs bg-grey-750"></div>
           ) : (
             <Tooltip placement="bottom-end">
               <TooltipTrigger asChild>

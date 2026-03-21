@@ -38,7 +38,7 @@ export const TxHistoryNetworkPicker: FC<{
       containerId="main"
       isOpen={isOpen}
       onDismiss={onDismiss}
-      className={classNames("relative z-50", IS_POPUP ? "size-full" : "h-[37.5rem] w-[25rem]")}
+      className={classNames("relative z-50", IS_POPUP ? "size-full" : "h-150 w-100")}
     >
       <div className="flex size-full grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">

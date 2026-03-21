@@ -17,8 +17,8 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
   const { t } = useTranslation()
 
   return (
-    <div className="flex max-h-[37.5rem] w-full flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
-      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-[1.25rem]">
+    <div className="flex max-h-150 w-full flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
+      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-10">
         <div className="flex w-full flex-col gap-12 text-body-secondary leading-paragraph">
           <div className="text-center font-bold text-body text-md">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
@@ -49,7 +49,7 @@ const RiskAnalysisPromptAutoRiskScan: FC = () => {
 
   return (
     <div className="flex w-full animate-fade-in flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
-      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-[1.25rem]">
+      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-10">
         <div className="flex w-full flex-col gap-8 text-body-secondary leading-paragraph">
           <div className="text-center font-bold text-body text-md">
             {t("Automatic risk assessments")}
@@ -95,7 +95,7 @@ const RiskAnalysisCriticalPane: FC<{
       <TransitionChild
         as="div"
         className={classNames(
-          "fixed top-0 left-0 z-10 h-[37.5rem] w-[25rem]",
+          "fixed top-0 left-0 z-10 h-150 w-100",
           "flex flex-col items-center gap-8 p-12",
           "bg-linear-to-b from-[#411D1D] to-black-primary"
         )}

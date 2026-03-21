@@ -116,7 +116,7 @@ export const SendFundsAmountForm = () => {
       onSubmit={handleSubmit}
       className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
     >
-      <Container className="flex h-[5.625rem] w-full flex-col justify-center gap-5 px-8">
+      <Container className="flex h-22.5 w-full flex-col justify-center gap-5 px-8">
         <div className="flex w-full items-center justify-between gap-4">
           <div>{t("From")}</div>
           <div>

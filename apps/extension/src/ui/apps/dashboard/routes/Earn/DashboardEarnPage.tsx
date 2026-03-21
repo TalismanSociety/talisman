@@ -34,7 +34,7 @@ export const DashboardEarnPage: FC = () => {
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
   return (
-    <div className="flex w-full min-w-[28.125rem] flex-col gap-6 overflow-hidden text-left text-base text-body-secondary">
+    <div className="flex w-full min-w-112.5 flex-col gap-6 overflow-hidden text-left text-base text-body-secondary">
       {/* Header with total balance - always show */}
       <EarnPageHeader />
 
@@ -43,7 +43,7 @@ export const DashboardEarnPage: FC = () => {
         <div className="shrink-0">
           <EarnTabsDashboard />
         </div>
-        <div className="w-[17.5rem]">
+        <div className="w-70">
           <SearchInput
             containerClassName="h-[2.25rem] w-full rounded-sm border px-4! bg-field! ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
             className="text-sm"

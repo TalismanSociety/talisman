@@ -127,7 +127,7 @@ export const ChangeValidatorSelect = () => {
           <ValidatorSortMethodButton method={sortMethod} onChange={setSortMethod} />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="flex justify-between pr-12 pl-[3.75rem] text-body-disabled text-sm">
+          <div className="flex justify-between pr-12 pl-15 text-body-disabled text-sm">
             <div>{t("Validator")}</div>
             <div>{t("APY")}</div>
           </div>

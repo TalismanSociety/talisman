@@ -298,7 +298,7 @@ export const GenericAmountEdit: FC<{
             <PillButton
               onClick={toggleIsTokenEdit}
               size="xs"
-              className="h-[1.375rem] w-[1.375rem] rounded-full px-0! py-0!"
+              className="h-11 w-11 rounded-full px-0! py-0!"
             >
               <SwapIcon />
             </PillButton>
@@ -307,7 +307,7 @@ export const GenericAmountEdit: FC<{
         <PillButton
           onClick={onMaxClick}
           size="xs"
-          className={classNames("h-[1.375rem] rounded-sm px-4! py-0!")}
+          className={classNames("h-11 rounded-sm px-4! py-0!")}
         >
           {t("Max")}
         </PillButton>

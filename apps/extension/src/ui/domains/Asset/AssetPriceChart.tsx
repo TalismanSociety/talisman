@@ -107,8 +107,8 @@ export const AssetPriceChart: FC<{
     <div
       className={classNames(
         "relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm bg-black-secondary",
-        variant === "small" && "h-[10.5rem]",
-        variant === "large" && "h-[12rem]",
+        variant === "small" && "h-42",
+        variant === "large" && "h-96",
         className
       )}
     >
@@ -474,7 +474,7 @@ const TimespanSelect: FC<{
           className={classNames(
             "rounded-[0.375rem] px-3 py-1.5 hover:bg-white/5 hover:text-white",
             "pointer-events-auto",
-            variant === "small" && "text-[0.625rem]",
+            variant === "small" && "text-tiny",
             variant === "large" && "text-sm",
             value === key && "bg-white/10 text-white"
           )}
@@ -578,7 +578,7 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
         <TokenLogo tokenId={token.id} className="inline-block text-[1.75rem]" />
         <div className="flex grow flex-col gap-1">
           <span className="font-bold text-sm">{token.symbol}</span>
-          <span className="text-[0.625rem] text-body-secondary">
+          <span className="text-body-secondary text-tiny">
             {t("Mkt Cap:")} <MarketCap tokenId={token.id} />
           </span>
         </div>

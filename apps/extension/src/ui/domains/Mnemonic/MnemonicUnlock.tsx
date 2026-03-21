@@ -97,12 +97,9 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
   }, [setValue])
 
   return mnemonic ? (
-    <div className="w-[36.25rem]">{children}</div>
+    <div className="w-145">{children}</div>
   ) : (
-    <form
-      onSubmit={handleSubmit(submit)}
-      className="flex w-[36.25rem] flex-col justify-between gap-8"
-    >
+    <form onSubmit={handleSubmit(submit)} className="flex w-145 flex-col justify-between gap-8">
       <FormFieldContainer label={title} error={errors.password?.message}>
         <FormFieldInputText
           before={<KeyIcon className="h-10 w-10 opacity-50" />}

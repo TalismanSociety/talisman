@@ -29,7 +29,7 @@ export const LedgerPolkadotUpgradeAlertDrawer = () => {
 
   return (
     <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
-      <div className="flex max-w-[26.25rem] flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
+      <div className="flex max-w-105 flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
         <div className="flex flex-col gap-4 text-center">
           <p className="font-bold text-white">{t("The Ledger Polkadot Generic app is here!")}</p>
           <p className="mt-4 text-body-secondary text-sm">

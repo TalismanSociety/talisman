@@ -88,7 +88,7 @@ const PortfolioSearch = () => {
         "h-16 w-full rounded-sm border border-field bg-field! px-4! text-xs ring-transparent focus-within:border-grey-700",
         "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
         "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
-        IS_POPUP ? "w-full" : "max-w-[23.375rem]"
+        IS_POPUP ? "w-full" : "max-w-93.5"
       )}
       placeholder={t("Search")}
       onChange={setPortfolioSearch}
@@ -143,7 +143,7 @@ const TokensSortButton = () => {
 
 export const PortfolioToolbarTokens = () => {
   return (
-    <div className="@container flex h-16 w-full min-w-[18.75rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
+    <div className="@container flex h-16 w-full min-w-75 shrink-0 items-center justify-between gap-4 overflow-hidden">
       <div className="flex grow items-center overflow-hidden">
         <PortfolioSearch />
       </div>

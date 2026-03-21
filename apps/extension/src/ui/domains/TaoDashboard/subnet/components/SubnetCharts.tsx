@@ -32,7 +32,7 @@ export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) =>
         <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
 
-      <div className="h-[32.5rem] overflow-hidden rounded-lg bg-grey-900">
+      <div className="h-130 overflow-hidden rounded-lg bg-grey-900">
         {/* Chart Content */}
         {activeTab === "price" ? (
           <SubnetPriceChart netuid={netuid} />

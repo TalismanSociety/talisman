@@ -20,7 +20,7 @@ export const SubSignBody: FC = () => {
       <h1 className="my-12 font-bold text-body text-md">
         {isBatch ? t("Approve Batch Request") : t("Approve Request")}
       </h1>
-      <h2 className="text-base leading-[2rem]">
+      <h2 className="text-base leading-16">
         <Trans
           t={t}
           components={{

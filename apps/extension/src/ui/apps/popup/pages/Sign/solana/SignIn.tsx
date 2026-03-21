@@ -171,7 +171,7 @@ const NoAccountWarning = ({
     <Drawer isOpen anchor="bottom" containerId="main">
       <div className="flex flex-col gap-8 rounded-t-xl bg-grey-800 p-12">
         <div className="w-full text-center">
-          <InfoIcon className="inline-block text-[2.5rem] text-primary-500" />
+          <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
         <p className="text-center text-body-secondary">
           <Trans

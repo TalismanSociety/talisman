@@ -36,7 +36,7 @@ export const SeekBenefitsModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black shadow-xs",
+        "h-150 w-100 overflow-hidden border-grey-800 bg-black shadow-xs",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border border-grey-800"
       )}
       containerId={IS_POPUP ? "main" : undefined}
@@ -73,12 +73,12 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       <IconButton onClick={onClose} className="absolute top-6 right-6 z-10">
         <XIcon />
       </IconButton>
-      <Background className="absolute top-0 right-0 z-0 h-[12.9375rem] w-[10.625rem]" />
+      <Background className="absolute top-0 right-0 z-0 h-51.75 w-42.5" />
       <div className="flex size-full flex-col p-8">
         <div className="grow">
           <div className="mt-7 flex h-80 flex-col justify-center gap-4">
             <p className="text-[1.3125rem]">{t("It's Time to SEEK")}</p>
-            <p className="max-w-[15.625rem] text-body-secondary text-sm">
+            <p className="max-w-62.5 text-body-secondary text-sm">
               {t("Hold SEEK to unlock exclusive benefits.")}
               <br />
               <button
@@ -92,7 +92,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             </p>
             <UserSeekBalance />
           </div>
-          <div className="mt-8 flex h-[2.875rem] items-center justify-between rounded-t-sm bg-grey-800 px-8 text-base">
+          <div className="mt-8 flex h-11.5 items-center justify-between rounded-t-sm bg-grey-800 px-8 text-base">
             <div className="flex grow items-center justify-start gap-3 overflow-hidden">
               <div className="truncate">{t("Earn SEEK rewards")}</div>
             </div>
@@ -170,7 +170,7 @@ const UserSeekBalance = () => {
 
   return (
     <div>
-      <div className="inline-flex h-[1.625rem] items-center gap-1.5 rounded-sm bg-primary/10 px-6 text-sm">
+      <div className="inline-flex h-6.5 items-center gap-1.5 rounded-sm bg-primary/10 px-6 text-sm">
         <span>{t("You have")}</span>
         <Tokens className="text-primary" amount={totalOwned.tokens} decimals={token.decimals} />
         <span>{token.symbol}</span>

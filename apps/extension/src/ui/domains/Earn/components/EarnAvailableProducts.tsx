@@ -152,7 +152,7 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
     >
       <YieldxyzProviderLogo providerId={product.providerId} className="size-16 shrink-0" />
       <div className="flex grow flex-col items-start justify-start gap-2 overflow-hidden">
-        <div className="flex h-[1.125rem] w-full gap-1 overflow-hidden text-left text-body">
+        <div className="flex h-9 w-full gap-1 overflow-hidden text-left text-body">
           <span className="truncate">{product.metadata.name}</span>
           {!IS_POPUP && (
             <EarnTypeBadge className="shrink-0">{product.mechanics?.type}</EarnTypeBadge>

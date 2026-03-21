@@ -69,7 +69,7 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
 
   if (isLoading)
     return (
-      <div className="flex h-[6.875rem] w-full shrink-0 flex-col justify-center px-12">
+      <div className="flex h-27.5 w-full shrink-0 flex-col justify-center px-12">
         <div>
           <Skeleton className="mb-3 h-8 w-48 font-medium text-white" />
         </div>
@@ -83,13 +83,13 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
 
   if (isError)
     return (
-      <div className="flex h-[6.875rem] w-full shrink-0 flex-col justify-center px-12">
+      <div className="flex h-27.5 w-full shrink-0 flex-col justify-center px-12">
         <div className="text-center text-body-secondary">{t("Failed to fetch data")}</div>
       </div>
     )
 
   return (
-    <div className="flex h-[6.875rem] w-full shrink-0 flex-col justify-center px-12">
+    <div className="flex h-27.5 w-full shrink-0 flex-col justify-center px-12">
       <div className="mb-3 font-medium text-white">{t("Whale Trade Flow")}</div>
       {inflowPercent !== null ? (
         <div className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full">

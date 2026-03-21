@@ -16,7 +16,7 @@ export const TaoDashboardSubnetsPage = () => {
   const [period, setPeriod] = useState<TimePeriod>("1w")
 
   return (
-    <div className="flex w-full min-w-[28.125rem] flex-col">
+    <div className="flex w-full min-w-112.5 flex-col">
       <TaoDashboardHeader />
 
       <div className="sticky top-0 z-10 flex flex-col gap-6 bg-black-primary pt-6">

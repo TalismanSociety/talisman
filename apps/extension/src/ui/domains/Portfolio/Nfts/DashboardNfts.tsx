@@ -246,15 +246,15 @@ const NftCollectionTile: FC<{
   })
 
   return (
-    <div ref={refContainer} className="h-[15.375rem] w-[13.6875rem]">
+    <div ref={refContainer} className="h-61.5 w-54.75">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )
 }
 
 const NftCollectionTileSkeleton = () => (
-  <div className="w-[13.6875rem]">
-    <div className="size-[13.6875rem] animate-pulse rounded-sm bg-grey-800"></div>
+  <div className="w-54.75">
+    <div className="size-54.75 animate-pulse rounded-sm bg-grey-800"></div>
   </div>
 )
 
@@ -263,7 +263,7 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
   onNftClick,
 }) => {
   return (
-    <div className="flex flex-wrap gap-[1.25rem]">
+    <div className="flex flex-wrap gap-10">
       {data.collections.map((collection, i) => (
         <NftCollectionTile
           key={`${collection.id}-${i}`}

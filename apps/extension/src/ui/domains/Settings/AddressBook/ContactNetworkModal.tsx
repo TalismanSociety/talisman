@@ -47,7 +47,7 @@ export const ContactNetworkPickerButton: FC<{
       <button
         type="button"
         className={classNames(
-          "flex h-[3.5rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8",
+          "flex h-28 w-full items-center gap-6 overflow-hidden rounded-sm px-8",
           "bg-grey-850 text-body-secondary enabled:hover:bg-grey-800 enabled:hover:text-body",
           className
         )}

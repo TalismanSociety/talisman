@@ -37,7 +37,7 @@ export const AssetBalanceCellValue = ({
     <WithTooltip tooltip={tooltip}>
       <div
         className={classNames(
-          "flex h-[4.125rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
+          "flex h-16.5 flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
           className
         )}
       >

@@ -11,7 +11,7 @@ import {
 type ToggleVariant = "default" | "sm" | "tiny"
 
 const VARIANTS: Record<ToggleVariant, string> = {
-  tiny: "h-6 w-[1.375rem] after:size-5 after:left-0.5 after:top-0.5 border-2",
+  tiny: "h-6 w-11 after:size-5 after:left-0.5 after:top-0.5 border-2",
   sm: "h-10 w-[2.25rem] after:h-8 after:w-8 ",
   default: "h-12 w-[2.75rem] after:h-10 after:w-10 ",
 }

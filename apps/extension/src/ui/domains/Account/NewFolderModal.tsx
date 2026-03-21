@@ -22,7 +22,7 @@ export const NewFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("New Folder")} onClose={close} className="w-[23rem]">
+      <ModalDialog title={t("New Folder")} onClose={close} className="w-92">
         <NewFolder onConfirm={close} onCancel={close} />
       </ModalDialog>
     </Modal>

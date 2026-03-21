@@ -53,10 +53,10 @@ export const AddEthereumNetwork = () => {
         <div className="flex h-full w-full flex-col items-center text-center">
           <NetworkLogo networkId={request.network.id} className="mt-6 inline-block text-3xl" />
           <h1 className="mt-8 mb-12 font-bold text-md">{t("Add Network")}</h1>
-          <p className="text-body-secondary leading-[1.625rem]">
+          <p className="text-body-secondary leading-6.5">
             <Trans t={t}>
               This app wants to connect Talisman to the{" "}
-              <span className="inline-block h-[1.625rem] items-center rounded-3xl bg-grey-850 px-3 font-light text-body">
+              <span className="inline-block h-6.5 items-center rounded-3xl bg-grey-850 px-3 font-light text-body">
                 {request.network.name}
               </span>{" "}
               network.

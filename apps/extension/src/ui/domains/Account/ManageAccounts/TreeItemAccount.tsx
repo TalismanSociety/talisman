@@ -30,7 +30,7 @@ export const TreeItemAccount: FC<{
     <div className={classNames("@container relative flex items-center")}>
       <div
         className={classNames(
-          "flex h-[3.6875rem] grow items-center gap-8 overflow-hidden rounded-sm border border-transparent px-8",
+          "flex h-14.75 grow items-center gap-8 overflow-hidden rounded-sm border border-transparent px-8",
           isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850"
         )}
       >

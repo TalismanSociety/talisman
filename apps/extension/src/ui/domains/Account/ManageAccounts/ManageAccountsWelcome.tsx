@@ -59,7 +59,7 @@ const Content: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="flex w-full max-w-[46.25rem] flex-col gap-8 rounded-t-xl border-grey-850 border-t bg-black p-12">
+    <div className="flex w-full max-w-185 flex-col gap-8 rounded-t-xl border-grey-850 border-t bg-black p-12">
       <div className="flex w-full justify-between py-4">
         <div className="font-bold text-body text-md">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>

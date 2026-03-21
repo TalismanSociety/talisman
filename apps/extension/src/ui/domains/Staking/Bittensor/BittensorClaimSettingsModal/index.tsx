@@ -17,7 +17,7 @@ export const BittensorClaimSettingsModal = () => {
       <div
         id={BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals & drawers
         className={cn(
-          "relative flex h-[37.5rem] max-h-dvh w-[25rem] max-w-dvw flex-col overflow-hidden bg-black",
+          "relative flex h-150 max-h-dvh w-100 max-w-dvw flex-col overflow-hidden bg-black",
           !IS_POPUP && "rounded border border-grey-850"
         )}
       >

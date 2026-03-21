@@ -66,7 +66,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
     <div
       {...getRootProps()}
       className={classNames(
-        "flex h-[10rem] cursor-pointer flex-col items-center gap-8 rounded border border-grey-700 border-dashed p-8 hover:bg-grey-900",
+        "flex h-80 cursor-pointer flex-col items-center gap-8 rounded border border-grey-700 border-dashed p-8 hover:bg-grey-900",
         isDragAccept && "bg-primary/10",
         (isInvalid || isDragReject) && "bg-alert-warn/10"
       )}

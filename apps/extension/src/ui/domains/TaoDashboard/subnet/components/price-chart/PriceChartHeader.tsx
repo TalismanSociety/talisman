@@ -43,7 +43,7 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   }
 
   return (
-    <div className="flex h-[6.375rem] flex-wrap items-center justify-between gap-4 px-12">
+    <div className="flex h-25.5 flex-wrap items-center justify-between gap-4 px-12">
       <div className="flex w-full items-end justify-between gap-4">
         <div className={cn(isError && "invisible")}>
           <div className="flex items-baseline gap-2">
@@ -98,7 +98,7 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
 }
 
 const PriceChartHeaderSkeleton = () => (
-  <div className="flex h-[6.375rem] flex-wrap items-center justify-between gap-4 px-12">
+  <div className="flex h-25.5 flex-wrap items-center justify-between gap-4 px-12">
     <div className="flex w-full items-end justify-between gap-4">
       <div className="flex flex-col gap-4">
         <div className="flex items-baseline gap-2">

@@ -251,7 +251,7 @@ const GetStartedActionButton: FC<{
       <div className="flex w-full flex-col gap-1">
         <div className="truncate font-bold @2xl:text-base text-body text-sm">{label}</div>
         {description && (
-          <div className="@2xl:text-sm text-[0.625rem] text-body-secondary">{description}</div>
+          <div className="@2xl:text-sm text-body-secondary text-tiny">{description}</div>
         )}
       </div>
     </div>

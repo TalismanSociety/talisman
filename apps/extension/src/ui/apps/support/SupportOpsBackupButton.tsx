@@ -33,7 +33,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [onClose])
 
   return (
-    <ModalDialog title="Backup" className="w-[25rem]" onClose={onClose}>
+    <ModalDialog title="Backup" className="w-100" onClose={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will save all your Talisman data into a file, which you can use to restore your

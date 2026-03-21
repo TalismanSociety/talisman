@@ -327,12 +327,12 @@ export const BittensorSubnetBondReview = () => {
                 <button
                   type="button"
                   className={classNames(
-                    "rounded-[43px] bg-[#D5FF5C]/[0.1] px-3 py-1",
+                    "rounded-[43px] bg-[#D5FF5C]/10 px-3 py-1",
                     !isSeekDrawerEnabled && "cursor-default"
                   )}
                   onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
                 >
-                  <div className="text-[#D5FF5C] text-[0.625rem]">
+                  <div className="text-[#D5FF5C] text-tiny">
                     {totalFeeDiscount > 0 ? (
                       <>
                         {totalDiscountPercent} {t("Off Fees")}

@@ -28,7 +28,7 @@ export const TryTalismanModal = () => {
           </Trans>
         }
         onClose={close}
-        className="h-[37.5rem] w-[25rem]"
+        className="h-150 w-100"
       >
         <ScrollContainer className="h-full w-full">
           <TryTalismanContent analytics={ANALYTICS_PAGE} />

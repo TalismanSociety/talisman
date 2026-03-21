@@ -34,7 +34,7 @@ const SignMessage = ({
       <h1 className="my-0 font-bold font-sans text-body text-md leading-base">
         {isDecrypt ? "Decrypt " : "Encrypt "}Request
       </h1>
-      <h2 className="mt-8 flex w-full flex-col items-center text-base leading-[2rem]">
+      <h2 className="mt-8 flex w-full flex-col items-center text-base leading-16">
         {isDecrypt
           ? t("You are decrypting some data with")
           : t("You are encrypting some data with")}

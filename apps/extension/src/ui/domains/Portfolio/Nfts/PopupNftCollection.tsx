@@ -156,7 +156,7 @@ const NftTileItem: FC<{
   })
 
   return (
-    <div ref={refContainer} className="h-[12.25rem] w-[10.4375rem]">
+    <div ref={refContainer} className="h-49 w-41.75">
       {intersection?.isIntersecting ? <NftTileInner {...props} /> : null}
     </div>
   )

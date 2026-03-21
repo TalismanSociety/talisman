@@ -54,7 +54,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [state.backup])
 
   return (
-    <ModalDialog title="Restore" className="w-[31.25rem]" onClose={onClose}>
+    <ModalDialog title="Restore" className="w-125" onClose={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will replace all existing Talisman data with the data from your backup file.
@@ -63,7 +63,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
           <p>Warning: All existing data will be erased and replaced.</p>
         </div>
 
-        <div className="flex h-[4.625rem] flex-col justify-between rounded border border-grey-700 p-5">
+        <div className="flex h-18.5 flex-col justify-between rounded border border-grey-700 p-5">
           <div>
             <input type="file" accept=".json,application/json" onChange={handleChange}></input>
           </div>

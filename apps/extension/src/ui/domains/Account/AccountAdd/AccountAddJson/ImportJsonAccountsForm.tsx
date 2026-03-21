@@ -230,7 +230,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
       </div>
       <div
         className={classNames(
-          "scrollable scrollable-800 mt-6 flex max-h-[17.5rem] flex-col gap-4 overflow-y-auto",
+          "scrollable scrollable-800 mt-6 flex max-h-70 flex-col gap-4 overflow-y-auto",
           accounts.length > 4 && "pr-4"
         )}
       >

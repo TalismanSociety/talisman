@@ -79,7 +79,7 @@ export const Statistics = ({
   return (
     <div
       className={classNames(
-        "flex h-[6.25rem] w-[14.75rem] flex-col gap-4 rounded bg-black-secondary p-8",
+        "flex h-25 w-59 flex-col gap-4 rounded bg-black-secondary p-8",
         align === "right" ? "items-end" : "items-start",
         className
       )}
@@ -94,7 +94,7 @@ export const Statistics = ({
             type="button"
             className={classNames(
               "pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-grey-750 bg-grey-800 text-center text-body-secondary text-sm transition-colors duration-100 ease-out hover:bg-grey-700",
-              currencyConfig[currency]?.symbol?.length === 2 && "text-[0.625rem]",
+              currencyConfig[currency]?.symbol?.length === 2 && "text-tiny",
               currencyConfig[currency]?.symbol?.length > 2 && "text-[0.5rem]"
             )}
             onClick={(event) => {

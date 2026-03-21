@@ -49,11 +49,11 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   if (!token || !network || !summary) return null
 
   return (
-    <div className="group relative h-[4.125rem] w-full">
+    <div className="group relative h-16.5 w-full">
       <button
         type="button"
         className={classNames(
-          "grid h-[4.125rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded bg-grey-850 text-left text-base text-body-secondary hover:bg-grey-800"
+          "grid h-16.5 w-full grid-cols-[40%_30%_30%] overflow-hidden rounded bg-grey-850 text-left text-base text-body-secondary hover:bg-grey-800"
         )}
         onClick={handleClick}
       >
@@ -87,7 +87,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             )}
           </div>
         </div>
-        <div className="h-[4.125rem] text-right">
+        <div className="h-16.5 text-right">
           <AssetBalanceCellValue
             locked
             render={summary.lockedTokens.gt(0)}
@@ -102,7 +102,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             noCountUp={noCountUp}
           />
         </div>
-        <div className="flex h-[4.125rem] flex-col items-end justify-center gap-2 text-right">
+        <div className="flex h-16.5 flex-col items-end justify-center gap-2 text-right">
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -119,7 +119,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
       </button>
       {canBond ? (
         <>
-          <div className="absolute top-0 right-8 hidden h-[4.125rem] flex-col justify-center group-hover:flex">
+          <div className="absolute top-0 right-8 hidden h-16.5 flex-col justify-center group-hover:flex">
             <BondPillButton
               balances={balances}
               isPortfolio
@@ -134,7 +134,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
         </>
       ) : canEarn ? (
         <>
-          <div className="absolute top-0 right-8 hidden h-[4.125rem] flex-col justify-center group-hover:flex">
+          <div className="absolute top-0 right-8 hidden h-16.5 flex-col justify-center group-hover:flex">
             <PillButton
               onClick={openEarnModal}
               className="h-16 rounded-[28px] bg-primary/10 px-4 font-light text-base text-primary hover:bg-primary/20 [>svg]:text-[1.25rem]"

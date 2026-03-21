@@ -125,7 +125,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <div id="edit-contact-modal" className="h-[37.5rem] w-[25rem] overflow-hidden">
+      <div id="edit-contact-modal" className="h-150 w-100 overflow-hidden">
         <ModalDialog title={t("Edit contact")} className="size-full overflow-hidden">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
             <div className="grow">

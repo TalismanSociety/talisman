@@ -22,7 +22,7 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
       )}
     >
       <div>
-        <div className="flex h-[4.125rem]">
+        <div className="flex h-16.5">
           <div className="p-8 text-xl">
             <div className="h-16 w-16 animate-pulse rounded-full bg-grey-700"></div>
           </div>
@@ -34,8 +34,8 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
       <div></div>
       <div>
         <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-          <div className="h-8 w-[6.25rem] animate-pulse rounded-xs bg-grey-700"></div>
-          <div className="h-8 w-[3.75rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-8 w-25 animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-8 w-15 animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -87,7 +87,7 @@ const NoAssetsFound = () => {
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
   return (
-    <div className="mb-4 flex h-[4.125rem] flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
+    <div className="mb-4 flex h-16.5 flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
       {selectedAccount
         ? t("No assets were found on this account.")
         : selectedFolder
@@ -103,7 +103,7 @@ export const DashboardAssetsTable = () => {
   const location = useLocation()
 
   return (
-    <div key={location.key} className="min-w-[28.125rem] text-left text-base text-body-secondary">
+    <div key={location.key} className="min-w-112.5 text-left text-base text-body-secondary">
       {!symbolBalances.length && !isInitialising && <NoAssetsFound />}
       {!!symbolBalances.length && <HeaderRow />}
       <VirtualizedRows symbolBalances={symbolBalances} />

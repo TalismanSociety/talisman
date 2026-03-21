@@ -39,7 +39,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
   }, [])
 
   return (
-    <div className="flex min-w-[36.25rem] flex-col gap-6">
+    <div className="flex min-w-145 flex-col gap-6">
       <span className="text-body-secondary text-sm">
         {t("Only reveal your recovery phrase when in a secure location")}
       </span>

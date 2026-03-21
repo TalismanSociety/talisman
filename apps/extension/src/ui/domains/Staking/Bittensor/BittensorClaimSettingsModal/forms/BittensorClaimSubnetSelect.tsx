@@ -348,7 +348,7 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={classNames(
-        "flex h-[3.625rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus-visible:bg-grey-700",
+        "flex h-14.5 w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus-visible:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >

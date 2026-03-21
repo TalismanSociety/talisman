@@ -19,7 +19,7 @@ export const YieldxyzProviderLogo: FC<{
       </TooltipTrigger>
       {!!provider && (
         <TooltipContent>
-          <div className="flex max-w-[25rem] flex-col gap-2 p-2 text-body-secondary text-sm">
+          <div className="flex max-w-100 flex-col gap-2 p-2 text-body-secondary text-sm">
             <div className="text-body">{provider.name}</div>
             {!!provider.description && <p>{provider.description}</p>}
             {typeof provider.tvlUsd === "number" && <div>TVL: {provider.tvlUsd}</div>}
@@ -47,7 +47,7 @@ export const YieldxyzProviderDisplay: FC<{
       </TooltipTrigger>
       {!!provider && (
         <TooltipContent>
-          <div className="flex max-w-[25rem] flex-col gap-2 p-2 text-body-secondary text-sm">
+          <div className="flex max-w-100 flex-col gap-2 p-2 text-body-secondary text-sm">
             <div className="text-body">{provider.name}</div>
             {!!provider.description && <p>{provider.description}</p>}
             {typeof provider.tvlUsd === "number" && <div>TVL: {provider.tvlUsd}</div>}

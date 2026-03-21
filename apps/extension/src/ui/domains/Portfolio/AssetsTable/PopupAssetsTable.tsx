@@ -44,11 +44,11 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
       <div className="grow space-y-1">
         <div className="flex justify-between gap-1">
           <div className="h-7 w-20 animate-pulse rounded-xs bg-grey-700"></div>
-          <div className="h-7 w-[6.25rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-7 w-25 animate-pulse rounded-xs bg-grey-700"></div>
         </div>
         <div className="flex justify-between gap-1">
           <div className="h-7 w-10 animate-pulse rounded-xs bg-grey-700"></div>
-          <div className="h-7 w-[3.75rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-7 w-15 animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -143,7 +143,7 @@ const AssetRow: FC<{
           </div>
           <div
             className={classNames(
-              "flex min-w-[5rem] shrink-0 flex-col items-end gap-2 text-right",
+              "flex min-w-40 shrink-0 flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >

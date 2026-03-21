@@ -148,7 +148,7 @@ export function AccountTypeNetworkSearch({
           {selected && (
             <CloseIcon className="cursor-pointer text-base" onClick={() => setSelected(null)} />
           )}
-          <ComboboxOptions className="absolute top-24 left-0 z-10 h-[18.75rem] w-full overflow-scroll rounded-b bg-grey-850">
+          <ComboboxOptions className="absolute top-24 left-0 z-10 h-75 w-full overflow-scroll rounded-b bg-grey-850">
             {({ option: network }) =>
               network.id === "combobox-header" ? (
                 <ComboboxOption

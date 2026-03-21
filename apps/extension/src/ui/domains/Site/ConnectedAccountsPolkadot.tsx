@@ -88,7 +88,7 @@ export const ConnectedAccountsPolkadot: FC<{
           >
             {t("Disconnect All")}
           </button>
-          <div className="h-[0.625rem] w-0.5 bg-body-disabled"></div>
+          <div className="h-5 w-0.5 bg-body-disabled"></div>
           <button
             type="button"
             className="truncate text-body-secondary hover:text-grey-300"

@@ -31,7 +31,7 @@ export const DashboardNotification = ({
       {action && (
         <button
           type="button"
-          className="h-[1.875rem] whitespace-nowrap rounded-xl bg-primary px-8 py-2 text-black text-sm!"
+          className="h-7.5 whitespace-nowrap rounded-xl bg-primary px-8 py-2 text-black text-sm!"
           onClick={onActionClick}
         >
           {action}

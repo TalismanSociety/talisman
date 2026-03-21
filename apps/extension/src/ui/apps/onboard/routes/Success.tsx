@@ -20,12 +20,12 @@ export const SuccessPage = () => {
   const { completeOnboarding } = useOnboard()
 
   return (
-    <OnboardLayout analytics={SUCCESS_PAGE} className="min-h-[30rem] min-w-[36.875rem]">
-      <div className="flex w-[23.0625rem] flex-col items-center justify-center gap-12 p-12">
+    <OnboardLayout analytics={SUCCESS_PAGE} className="min-h-120 min-w-147.5">
+      <div className="flex w-92.25 flex-col items-center justify-center gap-12 p-12">
         <div className="whitespace-nowrap text-center text-lg uppercase">
           {t("Welcome, brave Seeker!")}
         </div>
-        <ImgSuccess className="h-[10.375rem] w-[15.5625rem]" />
+        <ImgSuccess className="h-41.5 w-62.25" />
         <div className="text-center text-body-secondary">
           {t("Your Talisman wallet awakens. Let the journey begin.")}
         </div>

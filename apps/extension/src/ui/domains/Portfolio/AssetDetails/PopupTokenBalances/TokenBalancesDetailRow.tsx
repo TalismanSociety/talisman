@@ -51,7 +51,7 @@ export const TokenBalancesDetailRow = ({
           </div>
         )}
         {!row.address && row.isLoading && !row.description && row.locked && (
-          <div className="h-[0.875rem] max-w-48 animate-pulse rounded-xs bg-grey-800" />
+          <div className="h-7 max-w-48 animate-pulse rounded-xs bg-grey-800" />
         )}
         {!row.address && row.description && (
           <div className="text-left text-xs">

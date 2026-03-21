@@ -87,7 +87,7 @@ export const BittensorSlippageForm: FC<{
         after={
           <div className="flex items-center gap-4">
             <div>%</div>
-            <PillButton className="h-[1.875rem] px-4" onClick={handleReset}>
+            <PillButton className="h-7.5 px-4" onClick={handleReset}>
               {t("Reset")}
             </PillButton>
           </div>

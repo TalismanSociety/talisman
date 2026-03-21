@@ -47,7 +47,7 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
         ) : data ? (
           <HoldersOverviewContent data={data} />
         ) : (
-          <div className="flex h-[12.5rem] items-center justify-center text-body-secondary">
+          <div className="flex h-50 items-center justify-center text-body-secondary">
             {t("Failed to fetch data")}
           </div>
         )}
@@ -59,7 +59,7 @@ export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
 type SubnetHoldersData = NonNullable<ReturnType<typeof useSubnetHolders>["data"]>
 
 const HoldersOverviewSkeleton = () => (
-  <div className="flex h-[12.5rem] items-stretch gap-14">
+  <div className="flex h-50 items-stretch gap-14">
     <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
       <MetricsFieldSkeleton withExtra />
       <MetricsFieldSkeleton withExtra />
@@ -91,7 +91,7 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex h-[12.5rem] items-stretch gap-14">
+    <div className="flex h-50 items-stretch gap-14">
       <div className="flex h-full w-1/3 shrink-0 flex-col items-start justify-between">
         <MetricsField
           label={t("Total Holders")}

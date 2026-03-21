@@ -115,7 +115,7 @@ const AddToAddressBookDrawerForm: FC<{
 
   return (
     <form
-      className="flex h-[16.75rem] flex-col justify-end rounded-t-xl bg-grey-800 p-12"
+      className="flex h-67 flex-col justify-end rounded-t-xl bg-grey-800 p-12"
       onSubmit={submitWithoutBubbleUp}
     >
       <header className="flex flex-col items-center justify-center gap-6">

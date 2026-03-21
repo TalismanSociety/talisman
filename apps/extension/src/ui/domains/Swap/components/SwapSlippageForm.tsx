@@ -37,7 +37,7 @@ export const SwapSlippageForm: FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <div>%</div>
             <PillButton
-              className="h-[1.875rem] px-4"
+              className="h-7.5 px-4"
               onClick={() => {
                 setSlippagePercent(SWAP_SLIPPAGE_DEFAULT)
                 setSlippageEdit(SWAP_SLIPPAGE_DEFAULT.toFixed(2))

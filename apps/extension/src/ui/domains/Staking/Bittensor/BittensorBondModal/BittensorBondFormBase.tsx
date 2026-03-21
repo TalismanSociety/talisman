@@ -303,7 +303,7 @@ const AmountEdit = () => {
                 <PillButton
                   onClick={toggleDisplayMode}
                   size="xs"
-                  className="h-[1.375rem] w-[1.375rem] rounded-full px-0! py-0!"
+                  className="h-11 w-11 rounded-full px-0! py-0!"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -313,7 +313,7 @@ const AmountEdit = () => {
               onClick={onSetMaxClick}
               disabled={!maxPlancks}
               size="xs"
-              className={classNames("h-[1.375rem] rounded-sm px-4! py-0!")}
+              className={classNames("h-11 rounded-sm px-4! py-0!")}
             >
               {t("Max")}
             </PillButton>

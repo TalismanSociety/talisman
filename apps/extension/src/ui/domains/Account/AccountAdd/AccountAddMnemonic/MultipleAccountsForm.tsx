@@ -72,7 +72,7 @@ export const AccountAddMnemonicAccountsForm = () => {
         text={t("Please select which account(s) you'd like to import.")}
       />
       <div className="flex flex-col gap-8">
-        <div className="h-[26.25rem]">
+        <div className="h-105">
           <DerivedFromMnemonicAccountPicker
             name={name}
             mnemonic={data.mnemonic}

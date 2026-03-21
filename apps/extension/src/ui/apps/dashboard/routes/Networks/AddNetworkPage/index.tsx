@@ -115,7 +115,7 @@ const NetworkCreateForm: FC = () => {
               disabled={!platform}
               after={
                 field.state.meta.isValidating && (
-                  <div className="mr-[-0.75rem] shrink-0 px-2">
+                  <div className="-mr-6 shrink-0 px-2">
                     <LoaderIcon className="animate-spin-slow transition-none" />
                   </div>
                 )

@@ -34,7 +34,7 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
 
   return (
     <div id="main" className="relative flex h-full w-full flex-col">
-      <div className="flex h-32 min-h-[4rem] w-full items-center px-12 text-body-secondary">
+      <div className="flex h-32 min-h-32 w-full items-center px-12 text-body-secondary">
         {showBackButton ? (
           <button
             type="button"

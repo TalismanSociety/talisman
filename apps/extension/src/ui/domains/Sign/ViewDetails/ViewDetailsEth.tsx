@@ -131,8 +131,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   if (!request) return null
 
   return (
-    <div className="flex max-h-[37.5rem] w-full flex-col gap-12 bg-grey-850 p-12">
-      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-sm leading-[1.25rem]">
+    <div className="flex max-h-150 w-full flex-col gap-12 bg-grey-850 p-12">
+      <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-sm leading-10">
         <div className="text-body-secondary">{t("Details")}</div>
         {!!decodedTx?.isContractCall && (
           <ViewDetailsField label={t("Contract type and method")}>

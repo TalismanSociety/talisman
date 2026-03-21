@@ -56,7 +56,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       ref={refImg}
       className={classNames(
         props.className,
-        "indent-[-999em] leading-[0]",
+        "indent-[-999em] leading-0",
         isLoading && "animate-pulse"
       )}
       loading="lazy"

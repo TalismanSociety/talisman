@@ -150,7 +150,7 @@ export const NavigationDrawer: FC = () => {
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
         <header className="box-border flex h-36 w-full items-center justify-between gap-6 border-grey-800 border-b px-12">
-          <TalismanWhiteLogo className="h-[1.5625rem] w-auto" />
+          <TalismanWhiteLogo className="h-6.25 w-auto" />
           <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
           <div className="grow"></div>
           <IconButton onClick={close} aria-label={t("Close menu")}>

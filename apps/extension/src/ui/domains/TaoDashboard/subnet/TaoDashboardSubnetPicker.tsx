@@ -90,7 +90,7 @@ export const SubnetPicker: React.FC<{
         <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
       </div>
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-        <div className="flex justify-between pr-12 pl-[3.75rem] text-body-disabled text-sm">
+        <div className="flex justify-between pr-12 pl-15 text-body-disabled text-sm">
           <div>{t("Name / Pool")}</div>
           <div>{t("Emissions / Alpha Price")}</div>
         </div>
@@ -201,7 +201,7 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={cn(
-        "flex h-[3.625rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-14.5 w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800 text-body-secondary"
       )}

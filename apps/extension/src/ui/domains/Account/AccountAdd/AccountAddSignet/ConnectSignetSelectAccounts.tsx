@@ -90,7 +90,7 @@ export const ConnectSignetSelectAccounts = () => {
       <HeaderBlock title="Confirm Import?" />
       <Spacer large />
 
-      <div className="grid w-full max-w-xl gap-[0.625rem]">
+      <div className="grid w-full max-w-xl gap-5">
         {vaults.map((vault) => (
           <button
             type="button"
