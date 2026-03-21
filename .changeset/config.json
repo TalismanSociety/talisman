@@ -2,10 +2,10 @@
   "$schema": "https://unpkg.com/@changesets/config@2.1.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [["@talismn/balances", "@talismn/balances-*"]],
+  "fixed": [],
   "linked": [],
   "access": "restricted",
   "baseBranch": "origin/dev",
   "updateInternalDependencies": "patch",
-  "ignore": ["@polkadot-api/descriptors", "balances-demo", "extension", "balances-bench"]
+  "ignore": ["@polkadot-api/descriptors", "extension", "balances-bench"]
 }
