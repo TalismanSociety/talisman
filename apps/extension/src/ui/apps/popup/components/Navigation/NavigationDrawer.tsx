@@ -208,7 +208,7 @@ export const NavigationDrawer: FC = () => {
             className="flex w-full flex-col items-center text-body-secondary hover:bg-grey-800 hover:text-body"
             onClick={handleLock}
           >
-            <div className="h-0 w-11/12 border-1 border-grey-800 border-t" />
+            <div className="h-0 w-11/12 border border-grey-800 border-t" />
             <div className="flex w-full items-center justify-center gap-4 p-10">
               <LockIcon className="text-md" />
               <span>{t("Lock Wallet")}</span>

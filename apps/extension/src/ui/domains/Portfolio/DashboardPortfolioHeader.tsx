@@ -111,13 +111,13 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           className="absolute top-0 left-0 z-0 size-full select-none rounded-sm opacity-30"
         />
       )}
-      <div className="z-[1] flex w-full flex-col gap-4 overflow-hidden font-inter">
+      <div className="z-1 flex w-full flex-col gap-4 overflow-hidden font-inter">
         <SelectionScope folder={selectedFolder} account={selectedAccount} />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
             type="button"
             className={classNames(
-              "pointer-events-auto flex size-[2.75rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
+              "pointer-events-auto flex size-[2.75rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228/1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250/1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
               currencyConfig[currency]?.symbol?.length > 2 && "text-base"
             )}
@@ -138,7 +138,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <DashboardTopActions analyticsPage={ANALYTICS_PAGE} className="z-[1]" />
+      <DashboardTopActions analyticsPage={ANALYTICS_PAGE} className="z-1" />
     </div>
   )
 }

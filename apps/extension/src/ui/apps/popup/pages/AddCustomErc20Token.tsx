@@ -96,7 +96,7 @@ export const AddCustomErc20Token = () => {
           <div className="mt-16">
             <CustomErc20TokenViewDetails token={request.token} network={network} />
           </div>
-          <div className="flex-grow"></div>
+          <div className="grow"></div>
           {!!request.warnings?.length && (
             <SignAlertMessage type="error" className="mt-8">
               {request.warnings.map((warning, i) => (

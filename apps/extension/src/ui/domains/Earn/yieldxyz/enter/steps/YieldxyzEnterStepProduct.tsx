@@ -114,7 +114,7 @@ const ProductRow: FC<{
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
-      <YieldxyzProviderLogo providerId={product.providerId} className="!text-xl shrink-0" />
+      <YieldxyzProviderLogo providerId={product.providerId} className="text-xl! shrink-0" />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex w-full flex-col gap-2 overflow-hidden">
           <div className="line-clamp-2">{product.metadata.name}</div>

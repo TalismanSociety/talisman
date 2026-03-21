@@ -298,7 +298,7 @@ const HeaderRow: FC<{
     // biome-ignore lint/a11y/useFocusableInteractive: child buttons are focusable
     <div
       role="row"
-      className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),16px] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
+      className="grid h-20 w-full grid-cols-[160px_minmax(100px,1fr)_minmax(100px,1fr)_minmax(80px,0.7fr)_minmax(90px,0.9fr)_minmax(80px,0.8fr)_minmax(70px,0.7fr)_minmax(60px,0.5fr)_minmax(70px,0.6fr)_16px] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
     >
       <HeaderCell
         sortOrder={getSortOrder("netuid")}
@@ -447,7 +447,7 @@ const SubnetRow: FC<{
         }
       }}
       className={cn(
-        "group grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),16px] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors",
+        "group grid h-32 w-full grid-cols-[160px_minmax(100px,1fr)_minmax(100px,1fr)_minmax(80px,0.7fr)_minmax(90px,0.9fr)_minmax(80px,0.8fr)_minmax(70px,0.7fr)_minmax(60px,0.5fr)_minmax(70px,0.6fr)_16px] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors",
         !isRoot && "cursor-pointer hover:bg-grey-800"
       )}
     >

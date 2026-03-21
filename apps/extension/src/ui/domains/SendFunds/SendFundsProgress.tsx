@@ -54,7 +54,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
           size="sm"
           onClick={handleShowDrawer("speed-up")}
           icon={RocketIcon}
-          className="!p-4"
+          className="p-4!"
         >
           {t("Speed Up")}
         </PillButton>
@@ -62,7 +62,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
           size="sm"
           onClick={handleShowDrawer("cancel")}
           icon={XCircleIcon}
-          className="!p-4"
+          className="p-4!"
         >
           {t("Cancel Transfer")}
         </PillButton>

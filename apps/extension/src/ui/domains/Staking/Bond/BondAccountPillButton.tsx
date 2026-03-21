@@ -45,7 +45,7 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
     <PillButton className={classNames("h-16 max-w-full rounded px-4", className)} onClick={onClick}>
       <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         {address ? (
-          <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
+          <AccountIcon className="text-lg!" address={address} genesisHash={accountGenesisHash} />
         ) : (
           <UserIcon />
         )}

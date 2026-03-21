@@ -87,7 +87,7 @@ const NavButton: FC<{
       type="button"
       className={classNames(
         "flex items-center gap-4 text-body-inactive hover:text-body-secondary",
-        routeMatch && "!text-body",
+        routeMatch && "text-body!",
         className
       )}
       onClick={onClick}

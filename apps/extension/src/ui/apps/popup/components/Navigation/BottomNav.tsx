@@ -125,7 +125,7 @@ export const BottomNav = () => {
               label={t("Close")}
               icon={CloseIcon}
               onClick={closeQuickSettings}
-              className="!text-white"
+              className="text-white!"
             />
           ) : (
             <NavButton
@@ -159,7 +159,7 @@ const NavButton: FC<{
         "h-20 w-20 text-body-disabled",
         "enabled:hover:text-body-secondary",
         "enabled:focus-visible:border",
-        routeMatch && "!text-body",
+        routeMatch && "text-body!",
         className
       )}
       onClick={onClick}

@@ -44,8 +44,8 @@ export const ConnectedAccountsPill: FC = () => {
   const containerColors = useMemo(
     () =>
       count
-        ? "bg-gradient-to-r from-green-500/50 to-grey-800"
-        : "bg-gradient-to-r from-brand-orange/50 to-grey-800",
+        ? "bg-linear-to-r from-green-500/50 to-grey-800"
+        : "bg-linear-to-r from-brand-orange/50 to-grey-800",
     [count]
   )
 

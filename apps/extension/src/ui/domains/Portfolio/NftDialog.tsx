@@ -457,7 +457,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       className={classNames(
         "h-full w-full",
         "@2xl:overflow-hidden",
-        "bg-black shadow",
+        "bg-black shadow-sm",
         "@2xl:grid @2xl:grid-cols-2"
       )}
     >

@@ -72,7 +72,7 @@ export const AccountRow = ({
       <AccountIcon
         address={account.address}
         genesisHash={account.genesisHash}
-        className="!text-xl"
+        className="text-xl!"
       />
       <div className="flex grow items-center justify-between overflow-hidden">
         <div className="flex flex-col space-y-2">

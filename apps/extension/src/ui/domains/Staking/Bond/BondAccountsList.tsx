@@ -98,7 +98,7 @@ const AccountRow: FC<AccountRowProps> = ({
       <AccountIcon
         address={account.address}
         genesisHash={account.genesisHash}
-        className="!text-xl shrink-0"
+        className="text-xl! shrink-0"
       />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex flex-col space-y-2">

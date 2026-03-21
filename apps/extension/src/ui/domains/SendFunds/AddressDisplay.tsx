@@ -123,7 +123,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         )}
       >
         <AccountIcon
-          className={classNames("!text-lg", accountIconClassName)}
+          className={classNames("text-lg!", accountIconClassName)}
           address={resolvedAddress}
           genesisHash={getAccountGenesisHash(account)}
         />

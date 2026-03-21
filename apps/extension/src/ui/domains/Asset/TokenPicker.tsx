@@ -169,7 +169,7 @@ const TokenRow: FC<TokenRowProps> = ({
       )}
     >
       <div className="w-16 shrink-0">
-        <TokenLogo tokenId={token.id} className="!text-xl" />
+        <TokenLogo tokenId={token.id} className="text-xl!" />
       </div>
       <div className="flex grow flex-col gap-2.5 overflow-hidden">
         <div
@@ -184,8 +184,8 @@ const TokenRow: FC<TokenRowProps> = ({
             </div>
             <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
             {!!token.name && token.name !== token.symbol && (
-              // shrink-[9999] makes it so token.name is the primary thing that truncates, instead of the symbol
-              <div className="min-w-0 shrink-[9999] truncate font-normal text-body-inactive">
+              // shrink-9999 makes it so token.name is the primary thing that truncates, instead of the symbol
+              <div className="min-w-0 shrink-9999 truncate font-normal text-body-inactive">
                 {token.name}
               </div>
             )}

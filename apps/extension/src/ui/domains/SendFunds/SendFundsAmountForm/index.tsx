@@ -121,7 +121,7 @@ export const SendFundsAmountForm = () => {
           <div>{t("From")}</div>
           <div>
             <AddressPillButton
-              className="!max-w-[260px]"
+              className="max-w-[260px]!"
               address={from}
               genesisHash={genesisHash}
               onClick={handleGotoClick("from")}
@@ -132,7 +132,7 @@ export const SendFundsAmountForm = () => {
           <div>{t("To")}</div>
           <div className="flex items-center gap-4">
             <AddressPillButton
-              className="!max-w-[260px]"
+              className="max-w-[260px]!"
               address={to}
               genesisHash={genesisHash}
               onClick={handleGotoClick("to")}

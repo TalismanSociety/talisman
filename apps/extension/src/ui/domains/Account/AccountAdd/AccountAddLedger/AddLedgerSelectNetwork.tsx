@@ -52,7 +52,7 @@ const AppVersionButton: FC<{
     >
       <div
         className={classNames(
-          "text-base group-enabled:group-hover:text-body",
+          "text-base group-hover:group-enabled:text-body",
           selected && "text-body"
         )}
       >
@@ -231,7 +231,7 @@ export const AddLedgerSelectNetwork = () => {
                           </span>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="z-20 max-w-[20rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow">
+                      <TooltipContent className="z-20 max-w-[20rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow-sm">
                         <Trans
                           t={t}
                           defaults={

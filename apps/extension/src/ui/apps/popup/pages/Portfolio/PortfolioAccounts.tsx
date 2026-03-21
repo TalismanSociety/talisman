@@ -225,7 +225,7 @@ const AccountsToolbar = () => {
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "!bg-field !px-4 h-[2rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+            "bg-field! px-4! h-[2rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
             "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
           )}
           placeholder={t("Search account or folder")}
@@ -335,7 +335,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
         <ChevronLeftIcon />
       </IconButton>
       <div className="flex flex-col justify-center">
-        <CurrentAccountAvatar className="!text-2xl" />
+        <CurrentAccountAvatar className="text-2xl!" />
       </div>
       <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
         <div className="flex items-center gap-3">

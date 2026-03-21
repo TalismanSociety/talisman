@@ -47,7 +47,7 @@ export const DerivationModeDropdown: FC<{
       disabled={disabled}
       onChange={handleChange}
       className={classNames("group", className)}
-      buttonClassName="h-28 bg-field px-12 enabled:group-hover:!text-grey-300 disabled:text-body-disabled"
+      buttonClassName="h-28 bg-field px-12 group-hover:enabled:text-grey-300! disabled:text-body-disabled"
       optionClassName="h-28 bg-field px-12"
       value={current}
       renderItem={(o) => (

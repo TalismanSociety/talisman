@@ -71,7 +71,7 @@ export const PolkadotSignMessageRequest = () => {
                 <AccountPill account={account} ss58Format={chain?.prefix ?? undefined} />
                 {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
-              <Message className="w-full flex-grow" text={messageText} />
+              <Message className="w-full grow" text={messageText} />
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
           </>

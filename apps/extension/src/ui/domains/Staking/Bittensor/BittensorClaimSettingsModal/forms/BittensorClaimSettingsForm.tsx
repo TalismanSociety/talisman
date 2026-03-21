@@ -87,7 +87,7 @@ export const BittensorClaimSettingsForm = () => {
       <div className="mt-4 flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-body text-sm leading-[1.1]">{t("Reward Type")}</span>
-          <span className="text-body-secondary text-xs leading-[1.4]">
+          <span className="text-body-secondary text-xs leading-paragraph">
             {t("Select how this account receives root emission rewards.")}
           </span>
         </div>
@@ -113,10 +113,10 @@ export const BittensorClaimSettingsForm = () => {
                 )}
               >
                 <div className="flex flex-col gap-1 pr-10">
-                  <span className="font-semibold text-[14px] text-body leading-[1.2]">
+                  <span className="font-semibold text-[14px] text-body leading-base">
                     {option.title}
                   </span>
-                  <span className="text-[12px] text-body-secondary leading-[1.4]">
+                  <span className="text-[12px] text-body-secondary leading-paragraph">
                     {option.description}
                   </span>
                 </div>

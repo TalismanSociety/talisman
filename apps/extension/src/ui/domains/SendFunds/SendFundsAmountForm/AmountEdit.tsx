@@ -275,7 +275,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
                 <PillButton
                   onClick={toggleIsTokenEdit}
                   size="xs"
-                  className="!px-0 !py-0 h-[1.375rem] w-[1.375rem] rounded-full"
+                  className="px-0! py-0! h-[1.375rem] w-[1.375rem] rounded-full"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -285,7 +285,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("!px-4 !py-0 h-[1.375rem] rounded-sm")}
+              className={classNames("px-4! py-0! h-[1.375rem] rounded-sm")}
             >
               {t("Max")}
             </PillButton>

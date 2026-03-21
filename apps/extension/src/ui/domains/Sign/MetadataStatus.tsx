@@ -83,13 +83,13 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
 }
 
 const LoadingAlert = ({ children }: { children: ReactNode }) => (
-  <SignAlertMessage className="!my-6" type="warning" iconSize="base" processing>
+  <SignAlertMessage className="my-6!" type="warning" iconSize="base" processing>
     {children}
   </SignAlertMessage>
 )
 
 const ErrorAlert = ({ children }: { children: ReactNode }) => (
-  <SignAlertMessage className="!my-6" type="error" iconSize="base">
+  <SignAlertMessage className="my-6!" type="error" iconSize="base">
     {children}
   </SignAlertMessage>
 )

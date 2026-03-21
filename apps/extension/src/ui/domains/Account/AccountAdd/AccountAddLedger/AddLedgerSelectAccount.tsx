@@ -190,7 +190,7 @@ export const AddLedgerSelectAccount = () => {
 
   return (
     <form className="flex flex-col gap-12" onSubmit={handleSubmit(submit)}>
-      <div className="flex-grow">
+      <div className="grow">
         <h1 className="m-0">{t("Connect Ledger")}</h1>
         {(data.platform === "ethereum" || data.platform === "solana") && (
           <>

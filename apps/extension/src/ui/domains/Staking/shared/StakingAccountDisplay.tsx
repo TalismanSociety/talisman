@@ -89,7 +89,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
         )}
       >
         <AccountIcon
-          className="!text-lg"
+          className="text-lg!"
           address={resolvedAddress}
           genesisHash={getAccountGenesisHash(account)}
         />

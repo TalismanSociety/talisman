@@ -48,7 +48,7 @@ const MnemonicFormInner = () => {
         <Checkbox
           disabled={!canConfirm}
           onChange={(e) => setConfirmed(e.target.checked)}
-          className="!gap-8 text-body-secondary text-sm hover:text-body [&>span]:leading-paragraph"
+          className="gap-8! text-body-secondary text-sm hover:text-body [&>span]:leading-paragraph"
         >
           {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>

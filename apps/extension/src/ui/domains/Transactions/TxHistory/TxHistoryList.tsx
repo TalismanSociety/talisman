@@ -193,13 +193,13 @@ const TxIconContainer = ({
         {!!networkId && (
           <NetworkLogo
             networkId={networkId}
-            className="!absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border border-grey-800 bg-grey-900"
+            className="absolute! top-[-4px] right-[-4px] h-8 w-8 rounded-full border border-grey-800 bg-grey-900"
           />
         )}
       </div>
     </TooltipTrigger>
     {!!tooltip && (
-      <TooltipContent className="z-20 rounded-xs bg-grey-700 p-3 text-xs shadow">
+      <TooltipContent className="z-20 rounded-xs bg-grey-700 p-3 text-xs shadow-sm">
         {tooltip}
       </TooltipContent>
     )}
@@ -221,7 +221,7 @@ const TransactionLogo: FC<{
   if (siteUrl) {
     return (
       <TxIconContainer tooltip={siteUrl} networkId={networkId}>
-        <Favicon siteUrl={siteUrl} className="!size-16" />
+        <Favicon siteUrl={siteUrl} className="size-16!" />
       </TxIconContainer>
     )
   }
@@ -234,14 +234,14 @@ const TransactionLogo: FC<{
           networkId={swap.fromToken.networkId}
           className="z-10" // badge is on top right so we need the left token to be above the right token
         >
-          <TokenLogo tokenId={swap.fromToken.id} className="!size-16" />
+          <TokenLogo tokenId={swap.fromToken.id} className="size-16!" />
         </TxIconContainer>
         <TxIconContainer
           className="-ml-4"
           tooltip={swap.toTooltip}
           networkId={swap.toToken.networkId}
         >
-          <TokenLogo tokenId={swap.toToken.id} className="!size-16" />
+          <TokenLogo tokenId={swap.toToken.id} className="size-16!" />
         </TxIconContainer>
       </div>
     )
@@ -253,14 +253,14 @@ const TransactionLogo: FC<{
         tooltip={networkName ? `${transferToken.symbol} on ${networkName}` : undefined}
         networkId={networkId}
       >
-        <TokenLogo tokenId={transferToken.id} className="!size-16" />
+        <TokenLogo tokenId={transferToken.id} className="size-16!" />
       </TxIconContainer>
     )
   }
 
   return (
     <TxIconContainer tooltip={networkName}>
-      <NetworkLogo networkId={networkId} className="!size-16" />
+      <NetworkLogo networkId={networkId} className="size-16!" />
     </TxIconContainer>
   )
 }

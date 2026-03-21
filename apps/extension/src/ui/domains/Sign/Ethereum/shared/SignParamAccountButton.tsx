@@ -27,18 +27,18 @@ export const SignParamAccountButton: FC<SignParamAccountButtonProps> = ({
       iconPrefix={
         account ? (
           <AccountIcon
-            className="!h-[1.0313rem] !text-[1.0313rem] !leading-none"
+            className="h-[1.0313rem]! text-[1.0313rem]! leading-none!"
             address={account.address}
           />
         ) : (
           <AccountIcon
             type="polkadot-identicon"
-            className="!h-[1.0313rem] !text-[1.0313rem] !leading-none"
+            className="h-[1.0313rem]! text-[1.0313rem]! leading-none!"
             address={address}
           />
         )
       }
-      contentClassName={isInvalidAddress ? "!text-alert-warn" : undefined}
+      contentClassName={isInvalidAddress ? "text-alert-warn!" : undefined}
     >
       {account?.name ? (
         <Tooltip>

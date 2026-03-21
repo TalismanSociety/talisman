@@ -154,7 +154,7 @@ const Scanner = ({
         ref={preview}
         className={classNames(
           "absolute h-full w-full -scale-x-100 object-cover",
-          blur && "blur-sm"
+          blur && "blur-xs"
         )}
       />
       {inputDevices.length > 1 ? (

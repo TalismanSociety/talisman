@@ -40,12 +40,12 @@ export const DashboardEarnPage: FC = () => {
 
       {/* Tabs and Search in same row */}
       <div className="mb-6 flex w-full items-center justify-between overflow-hidden">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <EarnTabsDashboard />
         </div>
         <div className="w-[17.5rem]">
           <SearchInput
-            containerClassName="h-[2.25rem] w-full rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+            containerClassName="h-[2.25rem] w-full rounded-sm border px-4! bg-field! ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
             className="text-sm"
             placeholder={t("Search")}
             onChange={setSearch}

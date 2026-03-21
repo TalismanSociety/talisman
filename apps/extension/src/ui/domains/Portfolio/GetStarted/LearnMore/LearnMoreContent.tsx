@@ -25,7 +25,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onManageAccountsClick} />}
       >
         <img
-          className="aspect-[318/156] w-full rounded bg-body-black"
+          className="aspect-318/156 w-full rounded bg-body-black"
           alt="demo screenshot"
           src={MakeItYoursUrl}
         />
@@ -37,7 +37,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onCurrenciesClick} />}
       >
         <img
-          className="aspect-[318/156] w-full rounded bg-body-black"
+          className="aspect-318/156 w-full rounded bg-body-black"
           alt="demo screenshot"
           src={SeamlessUserExperienceUrl}
         />
@@ -49,7 +49,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onAddHardwareClick} />}
       >
         <img
-          className="aspect-[318/156] w-full rounded bg-body-black"
+          className="aspect-318/156 w-full rounded bg-body-black"
           alt="demo screenshot"
           src={WorksWithExternalDevicesUrl}
         />
@@ -61,7 +61,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onMnemonicsClick} />}
       >
         <img
-          className="aspect-[318/156] w-full rounded bg-body-black"
+          className="aspect-318/156 w-full rounded bg-body-black"
           alt="demo screenshot"
           src={AdvancedAccountManagementUrl}
         />
@@ -79,7 +79,7 @@ export const LearnMoreContent: FC<{
         }
       >
         <img
-          className="aspect-[318/156] w-full rounded bg-body-black"
+          className="aspect-318/156 w-full rounded bg-body-black"
           alt="demo screenshot"
           src={SafeguardYourAssetsUrl}
         />

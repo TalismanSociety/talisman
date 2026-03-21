@@ -119,7 +119,7 @@ const PriorityOption = ({
       onClick={onClick}
       type="button"
       className={classNames(
-        "mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-none hover:bg-grey-700 hover:text-white",
+        "mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-hidden hover:bg-grey-700 hover:text-white",
         selected ? "bg-grey-700 text-white" : "bg-grey-750 text-body-secondary"
       )}
     >

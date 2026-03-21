@@ -54,7 +54,7 @@ export const ContactNetworkPickerButton: FC<{
         onClick={open}
       >
         <div>
-          <NetworkLogo networkId={option?.id} className="text-[1.5rem]" />
+          <NetworkLogo networkId={option?.id} className="text-lg" />
         </div>
         <div className="grow truncate text-left text-body">{option?.name ?? t("All Networks")}</div>
         <ChevronRightIcon className="size-12" />

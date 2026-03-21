@@ -46,7 +46,7 @@ export const Modal: FC<ModalProps> = ({
       <TransitionChild
         as="div"
         className={classNames(
-          "top-0 left-0 z-20 h-full w-full bg-grey-900/50 backdrop-blur-sm",
+          "top-0 left-0 z-20 h-full w-full bg-grey-900/50 backdrop-blur-xs",
           containerId ? "absolute" : "fixed",
           onDismiss && "cursor-pointer"
         )}
@@ -71,7 +71,7 @@ export const Modal: FC<ModalProps> = ({
           as="div"
           className={classNames(
             "pointer-events-auto overflow-hidden",
-            containerId ? "max-h-full max-w-full" : "max-h-[100dvh] max-w-[dvw]",
+            containerId ? "max-h-full max-w-full" : "max-h-dvh max-w-[dvw]",
             className
           )}
           enter="ease-out duration-200"

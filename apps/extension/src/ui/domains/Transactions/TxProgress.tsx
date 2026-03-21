@@ -60,7 +60,7 @@ const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete
           size="sm"
           onClick={handleShowDrawer("speed-up")}
           icon={RocketIcon}
-          className="!p-4"
+          className="p-4!"
         >
           {t("Speed Up")}
         </PillButton>
@@ -68,7 +68,7 @@ const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete
           size="sm"
           onClick={handleShowDrawer("cancel")}
           icon={XCircleIcon}
-          className="!p-4"
+          className="p-4!"
         >
           {t("Cancel Transaction")}
         </PillButton>

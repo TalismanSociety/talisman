@@ -41,7 +41,7 @@ const SignMessage = ({
         <br />
         <AccountPill account={account} />
       </h2>
-      <Message className="mt-8 w-full flex-grow" text={data} />
+      <Message className="mt-8 w-full grow" text={data} />
     </div>
   )
 }

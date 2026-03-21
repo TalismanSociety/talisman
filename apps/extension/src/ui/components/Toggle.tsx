@@ -42,7 +42,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
         <div
           className={classNames(
             "peer box-content shrink-0 rounded-full border-2 border-transparent bg-grey-600",
-            "peer-focus:outline-none peer-focus-visible:border-body",
+            "peer-focus:outline-hidden peer-focus-visible:border-body",
             "peer-checked:after:translate-x-full peer-checked:after:bg-primary",
             "relative after:absolute after:top-1 after:left-1 after:rounded-full after:bg-grey-800 after:transition-all after:content-['']",
             VARIANTS[variant]

@@ -96,9 +96,9 @@ const DefaultView: FC<{
           <div className="mt-4">{t("Documentation")}</div>
           <div
             className={classNames(
-              "!text-xs flex w-full flex-col gap-2 overflow-hidden",
+              "text-xs! flex w-full flex-col gap-2 overflow-hidden",
               "[&_code]:text-body [&_em]:text-body [&_h1]:text-xs [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_h5]:text-xs [&_ul]:list-disc [&_ul]:pl-10",
-              "[overflow-wrap:anywhere]"
+              "wrap-anywhere"
             )}
           >
             {htmlParser(docs)}

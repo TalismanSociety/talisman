@@ -38,13 +38,13 @@ export const NavItem: FC<NavItemProps> = ({
   const content = (
     <>
       {iconContainer}
-      <div className={classNames("flex-grow", contentClassName)}>{children}</div>
+      <div className={classNames("grow", contentClassName)}>{children}</div>
     </>
   )
 
   const isNavLink = to !== undefined
   const navClassName = classNames(
-    "flex h-28 w-full shrink-1 items-center justify-start gap-4 rounded-sm p-4 text-left text-body-secondary hover:bg-grey-800 hover:text-body",
+    "flex h-28 w-full shrink items-center justify-start gap-4 rounded-sm p-4 text-left text-body-secondary hover:bg-grey-800 hover:text-body",
     isNavLink && "[&.active]:text-body",
     className
   )

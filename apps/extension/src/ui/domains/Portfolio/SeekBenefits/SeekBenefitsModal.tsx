@@ -36,7 +36,7 @@ export const SeekBenefitsModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black shadow",
+        "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black shadow-sm",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border"
       )}
       containerId={IS_POPUP ? "main" : undefined}
@@ -69,7 +69,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [remoteConfig.seek.tradeUrl])
 
   return (
-    <div className="relative size-full rounded-none border-none bg-gradient-to-b from-[#505F2E] to-40% to-transparent [&>header>h1]:text-md">
+    <div className="relative size-full rounded-none border-none bg-linear-to-b from-[#505F2E] to-40% to-transparent [&>header>h1]:text-md">
       <IconButton onClick={onClose} className="absolute top-6 right-6 z-10">
         <XIcon />
       </IconButton>

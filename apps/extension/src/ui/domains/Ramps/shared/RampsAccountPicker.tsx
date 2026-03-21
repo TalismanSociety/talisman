@@ -221,7 +221,7 @@ const AccountButtonRow: FC<{
       <AccountIcon
         address={account.address}
         genesisHash={getAccountGenesisHash(account)}
-        className="!text-xl"
+        className="text-xl!"
       />
       <div className="flex grow items-center justify-between overflow-hidden">
         <div className="flex grow flex-col space-y-2 overflow-hidden">

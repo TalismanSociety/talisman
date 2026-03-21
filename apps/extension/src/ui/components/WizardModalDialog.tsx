@@ -26,7 +26,7 @@ export const WizardModalDialog: FC<{
         <IconButton onClick={onBackClick} className={cn(onBackClick ? "visible" : "invisible")}>
           <ChevronLeftIcon />
         </IconButton>
-        <h1 className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-center font-bold text-base">
+        <h1 className="grow overflow-hidden text-ellipsis whitespace-nowrap text-center font-bold text-base">
           {title}
         </h1>
         <IconButton onClick={onCloseClick} className={cn(onCloseClick ? "visible" : "invisible")}>
@@ -35,7 +35,7 @@ export const WizardModalDialog: FC<{
       </header>
       <div
         className={cn(
-          "scrollable scrollable-800 flex-grow overflow-auto p-10 pt-0",
+          "scrollable scrollable-800 grow overflow-auto p-10 pt-0",
           contentClassName
         )}
       >

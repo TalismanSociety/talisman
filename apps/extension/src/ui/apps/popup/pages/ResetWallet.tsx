@@ -65,7 +65,7 @@ const ConfirmDrawer = ({
         <div className="mt-12 flex flex-col gap-8">
           <Button
             type="submit"
-            className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80 h-24 enabled:text-white"
+            className="enabled:bg-brand-orange! hover:enabled:bg-brand-orange/80! h-24 enabled:text-white"
             fullWidth
             onClick={handleReset}
             primary={isMatch}
@@ -96,10 +96,10 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
     <PopupLayout>
       <div className="flex h-32 items-center justify-center px-12 pr-[16px] text-body-secondary">
         <ChevronLeftIcon
-          className="flex-shrink cursor-pointer text-lg hover:text-white"
+          className="shrink cursor-pointer text-lg hover:text-white"
           onClick={closeResetWallet}
         />
-        <span className="flex-grow pr-[24px] text-center">{t("Reset Wallet")}</span>
+        <span className="grow pr-[24px] text-center">{t("Reset Wallet")}</span>
       </div>
       <PopupContent>
         <div className="flex h-full flex-col items-center justify-end gap-16 pb-8">

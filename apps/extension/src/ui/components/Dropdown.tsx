@@ -55,7 +55,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
               buttonClassName
             )}
           >
-            <div className="flex flex-grow flex-col justify-center overflow-hidden">
+            <div className="flex grow flex-col justify-center overflow-hidden">
               {value ? renderItem(value, propertyLabel) : placeholder}
             </div>
             {!disabled && <ChevronDownIcon className="shrink-0 text-[1.2em]" />}
@@ -69,7 +69,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
                     value={item}
                     className={classNames(
                       "w-full max-w-full cursor-pointer overflow-hidden bg-grey-800 p-8 hover:bg-grey-750 hover:text-grey-300",
-                      "flex-grow flex-col justify-center",
+                      "grow flex-col justify-center",
                       i === arr.length - 1 && "rounded-b-sm",
                       optionClassName
                     )}

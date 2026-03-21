@@ -19,7 +19,7 @@ const AlertCard = ({ className, onAccept }: Props) => {
   const { t } = useTranslation()
   return (
     <Card
-      className={classNames("!rounded-b-none text-center text-body-secondary", className)}
+      className={classNames("rounded-b-none! text-center text-body-secondary", className)}
       title={
         <div className="flex flex-col items-center p-2">
           <LockIcon className="icon inline-block p-1 text-3xl text-primary" />

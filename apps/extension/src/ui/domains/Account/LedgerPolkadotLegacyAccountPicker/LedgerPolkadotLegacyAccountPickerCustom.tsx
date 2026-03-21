@@ -172,7 +172,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
               {accountDef ? (
                 <>
                   <AccountIcon address={accountDef.address} className="text-xl" />
-                  <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+                  <div className="flex grow flex-col gap-2 overflow-hidden">
                     <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                       {accountDef.name}
                     </div>
@@ -210,7 +210,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
               ) : connectionStatus.status === "connecting" ? (
                 <>
                   <div className="size-[2rem] animate-pulse rounded-full bg-grey-750" />
-                  <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+                  <div className="flex grow flex-col gap-2 overflow-hidden">
                     <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                       <span className="animate-pulse select-none rounded-xs bg-grey-750 text-grey-750">
                         Account Name

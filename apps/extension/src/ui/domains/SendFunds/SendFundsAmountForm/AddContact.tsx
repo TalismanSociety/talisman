@@ -29,7 +29,7 @@ export const AddContact = ({ tokenGenesisHash }: { tokenGenesisHash?: HexString 
       <PillButton
         onClick={addressBookContactDrawer.open}
         size={"base"}
-        className="!rounded !px-4 h-16"
+        className="rounded! px-4! h-16"
         icon={UserPlusIcon}
       >
         {t("Add")}

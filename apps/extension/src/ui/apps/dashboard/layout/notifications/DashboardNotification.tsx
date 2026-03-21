@@ -24,14 +24,14 @@ export const DashboardNotification = ({
       {icon && (
         <div className="flex flex-col justify-center text-[2.375rem] text-primary">{icon}</div>
       )}
-      <div className="flex-grow">
+      <div className="grow">
         <span className="mr-4">{title}</span>
         <span className="text-body-secondary">{description}</span>
       </div>
       {action && (
         <button
           type="button"
-          className="!text-sm h-[1.875rem] whitespace-nowrap rounded-xl bg-primary px-8 py-2 text-black"
+          className="text-sm! h-[1.875rem] whitespace-nowrap rounded-xl bg-primary px-8 py-2 text-black"
           onClick={onActionClick}
         >
           {action}

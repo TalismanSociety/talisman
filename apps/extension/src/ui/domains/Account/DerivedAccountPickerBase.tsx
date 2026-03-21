@@ -82,7 +82,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       onClick={onClick}
     >
       <AccountIcon address={formattedAddress} genesisHash={genesisHash} className="text-xl" />
-      <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+      <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</div>
         <div className="text-body-secondary text-sm">
           <Address address={formattedAddress} startCharCount={6} endCharCount={6} />
@@ -107,7 +107,7 @@ const AccountButton: FC<AccountButtonProps> = ({
         {connected ? (
           <CheckCircleIcon className="text-lg text-primary" />
         ) : (
-          <Checkbox checked={selected} readOnly className="[&>input]:!border-body-disabled" />
+          <Checkbox checked={selected} readOnly className="[&>input]:border-body-disabled!" />
         )}
       </div>
     </button>

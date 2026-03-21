@@ -24,7 +24,7 @@ const AccountTypeButton: FC<{
     onClick={onClick}
   >
     <div className="text-xl">{icon}</div>
-    <div className="flex flex-grow flex-col justify-center gap-2">
+    <div className="flex grow flex-col justify-center gap-2">
       <div className="text-base text-body">{title}</div>
       <div className="text-body-secondary text-xs">{subtitle}</div>
     </div>

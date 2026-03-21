@@ -147,7 +147,7 @@ const TreeItemFolder: FC<{
     <div className={classNames("@container relative flex flex-col rounded-sm bg-grey-850 pt-2")}>
       <div
         className={classNames(
-          "flex h-[3.3125rem] items-center gap-8 overflow-hidden border-[1px] border-transparent px-8 pb-0"
+          "flex h-[3.3125rem] items-center gap-8 overflow-hidden border border-transparent px-8 pb-0"
         )}
       >
         <AccountFolderIcon className="shrink-0 text-xl" />

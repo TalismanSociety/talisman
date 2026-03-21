@@ -28,7 +28,7 @@ const ProtocolOptionRow: FC<{
       className={classNames(
         "flex h-24 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
-        isSelected && "!bg-grey-700"
+        isSelected && "bg-grey-700!"
       )}
     >
       {isAllProtocolsOption(option) ? (
@@ -192,7 +192,7 @@ export const ProtocolOptionsModal: FC<{
       onDismiss={onClose}
       className={classNames(
         "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow-sm"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}
     >

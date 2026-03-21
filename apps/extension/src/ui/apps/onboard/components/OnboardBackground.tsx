@@ -28,7 +28,7 @@ export const OnboardBackground = () => {
 
   return (
     <div
-      className="fixed top-0 left-0 z-0 h-lvh w-lvw transition-opacity duration-[1s] ease-linear"
+      className="fixed top-0 left-0 z-0 h-lvh w-lvw transition-opacity duration-1000 ease-linear"
       style={style}
     ></div>
   )

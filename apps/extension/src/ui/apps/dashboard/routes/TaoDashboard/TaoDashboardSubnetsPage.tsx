@@ -25,7 +25,7 @@ export const TaoDashboardSubnetsPage = () => {
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
           <div>
             <SearchInput
-              containerClassName="h-[2.25rem] rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+              containerClassName="h-[2.25rem] rounded-sm border px-4! bg-field! ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
               className="text-sm"
               placeholder={t("Search Subnet")}
               onChange={setSearch}

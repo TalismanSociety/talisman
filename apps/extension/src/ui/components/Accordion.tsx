@@ -24,7 +24,7 @@ export const AccordionIcon: FC<{ isOpen: boolean; className?: string }> = ({
   <div
     className={classNames(
       "transition-transform duration-300 ease-in-out",
-      isOpen ? "rotate-0" : "rotate-[-90deg]",
+      isOpen ? "rotate-0" : "-rotate-90",
       className
     )}
   >

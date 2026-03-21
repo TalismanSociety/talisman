@@ -8,7 +8,7 @@ export const Complete = () => {
 
   return (
     <MnemonicBackupModalBase>
-      <div className="!w-[35rem]">
+      <div className="w-[35rem]!">
         <VerificationComplete onComplete={close} />
       </div>
     </MnemonicBackupModalBase>

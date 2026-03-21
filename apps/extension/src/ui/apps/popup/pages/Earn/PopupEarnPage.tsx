@@ -145,7 +145,7 @@ export const PopupEarnPage: FC = () => {
             <EarnTabs onTabChange={handleTabChange} value={selectedTab} />
             <div className="w-full">
               <SearchInput
-                containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
+                containerClassName="bg-field! ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs px-4!"
                 className="text-xs"
                 placeholder={t("Search DeFi positions")}
                 onChange={setSearch}

@@ -75,10 +75,10 @@ const HoldersOverviewSkeleton = () => (
           <span className="l text-white text-xs">
             <Skeleton className="w-56" />
           </span>
-          <span className="font-medium text-lg text-white leading-[1.2]">
+          <span className="font-medium text-lg text-white leading-base">
             <Skeleton className="w-20" />
           </span>
-          <span className="font-bold text-sm leading-[1.2]">
+          <span className="font-bold text-sm leading-base">
             <Skeleton className="w-36" />
           </span>
         </div>
@@ -243,7 +243,7 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
               key={tier.key}
               role="button"
               tabIndex={0}
-              className="cursor-pointer outline-none"
+              className="cursor-pointer outline-hidden"
               onMouseEnter={() => handleHover(tier.key)}
               onFocus={() => handleHover(tier.key)}
             >
@@ -272,11 +272,11 @@ const HoldersDonutChart: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         <span className="l text-white text-xs">
           <TierLabel tier={activeTier} />
         </span>
-        <span className="font-medium text-lg text-white leading-[1.2]">
+        <span className="font-medium text-lg text-white leading-base">
           {formatCompactNumber(activeTierData.count)}
         </span>
         <span
-          className="font-bold text-sm leading-[1.2]"
+          className="font-bold text-sm leading-base"
           style={{ color: TIER_CONFIG[activeTier].color }}
         >
           {activeTierData.percent.toFixed(2)}%

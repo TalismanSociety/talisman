@@ -110,7 +110,7 @@ export const ConfigureAccount = () => {
         <FormFieldInputText
           type="text"
           placeholder={t("My Polkadot Vault Account")}
-          containerProps={{ className: "!h-28" }}
+          containerProps={{ className: "h-28!" }}
           small
           value={accountConfig.name}
           autoFocus
@@ -123,7 +123,7 @@ export const ConfigureAccount = () => {
             genesisHash={accountConfig.lockToNetwork ? accountConfig.genesisHash : undefined}
             className="text-xl"
           />
-          <div className="!items-start flex flex-col gap-2 overflow-hidden leading-8">
+          <div className="items-start! flex flex-col gap-2 overflow-hidden leading-8">
             <div className="flex w-full items-center gap-3 text-base text-body leading-none">
               <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
                 {accountConfig.name || t("My Polkadot Vault Account")}
@@ -172,7 +172,7 @@ export const ConfigureAccount = () => {
                 />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="z-20 w-[31.25rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs leading-paragraph shadow">
+            <TooltipContent className="z-20 w-[31.25rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs leading-paragraph shadow-sm">
               By default, derived accounts in Polkadot Vault are restricted to one network, based on
               derivation path. Root accounts can be used on any network. Select 'Derived Account' if
               you are not sure.

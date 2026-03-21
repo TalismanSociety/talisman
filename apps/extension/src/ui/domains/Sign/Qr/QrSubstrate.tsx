@@ -311,7 +311,7 @@ const SendPage = ({
       <div className="flex h-full flex-col items-center justify-end gap-6">
         <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-12">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <LoaderIcon className="!text-3xl animate-spin-slow text-body-secondary" />
+            <LoaderIcon className="text-3xl! animate-spin-slow text-body-secondary" />
           </div>
           {payload && (
             <SignPayloadQrCode account={account} payload={payload} shortMetadata={shortMetadata} />

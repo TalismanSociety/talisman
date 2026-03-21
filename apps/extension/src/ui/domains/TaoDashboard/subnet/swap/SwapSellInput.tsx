@@ -47,7 +47,7 @@ export const SwapSellInput: FC = () => {
         className={cn(
           "flex w-full flex-col gap-6 overflow-hidden rounded bg-black p-6",
           "border border-transparent",
-          inputErrorMessage && "!border-alert-error/50"
+          inputErrorMessage && "border-alert-error/50!"
         )}
       >
         <div className="flex w-full items-center justify-between gap-6 overflow-hidden">

@@ -1,11 +1,127 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@config '../../../tailwind.config.cjs';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* The components layer is for class-based styles that you want to be able to override with utilities. */
+/* Access to the (tailwind) theme is provided by theme() function if needed */
+@utility form-checkbox {
+  &input[type='checkbox']:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
+  }
+
+  /* we want focus state only for keyboard nav, so we disable :focus and use only :focus-visible */
+  &input[type='checkbox']:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+}
+
+/* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    display: none; /* chrome, safari, opera */
+  }
+  scrollbar-color: transparent transparent;
+  -ms-overflow-style: none; /* Edge */
+  scrollbar-width: none; /* Firefox */
+}
+@utility scrollable {
+  &::-webkit-scrollbar {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px currentColor;
+    border: solid 3px transparent;
+    border-radius: 25px;
+    cursor: pointer;
+  }
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  &::-webkit-resizer {
+    appearance: none;
+    display: none;
+  }
+  resize: none;
+  scrollbar-color: currentColor transparent;
+}
+@utility scrollable-500 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-500);
+  }
+  scrollbar-color: var(--color-grey-500) transparent;
+}
+@utility scrollable-600 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-600);
+  }
+  scrollbar-color: var(--color-grey-600) transparent;
+}
+@utility scrollable-700 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-700);
+  }
+  scrollbar-color: var(--color-grey-700) transparent;
+}
+@utility scrollable-800 {
+  &::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px var(--color-grey-800);
+  }
+  scrollbar-color: var(--color-grey-800) transparent;
+}
+@utility balance-revealable {
+  /*****************************************************************************
+   *                                Balances
+   ****************************************************************************/
+  @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent;
+
+  &.balance-reveal {
+    @apply overflow-visible rounded-none text-inherit;
+  }
+
+  &::after {
+    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden bg-cover bg-no-repeat opacity-15;
+    content: '';
+    /* ./blur.svg */
+    background-image: url('data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==');
+  }
+
+  &.balance-reveal::after {
+    @apply hidden;
+  }
+}
+@utility balance-reveal {
+  &.balance-revealable {
+    @apply overflow-visible rounded-none text-inherit;
+  }
+
+  &.balance-revealable::after {
+    @apply hidden;
+  }
+}
 
 /* The base layer is for things like reset rules or default styles applied to plain HTML elements. */
 @layer base {
   html {
-    scrollbar-color: theme("colors.grey.700") transparent;
+    scrollbar-color: var(--color-grey-700) transparent;
     @apply min-h-screen;
   }
 
@@ -69,103 +185,6 @@
   /* Would be great to remove this at some point */
   *:not(.allow-focus):focus {
     outline: none;
-  }
-}
-
-/* The components layer is for class-based styles that you want to be able to override with utilities. */
-/* Access to the (tailwind) theme is provided by theme() function if needed */
-@layer components {
-  input[type="checkbox"].form-checkbox:checked {
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
-  }
-
-  /* we want focus state only for keyboard nav, so we disable :focus and use only :focus-visible */
-  input[type="checkbox"].form-checkbox:focus:not(:focus-visible) {
-    box-shadow: none;
-  }
-}
-
-/* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    background-color: transparent;
-    display: none; /* chrome, safari, opera */
-  }
-  .no-scrollbar {
-    scrollbar-color: transparent transparent;
-    -ms-overflow-style: none; /* Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  .scrollable::-webkit-scrollbar {
-    background-color: transparent;
-  }
-  .scrollable::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px currentColor;
-    border: solid 3px transparent;
-    border-radius: 25px;
-    cursor: pointer;
-  }
-  .scrollable::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-  .scrollable::-webkit-resizer {
-    appearance: none;
-    display: none;
-  }
-  .scrollable {
-    resize: none;
-    scrollbar-color: currentColor transparent;
-  }
-
-  .scrollable-500::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.500");
-  }
-  .scrollable-500 {
-    scrollbar-color: theme("colors.grey.500") transparent;
-  }
-
-  .scrollable-600::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.600");
-  }
-  .scrollable-600 {
-    scrollbar-color: theme("colors.grey.600") transparent;
-  }
-
-  .scrollable-700::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.700");
-  }
-  .scrollable-700 {
-    scrollbar-color: theme("colors.grey.700") transparent;
-  }
-
-  .scrollable-800::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme("colors.grey.800");
-  }
-  .scrollable-800 {
-    scrollbar-color: theme("colors.grey.800") transparent;
-  }
-
-  /*****************************************************************************
-   *                                Balances
-   ****************************************************************************/
-  .balance-revealable {
-    @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent;
-  }
-
-  .balance-revealable.balance-reveal {
-    @apply overflow-visible rounded-none text-inherit;
-  }
-
-  .balance-revealable::after {
-    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden bg-cover bg-no-repeat opacity-[15%];
-    content: "";
-    /* ./blur.svg */
-    background-image: url("data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==");
-  }
-
-  .balance-revealable.balance-reveal::after {
-    @apply hidden;
   }
 }
 

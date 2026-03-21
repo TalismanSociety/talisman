@@ -94,7 +94,7 @@ export const NetworkCombo: FC<{
                 key={option.id}
                 value={option}
                 className={classNames(
-                  `relative flex h-24 w-full items-center gap-4 px-8 text-body-secondary hover:bg-grey-750 [&[data-focus]]:bg-grey-750 [&[data-selected]]:bg-grey-700 [&[data-selected]]:text-body`
+                  `relative flex h-24 w-full items-center gap-4 px-8 text-body-secondary hover:bg-grey-750 data-focus:bg-grey-750 data-selected:bg-grey-700 data-selected:text-body`
                 )}
               >
                 <NetworkLogo networkId={option.id} className="size-12" />

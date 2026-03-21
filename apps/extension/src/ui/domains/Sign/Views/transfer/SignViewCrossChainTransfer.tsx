@@ -43,7 +43,7 @@ const NetworkAndAccount: FC<{ networkId: string; networkName: string; address: s
 }) => (
   <div className="flex w-[150px] flex-col items-center gap-5 overflow-hidden">
     <div className="flex w-full items-center justify-center gap-2">
-      <NetworkLogo networkId={networkId} className="!h-9 !w-9 shrink-0" />
+      <NetworkLogo networkId={networkId} className="h-9! w-9! shrink-0" />
       <div className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-body text-md">
         {networkName}
       </div>

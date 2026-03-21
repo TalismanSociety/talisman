@@ -82,7 +82,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               <ArrowRightIcon size={14} />
             </a>
           </div>
-          <div className="flex justify-between rounded-[10px] border-[1px] border-[text-body-disabled] border-solid p-6">
+          <div className="flex justify-between rounded-[10px] border border-[text-body-disabled] border-solid p-6">
             <div className="flex items-center gap-4">
               <img
                 src={token?.logo ?? seekLogo}

@@ -185,7 +185,7 @@ const CurrencyButtonRowSkeleton: FC = () => {
   return (
     <div className="flex h-[3.625rem] w-full select-none items-center gap-4 px-12 text-left">
       <div className="flex items-center gap-8">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
         </div>
         <div className="min-w-0 space-y-2 text-[16px]">
