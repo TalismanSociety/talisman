@@ -23,7 +23,7 @@ import { BittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/Bitte
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
-import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
+import { SwapModal } from "@ui/domains/Swap/components/SwapModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
@@ -106,7 +106,7 @@ const Popup = () => {
         <LedgerPolkadotUpgradeAlertDrawer />
         <NomPoolWithdrawModal />
         <RampsModal />
-        <SwapTokensModal />
+        <SwapModal />
         <UnbondModal />
         <SeekBenefitsModal />
         <YieldxyzEnterPositionModal />

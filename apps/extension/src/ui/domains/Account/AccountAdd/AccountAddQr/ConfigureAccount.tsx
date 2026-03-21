@@ -9,7 +9,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 import {
   useActiveTokensState,
@@ -61,7 +61,7 @@ export const ConfigureAccount = () => {
   const activeTokens = useActiveTokensState()
 
   const chains = useNetworks({ platform: "polkadot", activeOnly: true, includeTestnets: true })
-  const balanceParams = useMemo<BalanceByParamsProps>(() => {
+  const balanceParams = useMemo<BalancesByParamsProps>(() => {
     if (state.type !== "CONFIGURE") return {}
 
     const { address, genesisHash, lockToNetwork } = state.accountConfig

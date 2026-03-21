@@ -1,5 +1,6 @@
 import type { AddressesAndTokens, BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useBalancesHydrate } from "@ui/state/balances"
@@ -17,14 +18,14 @@ const INITIAL_VALUE: BalanceSubscriptionResponse = {
 const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenIds: [] }
 
 // TODO merge addressesByChain and addressesandNetworks into a single addressesByNetwork object, or just remove both
-export type BalanceByParamsProps = {
+export type BalancesByParamsProps = {
   addressesAndTokens?: AddressesAndTokens
 }
 
 // This is used to fetch balances from accounts that are not in the keyring
 export const useBalancesByParams = ({
   addressesAndTokens = DEFAULT_TOKENS_AND_ADDRESSES,
-}: BalanceByParamsProps) => {
+}: BalancesByParamsProps) => {
   const hydrate = useBalancesHydrate()
 
   const subscribe = useCallback(
@@ -55,4 +56,23 @@ export const useBalancesByParams = ({
     }),
     [debouncedBalances, hydrate]
   )
+}
+
+type UseBalanceByParams = {
+  address: string | null | undefined
+  tokenId: TokenId | null | undefined
+}
+
+export const useBalanceByParams = ({ address, tokenId }: UseBalanceByParams) => {
+  const { balances } = useBalancesByParams({
+    addressesAndTokens: {
+      addresses: address ? [address] : [],
+      tokenIds: tokenId ? [tokenId] : [],
+    },
+  })
+
+  return useMemo(() => {
+    if (!address || !tokenId) return null
+    return balances.find({ address, tokenId }).each[0] ?? null
+  }, [balances, address, tokenId])
 }

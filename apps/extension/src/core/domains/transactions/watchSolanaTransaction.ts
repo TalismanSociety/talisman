@@ -8,7 +8,8 @@ import { createNotification } from "../../notifications"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { addSolTransaction, updateTransactionStatus } from "./helpers"
-import type { TransactionStatus, WatchTransactionOptions } from "./types"
+import type { TransactionStatus, WalletTransactionInfo, WatchTransactionOptions } from "./types"
+import { watchSwapStatus } from "./watchSwapStatus"
 
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,
@@ -32,7 +33,13 @@ export const watchSolanaTransaction = async (
 
     await addSolTransaction(networkId, transaction, { siteUrl, txInfo })
 
-    watchUntilFinalized(connection, signature, network.name, notifications ? txUrl : undefined)
+    watchUntilFinalized(
+      connection,
+      signature,
+      network.name,
+      notifications ? txUrl : undefined,
+      txInfo
+    )
   } catch (err) {
     log.error("Failed to watch Solana transaction (outer)", { err, networkId, transaction })
     sentry.captureException(err, { tags: { networkId } })
@@ -44,6 +51,7 @@ async function watchUntilFinalized(
   signature: string,
   networkName: string,
   notificationTxUrl?: string,
+  txInfo?: WalletTransactionInfo,
   maxRetries = 30,
   intervalMs = 2000
 ) {
@@ -70,6 +78,9 @@ async function watchUntilFinalized(
         await updateTransactionStatus(signature, txStatus, txDetails?.slot)
 
         if (notificationTxUrl) await createNotification("success", networkName, notificationTxUrl)
+
+        // Start watching exchange status for swap transactions
+        if (txInfo) watchSwapStatus(signature)
 
         // continue polling until finalized
       } else if (confirmationStatus === "finalized") {

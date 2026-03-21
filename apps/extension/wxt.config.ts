@@ -352,10 +352,6 @@ function createPackageSourceAliases(): Alias[] {
     // Map workspace packages to source for hot reload in dev (exact matches)
     { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
     {
-      find: "@talismn/balances-react",
-      replacement: resolve(packagesDir, "balances-react/src"),
-    },
-    {
       find: "@talismn/chain-connectors",
       replacement: resolve(packagesDir, "chain-connectors/src"),
     },

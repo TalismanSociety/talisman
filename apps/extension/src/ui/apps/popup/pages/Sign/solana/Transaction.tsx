@@ -30,7 +30,7 @@ import {
   type SolSignOutput,
   type SolSignPayload,
 } from "@ui/domains/Sign/SignLedgerSolana"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state/chaindata"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
@@ -200,7 +200,7 @@ const FeeEstimateRow: FC<{
     error,
   } = useEstimatedFee({ transaction, networkId, isLocked })
 
-  const balanceParams = useMemo<BalanceByParamsProps>(
+  const balanceParams = useMemo<BalancesByParamsProps>(
     () =>
       tokenId ? { addressesAndTokens: { addresses: [account.address], tokenIds: [tokenId] } } : {},
     [account.address, tokenId]

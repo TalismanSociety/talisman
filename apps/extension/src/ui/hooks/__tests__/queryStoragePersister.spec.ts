@@ -75,6 +75,8 @@ describe("createQueryStoragePersister", () => {
 
     expect(result).toEqual(cachedData)
     expect(queryFn).not.toHaveBeenCalled()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(mockedApi.queryCacheSet).not.toHaveBeenCalled()
   })
 
   it("should skip cache restore when query already has data", async () => {
@@ -131,9 +133,8 @@ describe("createQueryStoragePersister", () => {
       signal: new AbortController().signal,
       meta: undefined,
     }
-    const dataUpdatedAt = Date.now()
     const query = {
-      state: { data: undefined, dataUpdatedAt },
+      state: { data: undefined, dataUpdatedAt: Date.now() - 5_000 },
     }
 
     const before = Date.now()
@@ -147,12 +148,46 @@ describe("createQueryStoragePersister", () => {
       "default-age",
       "data",
       expect.any(Number),
-      dataUpdatedAt
+      expect.any(Number)
     )
 
     // purgeAt should be ~24h from when the persist happened
-    const [, , purgeAt] = mockedApi.queryCacheSet.mock.calls[0]!
+    const [, , purgeAt, persistedDataUpdatedAt] = mockedApi.queryCacheSet.mock.calls[0]!
     expect(purgeAt).toBeGreaterThanOrEqual(before + 86_400_000)
     expect(purgeAt).toBeLessThanOrEqual(after + 86_400_000)
+    expect(persistedDataUpdatedAt).toBeGreaterThanOrEqual(before)
+    expect(persistedDataUpdatedAt).toBeLessThanOrEqual(after)
+  })
+
+  it("should reset persisted timestamps when revalidation fetch succeeds", async () => {
+    mockedApi.queryCacheSet.mockResolvedValue(true)
+
+    const persister = createQueryStoragePersister({ key: "revalidate-key", maxAge: 60_000 })
+    const queryFn = vi.fn().mockResolvedValue({ fresh: true })
+    const context = {
+      queryKey: ["test"] as const,
+      signal: new AbortController().signal,
+      meta: undefined,
+    }
+    const query = {
+      state: { data: { stale: true }, dataUpdatedAt: Date.now() - 60_000 },
+    }
+
+    const before = Date.now()
+    const result = await persister(queryFn, context, query as never)
+    await new Promise((r) => setTimeout(r, 10))
+    const after = Date.now()
+
+    expect(result).toEqual({ fresh: true })
+    expect(mockedApi.queryCacheGet).not.toHaveBeenCalled()
+    expect(mockedApi.queryCacheSet).toHaveBeenCalledTimes(1)
+
+    const [, persistedData, purgeAt, persistedDataUpdatedAt] =
+      mockedApi.queryCacheSet.mock.calls[0]!
+    expect(persistedData).toEqual({ fresh: true })
+    expect(purgeAt).toBeGreaterThanOrEqual(before + 60_000)
+    expect(purgeAt).toBeLessThanOrEqual(after + 60_000)
+    expect(persistedDataUpdatedAt).toBeGreaterThanOrEqual(before)
+    expect(persistedDataUpdatedAt).toBeLessThanOrEqual(after)
   })
 })

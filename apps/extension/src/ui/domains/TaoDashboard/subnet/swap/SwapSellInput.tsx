@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { SettingsIcon } from "@talismn/icons"
+import { ChevronDownIcon, SettingsIcon } from "@talismn/icons"
 import { cn, tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -81,7 +81,7 @@ export const SwapSellInput: FC = () => {
           </div>
           <div
             className={cn(
-              "invisible w-full truncate text-alert-error text-sm",
+              "invisible w-full truncate text-alert-error text-xs",
               inputErrorMessage && "visible"
             )}
           >
@@ -175,6 +175,7 @@ const TokenPickerButton: FC<{
                 t("Subnet {{netuid}}", { netuid: position.token.netuid })}
             </div>
           </div>
+          <ChevronDownIcon className="size-[16px] shrink-0" />
         </div>
       ) : (
         <div className="text-body-secondary text-sm">{t("Select Position")}</div>
@@ -274,7 +275,7 @@ const TokenInput: FC<{
       value={inputValue}
       disabled={disabled}
       className={
-        "peer inline-block h-20 w-full text-ellipsis bg-transparent text-[2rem] text-body placeholder:text-body-disabled"
+        "peer inline-block h-20 w-full text-ellipsis bg-transparent text-[14px] text-body placeholder:text-body-disabled"
       }
       onChange={handleChange}
     />

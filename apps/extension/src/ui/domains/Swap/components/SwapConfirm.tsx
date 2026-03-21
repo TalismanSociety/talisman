@@ -1,205 +1,112 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { Tokens } from "@ui/domains/Asset/Tokens"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { ArrowDownIcon } from "@talismn/icons"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
-import { useNetworksMapById } from "@ui/state/chaindata"
-import { useSelectedCurrency } from "@ui/state/settings"
-import { useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
+import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { useSwapModal } from "../hooks/useSwapModal"
+import { useSwap } from "../SwapProvider"
+import { SwapConfirmActions } from "./SwapConfirmActions"
 
-import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
-import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  toAddressAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
-import { toAmountAtom } from "../swaps.api"
-import type { useFastBalance } from "../swaps-port/useFastBalance"
-import { SwapConfirmEvm } from "./SwapConfirmEvm"
-import { SwapConfirmSubstrate } from "./SwapConfirmSubstrate"
+const CONTAINER_ID = "swap-modal-confirm"
 
-export const SwapConfirm = ({
-  fastBalance,
-}: {
-  fastBalance: ReturnType<typeof useFastBalance>
-}) => {
+export const SwapConfirm = () => {
   const { t } = useTranslation()
+  const { close } = useSwapModal()
 
-  const networks = useNetworksMapById()
+  const { fromTokenId, toTokenId, fromAmount, toAmount, fromAddress, toAddress, setSwapView } =
+    useSwap()
+  const fromToken = useToken(fromTokenId)
+  const toToken = useToken(toTokenId)
 
-  const fromAsset = useAtomValue(fromAssetAtom)
-  const toAsset = useAtomValue(toAssetAtom)
-  const fromAmount = useAtomValue(fromAmountAtom)
-  const toAmount = useAtomValue(loadable(toAmountAtom))
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const toAddress = useAtomValue(toAddressAtom)
-  const currency = useSelectedCurrency()
-  const fromFiatAmount = useFiatValueForAmount({ amount: fromAmount, asset: fromAsset })
-  const toFiatAmount = useFiatValueForAmount({
-    amount: toAmount.state === "hasData" && toAmount.data ? toAmount.data : undefined,
-    asset: toAsset,
-  })
-  const fromNetwork = fromAsset ? networks[fromAsset.chainId] : undefined
-  const toNetwork = toAsset ? networks[toAsset.chainId] : undefined
+  if (
+    !fromToken ||
+    !toToken ||
+    !fromAddress ||
+    !toAddress ||
+    typeof fromAmount !== "bigint" ||
+    typeof toAmount !== "bigint"
+  )
+    return null
 
   return (
-    <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12">
-      <h3 className="-mb-8 h-32 font-bold text-lg">{t("You are swapping")}</h3>
-
-      <div className="relative flex w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8">
-        <div className="flex items-center justify-between gap-4">
-          <div className="text-body-secondary">{t("Sending")}</div>
-          <div className="flex items-center gap-4">
-            {fromAsset && (
-              <div className="relative">
-                <img
-                  src={fromAsset.image}
-                  alt=""
-                  className="h-12 w-12 min-w-12 rounded-full border-grey-800"
-                />
-                <NetworkLogo
-                  className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-800 text-xs"
-                  networkId={fromNetwork?.id}
-                />
-              </div>
-            )}
-
-            <div className="flex flex-col items-end">
-              <div className="flex items-center gap-2">
-                <Tokens
-                  className="whitespace-pre"
-                  amount={fromAmount.toString()}
-                  symbol={fromAmount.currency}
-                  decimals={fromAmount.decimals}
-                  noCountUp
-                />
-                <div className="text-body-secondary">
-                  (
-                  {(fromFiatAmount ?? 0).toLocaleString(undefined, {
-                    currency,
-                    style: "currency",
-                    currencyDisplay: "narrowSymbol",
-                  })}
-                  )
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-body-inactive text-xs">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <span className="truncate">{fromNetwork?.name}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex items-center gap-2">
-                      <NetworkLogo networkId={fromNetwork?.id} />{" "}
-                      <span className="truncate">{fromNetwork?.name}</span>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-          </div>
+    <WizardModalDialog
+      className="size-full border-none"
+      title={t("Confirm")}
+      onBackClick={() => setSwapView("form")}
+      onCloseClick={close}
+      contentClassName="relative !overflow-hidden !p-0"
+      id={CONTAINER_ID}
+    >
+      <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
+        <div className="flex w-full flex-col gap-2 overflow-hidden pl-6">
+          <TokenRow tokenId={fromToken.id} value={fromAmount} />
+          <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
+          <TokenRow tokenId={toToken.id} value={toAmount} />
         </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <div className="text-body-secondary">{t("Receiving")}</div>
-          <div className="flex items-center gap-4">
-            {toAsset && (
-              <div className="relative">
-                <img
-                  src={toAsset.image}
-                  alt=""
-                  className="h-12 w-12 min-w-12 rounded-full border-grey-800"
-                />
-                <NetworkLogo
-                  className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-800 text-xs"
-                  networkId={toNetwork?.id}
-                />{" "}
-              </div>
-            )}
-
-            <div className="flex flex-col items-end">
-              {toAmount.state === "hasData" && toAmount.data ? (
-                <div className="flex items-center gap-2">
-                  <div>
-                    ~
-                    <Tokens
-                      className="whitespace-pre"
-                      amount={toAmount.data.toString()}
-                      symbol={toAmount.data.currency}
-                      decimals={toAmount.data.decimals}
-                      noCountUp
-                    />
-                  </div>
-                  <div className="text-body-secondary">
-                    (
-                    {(toFiatAmount ?? 0).toLocaleString(undefined, {
-                      currency,
-                      style: "currency",
-                      currencyDisplay: "narrowSymbol",
-                    })}
-                    )
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <div className="inline-block animate-pulse rounded-xs bg-body-disabled text-body-disabled">
-                    ~0.002 TKN ($1.00)
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-3 text-body-inactive text-xs">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <span className="truncate">{toNetwork?.name}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex items-center gap-2">
-                      <NetworkLogo networkId={toNetwork?.id} /> {toNetwork?.name}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-          </div>
+        <div className="flex w-full flex-col gap-2 rounded-lg bg-grey-900 px-8 py-6 text-xs">
+          <AddressRow label={t("Sender")} address={fromAddress} networkId={fromToken.networkId} />
+          <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
         </div>
 
-        <div className="my-6 border-t border-t-[#3f3f3f]" />
+        <SwapConfirmActions containerId={CONTAINER_ID} />
+      </div>
+    </WizardModalDialog>
+  )
+}
 
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col overflow-hidden">
-            <div className="text-body-secondary text-sm">{t("From")}</div>
-          </div>
-          <div className="flex items-center gap-3">
-            <AddressDisplay
-              className="h-16"
-              address={fromAddress}
-              networkId={fromAsset?.chainId ? String(fromAsset?.chainId) : undefined}
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col overflow-hidden">
-            <div className="text-body-secondary text-sm">{t("To")}</div>
-          </div>
-          <div className="flex items-center gap-3">
-            <AddressDisplay
-              className="h-16"
-              address={toAddress}
-              networkId={toAsset?.chainId ? String(toAsset?.chainId) : undefined}
-            />
+const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) => {
+  const token = useToken(tokenId)
+  const network = useNetworkById(token?.networkId)
+
+  if (!token || !network) return null
+
+  return (
+    <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
+      <div className="relative shrink-0">
+        <TokenLogo tokenId={tokenId} className="h-[32px] w-[32px] min-w-[32px] rounded-full" />
+        <NetworkLogo
+          className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-900 text-[12px]"
+          networkId={token.networkId}
+        />
+      </div>
+      <div className="flex w-full flex-col gap-1 overflow-hidden">
+        <TokensAndFiat
+          tokenId={tokenId}
+          planck={value}
+          className="text-body-secondary text-sm"
+          tokensClassName="text-body font-bold"
+          noCountUp
+        />
+        <div className="flex w-full items-center gap-4 overflow-hidden text-sm">
+          <div className="truncate text-body-secondary">{token.name || token.symbol}</div>
+          <div className="flex shrink-0 items-center gap-[5px] rounded-full bg-grey-800 py-[4px] pr-[8px] pl-[5px]">
+            <NetworkLogo className="text-[16px]" networkId={network.id} />
+            <span className="truncate text-xs opacity-60">{network.name}</span>
           </div>
         </div>
       </div>
-
-      {fromAsset?.networkType === "evm" && <SwapConfirmEvm fastBalance={fastBalance} />}
-      {fromAsset?.networkType === "substrate" && <SwapConfirmSubstrate fastBalance={fastBalance} />}
     </div>
   )
 }
+
+const AddressRow: FC<{ label: ReactNode; address: string; networkId: string }> = ({
+  label,
+  address,
+  networkId,
+}) => (
+  <div className="flex h-11 items-center justify-between gap-4">
+    <div className="text-body-secondary">{label}</div>
+    <AddressDisplay
+      address={address}
+      networkId={networkId}
+      className="text-xs"
+      accountIconClassName="!text-md"
+    />
+  </div>
+)

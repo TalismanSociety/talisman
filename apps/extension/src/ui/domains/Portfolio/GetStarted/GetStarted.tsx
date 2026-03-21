@@ -5,7 +5,7 @@ import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -156,7 +156,7 @@ const useGetStarted = () => {
 
   const navigate = useNavigate()
   const { open: onCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapModal } = useSwapModal()
   const { open: openRamps } = useRampsModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
@@ -188,8 +188,8 @@ const useGetStarted = () => {
 
   const onSwapClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
-    openSwapTokensModal()
-  }, [openSwapTokensModal])
+    openSwapModal({})
+  }, [openSwapModal])
 
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "open ramps" })

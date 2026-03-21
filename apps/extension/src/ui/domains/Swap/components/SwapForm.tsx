@@ -1,212 +1,181 @@
-import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
+import { Drawer } from "@ui/components/Drawer"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useAccountsMap } from "@ui/state/accounts"
-import { useNetworkById } from "@ui/state/chaindata"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { loadable } from "jotai/utils"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-
-import {
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  type SwappableAssetWithDecimals,
-  swapQuoteRefresherAtom,
-  toAddressAtom,
-  toAssetAtom,
-} from "../swap-modules/common.swap-module"
-import {
-  fromAssetsAtom,
-  selectedQuoteAtom,
-  swapQuotesAtom,
-  toAmountAtom,
-  toAssetsAtom,
-  useFromAccount,
-  useReverse,
-  useSetToAddress,
-  useSwapErc20Approval,
-} from "../swaps.api"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import type { useFastBalance } from "../swaps-port/useFastBalance"
-import { FromToAccountSelector } from "./FromToAccountSelector"
+import { useSwapModal } from "../hooks/useSwapModal"
+import { useSwap } from "../SwapProvider"
+import { AvailableBalance } from "./AvailableBalance"
+import { InputFromAmount } from "./InputFromAmount"
 import { ReverseButton } from "./ReverseButton"
-import { SwapDetails } from "./SwapDetails"
-import { TokenAmountInput } from "./TokenAmountInput"
+import { SelectTokenButton } from "./SelectTokenButton"
+import { SwapAccountPicker } from "./SwapAccountPicker"
+import { SwapProviderPickerButton } from "./SwapProviderPickerButton"
+import { ToAmountDisplay } from "./ToAmountDisplay"
+import { TokenAndAmountContainer } from "./TokenAndAmountContainer"
 
-export const SwapForm = ({
-  fastBalance,
-  approveRecipient,
-}: {
-  fastBalance: ReturnType<typeof useFastBalance>
-  approveRecipient?: boolean
-}) => {
+export const SwapForm = () => {
   const { t } = useTranslation()
-  const setSwapView = useSetAtom(swapViewAtom)
+  const { close } = useSwapModal()
 
-  const setQuoteRefresher = useSetAtom(swapQuoteRefresherAtom)
-  const quote = useAtomValue(loadable(selectedQuoteAtom))
+  const {
+    swapView,
+    fromBalance,
+    toBalance,
+    setSwapView,
+    selectedQuote,
+    fromAddress,
+    fromTokenId,
+    setFromTokenId,
+    fromAmount,
+    setFromAmount,
+    onMaxFromAmountClick,
+    toAddress,
+    toTokenId,
+    setToTokenId,
+    toAmount,
+    fromAssetIds,
+    toAssetIds,
+    isLoadingQuotes,
+    isQuoteDataCurrent,
+    reverse,
+    setFromAddress,
+    setToAddress,
+  } = useSwap()
 
-  const fromAddress = useAtomValue(fromAddressAtom)
-  const [fromAsset, setFromAsset] = useAtom(fromAssetAtom)
-  const [fromAmount, setFromAmount] = useAtom(fromAmountAtom)
-  const { fromEvmAccount, fromSubstrateAccount } = useFromAccount()
-  const toAddress = useAtomValue(toAddressAtom)
-  useSetToAddress()
-  const [toAsset, setToAsset] = useAtom(toAssetAtom)
-
-  const toAmount = useAtomValue(loadable(toAmountAtom))
-  const fromAssets = useAtomValue(loadable(fromAssetsAtom))
-  const toAssets = useAtomValue(loadable(toAssetsAtom))
-  const [cachedToAmount, setCachedToAmount] = useState(
-    toAmount.state === "hasData" ? toAmount.data : undefined
-  )
-  const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
-  const quotes = useAtomValue(swapQuotesAtom)
+  const toToken = useToken(toTokenId ?? undefined)
+  const toNetwork = useNetworkById(toToken?.networkId)
 
   const accountsMap = useAccountsMap()
   const toAccount = toAddress ? accountsMap[toAddress] : null
   const toIsWatched = toAccount?.type === "watch-only"
   const toIsExternal = !toAccount || toAccount.type === "contact"
 
-  useSyncSwapsChaindata()
+  const isApproveRecipient = swapView === "approve-recipient"
+
+  const focusAmountInput = useCallback(() => {
+    // Defer to let the token picker modal close and the input re-enable
+    setTimeout(() => {
+      const el = document.getElementById("swap-amount-input")
+      if (el instanceof HTMLInputElement && !el.disabled) el.focus()
+    }, 100)
+  }, [])
 
   useEffect(() => {
-    if (approveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
-  }, [approveRecipient, setSwapView, toIsExternal, toIsWatched])
+    if (isApproveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
+  }, [isApproveRecipient, setSwapView, toIsExternal, toIsWatched])
 
-  // reset when any of the inputs change
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
-  useEffect(() => {
-    setCachedToAmount(undefined)
-  }, [fromAmount, fromAsset, toAsset])
-
-  useEffect(() => {
-    if (toAmount.state === "hasData" && toAmount.data) setCachedToAmount(toAmount.data)
-  }, [toAmount])
-
-  const reverse = useReverse()
-
-  const handleChangeFromAsset = useCallback(
-    (asset: SwappableAssetWithDecimals | null) => {
-      if (asset && toAsset && asset.id === toAsset.id) reverse()
-      else setFromAsset(asset)
+  const handleChangeToToken = useCallback(
+    (tokenId: string | null) => {
+      if (tokenId && fromTokenId && tokenId === fromTokenId) reverse()
+      else setToTokenId(tokenId)
+      focusAmountInput()
     },
-    [reverse, setFromAsset, toAsset]
+    [fromTokenId, reverse, setToTokenId, focusAmountInput]
   )
 
-  const handleChangeToAsset = useCallback(
-    (asset: SwappableAssetWithDecimals | null) => {
-      if (asset && fromAsset && asset.id === fromAsset.id) reverse()
-      else setToAsset(asset)
+  const handleChangeFromToken = useCallback(
+    (tokenId: string | null) => {
+      if (tokenId && toTokenId && tokenId === toTokenId) {
+        reverse()
+      } else {
+        setFromAmount(null)
+        setFromTokenId(tokenId)
+      }
+      focusAmountInput()
     },
-    [fromAsset, reverse, setToAsset]
+    [toTokenId, reverse, setFromTokenId, setFromAmount, focusAmountInput]
   )
 
   const insufficientBalance = useMemo(() => {
-    if (!fastBalance?.balance) return undefined
-    return fromAmount.planck > fastBalance.balance.transferable.planck
-  }, [fastBalance, fromAmount.planck])
-
-  const { data: approvalData, loading: approvalLoading } = useSwapErc20Approval()
-
-  // refresh quote every 20 seconds
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
-  useEffect(() => {
-    if (quotes.state === "loading") return
-    if (quotes.state === "hasData") {
-      if (quotes.data?.some((d) => d.state === "loading")) return
-    }
-    const id = setInterval(() => setQuoteRefresher(Date.now()), 20_000)
-    return () => clearInterval(id)
-  }, [])
+    if (!fromBalance || !fromAmount) return undefined
+    const gasBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
+    return fromAmount + gasBuffer > fromBalance.transferable.planck
+  }, [fromBalance, fromAmount, selectedQuote?.maxNativeTokenGasBuffer])
 
   return (
-    // mb-52 is composed of:
-    //     mb-44 (the height of the `Review` button and its container)
-    //   + pb-8  (an extra gap at the bottom of the `overflow-y-auto` scrollable view)
-    <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
-      <div className="relative flex w-full flex-col gap-4 rounded bg-grey-900 p-8">
-        <div className="flex items-start justify-between">
-          <h4 className="text-sm">{t("Select asset")}</h4>
+    <WizardModalDialog
+      className="size-full border-none"
+      title={t("Multi-chain Swap")}
+      onCloseClick={close}
+      contentClassName="relative !overflow-hidden !p-0"
+    >
+      <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
+        <div className="relative flex flex-col gap-6">
+          <TokenAndAmountContainer
+            tokenButton={
+              <SelectTokenButton
+                onSelectTokenId={handleChangeFromToken}
+                selectedTokenId={fromTokenId}
+                allowedTokenIds={fromAssetIds}
+                priorityMode="sell"
+              />
+            }
+            tokenAmount={<InputFromAmount />}
+            accountButton={
+              <SwapAccountPicker
+                title={t("Sender")}
+                subtitle={t("From")}
+                tokenId={fromTokenId}
+                value={fromAddress}
+                onAccountChange={setFromAddress}
+              />
+            }
+            accountBalance={
+              <AvailableBalance balance={fromBalance} onMaxClick={onMaxFromAmountClick} />
+            }
+            isError={!!insufficientBalance}
+          />
+
+          <TokenAndAmountContainer
+            tokenButton={
+              <SelectTokenButton
+                onSelectTokenId={handleChangeToToken}
+                selectedTokenId={toTokenId}
+                allowedTokenIds={toAssetIds}
+                priorityMode="buy"
+              />
+            }
+            tokenAmount={<ToAmountDisplay />}
+            accountButton={
+              <SwapAccountPicker
+                title={t("Recipient")}
+                subtitle={t("To")}
+                allowInput
+                allowZeroBalance
+                tokenId={toTokenId}
+                value={toAddress}
+                onAccountChange={setToAddress}
+              />
+            }
+            accountBalance={<AvailableBalance balance={toBalance} />}
+            isError={false}
+          />
+
+          <ReverseButton className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
 
-        <TokenAmountInput
-          hideBalance={fromAsset?.id === "btc-native"}
-          assets={fromAssets.state === "hasData" ? fromAssets.data : undefined}
-          amount={fromAmount}
-          onChangeAmount={setFromAmount}
-          leadingLabel={t("You're sending")}
-          evmAddress={fromEvmAccount?.address as `0x${string}`}
-          substrateAddress={fromSubstrateAccount?.address}
-          selectedAsset={fromAsset}
-          availableBalance={fastBalance?.balance?.transferable}
-          stayAliveBalance={fastBalance?.balance?.stayAlive}
-          onChangeAsset={handleChangeFromAsset}
-          disableBtc
-          maxNativeTokenGasBuffer={
-            (quote?.state === "hasData" &&
-              quote?.data?.quote?.state === "hasData" &&
-              quote?.data?.quote?.data?.maxNativeTokenGasBuffer) ||
-            undefined
-          }
-          priorityMode="sell"
-        />
-        <ReverseButton />
-        <TokenAmountInput
-          amount={cachedToAmount ?? undefined}
-          assets={toAssets.state === "hasData" ? toAssets.data : undefined}
-          leadingLabel={t("You're receiving")}
-          selectedAsset={toAsset}
-          onChangeAsset={handleChangeToAsset}
-          evmAddress={fromEvmAccount?.address as `0x${string}`}
-          substrateAddress={fromSubstrateAccount?.address}
-          disabled
-          hideBalance
-          priorityMode="buy"
-        />
-      </div>
+        <SwapProviderPickerButton />
 
-      <FromToAccountSelector />
-
-      <SwapDetails />
-
-      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
-        {fromAsset?.networkType === "btc" && (
-          <Button className="!w-full !rounded" disabled>
-            {t("Swapping from BTC is not supported")}
-          </Button>
-        )}
-
-        {["evm", "substrate"].includes(fromAsset?.networkType ?? "") && approvalData && (
-          <Button className="!w-full !rounded" primary onClick={() => setSwapView("approve-erc20")}>
-            {t(`Allow {{protocolName}} to spend {{symbol}}`, {
-              protocolName: approvalData.protocolName,
-              symbol: fromAsset?.symbol,
-            })}
-          </Button>
-        )}
-
-        {["evm", "substrate"].includes(fromAsset?.networkType ?? "") && !approvalData && (
+        <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8 pb-12">
           <Button
-            className="!w-full !rounded"
+            className="!w-full !rounded disabled:!bg-[#262626] disabled:!text-body-disabled"
             primary
             disabled={
-              toAmount.state !== "hasData" ||
-              !toAmount.data ||
-              toAmount.data.planck === 0n ||
+              !toAmount ||
+              toAmount === 0n ||
               !fromAddress ||
               !toAddress ||
               insufficientBalance !== false ||
-              quotes.state !== "hasData" ||
-              quotes.data?.some((d) => d.state === "loading") ||
-              approvalLoading
+              isLoadingQuotes ||
+              !isQuoteDataCurrent
             }
             onClick={() => {
-              if (quote.state !== "hasData" || !quote.data) return
-              if (!fastBalance?.balance) return
-              if (quote.data.quote.state !== "hasData" || !quote.data.quote.data) return
+              if (!selectedQuote) return
+              if (!fromBalance?.transferable?.planck) return
 
               // if toAddress isn't an owned account, show a warning to the user
               if (toIsExternal || toIsWatched) return setSwapView("approve-recipient")
@@ -214,46 +183,61 @@ export const SwapForm = ({
               setSwapView("confirm")
             }}
           >
-            {approvalLoading ? (
-              <LoaderIcon className="animate-spin-slow text-body-disabled" />
-            ) : (
-              t("Review")
-            )}
+            {t("Review")}
           </Button>
-        )}
 
-        {approveRecipient && (
-          <div className="absolute bottom-0 left-0 m-8 flex animate-slide-in-up flex-col gap-8 rounded bg-black-tertiary p-8">
-            <div className="flex items-center gap-3 text-orange-400 text-sm">
-              {toIsWatched && (
-                <Trans t={t}>
-                  <AlertCircleIcon /> Sending {toAsset?.symbol} to a watch-only account on{" "}
-                  {toNetwork?.name}.
-                </Trans>
-              )}
-              {toIsExternal && (
-                <Trans t={t}>
-                  <AlertCircleIcon /> Sending {toAsset?.symbol} to an external account on{" "}
-                  {toNetwork?.name}.
-                </Trans>
-              )}
+          <Drawer
+            isOpen={isApproveRecipient}
+            onDismiss={() => setSwapView("form")}
+            anchor="bottom"
+            containerId="swap-modal"
+          >
+            <div className="flex animate-slide-in-up flex-col gap-12 rounded bg-black-tertiary p-12">
+              <div className="flex items-center gap-4 text-orange-400 text-sm">
+                {toIsWatched && (
+                  <Trans t={t}>
+                    <AlertCircleIcon className="size-16" /> Sending {toToken?.symbol} to a
+                    watch-only account on {toNetwork?.name}.
+                  </Trans>
+                )}
+                {toIsExternal && (
+                  <Trans t={t}>
+                    <AlertCircleIcon className="size-16" /> Sending {toToken?.symbol} to an external
+                    account on {toNetwork?.name}.
+                  </Trans>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-8">
+                <Button onClick={() => setSwapView("form")}>{t("Cancel")}</Button>
+                <Button primary onClick={() => setSwapView("confirm")}>
+                  {t("Proceed")}
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-8">
-              <Button className="!w-full !rounded" small onClick={() => setSwapView("form")}>
-                {t("Cancel")}
-              </Button>
-              <Button
-                className="!w-full !rounded"
-                small
-                primary
-                onClick={() => setSwapView("confirm")}
-              >
-                {t("Proceed")}
-              </Button>
-            </div>
-          </div>
-        )}
+          </Drawer>
+        </div>
       </div>
-    </div>
+    </WizardModalDialog>
+  )
+}
+
+export const SwapFormShimmer = () => {
+  const { t } = useTranslation()
+  const { close } = useSwapModal()
+
+  return (
+    <WizardModalDialog
+      className="size-full border-none"
+      title={t("Multi-chain Swap")}
+      onCloseClick={close}
+    >
+      <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
+        <LoaderIcon className="h-16 w-16 animate-spin-slow" />
+        <div className="mt-4 font-bold text-base text-white opacity-70">
+          {t("Loading tokens lists")}
+        </div>
+        <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
+      </div>
+    </WizardModalDialog>
   )
 }

@@ -1,9 +1,10 @@
-import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { LoaderIcon } from "@talismn/icons"
 import { useSocialFeedsMounted } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import type { IChartApi, ISeriesApi, SeriesType, UTCTimestamp } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTweets } from "../../../hooks/useSn45Api"
+import { ChartOverlay } from "../chart-overlay/ChartOverlay"
 import { createChartOptions } from "../chartOptions"
 import { useRealtimeStakeEventsContext } from "../realtime/RealtimeStakeEventsProvider"
 import { CHART_COLORS, CHART_LAYOUT, INDICATOR_CONFIG } from "./chartConfig"
@@ -142,102 +143,17 @@ const PriceChartGraphSkeleton: FC<{
   resolution: OhlcvResolution
   setResolution: (resolution: OhlcvResolution) => void
 }> = ({ indicators, toggleIndicator, resolution, setResolution }) => (
-  <div className="relative size-full overflow-hidden bg-[#181818]">
+  <div className="relative size-full overflow-hidden">
     <div className="absolute inset-x-12 top-5 z-10">
       <PriceChartToolbar
         indicators={indicators}
         toggleIndicator={toggleIndicator}
         resolution={resolution}
         setResolution={setResolution}
-        // className="absolute inset-x-12 top-5 z-10"
       />
     </div>
-    {/* Grid lines */}
-    <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
-    <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />
-    <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
-    <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
-
-    {/* Centered candlestick icon */}
-    <div className="absolute inset-0 flex animate-pulse items-center justify-center">
-      <svg className="h-24 w-32 opacity-50" viewBox="0 0 80 48" fill="none">
-        {/* Candle 1 – buy */}
-        <line
-          x1="12"
-          y1="6"
-          x2="12"
-          y2="42"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-buy"
-        />
-        <rect x="8" y="14" width="8" height="16" rx="1" fill="currentColor" className="text-buy" />
-        {/* Candle 2 – sell */}
-        <line
-          x1="28"
-          y1="10"
-          x2="28"
-          y2="40"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-sell"
-        />
-        <rect
-          x="24"
-          y="18"
-          width="8"
-          height="14"
-          rx="1"
-          fill="currentColor"
-          className="text-sell"
-        />
-        {/* Candle 3 – buy */}
-        <line
-          x1="44"
-          y1="4"
-          x2="44"
-          y2="38"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-buy"
-        />
-        <rect x="40" y="10" width="8" height="20" rx="1" fill="currentColor" className="text-buy" />
-        {/* Candle 4 – sell */}
-        <line
-          x1="60"
-          y1="12"
-          x2="60"
-          y2="44"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-sell"
-        />
-        <rect
-          x="56"
-          y="20"
-          width="8"
-          height="12"
-          rx="1"
-          fill="currentColor"
-          className="text-sell"
-        />
-        {/* Candle 5 – buy */}
-        <line
-          x1="76"
-          y1="8"
-          x2="76"
-          y2="36"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-buy"
-        />
-        <rect x="72" y="12" width="8" height="16" rx="1" fill="currentColor" className="text-buy" />
-      </svg>
-    </div>
-
-    {/* TradingView logo placeholder */}
-    <div className="pointer-events-none absolute bottom-12 left-4 z-10 flex items-center gap-1 opacity-30">
-      <Skeleton className="size-5 rounded-full" />
+    <div className="absolute inset-0 flex items-center justify-center">
+      <LoaderIcon className="animate-spin-slow text-[40px] text-body-inactive" />
     </div>
   </div>
 )
@@ -719,5 +635,10 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     }
   }, [chartReady, chartData, tweets, showTweetMarkers, tokenPrice, indicators])
 
-  return <div ref={chartContainerRef} className="size-full" />
+  return (
+    <div className="relative size-full">
+      <div ref={chartContainerRef} className="size-full" />
+      <ChartOverlay chartRef={chartRef} candlestickSeriesRef={candlestickSeriesRef} bars={bars} />
+    </div>
+  )
 }

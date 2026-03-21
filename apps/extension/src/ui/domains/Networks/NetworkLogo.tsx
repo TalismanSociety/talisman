@@ -20,7 +20,10 @@ const NetworkLogoBase: FC<NetworkLogoBaseProps> = ({ network, className }) => {
       key={`${rid}::${src}`}
       data-id={network?.id}
       src={src}
-      className={classNames("relative block aspect-square w-[1em] shrink-0", className)}
+      className={classNames(
+        "relative block aspect-square w-[1em] shrink-0 rounded-full",
+        className
+      )}
       alt=""
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in chain lists

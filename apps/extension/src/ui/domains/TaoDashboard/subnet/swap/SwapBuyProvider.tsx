@@ -8,7 +8,7 @@ import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -46,7 +46,6 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     // preselect account straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
   )
-
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
   // target token doesnt have the validator address, because it will not exist unless user already has some
@@ -67,7 +66,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const balancesProps = useMemo(
-    (): BalanceByParamsProps =>
+    (): BalancesByParamsProps =>
       address && tokenIdIn
         ? {
             addressesAndTokens: {

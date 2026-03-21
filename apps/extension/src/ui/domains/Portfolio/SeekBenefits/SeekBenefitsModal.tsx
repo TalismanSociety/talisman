@@ -13,7 +13,7 @@ import { Button } from "@ui/components/Button"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -49,7 +49,7 @@ export const SeekBenefitsModal = () => {
 const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapModal } = useSwapModal()
 
   const handleClickLearnMore = useCallback(() => {
     window.open(remoteConfig.seek.docsUrl, "_blank", "noopener")
@@ -60,9 +60,9 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [remoteConfig.seek.stakingUrl])
 
   const handleClickSwap = useCallback(() => {
-    openSwapTokensModal()
+    openSwapModal({ toTokenId: remoteConfig.seek.tokenId })
     onClose()
-  }, [openSwapTokensModal, onClose])
+  }, [openSwapModal, onClose, remoteConfig.seek.tokenId])
 
   const handleClickTrade = useCallback(() => {
     window.open(remoteConfig.seek.tradeUrl, "_blank", "noopener")

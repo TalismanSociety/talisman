@@ -33,6 +33,7 @@ export const SendFundsTokenPicker = () => {
       address={from}
       initialSearch={tokenSymbol}
       selected={tokenId}
+      networkFilterContainerId="main"
       onSelect={handleTokenSelect}
       tokenFilter={tokenFilter}
     />

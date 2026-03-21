@@ -9,6 +9,7 @@ import {
   RepeatIcon,
   SeekEyeIcon,
   SendIcon,
+  TaoIcon,
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames, isNotNil } from "@talismn/util"
@@ -26,7 +27,7 @@ import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -35,8 +36,6 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
-import { TokenLogo } from "../Asset/TokenLogo"
-import { BITTENSOR_TOKEN_ID } from "../Staking/Bittensor/utils/constants"
 import { useIsBittensorEnabled } from "../TaoDashboard/hooks/useIsBittensorEnabled"
 import { useSeekBenefitsModal } from "./SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
@@ -231,7 +230,7 @@ const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapModal } = useSwapModal()
   const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
@@ -285,7 +284,7 @@ const TopActions: FC = () => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
+          onClick: () => openSwapModal({}),
           disabled: disableActions,
           disabledReason,
         },
@@ -304,8 +303,8 @@ const TopActions: FC = () => {
           ? {
               analyticsName: "Goto" as const,
               analyticsAction: "open tao dashboard",
-              label: t("Stake TAO"),
-              icon: BittensorIcon,
+              label: t("Trade TAO"),
+              icon: TaoIcon,
               onClick: () => api.dashboardOpen("/bittensor/subnets"),
               disabled: false,
             }
@@ -321,7 +320,7 @@ const TopActions: FC = () => {
       selectedAddress,
       symbol,
       openCopyAddressModal,
-      openSwapTokensModal,
+      openSwapModal,
       openRampsModal,
       isBittensorEnabled,
     ]
@@ -339,10 +338,6 @@ const TopActions: FC = () => {
     </div>
   )
 }
-
-const BittensorIcon: FC<{ className?: string }> = ({ className }) => (
-  <TokenLogo tokenId={BITTENSOR_TOKEN_ID} className={className} />
-)
 
 const SeekBenefitsLink = () => {
   const { open } = useSeekBenefitsModal()

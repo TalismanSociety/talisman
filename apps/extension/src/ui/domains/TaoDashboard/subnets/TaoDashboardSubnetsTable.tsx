@@ -1,10 +1,20 @@
-import { ArrowDownRightIcon, ArrowUpRightIcon, InfoIcon } from "@talismn/icons"
+import { bind } from "@react-rxjs/core"
+import {
+  ArrowDownRightIcon,
+  ArrowUpRightIcon,
+  ChevronRightIcon,
+  InfoIcon,
+  ZapOffIcon,
+  ZapPlusIcon,
+} from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { type FC, memo, type PropsWithChildren, useCallback, useMemo, useState } from "react"
+import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
+import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import { BehaviorSubject } from "rxjs"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import type { TimePeriod } from "../shared/types"
 import { formatCompactNumber } from "../shared/util"
@@ -23,6 +33,16 @@ type SortSetting = {
 }
 
 const DEFAULT_SORT_SETTING: SortSetting = { key: "netuid", order: "asc" }
+
+// keep track of sort setting globally so it persists across navigation
+const sortSetting$ = new BehaviorSubject<SortSetting>(DEFAULT_SORT_SETTING)
+const [useSortSetting] = bind(sortSetting$)
+
+const useSetSortSetting = () =>
+  useCallback((updater: SortSetting | ((prev: SortSetting) => SortSetting)) => {
+    const next = typeof updater === "function" ? updater(sortSetting$.getValue()) : updater
+    sortSetting$.next(next)
+  }, [])
 
 // Format number with appropriate precision
 const formatNumber = (num: number, decimals = 2) => formatCompactNumber(num, decimals)
@@ -107,12 +127,21 @@ const PriceChange: FC<{ change: number | undefined }> = ({ change }) => {
   )
 }
 
-export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod }> = ({
-  search = "",
-  period,
-}) => {
-  const { subnets, isLoading, loading, errors } = useTaoDashboardSubnets(period)
-  const [sortSetting, setSortSetting] = useState<SortSetting>(DEFAULT_SORT_SETTING)
+export const TaoDashboardSubnetsTableHeader: FC = () => {
+  const sortSetting = useSortSetting()
+  const setSortSetting = useSetSortSetting()
+
+  return <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
+}
+
+export const TaoDashboardSubnetsTable: FC<{
+  search?: string
+  period: TimePeriod
+  hideHeader?: boolean
+}> = ({ search = "", period, hideHeader = false }) => {
+  const { subnets, stakeAddress, isLoading, loading, errors } = useTaoDashboardSubnets(period)
+  const sortSetting = useSortSetting()
+  const setSortSetting = useSetSortSetting()
 
   const filteredSubnets = useMemo(() => {
     const trimmedSearch = search.trim().toLowerCase()
@@ -154,8 +183,14 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod 
   if (isLoading && subnets.length === 0) {
     return (
       // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
-      <div role="table" className="w-full overflow-hidden rounded-lg bg-black-secondary">
-        <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
+      <div
+        role="table"
+        className={cn(
+          "w-full overflow-hidden bg-black-secondary",
+          hideHeader ? "rounded-b-lg" : "rounded-lg"
+        )}
+      >
+        {!hideHeader && <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />}
         <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
           {Array.from({ length: 8 }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static list
@@ -168,11 +203,23 @@ export const TaoDashboardSubnetsTable: FC<{ search?: string; period: TimePeriod 
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
-    <div role="table" className="w-full overflow-hidden rounded-lg bg-black-secondary">
-      <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
+    <div
+      role="table"
+      className={cn(
+        "w-full overflow-hidden bg-black-secondary",
+        hideHeader ? "rounded-b-lg" : "rounded-lg"
+      )}
+    >
+      {!hideHeader && <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />}
       <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
         {sortedSubnets.map((subnet) => (
-          <SubnetRow key={subnet.netuid} subnet={subnet} loading={loading} errors={errors} />
+          <SubnetRow
+            key={subnet.netuid}
+            subnet={subnet}
+            loading={loading}
+            errors={errors}
+            stakeAddress={stakeAddress}
+          />
         ))}
       </div>
     </div>
@@ -221,7 +268,7 @@ const HeaderCell: FC<
 
 const HeaderRow: FC<{
   sortSetting: SortSetting
-  setSortSetting: React.Dispatch<React.SetStateAction<SortSetting>>
+  setSortSetting: (updater: SortSetting | ((prev: SortSetting) => SortSetting)) => void
 }> = ({ sortSetting, setSortSetting }) => {
   const { t } = useTranslation()
 
@@ -251,7 +298,7 @@ const HeaderRow: FC<{
     // biome-ignore lint/a11y/useFocusableInteractive: child buttons are focusable
     <div
       role="row"
-      className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
+      className="grid h-20 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),16px] items-center justify-items-start gap-4 bg-[#1a1a1a] px-8 text-body-inactive"
     >
       <HeaderCell
         sortOrder={getSortOrder("netuid")}
@@ -302,6 +349,7 @@ const HeaderRow: FC<{
         {t("Em.")}
       </HeaderCell>
       <HeaderCell>{t("7d Price")}</HeaderCell>
+      <HeaderCell>{/* Chevron column */}</HeaderCell>
     </div>
   )
 }
@@ -331,8 +379,15 @@ const SubnetRow: FC<{
   subnet: TaoDashboardSubnet
   loading: TaoDashboardSubnetsLoading
   errors: TaoDashboardSubnetsErrors
-}> = memo(({ subnet, loading, errors }) => {
+  stakeAddress: string | undefined
+}> = memo(({ subnet, loading, errors, stakeAddress }) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { open: openBondModal } = useBittensorBondModal()
+  const isRoot = subnet.netuid === 0
+  const canStake = !!stakeAddress
+  const canUnstake = !!subnet.unstakeAddress
+
   // Compare last price to first price in 7d data to determine chart color
   const firstPrice = !subnet.chartData ? 0 : (subnet.chartData[0] ?? 0)
   const lastPrice = !subnet.chartData ? 0 : (subnet.chartData[subnet.chartData.length - 1] ?? 0)
@@ -340,14 +395,61 @@ const SubnetRow: FC<{
   const sentiment =
     subnet.sentiment === "bullish" || subnet.sentiment === "bearish" ? subnet.sentiment : null
 
+  const handleRowClick = useCallback(() => {
+    if (!isRoot) navigate(`/bittensor/subnets/${subnet.token.netuid}`)
+  }, [isRoot, navigate, subnet.token.netuid])
+
+  const handleStakeClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (!canStake) return
+      openBondModal({
+        stakeDirection: "bond",
+        networkId: subnet.token.networkId,
+        netuid: subnet.netuid,
+        address: stakeAddress,
+      })
+    },
+    [openBondModal, subnet.token.networkId, subnet.netuid, stakeAddress, canStake]
+  )
+
+  const handleUnstakeClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (!canUnstake) return
+      openBondModal({
+        stakeDirection: "unbond",
+        networkId: subnet.token.networkId,
+        netuid: subnet.netuid,
+        address: subnet.unstakeAddress,
+      })
+    },
+    [openBondModal, subnet.token.networkId, subnet.netuid, subnet.unstakeAddress, canUnstake]
+  )
+
   return (
-    <Link
-      to={`/bittensor/subnets/${subnet.token.netuid}`}
+    // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
+    <div
       role="row"
-      aria-label={t("View subnet {{name}}", {
-        name: subnet.token.subnetName || `SN${subnet.token.netuid}`,
-      })}
-      className="grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr)] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors hover:bg-grey-800"
+      tabIndex={isRoot ? undefined : 0}
+      aria-label={
+        isRoot
+          ? t("Root subnet")
+          : t("View subnet {{name}}", {
+              name: subnet.token.subnetName || `SN${subnet.token.netuid}`,
+            })
+      }
+      onClick={handleRowClick}
+      onKeyDown={(e) => {
+        if (!isRoot && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault()
+          handleRowClick()
+        }
+      }}
+      className={cn(
+        "group grid h-32 w-full grid-cols-[160px,minmax(100px,1fr),minmax(100px,1fr),minmax(80px,0.7fr),minmax(90px,0.9fr),minmax(80px,0.8fr),minmax(70px,0.7fr),minmax(60px,0.5fr),minmax(70px,0.6fr),16px] items-center justify-items-start gap-4 bg-grey-900 px-8 text-left text-sm transition-colors",
+        !isRoot && "cursor-pointer hover:bg-grey-800"
+      )}
     >
       {/* Subnet */}
       <DataCell className="max-w-[160px] flex-row items-center gap-6 overflow-hidden">
@@ -355,7 +457,10 @@ const SubnetRow: FC<{
         <div className="flex grow flex-col gap-1 overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="truncate font-semibold text-white">
-              {subnet.token.subnetName || t("Subnet {{netuid}}", { netuid: subnet.token.netuid })}
+              {isRoot
+                ? t("Root")
+                : subnet.token.subnetName ||
+                  t("Subnet {{netuid}}", { netuid: subnet.token.netuid })}
             </span>
             <span className="text-primary">{subnet.token.symbol}</span>
           </div>
@@ -364,8 +469,10 @@ const SubnetRow: FC<{
       </DataCell>
 
       {/* Price */}
-      <DataCell error={errors.price}>
-        {loading.price && (subnet.priceTao === undefined || subnet.priceUsd === undefined) ? (
+      <DataCell error={!isRoot && errors.price}>
+        {isRoot ? (
+          <div className="font-medium text-white">1 τ</div>
+        ) : loading.price && (subnet.priceTao === undefined || subnet.priceUsd === undefined) ? (
           <>
             <SkeletonBar className="h-8 w-32" />
             <SkeletonBar className="h-6 w-40" />
@@ -391,7 +498,7 @@ const SubnetRow: FC<{
             <div className={cn(loading.balance && "animate-pulse")}>
               <TokensAndFiat tokenId={subnet.token.id} planck={subnet.balance} noFiat isBalance />
             </div>
-            {subnet.balanceUsd && (
+            {subnet.balanceUsd != null && (
               <FiatFromUsd
                 amount={subnet.balanceUsd}
                 className={cn("text-body-secondary text-xs", loading.balance && "animate-pulse")}
@@ -405,7 +512,12 @@ const SubnetRow: FC<{
             <SkeletonBar className="h-6 w-20" />
           </>
         ) : (
-          <span className="text-body-inactive">0 {subnet.token.symbol}</span>
+          <>
+            <div>
+              <TokensAndFiat tokenId={subnet.token.id} planck={0n} noFiat isBalance />
+            </div>
+            <FiatFromUsd amount={0} className="text-body-secondary text-xs" isBalance />
+          </>
         )}
       </DataCell>
 
@@ -415,6 +527,8 @@ const SubnetRow: FC<{
           <div className="flex flex-col gap-2">
             <SkeletonBar className="h-8 w-12" />
           </div>
+        ) : isRoot ? (
+          <span className="text-body-inactive">-</span>
         ) : (
           <div className="flex flex-col gap-2">
             <span className="font-medium text-white">{Math.round(subnet.score)}</span>
@@ -446,6 +560,8 @@ const SubnetRow: FC<{
       <DataCell error={errors.volume}>
         {loading.volume ? (
           <SkeletonBar className="h-8 w-20" />
+        ) : isRoot ? (
+          <span className="text-body-inactive">-</span>
         ) : (
           <FiatFromUsd amount={subnet.volumeUsd} className="text-white" noCountUp compact />
         )}
@@ -455,6 +571,8 @@ const SubnetRow: FC<{
       <DataCell error={errors.mcap}>
         {loading.mcap ? (
           <SkeletonBar className="h-8 w-28" />
+        ) : isRoot ? (
+          <span className="text-body-inactive">-</span>
         ) : (
           <FiatFromUsd amount={subnet.mcapUsd} className="text-white" noCountUp compact />
         )}
@@ -464,6 +582,8 @@ const SubnetRow: FC<{
       <DataCell error={errors.emission}>
         {loading.emission ? (
           <SkeletonBar className="h-8 w-20" />
+        ) : isRoot ? (
+          <span className="text-body-inactive">-</span>
         ) : (
           <span className={subnet.emission ? "text-white" : "text-body-inactive"}>
             {Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(subnet.emission)}%
@@ -471,12 +591,54 @@ const SubnetRow: FC<{
         )}
       </DataCell>
 
-      {/* Chart */}
+      {/* Chart / Stake+Unstake on hover (root always shows buttons) */}
       <DataCell>
-        {!loading.chart && !!subnet.chartData && (
-          <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+        {!isRoot && (
+          <div className="group-hover:hidden">
+            {!loading.chart && !!subnet.chartData && (
+              <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+            )}
+          </div>
         )}
+        <div
+          className={cn(
+            "items-center justify-center gap-2",
+            isRoot ? "flex" : "hidden group-hover:flex"
+          )}
+        >
+          <button
+            type="button"
+            aria-label={t("Stake")}
+            disabled={!canStake}
+            onClick={handleStakeClick}
+            className={cn(
+              "inline-flex size-[28px] items-center justify-center rounded-full",
+              canStake
+                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
+            )}
+          >
+            <ZapPlusIcon className="size-[16px]" />
+          </button>
+          <button
+            type="button"
+            aria-label={t("Unstake")}
+            disabled={!canUnstake}
+            onClick={handleUnstakeClick}
+            className={cn(
+              "inline-flex size-[28px] items-center justify-center rounded-full",
+              canUnstake
+                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
+            )}
+          >
+            <ZapOffIcon className="size-[16px]" />
+          </button>
+        </div>
       </DataCell>
-    </Link>
+
+      {/* Chevron — only for navigable subnets */}
+      <DataCell>{!isRoot && <ChevronRightIcon className="size-[16px] opacity-60" />}</DataCell>
+    </div>
   )
 })

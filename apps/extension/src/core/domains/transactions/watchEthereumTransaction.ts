@@ -12,6 +12,7 @@ import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { addEvmTransaction, updateTransactionStatus } from "./helpers"
 import type { WatchTransactionOptions } from "./types"
+import { watchSwapStatus } from "./watchSwapStatus"
 
 export const watchEthereumTransaction = async (
   evmNetworkId: NetworkId,
@@ -78,6 +79,9 @@ export const watchEthereumTransaction = async (
 
       // wait 2 confirmations before marking as confirmed
       if (receipt.status === "success") {
+        // Start watching exchange status for swap transactions
+        if (txInfo) watchSwapStatus(hash)
+
         const receipt = await client.waitForTransactionReceipt({ hash, confirmations: 2 })
         if (receipt.status === "success")
           updateTransactionStatus(
