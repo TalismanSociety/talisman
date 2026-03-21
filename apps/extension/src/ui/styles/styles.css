@@ -9,6 +9,7 @@
 @theme {
   /* ── Clear default namespaces (Talisman fully replaces these) ── */
   --color-*: initial;
+  --font-*: initial;
   --text-*: initial;
   --leading-*: initial;
   --radius-*: initial;
