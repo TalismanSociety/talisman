@@ -324,7 +324,7 @@
   }
 
   body {
-    @apply leading-base text-body bg-black-primary font-sans text-base antialiased;
+    @apply leading-base text-body bg-black-primary antialiased;
   }
 
   /* hides the content of the page while fonts are preloading (using webfontloader) */
@@ -384,6 +384,16 @@
   *:not(.allow-focus):focus {
     outline: none;
   }
+}
+
+/*
+ * Chrome extension pages apply un-layered font defaults (font-size: 75%, font-family: system-ui)
+ * that override @layer base rules (cascade layers have lower priority than un-layered styles).
+ * These must be outside @layer to win the cascade.
+ */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
 }
 
 @font-face {
