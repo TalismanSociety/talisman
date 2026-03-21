@@ -36,5 +36,8 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "prettier.enable": false,
-  "eslint.format.enable": false
+  "eslint.format.enable": false,
+
+  // let taildwind css handle the validation of styles.css
+  "css.validate": false
 }
