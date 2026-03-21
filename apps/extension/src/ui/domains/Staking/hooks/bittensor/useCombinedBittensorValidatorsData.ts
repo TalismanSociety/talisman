@@ -1,4 +1,5 @@
 import { useBittensorValidators } from "@ui/state/bittensor"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { keyBy } from "lodash-es"
 import { useMemo } from "react"
 
@@ -11,6 +12,14 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
   })
 
   const { status, data: validators } = useBittensorValidators()
+  const {
+    bittensor: { featuredValidators },
+  } = useRemoteConfig()
+
+  const featuredHotkeyOrder = useMemo(
+    () => new Map(featuredValidators.map((hotkey, i) => [hotkey.toLowerCase(), i])),
+    [featuredValidators]
+  )
 
   const combinedValidatorsData = useMemo(() => {
     if (!validators) return []
@@ -30,13 +39,15 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
           apr: Number(validatorYield?.thirty_day_apy ?? 0),
           subnets: validator.active_subnets,
           rank: validator.rank,
+          isFeatured: featuredHotkeyOrder.has(validator.hotkey.toLowerCase()) && !!validatorYield,
+          featuredOrder: featuredHotkeyOrder.get(validator.hotkey.toLowerCase()) ?? -1,
           hasData: !!validator,
           isError: status === "error",
         }
       }) ?? []
 
     return combined
-  }, [status, validators, validatorsYieldData])
+  }, [featuredHotkeyOrder, status, validators, validatorsYieldData])
 
   return {
     combinedValidatorsData,

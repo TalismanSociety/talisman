@@ -1,3 +1,4 @@
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Balances } from "@talismn/balances"
 import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
@@ -7,10 +8,12 @@ import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBi
 import type { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 export const BittensorStakeToolbarButton: FC<{ balances: Balances; className?: string }> = ({
   balances,
@@ -20,6 +23,14 @@ export const BittensorStakeToolbarButton: FC<{ balances: Balances; className?: s
   const { open } = useBittensorBondModal()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const accounts = useAccounts("owned")
+  const { selectedAccounts } = usePortfolioNavigation()
+  const bittensor = useNetworkById("bittensor")
+
+  const compatibleAccounts = useMemo(
+    () =>
+      bittensor ? selectedAccounts.filter((a) => isAccountCompatibleWithNetwork(bittensor, a)) : [],
+    [bittensor, selectedAccounts]
+  )
 
   const openArgs = useMemo<BittensorStakingWizardOpenOptions | null>(() => {
     const balance = balances.each
@@ -36,9 +47,10 @@ export const BittensorStakeToolbarButton: FC<{ balances: Balances; className?: s
       ? {
           networkId: token.networkId,
           stakeDirection: "bond",
+          address: compatibleAccounts.length === 1 ? compatibleAccounts[0].address : undefined,
         }
       : null
-  }, [accounts, balances, bittensorNetworkIds])
+  }, [accounts, balances, bittensorNetworkIds, compatibleAccounts])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return

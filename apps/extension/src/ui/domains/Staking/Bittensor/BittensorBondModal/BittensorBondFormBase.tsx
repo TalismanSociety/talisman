@@ -35,7 +35,6 @@ import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { ROOT_NETUID } from "../utils/constants"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
-import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
 const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
@@ -476,7 +475,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         onCloseClick={close}
         onAddressSelected={handleSelectAccount}
       />
-      <BittensorSelectStakeDrawer containerId={STAKING_MODAL_CONTENT_CONTAINER_ID} />
     </BittensorModalLayout>
   )
 }

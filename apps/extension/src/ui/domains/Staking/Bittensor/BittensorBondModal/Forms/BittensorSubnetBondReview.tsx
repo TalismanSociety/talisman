@@ -358,7 +358,7 @@ export const BittensorSubnetBondReview = () => {
       </div>
       <div className="grow"></div>
       {payload &&
-        (!hasAckWarning ? (
+        (stakeDirection !== "bond" && !hasAckWarning ? (
           <Button primary onClick={openWarningDrawer}>
             {t("Confirm")}
           </Button>

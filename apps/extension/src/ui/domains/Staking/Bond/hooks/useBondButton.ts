@@ -152,8 +152,6 @@ const getBondableBalance = (
    * Bittensor Staking
    */
   if (token?.type === "substrate-native" && bittensorNetworkIds.includes(token.networkId)) {
-    const defaultHotkey = remoteConfig.stakingPools.bittensor?.[0] as string | undefined
-
     const isBonding = allBalances.each.some(
       (b) =>
         b.networkId === token.networkId &&
@@ -167,7 +165,6 @@ const getBondableBalance = (
       networkId: token.networkId,
       tokenId: subNativeTokenId(token.networkId), // only for analytics
       address: balance.address,
-      hotkey: defaultHotkey,
       amount: balance.transferable.planck,
       isBonding,
     }

@@ -32,14 +32,49 @@ import { BittensorStakingModalHeader } from "../../components/BittensorModalHead
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { ROOT_NETUID } from "../../utils/constants"
 import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
+
+// Maps Greek letters to their visually similar Latin equivalents for search matching.
+// Subnet symbols use Greek letters (α, β, τ, etc.) that users will type as Latin (a, b, t, etc.)
+const GREEK_TO_LATIN: Record<string, string> = {
+  α: "a",
+  β: "b",
+  γ: "y",
+  δ: "d",
+  ε: "e",
+  ζ: "z",
+  η: "n",
+  θ: "th",
+  ι: "i",
+  κ: "k",
+  λ: "l",
+  μ: "u",
+  ν: "v",
+  ξ: "x",
+  ο: "o",
+  π: "p",
+  ρ: "p",
+  σ: "s",
+  ς: "s",
+  τ: "t",
+  υ: "u",
+  φ: "f",
+  χ: "x",
+  ψ: "ps",
+  ω: "w",
+}
+
+const greekRegex = new RegExp(`[${Object.keys(GREEK_TO_LATIN).join("")}]`, "g")
+
+const normalizeGreek = (str: string) => str.replace(greekRegex, (ch) => GREEK_TO_LATIN[ch] ?? ch)
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
 const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] => {
   const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
   const sorted = data
-    .filter((sn) => sn.netuid)
+    .filter((sn) => typeof sn.netuid === "number")
     .sort((a, b) => {
       if (descendingFilters.includes(sortBy)) {
         // Sort other fields in descending order
@@ -76,10 +111,10 @@ export const BittensorSubnetSelect = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const displayedSubnets = useMemo(() => {
-    const lowerSearch = deferredSearch.toLowerCase()
+    const lowerSearch = normalizeGreek(deferredSearch.toLowerCase())
     return sortedSubnets.filter((subnet) => {
       const { netuid, name, symbol } = subnet
-      const subnetName = `${netuid} ${name} ${symbol}`.toLowerCase()
+      const subnetName = normalizeGreek(`${netuid} ${name} ${symbol}`.toLowerCase())
       return subnetName.includes(lowerSearch)
     })
   }, [deferredSearch, sortedSubnets])
@@ -111,7 +146,7 @@ export const BittensorSubnetSelect = () => {
       header={
         <BittensorStakingModalHeader
           title={t("Select Subnet")}
-          onBackClick={() => setStep("form")}
+          onBackClick={() => (netuid === null ? close() : setStep("form"))}
           onCloseModal={close}
           withClose
         />
@@ -277,15 +312,19 @@ const SubnetRow: FC<{
   )
   const tokenAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
+  const isRoot = option.netuid === ROOT_NETUID
+
   const emission = useMemo(
     () =>
-      // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
-      // so we multiply by 2 to get the total emission rate.
-      option.emission
-        ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
-          "%"
-        : t("N/A"),
-    [option.emission, t]
+      isRoot
+        ? null
+        : // The Taostats emission field is per-block TAO-side only (dTAO splits 50/50 between TAO and alpha pools),
+          // so we multiply by 2 to get the total emission rate.
+          option.emission
+          ? (Number(BigInt(option?.emission || 0) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
+            "%"
+          : t("N/A"),
+    [isRoot, option.emission, t]
   )
 
   if (!tokenAlpha) return null
@@ -329,28 +368,34 @@ const SubnetRow: FC<{
                     noCountUp
                     noTooltip
                   />
-                  <div className="inline-block size-2 rounded-full bg-body-disabled" />{" "}
-                  <TokensAndFiat
-                    tokenId={tokenAlpha.id}
-                    planck={String(option.total_alpha)}
-                    noFiat
-                    noCountUp
-                    noTooltip
-                  />
+                  {!isRoot && (
+                    <>
+                      <div className="inline-block size-2 rounded-full bg-body-disabled" />
+                      <TokensAndFiat
+                        tokenId={tokenAlpha.id}
+                        planck={String(option.total_alpha)}
+                        noFiat
+                        noCountUp
+                        noTooltip
+                      />
+                    </>
+                  )}
                 </>
               )}
             </div>
-            <div className="shrink-0">
-              {isLoading ? (
-                <Skeleton>0.0000 TAO 0.0%</Skeleton>
-              ) : (
-                <BittensorAlphaPrice
-                  taoTokenId={taoTokenId}
-                  price={option.price}
-                  priceChange24h={option.price_change_1_day}
-                />
-              )}
-            </div>
+            {!isRoot && (
+              <div className="shrink-0">
+                {isLoading ? (
+                  <Skeleton>0.0000 TAO 0.0%</Skeleton>
+                ) : (
+                  <BittensorAlphaPrice
+                    taoTokenId={taoTokenId}
+                    price={option.price}
+                    priceChange24h={option.price_change_1_day}
+                  />
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

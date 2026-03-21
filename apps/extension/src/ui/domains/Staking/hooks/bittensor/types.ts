@@ -8,6 +8,8 @@ export type BondOption = {
   hasData: boolean
   isError: boolean
   isRecommended?: boolean
+  isFeatured: boolean
+  featuredOrder: number
   validatorYield?: ValidatorYield
   apr: number
   subnets: number

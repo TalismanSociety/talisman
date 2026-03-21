@@ -5,6 +5,7 @@ import { getBalanceId } from "@talismn/balances"
 import { subDTaoTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakeInputError"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
+import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -13,6 +14,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -41,10 +43,18 @@ const DEFAULT_INPUTS: SwapBuyInputs = {
 const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   const lastSelectedAddress = useLastSelectedAddress()
   const defaultAddress = useBestAccountAddress()
+  const allBalances = useBalances("owned")
+  const remoteConfig = useRemoteConfig()
 
   const [state, setState] = useState<SwapBuyInputs>(
     // preselect account straight up to prevent flickering
-    () => merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
+    () => {
+      const address = lastSelectedAddress || defaultAddress || null
+      return merge({}, DEFAULT_INPUTS, {
+        address,
+        hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, address) ?? null,
+      })
+    }
   )
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
@@ -128,6 +138,18 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     txMode,
     onSubmit,
   } = useSwapSubmit({ netuid, account, direction: "buy", resetValueIn })
+
+  // when netuid changes (e.g. subnet picker), reset hotkey to the best default for the new subnet
+  const prevNetuidRef = useRef(netuid)
+  useEffect(() => {
+    if (prevNetuidRef.current === netuid) return
+    prevNetuidRef.current = netuid
+    setState((s) => ({
+      ...s,
+      hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, s.address) ?? null,
+      valueIn: null,
+    }))
+  }, [netuid, remoteConfig, allBalances])
 
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {

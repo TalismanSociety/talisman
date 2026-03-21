@@ -64,7 +64,7 @@ const ViewTokenDetailsMenuItem: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
     genericEvent("open view token details", { from: "token menu" })
   }, [genericEvent, tokenId])
 
-  return <ContextMenuItem onClick={handleClick}>{t("View token details")}</ContextMenuItem>
+  return <ContextMenuItem onClick={handleClick}>{t("View Token Details")}</ContextMenuItem>
 }
 
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {

@@ -53,7 +53,6 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     apiUrl: "https://cgp.talisman.xyz",
   },
   nominationPools: {},
-  stakingPools: {},
   documentation: {
     unifiedAddressDocsUrl: "",
   },
@@ -76,6 +75,8 @@ const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       buy: {},
       sell: {},
     },
+    defaultValidatorsBySubnet: {},
+    featuredValidators: [],
   },
   recommendedNetworks: [],
   postHogUrl: "https://us.i.posthog.com/batch/",

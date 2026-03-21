@@ -11,18 +11,19 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
-import { usePortfolioBalances } from "@ui/state/portfolio"
-import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
+import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
 import {
   type BittensorStakingPosition,
   useBittensorStakingPositions,
@@ -79,7 +80,9 @@ export const useResetBittensorBondWizard = () => {
   const reset = useCallback((init: BittensorStakingWizardOpenOptions) => {
     const stakeType =
       typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
-    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType }))
+    const step =
+      init.stakeDirection === "bond" && typeof init.netuid !== "number" ? "select-subnet" : "form"
+    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType, step }))
   }, [])
 
   return reset
@@ -114,7 +117,8 @@ const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
 const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
-  const { allBalances } = usePortfolioBalances()
+  const allBalances = useBalances("owned")
+  const remoteConfig = useRemoteConfig()
 
   const [
     {
@@ -130,9 +134,27 @@ const useBittensorBondWizardProvider = () => {
       stakeDirection,
     },
     setWizardState,
-  ] = useState(() => wizardOpenState$.getValue())
+  ] = useState(() => {
+    const defValue = wizardOpenState$.getValue()
+
+    // Synchronously adjust the default set to have the best hotkey for the user
+    if (
+      defValue.stakeDirection === "bond" &&
+      typeof defValue.netuid === "number" &&
+      !defValue.hotkey
+    )
+      return {
+        ...defValue,
+        hotkey:
+          getDefaultValidatorHotkey(defValue.netuid, remoteConfig, allBalances, defValue.address) ??
+          null,
+      }
+
+    return defValue
+  })
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
+
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   const dtaoBalance = useBalance(allBalances, address, dtaoToken?.id)
@@ -143,7 +165,6 @@ const useBittensorBondWizardProvider = () => {
   const tokenRates = useTokenRates(nativeTokenId)
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
   const accountPicker = useOpenClose()
-  const stakeTypeDrawer = useOpenClose()
   const slippageDrawer = useOpenClose()
   const warningDrawer = useOpenClose()
   const seekDiscountDrawer = useOpenClose()
@@ -227,31 +248,36 @@ const useBittensorBondWizardProvider = () => {
     []
   )
 
-  const setHotkey = useCallback(
-    (hotkey: string) => setWizardState((prev) => ({ ...prev, hotkey })),
-    []
-  )
+  const isHotkeyAutoSelected = useRef(true)
+
+  const setHotkey = useCallback((hotkey: string) => {
+    isHotkeyAutoSelected.current = false
+    setWizardState((prev) => ({ ...prev, hotkey }))
+  }, [])
+
   const setNetuid = useCallback(
-    (netuid: number) =>
-      setWizardState((prev) => ({ ...prev, netuid, stakeType: netuid ? "subnet" : "root" })),
-    []
+    (netuid: number) => {
+      isHotkeyAutoSelected.current = true
+
+      setWizardState((prev) => {
+        if (prev.netuid === netuid) return prev
+        return {
+          ...prev,
+          netuid,
+          stakeType: netuid ? "subnet" : "root",
+          hotkey:
+            prev.stakeDirection === "bond"
+              ? (getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, prev.address) ?? null)
+              : null,
+        }
+      })
+    },
+    [allBalances, remoteConfig]
   )
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
     []
-  )
-
-  const setStakeType = useCallback(
-    (stakeType: StakeType) => {
-      setWizardState((prev) => ({
-        ...prev,
-        stakeType,
-        netuid: stakeType === "root" ? 0 : prev.netuid || null,
-      }))
-      stakeTypeDrawer.close()
-    },
-    [stakeTypeDrawer]
   )
 
   const toggleDisplayMode = useCallback(() => {
@@ -283,7 +309,12 @@ const useBittensorBondWizardProvider = () => {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    if (!!currentHotkey && !hotkey && currentHotkey !== hotkey && stakeDirection === "bond") {
+    if (
+      !!currentHotkey &&
+      isHotkeyAutoSelected.current &&
+      currentHotkey !== hotkey &&
+      stakeDirection === "bond"
+    ) {
       setWizardState((prev) => ({ ...prev, hotkey: currentHotkey }))
     }
   }, [currentHotkey, hotkey, stakeDirection, step])
@@ -483,11 +514,6 @@ const useBittensorBondWizardProvider = () => {
     if (stakeDirection === "unbond" && step === "form" && !position) setStep("select-position")
   }, [stakeDirection, position, setStep, step])
 
-  useEffect(() => {
-    // on mount, if stake type is not set, display the stake type select drawer
-    if (!stakeType && stakeDirection === "bond") stakeTypeDrawer.open()
-  }, [stakeType, stakeDirection, stakeTypeDrawer])
-
   return {
     account,
     nativeToken,
@@ -501,7 +527,6 @@ const useBittensorBondWizardProvider = () => {
     amountAlpha,
     displayMode,
     accountPicker,
-    stakeTypeDrawer,
     slippageDrawer,
     warningDrawer,
     seekDiscountDrawer,
@@ -539,7 +564,6 @@ const useBittensorBondWizardProvider = () => {
     setHotkey,
     setPlancks,
     setStep,
-    setStakeType,
     setPosition,
     toggleDisplayMode,
     onSubmitted,
