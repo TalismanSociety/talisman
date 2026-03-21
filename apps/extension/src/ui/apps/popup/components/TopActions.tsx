@@ -4,7 +4,7 @@ import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useAccounts } from "@ui/state/accounts"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
@@ -18,7 +18,7 @@ type TopActionsProps = {
 export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapModal } = useSwapModal()
   const ownedAccounts = useAccounts("owned")
   const isBittensorEnabled = useIsBittensorEnabled()
 
@@ -57,7 +57,7 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
+          onClick: () => openSwapModal({}),
           disabled: disableActions,
           disabledReason,
         },
@@ -78,7 +78,7 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
       disableActions,
       disabledReason,
       openCopyAddressModal,
-      openSwapTokensModal,
+      openSwapModal,
       t,
       isBittensorEnabled,
     ]

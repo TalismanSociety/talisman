@@ -6,6 +6,7 @@ export {
   getAccountSignetUrl,
   isAccountAddressEthereum,
   isAccountAddressSs58,
+  /** @knipignore */
   isAccountBitcoin,
   isAccountInTypes,
   isAccountLedgerPolkadotGeneric,

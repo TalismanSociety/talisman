@@ -37,7 +37,7 @@
 ## Architecture & Reuse
 
 - Favor **RxJS (+ @react-rxjs/core)** for state/logic that must run in both UI and service-worker contexts so we can reuse the same streams across backend and frontend; React local state is fine for purely local UI concerns.
-- Use provideContext when a react context is needed (for sharing data within wizards or component sub-trees)
+- Use provideContext when a react context is needed (for sharing data within wizards or component sub-trees). When using `provideContext`, define the main hook in a separate `.internal` file (e.g., `SwapProvider.internal.ts`) and re-export the provider/hook from the public module. This prevents WXT's HMR from resetting the entire component tree on every code change during development.
 - Reuse existing packages/modules (`@talismn/balances`, `chaindata-provider`, shared stores, UI components) before inventing new abstractions.
 - Keep modules composable and documented (see `BalancesModules.md` for expectations on APIs, storage, hydration).
 - Encourage `lodash-es` helpers when they keep code clear/concise.
@@ -77,6 +77,12 @@
 4. Any change that touches the keyring or secret storage must ship with dedicated unit tests.
 5. Before considering a task complete, ensure `pnpm check` passes (Biome check for the repo).
 
+## Browser Testing with the Wallet
+
+- When you need to interact with the Talisman wallet in a browser (e.g., to verify UI, test flows, or debug visually), use the `agent-browser` CLI.
+- **Only connect to the dev-mode browser on CDP port 9223** (`--cdp-url http://localhost:9223`). This is the designated development browser with the extension loaded.
+- **Using Talisman on any other browser instance is strictly forbidden.** Do not launch new browsers or connect to other CDP ports for wallet interactions.
+
 ## Commenting & Documentation
 
 - Code should be self-explanatory; add **succinct comments** only when context is non-obvious (security rationale, tricky RxJS flows, chain-specific quirks).
@@ -86,7 +92,7 @@
 ## Code quality
 
 - Add relevant tests along with any new development.
-- Before completing work, ensure `pnpm check --fix` passes, and verify that typescript code can compile using typecheck scripts.
+- Before completing work, ensure `pnpm check --fix`, `pnpm typecheck` and `pnpm knip` pass.
 
 ## Dev Mode 
 

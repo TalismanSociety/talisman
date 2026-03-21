@@ -1,3 +1,4 @@
+import { LoaderIcon } from "@talismn/icons"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import type { IChartApi, ISeriesApi } from "lightweight-charts"
@@ -160,43 +161,7 @@ const FlowChartGraphContent: FC<{
 }
 
 const FlowChartGraphSkeleton = () => (
-  <div className="relative size-full">
-    {/* Grid lines */}
-    <div className="absolute inset-x-4 top-[20%] h-px bg-grey-800/50" />
-    <div className="absolute inset-x-4 top-[40%] h-px bg-grey-800/50" />
-    <div className="absolute inset-x-4 top-[60%] h-px bg-grey-800/50" />
-    <div className="absolute inset-x-4 top-[80%] h-px bg-grey-800/50" />
-
-    {/* Centered area chart icon */}
-    <div className="absolute inset-0 flex animate-pulse items-center justify-center">
-      <svg className="h-24 w-32" viewBox="0 0 80 48" fill="none">
-        {/* Green area (TAO In) */}
-        <path
-          d="M0 36 L13 28 L26 30 L40 20 L53 22 L66 14 L80 16 L80 48 L0 48 Z"
-          fill="currentColor"
-          className="text-buy/20"
-        />
-        <path
-          d="M0 36 L13 28 L26 30 L40 20 L53 22 L66 14 L80 16"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="text-buy/50"
-          fill="none"
-        />
-        {/* Red area (TAO Out) */}
-        <path
-          d="M0 42 L13 40 L26 41 L40 36 L53 38 L66 34 L80 35 L80 48 L0 48 Z"
-          fill="currentColor"
-          className="text-sell/15"
-        />
-        <path
-          d="M0 42 L13 40 L26 41 L40 36 L53 38 L66 34 L80 35"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="text-sell/40"
-          fill="none"
-        />
-      </svg>
-    </div>
+  <div className="flex size-full items-center justify-center">
+    <LoaderIcon className="animate-spin-slow text-[40px] text-body-inactive" />
   </div>
 )

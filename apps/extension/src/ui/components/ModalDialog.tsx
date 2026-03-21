@@ -14,6 +14,9 @@ type ModalDialogProps = {
   contentClassName?: string
 }
 
+/**
+ * @deprecated Prefer using WizardModalDialog for new features
+ */
 export const ModalDialog: FC<ModalDialogProps> = ({
   id,
   className,

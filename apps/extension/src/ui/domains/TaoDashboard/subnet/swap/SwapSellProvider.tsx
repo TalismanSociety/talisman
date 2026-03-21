@@ -5,7 +5,7 @@ import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hook
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -36,7 +36,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     // preselect position straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { positionId: subnetPositions[0]?.id ?? null })
   )
-
   useEffect(() => {
     if (!subnetPositions.length) {
       setState((prev) => (prev.positionId ? { ...prev, positionId: null } : prev))
@@ -64,7 +63,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const hotkey = tokenIn?.hotkey ?? null
 
   const balancesProps = useMemo(
-    (): BalanceByParamsProps =>
+    (): BalancesByParamsProps =>
       address
         ? {
             addressesAndTokens: {

@@ -26,26 +26,29 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
       if (!scrollable) return
 
       const handleDetectScroll = () => {
+        // tolerance avoids false positives from sub-pixel rounding
+        const tolerance = 1
         setMore({
-          top: scrollable.scrollTop > 0,
-          bottom: scrollable.scrollHeight - scrollable.scrollTop > scrollable.clientHeight,
+          top: scrollable.scrollTop > tolerance,
+          bottom:
+            scrollable.scrollHeight - scrollable.scrollTop > scrollable.clientHeight + tolerance,
         })
       }
 
       scrollable.addEventListener("scroll", handleDetectScroll)
-      scrollable.addEventListener("resize", handleDetectScroll)
       window.addEventListener("resize", handleDetectScroll)
 
-      // init
-      handleDetectScroll()
+      // observe content size changes (async rendering, list updates)
+      const resizeObserver = new ResizeObserver(handleDetectScroll)
+      resizeObserver.observe(scrollable)
+      for (const child of scrollable.children) resizeObserver.observe(child)
 
-      // sometimes on init scrollHeight === clientHeight, setTimeout fixes the problem
-      setTimeout(() => handleDetectScroll(), 50)
+      handleDetectScroll()
 
       return () => {
         scrollable.removeEventListener("scroll", handleDetectScroll)
-        scrollable.removeEventListener("resize", handleDetectScroll)
         window.removeEventListener("resize", handleDetectScroll)
+        resizeObserver.disconnect()
       }
     }, [ref])
 

@@ -3,6 +3,7 @@ import type { SubDTaoToken, SubNativeToken } from "@talismn/chaindata-provider"
 import { cn, formatDecimals } from "@talismn/util"
 import { DistanceToNow } from "@ui/components/DistanceToNow"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTokens } from "../../hooks/useSubnetTokens"
@@ -89,6 +90,7 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
               alphaToken={alphaToken}
               taoToken={taoToken}
               transaction={tx}
+              showPrice={activeTab === "all"}
             />
           ))}
         </div>
@@ -101,7 +103,8 @@ const TransactionRow: FC<{
   taoToken: SubNativeToken
   alphaToken: SubDTaoToken
   transaction: TransactionEntry
-}> = ({ taoToken, alphaToken, transaction }) => {
+  showPrice?: boolean
+}> = ({ taoToken, alphaToken, transaction, showPrice }) => {
   const { t } = useTranslation()
   const { open } = useTransactionModal()
 
@@ -111,10 +114,27 @@ const TransactionRow: FC<{
   const taoDisplay = useMemo(() => {
     const taoValue = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
     const formatter = new BalanceFormatter(taoValue, taoToken.decimals)
-    return `τ ${formatDecimals(formatter.tokens, 6)}`
+    return `${formatDecimals(formatter.tokens, 6)} τ`
   }, [isBuy, transaction.tokenValueIn, transaction.tokenValueOut, taoToken.decimals])
 
   const alphaValue = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
+
+  const priceDisplay = useMemo(() => {
+    const taoVal = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
+    const alphaVal = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
+    const taoTokens = new BalanceFormatter(taoVal, taoToken.decimals).tokens
+    const alphaTokens = new BalanceFormatter(alphaVal, alphaToken.decimals).tokens
+    const alphaNum = Number(alphaTokens)
+    if (!alphaNum) return null
+    const price = Number(taoTokens) / alphaNum
+    return formatDecimals(price.toString(), 2)
+  }, [
+    isBuy,
+    transaction.tokenValueIn,
+    transaction.tokenValueOut,
+    taoToken.decimals,
+    alphaToken.decimals,
+  ])
 
   const handleClick = useCallback(() => {
     open(transaction)
@@ -146,38 +166,66 @@ const TransactionRow: FC<{
       <div className="flex items-center gap-8">
         <TransactionAvatar isBuy={isBuy} address={transaction.account} />
         <div className="flex flex-col gap-2">
-          <div>
-            <AccountNameOrAddress address={transaction.account} />
-          </div>
-          <div className={cn("text-xs", isFailed ? "text-alert-error" : "text-grey-500")}>
-            {statusLabel}
-          </div>
+          {showPrice ? (
+            <>
+              <div>
+                <AccountNameOrAddress address={transaction.account} />
+              </div>
+              <div className={cn("text-xs", isFailed ? "text-alert-error" : "text-grey-500")}>
+                {statusLabel}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="font-semibold">{isBuy ? t("BUY") : t("SELL")}</div>
+              <div className={cn("text-xs", isFailed ? "text-alert-error" : "text-grey-500")}>
+                {statusLabel}
+                <span className="ml-4 text-body-secondary">
+                  {shortenAddress(transaction.account, 4, 4)}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className={cn("flex flex-col items-end gap-2", isFailed && "opacity-50")}>
-        <div
-          className={cn(
-            isBuy && !isFailed && "text-primary",
-            transaction.status !== "failed" &&
-              transaction.status !== "indexed" &&
-              transaction.direction === "buy" &&
-              "animate-pulse"
+        <div className="flex items-baseline gap-4">
+          {isBuy ? (
+            <>
+              <span>{taoDisplay}</span>
+              <span className="text-body-secondary">→</span>
+              <span
+                className={cn(
+                  !isFailed && "text-primary",
+                  transaction.status !== "failed" &&
+                    transaction.status !== "indexed" &&
+                    "animate-pulse"
+                )}
+              >
+                <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
+              </span>
+            </>
+          ) : (
+            <>
+              <span className={cn(!isFailed && "text-primary")}>
+                <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
+              </span>
+              <span className="text-body-secondary">→</span>
+              <span
+                className={cn(
+                  transaction.status !== "failed" &&
+                    transaction.status !== "indexed" &&
+                    "animate-pulse"
+                )}
+              >
+                {taoDisplay}
+              </span>
+            </>
           )}
-        >
-          {isBuy ? "+ " : "- "}
-          <TokensAndFiat noFiat noCountUp tokenId={alphaToken.id} planck={alphaValue} />
         </div>
-        <div
-          className={cn(
-            "text-grey-500 text-xs",
-            transaction.status !== "failed" &&
-              transaction.status !== "indexed" &&
-              transaction.direction === "sell" &&
-              "animate-pulse"
-          )}
-        >
-          {taoDisplay}
-        </div>
+        {priceDisplay !== null && (
+          <div className="text-grey-500 text-xs">Price: {priceDisplay} τ</div>
+        )}
       </div>
     </button>
   )

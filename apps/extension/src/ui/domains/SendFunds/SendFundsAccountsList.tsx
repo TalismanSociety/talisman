@@ -2,7 +2,7 @@ import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Balance } from "@talismn/balances"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
-import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { type FC, type ReactNode, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountRow } from "./AccountRow"
@@ -51,6 +51,10 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   const token = useToken(tokenId)
   const balances = useBalances()
 
+  // Capture the selected account at mount time so the sort order stays stable.
+  // When the modal re-opens, the component remounts and picks up the new value.
+  const initialSelectedRef = useRef(selected)
+
   const accountsWithBalance = useMemo(() => {
     return accounts
       .map((account) => ({
@@ -58,9 +62,9 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         balance: balances.find({ address: account.address, tokenId }).sorted[0],
       }))
       .sort((a, b) => {
-        // selected account first
-        if (a.address === selected) return -1
-        if (b.address === selected) return 1
+        // Pin the initially-selected account to the top
+        if (a.address === initialSelectedRef.current) return -1
+        if (b.address === initialSelectedRef.current) return 1
 
         // then accounts by descending balance
         const balanceA = a.balance?.transferable.planck ?? 0n
@@ -73,14 +77,14 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         ...account,
         disabled: !account.balance || account.balance.transferable.planck === 0n,
       }))
-  }, [accounts, balances, selected, tokenId])
+  }, [accounts, balances, tokenId])
 
   if (!showIfEmpty && !accounts?.length) return null
 
   return (
     <div>
       {!!header && <div className="mt-8 mb-4 px-12 font-bold text-body-secondary">{header}</div>}
-      {accountsWithBalance?.map((account) => (
+      {accountsWithBalance.map((account) => (
         <AccountRow
           selected={account.address === selected}
           key={account.address}

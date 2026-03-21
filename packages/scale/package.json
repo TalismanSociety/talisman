@@ -27,8 +27,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@polkadot-api/metadata-builders": "0.12.2",
-    "@polkadot-api/substrate-bindings": "0.14.0",
+    "@polkadot-api/metadata-builders": "0.13.9",
+    "@polkadot-api/substrate-bindings": "0.17.0",
     "@polkadot-api/utils": "0.2.0",
     "anylogger": "^1.0.11",
     "scale-ts": "^1.6.1"

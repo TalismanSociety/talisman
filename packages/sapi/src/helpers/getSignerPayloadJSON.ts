@@ -59,7 +59,10 @@ export const getSignerPayloadJSON = async (
   }
 
   const era = mortal({ period: ERA_PERIOD, phase: blockNumber % ERA_PERIOD })
-  const signedExtensions = chain.metadata.extrinsic.signedExtensions.map((ext) => ext.identifier)
+  // signedExtensions is keyed by extension version, 0 is the default
+  const signedExtensions = (chain.metadata.extrinsic.signedExtensions[0] ?? []).map(
+    (ext) => ext.identifier
+  )
 
   const basePayload: SignerPayloadJSON = {
     address: signerConfig.address,

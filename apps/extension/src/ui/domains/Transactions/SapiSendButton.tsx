@@ -10,6 +10,7 @@ import { Button, type ButtonProps } from "@ui/components/Button"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { isUserRejectionError } from "@ui/util/isUserRejectionError"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
@@ -98,7 +99,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
       } catch (err) {
         log.error("Failed to submit", { payload, err })
         // biome-ignore lint/suspicious/noExplicitAny: legacy
-        setError((err as any)?.message ?? "Failed to submit")
+        setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
       }
     },
     [onSubmitted, sapi, lockedInputs]
@@ -155,7 +156,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       } catch (err) {
         log.error("Failed to submit", { payload, err })
         // biome-ignore lint/suspicious/noExplicitAny: legacy
-        setError((err as any)?.message ?? "Failed to submit")
+        setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
       }
     },
     [lockedInputs, onSubmitted, sapi]
@@ -207,9 +208,16 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
       setState({ isSubmitting: false, error: null })
       onSubmitted(hash)
     } catch (err) {
-      log.error("Failed to submit", { payload, err })
-      // biome-ignore lint/suspicious/noExplicitAny: legacy
-      setState({ isSubmitting: false, error: (err as any)?.message ?? "Failed to submit" })
+      if (isUserRejectionError(err)) {
+        setState({ isSubmitting: false, error: null })
+      } else {
+        log.error("Failed to submit", { payload, err })
+        setState({
+          isSubmitting: false,
+          // biome-ignore lint/suspicious/noExplicitAny: legacy
+          error: (err as any)?.message?.slice(0, 200) ?? "Failed to submit",
+        })
+      }
     }
   }, [mode, onSubmitted, payload, sapi, txInfo])
 

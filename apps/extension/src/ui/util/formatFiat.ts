@@ -26,12 +26,16 @@ export const formatFiat = (
       notation: compact ? "compact" : "standard",
     }),
 
-    ...(minimumDecimalPlaces !== undefined &&
-      !compact && {
-        // NOTE: If minimumFractionDigits is set to an integer greater than `20` then it throws the error:
-        //       `RangeError: minimumFractionDigits value is out of range`
-        minimumFractionDigits: minimumDecimalPlaces <= 20 ? minimumDecimalPlaces : 20,
+    ...(minimumDecimalPlaces !== undefined && {
+      // NOTE: If minimumFractionDigits is set to an integer greater than `20` then it throws the error:
+      //       `RangeError: minimumFractionDigits value is out of range`
+      minimumFractionDigits: minimumDecimalPlaces <= 20 ? minimumDecimalPlaces : 20,
+      // compact notation overrides maximumFractionDigits to 0-1 by default,
+      // so we need to explicitly set it to show the desired decimal places
+      ...(compact && {
+        maximumFractionDigits: minimumDecimalPlaces <= 20 ? minimumDecimalPlaces : 20,
       }),
+    }),
   }
 
   const formatted = new Intl.NumberFormat(undefined, formatOptions).format(amount)

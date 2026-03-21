@@ -234,6 +234,7 @@ export const getTransactionSerializable = (
         nonce: txRequest.nonce,
         to: txRequest.to,
         value: txRequest.value,
+        accessList: txRequest.accessList,
       }
       return res
     }
@@ -245,7 +246,8 @@ export const getTransactionSerializable = (
 
 const TX_GAS_LIMIT_DEFAULT = 250000n
 const TX_GAS_LIMIT_MIN = 21000n
-const TX_GAS_LIMIT_SAFETY_RATIO = 2n
+const TX_GAS_LIMIT_SAFETY_RATIO = 50n // 50% buffer (1.5×, industry standard)
+const TX_GAS_LIMIT_MAX_BLOCK_PERCENT = 90n // cap at 90% of block gas limit
 
 export const getGasLimit = (
   blockGasLimit: bigint,
@@ -262,7 +264,11 @@ export const getGasLimit = (
   // so if dapp suggests higher gas limit as the estimate, use that
   const highestLimit = safeGasLimit > suggestedGasLimit ? safeGasLimit : suggestedGasLimit
 
-  let gasLimit = highestLimit
+  // cap at 90% of block gas limit to prevent rejection
+  const maxBlockGas = (blockGasLimit * TX_GAS_LIMIT_MAX_BLOCK_PERCENT) / 100n
+  const cappedLimit = highestLimit > maxBlockGas ? maxBlockGas : highestLimit
+
+  let gasLimit = cappedLimit
   if (gasLimit > blockGasLimit) {
     // probably bad formatting or error from the dapp, fallback to default value
     gasLimit = TX_GAS_LIMIT_DEFAULT
@@ -323,15 +329,18 @@ export const getTotalFeesFromGasSettings = (
   if (gasSettings.type === "eip1559") {
     if (!isBigInt(baseFeePerGas))
       throw new Error("baseFeePerGas argument is required for type 2 fee computation")
+
+    // EIP-1559: effective fee per gas = min(maxFeePerGas, baseFeePerGas + maxPriorityFeePerGas)
+    const sumBasePriority = baseFeePerGas + gasSettings.maxPriorityFeePerGas
+    const effectiveFeePerGas =
+      sumBasePriority < gasSettings.maxFeePerGas ? sumBasePriority : gasSettings.maxFeePerGas
+
     return {
       estimatedL1DataFee,
       estimatedFee:
-        (gasSettings.maxPriorityFeePerGas +
-          (baseFeePerGas < gasSettings.maxFeePerGas ? baseFeePerGas : gasSettings.maxFeePerGas)) *
-          (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas) +
+        effectiveFeePerGas * (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas) +
         l1Fee,
-      maxFee:
-        (gasSettings.maxFeePerGas + gasSettings.maxPriorityFeePerGas) * gasSettings.gas + maxL1Fee,
+      maxFee: gasSettings.maxFeePerGas * gasSettings.gas + maxL1Fee,
     }
   } else {
     return {
@@ -370,6 +379,31 @@ export const prepareTransaction = (
   nonce,
 })
 
+/**
+ * Ensures that the transaction request has the correct fee fields according to the gas settings type, and removes any incompatible fields.
+ * This was introduced to workaround issues in swaps, with Lifi provider on BSC chain.
+ */
+export const normalizeTransactionFeeModel = (
+  tx: TransactionRequest,
+  gasSettings: EthGasSettings
+): TransactionRequest => {
+  const normalizedTx = { ...tx }
+
+  if (gasSettings.type === "eip1559") {
+    // on eip1559 tx, ensure we dont have any legacy fee field, and type is set to eip1559
+    delete normalizedTx.gasPrice
+    normalizedTx.type = "eip1559"
+    return normalizedTx
+  }
+
+  // on legacy tx, ensure we dont have any eip1559 fee field, and type is not set or set to legacy
+  delete normalizedTx.maxFeePerGas
+  delete normalizedTx.maxPriorityFeePerGas
+  if (normalizedTx.type === "eip1559") delete normalizedTx.type
+
+  return normalizedTx
+}
+
 const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")
 
 const schemaAddEthereumRequest = yup.object().shape({
@@ -399,7 +433,6 @@ export const isValidAddEthereumRequestParam = (obj: unknown) =>
 // For example, only the HTTPS protocol scheme should be used.
 // Furthermore, private IP ranges and hostnames should be forbidden.
 // Finally, only specific whitelisted image extensions should be allowed.
-/** @knipignore used in __tests__ */
 export const isSafeImageUrl = (url?: string) => {
   if (!url) return true
   try {

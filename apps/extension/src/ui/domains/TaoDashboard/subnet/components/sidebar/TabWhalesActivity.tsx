@@ -20,6 +20,7 @@ import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAv
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useSetChartOverlay } from "../chart-overlay/ChartOverlayContext"
 import { SectionTitleBar } from "./SectionTitleBar"
 
 export const TabWhalesActivity: FC<{ netuid: number }> = ({ netuid }) => {
@@ -175,6 +176,7 @@ const WhaleActivityItem: FC<{
   taoUsdPrice?: number
 }> = ({ tx, taoToken, taoUsdPrice }) => {
   const isBuy = isInflowTransaction(tx.transactionType)
+  const setHoveredItem = useSetChartOverlay()
 
   const usdValue = useMemo(() => {
     if (!taoUsdPrice) return null
@@ -197,6 +199,16 @@ const WhaleActivityItem: FC<{
     <button
       type="button"
       onClick={handleClick}
+      onMouseEnter={() =>
+        setHoveredItem({
+          type: "whale",
+          timestamp: Math.floor(new Date(tx.timestamp).getTime() / 1000),
+          tx,
+          taoUsdPrice,
+          taoDecimals: taoToken.decimals,
+        })
+      }
+      onMouseLeave={() => setHoveredItem(null)}
       className={cn(
         "flex h-28 shrink-0 items-center justify-between px-12 text-left text-sm hover:bg-grey-800"
       )}

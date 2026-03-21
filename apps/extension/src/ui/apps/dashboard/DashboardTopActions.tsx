@@ -15,7 +15,7 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
@@ -31,7 +31,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openSwapModal } = useSwapModal()
   const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
@@ -85,7 +85,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapTokensModal(),
+          onClick: () => openSwapModal({}),
           disabled: disableActions,
           disabledReason,
         },
@@ -121,7 +121,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
       selectedAddress,
       symbol,
       openCopyAddressModal,
-      openSwapTokensModal,
+      openSwapModal,
       openRampsModal,
       isBittensorEnabled,
     ]

@@ -3,6 +3,7 @@ import {
   getGasLimit,
   getGasSettingsEip1559,
   getTotalFeesFromGasSettings,
+  normalizeTransactionFeeModel,
   prepareTransaction,
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
@@ -142,22 +143,29 @@ const useBlockFeeData = (
         withFeeOptions ? publicClient.estimateMaxPriorityFeePerGas() : 0n,
       ])
 
+      let adjustedFeeHistoryAnalysis = feeHistoryAnalysis
       if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
-        // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
-        // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
-        // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
-        if (!feeHistoryAnalysis.isValid) {
-          feeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
-          feeHistoryAnalysis.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
-          feeHistoryAnalysis.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
-        } else if (
-          feeHistoryAnalysis.avgGasUsedRatio !== null &&
-          feeHistoryAnalysis.avgGasUsedRatio < 0.8
-        )
-          feeHistoryAnalysis.maxPriorityPerGasOptions.low =
-            minimumMaxPriorityFeePerGas < feeHistoryAnalysis.maxPriorityPerGasOptions.low
-              ? minimumMaxPriorityFeePerGas
-              : feeHistoryAnalysis.maxPriorityPerGasOptions.low
+        // clone to avoid mutating the object returned by getFeeHistoryAnalysis
+        adjustedFeeHistoryAnalysis = {
+          ...feeHistoryAnalysis,
+          maxPriorityPerGasOptions: { ...feeHistoryAnalysis.maxPriorityPerGasOptions },
+        }
+
+        if (!adjustedFeeHistoryAnalysis.isValid) {
+          // network inactive: use minimumMaxPriorityFeePerGas for all options
+          adjustedFeeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
+          adjustedFeeHistoryAnalysis.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
+          adjustedFeeHistoryAnalysis.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
+        } else {
+          // use eth_maxPriorityFeePerGas as floor for all tiers to prevent underpricing
+          const { maxPriorityPerGasOptions } = adjustedFeeHistoryAnalysis
+          if (maxPriorityPerGasOptions.low < minimumMaxPriorityFeePerGas)
+            maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
+          if (maxPriorityPerGasOptions.medium < minimumMaxPriorityFeePerGas)
+            maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
+          if (maxPriorityPerGasOptions.high < minimumMaxPriorityFeePerGas)
+            maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
+        }
       }
 
       const networkUsage = Number((gasUsed * 100n) / blockGasLimit) / 100
@@ -170,7 +178,7 @@ const useBlockFeeData = (
         baseFeePerGas: allPossibleBaseFees.length ? bigIntMax(...allPossibleBaseFees) : 0n,
         blockGasLimit,
         networkUsage,
-        feeHistoryAnalysis,
+        feeHistoryAnalysis: adjustedFeeHistoryAnalysis,
       }
     },
     enabled: !!tx && !!publicClient && withFeeOptions !== undefined,
@@ -509,11 +517,10 @@ export const useEthTransaction = (
   }, [evmNetworkId])
 
   // set default priority based on EIP1559 support
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
-    setPriority(hasEip1559Support ? "low" : "recommended")
-  }, [hasEip1559Support, isReplacement, priority])
+    setPriority(hasEip1559Support ? "medium" : "recommended")
+  }, [hasEip1559Support, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({
     evmNetworkId,
@@ -531,7 +538,8 @@ export const useEthTransaction = (
 
   const liveUpdatingTransaction = useMemo(() => {
     if (!publicClient || !tx || !gasSettings || nonce === undefined) return undefined
-    return prepareTransaction(tx, gasSettings, nonce)
+    const preparedTransaction = prepareTransaction(tx, gasSettings, nonce)
+    return normalizeTransactionFeeModel(preparedTransaction, gasSettings)
   }, [gasSettings, publicClient, tx, nonce])
 
   // transaction may be locked once sent to hardware device for signing
