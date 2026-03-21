@@ -1,6 +1,5 @@
 import { getSn45Api } from "@core/domains/bittensor/exports"
 import { useQuery } from "@tanstack/react-query"
-import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { useMemo } from "react"
 
@@ -28,7 +27,6 @@ export const useTaoPrice = () => {
       const response = await sn45Api.v1.getTaoPrice({ signal })
       return response.data
     },
-    persister: createQueryStoragePersister(),
     refetchInterval: 60_000,
     staleTime: 30_000,
   })
@@ -58,7 +56,6 @@ export const useSubnetLeaderboard = (period: TimePeriod = "1d") => {
         })),
       }
     },
-    persister: createQueryStoragePersister(),
     refetchInterval: 60_000,
     staleTime: 30_000,
   })
