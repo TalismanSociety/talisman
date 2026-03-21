@@ -1,8 +1,10 @@
+import { log } from "@common/log"
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { u8aToHex } from "@polkadot/util"
+import { Twox128 } from "@polkadot-api/substrate-bindings"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
-import { blake2b256, encryptKemAead } from "@talismn/crypto"
-import { Binary, FixedSizeBinary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
+import { encryptKemAead } from "@talismn/crypto"
+import { Binary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"
@@ -87,7 +89,32 @@ export class SubHandler extends ExtensionHandler {
       )
       if (!metadataRpc) throw new Error("Metadata RPC not found")
 
-      // increment nonce of the inner payload as it will be executed after the wrapper transaction
+      // fetch MevShield next key from chain storage
+      const { builder } = parseMetadataRpc(metadataRpc)
+      const storageCodec = builder.buildStorage("MevShield", "NextKey")
+      const stateKey = storageCodec.keys.enc()
+      const hexValue = await chainConnector.send<string | null>(
+        chain.id,
+        "state_getStorage",
+        [stateKey],
+        false
+      )
+
+      // graceful fallback: if shield is disabled on-chain, submit unshielded
+      if (!hexValue) {
+        log.warn("[mev-shield] NextKey not found on-chain, falling back to standard submission")
+        return this.submit({ payload, txInfo })
+      }
+
+      const nextKeyBinary = storageCodec.value.dec(hexValue) as Binary
+      const nextKeyBytes = nextKeyBinary.asBytes()
+
+      // compute xxhash128 of the public key for the ciphertext prefix
+      const keyHash = Twox128(nextKeyBytes)
+
+      // inner payload uses nonce+1 (block proposer pushes outer tx first, then inner)
+      // era/blockNumber/blockHash stay unchanged — the mortal era ≤8 restriction
+      // only applies to the outer submit_encrypted call, not the inner extrinsic
       const innerPayload: SignerPayloadJSON = {
         ...payload,
         nonce: toPjsHex(BigInt(payload.nonce) + 1n),
@@ -111,36 +138,26 @@ export class SubHandler extends ExtensionHandler {
 
       const signedInnerHash = innerTx.hash.toHex()
 
-      // fetch MevShield next key from chain storage
-      const { builder } = parseMetadataRpc(metadataRpc)
-      const storageCodec = builder.buildStorage("MevShield", "NextKey")
-      const stateKey = storageCodec.keys.enc()
-      const hexValue = await chainConnector.send<string | null>(
-        chain.id,
-        "state_getStorage",
-        [stateKey],
-        false
-      )
-      if (!hexValue) throw new Error("MevShield NextKey not found")
-      const nextKeyBinary = storageCodec.value.dec(hexValue) as Binary
+      // encrypt the inner tx with next mev shield key (v2 wire format includes keyHash prefix)
+      const ciphertextBytes = await encryptKemAead(keyHash, nextKeyBytes, innerTx.toU8a())
 
-      // encrypt the inner tx with next mev shield key
-      const ciphertextBytes = await encryptKemAead(nextKeyBinary.asBytes(), innerTx.toU8a())
-
-      // the hash of the inner tx must also be supplied in the outer encrypted call
-      const commitment = blake2b256(innerTx.toU8a())
-
-      // craft the encrypted call
+      // craft the encrypted call (v2: commitment parameter removed)
       const { codec, location } = builder.buildCall("MevShield", "submit_encrypted")
       const args = {
-        commitment: new FixedSizeBinary(commitment),
         ciphertext: new Binary(ciphertextBytes),
       }
       const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
 
+      // outer payload uses short mortal era (≤8 blocks) as required by CheckMortality
+      const outerBlockNumber = Number.parseInt(payload.blockNumber, 16)
+      const outerEra = mortalEra({
+        period: MEV_SHIELD_ERA_PERIOD,
+        phase: outerBlockNumber % MEV_SHIELD_ERA_PERIOD,
+      })
       const outerPayload: SignerPayloadJSON = {
         ...payload,
         method: method.asHex(),
+        era: outerEra,
         mode: 0,
         metadataHash: undefined,
       }
@@ -232,4 +249,28 @@ const toPjsHex = (value: number | bigint, minByteLen?: number) => {
   inner = (inner.length % 2 ? "0" : "") + inner
   const nPaddedBytes = Math.max(0, (minByteLen || 0) - inner.length / 2)
   return `0x${"00".repeat(nPaddedBytes)}${inner}` as `0x${string}`
+}
+
+/** Maximum era period for MEV Shield transactions (≤8 blocks enforced by CheckMortality on subtensor) */
+const MEV_SHIELD_ERA_PERIOD = 8
+
+/** Encode a mortal era as a hex string for SignerPayloadJSON */
+const mortalEra = (value: { period: number; phase: number }): `0x${string}` => {
+  const factor = Math.max(value.period >> 12, 1)
+  const left = Math.min(Math.max(trailingZeroes(value.period) - 1, 1), 15)
+  const right = (value.phase / factor) << 4
+  const encoded = left | right
+  // era is encoded as a u16 LE
+  const byte0 = encoded & 0xff
+  const byte1 = (encoded >> 8) & 0xff
+  return `0x${byte0.toString(16).padStart(2, "0")}${byte1.toString(16).padStart(2, "0")}`
+}
+
+function trailingZeroes(n: number) {
+  let i = 0
+  while (!(n & 1)) {
+    i++
+    n >>= 1
+  }
+  return i
 }

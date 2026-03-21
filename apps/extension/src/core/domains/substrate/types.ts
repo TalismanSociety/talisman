@@ -33,7 +33,7 @@ type SubstrateResponseSubmit = {
 
 type SubstrateResponseSubmitBittensorMevShield = {
   hash: HexString
-  innerHash: HexString
+  innerHash?: HexString
 }
 
 type SubstrateRequestSubmitBittensorMevShield = {
