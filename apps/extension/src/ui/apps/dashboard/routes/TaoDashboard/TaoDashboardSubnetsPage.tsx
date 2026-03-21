@@ -1,7 +1,5 @@
-import { cn } from "@talismn/util"
 import { SearchInput } from "@ui/components/SearchInput"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
-import { useSubnetLeaderboard, useTaoPrice } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TaoDashboardPeriodTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { TaoDashboardHeader } from "@ui/domains/TaoDashboard/subnets/TaoDashboardHeader"
@@ -9,23 +7,13 @@ import {
   TaoDashboardSubnetsTable,
   TaoDashboardSubnetsTableHeader,
 } from "@ui/domains/TaoDashboard/subnets/TaoDashboardSubnetsTable"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export const TaoDashboardSubnetsPage = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const [period, setPeriod] = useState<TimePeriod>("1w")
-
-  const { isRefetching: isTaoPriceRefetching, isError: isTaoPriceError } = useTaoPrice()
-  const { isRefetching: isLeaderboardRefetching, isError: isLeaderboardError } =
-    useSubnetLeaderboard("1d")
-
-  const dataStatus = useMemo(() => {
-    if (isTaoPriceError || isLeaderboardError) return "error"
-    if (isTaoPriceRefetching || isLeaderboardRefetching) return "refetching"
-    return "live"
-  }, [isTaoPriceError, isLeaderboardError, isTaoPriceRefetching, isLeaderboardRefetching])
 
   return (
     <div className="flex w-full min-w-[45rem] flex-col">
@@ -34,30 +22,21 @@ export const TaoDashboardSubnetsPage = () => {
       <div className="sticky top-0 z-10 flex flex-col gap-6 bg-black-primary pt-6">
         <EarnTabsDashboard />
 
-        <div className="flex w-full items-center gap-4">
-          <SearchInput
-            containerClassName="h-[3.6rem] grow rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
-            className="text-sm"
-            placeholder={t("Search Subnet")}
-            onChange={setSearch}
-            initialValue={search}
-          />
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="flex items-center gap-2 text-body-secondary text-sm">
-              <div
-                className={cn(
-                  "size-[6px] rounded-full",
-                  dataStatus === "live" && "bg-green",
-                  dataStatus === "refetching" && "animate-pulse bg-amber-400",
-                  dataStatus === "error" && "bg-red-500"
-                )}
-              />
-              <span>{t("Live")}</span>
-            </div>
+        <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
+          <div>
+            <SearchInput
+              containerClassName="h-[3.6rem] rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+              className="text-sm"
+              placeholder={t("Search Subnet")}
+              onChange={setSearch}
+              initialValue={search}
+            />
+          </div>
+          <div>
             <TaoDashboardPeriodTabs
               selected={period}
               onSelect={setPeriod}
-              className="h-full gap-2 rounded-sm p-2 [&>button]:size-[3.2rem]"
+              className="h-[3.6rem] shrink-0 gap-2 rounded-sm p-2 [&>button]:size-[3.6rem]"
             />
           </div>
         </div>
