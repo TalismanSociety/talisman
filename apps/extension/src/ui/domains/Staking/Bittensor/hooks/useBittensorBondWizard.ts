@@ -11,8 +11,8 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
-import { usePortfolioBalances } from "@ui/state/portfolio"
 import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
@@ -22,8 +22,8 @@ import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { useGetValidatorsYield } from "../../hooks/bittensor/dTao/useGetValidatorsYield"
 import { ROOT_NETUID } from "../utils/constants"
+import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
 import {
   type BittensorStakingPosition,
   useBittensorStakingPositions,
@@ -117,10 +117,8 @@ const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
 const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
-  const { allBalances } = usePortfolioBalances()
-  const {
-    bittensor: { defaultValidatorsBySubnet },
-  } = useRemoteConfig()
+  const allBalances = useBalances("owned")
+  const remoteConfig = useRemoteConfig()
 
   const [
     {
@@ -139,22 +137,24 @@ const useBittensorBondWizardProvider = () => {
   ] = useState(() => {
     const defValue = wizardOpenState$.getValue()
 
-    // apply default validator synchronously if not set
-    return defValue.stakeDirection === "bond" &&
+    // Synchronously adjust the default set to have the best hotkey for the user
+    if (
+      defValue.stakeDirection === "bond" &&
       typeof defValue.netuid === "number" &&
       !defValue.hotkey
-      ? { ...defValue, hotkey: defaultValidatorsBySubnet[defValue.netuid] }
-      : defValue
+    )
+      return {
+        ...defValue,
+        hotkey:
+          getDefaultValidatorHotkey(defValue.netuid, remoteConfig, allBalances, defValue.address) ??
+          null,
+      }
+
+    return defValue
   })
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
-  // subnet validators — React Query dedupes with the same call in useCombinedBittensorValidatorsData
-  const { data: subnetValidators } = useGetValidatorsYield({ netuid })
-  const activeHotkeys = useMemo(
-    () => new Set(subnetValidators?.map((v) => v.hotkey.toLowerCase())),
-    [subnetValidators]
-  )
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   const dtaoBalance = useBalance(allBalances, address, dtaoToken?.id)
@@ -255,39 +255,25 @@ const useBittensorBondWizardProvider = () => {
     setWizardState((prev) => ({ ...prev, hotkey }))
   }, [])
 
-  const setNetuid = useCallback((netuid: number) => {
-    isHotkeyAutoSelected.current = true
-    setWizardState((prev) => ({
-      ...prev,
-      netuid,
-      stakeType: netuid ? "subnet" : "root",
-      hotkey: null,
-    }))
-  }, [])
+  const setNetuid = useCallback(
+    (netuid: number) => {
+      isHotkeyAutoSelected.current = true
 
-  // resolve and apply the default validator from config once subnet validator data loads
-  // TODO delete this useEffect and do this synchronously on netuid selection
-  useEffect(() => {
-    if (
-      typeof netuid !== "number" ||
-      !activeHotkeys.size ||
-      !isHotkeyAutoSelected.current ||
-      stakeDirection !== "bond" ||
-      hotkey
-    )
-      return
-
-    // subnet-specific override takes priority
-    if (defaultValidatorsBySubnet[netuid]) {
-      const subnetDefault = defaultValidatorsBySubnet[netuid]
-      if (activeHotkeys.has(subnetDefault.toLowerCase())) {
-        setWizardState((prev) =>
-          prev.hotkey === subnetDefault ? prev : { ...prev, hotkey: subnetDefault }
-        )
-        return
-      }
-    }
-  }, [activeHotkeys, hotkey, netuid, defaultValidatorsBySubnet, stakeDirection])
+      setWizardState((prev) => {
+        if (prev.netuid === netuid) return prev
+        return {
+          ...prev,
+          netuid,
+          stakeType: netuid ? "subnet" : "root",
+          hotkey:
+            prev.stakeDirection === "bond"
+              ? (getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, prev.address) ?? null)
+              : null,
+        }
+      })
+    },
+    [allBalances, remoteConfig]
+  )
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
