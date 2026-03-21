@@ -1124,8 +1124,8 @@ importers:
         specifier: ^7.8.1
         version: 7.8.2
       tailwind-merge:
-        specifier: ^2.5.4
-        version: 2.5.4
+        specifier: ^3.5.0
+        version: 3.5.0
     devDependencies:
       '@talismn/tsconfig':
         specifier: workspace:*
@@ -8481,8 +8481,8 @@ packages:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
     engines: {node: '>=20'}
 
-  tailwind-merge@2.5.4:
-    resolution: {integrity: sha512-0q8cfZHMu9nuYP/b5Shb7Y7Sh1B7Nnl5GqNr1U+n2p6+mybvRtayrQ+0042Z5byvTA8ihjlP8Odo8/VnHbZu4Q==}
+  tailwind-merge@3.5.0:
+    resolution: {integrity: sha512-I8K9wewnVDkL1NTGoqWmVEIlUcB9gFriAEkXkfCjX5ib8ezGxtR3xD7iZIxrfArjEsH7F1CHD4RFUtxefdqV/A==}
 
   tailwindcss@4.2.1:
     resolution: {integrity: sha512-/tBrSQ36vCleJkAOsy9kbNTgaxvGbyOamC30PRePTQe/o1MFwEKHQk4Cn7BNGaPtjp+PuUrByJehM1hgxfq4sw==}
@@ -11426,7 +11426,7 @@ snapshots:
       '@polkadot-api/metadata-compatibility': 0.4.4
       '@polkadot-api/observable-client': 0.17.3(rxjs@7.8.2)
       '@polkadot-api/polkadot-sdk-compat': 2.4.1
-      '@polkadot-api/sm-provider': 0.1.16(@polkadot-api/smoldot@0.3.15(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@polkadot-api/sm-provider': 0.1.16(@polkadot-api/smoldot@0.3.15(bufferutil@4.0.8)(utf-8-validate@6.0.4))
       '@polkadot-api/smoldot': 0.3.15(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@polkadot-api/substrate-bindings': 0.17.0
       '@polkadot-api/substrate-client': 0.5.0
@@ -11605,12 +11605,6 @@ snapshots:
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/substrate-bindings': 0.17.0
       '@polkadot-api/utils': 0.2.0
-
-  '@polkadot-api/sm-provider@0.1.16(@polkadot-api/smoldot@0.3.15(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@polkadot-api/json-rpc-provider': 0.0.4
-      '@polkadot-api/json-rpc-provider-proxy': 0.2.8
-      '@polkadot-api/smoldot': 0.3.15(bufferutil@4.0.8)(utf-8-validate@5.0.10)
 
   '@polkadot-api/sm-provider@0.1.16(@polkadot-api/smoldot@0.3.15(bufferutil@4.0.8)(utf-8-validate@6.0.4))':
     dependencies:
@@ -17638,7 +17632,7 @@ snapshots:
       '@polkadot-api/polkadot-sdk-compat': 2.4.1
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/signer': 0.2.13
-      '@polkadot-api/sm-provider': 0.1.16(@polkadot-api/smoldot@0.3.15(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@polkadot-api/sm-provider': 0.1.16(@polkadot-api/smoldot@0.3.15(bufferutil@4.0.8)(utf-8-validate@6.0.4))
       '@polkadot-api/smoldot': 0.3.15(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@polkadot-api/substrate-bindings': 0.17.0
       '@polkadot-api/substrate-client': 0.5.0
@@ -18679,7 +18673,7 @@ snapshots:
 
   tagged-tag@1.0.0: {}
 
-  tailwind-merge@2.5.4: {}
+  tailwind-merge@3.5.0: {}
 
   tailwindcss@4.2.1: {}
 
