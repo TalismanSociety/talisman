@@ -139,6 +139,18 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     onSubmit,
   } = useSwapSubmit({ netuid, account, direction: "buy", resetValueIn })
 
+  // when netuid changes (e.g. subnet picker), reset hotkey to the best default for the new subnet
+  const prevNetuidRef = useRef(netuid)
+  useEffect(() => {
+    if (prevNetuidRef.current === netuid) return
+    prevNetuidRef.current = netuid
+    setState((s) => ({
+      ...s,
+      hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, s.address) ?? null,
+      valueIn: null,
+    }))
+  }, [netuid, remoteConfig, allBalances])
+
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
     if (refIsAccountInitialized.current) return
