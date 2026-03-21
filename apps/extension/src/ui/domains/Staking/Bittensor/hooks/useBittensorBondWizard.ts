@@ -119,7 +119,7 @@ const useBittensorBondWizardProvider = () => {
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
   const {
-    bittensor: { defaultValidators, defaultValidatorsBySubnet },
+    bittensor: { defaultValidatorsBySubnet },
   } = useRemoteConfig()
 
   const [
@@ -136,7 +136,16 @@ const useBittensorBondWizardProvider = () => {
       stakeDirection,
     },
     setWizardState,
-  ] = useState(() => wizardOpenState$.getValue())
+  ] = useState(() => {
+    const defValue = wizardOpenState$.getValue()
+
+    // apply default validator synchronously if not set
+    return defValue.stakeDirection === "bond" &&
+      typeof defValue.netuid === "number" &&
+      !defValue.hotkey
+      ? { ...defValue, hotkey: defaultValidatorsBySubnet[defValue.netuid] }
+      : defValue
+  })
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
@@ -257,6 +266,7 @@ const useBittensorBondWizardProvider = () => {
   }, [])
 
   // resolve and apply the default validator from config once subnet validator data loads
+  // TODO delete this useEffect and do this synchronously on netuid selection
   useEffect(() => {
     if (
       typeof netuid !== "number" ||
@@ -277,26 +287,7 @@ const useBittensorBondWizardProvider = () => {
         return
       }
     }
-
-    // pick the default validator with the highest APR on this subnet
-    const defaultHotkeySet = new Set(defaultValidators.map((key) => key.toLowerCase()))
-    const activeDefaults = (subnetValidators ?? [])
-      .filter((v) => defaultHotkeySet.has(v.hotkey.toLowerCase()))
-      .sort((a, b) => (b.thirty_day_apy ?? 0) - (a.thirty_day_apy ?? 0))
-
-    if (activeDefaults.length) {
-      const picked = activeDefaults[0].hotkey
-      setWizardState((prev) => (prev.hotkey === picked ? prev : { ...prev, hotkey: picked }))
-    }
-  }, [
-    activeHotkeys,
-    hotkey,
-    netuid,
-    defaultValidators,
-    defaultValidatorsBySubnet,
-    stakeDirection,
-    subnetValidators,
-  ])
+  }, [activeHotkeys, hotkey, netuid, defaultValidatorsBySubnet, stakeDirection])
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),

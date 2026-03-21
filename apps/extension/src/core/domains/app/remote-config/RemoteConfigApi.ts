@@ -379,8 +379,6 @@ export class RemoteConfigApi<
           };
           /** Maps Substrate chain IDs to arrays of recommended nomination pool IDs for staking (e.g. 'polkadot-asset-hub': [282, 12, 16]) */
           nominationPools: Record<string, number[]>;
-          /** Maps chain IDs to arrays of validator/staking pool addresses recommended for delegation */
-          stakingPools: Record<string, string[]>;
           /** Links to external documentation resources */
           documentation: {
             /**
@@ -455,6 +453,10 @@ export class RemoteConfigApi<
               /** Map from Bittensor subnet ID to custom fee amount for sell transactions. Empty/null means default fees apply */
               sell: Record<string, number> | null;
             };
+            /** Ordered list of validator hotkeys to feature prominently in the validator picker */
+            featuredValidators: string[];
+            /** Maps subnet netuid to a validator hotkey to use as the default for that subnet */
+            defaultValidatorsBySubnet: Record<string, string>;
           };
           /**
            * URL to send PostHog analytics events to

@@ -5,16 +5,7 @@ import type { Address } from "../../types/base"
 import type { PostHogCaptureProperties } from "../analytics/types"
 import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
-export type RemoteConfigStoreData = RemoteConfigData & {
-  bittensor: RemoteConfigData["bittensor"] & {
-    /** config.toml: [bittensor] defaultValidators = ["<hotkey>", ...] — pick first valid for subnet */
-    defaultValidators: string[]
-    /** config.toml: [bittensor.defaultValidatorsBySubnet] 45 = "<hotkey>" — per-subnet overrides */
-    defaultValidatorsBySubnet: Record<number, string>
-    /** config.toml: [bittensor] featuredValidators = ["<hotkey>", ...] */
-    featuredValidators: string[]
-  }
-}
+export type RemoteConfigStoreData = RemoteConfigData
 
 export interface RequestOnboardCreatePassword {
   pass: string
