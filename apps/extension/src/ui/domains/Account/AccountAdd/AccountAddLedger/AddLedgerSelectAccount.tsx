@@ -264,7 +264,7 @@ export const AddLedgerSelectAccount = () => {
       </div>
       <div className="flex justify-end">
         <Button
-          className="w-[24rem]"
+          className="w-[15rem]"
           type="submit"
           primary
           disabled={!isValid}

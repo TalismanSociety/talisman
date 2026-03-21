@@ -138,7 +138,7 @@ const Action: FC<ActionProps> = ({
         <button
           type="button"
           className={classNames(
-            "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[1rem] text-body-secondary opacity-90 backdrop-blur-sm",
+            "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[0.625rem] text-body-secondary opacity-90 backdrop-blur-sm",
             "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}
           onClick={handleClick}

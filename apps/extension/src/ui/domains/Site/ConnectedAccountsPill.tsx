@@ -66,7 +66,7 @@ export const ConnectedAccountsPill: FC = () => {
       <button
         type="button"
         className={classNames(
-          "group h-[3.6rem] w-full overflow-hidden rounded-full p-0.5",
+          "group h-[2.25rem] w-full overflow-hidden rounded-full p-0.5",
           containerColors,
           "text-body-secondary hover:text-grey-300"
         )}

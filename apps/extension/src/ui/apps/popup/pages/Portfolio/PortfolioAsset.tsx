@@ -69,7 +69,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   return (
     <>
-      <div className="flex h-[3.6rem] w-full items-center gap-4 font-bold text-base text-body">
+      <div className="flex h-[2.25rem] w-full items-center gap-4 font-bold text-base text-body">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>

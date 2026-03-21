@@ -109,7 +109,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
       {accounts.map((account) => (
         <div
           key={account.address}
-          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
+          className="flex w-[18.75rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
         >
           <AccountIcon
             className="shrink-0"
@@ -146,7 +146,7 @@ const NetworksTooltip: FC<{ networks: Network[] }> = ({ networks }) => {
       {networksWIthTokens.slice(0, 5).map(([network, tokens]) => (
         <div
           key={network.id}
-          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
+          className="flex w-[18.75rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
         >
           <NetworkLogo networkId={network.id} />
           <div className="grow truncate text-body">{network.name}</div>
@@ -365,7 +365,7 @@ const AssetTable: FC = () => {
   if (!balances.length || isInitializing) return null
 
   return (
-    <div className="flex w-full min-w-[45rem] flex-col gap-4 text-left text-base text-body">
+    <div className="flex w-full min-w-[28.125rem] flex-col gap-4 text-left text-base text-body">
       <div className="grid grid-cols-[1fr_1fr_1fr_10rem] gap-x-8 px-8 font-normal text-body-disabled text-sm">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
@@ -422,7 +422,7 @@ const Header: FC = () => {
   }, [])
 
   return (
-    <div className="flex h-[8.6rem] items-center gap-8 rounded-sm bg-grey-850 px-8">
+    <div className="flex h-[5.375rem] items-center gap-8 rounded-sm bg-grey-850 px-8">
       <DiamondIcon
         className={classNames(
           "text-lg",
@@ -482,7 +482,7 @@ const Header: FC = () => {
           small
           onClick={handleCancelScanClick}
           iconLeft={XIcon}
-          className="h-16 min-w-[10.5rem] rounded-full px-4 pr-6"
+          className="h-16 min-w-[6.5625rem] rounded-full px-4 pr-6"
         >
           {t("Cancel")}
         </Button>

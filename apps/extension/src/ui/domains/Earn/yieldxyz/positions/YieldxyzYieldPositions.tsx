@@ -88,7 +88,7 @@ const NavHeader: FC<{
         <IconButton onClick={() => navigate("/earn", true)}>
           <ChevronLeftIcon />
         </IconButton>
-        <YieldxyzProviderLogo providerId={product.providerId} className="size-[3.6rem]" />
+        <YieldxyzProviderLogo providerId={product.providerId} className="size-[2.25rem]" />
 
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
           <div className="flex w-full items-center gap-8 overflow-hidden">
@@ -302,7 +302,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
       )}
     >
       <Button
-        className={cn(!isGridLayout && "w-[17.5rem] text-base")}
+        className={cn(!isGridLayout && "w-[10.9375rem] text-base")}
         disabled={!canEnter}
         onClick={onAddToPositionClick}
       >
@@ -312,7 +312,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[17.5rem] text-base")}
+          className={cn(!isGridLayout && "w-[10.9375rem] text-base")}
           onClick={onWithdrawClick(withdrawableBalances[0])}
         >
           {t("Withdraw")}
@@ -322,7 +322,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[17.5rem] text-base")}
+          className={cn(!isGridLayout && "w-[10.9375rem] text-base")}
           onClick={onClaimClick(claimableBalances[0])}
         >
           <div className="flex h-full flex-col gap-1">

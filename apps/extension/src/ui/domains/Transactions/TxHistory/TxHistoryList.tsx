@@ -345,7 +345,7 @@ const TransactionRowBase: FC<{
       disabled={!onClick}
       className={classNames(
         "relative z-0 flex w-full grow items-center rounded-sm bg-grey-850 text-left hover:bg-grey-800",
-        IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8"
+        IS_POPUP ? "h-[3.25rem] gap-6 px-6" : "h-[3.625rem] gap-8 px-8"
       )}
     >
       {logo}

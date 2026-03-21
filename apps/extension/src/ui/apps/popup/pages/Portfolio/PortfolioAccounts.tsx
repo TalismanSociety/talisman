@@ -101,7 +101,7 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
       type="button"
       tabIndex={0}
       className={classNames(
-        "flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm bg-black-secondary px-6 text-body-secondary hover:bg-grey-800 hover:text-white"
+        "flex h-[3.6875rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm bg-black-secondary px-6 text-body-secondary hover:bg-grey-800 hover:text-white"
       )}
       onClick={handleClick}
     >
@@ -137,19 +137,19 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
     <div
       className={classNames(
         "group",
-        "relative h-[5.9rem] w-full rounded-sm bg-black-secondary hover:bg-grey-800"
+        "relative h-[3.6875rem] w-full rounded-sm bg-black-secondary hover:bg-grey-800"
       )}
     >
       <button
         type="button"
         tabIndex={0}
         className={classNames(
-          "flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 text-body-secondary hover:text-white"
+          "flex h-[3.6875rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 text-body-secondary hover:text-white"
         )}
         onClick={handleClick}
       >
         <div className="flex flex-col justify-center text-xl">
-          <div className="size-[3.2rem]"></div>
+          <div className="size-[2rem]"></div>
         </div>
         <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
           <div className="flex w-full items-center gap-3 text-base text-body">
@@ -178,8 +178,8 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
         </div>
       </button>
       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
-      <div className="absolute top-0 left-6 flex h-[5.9rem] flex-col justify-center">
-        <div className="relative size-[3.2rem] text-xl">
+      <div className="absolute top-0 left-6 flex h-[3.6875rem] flex-col justify-center">
+        <div className="relative size-[2rem] text-xl">
           <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
         </div>
       </div>
@@ -225,7 +225,7 @@ const AccountsToolbar = () => {
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "!bg-field !px-4 h-[3.2rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+            "!bg-field !px-4 h-[2rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
             "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
           )}
           placeholder={t("Search account or folder")}
@@ -318,7 +318,7 @@ const Accounts = ({
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
 
       {hasAnyAccount && !portfolioOptions.length && !watchedOptions.length && (
-        <div className="flex h-[10rem] items-center justify-center rounded-sm bg-grey-900 text-body-disabled text-xs opacity-50">
+        <div className="flex h-[6.25rem] items-center justify-center rounded-sm bg-grey-900 text-body-disabled text-xs opacity-50">
           {t("No accounts found")}
         </div>
       )}

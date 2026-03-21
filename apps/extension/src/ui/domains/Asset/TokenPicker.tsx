@@ -42,7 +42,7 @@ type TokenRowProps = {
 }
 
 const TokenRowSkeleton = () => (
-  <div className="flex h-[5.8rem] w-full items-center gap-4 px-12 text-left">
+  <div className="flex h-[3.625rem] w-full items-center gap-4 px-12 text-left">
     <div className="h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
     <div className="grow space-y-[5px]">
       <div className={"flex w-full justify-between font-bold text-body text-sm"}>
@@ -163,7 +163,7 @@ const TokenRow: FC<TokenRowProps> = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-[3.625rem] w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary"
       )}
@@ -439,7 +439,7 @@ const TokensList: FC<TokensListProps> = ({
           />
 
           {!tokens?.length && (
-            <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+            <div className="flex h-[3.625rem] w-full items-center px-12 text-left text-body-secondary">
               {t("No token matches your search")}
             </div>
           )}
@@ -457,7 +457,7 @@ const TokensList: FC<TokensListProps> = ({
           <TokenRowSkeleton />
         </>
       ) : (
-        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+        <div className="flex h-[3.625rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No tokens found")}
         </div>
       )}
@@ -621,7 +621,7 @@ const NetworkFilterButton: FC<{
         <button
           type="button"
           onClick={onClick}
-          className="flex size-[4.6rem] shrink-0 items-center justify-center rounded-sm border border-transparent bg-grey-800 text-body-secondary hover:bg-grey-750 focus-visible:border-grey-600"
+          className="flex size-[2.875rem] shrink-0 items-center justify-center rounded-sm border border-transparent bg-grey-800 text-body-secondary hover:bg-grey-750 focus-visible:border-grey-600"
         >
           {selectedNetworkId ? (
             <NetworkLogo networkId={selectedNetworkId} className="text-lg" />

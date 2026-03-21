@@ -32,7 +32,7 @@ export const SignalsSentimentTrend: FC<{ netuid: number }> = ({ netuid }) => {
         ) : data ? (
           <SentimentTrend data={data} />
         ) : (
-          <div className="flex h-[16.5rem] items-center justify-center text-body-secondary">
+          <div className="flex h-[10.3125rem] items-center justify-center text-body-secondary">
             {t("Failed to fetch data")}
           </div>
         )}
@@ -59,7 +59,7 @@ const SentimentTrend: FC<
   const sentChangeColor = useColorFromScore100Neg(sentChangeScore)
 
   return (
-    <div className="flex h-[16.5rem] items-stretch gap-14">
+    <div className="flex h-[10.3125rem] items-stretch gap-14">
       <div className="flex h-full flex-col items-center justify-between">
         <div className="mb-1 text-body-inactive text-xs">{t("Combined Score")}</div>
         <SentimentGauge score={data.score ?? 50} />
@@ -172,14 +172,14 @@ const SentimentGauge: FC<{ score: number }> = ({ score }) => {
 }
 
 const SentimentTrendSkeleton = () => (
-  <div className="flex h-[16.5rem] items-stretch gap-14">
+  <div className="flex h-[10.3125rem] items-stretch gap-14">
     <div className="flex h-full w-[118px] flex-col items-center justify-between">
       <div className="mb-1 text-body-inactive text-xs">
-        <Skeleton className="w-[9rem]" />
+        <Skeleton className="w-[5.625rem]" />
       </div>
       <SentimentGaucheSkeleton />
       <div>
-        <Skeleton className="w-[6rem]" />
+        <Skeleton className="w-[3.75rem]" />
       </div>
     </div>
 
@@ -218,10 +218,10 @@ const SentimentGaucheSkeleton = () => (
 const SentimentFieldSkeleton = () => (
   <div className="flex flex-col gap-2">
     <div className="text-body-inactive text-xs">
-      <Skeleton className="w-[12rem]" />
+      <Skeleton className="w-[7.5rem]" />
     </div>
     <div className="text-md">
-      <Skeleton className="w-[4rem]" />
+      <Skeleton className="w-[2.5rem]" />
     </div>
   </div>
 )

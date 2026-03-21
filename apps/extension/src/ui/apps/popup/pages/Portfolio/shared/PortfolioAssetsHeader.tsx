@@ -129,13 +129,13 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
   return (
     // top margin hack is to prevent account genesis hash icon from being truncated
     <div className="-mt-4">
-      <div className="mt-4 flex h-[4.4rem] w-full items-center gap-8">
+      <div className="mt-4 flex h-[2.75rem] w-full items-center gap-8">
         <div className="flex h-full grow items-center gap-4 overflow-hidden">
           <IconButton onClick={handleBackBtnClick}>
             <ChevronLeftIcon />
           </IconButton>
           <div className="flex flex-col justify-center">
-            <CurrentAccountAvatar className="!text-[3.6rem]" />
+            <CurrentAccountAvatar className="!text-[2.25rem]" />
           </div>
           <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">

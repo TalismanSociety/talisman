@@ -17,7 +17,7 @@ export const BittensorChangeValidatorModal = () => {
       <div
         id={STAKING_MODAL_CONTENT_CONTAINER_ID}
         className={cn(
-          "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
+          "relative flex h-[37.5rem] max-h-[100dvh] w-[25rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
           !IS_POPUP && "rounded border border-grey-850"
         )}
       >

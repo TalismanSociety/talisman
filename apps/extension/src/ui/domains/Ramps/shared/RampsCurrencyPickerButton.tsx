@@ -36,7 +36,7 @@ export const RampsCurrencyPickerButton: FC<{
         type="button"
         onClick={handleOpen}
         className={classNames(
-          "flex h-full w-[14rem] items-center gap-4 rounded-[12px] border border-grey-750 bg-grey-800 px-4 py-3 focus-visible:border-grey-600",
+          "flex h-full w-[8.75rem] items-center gap-4 rounded-[12px] border border-grey-750 bg-grey-800 px-4 py-3 focus-visible:border-grey-600",
           "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale"
         )}
       >
@@ -72,7 +72,7 @@ const EmptyContent: FC = () => {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
-        <PlusIcon className="m-[0.3rem] size-10 text-primary-500" />
+        <PlusIcon className="m-[0.1875rem] size-10 text-primary-500" />
       </div>
       <div className="text-white text-xs">{t("Select currency")}</div>
     </div>

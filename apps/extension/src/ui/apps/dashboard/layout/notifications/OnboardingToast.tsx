@@ -23,7 +23,7 @@ export const OnboardingToast = () => {
         <div>
           <img src="/favicon.svg" width="34" height="34" alt="" />
         </div>
-        <div className="grow leading-[2.4rem]">
+        <div className="grow leading-[1.5rem]">
           {t("Pin Talisman for easy access")}
           <br />
           <Trans

@@ -28,7 +28,7 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
       <div className="my-12 flex w-full flex-col items-center">
         <div className="rounded-full bg-grey-800 p-5">
-          <UserRightIcon className="text-[2.8rem] text-primary" />
+          <UserRightIcon className="text-[1.75rem] text-primary" />
         </div>
         <div className="mt-8 font-bold text-lg">{t("Sign In")}</div>
         <div className="my-16 flex w-full flex-col items-center gap-3 overflow-hidden text-body-secondary">
@@ -69,8 +69,8 @@ const ViewDetailsContent: FC<{
   const message = useMemo(() => request.prepareMessage(), [request])
 
   return (
-    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
-      <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[2rem]">
+    <div className="flex max-h-[37.5rem] w-full flex-col gap-12 bg-grey-850 p-12">
+      <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[1.25rem]">
         <div className="text-body-secondary">{t("Details")}</div>
         <p>
           {t(

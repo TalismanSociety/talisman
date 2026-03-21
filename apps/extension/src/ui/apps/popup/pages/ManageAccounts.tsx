@@ -33,7 +33,7 @@ const Header = () => {
   }, [navigate])
 
   return (
-    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center gap-3 px-8">
+    <header className="my-8 flex h-[2.25rem] w-full shrink-0 items-center gap-3 px-8">
       <IconButton onClick={goToPortfolio}>
         <ChevronLeftIcon />
       </IconButton>

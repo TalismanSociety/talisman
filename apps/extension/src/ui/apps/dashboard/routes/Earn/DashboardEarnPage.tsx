@@ -34,7 +34,7 @@ export const DashboardEarnPage: FC = () => {
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
   return (
-    <div className="flex w-full min-w-[45rem] flex-col gap-6 overflow-hidden text-left text-base text-body-secondary">
+    <div className="flex w-full min-w-[28.125rem] flex-col gap-6 overflow-hidden text-left text-base text-body-secondary">
       {/* Header with total balance - always show */}
       <EarnPageHeader />
 
@@ -43,9 +43,9 @@ export const DashboardEarnPage: FC = () => {
         <div className="flex-shrink-0">
           <EarnTabsDashboard />
         </div>
-        <div className="w-[28rem]">
+        <div className="w-[17.5rem]">
           <SearchInput
-            containerClassName="h-[3.6rem] w-full rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+            containerClassName="h-[2.25rem] w-full rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
             className="text-sm"
             placeholder={t("Search")}
             onChange={setSearch}
@@ -103,7 +103,7 @@ const EarnPageHeader = () => {
   }, [currency, tokenProducts])
 
   return (
-    <div className="flex h-64 items-center rounded-[0.75rem] border border-grey-800 px-6 py-8 text-left text-base text-body-secondary">
+    <div className="flex h-64 items-center rounded-[0.4688rem] border border-grey-800 px-6 py-8 text-left text-base text-body-secondary">
       <div className="flex w-full flex-col gap-4">
         <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
         <div className="font-bold text-2xl text-body">

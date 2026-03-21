@@ -16,7 +16,7 @@ export const TaoDashboardSubnetsPage = () => {
   const [period, setPeriod] = useState<TimePeriod>("1w")
 
   return (
-    <div className="flex w-full min-w-[45rem] flex-col">
+    <div className="flex w-full min-w-[28.125rem] flex-col">
       <TaoDashboardHeader />
 
       <div className="sticky top-0 z-10 flex flex-col gap-6 bg-black-primary pt-6">
@@ -25,7 +25,7 @@ export const TaoDashboardSubnetsPage = () => {
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
           <div>
             <SearchInput
-              containerClassName="h-[3.6rem] rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+              containerClassName="h-[2.25rem] rounded-sm border !px-4 !bg-field ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
               className="text-sm"
               placeholder={t("Search Subnet")}
               onChange={setSearch}
@@ -36,7 +36,7 @@ export const TaoDashboardSubnetsPage = () => {
             <TaoDashboardPeriodTabs
               selected={period}
               onSelect={setPeriod}
-              className="h-[3.6rem] shrink-0 gap-2 rounded-sm p-2 [&>button]:size-[3.6rem]"
+              className="h-[2.25rem] shrink-0 gap-2 rounded-sm p-2 [&>button]:size-[2.25rem]"
             />
           </div>
         </div>

@@ -87,7 +87,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               <img
                 src={token?.logo ?? seekLogo}
                 alt={"seek logo"}
-                className="inline-block size-[4rem] overflow-hidden"
+                className="inline-block size-[2.5rem] overflow-hidden"
               />
               <div>
                 <div className="text-white">{tokenSymbol}</div>

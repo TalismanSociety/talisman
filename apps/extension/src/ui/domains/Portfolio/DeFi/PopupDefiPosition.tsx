@@ -71,7 +71,7 @@ const DefiPositionSection: FC<{ position: DefiPosition; type: PositionSectionTyp
 
   return (
     <div className="rounded-sm bg-black-secondary">
-      <div className="flex h-[3.8rem] w-full items-center">
+      <div className="flex h-[2.375rem] w-full items-center">
         <div className="px-6 font-bold text-sm text-white">
           <PositionSectionLabel type={type} />
         </div>

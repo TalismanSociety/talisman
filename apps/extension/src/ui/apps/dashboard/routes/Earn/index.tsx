@@ -13,7 +13,7 @@ import { DashboardYieldxyzYieldPositionsPage } from "./DashboardYieldxyzYieldPos
 export const DashboardEarnRoutes: FC = () => {
   return (
     <PortfolioContainer>
-      <DashboardLayout sidebar="accounts" className="min-w-[130rem]">
+      <DashboardLayout sidebar="accounts" className="min-w-[81.25rem]">
         <Routes>
           <Route path="" element={<DashboardEarnPage />}>
             <Route index element={<Navigate to="positions" replace />} />

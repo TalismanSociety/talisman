@@ -86,9 +86,9 @@ export const BittensorStakingPositionSelect = () => {
         <div className="p-12 pt-0">
           <SearchInputControlled
             containerClassName={classNames(
-              "!bg-field !px-4 h-[3.6rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+              "!bg-field !px-4 h-[2.25rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
               "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
-              "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
+              "@2xl:h-[2.75rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
             )}
             placeholder={t("Search")}
             value={searchSync}

@@ -28,7 +28,7 @@ const FormattedAddress = ({ address, className }: { address: string; className?:
   return (
     <Tooltip>
       <TooltipTrigger className={classNames("flex items-center gap-2", className)}>
-        <AccountIcon address={address} className="shrink-0 text-[2rem]" />
+        <AccountIcon address={address} className="shrink-0 text-[1.25rem]" />
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
       </TooltipTrigger>
       <TooltipContent>{address}</TooltipContent>

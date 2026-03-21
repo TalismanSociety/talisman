@@ -84,7 +84,7 @@ export const NetworkCombo: FC<{
           </div>
           <ComboboxOptions
             className={classNames(
-              "overflow-x-none absolute top-24 z-10 max-h-[28rem] min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
+              "overflow-x-none absolute top-24 z-10 max-h-[17.5rem] min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
               "border border-grey-600",
               bgClassName
             )}

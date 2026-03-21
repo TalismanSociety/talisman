@@ -390,7 +390,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   return (
     <>
-      <div className="relative flex min-h-[4.48rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
+      <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
         <QuoteProvider />
         <QuoteDuration />
         <QuoteExchangeRate />

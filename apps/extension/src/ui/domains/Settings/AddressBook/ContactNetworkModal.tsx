@@ -47,14 +47,14 @@ export const ContactNetworkPickerButton: FC<{
       <button
         type="button"
         className={classNames(
-          "flex h-[5.6rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8",
+          "flex h-[3.5rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8",
           "bg-grey-850 text-body-secondary enabled:hover:bg-grey-800 enabled:hover:text-body",
           className
         )}
         onClick={open}
       >
         <div>
-          <NetworkLogo networkId={option?.id} className="text-[2.4rem]" />
+          <NetworkLogo networkId={option?.id} className="text-[1.5rem]" />
         </div>
         <div className="grow truncate text-left text-body">{option?.name ?? t("All Networks")}</div>
         <ChevronRightIcon className="size-12" />

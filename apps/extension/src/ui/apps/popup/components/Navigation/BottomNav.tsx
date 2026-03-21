@@ -98,7 +98,7 @@ export const BottomNav = () => {
         <QuickSettingsModal />
         <div
           className={classNames(
-            "flex h-[5.2rem] w-full items-center justify-between rounded border border-grey-800 bg-black/90 px-7 backdrop-blur-[2px]"
+            "flex h-[3.25rem] w-full items-center justify-between rounded border border-grey-800 bg-black/90 px-7 backdrop-blur-[2px]"
           )}
         >
           <NavButton
@@ -166,7 +166,7 @@ const NavButton: FC<{
     >
       <div
         className={classNames(
-          "flex w-full flex-col items-center justify-center gap-[0.15rem] overflow-visible",
+          "flex w-full flex-col items-center justify-center gap-[0.0938rem] overflow-visible",
           "translate-y-4 transition-transform group-hover:translate-y-0"
         )}
       >
@@ -180,7 +180,7 @@ const NavButton: FC<{
         )}
         <div
           className={classNames(
-            "text-[1rem] leading-paragraph",
+            "text-[0.625rem] leading-paragraph",
             "text-nowrap opacity-0 transition-opacity group-hover:opacity-100"
           )}
         >

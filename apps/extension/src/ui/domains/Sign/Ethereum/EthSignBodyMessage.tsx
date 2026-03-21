@@ -173,8 +173,8 @@ const ViewDetailsContent: FC<{
   }, [message])
 
   return (
-    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
-      <div className="flex w-full grow flex-col overflow-hidden text-sm leading-[2rem]">
+    <div className="flex max-h-[37.5rem] w-full flex-col gap-12 bg-grey-850 p-12">
+      <div className="flex w-full grow flex-col overflow-hidden text-sm leading-[1.25rem]">
         <div className="text-body-secondary">{t("Message")}</div>
         <pre className="scrollable scrollable-700 w-full grow overflow-auto rounded-xs bg-grey-800 p-4 text-body-secondary">
           {formatted}

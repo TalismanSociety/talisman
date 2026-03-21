@@ -117,7 +117,7 @@ const AccountsList: FC<{
         />
       ))}
       {!accounts?.length && (
-        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
+        <div className="flex h-[3.625rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No account matches your search")}
         </div>
       )}
@@ -146,7 +146,7 @@ const AccountRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={cn(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        "flex h-[3.625rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}

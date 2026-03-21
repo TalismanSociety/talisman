@@ -112,7 +112,7 @@ export const EthSignTransactionRequest = () => {
               )}
             </div>
 
-            <div className="flex min-h-[4.48rem] flex-col gap-2 text-body-secondary text-sm">
+            <div className="flex min-h-[2.8rem] flex-col gap-2 text-body-secondary text-sm">
               {transaction && txDetails && !!network && (
                 <>
                   <div className="flex items-center justify-between">

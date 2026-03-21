@@ -21,7 +21,7 @@ export const AuthorisedSiteToolbar = () => {
         <EvmNetworkSelectPill />
       </div>
       {/* Placeholder to reserve scrolling space */}
-      <div className="h-[3.6rem] w-full shrink-0"></div>
+      <div className="h-[2.25rem] w-full shrink-0"></div>
     </>
   )
 }

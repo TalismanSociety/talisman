@@ -110,7 +110,7 @@ const AccountRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-body-secondary hover:bg-grey-750 hover:text-body focus:bg-grey-700",
+        "flex h-[3.625rem] w-full items-center gap-4 px-12 text-left text-body-secondary hover:bg-grey-750 hover:text-body focus:bg-grey-700",
         selected && "bg-grey-800",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}

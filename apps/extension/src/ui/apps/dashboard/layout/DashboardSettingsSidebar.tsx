@@ -33,7 +33,7 @@ export const DashboardSettingsSidebar = () => {
   return (
     <div className={classNames("rounded-lg bg-grey-900", "flex w-full flex-col gap-8 p-8")}>
       <div className="flex h-16 shrink-0 items-center">
-        <div className="grow pl-4 font-bold text-[2rem]">{t("Settings")}</div>
+        <div className="grow pl-4 font-bold text-[1.25rem]">{t("Settings")}</div>
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton

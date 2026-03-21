@@ -309,7 +309,7 @@ const AddCustomTokenForm = () => {
                 disabled={!fldContractAddress.state.meta.isValid}
                 before={
                   <AssetLogo
-                    className="mr-2 rounded-full text-[3rem]"
+                    className="mr-2 rounded-full text-[1.875rem]"
                     url={field.form.getFieldValue("logo")}
                   />
                 }
@@ -346,7 +346,7 @@ const AddCustomTokenForm = () => {
       </div>
 
       <div className="flex justify-end gap-8 py-8">
-        <Button className="h-24 w-[24rem] text-base" type="button" onClick={() => navigate(-1)}>
+        <Button className="h-24 w-[15rem] text-base" type="button" onClick={() => navigate(-1)}>
           {t("Cancel")}
         </Button>
         <form.Subscribe
@@ -361,7 +361,7 @@ const AddCustomTokenForm = () => {
             <Button
               primary
               icon={SaveIcon}
-              className="h-24 w-[24rem] text-base"
+              className="h-24 w-[15rem] text-base"
               type="submit"
               processing={isSubmitting || isValidating}
               disabled={!canSubmit && !isSubmitting && !isValidating}

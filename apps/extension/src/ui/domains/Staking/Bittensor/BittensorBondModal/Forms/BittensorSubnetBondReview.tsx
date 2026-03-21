@@ -155,7 +155,7 @@ export const BittensorSubnetBondReview = () => {
       }
       contentClassName="p-12 pt-0 flex flex-col w-full"
     >
-      <div className="space-y-[0.75rem]">
+      <div className="space-y-[0.4688rem]">
         <div className="flex w-full flex-col rounded bg-grey-900 p-8 text-body-secondary">
           <div className="flex items-center justify-between gap-8 pb-2">
             <div className="whitespace-nowrap">{t("Amount")} </div>
@@ -332,7 +332,7 @@ export const BittensorSubnetBondReview = () => {
                   )}
                   onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
                 >
-                  <div className="text-[#D5FF5C] text-[1rem]">
+                  <div className="text-[#D5FF5C] text-[0.625rem]">
                     {totalFeeDiscount > 0 ? (
                       <>
                         {totalDiscountPercent} {t("Off Fees")}

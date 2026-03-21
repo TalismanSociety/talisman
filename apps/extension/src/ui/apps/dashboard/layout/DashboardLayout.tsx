@@ -21,13 +21,13 @@ export const DashboardLayout: FC<{
 }> = ({ children, sidebar, className }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
-      <div className={cn("relative mx-auto w-full min-w-[90rem] max-w-[144rem]", className)}>
+      <div className={cn("relative mx-auto w-full min-w-[56.25rem] max-w-[90rem]", className)}>
         <div className={cn("flex w-full overflow-x-clip", RESPONSIVE_FLEX_SPACING)}>
           {/* Sidebar */}
           {sidebar !== "none" && (
-            <div className="w-[29.6rem] shrink-0 pb-20">
-              <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
-                <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
+            <div className="w-[18.5rem] shrink-0 pb-20">
+              <div className="hidden h-48 w-[18.5rem] shrink-0 items-center gap-4 sm:flex">
+                <TalismanWhiteLogo className="h-[1.875rem] w-[9.1982rem]" />
                 <BuildVersionPill className="rounded-3xl bg-primary/5 text-primary hover:bg-primary/20" />
               </div>
               <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
@@ -92,7 +92,7 @@ const NavButton: FC<{
       )}
       onClick={onClick}
     >
-      <Icon className="shrink-0 text-[2rem]" />
+      <Icon className="shrink-0 text-[1.25rem]" />
       <div>{label}</div>
     </button>
   )

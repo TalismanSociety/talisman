@@ -37,7 +37,7 @@ export const LearnMoreModal = () => {
         centerTitle
         title={t("Learn More")}
         onClose={close}
-        className="maw-h-[100dvh] h-[60rem] w-[40rem] max-w-[100dvw] sm:h-[85rem] sm:w-[60rem]"
+        className="maw-h-[100dvh] h-[37.5rem] w-[25rem] max-w-[100dvw] sm:h-[53.125rem] sm:w-[37.5rem]"
       >
         <ScrollContainer className="h-full w-full">
           <LearnMoreContent

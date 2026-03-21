@@ -107,8 +107,8 @@ export const AssetPriceChart: FC<{
     <div
       className={classNames(
         "relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm bg-black-secondary",
-        variant === "small" && "h-[16.8rem]",
-        variant === "large" && "h-[19.2rem]",
+        variant === "small" && "h-[10.5rem]",
+        variant === "large" && "h-[12rem]",
         className
       )}
     >
@@ -131,7 +131,7 @@ export const AssetPriceChart: FC<{
               className={classNames(
                 "font-bold text-body-secondary",
                 variant === "small" && "text-base",
-                variant === "large" && "text-[2rem]",
+                variant === "large" && "text-[1.25rem]",
                 formattedHoveredValue && "text-body"
               )}
             >
@@ -472,9 +472,9 @@ const TimespanSelect: FC<{
           key={key}
           type="button"
           className={classNames(
-            "rounded-[0.6rem] px-3 py-1.5 hover:bg-white/5 hover:text-white",
+            "rounded-[0.375rem] px-3 py-1.5 hover:bg-white/5 hover:text-white",
             "pointer-events-auto",
-            variant === "small" && "text-[1rem]",
+            variant === "small" && "text-[0.625rem]",
             variant === "large" && "text-sm",
             value === key && "bg-white/10 text-white"
           )}
@@ -503,7 +503,7 @@ const TokenSelect: FC<{
         className={classNames(
           "flex items-center gap-2 p-2 font-bold",
           variant === "small" && "text-base",
-          variant === "large" && "text-[2rem]"
+          variant === "large" && "text-[1.25rem]"
         )}
       >
         <div className="flex flex-col justify-center">
@@ -524,7 +524,7 @@ const TokenSelect: FC<{
             "group rounded bg-grey-850 hover:bg-grey-800",
             "flex items-center gap-2 p-2 font-bold",
             variant === "small" && "text-base",
-            variant === "large" && "text-[2rem]"
+            variant === "large" && "text-[1.25rem]"
           )}
         >
           <div className="flex flex-col justify-center">
@@ -575,10 +575,10 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
       )}
     >
       <div className="flex items-center gap-4">
-        <TokenLogo tokenId={token.id} className="inline-block text-[2.8rem]" />
+        <TokenLogo tokenId={token.id} className="inline-block text-[1.75rem]" />
         <div className="flex grow flex-col gap-1">
           <span className="font-bold text-sm">{token.symbol}</span>
-          <span className="text-[1rem] text-body-secondary">
+          <span className="text-[0.625rem] text-body-secondary">
             {t("Mkt Cap:")} <MarketCap tokenId={token.id} />
           </span>
         </div>

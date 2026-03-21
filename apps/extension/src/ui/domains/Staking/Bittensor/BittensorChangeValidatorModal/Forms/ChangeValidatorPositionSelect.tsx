@@ -67,7 +67,7 @@ export const ChangeValidatorPositionSelect = () => {
         <div className="p-12 pt-0">
           <SearchInputControlled
             containerClassName={classNames(
-              "!bg-field !px-4 h-[3.6rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+              "!bg-field !px-4 h-[2.25rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
               "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
             )}
             placeholder={t("Search")}

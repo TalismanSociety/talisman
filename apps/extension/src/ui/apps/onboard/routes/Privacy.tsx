@@ -47,7 +47,11 @@ export const PrivacyPage = () => {
   }, [])
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[55rem] min-w-[60rem]">
+    <OnboardLayout
+      withBack
+      analytics={ANALYTICS_PAGE}
+      className="min-h-[34.375rem] min-w-[37.5rem]"
+    >
       <img src={imgAnalyticsSwitch} className="fixed top-80 left-80" alt="" />
       <img src={imgAnalyticsFlower} className="fixed right-10 bottom-32" alt="" />
       <OnboardDialog title={t("Manage your privacy")}>

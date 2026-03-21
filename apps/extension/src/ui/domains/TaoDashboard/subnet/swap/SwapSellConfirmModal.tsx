@@ -110,7 +110,7 @@ const SpenderValue = () => {
     <AccountDisplay
       ss58Format={42}
       address={selectedPosition.account.address}
-      iconClassName="text-[2rem]"
+      iconClassName="text-[1.25rem]"
     />
   )
 }

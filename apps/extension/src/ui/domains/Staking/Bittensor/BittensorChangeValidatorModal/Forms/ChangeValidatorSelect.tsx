@@ -114,7 +114,7 @@ export const ChangeValidatorSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "!bg-field !px-4 h-[2.25rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
                 "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search validators")}
@@ -127,7 +127,7 @@ export const ChangeValidatorSelect = () => {
           <ValidatorSortMethodButton method={sortMethod} onChange={setSortMethod} />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
+          <div className="flex justify-between pr-12 pl-[3.75rem] text-body-disabled text-sm">
             <div>{t("Validator")}</div>
             <div>{t("APY")}</div>
           </div>

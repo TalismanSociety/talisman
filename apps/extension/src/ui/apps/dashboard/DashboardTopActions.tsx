@@ -218,7 +218,7 @@ const SeekBenefitsLink: FC<{ analyticsPage: AnalyticsPage }> = ({ analyticsPage 
       className="flex shrink-0 items-center gap-3 text-base text-primary-700 hover:text-primary"
       onClick={handleSeekClick}
     >
-      <div className="flex flex-col justify-center text-[2rem]">
+      <div className="flex flex-col justify-center text-[1.25rem]">
         <SeekEyeIcon />
       </div>
       <div>SEEK</div>

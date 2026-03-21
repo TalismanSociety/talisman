@@ -74,7 +74,7 @@ const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
   const { toggle, isOpen } = useOpenClose()
 
   return (
-    <div className="h-[12rem]">
+    <div className="h-[7.5rem]">
       <div className="text-right">
         <button
           type="button"
@@ -86,7 +86,7 @@ const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
         </button>
       </div>
       {/* enlarge the area or it would hide focus ring on the inputs */}
-      <Accordion isOpen={isOpen} className={classNames(isOpen && "m-[-0.2rem] p-[0.2rem]")}>
+      <Accordion isOpen={isOpen} className={classNames(isOpen && "m-[-0.125rem] p-[0.125rem]")}>
         {children}
       </Accordion>
     </div>

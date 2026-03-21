@@ -334,7 +334,7 @@ export const SwapConfirmTalismanFeeLabel: FC<{
           )}
           onClick={isSeekDrawerEnabled ? open : undefined}
         >
-          <div className="text-[#D5FF5C] text-[1rem]">
+          <div className="text-[#D5FF5C] text-[0.625rem]">
             {totalFeeDiscount > 0 ? (
               <>
                 {totalDiscountPercent} {t("Off Fees")}

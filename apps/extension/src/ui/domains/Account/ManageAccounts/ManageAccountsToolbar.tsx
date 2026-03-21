@@ -49,9 +49,9 @@ export const ManageAccountsToolbar: FC<{
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "!bg-field !px-4 h-[3.6rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+            "!bg-field !px-4 h-[2.25rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
             "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
-            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
+            "@2xl:h-[2.75rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
           )}
           placeholder={t("Search account or folder")}
           onChange={onSearchChange}
@@ -74,8 +74,8 @@ const ToolbarButton: FC<{
     <TooltipTrigger asChild>
       <PortfolioToolbarButton
         className={classNames(
-          "size-[3.6rem]",
-          !IS_POPUP && "flex @2xl:h-[4.4rem] h-[3.6rem] w-auto items-center gap-3 @2xl:px-6 px-4"
+          "size-[2.25rem]",
+          !IS_POPUP && "flex @2xl:h-[2.75rem] h-[2.25rem] w-auto items-center gap-3 @2xl:px-6 px-4"
         )}
         onClick={onClick}
       >
@@ -102,7 +102,7 @@ const AccountsContextMenu = () => {
           className={classNames(
             "flex items-center justify-center rounded-sm border-content bg-grey-900 text-body-secondary hover:bg-grey-800",
             "border border-transparent ring-transparent focus-visible:border-grey-700",
-            "@2xl:size-[4.4rem] size-[3.6rem]"
+            "@2xl:size-[2.75rem] size-[2.25rem]"
           )}
         >
           <MoreHorizontalIcon />

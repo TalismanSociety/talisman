@@ -61,9 +61,9 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
   }, [isCopied])
 
   return (
-    <div className="min-w-[58rem]">
+    <div className="min-w-[36.25rem]">
       <div className="group relative overflow-hidden rounded bg-black-secondary p-2">
-        <div className={`grid min-h-[12.6rem] grid-cols-4 gap-4 p-2`}>
+        <div className={`grid min-h-[7.875rem] grid-cols-4 gap-4 p-2`}>
           {!!mnemonic &&
             mnemonic.split(" ").map((word, i) => (
               <span

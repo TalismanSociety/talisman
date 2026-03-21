@@ -109,7 +109,7 @@ const Accounts = () => {
   return (
     <div className="flex w-full flex-col gap-8 p-8" data-testid="sidebar-account-list">
       <div className="flex h-16 shrink-0 items-center">
-        <div className="grow pl-4 font-bold text-[2rem]">{t("Accounts")}</div>
+        <div className="grow pl-4 font-bold text-[1.25rem]">{t("Accounts")}</div>
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton onClick={handleManageAccountsClick} className="p-3">
@@ -235,7 +235,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
       <AccountIconCopyAddressButton
         address={option.address}
         genesisHash={option.genesisHash}
-        className="absolute top-4 left-4 text-[4rem]"
+        className="absolute top-4 left-4 text-[2.5rem]"
         tooltipPlacement="bottom"
       />
     </div>
@@ -312,7 +312,7 @@ const SidebarButtonBase: FC<{
       )}
       onClick={onClick}
     >
-      <div className="size-20 text-[4rem]">{logo}</div>
+      <div className="size-20 text-[2.5rem]">{logo}</div>
       <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
         <div className="truncate text-grey-300">{label}</div>
         <div className="truncate text-grey-500 text-xs">{fiat}</div>

@@ -38,12 +38,12 @@ export const EvmNetworkSelectPill = () => {
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="flex h-[3.6rem] w-[6.2rem] shrink-0 items-center gap-3 rounded-3xl border border-grey-800 bg-grey-850 pr-3 pl-2 text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
+            className="flex h-[2.25rem] w-[3.875rem] shrink-0 items-center gap-3 rounded-3xl border border-grey-800 bg-grey-850 pr-3 pl-2 text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
             onClick={open}
           >
             <Suspense>
               <NetworkLogo
-                className={classNames("text-[2.8rem] transition-opacity")} // flickering hack
+                className={classNames("text-[1.75rem] transition-opacity")} // flickering hack
                 networkId={evmNetworkId}
               />
               <ChevronDownIcon className="shrink-0 text-base" />

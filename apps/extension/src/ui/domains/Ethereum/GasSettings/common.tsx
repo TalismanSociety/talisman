@@ -38,9 +38,11 @@ export const Indicator: FC<IndicatorProps> = ({ children, label, className }) =>
       )}
     >
       {label && (
-        <div className="absolute top-[-0.8rem] left-5 bg-grey-800 px-2 text-[1rem]">{label}</div>
+        <div className="absolute top-[-0.5rem] left-5 bg-grey-800 px-2 text-[0.625rem]">
+          {label}
+        </div>
       )}
-      <div className="w-full text-left align-top leading-[1.7rem]">{children}</div>
+      <div className="w-full text-left align-top leading-[1.0625rem]">{children}</div>
     </div>
   )
 }

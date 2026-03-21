@@ -11,7 +11,7 @@ export const PopupSizeModalContainer: FC<PropsWithChildren<{ id: string; classNa
     <div
       id={id} // containerId for sub modals
       className={cn(
-        "relative h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] overflow-hidden bg-black-primary",
+        "relative h-[37.5rem] max-h-[100dvh] w-[25rem] max-w-[100dvw] overflow-hidden bg-black-primary",
         !IS_POPUP && "rounded-lg border border-grey-800 shadow",
         className
       )}

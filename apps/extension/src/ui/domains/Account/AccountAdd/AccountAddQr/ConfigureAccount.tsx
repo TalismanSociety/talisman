@@ -172,7 +172,7 @@ export const ConfigureAccount = () => {
                 />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="z-20 w-[50rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs leading-paragraph shadow">
+            <TooltipContent className="z-20 w-[31.25rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs leading-paragraph shadow">
               By default, derived accounts in Polkadot Vault are restricted to one network, based on
               derivation path. Root accounts can be used on any network. Select 'Derived Account' if
               you are not sure.

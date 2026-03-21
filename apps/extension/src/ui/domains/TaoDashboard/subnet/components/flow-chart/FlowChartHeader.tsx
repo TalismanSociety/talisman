@@ -22,7 +22,7 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, period }) =>
   if (isLoading) return <FlowChartHeaderSkeleton />
 
   return (
-    <div className="flex h-[10.2rem] flex-wrap items-center justify-between gap-4 px-12">
+    <div className="flex h-[6.375rem] flex-wrap items-center justify-between gap-4 px-12">
       <div className="flex w-full items-end justify-between gap-4">
         {/* Left side – Net Flow Display */}
         <div>
@@ -107,7 +107,7 @@ const MetricSkeleton: FC<{
 )
 
 const FlowChartHeaderSkeleton = () => (
-  <div className="flex h-[10.2rem] flex-wrap items-center justify-between gap-4 px-12">
+  <div className="flex h-[6.375rem] flex-wrap items-center justify-between gap-4 px-12">
     <div className="flex w-full items-start justify-between gap-4">
       <div className="flex flex-col gap-4">
         <Skeleton className="h-14 w-96" />
