@@ -19,7 +19,6 @@ export const ASSET_DISCOVERY_API_URL = "https://ada.talisman.xyz"
 export const YIELD_API_BASE_URL = "https://yap.talisman.xyz"
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
-export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const REMOTE_CONFIG_API_URL = "https://wrc.talisman.xyz"
 export const COINS_API_URL = "https://coins.talisman.xyz"
 

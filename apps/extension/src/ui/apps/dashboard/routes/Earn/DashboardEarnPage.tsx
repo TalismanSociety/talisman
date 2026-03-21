@@ -1,5 +1,6 @@
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
@@ -9,8 +10,16 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Outlet, useOutletContext } from "react-router-dom"
+import { DashboardTopActions } from "../../DashboardTopActions"
 import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
 import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Earn",
+  featureVersion: 1,
+  page: "Earn Home",
+}
 
 type DashboardEarnOutletContext = {
   search: string
@@ -94,8 +103,8 @@ const EarnPageHeader = () => {
   }, [currency, tokenProducts])
 
   return (
-    <div className="flex h-64 items-center justify-between rounded-[0.75rem] border border-grey-800 text-left text-base text-body-secondary">
-      <div className="flex flex-col gap-4 px-6 py-8">
+    <div className="flex h-64 items-center rounded-[0.75rem] border border-grey-800 px-6 py-8 text-left text-base text-body-secondary">
+      <div className="flex w-full flex-col gap-4">
         <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
         <div className="font-bold text-2xl text-body">
           {!eligibleTotal && status === "loading" ? (
@@ -104,6 +113,7 @@ const EarnPageHeader = () => {
             <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
           )}
         </div>
+        <DashboardTopActions analyticsPage={ANALYTICS_PAGE} />
       </div>
     </div>
   )

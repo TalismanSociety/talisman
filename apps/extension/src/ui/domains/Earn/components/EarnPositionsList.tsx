@@ -2,6 +2,8 @@ import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
 import { classNames, cn, isNotNil, type LoadableStatus } from "@talismn/util"
+import { Button } from "@ui/components/Button"
+import { NoAssetsFoundSymbol } from "@ui/components/NoAssetsFoundSymbol"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -197,8 +199,9 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
 
 export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
+  const navigate = useNavigateWithQuery()
   const { isInitialising } = usePortfolioGlobalData()
-  const { selectedAccount, selectedFolder, selectedAccounts } = usePortfolioNavigation()
+  const { selectedAccounts } = usePortfolioNavigation()
   const { status, data: positions } = useYieldxyzPositionsEnhanced()
   const isLoading = status === "loading"
 
@@ -276,17 +279,18 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     [displayPositions]
   )
 
-  if (!displayPositions.length && !isInitialising && !isLoading) {
+  if (!displayPositions.length && !isInitialising && !isLoading)
     return (
-      <div className="mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
-        {selectedAccount
-          ? t("No earning positions found for this account.")
-          : selectedFolder
-            ? t("No earning positions found in this folder.")
-            : t("No earning positions found.")}
+      <div className="flex flex-col items-center justify-center gap-8 py-12">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <NoAssetsFoundSymbol className="h-48 w-48" />
+          <div className="text-white/30">{t("No DeFi positions found")}</div>
+        </div>
+        <Button primary small className="px-24" onClick={() => navigate("/earn/discover")}>
+          {t("Discover")}
+        </Button>
       </div>
     )
-  }
 
   return (
     <div className="mb-6">
