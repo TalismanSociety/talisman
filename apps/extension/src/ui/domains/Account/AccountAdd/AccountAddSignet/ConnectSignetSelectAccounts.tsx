@@ -112,7 +112,7 @@ export const ConnectSignetSelectAccounts = () => {
             <Checkbox
               checked={selectedAccounts?.[vault.address] ?? false}
               readOnly
-              className="[&>input]:border-body-disabled! ml-auto"
+              className="ml-auto [&>input]:border-body-disabled!"
             />
           </button>
         ))}

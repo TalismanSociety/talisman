@@ -231,7 +231,7 @@ export const AddLedgerSelectNetwork = () => {
                           </span>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="z-20 max-w-[20rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow-sm">
+                      <TooltipContent className="z-20 max-w-[20rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow-xs">
                         <Trans
                           t={t}
                           defaults={

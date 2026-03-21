@@ -58,7 +58,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
   if (!address) return null
 
   return (
-    <PillButton className={classNames("px-4! h-16 max-w-[240px]", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 max-w-[240px] px-4!", className)} onClick={onClick}>
       <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         <AccountIcon className="text-lg!" address={address} genesisHash={accountGenesisHash} />
         <div className="grow truncate leading-base">
@@ -89,7 +89,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   // substrate generic format
   if (chainId === null)
     return (
-      <PillButton className={classNames("px-4! py-2! h-16", className)} onClick={onClick}>
+      <PillButton className={classNames("h-16 px-4! py-2!", className)} onClick={onClick}>
         <div className="flex flex-nowrap items-center gap-4 text-base text-body">
           <div className="flex shrink-0 flex-col justify-center">
             <AccountIcon type="polkadot-identicon" className="text-lg!" address={address} />
@@ -102,7 +102,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   if (!chain) return null
 
   return (
-    <PillButton className={classNames("px-4! py-2! h-16", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 px-4! py-2!", className)} onClick={onClick}>
       <div className="flex flex-nowrap items-center gap-4 text-base text-body">
         <div className="shrink-0">
           <NetworkLogo className="text-lg!" networkId={chain.id} />

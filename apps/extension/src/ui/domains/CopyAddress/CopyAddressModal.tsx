@@ -12,8 +12,10 @@ export const CopyAddressModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black shadow-sm",
-        window.location.pathname === "/popup.html" ? "max-h-full max-w-full" : "rounded-lg border"
+        "h-[37.5rem] w-[25rem] overflow-hidden border-grey-800 bg-black shadow-xs",
+        window.location.pathname === "/popup.html"
+          ? "max-h-full max-w-full"
+          : "rounded-lg border border-grey-800"
       )}
       containerId={window.location.pathname === "/popup.html" ? "main" : undefined}
     >

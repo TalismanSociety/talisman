@@ -71,7 +71,7 @@ const EmptyContent: FC = () => {
 
   return (
     <div className="flex w-full items-center gap-3">
-      <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
+      <div className="flex items-center justify-center rounded-full bg-[#D5FF5C]/10">
         <PlusIcon className="m-[0.1875rem] size-10 text-primary-500" />
       </div>
       <div className="text-white text-xs">{t("Select currency")}</div>

@@ -329,7 +329,7 @@ export const SwapConfirmTalismanFeeLabel: FC<{
         <button
           type="button"
           className={cn(
-            "rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1",
+            "rounded-[43px] bg-[#D5FF5C]/[0.1] px-3 py-1",
             !isSeekDrawerEnabled && "cursor-default"
           )}
           onClick={isSeekDrawerEnabled ? open : undefined}

@@ -57,10 +57,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
         )}
       </header>
       <div
-        className={cn(
-          "scrollable scrollable-800 grow overflow-auto p-10 pt-0",
-          contentClassName
-        )}
+        className={cn("scrollable scrollable-800 grow overflow-auto p-10 pt-0", contentClassName)}
       >
         {children}
       </div>

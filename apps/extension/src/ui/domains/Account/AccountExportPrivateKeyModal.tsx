@@ -127,7 +127,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
         )}
       </div>
       <div className="flex w-full grow flex-col justify-center gap-6">
-        <div className="text-body! flex w-full items-center gap-4">
+        <div className="flex w-full items-center gap-4 text-body!">
           <div>
             <AccountIcon address={account.address} className="text-lg!" />
           </div>

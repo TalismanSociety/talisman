@@ -1,34 +1,225 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@config '../../../tailwind.config.cjs';
+@plugin "@tailwindcss/forms" {
+  strategy: class;
+}
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+@source "../../../public";
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+@theme {
+  /* ── Clear default namespaces (Talisman fully replaces these) ── */
+  --color-*: initial;
+  --text-*: initial;
+  --leading-*: initial;
+  --radius-*: initial;
+
+  /* ── Colors ── */
+  --color-white: #fafafa;
+  --color-black: #121212;
+  --color-black-primary: #121212;
+  --color-black-secondary: #1b1b1b;
+  --color-black-tertiary: #262626;
+
+  --color-body-disabled: #5a5a5a;
+  --color-body-inactive: #717171;
+  --color-body-secondary: #a5a5a5;
+  --color-body: #fafafa;
+  --color-body-black: #121212;
+
+  --color-field: #1b1b1b;
+  --color-pill: #262626;
+
+  --color-alert-success: #6cfc69;
+  --color-alert-warn: #f48f45;
+  --color-alert-error: #fd4848;
+
+  --color-green: #6cfc69;
+  --color-green-500: #6cfc69;
+
+  --color-orange: #f48f45;
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f48f45;
+
+  --color-red: #fd4848;
+  --color-red-400: #f87171;
+  --color-red-500: #fd4848;
+
+  --color-primary: #d5ff5c;
+  --color-primary-500: #d5ff5c;
+  --color-primary-700: #c8eb46;
+
+  --color-brand-blue: #005773;
+  --color-brand-pink: #fd8fff;
+  --color-brand-orange: #fd4848;
+
+  --color-grey-50: #fafafa;
+  --color-grey-100: #f2f2f2;
+  --color-grey-200: #e4e4e4;
+  --color-grey-300: #d4d4d4;
+  --color-grey-400: #a5a5a5;
+  --color-grey-500: #717171;
+  --color-grey-600: #5a5a5a;
+  --color-grey-700: #3f3f3f;
+  --color-grey-750: #2f2f2f;
+  --color-grey-800: #262626;
+  --color-grey-850: #1b1b1b;
+  --color-grey-900: #181818;
+
+  --color-price-up: #8aeb94;
+  --color-price-down: #ff5c5f;
+
+  --color-buy: #6cfc69;
+  --color-sell: #fd4848;
+
+  /* ── Font Sizes ── */
+  --text-tiny: 0.625rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.5rem;
+  --text-xl: 2rem;
+  --text-2xl: 2.25rem;
+  --text-3xl: 2.5rem;
+
+  /* ── Line Heights ── */
+  --leading-3: 0.375rem;
+  --leading-4: 0.5rem;
+  --leading-5: 0.625rem;
+  --leading-6: 0.75rem;
+  --leading-7: 0.875rem;
+  --leading-8: 1rem;
+  --leading-9: 1.125rem;
+  --leading-10: 1.25rem;
+  --leading-none: 1;
+  --leading-base: 1.2;
+  --leading-paragraph: 1.4;
+
+  /* ── Border Radius ── */
+  --radius-none: 0;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 3rem;
+  --radius-full: 9999px;
+
+  /* ── Spacing ── */
+  --spacing-px: 1px;
+  --spacing-0: 0;
+  --spacing-0_5: 0.0625rem;
+  --spacing-1: 0.125rem;
+  --spacing-1_5: 0.1875rem;
+  --spacing-2: 0.25rem;
+  --spacing-2_5: 0.3125rem;
+  --spacing-3: 0.375rem;
+  --spacing-3_5: 0.4375rem;
+  --spacing-4: 0.5rem;
+  --spacing-5: 0.625rem;
+  --spacing-6: 0.75rem;
+  --spacing-7: 0.875rem;
+  --spacing-8: 1rem;
+  --spacing-9: 1.125rem;
+  --spacing-10: 1.25rem;
+  --spacing-11: 1.375rem;
+  --spacing-12: 1.5rem;
+  --spacing-14: 1.75rem;
+  --spacing-16: 2rem;
+  --spacing-20: 2.5rem;
+  --spacing-24: 3rem;
+  --spacing-28: 3.5rem;
+  --spacing-32: 4rem;
+  --spacing-36: 4.5rem;
+  --spacing-40: 5rem;
+  --spacing-44: 5.5rem;
+  --spacing-48: 6rem;
+  --spacing-52: 6.5rem;
+  --spacing-56: 7rem;
+  --spacing-60: 7.5rem;
+  --spacing-64: 8rem;
+  --spacing-72: 9rem;
+  --spacing-80: 10rem;
+  --spacing-96: 12rem;
+
+  /* ── Font Families ── */
+  --font-sans:
+    Surt, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --font-surtExpanded:
+    SurtExpanded, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", sans-serif;
+  --font-whyteInkTrap:
+    WhyteInktrapMedium, ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  --font-inter:
+    Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", sans-serif;
+  --font-unbounded:
+    Unbounded, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", sans-serif;
+
+  /* ── Animations ── */
+  --animate-fade-in-fast: fade-in 0.1s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-fade-in-slow: fade-in 0.5s ease-out;
+  --animate-spin-slow: spin 2s linear infinite;
+  --animate-spin-once: spin 4s linear forwards;
+  --animate-scale-in-out-once: scale-in-out 1.5s forwards;
+  --animate-slide-in-up: slide-in-up 300ms ease-out;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in-out {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+
+  @keyframes slide-in-up {
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0%);
+    }
   }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */
 /* Access to the (tailwind) theme is provided by theme() function if needed */
 @utility form-checkbox {
-  &input[type='checkbox']:checked {
+  &:checked {
     background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
   }
 
   /* we want focus state only for keyboard nav, so we disable :focus and use only :focus-visible */
-  &input[type='checkbox']:focus:not(:focus-visible) {
+  &:focus:not(:focus-visible) {
     box-shadow: none;
   }
 }
@@ -99,9 +290,9 @@
 
   &::after {
     @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden bg-cover bg-no-repeat opacity-15;
-    content: '';
+    content: "";
     /* ./blur.svg */
-    background-image: url('data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==');
+    background-image: url("data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==");
   }
 
   &.balance-reveal::after {
@@ -120,6 +311,12 @@
 
 /* The base layer is for things like reset rules or default styles applied to plain HTML elements. */
 @layer base {
+  /* Preserve v3 cursor:pointer behavior on buttons */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   html {
     scrollbar-color: var(--color-grey-700) transparent;
     @apply min-h-screen;

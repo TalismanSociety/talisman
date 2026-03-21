@@ -85,7 +85,7 @@ const PortfolioSearch = () => {
   return (
     <SearchInput
       containerClassName={classNames(
-        "bg-field! px-4! h-16 w-full rounded-sm border border-field text-xs ring-transparent focus-within:border-grey-700",
+        "h-16 w-full rounded-sm border border-field bg-field! px-4! text-xs ring-transparent focus-within:border-grey-700",
         "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
         "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
         IS_POPUP ? "w-full" : "max-w-[23.375rem]"

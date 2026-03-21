@@ -114,7 +114,7 @@ export const ChangeValidatorSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "bg-field! px-4! h-[2.25rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
                 "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search validators")}

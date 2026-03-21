@@ -46,7 +46,7 @@ const NetworkLogoInner: FC<NetworkLogoProps> = ({ networkId: id, className }) =>
 const NetworkLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
-      "bg-body-disabled! block! h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
+      "block! h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full bg-body-disabled!",
       className
     )}
   ></div>

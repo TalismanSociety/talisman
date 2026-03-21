@@ -110,12 +110,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             <div className="text-white">
               {hasSeekStaked ? t("Applied Discount") : t("Get Discounts")}
             </div>
-            <div
-              className={cn(
-                "rounded-[43px] px-4 py-2",
-                !hasSeekStaked && "bg-[#D5FF5C] bg-opacity-[0.1]"
-              )}
-            >
+            <div className={cn("rounded-[43px] px-4 py-2", !hasSeekStaked && "bg-[#D5FF5C]/[0.1]")}>
               <div className="text-[#D5FF5C] text-[14px]">
                 {hasSeekStaked ? discountPercent : t("Up to 25%")} {t("off fees")}
               </div>

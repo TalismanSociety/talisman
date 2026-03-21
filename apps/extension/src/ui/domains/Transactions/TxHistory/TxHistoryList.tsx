@@ -199,7 +199,7 @@ const TxIconContainer = ({
       </div>
     </TooltipTrigger>
     {!!tooltip && (
-      <TooltipContent className="z-20 rounded-xs bg-grey-700 p-3 text-xs shadow-sm">
+      <TooltipContent className="z-20 rounded-xs bg-grey-700 p-3 text-xs shadow-xs">
         {tooltip}
       </TooltipContent>
     )}

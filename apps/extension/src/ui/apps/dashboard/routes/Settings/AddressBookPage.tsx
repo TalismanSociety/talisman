@@ -159,7 +159,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
               <ContextMenuItem
                 disabled={!canSendFunds}
                 onClick={openSendFundsPopup}
-                className="disabled:text-body-disabled! disabled:cursor-not-allowed! disabled:bg-transparent!"
+                className="disabled:cursor-not-allowed! disabled:bg-transparent! disabled:text-body-disabled!"
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -173,7 +173,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
               <ContextMenuItem
                 disabled={!canViewOnExplorer}
                 onClick={handleViewOnExplorer}
-                className="disabled:text-body-disabled! disabled:cursor-not-allowed! disabled:bg-transparent!"
+                className="disabled:cursor-not-allowed! disabled:bg-transparent! disabled:text-body-disabled!"
               >
                 {t("View on explorer")}
               </ContextMenuItem>

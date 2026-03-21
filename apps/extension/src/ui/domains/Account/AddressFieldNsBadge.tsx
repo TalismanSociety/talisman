@@ -39,7 +39,7 @@ export const AddressFieldNsBadge = ({
             )}
           </>
         ) : (
-          <PillButton className="cursor-default! px-4! h-16 max-w-full">
+          <PillButton className="h-16 max-w-full cursor-default! px-4!">
             <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
               <AccountIcon className="text-lg" address={nsLookup} />
               <div className="grow truncate leading-base">

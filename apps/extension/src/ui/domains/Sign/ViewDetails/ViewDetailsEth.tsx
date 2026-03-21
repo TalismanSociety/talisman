@@ -29,7 +29,7 @@ import { ViewDetailsAddress } from "./ViewDetailsAddress"
 import { ViewDetailsField } from "./ViewDetailsField"
 
 const ViewDetailsGrid: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid grid-cols-keyvalue gap-x-8 whitespace-nowrap">{children}</div>
+  <div className="grid grid-cols-[auto_1fr] gap-x-8 whitespace-nowrap">{children}</div>
 )
 
 const ViewDetailsGridRow: FC<{ left: ReactNode; right: ReactNode }> = ({ left, right }) => (

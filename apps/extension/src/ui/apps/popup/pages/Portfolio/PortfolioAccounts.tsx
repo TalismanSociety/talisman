@@ -225,7 +225,7 @@ const AccountsToolbar = () => {
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "bg-field! px-4! h-[2rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+            "h-[2rem] w-full rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
             "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
           )}
           placeholder={t("Search account or folder")}

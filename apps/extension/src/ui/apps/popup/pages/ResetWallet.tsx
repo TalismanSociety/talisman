@@ -65,7 +65,7 @@ const ConfirmDrawer = ({
         <div className="mt-12 flex flex-col gap-8">
           <Button
             type="submit"
-            className="enabled:bg-brand-orange! hover:enabled:bg-brand-orange/80! h-24 enabled:text-white"
+            className="h-24 enabled:bg-brand-orange! enabled:text-white hover:enabled:bg-brand-orange/80!"
             fullWidth
             onClick={handleReset}
             primary={isMatch}

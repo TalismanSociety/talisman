@@ -307,8 +307,8 @@ const SelectTokenWarningDrawer: FC<{
                 className="h-16 w-auto shrink-0"
               />
               <div className="flex flex-col gap-3">
-                <p className="leading-none! text-body text-sm">{t("Token Audit Report")}</p>
-                <p className="leading-none! text-body-secondary text-xs">
+                <p className="text-body text-sm leading-none!">{t("Token Audit Report")}</p>
+                <p className="text-body-secondary text-xs leading-none!">
                   {t("Powered by GoPlus")}
                 </p>
               </div>

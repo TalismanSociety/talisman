@@ -45,7 +45,7 @@ const WordOption = ({
     onClick={onClick}
     disabled={selected}
     className={classNames(
-      "rounded-xl bg-black-tertiary px-8 py-3 text-body enabled:hover:bg-grey-700 disabled:text-opacity-20"
+      "rounded-xl bg-black-tertiary px-8 py-3 text-body enabled:hover:bg-grey-700 disabled:text-body/20"
     )}
   >
     <span className="notranslate">{word}</span>

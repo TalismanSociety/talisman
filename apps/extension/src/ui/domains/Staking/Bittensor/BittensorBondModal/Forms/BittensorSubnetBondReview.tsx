@@ -327,7 +327,7 @@ export const BittensorSubnetBondReview = () => {
                 <button
                   type="button"
                   className={classNames(
-                    "rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1",
+                    "rounded-[43px] bg-[#D5FF5C]/[0.1] px-3 py-1",
                     !isSeekDrawerEnabled && "cursor-default"
                   )}
                   onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
