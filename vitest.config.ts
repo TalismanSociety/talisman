@@ -22,7 +22,6 @@ export default defineConfig({
       "packages/chain-connectors",
       "packages/chaindata-provider",
       "packages/balances",
-      "packages/balances-react",
 
       // Extension app (jsdom environment with custom setup)
       "apps/extension",

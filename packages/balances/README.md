@@ -20,13 +20,6 @@ A quick rundown on each package is given below.
 - Helpers (utility functions) for balance modules to use
 - Provides a plugin architecture, which is used by the balance module packages to specify their balance types
 
-### The react API for wallets & dapps:
-
-**@talismn/balances-react** includes:
-
-- React hooks for subscribing to on-chain account token balances
-- (soon™): recoil atoms for on-chain account token balances
-
 ### The balance modules:
 
 **@talismn/balances-default-modules**

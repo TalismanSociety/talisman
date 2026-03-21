@@ -974,7 +974,6 @@ if (typeof document === "undefined") {
       ".vscode/**",
       // Other apps we don't need to build the extension
       "apps/balances-bench/**",
-      "apps/balances-demo/**",
     ],
   },
 })

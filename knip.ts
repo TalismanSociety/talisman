@@ -6,7 +6,6 @@ const config: KnipConfig = {
 
   ignoreWorkspaces: [
     ".papi/descriptors", // Generated polkadot-api descriptors
-    "apps/balances-demo", // Test project — unused artefacts expected
     "apps/balances-bench", // Test project — unused artefacts expected
   ],
 
