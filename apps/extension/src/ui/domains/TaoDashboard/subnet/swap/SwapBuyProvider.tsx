@@ -46,7 +46,6 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     // preselect account straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { address: lastSelectedAddress || defaultAddress || null })
   )
-
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
   // target token doesnt have the validator address, because it will not exist unless user already has some

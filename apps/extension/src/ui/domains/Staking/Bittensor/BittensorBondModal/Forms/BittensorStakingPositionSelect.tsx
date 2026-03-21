@@ -29,15 +29,27 @@ export const BittensorStakingPositionSelect = () => {
   const search = useDeferredValue(searchSync)
   const { close } = useBittensorBondModal()
 
-  const { networkId, position: currentPosition, setPosition, setStep } = useBittensorBondWizard()
+  const {
+    networkId,
+    netuid,
+    position: currentPosition,
+    setPosition,
+    setStep,
+  } = useBittensorBondWizard()
 
   const positions = useBittensorStakingPositions(networkId)
 
   const filteredPositions = useMemo(() => {
-    if (!search) return positions
+    // When opened from a specific subnet row, only show positions for that subnet
+    let result = positions
+    if (netuid !== null && netuid !== undefined) {
+      result = result.filter((p) => p.token.netuid === netuid)
+    }
+
+    if (!search) return result
 
     const lowerSearch = search.toLowerCase()
-    return positions.filter((position) =>
+    return result.filter((position) =>
       [
         position.token.symbol,
         position.token.name,
@@ -50,7 +62,7 @@ export const BittensorStakingPositionSelect = () => {
         .toLowerCase()
         .includes(lowerSearch)
     )
-  }, [positions, search])
+  }, [positions, search, netuid])
 
   const handleSelect = useCallback(
     (position: BittensorStakingPosition) => () => {

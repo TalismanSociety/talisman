@@ -35,6 +35,8 @@ type WizardState = {
 export type ChangeValidatorOpenOptions = {
   tokenId: TokenId
   address?: Address
+  /** When provided, the position selector shows all positions for this subnet instead of filtering by tokenId. */
+  netuid?: number
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -60,9 +62,13 @@ const useBittensorChangeValidatorWizardProvider = () => {
 
   const allPositions = useBittensorStakingPositions(networkId)
   const positions = useMemo(() => {
+    // When netuid is provided, show all positions for that subnet (used from subnet list)
+    if (args?.netuid !== undefined)
+      return allPositions.filter((pos) => pos.token.netuid === args.netuid)
+    // Otherwise filter by exact tokenId (existing behavior for portfolio context)
     if (!args?.tokenId) return allPositions
     return allPositions.filter((pos) => pos.token.id === args.tokenId)
-  }, [allPositions, args?.tokenId])
+  }, [allPositions, args?.tokenId, args?.netuid])
 
   // Find the current position based on the token
   const currentPosition = useMemo<BittensorStakingPosition | null>(() => {

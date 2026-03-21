@@ -1,6 +1,6 @@
 import { type Balance, Balances } from "@talismn/balances"
-import type { SubDTaoToken } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances } from "@ui/state/balances"
@@ -31,7 +31,6 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     return allTokens.filter(
       (token): token is SubDTaoToken =>
         token.type === "substrate-dtao" &&
-        !!token.netuid && // ignore root
         !token.hotkey && // ignore dynamic tokens
         token.networkId === BITTENSOR_NETWORK_ID // ignore testnet
     )
@@ -50,6 +49,22 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       return acc
     }, new Map<number, Balance[]>())
   }, [balances, selectedAccounts])
+
+  // Find the first selected substrate account with transferable native TAO
+  const stakeAddress = useMemo(() => {
+    const nativeTokenId = subNativeTokenId(BITTENSOR_NETWORK_ID)
+    for (const acc of selectedAccounts) {
+      if (isEthereumAddress(acc.address)) continue
+      const bal = balances.each.find(
+        (b) =>
+          b.tokenId === nativeTokenId &&
+          isAddressEqual(b.address, acc.address) &&
+          b.transferable.planck > 0n
+      )
+      if (bal) return acc.address
+    }
+    return undefined
+  }, [selectedAccounts, balances])
 
   // Index leaderboard by netuid
   const leaderboardMap = useMemo(() => {
@@ -84,6 +99,10 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           ? (new Balances(balancesPerNetuid.get(token.netuid)!) ?? 0)
           : null
 
+        // First selected account that has staked alpha on this subnet
+        const unstakeAddress =
+          balancesPerNetuid.get(token.netuid)?.find((b) => b.free.planck > 0n)?.address ?? undefined
+
         return {
           netuid: token.netuid,
           token,
@@ -97,6 +116,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           mcap,
           balance: balances?.sum.planck.transferable ?? null,
           balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
+          unstakeAddress,
           stakedTao: priceTao ? stakedAlpha * priceTao : undefined,
           stakedAlpha,
           mcapUsd: mcap,
@@ -139,7 +159,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   const isLoading = Object.values(loading).some(Boolean)
   const isError = Object.values(errors).some(Boolean)
 
-  return { subnets, isLoading, isError, loading, errors }
+  return { subnets, stakeAddress, isLoading, isError, loading, errors }
 }
 
 export type TaoDashboardSubnet = ReturnType<typeof useTaoDashboardSubnets>["subnets"][number]

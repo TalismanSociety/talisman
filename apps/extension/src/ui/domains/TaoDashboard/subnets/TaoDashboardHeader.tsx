@@ -12,152 +12,198 @@ import { Skeleton } from "../shared/Skeleton"
 import { raoToTao } from "../shared/util"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
-const _PoweredBySn45 = () => {
-  const { t } = useTranslation()
-  return (
-    <a
-      href="https://taostats.io/subnets/netuid-45/"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-full bg-grey-800 px-3 py-1.5 text-body-secondary text-xs transition-colors hover:bg-grey-750 hover:text-body"
-    >
-      <span>{t("Powered by")}</span>
-      <span className="font-semibold text-primary">SN45</span>
-    </a>
-  )
-}
-
 export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
 
   const tao = useToken(subNativeTokenId(BITTENSOR_NETWORK_ID))
   const ownedBalances = useBalances("owned")
-  const { data: taoPrice, isLoading: isTaoPriceLoading } = useTaoPrice()
-  const { data: leaderboardData, isLoading: isLeaderboardLoading } = useSubnetLeaderboard("1d")
+  const {
+    data: taoPrice,
+    isLoading: isTaoPriceLoading,
+    isRefetching: isTaoPriceRefetching,
+  } = useTaoPrice()
+  const {
+    data: leaderboardData,
+    isLoading: isLeaderboardLoading,
+    isRefetching: isLeaderboardRefetching,
+  } = useSubnetLeaderboard("1d")
 
   const taoBalances = useMemo(() => {
     if (!tao) return new Balances([])
     return ownedBalances.find({ tokenId: tao.id })
   }, [ownedBalances, tao])
 
+  // Pre-filter to only dTAO balances on Bittensor so that totalStakedPlanck
+  // does not recalculate when unrelated balances change.
+  const dtaoBalances = useMemo(
+    () =>
+      ownedBalances.find(
+        (b) => b.token?.type === "substrate-dtao" && b.token.networkId === BITTENSOR_NETWORK_ID
+      ),
+    [ownedBalances]
+  )
+
   const isInitializing = useIsBalanceInitializing()
 
-  const isBalanceLoading = useMemo(() => {
-    return isInitializing || taoBalances.each.some((b) => b.status === "cache")
-  }, [isInitializing, taoBalances])
+  const hasCachedBalances = useMemo(
+    () => taoBalances.each.some((b) => b.status === "cache"),
+    [taoBalances]
+  )
+  const isBalanceRefetching = hasCachedBalances && !isInitializing
 
   const isStatsLoading = isTaoPriceLoading || isLeaderboardLoading
+  const isStatsRefetching = isTaoPriceRefetching || isLeaderboardRefetching
 
-  // Compute stats from TAO price and leaderboard data
   const stats = useMemo(() => {
     const taoUsd = taoPrice?.price ? parseFloat(taoPrice.price) : 0
     const subnets = leaderboardData?.subnets ?? []
 
-    // TAO market cap from price feed
     const marketCap = taoPrice?.marketCap ?? 0
-
-    // TAO price change
     const priceChange24h = taoPrice?.priceChange24h ?? null
-
-    // Subnet volume from leaderboard (convert rao to TAO, then to USD)
     const totalSubnetVolume = subnets.reduce((sum, s) => sum + raoToTao(s.volume) * taoUsd, 0)
-
-    // Market cap change
     const marketCapChange24h = taoPrice?.marketCapChange24h ?? null
 
     return { marketCap, marketCapChange24h, totalSubnetVolume, taoUsd, priceChange24h }
   }, [taoPrice, leaderboardData])
 
+  const totalStakedPlanck = useMemo(() => {
+    // Use fiat("tao") to get the TAO-equivalent value directly from each dTAO balance,
+    // avoiding the lossy USD round trip (alpha -> USD -> TAO). The "tao" rate is computed
+    // from the on-chain alpha price without an intermediate USD division.
+    const stakedTao = dtaoBalances.each
+      .filter((b) => b.free.planck > 0n)
+      .reduce((sum, b) => sum + (b.free.fiat("tao") ?? 0), 0)
+
+    return BigInt(Math.round(stakedTao * 1e9))
+  }, [dtaoBalances])
+
   return (
-    <div className="flex h-auto min-h-64 items-center justify-between rounded-[0.75rem] border border-grey-800 px-16 text-left text-base text-body-secondary">
-      <StatItem
-        label={t("Available Tao")}
-        value={
-          <span>
-            <TokensAndFiat
-              tokenId={tao?.id}
-              planck={taoBalances.sum.planck.transferable}
-              noFiat
-              noCountUp
-              noSymbol
-              isBalance
-            />
-            {" τ"}
-          </span>
-        }
-        className={cn("w-[17rem]", isBalanceLoading && "animate-pulse")}
-      />
+    <div className="flex items-center rounded-[12px] border border-grey-800 px-3 py-4">
+      <div className="flex shrink-0 items-center gap-2 px-1.5">
+        <BalanceStat
+          label={t("Total Tao Balance")}
+          tokenId={tao?.id}
+          planck={taoBalances.sum.planck.transferable}
+          isLoading={isInitializing}
+          isRefetching={isBalanceRefetching}
+          className="pr-8"
+        />
+        <BalanceStat
+          label={t("Staked Tao Balance")}
+          tokenId={tao?.id}
+          planck={totalStakedPlanck}
+          isLoading={isInitializing || isTaoPriceLoading}
+          isRefetching={isBalanceRefetching || isTaoPriceRefetching}
+          className="pr-8"
+        />
+      </div>
 
-      <div className="h-44 w-px shrink-0 bg-grey-800" />
-
-      <StatItem
-        label={t("Total Market Cap")}
-        value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
-        change={stats.marketCapChange24h ?? undefined}
-        isLoading={isStatsLoading}
-        hasChange
-        className="w-[17rem]"
-      />
-      <StatItem
-        label={t("24h Trading Volume")}
-        value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
-        isLoading={isStatsLoading}
-        className="w-[17rem]"
-      />
-      <StatItem
-        label={t("TAO Price")}
-        value={<FiatFromUsd amount={stats.taoUsd} noCountUp />}
-        change={stats.priceChange24h ?? undefined}
-        isLoading={isStatsLoading}
-        hasChange
-        className="w-[17rem]"
-      />
+      <div className="flex flex-1 items-center justify-end border-grey-800 border-l px-8 py-3">
+        <div className="flex items-start gap-28">
+          <MarketStat
+            label={t("Total Market Cap")}
+            value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
+            change={stats.marketCapChange24h ?? undefined}
+            isLoading={isStatsLoading}
+            isRefetching={isStatsRefetching}
+          />
+          <MarketStat
+            label={t("Total Subnet Volume")}
+            value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
+            isLoading={isStatsLoading}
+            isRefetching={isStatsRefetching}
+          />
+          <MarketStat
+            label={t("TAO Price")}
+            value={<FiatFromUsd amount={stats.taoUsd} noCountUp />}
+            change={stats.priceChange24h ?? undefined}
+            isLoading={isStatsLoading}
+            isRefetching={isStatsRefetching}
+          />
+        </div>
+      </div>
     </div>
   )
 }
 
-// Stat item for the header
-const StatItem: FC<{
+/** Large balance stat (32px value) for the left section */
+const BalanceStat: FC<{
+  label: string
+  tokenId: string | undefined
+  planck: bigint
+  isLoading: boolean
+  isRefetching?: boolean
+  className?: string
+}> = ({ label, tokenId, planck, isLoading, isRefetching, className }) => {
+  return (
+    <div className={cn("flex flex-col gap-2", className)}>
+      <span className="text-body-secondary text-xs">{label}</span>
+      <div className="px-1">
+        {isLoading ? (
+          <Skeleton className="h-[38px] w-48" />
+        ) : (
+          <span
+            className={cn(
+              "whitespace-nowrap font-semibold text-[32px] text-body leading-[1.2]",
+              isRefetching && "animate-pulse"
+            )}
+          >
+            <TokensAndFiat tokenId={tokenId} planck={planck} noFiat noCountUp noSymbol isBalance />
+            {" τ"}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Market stat (24px value) for the right section */
+const MarketStat: FC<{
   label: ReactNode
   value: ReactNode
   change?: number
   isLoading?: boolean
-  hasChange?: boolean
-  className?: string
-}> = ({ label, value, change, isLoading, hasChange, className }) => {
+  isRefetching?: boolean
+}> = ({ label, value, change, isLoading, isRefetching }) => {
   const isPositive = change !== undefined && change > 0
   const isNegative = change !== undefined && change < 0
+  const showSkeleton = isLoading && !value
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <span className="text-body-secondary text-sm">{label}</span>
-      {isLoading ? (
-        <Skeleton className="h-[3.9rem] w-64" />
-      ) : (
-        <span className="font-bold text-body text-xl">{value}</span>
-      )}
-      {isLoading && hasChange ? (
-        <Skeleton className="h-8 w-16" />
+    <div className="flex flex-col gap-2">
+      <span className="text-body-secondary text-xs">{label}</span>
+      {showSkeleton ? (
+        <Skeleton className="h-[29px] w-32" />
       ) : (
         <span
           className={cn(
-            "text-sm",
-            change === undefined && "invisible",
-            isPositive && "text-green",
-            isNegative && "text-red-500",
-            !isPositive && !isNegative && "text-body-secondary"
+            "font-semibold text-[24px] text-body leading-[1.2]",
+            isRefetching && "animate-pulse"
           )}
         >
-          {change !== undefined ? (
-            <>
-              {change > 0 ? "+" : ""}
-              {change.toFixed(2)}%
-            </>
-          ) : (
-            "—"
-          )}
+          {value}
         </span>
       )}
+      <span
+        className={cn(
+          "text-xs",
+          showSkeleton && "invisible",
+          change === undefined && "invisible",
+          isPositive && "text-green",
+          isNegative && "text-red-500",
+          !isPositive && !isNegative && "text-body-secondary",
+          isRefetching && "animate-pulse"
+        )}
+      >
+        {change !== undefined ? (
+          <>
+            {change > 0 ? "+" : ""}
+            {change.toFixed(2)}%
+          </>
+        ) : (
+          "\u00A0"
+        )}
+      </span>
     </div>
   )
 }

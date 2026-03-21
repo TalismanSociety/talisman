@@ -36,7 +36,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     // preselect position straight up to prevent flickering
     () => merge({}, DEFAULT_INPUTS, { positionId: subnetPositions[0]?.id ?? null })
   )
-
   useEffect(() => {
     if (!subnetPositions.length) {
       setState((prev) => (prev.positionId ? { ...prev, positionId: null } : prev))
