@@ -1,4 +1,5 @@
 import { Button } from "@ui/components/Button"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,7 +32,7 @@ const TabContent: FC = () => {
         <SwapInputsContainer label={t("Spend")}>
           <SwapSellInput />
         </SwapInputsContainer>
-        <SwapInputsContainer label={t("Receive")}>
+        <SwapInputsContainer label={t("Receive")} right={<TaoBalance />}>
           <SwapSellOutput />
         </SwapInputsContainer>
       </div>
@@ -91,6 +92,23 @@ const FeeEstimate = () => {
       isLoading={isLoadingFeeEstimate}
       error={errorFeeEstimate}
     />
+  )
+}
+
+const TaoBalance: FC = () => {
+  const { t } = useTranslation()
+  const { balanceTokenOut, tokenIdOut } = useSwapSell()
+
+  return (
+    <div className="text-body-secondary text-sm">
+      {t("Bal:")}{" "}
+      <TokensAndFiat
+        planck={balanceTokenOut?.transferable.planck ?? 0n}
+        tokenId={tokenIdOut}
+        noCountUp
+        noFiat
+      />
+    </div>
   )
 }
 

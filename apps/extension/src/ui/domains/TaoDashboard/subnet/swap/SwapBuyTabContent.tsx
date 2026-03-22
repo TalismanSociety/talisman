@@ -1,7 +1,10 @@
 import { Button } from "@ui/components/Button"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { type FC, useCallback } from "react"
+import { useBalances } from "@ui/state/balances"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"
@@ -31,7 +34,7 @@ const TabContent: FC = () => {
         <SwapInputsContainer label={t("Spend")}>
           <SwapBuyInput />
         </SwapInputsContainer>
-        <SwapInputsContainer label={t("Receive")}>
+        <SwapInputsContainer label={t("Receive")} right={<StakedBalance />}>
           <SwapBuyOutput />
         </SwapInputsContainer>
       </div>
@@ -91,6 +94,35 @@ const FeeEstimate = () => {
       isLoading={isLoadingFeeEstimate}
       error={errorFeeEstimate}
     />
+  )
+}
+
+const StakedBalance: FC = () => {
+  const { t } = useTranslation()
+  const { address, netuid, tokenOutGeneric } = useSwapBuy()
+  const ownedBalances = useBalances("owned")
+
+  const stakedPlanck = useMemo(() => {
+    if (!address) return 0n
+    return ownedBalances.each
+      .filter(
+        (b) =>
+          b.address === address &&
+          b.token?.type === "substrate-dtao" &&
+          b.token.networkId === BITTENSOR_NETWORK_ID &&
+          b.token.netuid === netuid &&
+          b.free.planck > 0n
+      )
+      .reduce((sum, b) => sum + b.free.planck, 0n)
+  }, [ownedBalances, address, netuid])
+
+  if (!tokenOutGeneric) return null
+
+  return (
+    <div className="text-body-secondary text-sm">
+      {t("Bal:")}{" "}
+      <TokensAndFiat planck={stakedPlanck} tokenId={tokenOutGeneric.id} noCountUp noFiat />
+    </div>
   )
 }
 

@@ -7,11 +7,15 @@ import { useTranslation } from "react-i18next"
 
 type SwapInputsContainerProps = PropsWithChildren<{
   label: ReactNode
+  right?: ReactNode
 }>
 
-export const SwapInputsContainer: FC<SwapInputsContainerProps> = ({ label, children }) => (
+export const SwapInputsContainer: FC<SwapInputsContainerProps> = ({ label, right, children }) => (
   <div className="flex w-full flex-col gap-5 overflow-hidden">
-    <div className="pl-2 text-body-secondary text-sm">{label}</div>
+    <div className="flex items-center justify-between pl-2 text-body-secondary text-sm">
+      <div>{label}</div>
+      {right}
+    </div>
     <div className="w-full overflow-hidden">{children}</div>
   </div>
 )
