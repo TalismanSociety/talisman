@@ -114,7 +114,7 @@ const TransactionRow: FC<{
   const taoDisplay = useMemo(() => {
     const taoValue = isBuy ? transaction.tokenValueIn : transaction.tokenValueOut
     const formatter = new BalanceFormatter(taoValue, taoToken.decimals)
-    return `${formatDecimals(formatter.tokens, 6)} τ`
+    return `${formatDecimals(formatter.tokens)} τ`
   }, [isBuy, transaction.tokenValueIn, transaction.tokenValueOut, taoToken.decimals])
 
   const alphaValue = isBuy ? transaction.tokenValueOut : transaction.tokenValueIn
