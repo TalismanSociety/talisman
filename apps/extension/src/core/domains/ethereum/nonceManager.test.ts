@@ -3,11 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock chainConnectorEvm before importing the module under test
 const mockGetTransactionCount = vi.fn<() => Promise<number>>()
+const mockGetTransaction = vi.fn()
 
 vi.mock("../../rpcs/chain-connector-evm", () => ({
   chainConnectorEvm: {
     getPublicClientForEvmNetwork: vi.fn().mockResolvedValue({
       getTransactionCount: (_args: { address: string }) => mockGetTransactionCount(),
+      getTransaction: (args: { hash: string }) => mockGetTransaction(args),
     }),
   },
 }))
@@ -40,6 +42,8 @@ describe("nonceManager", () => {
     // Clear the transactionsV2 table between tests
     await db.transactionsV2.clear()
     vi.clearAllMocks()
+    // Default: tx found in mempool (not dropped)
+    mockGetTransaction.mockResolvedValue({ hash: "0x" })
   })
 
   it("returns on-chain nonce when no local pending transactions exist", async () => {
@@ -143,5 +147,81 @@ describe("nonceManager", () => {
     await expect(getNextNonce(ADDRESS, NETWORK_ID)).rejects.toThrow(
       "Could not find provider for EVM chain 1"
     )
+  })
+
+  describe("dropped transaction cleanup", () => {
+    const makeTransactionNotFoundError = () => {
+      const err = new Error("Transaction not found")
+      err.name = "TransactionNotFoundError"
+      return err
+    }
+
+    it("cleans up dropped unknown tx and returns on-chain nonce", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      await db.transactionsV2.put(makeTx(5, "unknown"))
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(5)
+
+      const tx = await db.transactionsV2.get(makeTx(5).id)
+      expect(tx?.status).toBe("error")
+    })
+
+    it("keeps unknown tx that is still in mempool", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+      mockGetTransaction.mockResolvedValue({ hash: "0x" })
+      await db.transactionsV2.put(makeTx(5, "unknown"))
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(6)
+
+      const tx = await db.transactionsV2.get(makeTx(5).id)
+      expect(tx?.status).toBe("unknown")
+    })
+
+    it("leaves unknown tx when RPC error occurs (fail-safe)", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+      mockGetTransaction.mockRejectedValue(new Error("RPC timeout"))
+      await db.transactionsV2.put(makeTx(5, "unknown"))
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(6)
+
+      const tx = await db.transactionsV2.get(makeTx(5).id)
+      expect(tx?.status).toBe("unknown")
+    })
+
+    it("does not trigger cleanup when on-chain nonce is already ahead", async () => {
+      mockGetTransactionCount.mockResolvedValue(10)
+      await db.transactionsV2.put(makeTx(5, "unknown"))
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(10)
+      expect(mockGetTransaction).not.toHaveBeenCalled()
+    })
+
+    it("recalculates correctly after cleaning multiple dropped txs", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      await db.transactionsV2.bulkPut([
+        makeTx(5, "unknown"),
+        makeTx(6, "unknown"),
+        makeTx(7, "unknown"),
+      ])
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(5) // all dropped → on-chain nonce
+    })
+
+    it("keeps valid pending tx even when unknown txs are dropped", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      await db.transactionsV2.bulkPut([makeTx(5, "pending"), makeTx(7, "unknown")])
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      // unknown tx (7) cleaned up, but pending tx (5) stays → max(5, 5+1) = 6
+      expect(nonce).toBe(6)
+    })
   })
 })

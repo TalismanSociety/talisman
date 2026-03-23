@@ -2,6 +2,7 @@ import type { EthNetworkId } from "@talismn/chaindata-provider"
 
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
+import { cleanupDroppedEvmTransactions } from "../transactions/cleanupDroppedTransactions"
 
 /**
  * Returns the next nonce to use for a transaction from the given address on the given network.
@@ -9,6 +10,9 @@ import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
  * Computes max(onChainNonce, highestLocalPendingNonce + 1) to ensure:
  * - We never regress below what the chain has confirmed
  * - We account for pending/unknown txs that haven't been mined yet (even across SW restarts)
+ *
+ * When local nonce exceeds on-chain, verifies that "unknown" txs are still in the mempool.
+ * Dropped txs are marked as "error" and excluded from the calculation.
  */
 export const getNextNonce = async (
   address: `0x${string}`,
@@ -26,6 +30,16 @@ export const getNextNonce = async (
   ])
 
   if (highestLocalNonce === null) return onChainNonce
+
+  // If local nonce would push ahead of on-chain, verify unknown txs are still in the mempool
+  if (highestLocalNonce + 1 > onChainNonce) {
+    const cleaned = await cleanupDroppedEvmTransactions(normalizedAddress, evmNetworkId)
+    if (cleaned) {
+      const updatedHighest = await getHighestLocalNonce(normalizedAddress, evmNetworkId)
+      if (updatedHighest === null) return onChainNonce
+      return Math.max(onChainNonce, updatedHighest + 1)
+    }
+  }
 
   return Math.max(onChainNonce, highestLocalNonce + 1)
 }
