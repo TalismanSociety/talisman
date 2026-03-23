@@ -119,9 +119,7 @@ const HoldersOverviewContent: FC<{ data: SubnetHoldersData }> = ({ data }) => {
         </MetricsField>
         <MetricsField
           label={t("Active Traders")}
-          tooltip={t(
-            "Percentage of holders who performed at least one trade during the selected period"
-          )}
+          tooltip={t("Percentage of holders with ≥1 trade during the selected period")}
         >
           {data.avgTradePercent.toFixed(1)}%
         </MetricsField>
