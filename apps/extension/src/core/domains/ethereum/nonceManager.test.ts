@@ -16,7 +16,7 @@ vi.mock("../../rpcs/chain-connector-evm", () => ({
 
 // Use real Dexie with fake-indexeddb (auto-imported in setup)
 import { db } from "../../db"
-import { getNextNonce } from "./nonceManager"
+import { _resetNonceState, getNextNonce, releaseReservedNonce } from "./nonceManager"
 
 const ADDRESS = "0x1111111111111111111111111111111111111111" as const
 const NETWORK_ID = "1"
@@ -39,8 +39,9 @@ const makeTx = (
 
 describe("nonceManager", () => {
   beforeEach(async () => {
-    // Clear the transactionsV2 table between tests
+    // Clear the transactionsV2 table and in-memory nonce state between tests
     await db.transactionsV2.clear()
+    _resetNonceState()
     vi.clearAllMocks()
     // Default: tx found in mempool (not dropped)
     mockGetTransaction.mockResolvedValue({ hash: "0x" })
@@ -222,6 +223,72 @@ describe("nonceManager", () => {
       const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
       // unknown tx (7) cleaned up, but pending tx (5) stays → max(5, 5+1) = 6
       expect(nonce).toBe(6)
+    })
+  })
+
+  describe("concurrent nonce reservation", () => {
+    it("assigns unique nonces to concurrent callers", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+
+      // Launch two concurrent getNextNonce calls
+      const [nonce1, nonce2] = await Promise.all([
+        getNextNonce(ADDRESS, NETWORK_ID),
+        getNextNonce(ADDRESS, NETWORK_ID),
+      ])
+
+      expect(nonce1).toBe(5)
+      expect(nonce2).toBe(6) // must not duplicate nonce 5
+    })
+
+    it("assigns unique nonces across three concurrent callers", async () => {
+      mockGetTransactionCount.mockResolvedValue(3)
+
+      const [n1, n2, n3] = await Promise.all([
+        getNextNonce(ADDRESS, NETWORK_ID),
+        getNextNonce(ADDRESS, NETWORK_ID),
+        getNextNonce(ADDRESS, NETWORK_ID),
+      ])
+
+      expect(new Set([n1, n2, n3]).size).toBe(3) // all unique
+      expect(n1).toBe(3)
+      expect(n2).toBe(4)
+      expect(n3).toBe(5)
+    })
+
+    it("does not reserve nonce when reserve is false", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+
+      const peek = await getNextNonce(ADDRESS, NETWORK_ID, { reserve: false })
+      expect(peek).toBe(5)
+
+      // Next call should still get 5 since the previous didn't reserve
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(5)
+    })
+
+    it("releases reserved nonce so it can be reused", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+
+      const nonce1 = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce1).toBe(5)
+
+      // Simulate send failure — release the reserved nonce
+      releaseReservedNonce(ADDRESS, NETWORK_ID)
+
+      const nonce2 = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce2).toBe(5) // reuses the released nonce
+    })
+
+    it("clears stale reservation when on-chain nonce advances past it", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+      const nonce1 = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce1).toBe(5)
+
+      // Simulate the transaction being mined — on-chain nonce advances
+      mockGetTransactionCount.mockResolvedValue(6)
+
+      const nonce2 = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce2).toBe(6) // stale reservation cleared, uses on-chain
     })
   })
 })

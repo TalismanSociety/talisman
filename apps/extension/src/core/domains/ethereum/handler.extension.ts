@@ -23,7 +23,7 @@ import { watchEthereumTransaction } from "../transactions"
 import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
-import { getNextNonce } from "./nonceManager"
+import { getNextNonce, releaseReservedNonce } from "./nonceManager"
 
 export class EthHandler extends ExtensionHandler {
   private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
@@ -77,7 +77,8 @@ export class EthHandler extends ExtensionHandler {
     assert(isEthereumAddress(account.address), "Invalid ethereum address")
 
     const tx = parseTransactionRequest(transaction)
-    if (tx.nonce === undefined) tx.nonce = await getNextNonce(account.address, ethChainId)
+    const nonceReserved = tx.nonce === undefined
+    if (nonceReserved) tx.nonce = await getNextNonce(account.address, ethChainId)
 
     const result = await withSecretKey(account.address, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
@@ -94,7 +95,9 @@ export class EthHandler extends ExtensionHandler {
     })
 
     if (result.ok) {
-      watchEthereumTransaction(ethChainId, result.val, transaction, {
+      // Serialize back so the payload passed to the watcher has the nonce
+      const transactionWithNonce = { ...transaction, nonce: tx.nonce }
+      watchEthereumTransaction(ethChainId, result.val, transactionWithNonce, {
         siteUrl: queued.url,
         notifications: true,
       })
@@ -112,6 +115,7 @@ export class EthHandler extends ExtensionHandler {
 
       return true
     } else {
+      if (nonceReserved) releaseReservedNonce(account.address, ethChainId)
       if (result.val === "Unauthorised") {
         reject(Error(result.val))
       } else {
@@ -162,7 +166,8 @@ export class EthHandler extends ExtensionHandler {
 
     // Explicitly assign nonce so it's recorded in Dexie via addEvmTransaction
     const tx = parseTransactionRequest(unsigned)
-    if (tx.nonce === undefined) tx.nonce = await getNextNonce(unsigned.from, evmNetworkId)
+    const nonceReserved = tx.nonce === undefined
+    if (nonceReserved) tx.nonce = await getNextNonce(unsigned.from, evmNetworkId)
 
     // Serialize back so the unsigned payload passed to the watcher has the nonce
     const unsignedWithNonce = { ...unsigned, nonce: tx.nonce }
@@ -195,6 +200,7 @@ export class EthHandler extends ExtensionHandler {
 
       return result.val // hash
     } else {
+      if (nonceReserved) releaseReservedNonce(unsigned.from, evmNetworkId)
       if (result.val === "Unauthorised") {
         throw new Error("Unauthorized")
       } else {
@@ -465,7 +471,7 @@ export class EthHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(eth.transactions.count)": {
         const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
-        return getNextNonce(address, evmNetworkId)
+        return getNextNonce(address, evmNetworkId, { reserve: false })
       }
 
       case "pri(eth.request)":
