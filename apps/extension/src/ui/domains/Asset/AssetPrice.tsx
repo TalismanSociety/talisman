@@ -1,10 +1,11 @@
 import { bind } from "@react-rxjs/core"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames, formatPrice } from "@talismn/util"
+import { formatPrice } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { selectedCurrency$ } from "@ui/state/settings"
 import { getTokenRates$ } from "@ui/state/tokenRates"
+import { classNames } from "@ui/util/cn"
 import type { FC } from "react"
 import { combineLatest, map } from "rxjs"
 

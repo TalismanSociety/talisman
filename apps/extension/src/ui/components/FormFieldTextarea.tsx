@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import { type DetailedHTMLProps, forwardRef, type TextareaHTMLAttributes } from "react"
 
 type FormFieldTextareaProps = DetailedHTMLProps<

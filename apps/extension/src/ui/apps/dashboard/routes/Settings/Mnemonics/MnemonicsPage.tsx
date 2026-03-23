@@ -8,7 +8,6 @@ import {
   PolkadotVaultIcon,
   SecretIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import {
@@ -26,6 +25,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useMnemonics } from "@ui/state/mnemonics"
+import { classNames } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"

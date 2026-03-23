@@ -1,6 +1,5 @@
 import { detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
@@ -30,6 +29,7 @@ import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useContacts } from "@ui/state/addressBook"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { classNames } from "@ui/util/cn"
 import {
   type ButtonHTMLAttributes,
   type DetailedHTMLProps,

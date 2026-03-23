@@ -1,7 +1,6 @@
 import type { DefiPosition } from "@core/domains/defi/exports"
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,6 +8,7 @@ import {
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
 import { useNetworkById } from "@ui/state/chaindata"
+import { classNames } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

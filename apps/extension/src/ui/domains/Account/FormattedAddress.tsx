@@ -1,9 +1,9 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { classNames } from "@ui/util/cn"
 import type { FC } from "react"
 
 import { AccountIcon } from "./AccountIcon"

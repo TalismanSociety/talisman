@@ -1,5 +1,6 @@
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { FC, PropsWithChildren } from "react"
 
 type IconSize = "xl" | "lg" | "md" | "base" | "sm"

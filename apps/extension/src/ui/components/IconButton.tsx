@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import { type ButtonHTMLAttributes, forwardRef } from "react"
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">

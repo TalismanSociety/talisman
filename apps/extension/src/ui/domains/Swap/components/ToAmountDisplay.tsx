@@ -1,10 +1,10 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { cn } from "@talismn/util"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
+import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useSwap } from "../SwapProvider"
 

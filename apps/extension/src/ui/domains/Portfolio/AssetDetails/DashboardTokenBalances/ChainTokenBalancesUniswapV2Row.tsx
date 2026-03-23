@@ -1,11 +1,10 @@
 import type { Balance } from "@talismn/balances"
-import { classNames } from "@talismn/util"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"

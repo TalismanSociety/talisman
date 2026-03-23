@@ -24,7 +24,7 @@ import {
   SearchIcon,
   XIcon,
 } from "@talismn/icons"
-import { classNames, isNotNil, isTruthy } from "@talismn/util"
+import { isNotNil, isTruthy } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -61,6 +61,7 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state/chaindata"
+import { classNames } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type ChangeEventHandler,

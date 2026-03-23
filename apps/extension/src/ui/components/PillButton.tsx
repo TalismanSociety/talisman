@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import { type FC, forwardRef, type SVGProps } from "react"
 
 export type PillButtonSize = "tiny" | "xs" | "sm" | "base"

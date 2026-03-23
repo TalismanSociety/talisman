@@ -1,10 +1,11 @@
 import type { Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames, type HexString } from "@talismn/util"
+import type { HexString } from "@talismn/util"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Tooltip, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
+import { classNames } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 
 import { Fiat } from "../Asset/Fiat"

@@ -1,6 +1,6 @@
 import type { Balance } from "@talismn/balances"
-import { cn } from "@talismn/util"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

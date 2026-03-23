@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { classNames } from "./classNames"
+import { classNames } from "./cn"
 
 describe("classNames", () => {
   it("keeps text color and custom text-tiny size together", () => {

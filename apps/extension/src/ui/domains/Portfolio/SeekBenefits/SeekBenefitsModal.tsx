@@ -8,7 +8,6 @@ import {
   ZapFastIcon,
   ZapIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
@@ -19,6 +18,7 @@ import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
+import { classNames } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, type SVGProps, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"

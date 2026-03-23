@@ -1,5 +1,4 @@
 import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import {
@@ -12,6 +11,7 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
+import { classNames } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"

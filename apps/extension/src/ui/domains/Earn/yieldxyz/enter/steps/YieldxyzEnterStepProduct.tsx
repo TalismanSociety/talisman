@@ -1,11 +1,11 @@
 import type { YieldDto } from "@core/domains/earn/exports"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, LockIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { cn } from "@ui/util/cn"
 import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

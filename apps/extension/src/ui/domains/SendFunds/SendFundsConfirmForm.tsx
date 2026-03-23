@@ -1,11 +1,11 @@
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Checkbox } from "@ui/components/Checkbox"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

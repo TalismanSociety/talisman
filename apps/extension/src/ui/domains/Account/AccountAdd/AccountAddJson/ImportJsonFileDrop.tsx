@@ -1,5 +1,6 @@
 import { FileCheckIcon, FilePlusIcon, FileXIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { type FC, type MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { type DropzoneOptions, useDropzone } from "react-dropzone"
 import { Trans, useTranslation } from "react-i18next"

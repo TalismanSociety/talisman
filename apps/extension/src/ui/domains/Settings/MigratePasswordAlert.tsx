@@ -1,10 +1,10 @@
 import { LockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Card } from "@ui/components/Card"
 import { Drawer } from "@ui/components/Drawer"
+import { classNames } from "@ui/util/cn"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

@@ -6,7 +6,8 @@ import {
   ZapIcon,
   ZapOffIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { type FC, useMemo } from "react"
 
 export type SignIconType = "vote" | "stake" | "unstake" | "ok" | "nok" | "transfer"

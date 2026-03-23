@@ -1,9 +1,9 @@
 import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
+import { classNames } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

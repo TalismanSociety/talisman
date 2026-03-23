@@ -5,7 +5,8 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

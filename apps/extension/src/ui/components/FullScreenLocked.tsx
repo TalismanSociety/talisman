@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { HandMonoLogo } from "@ui/theme/logos"
+import { classNames } from "@ui/util/cn"
 import type { ReactNode } from "react"
 
 import { FadeIn } from "./FadeIn"

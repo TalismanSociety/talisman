@@ -5,7 +5,8 @@ import {
   useDroppable,
 } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { KeyboardEvent, MouseEvent } from "react"
 import { type CSSProperties, type FC, type ReactNode, useMemo } from "react"
 

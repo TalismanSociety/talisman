@@ -1,5 +1,4 @@
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
-import { classNames, cn } from "@talismn/util"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -10,6 +9,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames, cn } from "@ui/util/cn"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

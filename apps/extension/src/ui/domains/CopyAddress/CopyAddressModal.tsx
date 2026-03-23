@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
+import { classNames } from "@ui/util/cn"
 
 import { CopyAddressWizard } from "./CopyAddressWizard"
 import { useCopyAddressModal } from "./useCopyAddressModal"

@@ -1,9 +1,9 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { classNames } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 
 import { AccountIcon } from "../../Account/AccountIcon"

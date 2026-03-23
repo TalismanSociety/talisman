@@ -1,6 +1,6 @@
 import { AlertTriangleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useIsCapsLockOn } from "@ui/hooks/useIsCapsLockOn"
+import { classNames } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

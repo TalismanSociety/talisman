@@ -1,7 +1,7 @@
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { HandMonoLogo } from "@ui/theme/logos"
+import { classNames } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   type FC,
@@ -11,6 +11,7 @@ import {
   useEffect,
   useRef,
 } from "react"
+
 import { useLocation } from "react-router-dom"
 
 import { BottomNav } from "../components/Navigation/BottomNav"

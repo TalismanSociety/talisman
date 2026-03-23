@@ -1,6 +1,7 @@
 import { PRIVACY_POLICY_URL } from "@common/constants"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { FC, ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

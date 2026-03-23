@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import {
   type CSSProperties,
   type FC,
@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 const Button = forwardRef<

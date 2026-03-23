@@ -2,7 +2,6 @@ import type { EvmAddress } from "@core/domains/ethereum/types"
 import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -25,6 +24,7 @@ import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
+import { classNames } from "@ui/util/cn"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

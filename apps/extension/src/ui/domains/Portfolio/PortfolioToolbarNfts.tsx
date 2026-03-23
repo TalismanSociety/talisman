@@ -5,7 +5,6 @@ import {
   ToolbarSortIcon,
   ToolbarTilesIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -30,6 +29,7 @@ import {
   usePortfolioSearch,
 } from "@ui/state/portfolio"
 import { useSetting } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"

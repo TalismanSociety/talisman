@@ -2,7 +2,6 @@ import { IS_FIREFOX } from "@common/constants"
 import { isAccountPlatformCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { AccountPlatform } from "@talismn/crypto"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
@@ -13,6 +12,7 @@ import {
   PolkadotCircleBorderedLogo,
   SolanaCircleLogo,
 } from "@ui/theme/logos"
+import { classNames } from "@ui/util/cn"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import {
   cloneElement,

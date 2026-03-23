@@ -1,6 +1,6 @@
 import { Transition, TransitionChild } from "@headlessui/react"
-import { classNames } from "@talismn/util"
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
+import { classNames } from "@ui/util/cn"
 import {
   type FC,
   type MouseEventHandler,

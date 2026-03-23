@@ -1,8 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
-
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { classNames } from "@ui/util/cn"
 
 import type { BalanceDetailRow } from "../useTokenBalances"
 import { AssetState } from "./AssetState"

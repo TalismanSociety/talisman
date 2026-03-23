@@ -1,10 +1,10 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { classNames } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

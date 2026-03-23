@@ -1,8 +1,8 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { classNames } from "@ui/util/cn"
 import { useMemo } from "react"
 
 import { type PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"

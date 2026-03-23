@@ -1,11 +1,11 @@
 import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AlertTriangleIcon, InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import imgFeePriorityCustom from "@ui/theme/images/fee-priority-custom.png"
 import imgFeePriorityHigh from "@ui/theme/images/fee-priority-high.png"
 import imgFeePriorityLow from "@ui/theme/images/fee-priority-low.png"
 import imgFeePriorityMedium from "@ui/theme/images/fee-priority-medium.png"
 import imgFeePriorityRecommended from "@ui/theme/images/fee-priority-recommended.png"
+import { classNames } from "@ui/util/cn"
 import { type FC, type PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

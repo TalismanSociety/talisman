@@ -1,5 +1,5 @@
-import { cn } from "@talismn/util"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 import { EarnTabs, type EarnTabsKey } from "./EarnTabs"

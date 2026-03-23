@@ -1,4 +1,5 @@
-import { classNames, formatPrice, isNotNil } from "@talismn/util"
+import { formatPrice, isNotNil } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import { capitalize } from "lodash-es"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"

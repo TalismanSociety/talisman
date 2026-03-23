@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import type { MethodType } from "@ui/domains/Account/AccountAdd/context"
+import { classNames } from "@ui/util/cn"
 import { type FC, Fragment, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, type To, useLocation } from "react-router-dom"

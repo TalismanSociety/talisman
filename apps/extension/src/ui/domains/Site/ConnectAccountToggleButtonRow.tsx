@@ -1,7 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { classNames } from "@ui/util/cn"
 import type { FC } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"

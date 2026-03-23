@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
+import { classNames } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 export const RampsPickerLayout: FC<{

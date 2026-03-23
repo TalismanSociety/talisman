@@ -1,6 +1,6 @@
-import { classNames, cn } from "@talismn/util"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { classNames, cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

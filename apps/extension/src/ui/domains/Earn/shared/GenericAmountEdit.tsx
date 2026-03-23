@@ -1,11 +1,12 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
-import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames, cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -16,6 +17,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import { currencyConfig } from "../../Asset/currencyConfig"

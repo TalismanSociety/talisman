@@ -1,7 +1,6 @@
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import {
   ContextMenu,
@@ -16,6 +15,7 @@ import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { classNames } from "@ui/util/cn"
 import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"

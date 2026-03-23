@@ -1,7 +1,7 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { IconButton } from "@ui/components/IconButton"
+import { classNames } from "@ui/util/cn"
 import { useCallback, useRef } from "react"
 import { useEffectOnce } from "react-use"
 

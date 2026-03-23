@@ -1,8 +1,8 @@
 import type { BalanceFormatter } from "@talismn/balances"
-import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { classNames } from "@ui/util/cn"
 import type { FC } from "react"
 
 type SignParamTokensDisplayProps = {

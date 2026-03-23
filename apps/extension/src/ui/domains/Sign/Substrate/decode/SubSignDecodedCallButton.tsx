@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { classNames } from "@ui/util/cn"
 import type { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { SubSignDecodedCallButtonContent } from "./SubSignDecodedCallButtonContent"
 import { SubSignDecodedCallDrawer } from "./SubSignDecodedCallDrawer"

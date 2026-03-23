@@ -1,6 +1,7 @@
 import { Listbox } from "@headlessui/react"
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { ReactNode } from "react"
 
 export type DropdownOption = Record<string, unknown>

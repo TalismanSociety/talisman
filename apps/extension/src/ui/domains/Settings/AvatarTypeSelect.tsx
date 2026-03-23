@@ -1,7 +1,7 @@
 import type { IdenticonType } from "@core/domains/accounts/types"
 import type { Address } from "@core/types/base"
-import { classNames } from "@talismn/util"
 import { useAccounts } from "@ui/state/accounts"
+import { classNames } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"

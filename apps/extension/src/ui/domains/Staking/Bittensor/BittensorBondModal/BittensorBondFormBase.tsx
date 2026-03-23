@@ -1,12 +1,13 @@
 import type { Account } from "@core/domains/keyring/exports"
 import type { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
-import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -17,6 +18,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import { currencyConfig } from "../../../Asset/currencyConfig"

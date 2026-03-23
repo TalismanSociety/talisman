@@ -1,5 +1,4 @@
 import { type DotNetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { cn } from "@talismn/util"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import {
@@ -14,6 +13,7 @@ import {
 } from "@ui/domains/Staking/Bittensor/utils/validatorSorting"
 import type { BondOption as BondOptionType } from "@ui/domains/Staking/hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
+import { cn } from "@ui/util/cn"
 import {
   type FC,
   useDeferredValue,

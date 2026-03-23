@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
+import { classNames } from "@ui/util/cn"
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 

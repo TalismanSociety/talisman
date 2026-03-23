@@ -2,7 +2,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import type { TokenRates } from "@talismn/token-rates"
-import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -10,6 +10,7 @@ import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
+import { classNames, cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -20,6 +21,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import { currencyConfig } from "../../Asset/currencyConfig"

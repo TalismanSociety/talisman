@@ -1,5 +1,4 @@
 import { FilterIcon, GlobeIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -18,6 +17,7 @@ import {
   usePortfolioNetworkFilter,
   usePortfolioSearch,
 } from "@ui/state/portfolio"
+import { classNames } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"

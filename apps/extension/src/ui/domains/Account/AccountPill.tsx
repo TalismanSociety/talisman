@@ -1,6 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { copyAddress } from "@ui/util/copyAddress"
 import { type FC, useCallback, useMemo } from "react"
 

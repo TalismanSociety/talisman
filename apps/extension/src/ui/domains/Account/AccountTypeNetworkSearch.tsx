@@ -9,7 +9,6 @@ import {
 import { isNetworkDot } from "@talismn/chaindata-provider"
 import type { AccountPlatform } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import {
   useActiveNetworksState,
@@ -18,6 +17,7 @@ import {
   useTokensMap,
 } from "@ui/state/chaindata"
 import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
+import { classNames } from "@ui/util/cn"
 import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

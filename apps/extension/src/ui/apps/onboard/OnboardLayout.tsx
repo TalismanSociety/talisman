@@ -1,8 +1,8 @@
-import { classNames } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { BackButton } from "@ui/components/BackButton"
 import { FadeIn } from "@ui/components/FadeIn"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { classNames } from "@ui/util/cn"
 import { type FC, type ReactNode, Suspense } from "react"
 
 type LayoutProps = {

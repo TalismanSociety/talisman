@@ -1,7 +1,6 @@
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { type NetworkId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   ContextMenu,
@@ -18,6 +17,7 @@ import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useToken } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import {
   type FC,
   useDeferredValue,

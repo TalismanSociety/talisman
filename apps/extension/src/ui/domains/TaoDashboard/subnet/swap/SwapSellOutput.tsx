@@ -1,5 +1,6 @@
-import { cn, planckToTokens } from "@talismn/util"
+import { planckToTokens } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwapSell } from "./SwapSellProvider"

@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import { type CSSProperties, type FC, useEffect, useRef, useState } from "react"
 
 export type TabDef = {

@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { motion, type TargetAndTransition, type Transition } from "framer-motion"
 import throttle from "lodash-es/throttle"
 import {

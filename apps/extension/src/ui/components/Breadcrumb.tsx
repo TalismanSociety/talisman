@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { type FC, Fragment, type ReactNode } from "react"
 
 export type BreadcrumbItem = {

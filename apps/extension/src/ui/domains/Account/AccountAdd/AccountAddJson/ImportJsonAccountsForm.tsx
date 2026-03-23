@@ -5,7 +5,7 @@ import {
   LockIcon,
   UnlockIcon,
 } from "@talismn/icons"
-import { classNames, sleep } from "@talismn/util"
+import { sleep } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FadeIn } from "@ui/components/FadeIn"
@@ -15,6 +15,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

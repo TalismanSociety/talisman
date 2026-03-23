@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { classNames } from "@ui/util/cn"
 
 import { useMnemonicBackupModal } from "./context"
 

@@ -1,5 +1,6 @@
 import { StarIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { FC } from "react"
 
 import { PortfolioNetworksLogoStack } from "./AssetsTable/PortfolioNetworksLogoStack"

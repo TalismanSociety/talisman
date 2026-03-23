@@ -1,8 +1,8 @@
 import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@common/constants"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useNetworkById } from "@ui/state/chaindata"
+import { classNames } from "@ui/util/cn"
 import { type FC, Suspense, useId } from "react"
 
 type NetworkLogoBaseProps = {

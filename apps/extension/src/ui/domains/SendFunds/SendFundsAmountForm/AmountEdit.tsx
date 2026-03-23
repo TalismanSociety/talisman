@@ -1,11 +1,12 @@
 import { log } from "@common/log"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
-import { classNames, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { PillButton } from "@ui/components/PillButton"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import BigNumber from "bignumber.js"
 import {
   type ChangeEventHandler,
@@ -17,6 +18,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import { currencyConfig } from "../../Asset/currencyConfig"

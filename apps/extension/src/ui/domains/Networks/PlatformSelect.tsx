@@ -1,6 +1,6 @@
 import type { NetworkPlatform } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { Dropdown } from "@ui/components/Dropdown"
+import { classNames } from "@ui/util/cn"
 import { type FC, useCallback, useState } from "react"
 
 type NetworkPlatformOption = {

@@ -1,5 +1,6 @@
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { copyAddress } from "@ui/util/copyAddress"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 

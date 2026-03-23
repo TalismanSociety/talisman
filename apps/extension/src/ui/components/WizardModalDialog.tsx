@@ -1,5 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { classNames, cn } from "@talismn/util"
+import { classNames, cn } from "@ui/util/cn"
+
 import type { FC, ReactNode } from "react"
 
 import { IconButton } from "./IconButton"

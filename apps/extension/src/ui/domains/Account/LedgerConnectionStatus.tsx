@@ -1,6 +1,6 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import type { LedgerStatus } from "@ui/hooks/ledger/common"
+import { classNames } from "@ui/util/cn"
 import { useTranslation } from "react-i18next"
 
 export type LedgerConnectionStatusProps = {

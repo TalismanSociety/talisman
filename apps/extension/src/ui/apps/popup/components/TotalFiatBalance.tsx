@@ -1,5 +1,4 @@
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { TopActions } from "@ui/apps/popup/components/TopActions"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
@@ -8,6 +7,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useSelectedCurrency, useSetting } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import { type MouseEventHandler, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

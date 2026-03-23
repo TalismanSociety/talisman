@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import imgUnknownNft from "@ui/theme/images/unknown-nft.svg?url"
+import { classNames } from "@ui/util/cn"
 import { getSafeImageUrl } from "@ui/util/getSafeImageUrl"
 import { useState } from "react"
 

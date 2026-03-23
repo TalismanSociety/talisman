@@ -1,5 +1,4 @@
-import { classNames } from "@talismn/util"
-
+import { classNames } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 
 type ModalContentProps = {

@@ -1,6 +1,6 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { classNames } from "@ui/util/cn"
 import { type ButtonHTMLAttributes, type DetailedHTMLProps, type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { type To, useNavigate } from "react-router-dom"

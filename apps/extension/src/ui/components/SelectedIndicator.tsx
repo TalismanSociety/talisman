@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 
 export const SelectedIndicator = ({ className }: { className?: string }) => (
   <svg

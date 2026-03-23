@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
+import { classNames } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

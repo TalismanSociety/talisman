@@ -1,10 +1,10 @@
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkOptionsModal } from "@ui/domains/Portfolio/NetworkOptionsModal"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import type { NetworkOption } from "@ui/state/portfolio"
+import { classNames } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

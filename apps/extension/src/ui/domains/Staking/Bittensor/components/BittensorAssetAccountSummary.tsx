@@ -1,6 +1,6 @@
 import type { Token } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { classNames } from "@ui/util/cn"
 import type { ReactNode } from "react"
 import { Suspense } from "react"
 

@@ -1,6 +1,7 @@
-import { classNames, formatDecimals, MAX_DECIMALS_FORMAT } from "@talismn/util"
+import { formatDecimals, MAX_DECIMALS_FORMAT } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { classNames } from "@ui/util/cn"
 import BigNumber from "bignumber.js"
 import React, { type FC, useMemo } from "react"
 import CountUp from "react-countup"

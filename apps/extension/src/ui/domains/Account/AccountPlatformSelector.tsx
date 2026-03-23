@@ -1,6 +1,6 @@
 import type { AccountPlatform } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
 import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@ui/theme/logos"
+import { classNames } from "@ui/util/cn"
 import { type FC, type ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

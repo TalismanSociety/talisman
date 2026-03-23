@@ -1,5 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

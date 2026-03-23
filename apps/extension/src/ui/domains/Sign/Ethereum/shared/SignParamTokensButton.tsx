@@ -1,6 +1,7 @@
 import type { BalanceFormatter } from "@talismn/balances"
 import type { EthNetwork } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import type { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"

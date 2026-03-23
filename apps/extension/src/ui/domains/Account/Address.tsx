@@ -1,8 +1,8 @@
 import { encodeAnyAddress } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { classNames } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 

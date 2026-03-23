@@ -1,9 +1,9 @@
 import type { Network } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { PillButton } from "@ui/components/PillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { classNames } from "@ui/util/cn"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

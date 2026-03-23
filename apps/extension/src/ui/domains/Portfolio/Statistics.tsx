@@ -1,8 +1,8 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import type BigNumber from "bignumber.js"
 import type { ReactNode } from "react"
 

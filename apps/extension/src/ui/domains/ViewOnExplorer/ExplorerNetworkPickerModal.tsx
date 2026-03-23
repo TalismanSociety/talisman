@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
+import { classNames } from "@ui/util/cn"
 import type { FC } from "react"
 
 import { ExplorerNetworkPicker } from "./ExplorerNetworkPicker"

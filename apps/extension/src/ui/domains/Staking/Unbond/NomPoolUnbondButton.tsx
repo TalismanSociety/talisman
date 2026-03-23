@@ -1,7 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { classNames } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

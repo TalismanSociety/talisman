@@ -2,7 +2,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import type { AccountPlatform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Dropdown } from "@ui/components/Dropdown"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -15,6 +14,7 @@ import {
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
+import { classNames } from "@ui/util/cn"
 import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 import { t } from "i18next"
 import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"

@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   type FC,
@@ -8,6 +8,7 @@ import {
   useCallback,
   useMemo,
 } from "react"
+
 import { useNavigate } from "react-router-dom"
 
 export type CtaButtonSize = "large" | "small"

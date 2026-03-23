@@ -1,10 +1,10 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import {
   type FormFieldInputContainerProps,
   FormFieldInputText,
 } from "@ui/components/FormFieldInputText"
 import { IconButton } from "@ui/components/IconButton"
+import { classNames } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   forwardRef,

@@ -1,5 +1,4 @@
 import { Balances } from "@talismn/balances"
-import { cn } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -7,6 +6,7 @@ import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Outlet, useOutletContext } from "react-router-dom"

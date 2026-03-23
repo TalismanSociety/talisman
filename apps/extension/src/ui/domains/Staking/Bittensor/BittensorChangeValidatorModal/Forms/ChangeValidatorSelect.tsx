@@ -1,6 +1,6 @@
-import { classNames } from "@talismn/util"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
+import { classNames } from "@ui/util/cn"
 import {
   useCallback,
   useDeferredValue,
@@ -10,6 +10,7 @@ import {
   useState,
   useTransition,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import type { BondOption as BondOptionType } from "../../../hooks/bittensor/types"

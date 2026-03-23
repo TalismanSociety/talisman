@@ -1,5 +1,6 @@
 import { SettingsIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames } from "@ui/util/cn"
+
 import { useCallback, useMemo } from "react"
 
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"

@@ -7,8 +7,8 @@ import {
 } from "@headlessui/react"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { classNames } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

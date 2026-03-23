@@ -1,7 +1,6 @@
 import { log } from "@common/log"
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import {
   ContextMenu,
@@ -20,6 +19,7 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nfts"
+import { classNames } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
 import { toPairs } from "lodash"

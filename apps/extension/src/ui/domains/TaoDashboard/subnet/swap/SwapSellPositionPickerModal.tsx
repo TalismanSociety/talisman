@@ -1,5 +1,4 @@
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
-import { classNames, cn } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -14,6 +13,7 @@ import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/Dashb
 import type { BittensorStakingPosition } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { classNames, cn } from "@ui/util/cn"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

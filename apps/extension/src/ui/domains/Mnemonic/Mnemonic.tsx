@@ -1,6 +1,6 @@
 import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { notify } from "@ui/components/Notifications"
+import { classNames } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

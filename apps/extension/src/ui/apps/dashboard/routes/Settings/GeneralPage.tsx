@@ -17,7 +17,7 @@ import {
   UserIcon,
   XIcon,
 } from "@talismn/icons"
-import { classNames, isNotNil } from "@talismn/util"
+import { isNotNil } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
@@ -31,6 +31,7 @@ import { Toggle } from "@ui/components/Toggle"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state/settings"
+import { classNames } from "@ui/util/cn"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
