@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
+import { normalizeGreek } from "@ui/domains/Staking/Bittensor/utils/normalizeGreek"
 import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -145,13 +146,13 @@ export const TaoDashboardSubnetsTable: FC<{
   const setSortSetting = useSetSortSetting()
 
   const filteredSubnets = useMemo(() => {
-    const trimmedSearch = search.trim().toLowerCase()
+    const trimmedSearch = normalizeGreek(search.trim().toLowerCase())
     if (!trimmedSearch) return subnets
 
     return subnets.filter((subnet) => {
       return (
-        subnet.token.subnetName?.toLowerCase().includes(trimmedSearch) ||
-        subnet.token.symbol.toLowerCase().includes(trimmedSearch) ||
+        normalizeGreek(subnet.token.subnetName?.toLowerCase() ?? "").includes(trimmedSearch) ||
+        normalizeGreek(subnet.token.symbol.toLowerCase()).includes(trimmedSearch) ||
         `sn${subnet.netuid}`.includes(trimmedSearch) ||
         String(subnet.netuid).includes(trimmedSearch)
       )

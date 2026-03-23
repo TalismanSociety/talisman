@@ -14,6 +14,7 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/BittensorBondModal/BittensorAlphaPrice"
+import { normalizeGreek } from "@ui/domains/Staking/Bittensor/utils/normalizeGreek"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
@@ -49,10 +50,10 @@ export const SubnetPicker: React.FC<{
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const displayedSubnets = useMemo(() => {
-    const lowerSearch = deferredSearch.toLowerCase()
+    const lowerSearch = normalizeGreek(deferredSearch.toLowerCase())
     return sortedSubnets.filter((subnet) => {
       const { netuid, name, symbol } = subnet
-      const subnetName = `${netuid} ${name} ${symbol}`.toLowerCase()
+      const subnetName = normalizeGreek(`${netuid} ${name} ${symbol}`.toLowerCase())
       return subnetName.includes(lowerSearch)
     })
   }, [deferredSearch, sortedSubnets])
