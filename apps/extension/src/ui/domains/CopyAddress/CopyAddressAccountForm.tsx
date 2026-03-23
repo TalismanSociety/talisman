@@ -9,7 +9,7 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type FC,
@@ -38,7 +38,7 @@ const AccountRowContainer: FC<
 > = ({ onClick, isSelected, children }) => {
   const className = useMemo(
     () =>
-      classNames(
+      cn(
         "flex h-14.5 w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         isSelected && "bg-grey-800",
         "text-body-secondary hover:text-body"

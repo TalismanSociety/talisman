@@ -2,7 +2,7 @@ import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyrin
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useTranslation } from "react-i18next"
 
 export const PortfolioAccount = ({
@@ -16,7 +16,7 @@ export const PortfolioAccount = ({
   const account = useAccountByAddress(address)
   if (!account) return null
   return (
-    <div className={classNames("flex items-center gap-3", className)}>
+    <div className={cn("flex items-center gap-3", className)}>
       <AccountIcon
         className="text-[1em]!"
         address={address}

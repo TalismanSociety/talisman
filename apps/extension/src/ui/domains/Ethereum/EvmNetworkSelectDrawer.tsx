@@ -11,7 +11,7 @@ import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { useActiveNetworksState, useNetworkById, useNetworks } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
@@ -107,10 +107,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         {!!inactiveEvmNetworks.length && (
           <>
             <div
-              className={classNames(
-                "text-body-secondary text-xs",
-                !!activeEvmNetworks.length && "mt-4"
-              )}
+              className={cn("text-body-secondary text-xs", !!activeEvmNetworks.length && "mt-4")}
             >
               {t("Inactive networks")}
             </div>
@@ -177,7 +174,7 @@ const NetworkButton: FC<{
             </div>
           )}
           <div
-            className={classNames(
+            className={cn(
               "mx-4 h-4 w-4 shrink-0 rounded-full",
               isSelected ? "bg-primary" : "bg-grey-700"
             )}

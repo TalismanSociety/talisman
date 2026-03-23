@@ -6,7 +6,7 @@ import {
   ZapIcon,
   ZapOffIcon,
 } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import { type FC, useMemo } from "react"
 
@@ -50,7 +50,7 @@ export const SignViewIconHeader: FC<{ icon: SignIconType }> = ({ icon }) => {
   return (
     <div>
       <div className="mb-8 inline-flex h-24 w-24 items-center justify-center rounded-full bg-grey-800">
-        <Icon className={classNames("text-[28px]", className)} />
+        <Icon className={cn("text-[28px]", className)} />
       </div>
     </div>
   )

@@ -24,7 +24,7 @@ import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -89,7 +89,7 @@ export const EthSignTransactionRequest = () => {
   return (
     <PopupLayout>
       <PopupHeader
-        className={classNames(isLoading && "invisible")}
+        className={cn(isLoading && "invisible")}
         right={<SignNetworkLogo network={network} />}
       >
         <AppPill url={url} />

@@ -1,5 +1,5 @@
 import { Button } from "@ui/components/Button"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,7 +13,7 @@ export const TxSubmitButtonFallback: FC<{
 
   return (
     <Button
-      className={classNames("w-full", className)}
+      className={cn("w-full", className)}
       primary
       disabled={disabled && !isProcessing}
       processing={isProcessing}

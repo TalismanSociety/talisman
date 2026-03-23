@@ -1,5 +1,5 @@
 import { CodeBlock } from "@ui/components/CodeBlock"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,7 +20,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
       <button
         type="button"
         onClick={() => setDisplayAsJson(false)}
-        className={classNames(
+        className={cn(
           "cursor-pointer",
           !displayAsJson ? "text-body" : "underline hover:text-grey-300"
         )}
@@ -31,7 +31,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
       <button
         type="button"
         onClick={() => setDisplayAsJson(true)}
-        className={classNames(
+        className={cn(
           "cursor-pointer",
           displayAsJson ? "text-body" : "underline hover:text-grey-300"
         )}

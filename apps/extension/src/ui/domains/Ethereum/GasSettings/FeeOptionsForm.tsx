@@ -12,7 +12,7 @@ import { ChevronRightIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -118,7 +118,7 @@ const PriorityOption = ({
     <button
       onClick={onClick}
       type="button"
-      className={classNames(
+      className={cn(
         "mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-hidden hover:bg-grey-700 hover:text-white",
         selected ? "bg-grey-700 text-white" : "bg-grey-750 text-body-secondary"
       )}

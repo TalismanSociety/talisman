@@ -1,6 +1,6 @@
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   useCallback,
   useDeferredValue,
@@ -114,7 +114,7 @@ export const ChangeValidatorSelect = () => {
         <div className="flex items-center gap-4 px-12">
           <div className="grow">
             <SearchInputControlled
-              containerClassName={classNames(
+              containerClassName={cn(
                 "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
                 "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}

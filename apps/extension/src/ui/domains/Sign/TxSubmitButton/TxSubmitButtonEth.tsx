@@ -4,7 +4,7 @@ import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { BaseError } from "viem"
@@ -90,7 +90,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
     <SignApproveButton
       processing={isSubmitting}
       onClick={handleSubmitClick}
-      className={classNames("w-full", className)}
+      className={cn("w-full", className)}
       primary
     >
       {label ?? t("Approve")}

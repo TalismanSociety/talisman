@@ -11,7 +11,7 @@ import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { range } from "lodash-es"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -183,7 +183,7 @@ const TokenButtonRow: FC<{
       type="button"
       onClick={onClick}
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary"
       )}

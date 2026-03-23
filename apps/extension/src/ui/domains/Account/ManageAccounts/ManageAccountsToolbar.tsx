@@ -11,7 +11,7 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -41,14 +41,14 @@ export const ManageAccountsToolbar: FC<{
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "@container flex w-full shrink-0 items-center justify-between gap-4 overflow-hidden",
         className
       )}
     >
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
-          containerClassName={classNames(
+          containerClassName={cn(
             "h-[2.25rem] w-full rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
             "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
             "@2xl:h-[2.75rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
@@ -73,7 +73,7 @@ const ToolbarButton: FC<{
   <Tooltip placement="bottom-end">
     <TooltipTrigger asChild>
       <PortfolioToolbarButton
-        className={classNames(
+        className={cn(
           "size-[2.25rem]",
           !IS_POPUP && "flex @2xl:h-[2.75rem] h-[2.25rem] w-auto items-center gap-3 @2xl:px-6 px-4"
         )}
@@ -99,7 +99,7 @@ const AccountsContextMenu = () => {
     <>
       <ContextMenu placement="bottom-end">
         <ContextMenuTrigger
-          className={classNames(
+          className={cn(
             "flex items-center justify-center rounded-sm border-content bg-grey-900 text-body-secondary hover:bg-grey-800",
             "border border-transparent ring-transparent focus-visible:border-grey-700",
             "@2xl:size-[2.75rem] size-[2.25rem]"

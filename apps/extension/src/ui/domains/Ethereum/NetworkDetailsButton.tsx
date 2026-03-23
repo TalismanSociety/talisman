@@ -3,7 +3,7 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { PillButton } from "@ui/components/PillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -78,7 +78,7 @@ const _NetworkDetailsLink: FC<{
       <button
         type="button"
         onClick={open}
-        className={classNames(
+        className={cn(
           "text-body-secondary underline ring-body hover:text-grey-300 focus-visible:ring-1 active:text-body",
           className
         )}

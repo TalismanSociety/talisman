@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import type { MethodType } from "@ui/domains/Account/AccountAdd/context"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, Fragment, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, type To, useLocation } from "react-router-dom"
@@ -168,7 +168,7 @@ export const LayoutBreadcrumb: FC<{
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "mb-6 flex max-w-full items-center gap-1 overflow-hidden text-body-inactive text-xs",
         className
       )}
@@ -199,7 +199,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps & { selected: boolean }> = ({
   return (
     <NavLink
       to={to}
-      className={classNames(
+      className={cn(
         "flex items-center gap-4 truncate font-normal hover:text-body-secondary",
         selected && "font-medium text-body-secondary!"
       )}

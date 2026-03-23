@@ -1,6 +1,6 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type FC,
   type MouseEventHandler,
@@ -45,7 +45,7 @@ export const Modal: FC<ModalProps> = ({
     <Transition show={!!isOpen} appear>
       <TransitionChild
         as="div"
-        className={classNames(
+        className={cn(
           "top-0 left-0 z-20 h-full w-full bg-grey-900/50 backdrop-blur-xs",
           containerId ? "absolute" : "fixed",
           onDismiss && "cursor-pointer"
@@ -59,7 +59,7 @@ export const Modal: FC<ModalProps> = ({
         onClick={handleDismiss}
       ></TransitionChild>
       <div
-        className={classNames(
+        className={cn(
           "top-0 left-0 z-20 h-full w-full overflow-hidden",
           "pointer-events-none flex flex-col items-center",
           containerId ? "absolute" : "fixed",
@@ -69,7 +69,7 @@ export const Modal: FC<ModalProps> = ({
       >
         <TransitionChild
           as="div"
-          className={classNames(
+          className={cn(
             "pointer-events-auto overflow-hidden",
             containerId ? "max-h-full max-w-full" : "max-h-dvh max-w-[dvw]",
             className

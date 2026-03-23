@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 
 export const BittensorAlphaPrice: FC<{
@@ -52,9 +52,7 @@ export const BittensorAlphaPrice: FC<{
         noCountUp
         noTooltip={noTooltip}
       />{" "}
-      {change24h ? (
-        <span className={classNames(changeClassName, changeClassName)}>{change24h}</span>
-      ) : null}
+      {change24h ? <span className={cn(changeClassName, changeClassName)}>{change24h}</span> : null}
     </span>
   )
 }

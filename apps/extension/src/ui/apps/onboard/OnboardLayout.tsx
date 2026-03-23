@@ -2,7 +2,7 @@ import type { AnalyticsPage } from "@ui/api/analytics"
 import { BackButton } from "@ui/components/BackButton"
 import { FadeIn } from "@ui/components/FadeIn"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, Suspense } from "react"
 
 type LayoutProps = {
@@ -18,12 +18,7 @@ export const OnboardLayout: FC<LayoutProps> = ({
   children,
   className,
 }) => (
-  <div
-    className={classNames(
-      "flex h-full w-full items-center justify-center pt-12 sm:pt-auto",
-      className
-    )}
-  >
+  <div className={cn("flex h-full w-full items-center justify-center pt-12 sm:pt-auto", className)}>
     {!!withBack && (
       <BackButton
         className="absolute top-4 left-4 z-20 bg-grey-850/50 transition-colors ease-in hover:bg-grey-800/70 sm:top-32 sm:left-32"

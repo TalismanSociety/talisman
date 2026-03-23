@@ -1,5 +1,5 @@
 import { CheckIcon } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import type { FC } from "react"
 
@@ -22,7 +22,7 @@ export const ExclusiveButtonsList = <T extends string | number>({
   className,
 }: ExclusiveButtonsListProps<T>) => {
   return (
-    <div className={classNames("flex flex-col gap-4", className)}>
+    <div className={cn("flex flex-col gap-4", className)}>
       {options.map((option) => (
         <Button
           key={option.value}
@@ -43,7 +43,7 @@ const Button: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center justify-between gap-4 rounded-sm px-6 text-body-secondary sm:px-8",
         "border border-grey-800",
         selected && "bg-grey-900 text-body",

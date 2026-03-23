@@ -8,7 +8,7 @@ import {
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, XIcon } from "@talismn/icons"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -49,9 +49,9 @@ export const NetworkCombo: FC<{
       onClose={() => setSearch("")}
     >
       {({ open }) => (
-        <div className={classNames("relative")}>
+        <div className={cn("relative")}>
           <div
-            className={classNames(
+            className={cn(
               "flex h-24 items-center gap-4 px-8",
               "w-full",
               "rounded-sm border border-transparent focus-within:border-grey-600",
@@ -62,12 +62,12 @@ export const NetworkCombo: FC<{
           >
             <NetworkLogo
               networkId={value ?? undefined}
-              className={classNames("size-12", !selected && "opacity-50")}
+              className={cn("size-12", !selected && "opacity-50")}
             />
             <ComboboxInput
               placeholder={placeholder ?? t("Select network")}
               displayValue={(n: Network) => networkNameById[n?.id ?? ""] ?? ""}
-              className={classNames(
+              className={cn(
                 "h-full grow bg-transparent text-grey-300 placeholder:text-body-disabled focus:text-body"
               )}
               onChange={(e) => setSearch(e.target.value)}
@@ -83,7 +83,7 @@ export const NetworkCombo: FC<{
             )}
           </div>
           <ComboboxOptions
-            className={classNames(
+            className={cn(
               "overflow-x-none absolute top-24 z-10 max-h-70 min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
               "border border-grey-600",
               bgClassName
@@ -93,7 +93,7 @@ export const NetworkCombo: FC<{
               <ComboboxOption
                 key={option.id}
                 value={option}
-                className={classNames(
+                className={cn(
                   `relative flex h-24 w-full items-center gap-4 px-8 text-body-secondary hover:bg-grey-750 data-focus:bg-grey-750 data-selected:bg-grey-700 data-selected:text-body`
                 )}
               >

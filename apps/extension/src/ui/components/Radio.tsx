@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { ChangeEventHandler, FC, ReactNode } from "react"
 
 export const Radio: FC<{
@@ -11,7 +11,7 @@ export const Radio: FC<{
 }> = ({ name, value, label, checked, className, onChange }) => {
   return (
     <label
-      className={classNames(
+      className={cn(
         "cursor-pointer p-0.5",
         "hover:text-grey-300",
         "has-checked:cursor-default has-checked:text-body",
@@ -24,7 +24,7 @@ export const Radio: FC<{
         value={value}
         checked={checked}
         onChange={onChange}
-        className={classNames(
+        className={cn(
           "h-[0.8em] w-[0.8em] appearance-none rounded-full bg-body-disabled",
           "checked:border-[0.15em] checked:border-body-disabled checked:bg-primary",
           "ring-body focus-visible:ring-1"

@@ -1,7 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapMinusIcon } from "@talismn/icons"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -34,7 +34,7 @@ export const NomPoolWithdrawButton: FC<{
 
   return (
     <button
-      className={classNames(
+      className={cn(
         "bg-primary/10 font-light text-primary/80 hover:bg-primary/20 hover:text-primary",
         variant === "small" && "h-10 rounded-sm px-3 text-xs",
         variant === "large" && "h-14 rounded px-4 text-sm",
@@ -45,7 +45,7 @@ export const NomPoolWithdrawButton: FC<{
     >
       <div className="flex items-center gap-2">
         <ZapMinusIcon
-          className={classNames(
+          className={cn(
             "shrink-0",
             variant === "small" && "text-xs",
             variant === "large" && "text-base"

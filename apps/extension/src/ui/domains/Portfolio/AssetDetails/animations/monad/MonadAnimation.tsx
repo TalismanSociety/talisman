@@ -1,5 +1,5 @@
 import { useScrollContainer } from "@ui/components/ScrollContainer"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 
@@ -31,7 +31,7 @@ export const MonadAnimation = () => {
   return createPortal(
     <div className={"absolute bottom-28 left-0 w-full"}>
       <div
-        className={classNames(
+        className={cn(
           "relative h-23.25 w-26.25 -translate-x-full opacity-100 duration-[2s] ease-out",
           step > 0 && "translate-x-37",
           step === 3 && "opacity-0 duration-500 ease-out"
@@ -40,12 +40,12 @@ export const MonadAnimation = () => {
         <img
           src={imgAnimation1}
           alt=""
-          className={classNames("absolute size-full", step <= 1 ? "visible" : "invisible")}
+          className={cn("absolute size-full", step <= 1 ? "visible" : "invisible")}
         />
         <img
           src={imgAnimation2}
           alt=""
-          className={classNames("absolute size-full", step > 1 ? "visible" : "invisible")}
+          className={cn("absolute size-full", step > 1 ? "visible" : "invisible")}
         />
       </div>
     </div>,

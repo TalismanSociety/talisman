@@ -31,7 +31,7 @@ import { Toggle } from "@ui/components/Toggle"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -238,7 +238,7 @@ const LedgerTransportCheckModalDialog: FC<{
     <ModalDialog title={t("Ledger connectivity check")} onClose={onClose}>
       <div className="flex w-full items-center gap-6">
         <div
-          className={classNames(
+          className={cn(
             "flex size-24 shrink-0 items-center justify-center rounded-full",
             s.ok ? "bg-alert-success/10 text-alert-success" : "bg-alert-warn/10 text-alert-warn"
           )}

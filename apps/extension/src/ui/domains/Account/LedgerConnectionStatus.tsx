@@ -1,6 +1,6 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import type { LedgerStatus } from "@ui/hooks/ledger/common"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useTranslation } from "react-i18next"
 
 export type LedgerConnectionStatusProps = {
@@ -42,7 +42,7 @@ export const LedgerConnectionStatus = ({
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center gap-4 rounded-sm bg-grey-850 p-8 text-body-secondary",
         className
       )}

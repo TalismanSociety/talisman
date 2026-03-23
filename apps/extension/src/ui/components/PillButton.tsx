@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, forwardRef, type SVGProps } from "react"
 
 export type PillButtonSize = "tiny" | "xs" | "sm" | "base"
@@ -31,7 +31,7 @@ export const PillButton = forwardRef<HTMLButtonElement, PillButtonProps>(
       <button
         ref={ref}
         type="button"
-        className={classNames(
+        className={cn(
           getFontSize(size),
           "transition-colors duration-100 ease-out",
           "inline-flex shrink-0 items-center justify-center bg-grey-800 text-body-secondary leading-none outline-hidden",

@@ -4,7 +4,7 @@ import { isHexString } from "@talismn/util"
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/components/Popover"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { startCase } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -116,9 +116,7 @@ export const QrCodeSourceSelector = ({
   return sources.length > 1 ? (
     <Popover placement="bottom-end" open={showPopover} onOpenChange={togglePopover}>
       <PopoverTrigger asChild>
-        <div
-          className={classNames("flex items-center gap-3 text-body-secondary text-sm", className)}
-        >
+        <div className={cn("flex items-center gap-3 text-body-secondary text-sm", className)}>
           {t("QR Source:")}{" "}
           <button
             type="button"
@@ -131,7 +129,7 @@ export const QrCodeSourceSelector = ({
         </div>
       </PopoverTrigger>
       <PopoverContent
-        className={classNames(
+        className={cn(
           "z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left shadow-lg",
           showPopover ? "visible opacity-100" : "invisible opacity-0"
         )}

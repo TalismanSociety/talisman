@@ -4,7 +4,7 @@ import { PillButton } from "@ui/components/PillButton"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -42,7 +42,7 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
   )
 
   return (
-    <PillButton className={classNames("h-16 max-w-full rounded px-4", className)} onClick={onClick}>
+    <PillButton className={cn("h-16 max-w-full rounded px-4", className)} onClick={onClick}>
       <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         {address ? (
           <AccountIcon className="text-lg!" address={address} genesisHash={accountGenesisHash} />

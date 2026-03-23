@@ -1,7 +1,7 @@
 import { api } from "@ui/api"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { HandMonoLogo } from "@ui/theme/logos"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   type FC,
@@ -32,10 +32,7 @@ export const PopupHeader: FC<ContainerProps & { right?: ReactNode }> = ({
   return (
     <header
       {...props}
-      className={classNames(
-        "flex h-32 w-full shrink-0 items-center justify-between px-12",
-        className
-      )}
+      className={cn("flex h-32 w-full shrink-0 items-center justify-between px-12", className)}
     >
       <div className="w-16 shrink-0 text-xl">
         <HandMonoLogo onClick={handleLogoClick} />
@@ -65,7 +62,7 @@ export const PopupContent: FC<ContainerProps & { withBottomNav?: boolean }> = ({
     <ScrollContainer
       {...props}
       ref={scrollableRef}
-      className={classNames("w-full grow overflow-hidden px-8", className)}
+      className={cn("w-full grow overflow-hidden px-8", className)}
     >
       {children}
       {!!withBottomNav && (
@@ -79,7 +76,7 @@ export const PopupContent: FC<ContainerProps & { withBottomNav?: boolean }> = ({
 }
 
 export const PopupFooter: FC<ContainerProps> = ({ className, ...props }) => {
-  return <footer {...props} className={classNames("shrink-0 px-12 py-10", className)} />
+  return <footer {...props} className={cn("shrink-0 px-12 py-10", className)} />
 }
 
 export const PopupLayout: FC<ContainerProps> = ({ className, children, ...props }) => {
@@ -87,7 +84,7 @@ export const PopupLayout: FC<ContainerProps> = ({ className, children, ...props 
     <main
       id="main"
       {...props}
-      className={classNames("relative flex h-full w-full flex-col overflow-hidden", className)}
+      className={cn("relative flex h-full w-full flex-col overflow-hidden", className)}
     >
       {children}
     </main>

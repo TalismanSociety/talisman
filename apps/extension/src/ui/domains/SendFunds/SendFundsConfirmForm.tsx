@@ -5,7 +5,7 @@ import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -333,7 +333,7 @@ const DefaultFeeSummary = () => {
         <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
           <div className="text-body-secondary">{t("Tip")}</div>
           <div className="text-body">
-            <div className={classNames("inline-flex h-4.25 items-center")}>
+            <div className={cn("inline-flex h-4.25 items-center")}>
               <TokensAndFiat planck={tip.planck} tokenId={tipToken.id} />
             </div>
           </div>
@@ -344,12 +344,7 @@ const DefaultFeeSummary = () => {
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div className="text-body">
-          <div
-            className={classNames(
-              "inline-flex h-4.25 items-center",
-              isRefetching && "animate-pulse"
-            )}
-          >
+          <div className={cn("inline-flex h-4.25 items-center", isRefetching && "animate-pulse")}>
             {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
             {estimatedFee && feeToken && (
               <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
@@ -440,7 +435,7 @@ const BittensorAlphaTokenRow: FC = () => {
   return (
     <div className="mt-4 flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
       <div className="text-body-secondary">{t("Token")}</div>
-      <div className={classNames("truncate", token.netuid === 0 ? "text-alert-warn" : "text-body")}>
+      <div className={cn("truncate", token.netuid === 0 ? "text-alert-warn" : "text-body")}>
         {token.name}
         <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
       </div>

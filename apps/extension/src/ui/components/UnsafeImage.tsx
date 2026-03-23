@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useRef, useState } from "react"
 
 export type UnsafeImageProps = React.DetailedHTMLProps<
@@ -54,11 +54,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       {...props}
       alt={props.alt ?? ""}
       ref={refImg}
-      className={classNames(
-        props.className,
-        "indent-[-999em] leading-0",
-        isLoading && "animate-pulse"
-      )}
+      className={cn(props.className, "indent-[-999em] leading-0", isLoading && "animate-pulse")}
       loading="lazy"
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       onLoadStart={handleLoadStart}

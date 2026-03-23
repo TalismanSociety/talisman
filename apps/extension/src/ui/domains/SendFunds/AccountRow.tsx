@@ -4,7 +4,7 @@ import type { Token } from "@talismn/chaindata-provider"
 import { XIcon } from "@talismn/icons"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -61,7 +61,7 @@ export const AccountRow = ({
       type="button"
       onClick={onClick}
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
@@ -129,7 +129,7 @@ const AccountTokenBalance = ({
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "space-y-2 whitespace-nowrap text-right text-sm",
         balance.status === "cache" && "animate-pulse"
       )}

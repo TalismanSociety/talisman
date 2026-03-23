@@ -1,7 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -17,7 +17,7 @@ export const ConnectAccountToggleButtonRow: FC<{
   <button
     type="button"
     onClick={onClick}
-    className={classNames(
+    className={cn(
       "flex h-24 w-full shrink-0 items-center gap-6 px-6 hover:bg-field",
       !isConnected && "text-body-secondary"
     )}
@@ -54,7 +54,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     />
     <div className="grow"></div>
     <div
-      className={classNames(
+      className={cn(
         "mx-2 h-4 w-4 shrink-0 rounded-full",
         isConnected ? "bg-primary" : "bg-grey-700"
       )}

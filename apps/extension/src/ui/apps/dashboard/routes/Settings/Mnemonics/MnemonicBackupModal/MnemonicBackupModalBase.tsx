@@ -1,5 +1,5 @@
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import { useMnemonicBackupModal } from "./context"
 
@@ -15,7 +15,7 @@ export const MnemonicBackupModalBase = ({
   const { close } = useMnemonicBackupModal()
   return (
     <ModalDialog
-      className={classNames("w-auto p-2", className)}
+      className={cn("w-auto p-2", className)}
       title={title && <span className="font-semibold text-md">{title}</span>}
       onClose={close}
     >

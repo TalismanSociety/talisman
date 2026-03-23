@@ -8,7 +8,7 @@ import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useDefiPositionsDisplay } from "@ui/state/defi"
 import { usePortfolioSelectedAccounts } from "@ui/state/portfolio"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -157,7 +157,7 @@ const DefiPositionRow: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm bg-grey-850 px-6 hover:bg-grey-800"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
@@ -181,7 +181,7 @@ const DefiPositionRow: FC<{
               <PortfolioAccount address={position.address} />
             )}
           </div>
-          <div className={classNames(status === "loading" && "animate-pulse")}>
+          <div className={cn(status === "loading" && "animate-pulse")}>
             <PositionTotal position={position} noCountUp={noCountUp} />
           </div>
         </div>

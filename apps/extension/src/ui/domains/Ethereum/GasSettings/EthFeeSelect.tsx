@@ -9,7 +9,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { PillButton } from "@ui/components/PillButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
 import type { TransactionRequest } from "viem"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
@@ -101,7 +101,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
         disabled={disabled}
         type="button"
         onClick={open}
-        className={classNames("h-12 pl-4", className)}
+        className={cn("h-12 pl-4", className)}
       >
         <img src={options[priority].icon} alt="" className="inline-block w-10" />{" "}
         <span className="align-middle">{options[priority].label}</span>

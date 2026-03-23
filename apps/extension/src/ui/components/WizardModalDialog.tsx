@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import type { FC, ReactNode } from "react"
 
@@ -17,7 +17,7 @@ export const WizardModalDialog: FC<{
   return (
     <div
       id={id}
-      className={classNames(
+      className={cn(
         "flex h-150 max-h-full w-100 max-w-full flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}

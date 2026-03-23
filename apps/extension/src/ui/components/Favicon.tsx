@@ -1,6 +1,6 @@
 import { IS_FIREFOX } from "@common/constants"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 export const Favicon: FC<{ url: string; className?: string }> = ({ url, className }) => {
@@ -8,7 +8,7 @@ export const Favicon: FC<{ url: string; className?: string }> = ({ url, classNam
 
   return (
     <span
-      className={classNames(
+      className={cn(
         "flex h-[1.2em] w-[1.2em] shrink-0 items-center justify-center overflow-hidden rounded-full bg-black",
         className
       )}

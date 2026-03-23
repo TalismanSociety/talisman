@@ -21,7 +21,7 @@ import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -189,7 +189,7 @@ const TxIconContainer = ({
 }) => (
   <Tooltip>
     <TooltipTrigger asChild>
-      <div className={classNames("relative h-16 w-16 shrink-0", className)}>
+      <div className={cn("relative h-16 w-16 shrink-0", className)}>
         {children}
         {!!networkId && (
           <NetworkLogo
@@ -344,7 +344,7 @@ const TransactionRowBase: FC<{
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={classNames(
+      className={cn(
         "relative z-0 flex w-full grow items-center rounded-sm bg-grey-850 text-left hover:bg-grey-800",
         IS_POPUP ? "h-13 gap-6 px-6" : "h-14.5 gap-8 px-8"
       )}
@@ -353,24 +353,18 @@ const TransactionRowBase: FC<{
       <div className="flex w-full grow justify-between leading-paragraph">
         <div className="flex flex-col items-start justify-center">
           <div
-            className={classNames(
+            className={cn(
               "flex h-10 items-center gap-2 font-bold text-body",
               IS_POPUP ? "text-sm" : "text-base"
             )}
           >
             {status}
           </div>
-          <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
-            {wen}
-          </div>
+          <div className={cn("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>{wen}</div>
         </div>
         <div className="flex flex-col items-end justify-center text-right">
-          <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>
-            {tokens}
-          </div>
-          <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
-            {fiat}
-          </div>
+          <div className={cn("text-body", IS_POPUP ? "text-sm" : "text-base")}>{tokens}</div>
+          <div className={cn("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>{fiat}</div>
         </div>
       </div>
     </button>

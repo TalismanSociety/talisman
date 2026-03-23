@@ -1,5 +1,5 @@
 import { FileSearchIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,7 +31,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
     <button
       type="button"
       onClick={handleClick}
-      className={classNames(
+      className={cn(
         "flex items-center gap-2 text-body-inactive hover:text-body-secondary",
         className,
         hasError && "text-alert-warn",

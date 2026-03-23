@@ -1,10 +1,10 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 const Pill = ({ className, children }: { className?: string; children?: ReactNode }) => (
   <div
-    className={classNames(
+    className={cn(
       "inline-block rounded bg-primary/10 p-4 font-light text-primary text-xs",
       className
     )}

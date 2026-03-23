@@ -2,7 +2,7 @@ import { encodeAnyAddress } from "@talismn/crypto"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 
@@ -48,7 +48,7 @@ export const Address: FC<AddressProps> = ({
 
   const display = (
     <span
-      className={classNames(
+      className={cn(
         // don't wrap shortenedAddresses onto two lines when low on space
         // e.g. `0x00…0000` -> `0x00…\n0000`
         !onChainId && "whitespace-nowrap"

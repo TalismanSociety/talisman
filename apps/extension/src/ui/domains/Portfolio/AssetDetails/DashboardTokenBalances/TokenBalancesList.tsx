@@ -7,7 +7,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -48,7 +48,7 @@ export const TokenBalancesList = ({
   return (
     <div className="mb-8">
       <div
-        className={classNames(
+        className={cn(
           "grid grid-cols-[40%_30%_30%] bg-grey-800",
           detailRowsLength ? "rounded-t" : "rounded"
         )}
@@ -99,9 +99,7 @@ export const TokenBalancesList = ({
             symbol={symbol}
             tooltip={t("Total Locked Balance")}
             balancesStatus={status}
-            className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
-            )}
+            className={cn(status.status === "fetching" && "animate-pulse transition-opacity")}
           />
         </div>
         <div className="flex items-center justify-end">
@@ -114,9 +112,7 @@ export const TokenBalancesList = ({
             symbol={symbol}
             tooltip={t("Total Available Balance")}
             balancesStatus={status}
-            className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
-            )}
+            className={cn(status.status === "fetching" && "animate-pulse transition-opacity")}
           />
         </div>
       </div>

@@ -15,7 +15,7 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, type To, useMatch, useNavigate } from "react-router-dom"
@@ -31,7 +31,7 @@ export const DashboardSettingsSidebar = () => {
   }, [genericEvent, navigate])
 
   return (
-    <div className={classNames("rounded-lg bg-grey-900", "flex w-full flex-col gap-8 p-8")}>
+    <div className={cn("rounded-lg bg-grey-900", "flex w-full flex-col gap-8 p-8")}>
       <div className="flex h-16 shrink-0 items-center">
         <div className="grow pl-4 font-bold text-[1.25rem]">{t("Settings")}</div>
         <Tooltip>
@@ -105,7 +105,7 @@ const SidebarNavItem: FC<{
   return (
     <NavLink
       to={to}
-      className={classNames(
+      className={cn(
         "flex w-full items-center gap-6 overflow-hidden rounded",
         "text-body-inactive [&.active]:text-body",
         "hover:bg-grey-750 [&.active]:bg-grey-800",

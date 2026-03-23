@@ -1,5 +1,5 @@
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import type { FC, PropsWithChildren } from "react"
 
@@ -36,13 +36,10 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
 }) => {
   return (
     <div
-      className={classNames(
-        "flex w-full items-center gap-4 rounded-sm bg-alert-warn/10 p-5",
-        className
-      )}
+      className={cn("flex w-full items-center gap-4 rounded-sm bg-alert-warn/10 p-5", className)}
     >
       <div
-        className={classNames(
+        className={cn(
           type === "error" ? "text-alert-warn" : "text-body-secondary",
           getIconSizeClass(iconSize)
         )}
@@ -54,7 +51,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
         )}
       </div>
       <div
-        className={classNames(
+        className={cn(
           "scrollable scrollable-700 grow overflow-y-auto text-left text-xs leading-[140%]",
           type === "error" ? "text-alert-warn" : "text-body-secondary"
         )}

@@ -8,7 +8,7 @@ import {
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
 import { useNetworkById } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -31,7 +31,7 @@ export const PositionContextMenu: FC<{ position: DefiPosition; className?: strin
 
   return (
     <ContextMenu placement={"bottom-end"}>
-      <ContextMenuTrigger className={classNames(className)} asChild>
+      <ContextMenuTrigger className={cn(className)} asChild>
         <div className="flex size-9.5 shrink-0 cursor-pointer items-center justify-center rounded text-body-secondary hover:bg-grey-750 hover:text-body">
           <MoreHorizontalIcon className="shrink-0" />
         </div>

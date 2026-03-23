@@ -17,7 +17,7 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -147,7 +147,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
     <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
         ref={ref}
-        className={classNames(
+        className={cn(
           "rounded p-6 text-body-secondary hover:bg-grey-800 hover:text-body",
           className
         )}

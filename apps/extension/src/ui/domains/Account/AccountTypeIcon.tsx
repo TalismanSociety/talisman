@@ -8,7 +8,7 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -49,7 +49,7 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({
     <Tooltip>
       <TooltipTrigger asChild className="flex flex-col justify-center">
         <span>
-          <Icon className={classNames(className)} />
+          <Icon className={cn(className)} />
         </span>
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>

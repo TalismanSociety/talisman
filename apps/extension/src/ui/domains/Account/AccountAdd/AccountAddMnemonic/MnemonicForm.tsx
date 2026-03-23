@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { type UseFormSetValue, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -252,7 +252,7 @@ export const AccountAddMnemonicForm = () => {
       <AccountPlatformSelector defaultValue={platform} onChange={handleTypeChange} />
 
       <form onSubmit={handleSubmit(submit)}>
-        <div className={classNames(!platform && "invisible")}>
+        <div className={cn(!platform && "invisible")}>
           <FormFieldContainer error={errors.name?.message}>
             <FormFieldInputText
               {...register("name")}
@@ -291,7 +291,7 @@ export const AccountAddMnemonicForm = () => {
           <Spacer small />
           <DerivationModeDropdown value={mode} onChange={handleModeChange} />
           <FormFieldContainer
-            className={classNames("mt-2", mode !== "custom" && "invisible")}
+            className={cn("mt-2", mode !== "custom" && "invisible")}
             error={errors.derivationPath?.message}
           >
             <FormFieldInputText

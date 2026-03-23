@@ -2,7 +2,7 @@ import type { Balances } from "@talismn/balances"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
@@ -16,7 +16,7 @@ import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances
 const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "mt-4 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded bg-grey-850 text-left text-base text-body-secondary",
         className
       )}

@@ -11,7 +11,7 @@ import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/er
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   type ChangeEventHandler,
@@ -185,9 +185,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
                     ) : (
                       <Tooltip placement="bottom-end">
                         <TooltipTrigger asChild>
-                          <span
-                            className={classNames(balances.status !== "live" && "animate-pulse")}
-                          >
+                          <span className={cn(balances.status !== "live" && "animate-pulse")}>
                             <Fiat
                               className="leading-none"
                               amount={balances.balances.sum.fiat("usd").total}

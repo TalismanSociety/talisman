@@ -10,7 +10,7 @@ import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -280,7 +280,7 @@ export const AmountEdit: FC<{
           />
         )}
       </div>
-      <div className={classNames("mt-4 flex max-w-full items-center justify-center gap-4")}>
+      <div className={cn("mt-4 flex max-w-full items-center justify-center gap-4")}>
         {tokenRates && (
           <>
             {!isTokenEdit ? (
@@ -297,11 +297,7 @@ export const AmountEdit: FC<{
             </PillButton>
           </>
         )}
-        <PillButton
-          onClick={onMaxClick}
-          size="xs"
-          className={classNames("h-11 rounded-sm px-4! py-0!")}
-        >
+        <PillButton onClick={onMaxClick} size="xs" className={cn("h-11 rounded-sm px-4! py-0!")}>
           {t("Max")}
         </PillButton>
       </div>

@@ -7,7 +7,7 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useAccounts } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -138,7 +138,7 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className={classNames(
+          className={cn(
             "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-body-secondary text-tiny opacity-90 backdrop-blur-xs",
             "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}

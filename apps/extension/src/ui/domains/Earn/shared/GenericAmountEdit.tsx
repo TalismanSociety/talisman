@@ -6,7 +6,7 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -289,7 +289,7 @@ export const GenericAmountEdit: FC<{
           />
         )}
       </div>
-      <div className={classNames("mt-4 flex max-w-full items-center justify-center gap-4")}>
+      <div className={cn("mt-4 flex max-w-full items-center justify-center gap-4")}>
         {priceUsd && (
           <>
             {!isTokenEdit ? (
@@ -306,11 +306,7 @@ export const GenericAmountEdit: FC<{
             </PillButton>
           </>
         )}
-        <PillButton
-          onClick={onMaxClick}
-          size="xs"
-          className={classNames("h-11 rounded-sm px-4! py-0!")}
-        >
+        <PillButton onClick={onMaxClick} size="xs" className={cn("h-11 rounded-sm px-4! py-0!")}>
           {t("Max")}
         </PillButton>
       </div>

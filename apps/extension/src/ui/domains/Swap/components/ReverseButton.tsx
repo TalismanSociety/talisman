@@ -1,5 +1,5 @@
 import { RepeatIcon } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import type { FC } from "react"
 import { useSwap } from "../SwapProvider"
@@ -10,7 +10,7 @@ export const ReverseButton: FC<{ className?: string }> = ({ className }) => {
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex size-24 items-center justify-center",
         "rounded-full border-[3px] border-grey-900 bg-[#2d3121] text-primary",
         "transition-colors hover:bg-[#383d29]",

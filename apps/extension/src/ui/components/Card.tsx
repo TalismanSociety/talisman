@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 export const Card: FC<{
@@ -8,7 +8,7 @@ export const Card: FC<{
   className?: string
 }> = ({ className, title, description, cta }) => {
   return (
-    <div className={classNames("flex w-full flex-col gap-10 rounded bg-grey-800 p-10", className)}>
+    <div className={cn("flex w-full flex-col gap-10 rounded bg-grey-800 p-10", className)}>
       {title && <div>{title}</div>}
       {description && <div>{description}</div>}
       {cta && <div>{cta}</div>}

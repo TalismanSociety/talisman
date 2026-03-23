@@ -18,7 +18,7 @@ import {
   usePortfolioSearch,
 } from "@ui/state/portfolio"
 import { useSetting } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
@@ -52,10 +52,7 @@ const NetworkFilterButton = () => {
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={open}
-            className={classNames(networkFilter && "text-primary")}
-          >
+          <PortfolioToolbarButton onClick={open} className={cn(networkFilter && "text-primary")}>
             {networkFilter ? (
               <NetworkLogo className="text-lg" networkId={networkFilter.networkIds[0]} />
             ) : (
@@ -84,7 +81,7 @@ const PortfolioSearch = () => {
 
   return (
     <SearchInput
-      containerClassName={classNames(
+      containerClassName={cn(
         "h-16 w-full rounded-sm border border-field bg-field! px-4! text-xs ring-transparent focus-within:border-grey-700",
         "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
         "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",

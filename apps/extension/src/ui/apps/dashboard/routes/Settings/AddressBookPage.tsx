@@ -29,7 +29,7 @@ import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useContacts } from "@ui/state/addressBook"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type ButtonHTMLAttributes,
   type DetailedHTMLProps,
@@ -56,7 +56,7 @@ const SquareButton = forwardRef<
     {...props}
     type="button"
     ref={ref}
-    className={classNames(
+    className={cn(
       "flex h-16 w-16 items-center justify-center rounded-sm enabled:cursor-pointer enabled:hover:bg-grey-700 enabled:hover:text-body-secondary disabled:cursor-not-allowed",
       props.className
     )}

@@ -6,7 +6,7 @@ import {
   useSelectedVideoInput,
   useVideoInputDevices,
 } from "@ui/state/browser"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { BrowserQRCodeReader } from "@zxing/browser"
 import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -152,10 +152,7 @@ const Scanner = ({
     <div className="absolute h-full w-full">
       <video
         ref={preview}
-        className={classNames(
-          "absolute h-full w-full -scale-x-100 object-cover",
-          blur && "blur-xs"
-        )}
+        className={cn("absolute h-full w-full -scale-x-100 object-cover", blur && "blur-xs")}
       />
       {inputDevices.length > 1 ? (
         <div className="absolute top-10 left-1/2 -translate-x-1/2">
@@ -178,7 +175,7 @@ const Scanner = ({
               onClick={() => setSelectedVideoInput(device.deviceId)}
             >
               <div
-                className={classNames(
+                className={cn(
                   "h-4 w-4 shrink-0 rounded-full",
                   device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700"
                 )}

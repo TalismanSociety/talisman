@@ -5,7 +5,7 @@ import { formatPrice } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { selectedCurrency$ } from "@ui/state/settings"
 import { getTokenRates$ } from "@ui/state/tokenRates"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { combineLatest, map } from "rxjs"
 
@@ -79,12 +79,10 @@ export const AssetPrice: FC<{
   return (
     <Tooltip placement="bottom-start">
       <TooltipTrigger asChild>
-        <Container className={classNames("whitespace-nowrap", className)}>
+        <Container className={cn("whitespace-nowrap", className)}>
           <span className={priceClassName}>{price.compact} </span>
           {!noChange && price.change24h ? (
-            <span className={classNames(price.changeClassName, changeClassName)}>
-              {price.change24h}
-            </span>
+            <span className={cn(price.changeClassName, changeClassName)}>{price.change24h}</span>
           ) : null}
         </Container>
       </TooltipTrigger>

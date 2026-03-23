@@ -1,5 +1,5 @@
 import { Modal } from "@ui/components/Modal"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import { CopyAddressWizard } from "./CopyAddressWizard"
 import { useCopyAddressModal } from "./useCopyAddressModal"
@@ -11,7 +11,7 @@ export const CopyAddressModal = () => {
     <Modal
       isOpen={isOpen}
       onDismiss={close}
-      className={classNames(
+      className={cn(
         "h-150 w-100 overflow-hidden border-grey-800 bg-black shadow-xs",
         window.location.pathname === "/popup.html"
           ? "max-h-full max-w-full"

@@ -16,7 +16,7 @@ import { useTokensMap } from "@ui/state/chaindata"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { isNil, toPairs, uniq } from "lodash-es"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
@@ -172,7 +172,7 @@ const TokenRow: FC<{
 const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "mb-4 grid w-full grid-cols-[40%_30%_30%] rounded bg-grey-850 text-left text-base text-body-secondary",
         className
       )}

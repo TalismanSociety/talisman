@@ -18,7 +18,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -35,7 +35,7 @@ import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "mt-4 flex h-28 items-center gap-6 rounded-sm bg-black-secondary px-6",
         className
       )}
@@ -142,13 +142,13 @@ const AssetRow: FC<{
             )}
           </div>
           <div
-            className={classNames(
+            className={cn(
               "flex min-w-40 shrink-0 flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
             <div
-              className={classNames(
+              className={cn(
                 "whitespace-nowrap font-bold text-sm",
                 locked ? "text-body-secondary" : "text-white",
                 selectedAccount?.type !== "watch-only" &&
@@ -169,7 +169,7 @@ const AssetRow: FC<{
               />
             </div>
             <div
-              className={classNames(
+              className={cn(
                 "text-body-secondary text-xs leading-base",
                 selectedAccount?.type !== "watch-only" &&
                   (canEarn || showStakingButton) &&
@@ -221,7 +221,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
     <div className="flex flex-col gap-4">
       <button
         type="button"
-        className={classNames("flex cursor-pointer items-center gap-2 text-sm", className)}
+        className={cn("flex cursor-pointer items-center gap-2 text-sm", className)}
         onClick={toggle}
       >
         <div className="grow text-left text-body-secondary">{label}</div>

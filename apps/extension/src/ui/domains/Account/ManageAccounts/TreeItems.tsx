@@ -15,7 +15,7 @@ import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"
@@ -83,7 +83,7 @@ export const TreeItem: FC<{
   isInFolder,
 }) => {
   return (
-    <div id={item.id} className={classNames(isDragged ? "cursor-grabbing" : "cursor-grab")}>
+    <div id={item.id} className={cn(isDragged ? "cursor-grabbing" : "cursor-grab")}>
       {item.type === "account" && (
         <TreeItemAccount
           address={item.address}
@@ -144,9 +144,9 @@ const TreeItemFolder: FC<{
   const { isOpen, toggle } = useOpenClose(true)
 
   return (
-    <div className={classNames("@container relative flex flex-col rounded-sm bg-grey-850 pt-2")}>
+    <div className={cn("@container relative flex flex-col rounded-sm bg-grey-850 pt-2")}>
       <div
-        className={classNames(
+        className={cn(
           "flex h-13.25 items-center gap-8 overflow-hidden border border-transparent px-8 pb-0"
         )}
       >
@@ -185,7 +185,7 @@ const TreeItemFolder: FC<{
       </div>
       <Accordion isOpen={isOpen} className="w-full shrink-0" alwaysRender>
         {!!folder.tree.length && (
-          <div className={classNames("px-4")}>
+          <div className={cn("px-4")}>
             <TreeItems
               treeName={treeName}
               parentId={folder.id}

@@ -4,7 +4,7 @@ import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Card } from "@ui/components/Card"
 import { Drawer } from "@ui/components/Drawer"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -19,7 +19,7 @@ const AlertCard = ({ className, onAccept }: Props) => {
   const { t } = useTranslation()
   return (
     <Card
-      className={classNames("rounded-b-none! text-center text-body-secondary", className)}
+      className={cn("rounded-b-none! text-center text-body-secondary", className)}
       title={
         <div className="flex flex-col items-center p-2">
           <LockIcon className="icon inline-block p-1 text-3xl text-primary" />

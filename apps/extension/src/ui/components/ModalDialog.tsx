@@ -1,5 +1,5 @@
 import { XIcon } from "@talismn/icons"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import type { FC, ReactNode } from "react"
 
@@ -30,7 +30,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
   return (
     <div
       id={id}
-      className={classNames(
+      className={cn(
         "flex max-h-dvh w-105 max-w-dvw flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}
@@ -44,7 +44,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
           </IconButton>
         )}
         <h1
-          className={classNames(
+          className={cn(
             "grow overflow-hidden text-ellipsis whitespace-nowrap font-bold text-base",
             centerTitle && "text-center"
           )}

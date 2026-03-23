@@ -2,7 +2,7 @@ import { appStore } from "@core/domains/app/store.app"
 import { TalismanHandIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { useAppState } from "@ui/state/app"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -14,7 +14,7 @@ export const MigrationProgress = () => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         // displayed as the only content of the page, while a migration is running.
         !IS_POPUP && "flex h-screen w-screen flex-col items-center justify-center"
       )}
@@ -22,9 +22,9 @@ export const MigrationProgress = () => {
       <div className="flex h-150 w-100 animate-fade-in-slow flex-col items-center justify-between overflow-hidden p-8">
         <div className="flex h-67 flex-col items-center justify-center gap-24 pt-4">
           <TalismanHandIcon
-            className={classNames("h-48 w-48", !migration.errors?.length && "animate-pulse")}
+            className={cn("h-48 w-48", !migration.errors?.length && "animate-pulse")}
           />
-          <div className={classNames("font-bold text-lg")}>
+          <div className={cn("font-bold text-lg")}>
             {migration.errors?.length ? t("Talisman update failed") : t("Talisman update")}
           </div>
         </div>

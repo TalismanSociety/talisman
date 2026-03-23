@@ -5,7 +5,7 @@ import type { HexString } from "@talismn/util"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Tooltip, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 
 import { Fiat } from "../Asset/Fiat"
@@ -36,10 +36,7 @@ const AccountButtonShimmer: FC<{ withBalances: boolean }> = ({ withBalances }) =
       <div className="h-7 w-17 animate-pulse rounded-xs bg-grey-750"></div>
     </div>
     <div
-      className={classNames(
-        "h-9 w-17 animate-pulse rounded-xs bg-grey-750",
-        !withBalances && "invisible"
-      )}
+      className={cn("h-9 w-17 animate-pulse rounded-xs bg-grey-750", !withBalances && "invisible")}
     ></div>
     <div className="h-10 w-10 animate-pulse rounded-xs bg-grey-750"></div>
   </div>
@@ -76,7 +73,7 @@ const AccountButton: FC<AccountButtonProps> = ({
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-32 w-full items-center gap-8 rounded-sm bg-grey-850 px-8 text-left text-grey-200 enabled:hover:bg-grey-800 disabled:opacity-50"
       )}
       disabled={connected}
@@ -96,7 +93,7 @@ const AccountButton: FC<AccountButtonProps> = ({
           ) : (
             <Tooltip placement="bottom-end">
               <TooltipTrigger asChild>
-                <span className={classNames(isLoading && "animate-pulse")}>
+                <span className={cn(isLoading && "animate-pulse")}>
                   <Fiat className="leading-none" amount={totalFiat} isBalance />
                 </span>
               </TooltipTrigger>

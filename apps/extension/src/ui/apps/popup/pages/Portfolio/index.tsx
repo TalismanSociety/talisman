@@ -3,7 +3,7 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
@@ -44,7 +44,7 @@ const Content: FC<PropsWithChildren> = ({ children }) => {
   }, [location.pathname])
 
   return (
-    <ScrollContainer ref={scrollableRef} className={classNames("size-full overflow-hidden px-8")}>
+    <ScrollContainer ref={scrollableRef} className={cn("size-full overflow-hidden px-8")}>
       {children}
     </ScrollContainer>
   )

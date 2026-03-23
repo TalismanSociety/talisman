@@ -1,6 +1,6 @@
 import { Listbox } from "@headlessui/react"
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import type { ReactNode } from "react"
 
@@ -50,7 +50,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
         {label && <Listbox.Label className="mb-8 block text-body-secondary">{label}</Listbox.Label>}
         <div className={"inline-block max-h-50 w-full text-body-secondary"}>
           <Listbox.Button
-            className={classNames(
+            className={cn(
               "flex w-full items-center gap-8 bg-grey-800 p-8 text-left enabled:hover:text-grey-300 disabled:bg-field disabled:text-body-disabled",
               open ? "rounded-t-sm" : "rounded-sm",
               buttonClassName
@@ -68,7 +68,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
                   <Listbox.Option
                     key={item[propertyKey] as string | number}
                     value={item}
-                    className={classNames(
+                    className={cn(
                       "w-full max-w-full cursor-pointer overflow-hidden bg-grey-800 p-8 hover:bg-grey-750 hover:text-grey-300",
                       "grow flex-col justify-center",
                       i === arr.length - 1 && "rounded-b-sm",

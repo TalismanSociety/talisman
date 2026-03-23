@@ -17,7 +17,7 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state/chaindata"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type FC,
   useCallback,
@@ -164,7 +164,7 @@ export const BittensorClaimSubnetSelect = () => {
         <div className="flex items-center gap-4 px-12">
           <div className="grow">
             <SearchInputControlled
-              containerClassName={classNames(
+              containerClassName={cn(
                 "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
                 "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
@@ -347,7 +347,7 @@ const SubnetRow: FC<{
       type="button"
       key={option.netuid}
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus-visible:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
@@ -362,7 +362,7 @@ const SubnetRow: FC<{
         </div>
       </div>
       <div
-        className={classNames(
+        className={cn(
           "mx-2 h-4 w-4 shrink-0 rounded-full",
           isSelected ? "bg-primary" : "bg-grey-700"
         )}

@@ -5,7 +5,7 @@ import imgFeePriorityHigh from "@ui/theme/images/fee-priority-high.png"
 import imgFeePriorityLow from "@ui/theme/images/fee-priority-low.png"
 import imgFeePriorityMedium from "@ui/theme/images/fee-priority-medium.png"
 import imgFeePriorityRecommended from "@ui/theme/images/fee-priority-recommended.png"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -32,7 +32,7 @@ type IndicatorProps = PropsWithChildren & {
 export const Indicator: FC<IndicatorProps> = ({ children, label, className }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "relative flex h-[41px] flex-col justify-center rounded-sm border border-grey-700 px-6 text-body-secondary text-xs",
         className
       )}
@@ -48,7 +48,7 @@ type MessageRowProps = { type: "error" | "warning"; message: string }
 export const MessageRow: FC<MessageRowProps> = ({ type, message }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "mt-4 mb-6 h-8 w-full text-left text-xs",
         type === "warning" && "text-alert-warn",
         type === "error" && "text-alert-error",

@@ -6,7 +6,7 @@ import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { isAscii } from "@talismn/util"
 import { CodeBlock } from "@ui/components/CodeBlock"
 import { FallbackErrorBoundary } from "@ui/components/FallbackErrorBoundary"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import DOMPurify from "dompurify"
 import htmlParser from "html-react-parser"
 import { dump as convertToYaml } from "js-yaml"
@@ -96,7 +96,7 @@ const DefaultView: FC<{
         <>
           <div className="mt-4">{t("Documentation")}</div>
           <div
-            className={classNames(
+            className={cn(
               "flex w-full flex-col gap-2 overflow-hidden text-xs!",
               "[&_code]:text-body [&_em]:text-body [&_h1]:text-xs [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_h5]:text-xs [&_ul]:list-disc [&_ul]:pl-10",
               "wrap-anywhere"

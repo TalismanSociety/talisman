@@ -1,6 +1,6 @@
 import type { AccountPlatform } from "@talismn/crypto"
 import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@ui/theme/logos"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,7 +14,7 @@ const AccountTypeButton: FC<{
 }> = ({ className, icon, title, subtitle, disabled, onClick }) => (
   <button
     type="button"
-    className={classNames(
+    className={cn(
       "allow-focus flex h-32 items-center gap-6 rounded bg-field px-6 text-left",
       disabled && "text-body-secondary opacity-40",
       !disabled && "hover:bg-grey-800",
@@ -54,9 +54,9 @@ export const AccountPlatformSelector = ({
   }, [onChange, platform])
 
   return (
-    <div className={classNames("grid w-full grid-cols-2 gap-10", className)}>
+    <div className={cn("grid w-full grid-cols-2 gap-10", className)}>
       <AccountTypeButton
-        className={classNames(
+        className={cn(
           platform === "ethereum" ? "border-body" : "border-body-secondary/20",
           "border"
         )}
@@ -70,7 +70,7 @@ export const AccountPlatformSelector = ({
         onClick={handleClick("ethereum")}
       />
       <AccountTypeButton
-        className={classNames(
+        className={cn(
           platform === "polkadot" ? "border-body" : "border-body-secondary/20",
           "border"
         )}
@@ -84,10 +84,7 @@ export const AccountPlatformSelector = ({
         onClick={handleClick("polkadot")}
       />
       <AccountTypeButton
-        className={classNames(
-          platform === "solana" ? "border-body" : "border-body-secondary/20",
-          "border"
-        )}
+        className={cn(platform === "solana" ? "border-body" : "border-body-secondary/20", "border")}
         icon={<SolanaLogo />}
         title={t("Solana")}
         subtitle={

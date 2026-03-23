@@ -10,7 +10,7 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useMatch, useNavigate } from "react-router-dom"
@@ -97,7 +97,7 @@ export const BottomNav = () => {
       <div className="absolute bottom-0 left-0 z-20 flex w-full flex-col justify-center gap-6 px-8 pb-6">
         <QuickSettingsModal />
         <div
-          className={classNames(
+          className={cn(
             "flex h-13 w-full items-center justify-between rounded border border-grey-800 bg-black/90 px-7 backdrop-blur-[2px]"
           )}
         >
@@ -154,7 +154,7 @@ const NavButton: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "group",
         "h-20 w-20 text-body-disabled",
         "enabled:hover:text-body-secondary",
@@ -165,7 +165,7 @@ const NavButton: FC<{
       onClick={onClick}
     >
       <div
-        className={classNames(
+        className={cn(
           "flex w-full flex-col items-center justify-center gap-[0.0938rem] overflow-visible",
           "translate-y-4 transition-transform group-hover:translate-y-0"
         )}
@@ -179,7 +179,7 @@ const NavButton: FC<{
           <Icon className="size-10 shrink-0" />
         )}
         <div
-          className={classNames(
+          className={cn(
             "text-tiny leading-paragraph",
             "text-nowrap opacity-0 transition-opacity group-hover:opacity-100"
           )}

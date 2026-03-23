@@ -1,7 +1,7 @@
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { useAnyNetwork } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { copyAddress } from "@ui/util/copyAddress"
 import { type FC, useCallback, useMemo } from "react"
 
@@ -43,7 +43,7 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
   }, [address, blockExplorerUrl, effectiveMode])
 
   return (
-    <span className={classNames("inline-flex items-center gap-[0.5em]", className)}>
+    <span className={cn("inline-flex items-center gap-[0.5em]", className)}>
       <Address
         address={address}
         noShorten={noShorten}

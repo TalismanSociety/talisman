@@ -1,6 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
@@ -11,7 +11,7 @@ export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "ml-[0.4em] inline-block h-9 pl-0.5 leading-none [&>div]:ml-[-0.4em]",
         className
       )}

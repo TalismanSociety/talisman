@@ -1,7 +1,7 @@
 import { CapsLockIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useIsCapsLockOn } from "@ui/hooks/useIsCapsLockOn"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,7 +14,7 @@ export const CapsLockWarningIcon: FC<{ className?: string }> = ({ className }) =
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className={classNames("text-alert-warn", className)}>
+        <div className={cn("text-alert-warn", className)}>
           <CapsLockIcon className="text-lg" />
         </div>
       </TooltipTrigger>

@@ -1,5 +1,5 @@
 import { CheckIcon } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import {
   type ButtonHTMLAttributes,
@@ -59,7 +59,7 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
       type="button"
       {...props}
       onClick={handleClick}
-      className={classNames(
+      className={cn(
         "h-20 rounded-xs p-6 text-left focus-visible:bg-grey-800 enabled:hover:bg-grey-800 disabled:text-body-disabled",
         className
       )}
@@ -73,13 +73,13 @@ export const ContextMenuOptionItem: FC<{
   onClick: () => void
 }> = ({ label, selected, onClick }) => (
   <ContextMenuItem
-    className={classNames(
+    className={cn(
       "flex items-center justify-between gap-16",
       selected ? "text-body" : "text-body-secondary"
     )}
     onClick={onClick}
   >
     <div>{label}</div>
-    <CheckIcon className={classNames(selected ? "visible" : "invisible")} />
+    <CheckIcon className={cn(selected ? "visible" : "invisible")} />
   </ContextMenuItem>
 )

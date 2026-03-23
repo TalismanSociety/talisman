@@ -13,7 +13,7 @@ import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSele
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -160,7 +160,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
           <AccountPlatformSelector defaultValue={platform} onChange={handlePlatformChange} />
         )}
 
-        <div className={classNames("transition-opacity", platform ? "opacity-100" : "opacity-0")}>
+        <div className={cn("transition-opacity", platform ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">
               {t("Please enter the name and the wallet address you'll be watching.")}

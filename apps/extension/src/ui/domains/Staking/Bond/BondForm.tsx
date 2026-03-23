@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -68,7 +68,7 @@ const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, accou
       isBalance
       tokenId={token?.id}
       planck={balance.transferable.planck}
-      className={classNames(balance.status !== "live" && "animate-pulse")}
+      className={cn(balance.status !== "live" && "animate-pulse")}
       tokensClassName="text-body"
       fiatClassName="text-body-secondary"
     />
@@ -283,7 +283,7 @@ const AmountEdit = () => {
           <div className="flex flex-col font-bold text-xl">
             {displayMode === "token" ? <TokenInput /> : <FiatInput />}
           </div>
-          <div className={classNames("flex max-w-full items-center justify-center gap-4")}>
+          <div className={cn("flex max-w-full items-center justify-center gap-4")}>
             {tokenRates && (
               <>
                 {displayMode !== "token" ? <TokenDisplay /> : <FiatDisplay />}
@@ -300,7 +300,7 @@ const AmountEdit = () => {
               onClick={onSetMaxClick}
               disabled={!maxPlancks}
               size="xs"
-              className={classNames("h-11 rounded-sm px-4! py-0!")}
+              className={cn("h-11 rounded-sm px-4! py-0!")}
             >
               {t("Max")}
             </PillButton>
@@ -335,7 +335,7 @@ const StakeAprBase: FC<{
   }
 
   return (
-    <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>
+    <span className={cn(apr ? "text-alert-success" : "text-body-secondary")}>
       <WithAprDocsLink>{display}</WithAprDocsLink>
     </span>
   )

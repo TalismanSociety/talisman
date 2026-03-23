@@ -19,7 +19,7 @@ import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash-es/sortBy"
 import { type FC, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
@@ -163,7 +163,7 @@ const TokenRow: FC<TokenRowProps> = ({
       data-id={token.id}
       onClick={onClick}
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary"
@@ -174,7 +174,7 @@ const TokenRow: FC<TokenRowProps> = ({
       </div>
       <div className="flex grow flex-col gap-2.5 overflow-hidden">
         <div
-          className={classNames(
+          className={cn(
             "flex w-full justify-between gap-6 overflow-hidden font-bold text-sm",
             selected ? "text-body-secondary" : "text-body"
           )}
@@ -192,7 +192,7 @@ const TokenRow: FC<TokenRowProps> = ({
             )}
             {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
           </div>
-          <div className={classNames(isLoading && "animate-pulse")}>
+          <div className={cn(isLoading && "animate-pulse")}>
             <Tokens
               amount={tokensTotal}
               decimals={token.decimals}
@@ -213,7 +213,7 @@ const TokenRow: FC<TokenRowProps> = ({
               )}
             </div>
           </div>
-          <div className={classNames(isLoading && "animate-pulse")}>
+          <div className={cn(isLoading && "animate-pulse")}>
             {hasFiatRate ? (
               <Fiat
                 amount={balances.sum.fiat(currency).transferable}
@@ -552,9 +552,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   )
 
   return (
-    <div
-      className={classNames("flex h-full min-h-full w-full flex-col overflow-hidden", className)}
-    >
+    <div className={cn("flex h-full min-h-full w-full flex-col overflow-hidden", className)}>
       <div className="flex min-h-fit w-full flex-col items-center gap-3 px-12 pb-8">
         <div className="flex w-full items-center gap-4">
           <SearchInput

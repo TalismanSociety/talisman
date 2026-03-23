@@ -1,6 +1,6 @@
 import type { NetworkPlatform } from "@talismn/chaindata-provider"
 import { Dropdown } from "@ui/components/Dropdown"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useState } from "react"
 
 type NetworkPlatformOption = {
@@ -38,7 +38,7 @@ export const PlatformSelect: FC<{
       renderItem={(p) => p.label}
       value={OPTIONS.find((opt) => opt.value === selected) || null}
       onChange={handleChange}
-      className={classNames("[&>div>button]:h-11.5", className)}
+      className={cn("[&>div>button]:h-11.5", className)}
     />
   )
 }

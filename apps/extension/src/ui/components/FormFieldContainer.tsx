@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 type FormFieldContainerProps = {
@@ -17,7 +17,7 @@ export const FormFieldContainer: FC<FormFieldContainerProps> = ({
   noErrorRow,
 }) => {
   return (
-    <div className={classNames("text-left text-base leading-base", className)}>
+    <div className={cn("text-left text-base leading-base", className)}>
       <div className="text-body-secondary">{label}</div>
       <div className="mt-4">{children}</div>
       {!noErrorRow && (

@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 export const Spacer: FC<{
@@ -6,5 +6,5 @@ export const Spacer: FC<{
   small?: boolean
   className?: string
 }> = ({ large, small, className }) => (
-  <div className={classNames(large ? "h-16" : small ? "h-8" : "h-12", className)} />
+  <div className={cn(large ? "h-16" : small ? "h-8" : "h-12", className)} />
 )

@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import {
   type CSSProperties,
   type FC,
@@ -20,10 +20,7 @@ const Button = forwardRef<
     type="button"
     ref={ref}
     disabled={selected}
-    className={classNames(
-      "z-10 px-[0.5em] transition-colors duration-150",
-      selected && "text-body-black"
-    )}
+    className={cn("z-10 px-[0.5em] transition-colors duration-150", selected && "text-body-black")}
     onClick={onClick}
   >
     {children}
@@ -75,7 +72,7 @@ export const MnemonicWordCountSwitch: FC<{
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "inline-block rounded-full bg-grey-800 p-[0.2em] text-body-secondary text-xs leading-paragraph",
         className
       )}
@@ -88,9 +85,7 @@ export const MnemonicWordCountSwitch: FC<{
           {t("24-word")}
         </Button>
         <div
-          className={classNames(
-            "absolute top-0 h-full rounded-full bg-primary transition-all ease-in-out"
-          )}
+          className={cn("absolute top-0 h-full rounded-full bg-primary transition-all ease-in-out")}
           style={selectionOverlay}
         />
       </div>

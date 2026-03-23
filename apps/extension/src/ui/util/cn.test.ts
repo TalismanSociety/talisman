@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest"
 
-import { classNames } from "./cn"
+import { cn } from "./cn"
 
-describe("classNames", () => {
+describe("cn", () => {
   it("keeps text color and custom text-tiny size together", () => {
-    expect(classNames("text-body-disabled text-tiny")).toBe("text-body-disabled text-tiny")
-    expect(classNames("text-body-disabled text-tiny")).toBe("text-tiny text-body-disabled")
+    expect(cn("text-body-disabled text-tiny")).toBe("text-body-disabled text-tiny")
+    expect(cn("text-body-disabled", "text-tiny")).toBe("text-body-disabled text-tiny")
   })
 
   it("still resolves conflicting font sizes", () => {
-    expect(classNames("text-tiny text-xs")).toBe("text-tiny")
-    expect(classNames("text-tiny text-xs")).toBe("text-xs")
+    expect(cn("text-xs", "text-tiny")).toBe("text-tiny")
   })
 })

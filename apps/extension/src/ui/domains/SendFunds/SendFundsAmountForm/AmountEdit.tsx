@@ -6,7 +6,7 @@ import { PillButton } from "@ui/components/PillButton"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import BigNumber from "bignumber.js"
 import {
   type ChangeEventHandler,
@@ -93,7 +93,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4",
         isEstimatingMaxAmount && "animate-pulse"
       )}
@@ -106,7 +106,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         inputMode="decimal"
         value={value}
         placeholder="0"
-        className={classNames(
+        className={cn(
           "peer inline-block min-w-0 text-ellipsis bg-transparent text-body text-xl",
           sendMax && "placeholder:text-white",
           isEstimatingMaxAmount && "hidden" // hide until value is known
@@ -169,7 +169,7 @@ const FiatInput = () => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         // display flex in reverse order to leverage peer css
         "end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center",
         isEstimatingMaxAmount && "animate-pulse"
@@ -183,7 +183,7 @@ const FiatInput = () => {
         // biome-ignore lint/a11y/noAutofocus: legacy
         autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}
-        className={classNames(
+        className={cn(
           "peer inline-block min-w-0 bg-transparent text-body text-xl",
           isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
@@ -191,7 +191,7 @@ const FiatInput = () => {
       />
       {isEstimatingMaxAmount && <div className="h-16 w-48 rounded bg-grey-800"></div>}
       <div
-        className={classNames(
+        className={cn(
           "block shrink-0",
           isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
@@ -266,7 +266,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
             {isTokenEdit ? <TokenInput onTokenClick={onTokenClick} /> : <FiatInput />}
           </div>
           <div
-            className={classNames(
+            className={cn(
               "mt-4 flex max-w-full items-center justify-center gap-4",
               isEstimatingMaxAmount && "invisible"
             )}
@@ -287,7 +287,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("h-11 rounded-sm px-4! py-0!")}
+              className={cn("h-11 rounded-sm px-4! py-0!")}
             >
               {t("Max")}
             </PillButton>

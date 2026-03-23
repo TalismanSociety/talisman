@@ -4,7 +4,7 @@ import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"
@@ -63,7 +63,7 @@ export const DashboardLayout: FC<{
   )
 }
 
-const RESPONSIVE_FLEX_SPACING = classNames(
+const RESPONSIVE_FLEX_SPACING = cn(
   "gap-5 px-5",
   "md:gap-10 md:px-10",
   "lg:gap-20 lg:px-20",
@@ -86,7 +86,7 @@ const NavButton: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex items-center gap-4 text-body-inactive hover:text-body-secondary",
         routeMatch && "text-body!",
         className

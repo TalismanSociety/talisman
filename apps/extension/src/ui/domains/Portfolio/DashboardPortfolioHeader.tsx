@@ -17,7 +17,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -100,7 +100,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "relative z-0 flex h-96 flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
         className
       )}
@@ -116,7 +116,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
         <div className="flex w-full max-w-full items-center gap-6">
           <button
             type="button"
-            className={classNames(
+            className={cn(
               "pointer-events-auto flex size-[2.75rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228/1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250/1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
               currencyConfig[currency]?.symbol?.length > 2 && "text-base"
@@ -129,7 +129,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
             {currencyConfig[currency]?.symbol}
           </button>
           <Fiat
-            className={classNames(
+            className={cn(
               "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[3rem] leading-24"
             )}
             amount={selectedTotal}

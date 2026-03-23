@@ -12,7 +12,7 @@ import {
   PolkadotCircleBorderedLogo,
   SolanaCircleLogo,
 } from "@ui/theme/logos"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import {
   cloneElement,
@@ -40,7 +40,7 @@ export const AccountCreateContainer = ({ className }: { className?: string }) =>
   const MethodButtonsComponent = methodButtonsFromMethodType[methodType] ?? null
 
   return (
-    <div className={classNames("justify-left flex flex-col gap-8", className)}>
+    <div className={cn("justify-left flex flex-col gap-8", className)}>
       <div className="flex overflow-auto">
         <MethodTypeTab
           icon={<PlusIcon />}
@@ -93,7 +93,7 @@ function MethodTypeTab({
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex items-center justify-start gap-4 rounded-t border border-transparent border-b-0 p-6 opacity-70 lg:grow lg:last-of-type:rounded-br",
         "hover:border-grey-750 hover:bg-grey-750 hover:opacity-100 focus:border-grey-750 focus:bg-grey-750 focus:opacity-100",
         isSelected && "border-grey-750 bg-grey-850 opacity-100",
@@ -104,7 +104,7 @@ function MethodTypeTab({
     >
       <div className="text-lg text-primary">{cloneElement(icon, { className: "stroke-1" })}</div>
       <div
-        className={classNames(
+        className={cn(
           "hidden flex-col items-start justify-start gap-2 lg:flex",
           isSelected && "flex"
         )}
@@ -376,7 +376,7 @@ function AccountCreateMethodButton({
       type="button"
       disabled={disabled}
       onClick={handleClick}
-      className={classNames(
+      className={cn(
         "relative flex flex-col gap-12 rounded bg-white/5 p-10",
         disabled && "text-body-secondary opacity-40",
         !disabled && "cursor-pointer text-body hover:bg-white/10 focus:bg-white/10"
@@ -385,7 +385,7 @@ function AccountCreateMethodButton({
       <span className="w-full border-grey-800 border-b pb-3 text-start">{title}</span>
       <span className="flex items-center gap-2 pr-8 text-body-secondary text-sm">
         {networks?.map((network, i) => (
-          <span key={network} className={classNames(i + 1 < networks.length && "-mr-4")}>
+          <span key={network} className={cn(i + 1 < networks.length && "-mr-4")}>
             {networkChoices[network]}
           </span>
         ))}

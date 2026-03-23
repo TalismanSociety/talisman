@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -24,7 +24,7 @@ export const Message: FC<MessageProps> = ({ text, rows, className }) => {
       <textarea
         readOnly
         rows={rows}
-        className={classNames(
+        className={cn(
           "scrollable scrollable-600 bg-grey-800 text-body-secondary",
           "rounded p-6 text-left font-mono",
           className

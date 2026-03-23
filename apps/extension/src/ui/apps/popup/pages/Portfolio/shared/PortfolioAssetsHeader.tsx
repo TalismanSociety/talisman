@@ -20,7 +20,7 @@ import { useBalances } from "@ui/state/balances"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { usePortfolioBalances } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -40,7 +40,7 @@ const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
     <Tooltip placement="bottom">
       <TooltipTrigger
         onClick={canSendFunds ? sendFunds : undefined}
-        className={classNames(
+        className={cn(
           "flex h-16 w-16 flex-col items-center justify-center rounded-full text-body-secondary text-md",
           canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
         )}
@@ -139,7 +139,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
           </div>
           <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
-              <div className={classNames("truncate", account ? "" : "text-body-secondary")}>
+              <div className={cn("truncate", account ? "" : "text-body-secondary")}>
                 {account
                   ? (account.name ?? t("Unnamed Account"))
                   : folder
@@ -152,7 +152,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
                 signetUrl={getAccountSignetUrl(account)}
               />
             </div>
-            <div className={classNames("truncate", account ? "text-body-secondary" : "")}>
+            <div className={cn("truncate", account ? "text-body-secondary" : "")}>
               {account ? (
                 <Address address={formattedAddress} />
               ) : (

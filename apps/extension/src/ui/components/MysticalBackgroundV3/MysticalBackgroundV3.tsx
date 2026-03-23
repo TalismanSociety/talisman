@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type CSSProperties, memo, useLayoutEffect, useMemo, useRef } from "react"
 import { useMeasure } from "react-use"
 
@@ -28,7 +28,7 @@ export const MysticalBackgroundV3 = ({
   )
 
   return (
-    <div ref={refSize} className={classNames("overflow-hidden", className)} style={style}>
+    <div ref={refSize} className={cn("overflow-hidden", className)} style={style}>
       <CelestialArtifacts config={mergedConfig} size={size} />
     </div>
   )

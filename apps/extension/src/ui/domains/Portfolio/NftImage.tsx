@@ -1,5 +1,5 @@
 import imgUnknownNft from "@ui/theme/images/unknown-nft.svg?url"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { getSafeImageUrl } from "@ui/util/getSafeImageUrl"
 import { useState } from "react"
 
@@ -30,10 +30,7 @@ export const NftImage = ({
 
   return (
     <div
-      className={classNames(
-        "relative size-16 shrink-0 overflow-hidden rounded-sm bg-grey-800",
-        className
-      )}
+      className={cn("relative size-16 shrink-0 overflow-hidden rounded-sm bg-grey-800", className)}
     >
       {isLoading && !hasError && (
         <img src={imgUnknownNft} className="size-full shrink-0 animate-pulse" alt="Loading" />
@@ -41,7 +38,7 @@ export const NftImage = ({
       <img
         onLoad={handleLoad}
         onError={handleError}
-        className={classNames("size-full shrink-0", className)}
+        className={cn("size-full shrink-0", className)}
         src={imageUrl}
         alt={alt}
       />

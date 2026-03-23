@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -83,7 +83,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
         />
       </TooltipContent>
       <TooltipTrigger
-        className={classNames(
+        className={cn(
           "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
           className
         )}

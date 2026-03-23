@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 import { AccountIcon } from "./AccountIcon"
@@ -35,7 +35,7 @@ export const FormattedAddress: FC<{
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className={classNames(
+          className={cn(
             "inline-flex max-w-full items-baseline gap-[0.3em] overflow-hidden",
             className
           )}

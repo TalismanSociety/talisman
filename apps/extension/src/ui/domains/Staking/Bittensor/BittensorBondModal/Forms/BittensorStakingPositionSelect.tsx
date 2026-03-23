@@ -9,7 +9,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { classNames, cn } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { t } from "i18next"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -85,7 +85,7 @@ export const BittensorStakingPositionSelect = () => {
       <div className="flex size-full flex-col overflow-hidden">
         <div className="p-12 pt-0">
           <SearchInputControlled
-            containerClassName={classNames(
+            containerClassName={cn(
               "h-[2.25rem] w-full rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
               "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
               "@2xl:h-[2.75rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"

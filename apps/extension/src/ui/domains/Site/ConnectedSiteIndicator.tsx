@@ -1,4 +1,4 @@
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 import type { SiteConnectionStatus } from "./types"
@@ -9,7 +9,7 @@ export const ConnectedSiteIndicator: FC<{
 }> = ({ status, className }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex h-8 w-8 items-center justify-center rounded-full border-2",
         status === "connected" && "border-green-500/20",
         status === "disconnected" && "border-brand-orange/20",
@@ -18,7 +18,7 @@ export const ConnectedSiteIndicator: FC<{
       )}
     >
       <div
-        className={classNames(
+        className={cn(
           "h-4 w-4 rounded-full",
           status === "connected" && "bg-green-500",
           status === "disconnected" && "bg-brand-orange",

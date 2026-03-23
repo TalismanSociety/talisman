@@ -14,7 +14,7 @@ import {
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 import { t } from "i18next"
 import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"
@@ -41,7 +41,7 @@ const AppVersionButton: FC<{
     <button
       type="button"
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "group flex min-h-60 flex-col gap-5 rounded border bg-field p-8 text-left text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected
@@ -50,12 +50,7 @@ const AppVersionButton: FC<{
       )}
       disabled={disabled}
     >
-      <div
-        className={classNames(
-          "text-base group-hover:group-enabled:text-body",
-          selected && "text-body"
-        )}
-      >
+      <div className={cn("text-base group-hover:group-enabled:text-body", selected && "text-body")}>
         {title}
       </div>
       <div className="text-xs">{description}</div>
@@ -254,7 +249,7 @@ export const AddLedgerSelectNetwork = () => {
                       description={t("Supports multiple substrate networks")}
                       extra={
                         <span
-                          className={classNames(
+                          className={cn(
                             "rounded-[0.75rem] bg-green/10 px-4 py-1 text-green",
                             chain?.hasCheckMetadataHash ? "visible" : "invisible"
                           )}
@@ -289,7 +284,7 @@ export const AddLedgerSelectNetwork = () => {
             )}
           </>
         )}
-        <div className={classNames("mt-16 h-60", showConnect ? "visible" : "invisible")}>
+        <div className={cn("mt-16 h-60", showConnect ? "visible" : "invisible")}>
           {showConnect && platform === "polkadot" && chainId && (
             <>
               {substrateAppType === AddSubstrateLedgerAppType.Legacy && (

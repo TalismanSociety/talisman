@@ -7,7 +7,7 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -134,7 +134,7 @@ const NetworkFilterRow: FC<{
     <button
       type="button"
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
         selected && "bg-grey-700!"

@@ -10,7 +10,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { Message } from "@ui/domains/Sign/Message"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -134,10 +134,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         <RiskAnalysisPillButton />
         <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>
-      <Message
-        className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
-        text={text}
-      />
+      <Message className={cn("w-full grow", isTypedData && "whitespace-pre text-xs")} text={text} />
 
       {isInvalidVerifyingContract && (
         <SignAlertMessage type="error" className="mt-8">

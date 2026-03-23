@@ -4,7 +4,7 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSetting } from "@ui/state/settings"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
@@ -94,7 +94,7 @@ const RiskAnalysisCriticalPane: FC<{
     <Transition show={isOpen}>
       <TransitionChild
         as="div"
-        className={classNames(
+        className={cn(
           "fixed top-0 left-0 z-10 h-150 w-100",
           "flex flex-col items-center gap-8 p-12",
           "bg-linear-to-b from-[#411D1D] to-black-primary"

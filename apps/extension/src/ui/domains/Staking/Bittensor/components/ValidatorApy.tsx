@@ -1,5 +1,5 @@
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,9 +25,5 @@ export const ValidatorApy = () => {
     return <div className="text-alert-warn">{t("Unable to fetch APY data")}</div>
   }
 
-  return (
-    <span className={classNames(apy ? "text-alert-success" : "text-body-secondary")}>
-      {display}
-    </span>
-  )
+  return <span className={cn(apy ? "text-alert-success" : "text-body-secondary")}>{display}</span>
 }

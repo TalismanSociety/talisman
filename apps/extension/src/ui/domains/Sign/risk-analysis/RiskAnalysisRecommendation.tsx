@@ -5,7 +5,7 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { classNames } from "@ui/util/cn"
+import { cn } from "@ui/util/cn"
 
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -101,14 +101,10 @@ const RiskAnalysisRecommendationInner: FC<{
 
   return (
     <div
-      className={classNames(
-        "flex w-full gap-8 rounded p-4 leading-paragraph",
-        bgClassName,
-        textClassName
-      )}
+      className={cn("flex w-full gap-8 rounded p-4 leading-paragraph", bgClassName, textClassName)}
     >
       <div className="flex flex-col justify-center">
-        <div className={classNames("rounded-full p-4", iconClassName)}>
+        <div className={cn("rounded-full p-4", iconClassName)}>
           <Icon className="h-12 w-12" />
         </div>
       </div>
