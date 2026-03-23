@@ -1,7 +1,7 @@
 import type { IdenticonType } from "@core/domains/accounts/types"
 import type { Address } from "@core/types/base"
-import { classNames } from "@talismn/util"
 import { useAccounts } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -17,7 +17,7 @@ const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onCl
   return (
     <button
       type="button"
-      className={classNames("h-9.5 w-9.5 rounded-full p-1.5", selected && "bg-primary")}
+      className={cn("h-9.5 w-9.5 rounded-full p-1.5", selected && "bg-primary")}
       onClick={onClick}
     >
       <AccountIcon className="text-xl" address={address} type={type} />
@@ -51,7 +51,7 @@ export const AvatarTypeSelect: FC<AvatarTypeSelectProps> = ({
   )
 
   return (
-    <div className={classNames("inline-flex gap-4", className)}>
+    <div className={cn("inline-flex gap-4", className)}>
       <AvatarOption
         address={address}
         type="talisman-orb"

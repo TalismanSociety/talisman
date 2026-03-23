@@ -1,6 +1,6 @@
 import type { Token } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { cn } from "@ui/util/cn"
 import type { ReactNode } from "react"
 import { Suspense } from "react"
 
@@ -28,7 +28,7 @@ export const BittensorAssetAccountSummary = ({
 }: BittensorAssetAccountSummaryProps) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph",
         className
       )}

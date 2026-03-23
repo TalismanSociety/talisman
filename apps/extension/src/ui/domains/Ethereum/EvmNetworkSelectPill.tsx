@@ -1,11 +1,11 @@
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { Suspense, useMemo } from "react"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
@@ -43,7 +43,7 @@ export const EvmNetworkSelectPill = () => {
           >
             <Suspense>
               <NetworkLogo
-                className={classNames("text-[1.75rem] transition-opacity")} // flickering hack
+                className={cn("text-[1.75rem] transition-opacity")} // flickering hack
                 networkId={evmNetworkId}
               />
               <ChevronDownIcon className="shrink-0 text-base" />

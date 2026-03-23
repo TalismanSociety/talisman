@@ -1,8 +1,8 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 
 type Props = { addresses?: string[]; className?: string; max?: number }
@@ -23,7 +23,7 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
   )
 
   return (
-    <div className={classNames("shrink-0 whitespace-nowrap pl-[0.25em]", className)}>
+    <div className={cn("shrink-0 whitespace-nowrap pl-[0.25em]", className)}>
       {visibleAccounts.map((account) => (
         <AccountsLogoStackItem key={account.address} account={account} />
       ))}

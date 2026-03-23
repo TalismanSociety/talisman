@@ -1,5 +1,6 @@
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { useMemo } from "react"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
@@ -58,7 +59,7 @@ export const RiskAnalysisAssetImage = (props: AssetImageProps) => {
       {content}
 
       <div
-        className={classNames(
+        className={cn(
           "absolute -top-4 -right-4 h-10 w-10 rounded-full p-1",
           props.side === "in" && "bg-[#16541D]",
           props.side === "out" && "bg-[#262C54]"

@@ -1,12 +1,13 @@
 import type { NftCollection, NftData } from "@core/domains/nfts/exports"
 import { StarIcon } from "@talismn/icons"
-import { classNames, isNotNil } from "@talismn/util"
+import { isNotNil } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useIsFavoriteNft, useNfts } from "@ui/state/nfts"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useSetting } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
@@ -128,10 +129,7 @@ const NftCollectionRowInner: FC<{
           <span className="font-bold">{nfts.length}</span> {nfts.length > 1 ? t("NFTs") : t("NFT")}
         </div>
         <div
-          className={classNames(
-            "text-body-secondary",
-            value === null && "select-none text-transparent"
-          )}
+          className={cn("text-body-secondary", value === null && "select-none text-transparent")}
         >
           {value !== null ? <Fiat amount={value} forceCurrency="usd" noCountUp /> : "N/A"}
         </div>

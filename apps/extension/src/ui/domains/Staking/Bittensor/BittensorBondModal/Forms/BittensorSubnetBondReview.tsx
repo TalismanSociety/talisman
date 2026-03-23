@@ -1,6 +1,5 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon, InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -12,6 +11,7 @@ import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/M
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { cn } from "@ui/util/cn"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -243,7 +243,7 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 text-xs">
             <div className="whitespace-nowrap">{t("Price Impact")}</div>
             <div
-              className={classNames(
+              className={cn(
                 "text-body",
                 !!priceImpact && priceImpact >= HIGH_PRICE_IMPACT && "text-orange-500",
                 !!priceImpact && priceImpact >= VERY_HIGH_PRICE_IMPACT && "text-red-500"
@@ -326,7 +326,7 @@ export const BittensorSubnetBondReview = () => {
               {(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled) && (
                 <button
                   type="button"
-                  className={classNames(
+                  className={cn(
                     "rounded-[43px] bg-[#D5FF5C]/10 px-3 py-1",
                     !isSeekDrawerEnabled && "cursor-default"
                   )}

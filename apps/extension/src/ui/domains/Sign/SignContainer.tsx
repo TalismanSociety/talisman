@@ -1,7 +1,7 @@
-import { classNames } from "@talismn/util"
 import { FadeIn } from "@ui/components/FadeIn"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
@@ -28,7 +28,7 @@ export const SignContainer: FC<SignContainerProps> = ({
   const alertContainer = document.getElementById("sign-alerts-inject") as Element
 
   return (
-    <FadeIn className={classNames("flex h-full flex-col pt-8", className)}>
+    <FadeIn className={cn("flex h-full flex-col pt-8", className)}>
       {header}
       <h1 className="mt-0 mb-12 font-bold font-sans text-body text-lg leading-base">{title}</h1>
       <div className="flex w-full flex-col items-center gap-4 py-8 [&>div]:max-w-full [&>div]:overflow-x-hidden">

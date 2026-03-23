@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,12 +25,7 @@ export const MsgSignButton: FC<MsgSignButtonProps> = ({
   const { t } = useTranslation()
 
   if (!payload || disabled)
-    return (
-      <MsgSignButtonFallback
-        label={label ?? t("Sign")}
-        className={classNames("w-full", className)}
-      />
-    )
+    return <MsgSignButtonFallback label={label ?? t("Sign")} className={cn("w-full", className)} />
 
   switch (payload.platform) {
     case "polkadot":
@@ -67,7 +62,7 @@ export const MsgSignButton: FC<MsgSignButtonProps> = ({
       return (
         <MsgSignButtonFallback
           label="Unsupported message type"
-          className={classNames("w-full", className)}
+          className={cn("w-full", className)}
         />
       )
   }

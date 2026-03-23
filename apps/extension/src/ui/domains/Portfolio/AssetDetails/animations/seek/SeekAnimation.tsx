@@ -1,4 +1,4 @@
-import { cn } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 

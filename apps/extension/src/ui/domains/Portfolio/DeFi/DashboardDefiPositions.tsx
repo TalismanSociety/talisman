@@ -1,5 +1,5 @@
 import type { DefiPosition } from "@core/domains/defi/exports"
-import { classNames, type Loadable, type LoadableStatus } from "@talismn/util"
+import type { Loadable, LoadableStatus } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FadeIn } from "@ui/components/FadeIn"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -11,6 +11,7 @@ import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useDefiPositionsDisplay } from "@ui/state/defi"
 import { usePortfolioSelectedAccounts } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -135,7 +136,7 @@ const ToggleCurrency = () => {
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-grey-750 bg-grey-800 text-center text-body-secondary text-sm transition-colors duration-100 ease-out hover:bg-grey-700",
         currencyConfig[currency]?.symbol?.length === 2 && "text-tiny",
         currencyConfig[currency]?.symbol?.length > 2 && "text-[0.5rem]"
@@ -179,7 +180,7 @@ const DefiPositionRow: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-16.5 w-full items-center gap-8 overflow-hidden rounded-sm bg-grey-850 px-8 hover:bg-grey-800"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
@@ -204,7 +205,7 @@ const DefiPositionRow: FC<{
               <PortfolioAccount address={position.address} />
             )}
           </div>
-          <div className={classNames(status === "loading" && "animate-pulse")}>
+          <div className={cn(status === "loading" && "animate-pulse")}>
             <PositionTotal position={position} noCountUp={noCountUp} />
           </div>
         </div>

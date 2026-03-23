@@ -1,6 +1,5 @@
 import { IS_FIREFOX } from "@common/constants"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { classNames } from "@talismn/util"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
@@ -9,6 +8,7 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import imgPassword from "@ui/theme/images/onboard_password_character.png"
+import { cn } from "@ui/util/cn"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -147,11 +147,7 @@ export const PasswordPage = () => {
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
             <div className="flex flex-col pb-12">
               <div className="mt-12 mb-4 flex h-[1.2em] items-center justify-between text-sm">
-                <div
-                  className={classNames(
-                    password ? "text-body-secondary" : "text-body-secondary/50"
-                  )}
-                >
+                <div className={cn(password ? "text-body-secondary" : "text-body-secondary/50")}>
                   {t("Password strength")}: <PasswordStrength password={password} />
                 </div>
                 <div>
@@ -186,7 +182,7 @@ export const PasswordPage = () => {
               fullWidth
               primary
               type="submit"
-              className={classNames(!isValid && "opacity-70")}
+              className={cn(!isValid && "opacity-70")}
               disabled={!isValid}
               processing={isSubmitting}
               data-testid="onboarding-password-confirm-button"

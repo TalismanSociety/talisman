@@ -1,5 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -19,24 +20,21 @@ export const StakingFeeEstimate: FC<{
   return (
     <>
       {error ? (
-        <div className={classNames("truncate text-alert-error", className)}>
+        <div className={cn("truncate text-alert-error", className)}>
           {t("Failed to estimate fee")}
         </div>
       ) : (plancks || plancks === 0n) && tokenId ? (
         <TokensAndFiat
           tokenId={tokenId}
           planck={plancks}
-          className={classNames("text-body-secondary", isLoading && "animate-pulse", className)}
-          tokensClassName={classNames("text-body", tokensClassName)}
+          className={cn("text-body-secondary", isLoading && "animate-pulse", className)}
+          tokensClassName={cn("text-body", tokensClassName)}
           noCountUp={noCountUp}
           noFiat={noFiat}
         />
       ) : isLoading ? (
         <div
-          className={classNames(
-            "animate-pulse rounded-xs bg-body-disabled text-body-disabled",
-            className
-          )}
+          className={cn("animate-pulse rounded-xs bg-body-disabled text-body-disabled", className)}
         >
           0.0000 TKN ($0.00)
         </div>

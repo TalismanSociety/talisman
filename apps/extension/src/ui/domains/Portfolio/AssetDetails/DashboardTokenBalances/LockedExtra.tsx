@@ -1,10 +1,10 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -58,7 +58,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
         ) : (
           <>
-            <div className={classNames(isLoading && "animate-pulse transition-opacity")}>
+            <div className={cn(isLoading && "animate-pulse transition-opacity")}>
               <div className="flex items-center gap-2">
                 <ZapOffIcon className="shrink-0 text-sm" />
                 <div>{t("Unbonding")}</div>

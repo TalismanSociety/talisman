@@ -1,7 +1,7 @@
 import { type EvmUniswapV2Token, evmErc20TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useToken } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 export const TokenLogo: FC<{
@@ -29,7 +29,7 @@ const LpTokenLogo: FC<{ token: EvmUniswapV2Token; className?: string }> = ({
   const token1 = useToken(evmErc20TokenId(token.networkId, token.tokenAddress1))
 
   return (
-    <div className={classNames("relative block aspect-square w-[1em] shrink-0", className)}>
+    <div className={cn("relative block aspect-square w-[1em] shrink-0", className)}>
       <AssetLogo
         tokenId={token0?.id}
         url={token0?.logo}

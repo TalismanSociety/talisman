@@ -1,7 +1,6 @@
 import { log } from "@common/log"
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import {
   ContextMenu,
@@ -20,6 +19,7 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nfts"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
 import { toPairs } from "lodash"
@@ -323,10 +323,10 @@ const ScrollableArea: FC<
   return (
     <div
       ref={refContainer}
-      className={classNames("scrollable scrollable-700 w-full grow overflow-y-auto", className)}
+      className={cn("scrollable scrollable-700 w-full grow overflow-y-auto", className)}
       style={style}
     >
-      <div ref={refContent} className={classNames("w-full", innerClassName)}>
+      <div ref={refContent} className={cn("w-full", innerClassName)}>
         {children}
       </div>
     </div>
@@ -342,7 +342,7 @@ const FavoriteButton: FC<{ nftId: string }> = ({ nftId }) => {
 
   return (
     <IconButton onClick={handleClick}>
-      <StarIcon className={classNames(isFavorite && "fill-[#D5FF5C] stroke-[#D5FF5C]")} />
+      <StarIcon className={cn(isFavorite && "fill-[#D5FF5C] stroke-[#D5FF5C]")} />
     </IconButton>
   )
 }
@@ -371,7 +371,7 @@ const NftVideo: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
 
   if (!nft.videoUrl) return null
   return (
-    <div className={classNames("relative", className)}>
+    <div className={cn("relative", className)}>
       <video
         ref={refPlayer}
         className="absolute size-full"
@@ -410,7 +410,7 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: legacy
     // biome-ignore lint/a11y/noStaticElementInteractions: legacy
-    <div className={classNames("relative", className)} onClick={handleBgClick}>
+    <div className={cn("relative", className)} onClick={handleBgClick}>
       <NftImage src={nft.imageUrl} className="absolute size-full" />
       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
     </div>
@@ -454,7 +454,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "h-full w-full",
         "@2xl:overflow-hidden",
         "bg-black shadow-xs",
@@ -472,7 +472,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         </Tooltip>
       </div>
       <div
-        className={classNames(
+        className={cn(
           "flex h-full grow flex-col overflow-y-auto font-light",
           "@2xl:overflow-hidden"
         )}
@@ -546,7 +546,7 @@ const NftDialogInner: FC<{
     <Modal
       isOpen={isOpen}
       onDismiss={handleDismiss}
-      className={classNames(
+      className={cn(
         "@container h-125 w-100 overflow-hidden bg-black",
         IS_POPUP ? "h-full w-full" : "lg:w-250 lg:rounded-lg"
       )}

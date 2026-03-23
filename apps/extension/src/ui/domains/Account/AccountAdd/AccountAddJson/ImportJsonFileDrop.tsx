@@ -1,5 +1,6 @@
 import { FileCheckIcon, FilePlusIcon, FileXIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { type FC, type MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { type DropzoneOptions, useDropzone } from "react-dropzone"
 import { Trans, useTranslation } from "react-i18next"
@@ -65,7 +66,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
   return (
     <div
       {...getRootProps()}
-      className={classNames(
+      className={cn(
         "flex h-80 cursor-pointer flex-col items-center gap-8 rounded border border-grey-700 border-dashed p-8 hover:bg-grey-900",
         isDragAccept && "bg-primary/10",
         (isInvalid || isDragReject) && "bg-alert-warn/10"

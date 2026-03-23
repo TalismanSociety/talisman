@@ -2,7 +2,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import type { TokenRates } from "@talismn/token-rates"
-import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -10,6 +10,7 @@ import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -20,6 +21,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
@@ -278,7 +280,7 @@ export const AmountEdit: FC<{
           />
         )}
       </div>
-      <div className={classNames("mt-4 flex max-w-full items-center justify-center gap-4")}>
+      <div className={cn("mt-4 flex max-w-full items-center justify-center gap-4")}>
         {tokenRates && (
           <>
             {!isTokenEdit ? (
@@ -295,11 +297,7 @@ export const AmountEdit: FC<{
             </PillButton>
           </>
         )}
-        <PillButton
-          onClick={onMaxClick}
-          size="xs"
-          className={classNames("h-11 rounded-sm px-4! py-0!")}
-        >
+        <PillButton onClick={onMaxClick} size="xs" className={cn("h-11 rounded-sm px-4! py-0!")}>
           {t("Max")}
         </PillButton>
       </div>

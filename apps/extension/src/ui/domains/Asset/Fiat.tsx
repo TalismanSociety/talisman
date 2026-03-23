@@ -1,9 +1,10 @@
 import type { BalanceFormatter } from "@talismn/balances"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames, type Prettify } from "@talismn/util"
+import type { Prettify } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { useFiatFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@ui/util/formatFiat"
 import React, { type FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
@@ -47,7 +48,7 @@ export const Fiat = ({
   return (
     <span
       ref={refReveal}
-      className={classNames(
+      className={cn(
         "fiat whitespace-nowrap",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",

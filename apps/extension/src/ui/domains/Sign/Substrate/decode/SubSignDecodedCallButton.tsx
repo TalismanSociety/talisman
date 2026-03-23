@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { cn } from "@ui/util/cn"
 import type { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { SubSignDecodedCallButtonContent } from "./SubSignDecodedCallButtonContent"
 import { SubSignDecodedCallDrawer } from "./SubSignDecodedCallDrawer"
@@ -12,7 +12,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "border-grey-700 bg-grey-850 text-body-secondary hover:bg-grey-800",
         "group left-align flex w-full items-center gap-4 overflow-x-hidden truncate rounded border pr-4 pl-8 text-left font-normal",
         mode === "multiline" && "py-4 leading-paragraph",
@@ -21,7 +21,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
       onClick={onClick}
     >
       <div
-        className={classNames(
+        className={cn(
           "grow align-baseline",
           mode === "compact" && "truncate",
           mode === "multiline" && "line-clamp-5 whitespace-normal"

@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { type CtaButtonSize, getContainerClassName } from "@ui/components/CtaButton"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, type SVGProps, useMemo } from "react"
 
 export const Setting: FC<{
@@ -29,18 +29,16 @@ export const Setting: FC<{
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex w-full items-center gap-8 rounded-sm bg-grey-850 px-8 text-body-secondary",
         containerClassName,
         className
       )}
     >
-      {IconLeft && <IconLeft className={classNames("shrink-0 text-body", iconLeftClassName)} />}
-      <div className={classNames("flex grow flex-col items-start", contentClassName)}>
-        <div className={classNames("text-body", titleClassName)}>{title}</div>
-        <div className={classNames("text-left text-body-secondary", subtitleClassName)}>
-          {subtitle}
-        </div>
+      {IconLeft && <IconLeft className={cn("shrink-0 text-body", iconLeftClassName)} />}
+      <div className={cn("flex grow flex-col items-start", contentClassName)}>
+        <div className={cn("text-body", titleClassName)}>{title}</div>
+        <div className={cn("text-left text-body-secondary", subtitleClassName)}>{subtitle}</div>
       </div>
       {children}
       {IconRight && <IconRight className="shrink-0 text-lg" />}

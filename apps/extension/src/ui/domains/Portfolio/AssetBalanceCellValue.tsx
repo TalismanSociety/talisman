@@ -1,7 +1,7 @@
 import { LockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { cn } from "@ui/util/cn"
 import type BigNumber from "bignumber.js"
 import type { ReactNode } from "react"
 
@@ -36,13 +36,13 @@ export const AssetBalanceCellValue = ({
   return (
     <WithTooltip tooltip={tooltip}>
       <div
-        className={classNames(
+        className={cn(
           "flex h-16.5 flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
           className
         )}
       >
         <div
-          className={classNames(
+          className={cn(
             "flex items-center justify-end gap-2",
             locked ? "text-body-secondary" : "text-body"
           )}

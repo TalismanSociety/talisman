@@ -1,8 +1,8 @@
 import { Icon } from "@iconify/react/dist/iconify.js"
 import { PlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Drawer } from "@ui/components/Drawer"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { getRampsCurrency, type RampsCurrency } from "./currencies"
@@ -35,7 +35,7 @@ export const RampsCurrencyPickerButton: FC<{
       <button
         type="button"
         onClick={handleOpen}
-        className={classNames(
+        className={cn(
           "flex h-full w-35 items-center gap-4 rounded-[12px] border border-grey-750 bg-grey-800 px-4 py-3 focus-visible:border-grey-600",
           "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale"
         )}

@@ -1,8 +1,8 @@
 import { XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,7 +19,7 @@ const ModalHeader = () => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex h-32 w-full shrink-0 items-center justify-between px-10 text-body-secondary",
         step === "follow-up" ? "invisible" : "visible"
       )}
@@ -46,7 +46,7 @@ const ModalContent = () => {
 const Content = () => (
   <div
     id="StakingModalDialog" // acts as containerId for sub modals
-    className={classNames(
+    className={cn(
       "relative flex h-150 max-h-dvh w-100 max-w-dvw flex-col overflow-hidden bg-black",
       !IS_POPUP && "rounded border border-grey-850"
     )}

@@ -1,6 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, TalismanHandIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
-import { cn, planckToTokens } from "@talismn/util"
+import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   ContextMenu,
@@ -15,6 +15,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { EarnTypeBadge } from "@ui/domains/Earn/components/EarnTypeBadge"
 import { useToken } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

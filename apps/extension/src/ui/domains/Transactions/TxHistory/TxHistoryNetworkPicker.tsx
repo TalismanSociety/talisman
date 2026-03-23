@@ -6,13 +6,13 @@ import {
   GlobeIcon,
   XIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -38,7 +38,7 @@ export const TxHistoryNetworkPicker: FC<{
       containerId="main"
       isOpen={isOpen}
       onDismiss={onDismiss}
-      className={classNames("relative z-50", IS_POPUP ? "size-full" : "h-150 w-100")}
+      className={cn("relative z-50", IS_POPUP ? "size-full" : "h-150 w-100")}
     >
       <div className="flex size-full grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
@@ -107,7 +107,7 @@ const NetworkRow: FC<{
     <button
       type="button"
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
         selected && "bg-grey-700!"

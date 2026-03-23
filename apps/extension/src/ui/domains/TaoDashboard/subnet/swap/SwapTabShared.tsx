@@ -1,7 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { cn } from "@ui/util/cn"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,4 +1,4 @@
-import { cn } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 export const TokenAndAmountContainer: FC<{

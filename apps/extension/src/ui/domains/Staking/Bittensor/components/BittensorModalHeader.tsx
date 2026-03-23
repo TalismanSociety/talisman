@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 export const BittensorStakingModalHeader: FC<{

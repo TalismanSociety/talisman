@@ -3,18 +3,20 @@ import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames, formatPrice, isNotNil, isTruthy } from "@talismn/util"
+import { formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { IconButton } from "@ui/components/IconButton"
 import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@ui/components/Popover"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates, useTokenRatesMap } from "@ui/state/tokenRates"
+import { cn } from "@ui/util/cn"
 import ChartJs, {
   type ActiveElement,
   type ChartComponentLike,
   type ChartEvent,
 } from "chart.js/auto"
+
 import { uniq } from "lodash-es"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -105,7 +107,7 @@ export const AssetPriceChart: FC<{
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm bg-black-secondary",
         variant === "small" && "h-42",
         variant === "large" && "h-96",
@@ -113,7 +115,7 @@ export const AssetPriceChart: FC<{
       )}
     >
       <div
-        className={classNames(
+        className={cn(
           "flex shrink-0 items-center justify-between",
           variant === "small" && "h-20 px-4",
           variant === "large" && "h-24 px-5"
@@ -128,7 +130,7 @@ export const AssetPriceChart: FC<{
         <div className="flex items-center gap-4">
           {isValid && (
             <div
-              className={classNames(
+              className={cn(
                 "font-bold text-body-secondary",
                 variant === "small" && "text-base",
                 variant === "large" && "text-[1.25rem]",
@@ -166,7 +168,7 @@ export const AssetPriceChart: FC<{
       )}
       {!isValid && (
         <div
-          className={classNames(
+          className={cn(
             "absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center text-body-inactive",
             variant === "small" && "text-base",
             variant === "large" && "text-lg"
@@ -460,7 +462,7 @@ const TimespanSelect: FC<{
 }> = ({ value, variant, onChange, className }) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex w-full shrink-0 items-center justify-center gap-2 font-bold text-body-secondary",
         variant === "small" && "h-16",
         variant === "large" && "h-20",
@@ -471,7 +473,7 @@ const TimespanSelect: FC<{
         <button
           key={key}
           type="button"
-          className={classNames(
+          className={cn(
             "rounded-[0.375rem] px-3 py-1.5 hover:bg-white/5 hover:text-white",
             "pointer-events-auto",
             variant === "small" && "text-tiny",
@@ -500,7 +502,7 @@ const TokenSelect: FC<{
   if (tokens.length === 1)
     return (
       <div
-        className={classNames(
+        className={cn(
           "flex items-center gap-2 p-2 font-bold",
           variant === "small" && "text-base",
           variant === "large" && "text-[1.25rem]"
@@ -520,7 +522,7 @@ const TokenSelect: FC<{
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={classNames(
+          className={cn(
             "group rounded bg-grey-850 hover:bg-grey-800",
             "flex items-center gap-2 p-2 font-bold",
             variant === "small" && "text-base",
@@ -569,7 +571,7 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
     <button
       type="button"
       onClick={handleClick}
-      className={classNames(
+      className={cn(
         "h-20 rounded-xs p-6 px-3 text-left focus-visible:bg-grey-800 enabled:hover:bg-grey-800 disabled:text-body-disabled",
         "flex w-full items-center justify-between gap-16"
       )}
@@ -585,9 +587,7 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
       </div>
       <div className="flex gap-4 font-bold text-body">
         <AssetPrice tokenId={token.id} balances={null} noTooltip noChange className="text-sm" />
-        <CheckIcon
-          className={classNames("text-base text-primary", selected ? "visible" : "invisible")}
-        />
+        <CheckIcon className={cn("text-base text-primary", selected ? "visible" : "invisible")} />
       </div>
     </button>
   )

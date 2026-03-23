@@ -1,11 +1,10 @@
 import type { Balance } from "@talismn/balances"
-import { classNames } from "@talismn/util"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
@@ -34,7 +33,7 @@ export const TokenBalancesUniswapV2Row = ({
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex w-full flex-col justify-center gap-8 bg-black-secondary px-7 py-6",
         isLastBalance && "rounded-b-sm"
       )}
@@ -52,7 +51,7 @@ export const TokenBalancesUniswapV2Row = ({
           </div>
           <div className="grow font-bold text-white">{symbol}</div>
           <div
-            className={classNames(
+            className={cn(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}

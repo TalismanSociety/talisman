@@ -1,6 +1,6 @@
-import { classNames } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { useToken } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -13,7 +13,7 @@ export const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, 
   if (!tokenId || !token) return null
 
   return (
-    <PillButton className={classNames("h-16 px-4! py-2!", className)} onClick={onClick}>
+    <PillButton className={cn("h-16 px-4! py-2!", className)} onClick={onClick}>
       <div className="flex flex-nowrap items-center gap-4 text-base text-body">
         <div className="shrink-0">
           <TokenLogo className="text-lg!" tokenId={tokenId} />

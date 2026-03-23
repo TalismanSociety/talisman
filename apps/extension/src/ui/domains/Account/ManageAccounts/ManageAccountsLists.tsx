@@ -1,8 +1,8 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -46,7 +46,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
   }, [portfolioUiTree, watchedUiTree, search, accountsMap])
 
   return (
-    <div className={classNames("@container", className)}>
+    <div className={cn("@container", className)}>
       {!!watchedUiTree.length && <Separator icon={TalismanHandIcon} label={t("My portfolio")} />}
       <ManageAccountsList
         accounts={accounts}

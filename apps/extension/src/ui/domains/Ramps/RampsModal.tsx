@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
+import { cn } from "@ui/util/cn"
 
 import { RampsFormRouter } from "./RampsFormRouter"
 import { useRampsModal } from "./useRampsModal"
@@ -12,7 +12,7 @@ export const RampsModal = () => {
     <Modal
       isOpen={isOpen}
       onDismiss={close}
-      className={classNames(
+      className={cn(
         "h-150 w-100 overflow-hidden border-grey-800 bg-black shadow-xs",
         window.location.pathname === "/popup.html"
           ? "max-h-full max-w-full"

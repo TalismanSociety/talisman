@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   type FC,
@@ -23,7 +23,7 @@ const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
   return (
     <div
       {...props}
-      className={classNames(
+      className={cn(
         "flex w-full items-center gap-4 rounded border border-transparent bg-field px-12 font-light text-grey-300 text-md leading-none focus-within:border-grey-600",
         small ? "h-24" : "h-28",
         className
@@ -54,7 +54,7 @@ export const FormFieldInputText = forwardRef<HTMLInputElement, FormFieldInputTex
           data-lpignore
           ref={ref}
           {...props}
-          className={classNames(
+          className={cn(
             "h-full min-w-0 grow bg-transparent placeholder:text-body-disabled focus:text-body focus-visible:outline-hidden disabled:text-body-disabled",
             props.className
           )}

@@ -1,12 +1,12 @@
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { useToken } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { type ReactNode, Suspense } from "react"
 
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
@@ -35,9 +35,9 @@ export const TokenBalancesList = ({
   if (!token) return null
 
   return (
-    <div className={classNames("text-body-secondary text-sm")}>
+    <div className={cn("text-body-secondary text-sm")}>
       <div
-        className={classNames(
+        className={cn(
           "flex w-full items-center gap-4 overflow-hidden border-transparent bg-grey-800 px-7 py-6",
           detailRowsLength ? "rounded-t-sm" : "rounded"
         )}

@@ -1,6 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { copyAddress } from "@ui/util/copyAddress"
 import { type FC, useCallback, useMemo } from "react"
 
@@ -31,7 +32,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, classNa
     <button
       type="button"
       onClick={handleClick}
-      className={classNames(
+      className={cn(
         "inline-block max-w-full rounded-3xl bg-grey-850 px-4 text-body hover:bg-grey-800",
         className
       )}

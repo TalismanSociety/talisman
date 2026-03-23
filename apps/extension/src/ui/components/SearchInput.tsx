@@ -1,10 +1,10 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import {
   type FormFieldInputContainerProps,
   FormFieldInputText,
 } from "@ui/components/FormFieldInputText"
 import { IconButton } from "@ui/components/IconButton"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   forwardRef,
@@ -86,7 +86,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     const containerProps = useMemo(
       () => ({
         small: small === undefined ? INPUT_CONTAINER_PROPS.small : small,
-        className: classNames(INPUT_CONTAINER_PROPS.className, containerClassName),
+        className: cn(INPUT_CONTAINER_PROPS.className, containerClassName),
       }),
       [containerClassName, small]
     )
@@ -101,15 +101,12 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     return (
       <FormFieldInputText
         ref={internalRef}
-        className={classNames("text-base", className)}
+        className={cn("text-base", className)}
         containerProps={containerProps}
         before={<SearchIcon className="shrink-0 text-body-disabled" />}
         after={
           after ?? (
-            <IconButton
-              onClick={handleClear}
-              className={classNames(search ? "visible" : "invisible")}
-            >
+            <IconButton onClick={handleClear} className={cn(search ? "visible" : "invisible")}>
               <XIcon />
             </IconButton>
           )

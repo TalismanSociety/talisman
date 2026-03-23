@@ -1,6 +1,6 @@
-import { cn } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBittensorValidator } from "@ui/state/bittensor"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import type { FC } from "react"
 

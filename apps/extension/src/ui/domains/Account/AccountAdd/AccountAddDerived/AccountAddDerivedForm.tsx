@@ -8,7 +8,6 @@ import type { RequestAddAccountDerive } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { type AccountPlatform, isValidDerivationPath, type KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import {
@@ -28,6 +27,7 @@ import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSele
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useMnemonics } from "@ui/state/mnemonics"
+import { cn } from "@ui/util/cn"
 import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -86,7 +86,7 @@ const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
         </button>
       </div>
       {/* enlarge the area or it would hide focus ring on the inputs */}
-      <Accordion isOpen={isOpen} className={classNames(isOpen && "-m-1 p-1")}>
+      <Accordion isOpen={isOpen} className={cn(isOpen && "-m-1 p-1")}>
         {children}
       </Accordion>
     </div>
@@ -271,7 +271,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         )}
 
         <div
-          className={classNames(
+          className={cn(
             "flex flex-col gap-8 transition-opacity",
             platform ? "opacity-100" : "opacity-0"
           )}
@@ -309,7 +309,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
               {t("Custom derivation path")}
             </Checkbox>
             <FormFieldContainer
-              className={classNames(
+              className={cn(
                 !isCustomDerivationPath && "block cursor-not-allowed select-none opacity-50"
               )}
               error={errors.derivationPath?.message}

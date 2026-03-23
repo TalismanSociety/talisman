@@ -130,7 +130,8 @@
     "viem": "^2.27.3",
     "webfontloader": "^1.6.28",
     "yup": "1.4.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "6.0.3",

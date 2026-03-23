@@ -8,7 +8,6 @@ import {
   PolkadotVaultIcon,
   SecretIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import {
@@ -26,6 +25,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useMnemonics } from "@ui/state/mnemonics"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -151,7 +151,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
       <button
         type="button"
         onClick={toggle}
-        className={classNames(
+        className={cn(
           "flex h-16.25 w-full items-center gap-6 rounded-sm px-8 text-left text-body-secondary hover:text-body",
           mnemonic.confirmed
             ? "bg-grey-850 hover:bg-grey-800"
@@ -252,9 +252,7 @@ const BackupReminder: FC = () => {
 
   return (
     <div
-      className={classNames(
-        "mb-8 flex w-full items-center gap-4 rounded-sm border border-grey-500 p-4"
-      )}
+      className={cn("mb-8 flex w-full items-center gap-4 rounded-sm border border-grey-500 p-4")}
     >
       <div className="rounded-full bg-primary/10 p-3">
         <AlertCircleIcon className="text-primary-500 text-sm" />

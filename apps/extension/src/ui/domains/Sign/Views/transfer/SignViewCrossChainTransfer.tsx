@@ -2,7 +2,6 @@ import { type Address, BalanceFormatter } from "@talismn/balances"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import type { TokenRates } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -12,6 +11,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,7 +27,7 @@ const FormattedAddress = ({ address, className }: { address: string; className?:
 
   return (
     <Tooltip>
-      <TooltipTrigger className={classNames("flex items-center gap-2", className)}>
+      <TooltipTrigger className={cn("flex items-center gap-2", className)}>
         <AccountIcon address={address} className="shrink-0 text-[1.25rem]" />
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
       </TooltipTrigger>

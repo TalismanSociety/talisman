@@ -1,11 +1,11 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { cn } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 
 export const AccountDisplay: FC<{

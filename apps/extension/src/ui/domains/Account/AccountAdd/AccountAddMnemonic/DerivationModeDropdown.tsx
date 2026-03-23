@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { Dropdown } from "@ui/components/Dropdown"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -46,7 +46,7 @@ export const DerivationModeDropdown: FC<{
       propertyKey="mode"
       disabled={disabled}
       onChange={handleChange}
-      className={classNames("group", className)}
+      className={cn("group", className)}
       buttonClassName="h-28 bg-field px-12 group-hover:enabled:text-grey-300! disabled:text-body-disabled"
       optionClassName="h-28 bg-field px-12"
       value={current}

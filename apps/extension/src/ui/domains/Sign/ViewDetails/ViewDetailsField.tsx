@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 export type ViewDetailsFieldProps = {
@@ -13,6 +13,6 @@ export const ViewDetailsField: FC<ViewDetailsFieldProps> = ({ label, children, e
   error || children ? (
     <div className="mt-4">
       <div className="text-body-secondary">{label}</div>
-      <div className={classNames(error && "text-alert-warn")}>{error || children}</div>
+      <div className={cn(error && "text-alert-warn")}>{error || children}</div>
     </div>
   ) : null

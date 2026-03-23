@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { type ButtonHTMLAttributes, type DetailedHTMLProps, forwardRef } from "react"
 
 export const PortfolioToolbarButton = forwardRef<
@@ -10,7 +10,7 @@ export const PortfolioToolbarButton = forwardRef<
       ref={ref}
       type="button"
       {...props}
-      className={classNames(
+      className={cn(
         "flex items-center justify-center rounded-sm border-content bg-grey-900 text-body-secondary hover:bg-grey-800",
         "size-16 border border-transparent ring-transparent focus-visible:border-grey-700",
         props.className

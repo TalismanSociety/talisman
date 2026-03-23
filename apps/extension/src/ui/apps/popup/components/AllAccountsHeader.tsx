@@ -1,10 +1,10 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { IconButton } from "@ui/components/IconButton"
+import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
@@ -21,7 +21,7 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
     <div ref={ref} className="relative h-35 w-full">
       <button
         type="button"
-        className={classNames(
+        className={cn(
           "flex size-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
           "bg-black-secondary text-body-secondary transition-colors duration-75",
           !disabled && "hover:text-body"

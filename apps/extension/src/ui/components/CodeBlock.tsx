@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import hljs from "highlight.js/lib/core"
 import json from "highlight.js/lib/languages/json"
 import yaml from "highlight.js/lib/languages/yaml"
@@ -19,7 +19,7 @@ export const CodeBlock = ({ className, code }: CodeBlockProps) => {
 
   return (
     <pre
-      className={classNames(
+      className={cn(
         "scrollable scrollable-700 overflow-x-auto rounded-sm bg-grey-800 p-8 py-4 text-body-secondary",
         className
       )}

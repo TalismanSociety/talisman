@@ -1,6 +1,5 @@
 import { appStore } from "@core/domains/app/store.app"
 import { XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { IconButton } from "@ui/components/IconButton"
@@ -9,6 +8,7 @@ import { useAppState } from "@ui/state/app"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
 import { useMnemonics } from "@ui/state/mnemonics"
 import { useSessionState } from "@ui/state/session"
+import { cn } from "@ui/util/cn"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,7 +21,7 @@ export const BackupReminderBanner = () => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "relative z-0 overflow-hidden",
         "select-none rounded-sm p-6 py-4 text-xs",
         "border border-body-secondary"

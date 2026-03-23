@@ -1,11 +1,11 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 
 import { AccountContextMenu } from "../AccountContextMenu"
@@ -27,9 +27,9 @@ export const TreeItemAccount: FC<{
   if (!account) return null
 
   return (
-    <div className={classNames("@container relative flex items-center")}>
+    <div className={cn("@container relative flex items-center")}>
       <div
-        className={classNames(
+        className={cn(
           "flex h-14.75 grow items-center gap-8 overflow-hidden rounded-sm border border-transparent px-8",
           isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850"
         )}

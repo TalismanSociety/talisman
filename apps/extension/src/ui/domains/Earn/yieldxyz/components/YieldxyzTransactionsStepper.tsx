@@ -1,6 +1,7 @@
 import type { TransactionDto } from "@core/domains/earn/exports"
 import { LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { FC } from "react"
 
 export const YieldxyzTransactionsStepper: FC<{
@@ -47,21 +48,21 @@ export const YieldxyzTransactionsStepper: FC<{
             return (
               <div key={transaction.id ?? index} className="z-1 flex justify-center">
                 <div
-                  className={classNames(
+                  className={cn(
                     "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
                     isActive ? "bg-primary-500" : "bg-grey-600"
                   )}
                 >
                   {isProcessing ? (
                     <LoaderIcon
-                      className={classNames(
+                      className={cn(
                         "h-8 w-8 animate-spin-slow",
                         isActive ? "text-black" : "text-grey-700"
                       )}
                     />
                   ) : (
                     <span
-                      className={classNames(
+                      className={cn(
                         "font-bold text-sm leading-none",
                         isActive ? "text-black" : "text-body-secondary"
                       )}
@@ -87,7 +88,7 @@ export const YieldxyzTransactionsStepper: FC<{
           return (
             <div
               key={transaction.id ?? `label-${index}`}
-              className={classNames(
+              className={cn(
                 "text-center font-bold text-base capitalize leading-tight",
                 isActive ? "text-primary-500" : "text-grey-600"
               )}

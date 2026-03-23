@@ -1,7 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -11,6 +10,7 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -109,7 +109,7 @@ const AccountRow: FC<{
       type="button"
       onClick={onClick}
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full items-center gap-4 px-12 text-left text-body-secondary hover:bg-grey-750 hover:text-body focus:bg-grey-700",
         selected && "bg-grey-800",
         "disabled:cursor-not-allowed disabled:opacity-50"

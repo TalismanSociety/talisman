@@ -1,10 +1,10 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { FormattedAddress } from "../Account/FormattedAddress"
@@ -28,8 +28,8 @@ const ConnectionStatusContainer: FC<{
   }, [status])
 
   return (
-    <div className={classNames("rounded-sm p-0.5", colors)}>
-      <div className={classNames("overflow-hidden rounded-sm", className)}>{children}</div>
+    <div className={cn("rounded-sm p-0.5", colors)}>
+      <div className={cn("overflow-hidden rounded-sm", className)}>{children}</div>
     </div>
   )
 }

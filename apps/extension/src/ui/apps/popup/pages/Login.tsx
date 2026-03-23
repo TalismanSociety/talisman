@@ -1,6 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
@@ -12,6 +11,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
+import { cn } from "@ui/util/cn"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -35,10 +35,7 @@ const HideBalancesToggle = () => {
       <TooltipTrigger asChild>
         <label
           htmlFor="showBalances"
-          className={classNames(
-            "absolute top-10 right-10 z-20",
-            "inline-flex cursor-pointer items-center"
-          )}
+          className={cn("absolute top-10 right-10 z-20", "inline-flex cursor-pointer items-center")}
         >
           <input
             id="showBalances"
@@ -48,27 +45,27 @@ const HideBalancesToggle = () => {
             onChange={(e) => setHideBalances(!e.target.checked)}
           />
           <div
-            className={classNames(
+            className={cn(
               "peer h-14 w-28 shrink-0 rounded-full bg-grey-600",
               "peer-focus:outline-hidden peer-focus-visible:ring-2 peer-focus-visible:ring-body"
             )}
           ></div>
           <div
-            className={classNames(
+            className={cn(
               "absolute top-1 left-1 flex h-12 w-12",
               "rounded-full bg-grey-800",
               "transition peer-checked:translate-x-14 peer-checked:bg-primary"
             )}
           >
             <EyeIcon
-              className={classNames(
+              className={cn(
                 "absolute top-2 left-2 h-8 w-8",
                 "text-body-black transition-opacity",
                 hideBalances ? "opacity-0" : "opacity-100"
               )}
             />
             <EyeOffIcon
-              className={classNames(
+              className={cn(
                 "absolute top-2 left-2 h-8 w-8",
                 "text-body transition-opacity",
                 !hideBalances ? "opacity-0" : "opacity-100"
@@ -159,10 +156,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         <VersionInfo />
       </Suspense>
       <PopupContent
-        className={classNames(
-          "z-10 select-none pt-32 text-center",
-          isSubmitting && "animate-pulse"
-        )}
+        className={cn("z-10 select-none pt-32 text-center", isSubmitting && "animate-pulse")}
       >
         <div className="mt-[60px]">
           <HandMonoLogo className="inline-block text-[64px]" />
@@ -191,7 +185,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
-            className={classNames(!isValid && "bg-white/10")}
+            className={cn(!isValid && "bg-white/10")}
           >
             {t("Unlock")}
           </Button>

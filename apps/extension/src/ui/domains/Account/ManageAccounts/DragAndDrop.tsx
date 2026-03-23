@@ -5,7 +5,8 @@ import {
   useDroppable,
 } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { KeyboardEvent, MouseEvent } from "react"
 import { type CSSProperties, type FC, type ReactNode, useMemo } from "react"
 
@@ -37,7 +38,7 @@ export const TreeDraggable: FC<{
   return (
     <div className={"relative"}>
       <div
-        className={classNames(
+        className={cn(
           "absolute top-0 left-0 size-full",
           "rounded-sm border border-grey-800 border-dashed bg-grey-850/50",
           isDragging ? "visible" : "invisible"
@@ -69,7 +70,7 @@ export const TreeDroppable: FC<{
   return (
     <div
       ref={setNodeRef}
-      className={classNames(
+      className={cn(
         className,
         !disabled && !!over && hasOverClassName,
         !disabled && isOver && isOverClassName

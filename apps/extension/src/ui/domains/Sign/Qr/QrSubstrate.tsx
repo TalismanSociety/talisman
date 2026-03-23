@@ -5,7 +5,6 @@ import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
-import { classNames, cn } from "@talismn/util"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
@@ -14,6 +13,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type ReactElement, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -102,7 +102,7 @@ export const QrSubstrate = ({
 
   if (scanState.page === "INIT")
     return (
-      <div className={classNames("flex w-full flex-col items-center", className)}>
+      <div className={cn("flex w-full flex-col items-center", className)}>
         <div className="flex w-full items-center gap-12">
           {!!onReject && (
             <Button className="w-full" onClick={onReject}>
@@ -123,7 +123,7 @@ export const QrSubstrate = ({
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "absolute top-0 left-0 flex h-full w-full flex-col items-center bg-black-primary",
         className
       )}
@@ -155,7 +155,7 @@ export const QrSubstrate = ({
         </header>
       )}
       <section
-        className={classNames(
+        className={cn(
           "w-full grow",
           // don't pad the UPDATE_METADATA view
           scanState.page !== "UPDATE_METADATA" && "px-12"
@@ -224,7 +224,7 @@ export const QrSubstrate = ({
         )}
       </section>
       <footer
-        className={classNames(
+        className={cn(
           "flex w-full shrink-0 items-center gap-12 px-12",
           // the send funds popup has a narrower margin on the bottom
           // than the sign tx popup does
@@ -321,7 +321,7 @@ const SendPage = ({
           <Checkbox
             onChange={(e) => setEmbedProof(e.target.checked)}
             checked={!!embedProof}
-            className={classNames(
+            className={cn(
               "gap-8! text-body-secondary text-sm hover:text-body",
               !canSignWithProof && "invisible"
             )}
@@ -359,7 +359,7 @@ const SendPage = ({
             </div>
             <button
               type="button"
-              className={classNames(
+              className={cn(
                 "mt-4 font-light text-grey-200 text-xs hover:text-white",
                 signWithProof && "invisible"
               )}

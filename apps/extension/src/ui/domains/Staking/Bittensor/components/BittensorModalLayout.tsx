@@ -1,4 +1,4 @@
-import { cn } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 
 export const BittensorModalLayout: FC<

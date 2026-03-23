@@ -1,12 +1,12 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58 } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { copyAddress } from "@ui/util/copyAddress"
 import { type FC, useCallback, useMemo } from "react"
 
@@ -32,7 +32,7 @@ export const SummaryAddressDisplay: FC<{
     return (
       <span className="truncate whitespace-nowrap text-body">
         <AccountIcon
-          className={classNames("inline-block align-sub text-[1.2em]")}
+          className={cn("inline-block align-sub text-[1.2em]")}
           address={address}
           genesisHash={getAccountGenesisHash(account)}
         />
@@ -54,7 +54,7 @@ export const SummaryAddressDisplay: FC<{
         >
           <div>
             <AccountIcon
-              className={classNames("inline-block align-sub text-[1.2em]")}
+              className={cn("inline-block align-sub text-[1.2em]")}
               address={address}
               genesisHash={getAccountGenesisHash(account)}
             />

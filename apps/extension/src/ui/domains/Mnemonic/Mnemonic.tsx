@@ -1,6 +1,6 @@
 import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { notify } from "@ui/components/Notifications"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -82,7 +82,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
               setBlurOnHover(isRevealed)
               setIconType(isRevealed ? "open" : null)
             }}
-            className={classNames(
+            className={cn(
               "absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-sm text-body transition",
               !isRevealed && "backdrop-blur-md",
               blurOnHover && isRevealed && "hover:backdrop-blur-md"

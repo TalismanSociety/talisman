@@ -1,10 +1,10 @@
 import { log } from "@common/log"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { PillButton } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

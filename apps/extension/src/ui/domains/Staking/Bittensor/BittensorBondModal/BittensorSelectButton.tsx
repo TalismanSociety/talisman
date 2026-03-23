@@ -1,5 +1,6 @@
 import { SettingsIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { useCallback, useMemo } from "react"
 
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
@@ -38,7 +39,7 @@ export const BittensorSelectButton = ({
     <button
       type="button"
       onClick={handleClick}
-      className={classNames(
+      className={cn(
         "flex cursor-pointer items-center gap-2 rounded-xl bg-pill px-4 py-2 font-light text-xs hover:bg-grey-700",
         isBtnDisabled && "cursor-not-allowed opacity-50"
       )}

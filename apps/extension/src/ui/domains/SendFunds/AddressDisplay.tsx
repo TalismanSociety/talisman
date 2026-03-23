@@ -3,11 +3,11 @@ import type { Address as TAddress } from "@talismn/balances"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useAnyNetwork, useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { copyAddress } from "@ui/util/copyAddress"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useMemo } from "react"
@@ -117,13 +117,13 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         />
       </TooltipContent>
       <TooltipTrigger
-        className={classNames(
+        className={cn(
           "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
           className
         )}
       >
         <AccountIcon
-          className={classNames("text-lg!", accountIconClassName)}
+          className={cn("text-lg!", accountIconClassName)}
           address={resolvedAddress}
           genesisHash={getAccountGenesisHash(account)}
         />

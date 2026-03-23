@@ -24,7 +24,7 @@ import {
   SearchIcon,
   XIcon,
 } from "@talismn/icons"
-import { classNames, isNotNil, isTruthy } from "@talismn/util"
+import { isNotNil, isTruthy } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -61,6 +61,7 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import {
   type ChangeEventHandler,
@@ -424,7 +425,7 @@ const Header: FC = () => {
   return (
     <div className="flex h-21.5 items-center gap-8 rounded-sm bg-grey-850 px-8">
       <DiamondIcon
-        className={classNames(
+        className={cn(
           "text-lg",
           isInProgress || isInitializing ? "text-primary" : "text-body-secondary"
         )}
@@ -458,7 +459,7 @@ const Header: FC = () => {
             </div>
             <div className="relative flex h-4 overflow-hidden rounded-lg bg-grey-800">
               <div
-                className={classNames(
+                className={cn(
                   "absolute top-0 left-0 h-4 w-full rounded-lg bg-primary-500",
                   effectivePercent && "transition-transform duration-300 ease-out" // no animation on restart
                 )}
@@ -489,7 +490,7 @@ const Header: FC = () => {
       ) : (
         <ContextMenu placement="bottom-end">
           <ContextMenuTrigger
-            className={classNames(
+            className={cn(
               "flex h-16 items-center gap-2 rounded-full border border-transparent bg-primary px-4 text-black text-xs",
               "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent"
             )}

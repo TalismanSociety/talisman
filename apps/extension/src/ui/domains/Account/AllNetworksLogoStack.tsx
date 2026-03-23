@@ -1,10 +1,11 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
-import { classNames, isTruthy } from "@talismn/util"
+import { isTruthy } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import type { PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 
 type Props = { ids?: NetworkId[]; className?: string; max?: number }
@@ -66,7 +67,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
   )
 
   return (
-    <div className={classNames("h-[1em] shrink-0 pl-[0.1563rem]", className)}>
+    <div className={cn("h-[1em] shrink-0 pl-[0.1563rem]", className)}>
       {visibleNetworks.map((network, idx) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <AllNetworksLogoStackItem key={`${network}-${idx}`} network={network} />

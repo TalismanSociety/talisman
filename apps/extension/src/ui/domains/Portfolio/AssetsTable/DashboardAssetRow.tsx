@@ -1,6 +1,5 @@
 import type { Balances } from "@talismn/balances"
 import { TrendingUpIcon, ZapFastIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -11,6 +10,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -52,7 +52,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
     <div className="group relative h-16.5 w-full">
       <button
         type="button"
-        className={classNames(
+        className={cn(
           "grid h-16.5 w-full grid-cols-[40%_30%_30%] overflow-hidden rounded bg-grey-850 text-left text-base text-body-secondary hover:bg-grey-800"
         )}
         onClick={handleClick}
@@ -95,7 +95,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             fiat={summary.lockedFiat}
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
-            className={classNames(
+            className={cn(
               "noPadRight",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
@@ -109,7 +109,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             fiat={summary.availableFiat}
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
-            className={classNames(
+            className={cn(
               (canEarn || canBond) && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}

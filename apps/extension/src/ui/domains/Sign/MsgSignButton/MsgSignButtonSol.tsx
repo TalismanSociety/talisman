@@ -1,8 +1,8 @@
 import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { base58 } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -49,7 +49,7 @@ export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
       )
     default:
       return (
-        <Button onClick={() => onSubmit()} className={classNames("w-full", className)} primary>
+        <Button onClick={() => onSubmit()} className={cn("w-full", className)} primary>
           {label ?? t("Sign")}
         </Button>
       )
