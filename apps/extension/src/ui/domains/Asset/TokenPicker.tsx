@@ -44,7 +44,7 @@ type TokenRowProps = {
 const TokenRowSkeleton = () => (
   <div className="flex h-14.5 w-full items-center gap-4 px-12 text-left">
     <div className="h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
-    <div className="grow space-y-[5px]">
+    <div className="grow space-y-2.5">
       <div className={"flex w-full justify-between font-bold text-body text-sm"}>
         <div>
           <div className="inline-block h-7 w-20 animate-pulse rounded-xs bg-grey-750"></div>
