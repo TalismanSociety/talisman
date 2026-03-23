@@ -79,13 +79,6 @@ export const ValidatorRows: FC<{
 }> = ({ taoTokenId, validators, selectedHotkey, isLoading, onSelect }) => {
   const { ref: refContainer } = useScrollContainer()
 
-  const featuredBoundary = useMemo(() => {
-    const idx = validators.findIndex((v) => !v.isFeatured)
-    // only show divider if there are both featured and non-featured validators
-    if (idx <= 0) return null
-    return idx
-  }, [validators])
-
   const virtualizer = useVirtualizer({
     count: validators.length,
     estimateSize: () => 58,
@@ -103,12 +96,6 @@ export const ValidatorRows: FC<{
           height: `${virtualizer.getTotalSize()}px`,
         }}
       >
-        {featuredBoundary !== null && (
-          <div
-            className="absolute right-12 left-8 h-[2px] rounded-full bg-white/10"
-            style={{ top: `${featuredBoundary * 58}px` }}
-          />
-        )}
         {virtualizer.getVirtualItems().map((item) => {
           const validator = validators[item.index]
           if (!validator) return null

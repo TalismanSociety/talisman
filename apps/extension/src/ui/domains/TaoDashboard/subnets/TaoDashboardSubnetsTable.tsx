@@ -546,6 +546,8 @@ const SubnetRow: FC<{
             <SkeletonBar className="h-8 w-24" />
             <SkeletonBar className="h-6 w-20" />
           </>
+        ) : isRoot ? (
+          <span className="text-body-inactive">-</span>
         ) : (
           <>
             <div className="text-white">
