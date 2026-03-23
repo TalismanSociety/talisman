@@ -159,11 +159,8 @@ const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
   const setHoveredItem = useSetChartOverlay()
 
   return (
-    <a
+    <article
       key={tweet.id}
-      href={tweet.url || `https://twitter.com/i/status/${tweet.id}`}
-      target="_blank"
-      rel="noopener noreferrer"
       className="group flex flex-col gap-6 rounded p-6 transition-colors hover:bg-grey-800"
       onMouseEnter={() =>
         setHoveredItem({
@@ -198,11 +195,16 @@ const TweetCard: FC<{ tweet: Tweet }> = ({ tweet }) => {
       </div>
       <div className="flex items-center justify-between text-grey-600 text-sm">
         <DistanceToNow timestamp={tweet.createdAt} />
-        <span className="text-primary opacity-0 transition-opacity group-hover:opacity-100">
+        <a
+          href={tweet.url || `https://twitter.com/i/status/${tweet.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-xs px-3 py-1 text-primary opacity-0 transition-all hover:bg-primary/10 group-hover:opacity-100"
+        >
           {t("View")} <ArrowRightIcon className="inline" />
-        </span>
+        </a>
       </div>
-    </a>
+    </article>
   )
 }
 
