@@ -1,14 +1,14 @@
 import type { IdenticonType } from "@core/domains/accounts/types"
 import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
-import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon"
+import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon/PolkadotAvatar"
 import { renderToString } from "react-dom/server"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
   try {
     const component =
       iconType === "polkadot-identicon" ? (
-        <PolkadotAvatar seed={address} />
+        <PolkadotAvatar address={address} />
       ) : (
         <TalismanOrb seed={address} />
       )
