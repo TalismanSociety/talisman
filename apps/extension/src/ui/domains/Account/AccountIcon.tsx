@@ -52,7 +52,7 @@ const AccountIconBase = memo(
     return (
       <div className={cn("relative inline-block shrink-0", className)}>
         {displayType === "polkadot-identicon" ? (
-          <PolkadotAvatar address={address} />
+          <PolkadotAvatar address={address} className="block! h-[1em] w-[1em]" />
         ) : (
           <TalismanOrb seed={address} />
         )}

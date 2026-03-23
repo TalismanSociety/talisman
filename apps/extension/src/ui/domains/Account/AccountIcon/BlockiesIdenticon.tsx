@@ -1,5 +1,5 @@
 import { cn } from "@ui/util/cn"
-import { memo, useMemo } from "react"
+import { type FC, memo, useMemo } from "react"
 
 const createRand = (seed: string) => {
   const seedArray: [number, number, number, number] = [0, 0, 0, 0]
@@ -56,16 +56,14 @@ const createImageData = (rand: () => number, size: number) => {
   return data
 }
 
-interface EthereumIdenticonProps {
-  address: string
-  size?: number
-  className?: string
-}
-
 const VIEWBOX_SIZE = 64
 const GRID_SIZE = 8
 
-export const BlockiesIdenticon = memo(({ address, className }: EthereumIdenticonProps) => {
+export const BlockiesIdenticon: FC<{
+  address: string
+  size?: number
+  className?: string
+}> = memo(({ address, size = "1em", className }) => {
   const blockies = useMemo(() => {
     const seed = address.toLowerCase()
     const rand = createRand(seed)
@@ -83,8 +81,8 @@ export const BlockiesIdenticon = memo(({ address, className }: EthereumIdenticon
   return (
     <svg
       className={cn("rounded-full", className)}
-      height={VIEWBOX_SIZE}
-      width={VIEWBOX_SIZE}
+      width={size}
+      height={size}
       viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
       role="img"
       aria-label={`account identicon for ${address.slice(0, 8)}...${address.slice(-4)}`}
