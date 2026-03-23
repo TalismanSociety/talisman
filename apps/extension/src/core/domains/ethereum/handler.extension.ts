@@ -115,7 +115,7 @@ export class EthHandler extends ExtensionHandler {
 
       return true
     } else {
-      if (nonceReserved) releaseReservedNonce(account.address, ethChainId)
+      if (nonceReserved) releaseReservedNonce(account.address, ethChainId, tx.nonce as number)
       if (result.val === "Unauthorised") {
         reject(Error(result.val))
       } else {
@@ -200,7 +200,7 @@ export class EthHandler extends ExtensionHandler {
 
       return result.val // hash
     } else {
-      if (nonceReserved) releaseReservedNonce(unsigned.from, evmNetworkId)
+      if (nonceReserved) releaseReservedNonce(unsigned.from, evmNetworkId, tx.nonce as number)
       if (result.val === "Unauthorised") {
         throw new Error("Unauthorized")
       } else {

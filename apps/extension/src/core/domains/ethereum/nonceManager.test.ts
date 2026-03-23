@@ -272,11 +272,30 @@ describe("nonceManager", () => {
       const nonce1 = await getNextNonce(ADDRESS, NETWORK_ID)
       expect(nonce1).toBe(5)
 
-      // Simulate send failure — release the reserved nonce
-      releaseReservedNonce(ADDRESS, NETWORK_ID)
+      // Simulate send failure — release the specific reserved nonce
+      releaseReservedNonce(ADDRESS, NETWORK_ID, nonce1)
 
       const nonce2 = await getNextNonce(ADDRESS, NETWORK_ID)
       expect(nonce2).toBe(5) // reuses the released nonce
+    })
+
+    it("releasing one reservation preserves other in-flight reservations", async () => {
+      mockGetTransactionCount.mockResolvedValue(5)
+
+      // Handler A reserves nonce 5, Handler B reserves nonce 6
+      const [nonce1, nonce2] = await Promise.all([
+        getNextNonce(ADDRESS, NETWORK_ID),
+        getNextNonce(ADDRESS, NETWORK_ID),
+      ])
+      expect(nonce1).toBe(5)
+      expect(nonce2).toBe(6)
+
+      // Handler B fails — release only nonce 6
+      releaseReservedNonce(ADDRESS, NETWORK_ID, nonce2)
+
+      // Handler C should get 6 (reuse of released), NOT 5 (still in-flight)
+      const nonce3 = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce3).toBe(6)
     })
 
     it("clears stale reservation when on-chain nonce advances past it", async () => {

@@ -4,20 +4,30 @@ import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { cleanupDroppedEvmTransactions } from "../transactions/cleanupDroppedTransactions"
 
-// Tracks the highest nonce handed out per address:network that may not be
-// persisted to Dexie yet. Prevents concurrent callers from receiving the same nonce.
-const reservedNonces = new Map<string, number>()
+// Tracks all nonces handed out per address:network that may not be persisted
+// to Dexie yet. Using a Set prevents concurrent callers from receiving duplicates,
+// even when one reservation is released while others are still in flight.
+const reservedNonces = new Map<string, Set<number>>()
 
 // Promise-chain mutex per address:network — serializes getNextNonce calls
 // so concurrent requests don't interleave at await points.
 const nonceMutexes = new Map<string, Promise<unknown>>()
 
 /**
- * Releases an in-memory nonce reservation for a given address and network.
+ * Releases a specific in-memory nonce reservation for a given address and network.
  * Call this when a transaction fails to send so the nonce can be reused.
  */
-export const releaseReservedNonce = (address: string, evmNetworkId: EthNetworkId): void => {
-  reservedNonces.delete(`${address.toLowerCase()}:${evmNetworkId}`)
+export const releaseReservedNonce = (
+  address: string,
+  evmNetworkId: EthNetworkId,
+  nonce: number
+): void => {
+  const key = `${address.toLowerCase()}:${evmNetworkId}`
+  const set = reservedNonces.get(key)
+  if (!set) return
+
+  set.delete(nonce)
+  if (set.size === 0) reservedNonces.delete(key)
 }
 
 /** @internal Clears all in-memory nonce state. Test-only. */
@@ -82,10 +92,13 @@ const computeNextNonce = async (
     getHighestLocalNonce(normalizedAddress, evmNetworkId),
   ])
 
-  // Clear stale reservation if on-chain has advanced past it
-  const reserved = reservedNonces.get(key)
-  if (reserved !== undefined && onChainNonce > reserved) {
-    reservedNonces.delete(key)
+  // Clear stale reservations where the on-chain nonce has advanced past them
+  const reservedSet = reservedNonces.get(key)
+  if (reservedSet) {
+    for (const n of reservedSet) {
+      if (onChainNonce > n) reservedSet.delete(n)
+    }
+    if (reservedSet.size === 0) reservedNonces.delete(key)
   }
 
   let nextNonce: number
@@ -107,12 +120,19 @@ const computeNextNonce = async (
   }
 
   // Ensure we don't hand out a nonce that was already reserved in-memory
-  const currentReserved = reservedNonces.get(key)
-  if (currentReserved !== undefined && currentReserved >= nextNonce) {
-    nextNonce = currentReserved + 1
+  const currentReservedSet = reservedNonces.get(key)
+  if (currentReservedSet && currentReservedSet.size > 0) {
+    const highestReserved = Math.max(...currentReservedSet)
+    if (highestReserved >= nextNonce) {
+      nextNonce = highestReserved + 1
+    }
   }
 
-  if (reserve) reservedNonces.set(key, nextNonce)
+  if (reserve) {
+    const set = reservedNonces.get(key) ?? new Set<number>()
+    set.add(nextNonce)
+    reservedNonces.set(key, set)
+  }
 
   return nextNonce
 }
