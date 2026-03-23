@@ -1,11 +1,10 @@
 import type { IdenticonType } from "@core/domains/accounts/types"
 import type { Address } from "@core/types/base"
 import { TalismanOrb } from "@talismn/orb"
-import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { type FC, Suspense, useMemo } from "react"
+import { type FC, memo, Suspense } from "react"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { PolkadotAvatar } from "./AccountIcon/PolkadotAvatar"
@@ -28,28 +27,57 @@ const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
   ) : null
 }
 
-const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHash, type }) => {
-  const [identiconType] = useSetting("identiconType")
+const AccountIconWithSettings = memo(
+  ({ address, className, genesisHash }: Omit<AccountIconProps, "type">) => {
+    const [identiconType] = useSetting("identiconType")
 
-  // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
-  // fallbacks to settings store, or default talisman-orb value
-  const displayType = useMemo(() => type ?? identiconType ?? "talisman-orb", [identiconType, type])
+    return (
+      <AccountIconBase
+        address={address}
+        className={className}
+        genesisHash={genesisHash}
+        displayType={identiconType ?? "talisman-orb"}
+      />
+    )
+  }
+)
+
+const AccountIconBase = memo(
+  ({
+    address,
+    className,
+    genesisHash,
+    displayType,
+  }: Omit<AccountIconProps, "type"> & { displayType: IdenticonType }) => {
+    return (
+      <div className={cn("relative inline-block shrink-0", className)}>
+        {displayType === "polkadot-identicon" ? (
+          <PolkadotAvatar address={address} />
+        ) : (
+          <TalismanOrb seed={address} />
+        )}
+        {genesisHash ? <ChainBadge genesisHash={genesisHash} /> : null}
+      </div>
+    )
+  }
+)
+
+const AccountIconInner: FC<AccountIconProps> = memo(({ address, className, genesisHash, type }) => {
+  if (type) {
+    return (
+      <AccountIconBase
+        address={address}
+        className={className}
+        genesisHash={genesisHash}
+        displayType={type}
+      />
+    )
+  }
 
   return (
-    <div className={cn("relative inline-block shrink-0", className)}>
-      {displayType === "polkadot-identicon" ? (
-        <PolkadotAvatar address={address} />
-      ) : (
-        <TalismanOrb seed={address} />
-      )}
-      {genesisHash && (
-        <Suspense fallback={<SuspenseTracker name="AccountIconInner.Badge" />}>
-          <ChainBadge genesisHash={genesisHash} />
-        </Suspense>
-      )}
-    </div>
+    <AccountIconWithSettings address={address} className={className} genesisHash={genesisHash} />
   )
-}
+})
 
 const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
   <div

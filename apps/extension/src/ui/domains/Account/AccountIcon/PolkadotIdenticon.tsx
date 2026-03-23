@@ -1,7 +1,7 @@
 import { blake2b } from "@noble/hashes/blake2.js"
 import { cn } from "@ui/util/cn"
 import { getSs58AddressInfo } from "polkadot-api"
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 
 const S = 64
 const C = S / 2
@@ -200,27 +200,22 @@ interface PolkadotIdenticonProps {
   isAlternative?: boolean
 }
 
-export const PolkadotIdenticon = ({
-  address,
-  size = 64,
-  className,
-  isAlternative = false,
-}: PolkadotIdenticonProps) => {
-  const circles = useMemo(() => polkadotIcon(address, isAlternative), [address, isAlternative])
+export const PolkadotIdenticon = memo(
+  ({ address, className, isAlternative = false }: PolkadotIdenticonProps) => {
+    const circles = useMemo(() => polkadotIcon(address, isAlternative), [address, isAlternative])
 
-  return (
-    <svg
-      className={cn("rounded-full", className)}
-      height={size}
-      viewBox="0 0 64 64"
-      width={size}
-      role="img"
-      aria-label={`Account identicon for ${address.slice(0, 8)}...${address.slice(-6)}`}
-    >
-      {circles.map(({ cx, cy, fill, r }, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: order wont change
-        <circle key={i} cx={cx} cy={cy} fill={fill} r={r} />
-      ))}
-    </svg>
-  )
-}
+    return (
+      <svg
+        className={cn("rounded-full", className)}
+        viewBox="0 0 64 64"
+        role="img"
+        aria-label={`Account identicon for ${address.slice(0, 8)}...${address.slice(-6)}`}
+      >
+        {circles.map(({ cx, cy, fill, r }, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: order wont change
+          <circle key={i} cx={cx} cy={cy} fill={fill} r={r} />
+        ))}
+      </svg>
+    )
+  }
+)

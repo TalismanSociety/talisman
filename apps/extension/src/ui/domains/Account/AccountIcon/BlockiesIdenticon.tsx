@@ -1,5 +1,5 @@
 import { cn } from "@ui/util/cn"
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 
 const createRand = (seed: string) => {
   const seedArray: [number, number, number, number] = [0, 0, 0, 0]
@@ -62,39 +62,41 @@ interface EthereumIdenticonProps {
   className?: string
 }
 
-export const BlockiesIdenticon = ({ address, size = 64, className }: EthereumIdenticonProps) => {
+const VIEWBOX_SIZE = 64
+const GRID_SIZE = 8
+
+export const BlockiesIdenticon = memo(({ address, className }: EthereumIdenticonProps) => {
   const blockies = useMemo(() => {
     const seed = address.toLowerCase()
     const rand = createRand(seed)
     const color = createColor(rand)
     const bgColor = createColor(rand)
     const spotColor = createColor(rand)
-    const gridSize = 8
-    const imageData = createImageData(rand, gridSize)
+    const imageData = createImageData(rand, GRID_SIZE)
 
-    return { color, bgColor, spotColor, imageData, gridSize }
+    return { color, bgColor, spotColor, imageData }
   }, [address])
 
-  const { color, bgColor, spotColor, imageData, gridSize } = blockies
-  const scale = size / gridSize
+  const { color, bgColor, spotColor, imageData } = blockies
+  const scale = VIEWBOX_SIZE / GRID_SIZE
 
   return (
     <svg
       className={cn("rounded-full", className)}
-      height={size}
-      width={size}
-      viewBox={`0 0 ${size} ${size}`}
+      height={VIEWBOX_SIZE}
+      width={VIEWBOX_SIZE}
+      viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
       role="img"
       aria-label={`account identicon for ${address.slice(0, 8)}...${address.slice(-4)}`}
     >
-      <rect width={size} height={size} fill={bgColor} />
+      <rect width={VIEWBOX_SIZE} height={VIEWBOX_SIZE} fill={bgColor} />
       {imageData.map((value, index) => {
         if (value === 0) return null
-        const x = (index % gridSize) * scale
-        const y = Math.floor(index / gridSize) * scale
+        const x = (index % GRID_SIZE) * scale
+        const y = Math.floor(index / GRID_SIZE) * scale
         const fill = value === 1 ? color : spotColor
         return <rect key={`${x}-${y}`} x={x} y={y} width={scale} height={scale} fill={fill} />
       })}
     </svg>
   )
-}
+})
