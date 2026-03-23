@@ -8,6 +8,7 @@ import {
   ZapPlusIcon,
 } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
@@ -620,20 +621,27 @@ const SubnetRow: FC<{
           >
             <ZapPlusIcon className="size-[16px]" />
           </button>
-          <button
-            type="button"
-            aria-label={t("Unstake")}
-            disabled={!canUnstake}
-            onClick={handleUnstakeClick}
-            className={cn(
-              "inline-flex size-[28px] items-center justify-center rounded-full",
-              canUnstake
-                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
-                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
-            )}
-          >
-            <ZapOffIcon className="size-[16px]" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <button
+                  type="button"
+                  aria-label={t("Unstake")}
+                  disabled={!canUnstake}
+                  onClick={handleUnstakeClick}
+                  className={cn(
+                    "inline-flex size-[28px] items-center justify-center rounded-full",
+                    canUnstake
+                      ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                      : "cursor-default bg-grey-800/50 text-body-disabled"
+                  )}
+                >
+                  <ZapOffIcon className="size-[16px]" />
+                </button>
+              </span>
+            </TooltipTrigger>
+            {!canUnstake && <TooltipContent>{t("No subnet balance")}</TooltipContent>}
+          </Tooltip>
         </div>
       </DataCell>
 
