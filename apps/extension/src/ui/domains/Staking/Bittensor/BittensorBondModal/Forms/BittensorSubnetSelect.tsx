@@ -43,6 +43,10 @@ const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] 
   const sorted = data
     .filter((sn) => typeof sn.netuid === "number")
     .sort((a, b) => {
+      // Root subnet always pinned to top
+      if (a.netuid === 0) return -1
+      if (b.netuid === 0) return 1
+
       if (descendingFilters.includes(sortBy)) {
         // Sort other fields in descending order
         if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
