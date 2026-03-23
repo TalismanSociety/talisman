@@ -14,7 +14,6 @@ import {
   SwapDetailsRow,
   SwapFeeEstimate,
   SwapInputsContainer,
-  SwapPriceImpact,
   SwapSlippageRow,
 } from "./SwapTabShared"
 import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
@@ -43,8 +42,8 @@ const TabContent: FC = () => {
           <SwapDetailsRow label={t("Estimated Fee")}>
             <FeeEstimate />
           </SwapDetailsRow>
-          <SwapDetailsRow label={t("Price Impact")}>
-            <PriceImpact />
+          <SwapDetailsRow label={t("Alpha Price")}>
+            <AlphaPrice />
           </SwapDetailsRow>
           <SwapDetailsRow label={t("Max Slippage")}>
             <SlippageEdit />
@@ -78,10 +77,13 @@ const SubmitButton = () => {
   )
 }
 
-const PriceImpact = () => {
-  const { priceImpact, isLoading } = useSwapBuy()
+const AlphaPrice = () => {
+  const { t } = useTranslation()
+  const { swapPrice, taoToken } = useSwapBuy()
 
-  return <SwapPriceImpact priceImpact={priceImpact} isLoading={isLoading} />
+  if (!taoToken || !swapPrice) return t("N/A")
+
+  return <TokensAndFiat planck={swapPrice} tokenId={taoToken.id} noCountUp noFiat />
 }
 
 const FeeEstimate = () => {
