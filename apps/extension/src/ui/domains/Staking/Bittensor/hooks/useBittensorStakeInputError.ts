@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { useToken } from "@ui/state/chaindata"
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
@@ -28,6 +28,12 @@ export const useBittensorStakeInputError = ({
   const tokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const taoToken = useToken(tokenId, "substrate-native")
 
+  // Keep the last known fee so validation stays stable while the fee is re-estimating
+  const lastFeeEstimateRef = useRef<bigint | null>(null)
+  if (typeof feeEstimate === "bigint") lastFeeEstimateRef.current = feeEstimate
+  const effectiveFeeEstimate =
+    typeof feeEstimate === "bigint" ? feeEstimate : lastFeeEstimateRef.current
+
   const inputErrorMessage = useMemo(() => {
     if (!taoToken) return null
     const existentialDeposit = BigInt(taoToken.existentialDeposit)
@@ -37,7 +43,7 @@ export const useBittensorStakeInputError = ({
       typeof taoAmountIn !== "bigint" ||
       typeof taoBalance !== "bigint" ||
       typeof dtaoBalance !== "bigint" ||
-      typeof feeEstimate !== "bigint" ||
+      typeof effectiveFeeEstimate !== "bigint" ||
       typeof minTaoBondForInput !== "bigint" ||
       typeof minTaoStakeForInput !== "bigint"
     )
@@ -45,14 +51,19 @@ export const useBittensorStakeInputError = ({
 
     if (!taoBalance || taoAmountIn > taoBalance) return t("Insufficient balance")
 
-    if (!!taoBalance && !!feeEstimate && !!taoAmountIn && taoAmountIn + feeEstimate > taoBalance)
+    if (
+      !!taoBalance &&
+      !!effectiveFeeEstimate &&
+      !!taoAmountIn &&
+      taoAmountIn + effectiveFeeEstimate > taoBalance
+    )
       return t("Insufficient balance to cover fee")
 
-    if (existentialDeposit + taoAmountIn + feeEstimate > taoBalance)
+    if (existentialDeposit + taoAmountIn + effectiveFeeEstimate > taoBalance)
       return t("Insufficient balance to cover fee and keep account alive")
 
     if (
-      existentialDeposit + taoAmountIn + feeEstimate * 10n >
+      existentialDeposit + taoAmountIn + effectiveFeeEstimate * 10n >
       taoBalance // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
@@ -76,7 +87,7 @@ export const useBittensorStakeInputError = ({
     return null
   }, [
     dtaoBalance,
-    feeEstimate,
+    effectiveFeeEstimate,
     minTaoBondForInput,
     minTaoStakeForInput,
     t,

@@ -2,6 +2,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { ChevronDownIcon, SettingsIcon } from "@talismn/icons"
 import { cn, tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -87,14 +88,19 @@ export const SwapSellInput: FC = () => {
               />
             </div>
           </div>
-          <div
-            className={cn(
-              "invisible w-full truncate text-alert-error text-xs",
-              inputErrorMessage && "visible"
-            )}
-          >
-            {inputErrorMessage || t("Error")}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "invisible w-full truncate text-alert-error text-xs",
+                  inputErrorMessage && "visible"
+                )}
+              >
+                {inputErrorMessage || t("Error")}
+              </div>
+            </TooltipTrigger>
+            {inputErrorMessage && <TooltipContent>{inputErrorMessage}</TooltipContent>}
+          </Tooltip>
         </div>
 
         <SwapSellPositionPickerModal
