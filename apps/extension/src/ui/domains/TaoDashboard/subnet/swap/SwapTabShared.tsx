@@ -12,7 +12,7 @@ type SwapInputsContainerProps = PropsWithChildren<{
 
 export const SwapInputsContainer: FC<SwapInputsContainerProps> = ({ label, right, children }) => (
   <div className="flex w-full flex-col gap-5 overflow-hidden">
-    <div className="flex items-center justify-between pl-2 text-body-secondary text-sm">
+    <div className="flex items-center justify-between pr-6 pl-2 text-body-secondary text-sm">
       <div>{label}</div>
       {right}
     </div>
