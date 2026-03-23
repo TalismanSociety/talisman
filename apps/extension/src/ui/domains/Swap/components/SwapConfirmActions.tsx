@@ -21,6 +21,7 @@ import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { EstimateGasExecutionError } from "viem"
+import { isQuoteExpiredError } from "../helpers/isQuoteExpiredError"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
@@ -28,12 +29,14 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { SwapQuoteExpiredDrawer } from "./SwapQuoteExpiredDrawer"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
   const { t } = useTranslation()
   const {
     swapView,
+    setSwapView,
     fromBalance,
     fromAddress,
     toAddress,
@@ -383,10 +386,17 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const errorMessage = useMemo(() => {
     if (!exchangeError) return null
+    if (isQuoteExpiredError(exchangeError)) return null
     // biome-ignore lint/suspicious/noExplicitAny: error shape is unknown and may not extend Error
     const anyError = exchangeError as any
     return anyError?.shortMessage || anyError?.message || t("Transaction is likely to fail")
   }, [exchangeError, t])
+
+  const isQuoteExpired = useMemo(() => isQuoteExpiredError(exchangeError), [exchangeError])
+
+  const handleQuoteExpiredDismiss = useCallback(() => {
+    setSwapView("form")
+  }, [setSwapView])
 
   return (
     <>
@@ -508,6 +518,11 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           onClose={slippageDrawer.close}
         />
       ) : null}
+      <SwapQuoteExpiredDrawer
+        containerId={containerId}
+        isOpen={isQuoteExpired}
+        onDismiss={handleQuoteExpiredDismiss}
+      />
     </>
   )
 }
