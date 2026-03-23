@@ -22,7 +22,7 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
   )
 
   const combinedValidatorsData = useMemo(() => {
-    if (!validators) return []
+    if (!validators || isLoading) return []
 
     const validatorYieldMap = keyBy(validatorsYieldData ?? [], (yieldData) => yieldData.hotkey)
 
@@ -47,7 +47,7 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
       }) ?? []
 
     return combined
-  }, [featuredHotkeyOrder, status, validators, validatorsYieldData])
+  }, [featuredHotkeyOrder, isLoading, status, validators, validatorsYieldData])
 
   return {
     combinedValidatorsData,

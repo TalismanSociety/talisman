@@ -4,6 +4,7 @@ import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
@@ -17,6 +18,9 @@ export const SelectValidatorPill: FC<{
   onSelect: (hotkey: string) => void
 }> = ({ netuid, hotkey, onSelect }) => {
   const { t } = useTranslation()
+
+  // preload validator + yield data so the picker doesn't flicker on open
+  useCombinedBittensorValidatorsData(netuid)
 
   const { open, isOpen, close } = useOpenClose()
 
