@@ -1,5 +1,6 @@
 import { UsersIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { ReactNode } from "react"
 
 export const AllAccountsIcon = ({ className }: { className?: string }) => (
@@ -16,7 +17,7 @@ export const AccountsIconContainer = ({
   children?: ReactNode
 }) => (
   <div
-    className={classNames(
+    className={cn(
       "flex h-[1em] w-[1em] items-center justify-center rounded-full bg-grey-750 p-[0.25em]",
       className
     )}

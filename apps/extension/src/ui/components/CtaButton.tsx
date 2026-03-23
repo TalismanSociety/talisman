@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   type FC,
@@ -8,6 +8,7 @@ import {
   useCallback,
   useMemo,
 } from "react"
+
 import { useNavigate } from "react-router-dom"
 
 export type CtaButtonSize = "large" | "small"
@@ -78,19 +79,17 @@ export const CtaButton: FC<CtaButton> = ({
     <button
       type="button"
       {...props}
-      className={classNames(
+      className={cn(
         "flex w-full cursor-pointer items-center gap-8 rounded-sm bg-grey-850 px-8 text-body-disabled enabled:hover:bg-grey-800 enabled:hover:text-body disabled:cursor-not-allowed disabled:opacity-50",
         containerClassName,
         className
       )}
       onClick={handleClick}
     >
-      {IconLeft && <IconLeft className={classNames("shrink-0 text-body", iconLeftClassName)} />}
-      <div className={classNames("flex grow flex-col items-start", contentClassName)}>
-        <div className={classNames("text-body", titleClassName)}>{title}</div>
-        <div className={classNames("text-left text-body-secondary", subtitleClassName)}>
-          {subtitle}
-        </div>
+      {IconLeft && <IconLeft className={cn("shrink-0 text-body", iconLeftClassName)} />}
+      <div className={cn("flex grow flex-col items-start", contentClassName)}>
+        <div className={cn("text-body", titleClassName)}>{title}</div>
+        <div className={cn("text-left text-body-secondary", subtitleClassName)}>{subtitle}</div>
       </div>
       {IconRight && <IconRight className="shrink-0 text-lg" />}
     </button>

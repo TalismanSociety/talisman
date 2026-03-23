@@ -1,6 +1,5 @@
 export * from "./addTrailingSlash"
 export * from "./BigMath"
-export * from "./classNames"
 export * from "./deferred"
 export * from "./FunctionPropertyNames"
 export * from "./firstThenDebounce"

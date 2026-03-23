@@ -1,11 +1,12 @@
 import { BalanceFormatter } from "@talismn/balances"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
-import { cn, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsBalanceInitializing } from "@ui/state/balances"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,

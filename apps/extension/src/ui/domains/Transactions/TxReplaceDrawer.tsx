@@ -5,7 +5,6 @@ import type { WalletTransaction, WalletTransactionEth } from "@core/domains/tran
 import type { HexString } from "@polkadot/util/types"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
@@ -18,6 +17,7 @@ import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -225,12 +225,12 @@ const EvmDrawerContent: FC<{
 
   return (
     <>
-      <Icon className={classNames("text-[40px]", iconClassName)} />
+      <Icon className={cn("text-[40px]", iconClassName)} />
       <div className="mt-12 font-bold text-base">{title}</div>
       <p className="mt-10 text-center text-body-secondary text-sm">{description}</p>
       {!!fullHeight && <div className="grow"></div>}
       <div
-        className={classNames(
+        className={cn(
           "mt-16 w-full space-y-2 text-body-secondary text-xs",
           !canReplace && "pointer-events-none opacity-50"
         )}
@@ -285,12 +285,7 @@ const EvmDrawerContent: FC<{
           />
         </div>
       ) : (
-        <div
-          className={classNames(
-            "mt-8 grid w-full gap-4",
-            canReplace ? "grid-cols-2" : "grid-cols-1"
-          )}
-        >
+        <div className={cn("mt-8 grid w-full gap-4", canReplace ? "grid-cols-2" : "grid-cols-1")}>
           <Button className="h-24" onClick={() => onClose?.()}>
             {t("Close")}
           </Button>

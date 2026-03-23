@@ -5,7 +5,7 @@ import {
   LockIcon,
   UnlockIcon,
 } from "@talismn/icons"
-import { classNames, sleep } from "@talismn/util"
+import { sleep } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FadeIn } from "@ui/components/FadeIn"
@@ -15,6 +15,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -60,7 +61,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>
             </div>
-            <div className={classNames(account.isLoading && "animate-pulse")}>
+            <div className={cn(account.isLoading && "animate-pulse")}>
               <Tooltip placement="bottom-end">
                 <TooltipTrigger asChild>
                   <div>
@@ -204,7 +205,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
           </div>
         </div>
       )}
-      <div className={classNames("flex items-center px-8", accounts.length > 4 && "pr-12")}>
+      <div className={cn("flex items-center px-8", accounts.length > 4 && "pr-12")}>
         <div className="grow">
           <Trans
             t={t}
@@ -229,7 +230,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
         )}
       </div>
       <div
-        className={classNames(
+        className={cn(
           "scrollable scrollable-800 mt-6 flex max-h-70 flex-col gap-4 overflow-y-auto",
           accounts.length > 4 && "pr-4"
         )}

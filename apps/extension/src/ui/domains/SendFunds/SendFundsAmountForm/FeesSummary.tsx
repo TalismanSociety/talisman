@@ -1,6 +1,7 @@
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
@@ -75,9 +76,7 @@ export const FeesSummary = () => {
   const { feeToken, estimatedFee, isLoading } = useSendFunds()
 
   return (
-    <Container
-      className={classNames("space-y-4 px-8 py-4", isLoading && !estimatedFee && "animate-pulse")}
-    >
+    <Container className={cn("space-y-4 px-8 py-4", isLoading && !estimatedFee && "animate-pulse")}>
       <NetworkRow />
       <EvmFeeSettingsRow />
       <div className="flex w-full items-center justify-between gap-4">
@@ -85,7 +84,7 @@ export const FeesSummary = () => {
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div
-          className={classNames(
+          className={cn(
             "flex grow items-center justify-end gap-2 truncate",
             isLoading && estimatedFee && "animate-pulse"
           )}

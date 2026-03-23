@@ -4,7 +4,6 @@ import { isAccountLedgerPolkadotLegacy } from "@core/domains/keyring/exports"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Tooltip, TooltipTrigger } from "@ui/components/Tooltip"
@@ -14,6 +13,7 @@ import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrat
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   type ChangeEventHandler,
@@ -192,9 +192,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
                     ) : (
                       <Tooltip placement="bottom-end">
                         <TooltipTrigger asChild>
-                          <span
-                            className={classNames(balances.status !== "live" && "animate-pulse")}
-                          >
+                          <span className={cn(balances.status !== "live" && "animate-pulse")}>
                             <Fiat
                               className="leading-none"
                               amount={balances.balances.sum.fiat("usd").total}

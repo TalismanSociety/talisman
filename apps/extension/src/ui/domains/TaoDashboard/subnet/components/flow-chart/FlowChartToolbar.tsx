@@ -1,5 +1,5 @@
-import { cn } from "@talismn/util"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 

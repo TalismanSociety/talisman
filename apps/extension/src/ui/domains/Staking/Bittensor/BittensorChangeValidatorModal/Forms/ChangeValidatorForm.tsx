@@ -1,11 +1,11 @@
 import { SettingsIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -177,7 +177,7 @@ const ValidatorSelectButton: FC<{
     <button
       type="button"
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "flex max-w-full cursor-pointer items-center gap-2 rounded-xl bg-pill px-4 py-2 font-light text-xs hover:bg-grey-700"
       )}
     >

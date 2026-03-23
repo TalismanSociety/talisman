@@ -1,12 +1,12 @@
 import type { Balances } from "@talismn/balances"
 import { isAddressEqual } from "@talismn/crypto"
 import { GaugeIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -44,7 +44,7 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
         <button
           type="button"
           onClick={handleClick}
-          className={classNames(
+          className={cn(
             "flex h-16 items-center gap-2 rounded-sm border border-transparent bg-grey-900 p-4 text-primary hover:bg-grey-800",
             "ring-transparent focus-visible:border-grey-700",
             className

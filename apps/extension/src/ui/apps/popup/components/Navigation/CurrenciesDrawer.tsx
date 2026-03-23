@@ -1,6 +1,5 @@
 import { ChevronLeftIcon, StarIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
 import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -8,6 +7,7 @@ import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useSetting } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,7 +21,7 @@ const CurrencyButton: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center gap-4 rounded-sm px-6 text-body-secondary",
         "border border-grey-800",
         selected && "bg-grey-900",

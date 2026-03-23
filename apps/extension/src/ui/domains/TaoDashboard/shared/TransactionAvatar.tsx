@@ -1,6 +1,6 @@
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 export const TransactionAvatar: FC<{ isBuy: boolean; address: string; className?: string }> = ({

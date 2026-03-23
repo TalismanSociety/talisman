@@ -1,5 +1,4 @@
 import { ArrowRightCircleIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
-import { classNames, cn } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
@@ -10,6 +9,7 @@ import { useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -239,7 +239,7 @@ const GetStartedActionButton: FC<{
 }> = ({ label, description, iconTop, iconRight, className, onClick }) => (
   <button
     type="button"
-    className={classNames(
+    className={cn(
       "rounded-sm border border-disabled border-grey-700/40 bg-grey-800 @2xl:px-8 px-6 py-4 text-left @2xl:text-md text-base leading-paragraph hover:bg-grey-750 enabled:focus-visible:bg-grey-750",
       "flex w-full items-center gap-8 overflow-hidden",
       className

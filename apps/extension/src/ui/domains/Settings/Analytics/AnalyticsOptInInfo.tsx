@@ -1,6 +1,7 @@
 import { PRIVACY_POLICY_URL } from "@common/constants"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { FC, ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -15,7 +16,7 @@ export const AnalyticsOptInInfo: FC<{
   const { t } = useTranslation()
 
   return (
-    <div className={classNames("flex flex-col gap-12", className)}>
+    <div className={cn("flex flex-col gap-12", className)}>
       <h1 className="mb-4">{t("Help us improve Talisman")}</h1>
       <p className="text-body-secondary">
         {t(

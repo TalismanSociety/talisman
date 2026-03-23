@@ -1,6 +1,6 @@
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/constants"
-import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
+import { cn } from "@ui/util/cn"
 import { type CSSProperties, type FC, useId, useMemo } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
@@ -28,7 +28,7 @@ export const AssetLogo: FC<{
       key={`${rid}::${src}`}
       data-id={tokenId}
       src={src}
-      className={classNames(
+      className={cn(
         "relative block aspect-square w-[1em] shrink-0",
         rounded && "rounded-full",
         className

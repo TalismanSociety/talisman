@@ -1,8 +1,8 @@
 import type { BalanceFormatter } from "@talismn/balances"
-import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 type SignParamTokensDisplayProps = {
@@ -25,12 +25,7 @@ export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
   className,
 }) => {
   return (
-    <span
-      className={classNames(
-        "inline-flex gap-3 px-4 pt-0.5 text-base text-body-secondary",
-        className
-      )}
-    >
+    <span className={cn("inline-flex gap-3 px-4 pt-0.5 text-base text-body-secondary", className)}>
       {withIcon && (
         <span>
           <TokenLogo tokenId={tokenId} />

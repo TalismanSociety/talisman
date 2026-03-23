@@ -7,7 +7,7 @@ import {
   SendIcon,
   TaoIcon,
 } from "@talismn/icons"
-import { classNames, isNotNil } from "@talismn/util"
+import { isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -18,6 +18,7 @@ import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { cn } from "@ui/util/cn"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
@@ -128,7 +129,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   )
 
   return (
-    <div className={classNames("flex w-full items-center justify-between gap-8", className)}>
+    <div className={cn("flex w-full items-center justify-between gap-8", className)}>
       <div className="flex justify-center gap-4" data-testid="top-actions-buttons">
         {actions.map((action, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static list
@@ -184,7 +185,7 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className={classNames(
+          className={cn(
             "pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-xs disabled:opacity-70",
             "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}

@@ -1,6 +1,6 @@
 import { Transition, TransitionChild } from "@headlessui/react"
-import { classNames } from "@talismn/util"
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
+import { cn } from "@ui/util/cn"
 import {
   type FC,
   type MouseEventHandler,
@@ -31,7 +31,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "right":
       return {
         position,
-        drawer: classNames("top-0 right-0", position, leftRight),
+        drawer: cn("top-0 right-0", position, leftRight),
         enterFrom: "translate-x-full",
         enterTo: "translate-x-0",
         leaveFrom: "translate-x-0",
@@ -40,7 +40,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "left":
       return {
         position,
-        drawer: classNames("top-0 left-0", position, leftRight),
+        drawer: cn("top-0 left-0", position, leftRight),
         enterFrom: "-translate-x-full",
         enterTo: "translate-x-0",
         leaveFrom: "translate-x-0",
@@ -49,7 +49,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "top":
       return {
         position,
-        drawer: classNames("top-0 left-0", position, topBottom),
+        drawer: cn("top-0 left-0", position, topBottom),
         enterFrom: "-translate-y-full",
         enterTo: "translate-y-0",
         leaveFrom: "translate-y-0",
@@ -58,7 +58,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "bottom":
       return {
         position,
-        drawer: classNames("bottom-0 left-0", position, topBottom),
+        drawer: cn("bottom-0 left-0", position, topBottom),
         enterFrom: "translate-y-full",
         enterTo: "translate-y-0",
         leaveFrom: "translate-y-0",
@@ -108,7 +108,7 @@ export const Drawer: FC<DrawerProps> = ({
       {/* Background overlay */}
       <TransitionChild
         as="div"
-        className={classNames(
+        className={cn(
           "top-0 left-0 z-10 h-full w-full bg-grey-900/80",
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
           position
@@ -125,7 +125,7 @@ export const Drawer: FC<DrawerProps> = ({
       {/* Drawer */}
       <TransitionChild
         as="div"
-        className={classNames("z-10 shadow-2xl", position, drawer, className)}
+        className={cn("z-10 shadow-2xl", position, drawer, className)}
         enter="transition-transform ease-in-out duration-300 transform"
         enterFrom={enterFrom}
         enterTo={enterTo}

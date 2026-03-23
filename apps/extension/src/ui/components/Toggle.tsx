@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   forwardRef,
@@ -32,7 +32,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
     return (
       <label
         htmlFor={id}
-        className={classNames(
+        className={cn(
           "relative inline-flex items-center",
           props.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           className
@@ -40,7 +40,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
       >
         <input id={id} ref={ref} type="checkbox" className="peer sr-only" {...props} />
         <div
-          className={classNames(
+          className={cn(
             "peer box-content shrink-0 rounded-full border-2 border-transparent bg-grey-600",
             "peer-focus:outline-hidden peer-focus-visible:border-body",
             "peer-checked:after:translate-x-full peer-checked:after:bg-primary",

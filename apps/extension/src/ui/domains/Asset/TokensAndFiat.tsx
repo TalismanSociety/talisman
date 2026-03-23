@@ -1,8 +1,8 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { classNames } from "@talismn/util"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
+import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useMemo } from "react"
 
 import { Fiat } from "./Fiat"
@@ -58,10 +58,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
       {withLogo ? (
         <TokenLogo
           tokenId={tokenId}
-          className={classNames(
-            "mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub",
-            logoClassName
-          )}
+          className={cn("mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub", logoClassName)}
         />
       ) : null}
       <Tokens

@@ -1,7 +1,7 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { IconButton } from "@ui/components/IconButton"
+import { cn } from "@ui/util/cn"
 import { useCallback, useRef } from "react"
 import { useEffectOnce } from "react-use"
 
@@ -42,11 +42,11 @@ export const SearchInputControlled = ({
   return (
     <FormFieldInputText
       ref={ref}
-      className={classNames("text-base", className)}
+      className={cn("text-base", className)}
       containerProps={{ className: containerClassName }}
       before={<SearchIcon className="shrink-0 text-body-disabled" />}
       after={
-        <IconButton onClick={handleClear} className={classNames(value ? "visible" : "invisible")}>
+        <IconButton onClick={handleClear} className={cn(value ? "visible" : "invisible")}>
           <XIcon />
         </IconButton>
       }

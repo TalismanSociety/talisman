@@ -3,10 +3,10 @@ import type { Address } from "@core/types/base"
 import type { IconTheme } from "@polkadot/react-identicon/types"
 import { detectAddressEncoding } from "@talismn/crypto"
 import { TalismanOrb } from "@talismn/orb"
-import { classNames } from "@talismn/util"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type CSSProperties, type FC, lazy, Suspense, useMemo } from "react"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
@@ -61,7 +61,7 @@ const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHas
   const displayType = useMemo(() => type ?? identiconType ?? "talisman-orb", [identiconType, type])
 
   return (
-    <div className={classNames("relative inline-block shrink-0", className)}>
+    <div className={cn("relative inline-block shrink-0", className)}>
       {displayType === "polkadot-identicon" ? (
         <PolkadotAvatar seed={address} />
       ) : (
@@ -78,7 +78,7 @@ const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHas
 
 const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
   <div
-    className={classNames(
+    className={cn(
       "block! h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full bg-body-disabled!",
       className
     )}

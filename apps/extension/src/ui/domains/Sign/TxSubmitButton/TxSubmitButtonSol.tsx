@@ -1,10 +1,10 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -101,7 +101,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         <SignApproveButton
           processing={isSubmitting}
           onClick={handleSubmitClick}
-          className={classNames("w-full", className)}
+          className={cn("w-full", className)}
           primary
         >
           {label ?? t("Approve")}

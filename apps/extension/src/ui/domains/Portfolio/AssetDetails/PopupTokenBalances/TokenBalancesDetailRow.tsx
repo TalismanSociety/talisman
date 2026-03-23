@@ -1,10 +1,10 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { cn } from "@ui/util/cn"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { PortfolioAccount } from "../PortfolioAccount"
@@ -28,7 +28,7 @@ export const TokenBalancesDetailRow = ({
 }: TokenBalancesDetailRowProps) => {
   return (
     <div
-      className={classNames(
+      className={cn(
         "flex w-full items-center gap-8 bg-black-secondary px-7 py-6",
         isLastRow && "rounded-b-sm"
       )}
@@ -65,13 +65,13 @@ export const TokenBalancesDetailRow = ({
         )}
       </div>
       <div
-        className={classNames(
+        className={cn(
           "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
           status.status === "fetching" && "animate-pulse transition-opacity"
         )}
       >
         <div
-          className={classNames(
+          className={cn(
             "flex h-10 items-center gap-2 font-bold",
             row.locked ? "text-body-secondary" : "text-white"
           )}

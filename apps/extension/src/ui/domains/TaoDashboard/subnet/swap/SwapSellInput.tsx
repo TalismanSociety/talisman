@@ -1,6 +1,6 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { ChevronDownIcon, SettingsIcon } from "@talismn/icons"
-import { cn, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -9,6 +9,7 @@ import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useIsBalanceInitializing } from "@ui/state/balances"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,

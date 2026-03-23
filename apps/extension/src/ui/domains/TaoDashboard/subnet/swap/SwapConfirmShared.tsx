@@ -1,6 +1,5 @@
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
-import { cn } from "@talismn/util"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -19,6 +18,7 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { cn } from "@ui/util/cn"
 import {
   type ComponentProps,
   type FC,

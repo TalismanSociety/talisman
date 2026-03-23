@@ -1,6 +1,7 @@
 import type { BalanceFormatter } from "@talismn/balances"
 import type { EthNetwork } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
@@ -35,7 +36,7 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
       address={address}
       withIcon={withIcon}
       contentClassName="leading-none"
-      className={classNames("pt-0.5", className)}
+      className={cn("pt-0.5", className)}
     >
       <SignParamTokensDisplay
         tokenId={tokenId}

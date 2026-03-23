@@ -1,12 +1,13 @@
 import type { Account } from "@core/domains/keyring/exports"
 import type { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
-import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
   type FC,
@@ -17,6 +18,7 @@ import {
   useRef,
   useState,
 } from "react"
+
 import { useTranslation } from "react-i18next"
 
 import { currencyConfig } from "../../../Asset/currencyConfig"
@@ -46,7 +48,7 @@ const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, accou
       isBalance
       tokenId={token?.id}
       planck={balance.transferable.planck}
-      className={classNames(balance.status !== "live" && "animate-pulse")}
+      className={cn(balance.status !== "live" && "animate-pulse")}
       tokensClassName="text-body"
       fiatClassName="text-body-secondary"
     />
@@ -296,7 +298,7 @@ const AmountEdit = () => {
           <div className="flex flex-col font-bold text-xl">
             {displayMode === "token" ? <TokenInput /> : <FiatInput />}
           </div>
-          <div className={classNames("flex max-w-full items-center justify-center gap-4")}>
+          <div className={cn("flex max-w-full items-center justify-center gap-4")}>
             {tokenRates && (
               <>
                 {displayMode !== "token" ? <TokenDisplay /> : <FiatDisplay />}
@@ -313,7 +315,7 @@ const AmountEdit = () => {
               onClick={onSetMaxClick}
               disabled={!maxPlancks}
               size="xs"
-              className={classNames("h-11 rounded-sm px-4! py-0!")}
+              className={cn("h-11 rounded-sm px-4! py-0!")}
             >
               {t("Max")}
             </PillButton>
@@ -417,12 +419,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
 
       <div className="flex flex-col gap-2 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <BondTypeDetails />
-        <div
-          className={classNames(
-            "flex gap-8",
-            stakeType === "subnet" ? "flex-col-reverse" : "flex-col"
-          )}
-        >
+        <div className={cn("flex gap-8", stakeType === "subnet" ? "flex-col-reverse" : "flex-col")}>
           <div className="flex items-center justify-between gap-6">
             <div className="whitespace-nowrap">{t("Select Validator")}</div>
             <div className="truncate text-body">

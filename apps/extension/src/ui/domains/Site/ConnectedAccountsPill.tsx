@@ -1,11 +1,12 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames, isNotNil } from "@talismn/util"
+import { isNotNil } from "@talismn/util"
 import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useAccounts } from "@ui/state/accounts"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
+import { cn } from "@ui/util/cn"
 import { uniq } from "lodash-es"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -65,7 +66,7 @@ export const ConnectedAccountsPill: FC = () => {
     <>
       <button
         type="button"
-        className={classNames(
+        className={cn(
           "group h-[2.25rem] w-full overflow-hidden rounded-full p-0.5",
           containerColors,
           "text-body-secondary hover:text-grey-300"

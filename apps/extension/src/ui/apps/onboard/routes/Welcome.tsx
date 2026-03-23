@@ -1,11 +1,11 @@
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@common/constants"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { TalismanColouredHandWhiteTextLogo } from "@ui/theme/logos"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -48,7 +48,7 @@ const NetworkItem: FC<{ logo: string; label: string }> = ({ logo, label }) => {
 const SupportedNetworks = () => {
   const { t } = useTranslation()
   return (
-    <div className={classNames("my-10 flex h-20 shrink-0 content-center pl-5")}>
+    <div className={cn("my-10 flex h-20 shrink-0 content-center pl-5")}>
       <NetworkItem logo={logoMainnet} label="Ethereum Mainnet" />
       <NetworkItem logo={logoBase} label="Base" />
       <NetworkItem logo={logoSonic} label="Sonic" />

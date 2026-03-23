@@ -1,7 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -36,7 +36,7 @@ export const NomPoolUnbondButton: FC<{
 
   return (
     <button
-      className={classNames(
+      className={cn(
         "bg-body/10 font-light text-body-secondary hover:bg-body/20 hover:text-body",
         variant === "small" && "h-10 rounded-sm px-3 text-xs",
         variant === "large" && "h-14 rounded px-4 text-sm",
@@ -47,7 +47,7 @@ export const NomPoolUnbondButton: FC<{
     >
       <div className="flex items-center gap-2">
         <ZapOffIcon
-          className={classNames(
+          className={cn(
             "shrink-0",
             variant === "small" && "text-xs",
             variant === "large" && "text-base"

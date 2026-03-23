@@ -9,7 +9,6 @@ import {
 import { isNetworkDot } from "@talismn/chaindata-provider"
 import type { AccountPlatform } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import {
   useActiveNetworksState,
@@ -18,6 +17,7 @@ import {
   useTokensMap,
 } from "@ui/state/chaindata"
 import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
+import { cn } from "@ui/util/cn"
 import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -120,7 +120,7 @@ export function AccountTypeNetworkSearch({
     >
       {({ open }) => (
         <div
-          className={classNames(
+          className={cn(
             "flex h-24 w-full items-center gap-4 rounded-sm bg-grey-850 px-8 text-body-secondary/50 text-sm",
             open && "rounded-b-none"
           )}
@@ -133,7 +133,7 @@ export function AccountTypeNetworkSearch({
             </div>
           )}
           <ComboboxInput
-            className={classNames("w-full border-none bg-transparent", selected && "hidden")}
+            className={cn("w-full border-none bg-transparent", selected && "hidden")}
             id={inputId}
             placeholder={t("Search for network")}
             onChange={(e) => setSearch(e.target.value)}

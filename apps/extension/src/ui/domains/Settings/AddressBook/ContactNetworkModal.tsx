@@ -1,10 +1,10 @@
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkOptionsModal } from "@ui/domains/Portfolio/NetworkOptionsModal"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import type { NetworkOption } from "@ui/state/portfolio"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -46,7 +46,7 @@ export const ContactNetworkPickerButton: FC<{
     <>
       <button
         type="button"
-        className={classNames(
+        className={cn(
           "flex h-28 w-full items-center gap-6 overflow-hidden rounded-sm px-8",
           "bg-grey-850 text-body-secondary enabled:hover:bg-grey-800 enabled:hover:text-body",
           className

@@ -1,8 +1,9 @@
-import { cn } from "@talismn/util"
 import {
   type NavTabConfig,
   TaoDashboardNavTabs,
 } from "@ui/domains/TaoDashboard/shared/TaoDashboardNavTabs"
+import { cn } from "@ui/util/cn"
+
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TabSignals } from "./TabSignals"

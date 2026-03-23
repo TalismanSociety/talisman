@@ -1,4 +1,4 @@
-import { cn } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 
 /** Generic skeleton placeholder used across TaoDashboard charts and headers. */

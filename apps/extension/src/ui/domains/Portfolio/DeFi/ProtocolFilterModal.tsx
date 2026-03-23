@@ -1,5 +1,4 @@
 import { ChevronLeftIcon, ProtocolIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
@@ -9,6 +8,7 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import type { ProtocolOption } from "@ui/state/defi"
 import { useDefiPositions } from "@ui/state/defi"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -25,7 +25,7 @@ const ProtocolOptionRow: FC<{
     <button
       type="button"
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "flex h-24 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
         isSelected && "bg-grey-700!"
@@ -150,17 +150,11 @@ const ProtocolOptionsModalContent: FC<{
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex w-full items-center px-8 pt-8">
-        <IconButton
-          className={classNames("size-12 shrink-0", !IS_POPUP && "invisible")}
-          onClick={onClose}
-        >
+        <IconButton className={cn("size-12 shrink-0", !IS_POPUP && "invisible")} onClick={onClose}>
           <ChevronLeftIcon />
         </IconButton>
         <div className="grow text-center text-secondary">{t("Protocol Filter")}</div>
-        <IconButton
-          className={classNames("size-12 shrink-0", IS_POPUP && "invisible")}
-          onClick={onClose}
-        >
+        <IconButton className={cn("size-12 shrink-0", IS_POPUP && "invisible")} onClick={onClose}>
           <XIcon />
         </IconButton>
       </div>
@@ -190,7 +184,7 @@ export const ProtocolOptionsModal: FC<{
     <Modal
       isOpen={isOpen}
       onDismiss={onClose}
-      className={classNames(
+      className={cn(
         "h-150 w-100 overflow-hidden border-grey-800 bg-black",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border border-grey-800 shadow-xs"
       )}

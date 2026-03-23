@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,7 +25,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
         label={label ?? t("Confirm")}
         disabled={disabled}
         isProcessing={isProcessing}
-        className={classNames("w-full", className)}
+        className={cn("w-full", className)}
       />
     )
 
@@ -64,7 +64,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
       return (
         <TxSubmitButtonFallback
           label="Unsupported transaction type"
-          className={classNames("w-full", className)}
+          className={cn("w-full", className)}
         />
       )
   }

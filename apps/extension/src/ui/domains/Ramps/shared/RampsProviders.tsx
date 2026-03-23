@@ -1,4 +1,5 @@
-import { classNames, formatPrice, isNotNil } from "@talismn/util"
+import { formatPrice, isNotNil } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { capitalize } from "lodash-es"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -89,7 +90,7 @@ const RampsProviderButtonAvailable: FC<
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-23 flex-col justify-between gap-8 rounded border bg-grey-900 p-6 text-left leading-paragraph",
         isSelected
           ? "border-body bg-grey-850 text-body"
@@ -177,7 +178,7 @@ const ProviderLabel: FC<{ provider: RampsProvider }> = ({ provider }) => {
   return (
     <span className="inline-flex items-center gap-2 text-body-secondary text-xs">
       <span
-        className={classNames(
+        className={cn(
           "inline-block size-8 rounded-full",
           provider === "ramp" && "bg-white p-1" // figma didnt use an svg, wrap the official one to make it look as expected
         )}

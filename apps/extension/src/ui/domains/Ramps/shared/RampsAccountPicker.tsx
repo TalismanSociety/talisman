@@ -5,7 +5,6 @@ import type { Token } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
 import type { TokenRatesList } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -17,6 +16,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { RampsPickerLayout } from "./RampsPickerLayout"
@@ -212,7 +212,7 @@ const AccountButtonRow: FC<{
       type="button"
       onClick={onClick}
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         isSelected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50"
@@ -274,7 +274,7 @@ const AccountTokenBalance: FC<{
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "space-y-2 whitespace-nowrap text-right text-sm",
         loadingStatus !== "live" && "animate-pulse"
       )}

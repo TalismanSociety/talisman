@@ -6,7 +6,6 @@ import type {
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
 import { BalanceFormatter } from "@talismn/balances"
-import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -14,6 +13,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
+import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -119,7 +119,7 @@ const ViewDetailsContent: FC<{
             <ViewDetailsField label={t("Lifetime")}>
               {lifetimeRows?.map((str, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: legacy
-                <div key={str + i} className={classNames(str === "LOADING" && "invisible")}>
+                <div key={str + i} className={cn(str === "LOADING" && "invisible")}>
                   {str}
                 </div>
               ))}

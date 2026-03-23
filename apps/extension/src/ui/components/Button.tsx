@@ -1,5 +1,6 @@
 import { LoaderIcon } from "@talismn/icons"
-import { classNames, cn } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { type FC, type SVGProps, useMemo } from "react"
 
 type ButtonColor = "default" | "primary" | "red" | "orange" | "buy" | "sell"
@@ -76,7 +77,7 @@ export const Button: FC<ButtonProps> = ({
     <button
       type="button"
       disabled={disabled || processing}
-      className={classNames(
+      className={cn(
         "bg relative inline-flex items-center justify-center rounded",
         small ? "h-20 px-8 text-sm" : "h-28 px-12 text-md",
         fullWidth ? "w-full" : "",
@@ -86,9 +87,7 @@ export const Button: FC<ButtonProps> = ({
       {...props}
     >
       {
-        <div
-          className={classNames("flex items-center gap-5", !disabled && processing && "invisible")}
-        >
+        <div className={cn("flex items-center gap-5", !disabled && processing && "invisible")}>
           {IconLeft && (
             <div className={small ? "text-md" : "text-lg"}>
               <IconLeft />
@@ -104,7 +103,7 @@ export const Button: FC<ButtonProps> = ({
       }
       {!disabled && processing && (
         <div
-          className={classNames(
+          className={cn(
             "absolute top-0 left-0 flex h-full w-full flex-col items-center justify-center"
           )}
         >

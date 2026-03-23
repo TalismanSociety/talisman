@@ -6,7 +6,6 @@ import {
   isAccountPortfolio,
 } from "@core/domains/keyring/exports"
 import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { IconButton } from "@ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
@@ -19,6 +18,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, Fragment, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -306,7 +306,7 @@ const SidebarButtonBase: FC<{
   return (
     <button
       type="button"
-      className={classNames(
+      className={cn(
         "flex h-28 w-full items-center gap-4 rounded-[12px] px-4 text-left hover:bg-grey-750",
         isSelected && "bg-grey-800"
       )}

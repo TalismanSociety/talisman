@@ -1,6 +1,5 @@
 import { log } from "@common/log"
 import { Balances } from "@talismn/balances"
-import { cn } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -11,6 +10,7 @@ import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hoo
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import {
   type FC,
   type PropsWithChildren,

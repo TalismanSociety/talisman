@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import {
   type DetailedHTMLProps,
   forwardRef,
@@ -19,7 +19,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ disabled, className, children, containerProps = {}, childProps = {}, ...inputProps }, ref) => {
     return (
       <label
-        className={classNames(
+        className={cn(
           "inline-flex items-center justify-start gap-[0.5em]",
           !disabled && "cursor-pointer",
           className
@@ -28,7 +28,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       >
         <input
           type="checkbox"
-          className={classNames(
+          className={cn(
             "form-checkbox h-[1.2em] w-[1.2em] cursor-pointer rounded-xs border border-body-secondary bg-transparent text-grey-800",
             "checked:active hover:border-white checked:hover:border-body-secondary checked:active:focus-visible:border-transparent",
             "active:bg-grey-700 enabled:focus-visible:border-white",
@@ -41,11 +41,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         />
         {children && (
           <span
-            className={classNames(
-              "text-left",
-              disabled && "text-body-disabled",
-              childProps.className
-            )}
+            className={cn("text-left", disabled && "text-body-disabled", childProps.className)}
             {...childProps}
           >
             {children}

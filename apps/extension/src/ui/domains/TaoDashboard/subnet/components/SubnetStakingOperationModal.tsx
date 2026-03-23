@@ -1,6 +1,6 @@
 import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { cn, formatDecimals } from "@talismn/util"
+import { formatDecimals } from "@talismn/util"
 import { CodeBlock } from "@ui/components/CodeBlock"
 import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
@@ -11,6 +11,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
+import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo, useState } from "react"
@@ -23,6 +24,7 @@ import {
   type StakingOperationType,
   useBittensorStakingOperation,
 } from "./useBittensorStakingOperation"
+
 import { useSubnetTransactions } from "./useSubnetTransactions"
 import { useTransactionModal } from "./useTransactionModal"
 

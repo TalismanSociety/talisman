@@ -1,5 +1,6 @@
 import { StarIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import type { FC } from "react"
 
 import { PortfolioNetworksLogoStack } from "./AssetsTable/PortfolioNetworksLogoStack"
@@ -18,7 +19,7 @@ export const NftTile: FC<{
     <button
       type="button"
       onClick={onClick}
-      className={classNames(
+      className={cn(
         "group relative flex size-full flex-col gap-4 overflow-hidden text-left text-body-secondary",
         className
       )}

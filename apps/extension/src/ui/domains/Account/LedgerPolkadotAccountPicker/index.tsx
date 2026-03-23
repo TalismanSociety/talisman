@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -57,7 +57,7 @@ const DerivationModeButton: FC<{ selected: boolean; onClick: () => void; childre
 }) => (
   <button
     type="button"
-    className={classNames(selected ? "text-body" : "hover:text-grey-300")}
+    className={cn(selected ? "text-body" : "hover:text-grey-300")}
     onClick={onClick}
   >
     {children}

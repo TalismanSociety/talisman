@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { type CSSProperties, type FC, useEffect, useRef, useState } from "react"
 
 export type TabDef = {
@@ -53,7 +53,7 @@ export const Tabs: FC<{
   return (
     <div
       ref={refTabs}
-      className={classNames(
+      className={cn(
         "relative flex h-12 w-full shrink-0 gap-12 border-grey-700 border-b font-light text-sm",
         indicatorStyle ? "visible" : "invisible", // wait for indicator's style to be ready, prevents flickering
         className
@@ -64,7 +64,7 @@ export const Tabs: FC<{
           type="button"
           key={tab.value}
           onClick={() => onChange(tab.value)}
-          className={classNames(
+          className={cn(
             "-mb-0.5 flex h-full select-none flex-col justify-between text-body-secondary",
             tab.value === selected && "selected text-primary",
             tab.disabled && "pointer-events-none cursor-default text-body-disabled"

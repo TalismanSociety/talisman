@@ -1,6 +1,6 @@
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { cn } from "@ui/util/cn"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -103,7 +103,7 @@ export const BittensorClaimSettingsForm = () => {
                 aria-checked={isSelected}
                 onClick={() => !option.disabled && setSelectedClaimType(option.value)}
                 disabled={isClaimTypeLoading}
-                className={classNames(
+                className={cn(
                   "relative w-full rounded-sm border border-light-gray px-6 py-5 text-left transition-colors",
                   "bg-black-tertiary text-sm",
                   isSelected
@@ -126,7 +126,7 @@ export const BittensorClaimSettingsForm = () => {
                   }
                 >
                   <span
-                    className={classNames(
+                    className={cn(
                       "h-3.5 w-3.5 rounded-full transition-colors",
                       isSelected ? "bg-primary" : "bg-transparent"
                     )}

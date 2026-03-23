@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "../../Asset/Fiat"
@@ -16,7 +16,7 @@ export const AvailableBalanceRow = () => {
         <div>{t("Available Balance")}</div>
         {balance && token && (
           <div
-            className={classNames(
+            className={cn(
               "flex items-center gap-2",
               balance?.status === "cache" && "animate-pulse"
             )}

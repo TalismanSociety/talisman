@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 
 export const RampsNumberFieldContainer: FC<{
@@ -8,7 +8,7 @@ export const RampsNumberFieldContainer: FC<{
 }> = ({ input, button, withFocusWithin }) => (
   <div className="w-full overflow-hidden">
     <div
-      className={classNames(
+      className={cn(
         "flex h-13.75 w-full justify-between overflow-hidden rounded-[12px] border border-grey-750 bg-black-secondary p-3 pl-8",
         withFocusWithin && "has-[input:focus]:border-grey-600"
       )}

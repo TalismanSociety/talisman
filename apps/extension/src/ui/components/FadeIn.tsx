@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { type DetailedHTMLProps, type FC, type HTMLAttributes, useEffect, useState } from "react"
 
 type FadeInProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -13,7 +13,7 @@ export const FadeIn: FC<FadeInProps> = ({ className, ...props }) => {
   return (
     <div
       {...props}
-      className={classNames("transition-opacity", opacity ? "opacity-100" : "opacity-0", className)}
+      className={cn("transition-opacity", opacity ? "opacity-100" : "opacity-0", className)}
     />
   )
 }

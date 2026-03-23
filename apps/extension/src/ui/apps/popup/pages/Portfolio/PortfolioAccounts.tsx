@@ -20,7 +20,6 @@ import {
   PlusIcon,
   SettingsIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
@@ -41,6 +40,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state/balances"
+import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -100,7 +100,7 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
     <button
       type="button"
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.75 w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm bg-black-secondary px-6 text-body-secondary hover:bg-grey-800 hover:text-white"
       )}
       onClick={handleClick}
@@ -135,7 +135,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "group",
         "relative h-14.75 w-full rounded-sm bg-black-secondary hover:bg-grey-800"
       )}
@@ -143,7 +143,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
       <button
         type="button"
         tabIndex={0}
-        className={classNames(
+        className={cn(
           "flex h-14.75 w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 text-body-secondary hover:text-white"
         )}
         onClick={handleClick}
@@ -224,7 +224,7 @@ const AccountsToolbar = () => {
     <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
-          containerClassName={classNames(
+          containerClassName={cn(
             "h-16 w-full rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
             "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
           )}
@@ -263,7 +263,7 @@ const AccountsToolbar = () => {
 
 const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
   return (
-    <div className={classNames("flex w-full flex-col gap-4", className)}>
+    <div className={cn("flex w-full flex-col gap-4", className)}>
       {options.map((option) =>
         option.type === "folder" ? (
           <FolderButton key={option.id} option={option} />
@@ -310,7 +310,7 @@ const Accounts = ({
       {hasPortfolioOptions && <AccountsList options={portfolioOptions} />}
 
       {hasWatchedOptions && (
-        <div className={classNames("flex items-center gap-2 font-bold text-body-secondary")}>
+        <div className={cn("flex items-center gap-2 font-bold text-body-secondary")}>
           <EyeIcon />
           <div>{t("Followed only")}</div>
         </div>

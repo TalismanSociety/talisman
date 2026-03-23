@@ -1,5 +1,5 @@
-import { classNames } from "@talismn/util"
 import { FadeIn } from "@ui/components/FadeIn"
+import { cn } from "@ui/util/cn"
 import {
   type CSSProperties,
   type ReactNode,
@@ -37,7 +37,7 @@ const OptionButton = <O extends string>({
       type="button"
       ref={buttonRef}
       disabled={selected}
-      className={classNames(
+      className={cn(
         "z-10 h-full whitespace-pre px-7 py-2 transition-colors duration-150",
         selected && "text-body-black",
         className
@@ -80,12 +80,7 @@ export const OptionSwitch = <O extends string>({
   )
 
   return (
-    <div
-      className={classNames(
-        "inline-block h-14 rounded-full p-[0.25em] text-body-secondary",
-        className
-      )}
-    >
+    <div className={cn("inline-block h-14 rounded-full p-[0.25em] text-body-secondary", className)}>
       <div className="relative z-0 flex h-full items-center gap-2">
         {options.map(([option, optionText]) => (
           <OptionButton

@@ -2,11 +2,11 @@ import type { AccountType } from "@core/domains/keyring/exports"
 import type { Balance } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -42,7 +42,7 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token | null; balance
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "space-y-2 whitespace-nowrap text-right text-sm",
         balance.status === "cache" && "animate-pulse"
       )}
@@ -88,7 +88,7 @@ const AccountRow: FC<AccountRowProps> = ({
       type="button"
       onClick={onClick}
       tabIndex={0}
-      className={classNames(
+      className={cn(
         "flex h-14.5 w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50"

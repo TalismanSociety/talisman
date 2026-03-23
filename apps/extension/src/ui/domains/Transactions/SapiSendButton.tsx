@@ -5,11 +5,11 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
-import { classNames } from "@talismn/util"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { isUserRejectionError } from "@ui/util/isUserRejectionError"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -225,7 +225,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
     <div className="flex w-full flex-col gap-6">
       <SubmitErrorDisplay error={error} />
       <Button
-        className={classNames("w-full", className)}
+        className={cn("w-full", className)}
         primary
         disabled={disabled}
         onClick={handleSubmitClick}
@@ -260,12 +260,7 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
   // make it so we dont need a fallback disabled button here
   if (!props.payload)
     return (
-      <Button
-        className={classNames("w-full", props.className)}
-        primary
-        disabled
-        color={props.color}
-      >
+      <Button className={cn("w-full", props.className)} primary disabled color={props.color}>
         {props.label ?? <LoaderIcon className="animate-spin-slow text-lg" />}
       </Button>
     )
@@ -276,22 +271,12 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}
       {signMethod === "loading" && (
-        <Button
-          className={classNames("w-full", props.className)}
-          primary
-          disabled
-          color={props.color}
-        >
+        <Button className={cn("w-full", props.className)} primary disabled color={props.color}>
           <LoaderIcon className="animate-spin-slow text-lg" />
         </Button>
       )}
       {signMethod === "unsupported" && (
-        <Button
-          className={classNames("w-full", props.className)}
-          primary
-          disabled
-          color={props.color}
-        >
+        <Button className={cn("w-full", props.className)} primary disabled color={props.color}>
           {t("Unsupported account type: {{type}}", { type: account?.type })}
         </Button>
       )}

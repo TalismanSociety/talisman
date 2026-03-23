@@ -1,10 +1,10 @@
 import { InfoIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useSubnetTradeFlow } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber, raoToTao } from "@ui/domains/TaoDashboard/shared/util"
+import { cn } from "@ui/util/cn"
 import {
   type CSSProperties,
   type FC,

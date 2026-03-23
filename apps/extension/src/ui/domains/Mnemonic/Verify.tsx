@@ -1,7 +1,7 @@
 import { wordlist } from "@scure/bip39/wordlists/english"
 import { ChevronLeftIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Button } from "@ui/components/Button"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -17,7 +17,7 @@ const WordSlot = ({
   word?: string
 }) => (
   <span
-    className={classNames(
+    className={cn(
       "whitespace-nowrap rounded-xl bg-black-tertiary px-6 py-3",
       error
         ? "border border-brand-orange border-dashed text-brand-orange"
@@ -44,7 +44,7 @@ const WordOption = ({
     type="button"
     onClick={onClick}
     disabled={selected}
-    className={classNames(
+    className={cn(
       "rounded-xl bg-black-tertiary px-8 py-3 text-body enabled:hover:bg-grey-700 disabled:text-body/20"
     )}
   >

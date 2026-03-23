@@ -1,9 +1,9 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { classNames } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 
 import { AccountIcon } from "./AccountIcon"
@@ -42,7 +42,7 @@ export const AccountPillButton: FC<AccountPillButtonProps> = ({
   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-full px-4!", className)} onClick={onClick}>
+    <PillButton className={cn("h-16 max-w-full px-4!", className)} onClick={onClick}>
       <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         <AccountIcon className="text-lg!" address={address} genesisHash={accountGenesisHash} />
         <div className="grow truncate leading-base">

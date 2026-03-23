@@ -1,6 +1,5 @@
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -8,6 +7,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import {
@@ -125,7 +125,7 @@ export const TryTalismanContent: FC<{
             <div className="relative w-full">
               <input
                 type="text"
-                className={classNames(
+                className={cn(
                   "w-full rounded bg-black-secondary px-8 py-6 text-body placeholder:text-body-disabled",
                   isNsLookup && "pr-16"
                 )}
@@ -146,7 +146,7 @@ export const TryTalismanContent: FC<{
 
             <button
               type="button"
-              className={classNames(
+              className={cn(
                 "rounded border border-body-disabled px-8 py-6 text-body-disabled",
                 address.length && "border-primary bg-primary text-black hover:bg-primary/95"
               )}

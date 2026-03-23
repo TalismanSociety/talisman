@@ -1,5 +1,4 @@
-import { classNames } from "@talismn/util"
-
+import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 
 type ModalContentProps = {
@@ -13,7 +12,7 @@ export const ModalContent = ({ ModalHeader, ModalBody }: ModalContentProps) => {
   return (
     <div
       id={STAKING_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals
-      className={classNames(
+      className={cn(
         "relative flex h-150 max-h-dvh w-100 max-w-dvw flex-col overflow-hidden bg-black",
         !IS_POPUP && "rounded border border-grey-850"
       )}

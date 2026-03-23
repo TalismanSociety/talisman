@@ -567,6 +567,9 @@ importers:
       semver:
         specifier: 7.6.3
         version: 7.6.3
+      tailwind-merge:
+        specifier: ^3.5.0
+        version: 3.5.0
       ts-results:
         specifier: 3.3.0
         version: 3.3.0
@@ -1123,9 +1126,6 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
-      tailwind-merge:
-        specifier: ^3.5.0
-        version: 3.5.0
     devDependencies:
       '@talismn/tsconfig':
         specifier: workspace:*

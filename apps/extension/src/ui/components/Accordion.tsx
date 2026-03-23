@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
+
 import { motion, type TargetAndTransition, type Transition } from "framer-motion"
 import throttle from "lodash-es/throttle"
 import {
@@ -22,7 +23,7 @@ export const AccordionIcon: FC<{ isOpen: boolean; className?: string }> = ({
   className,
 }) => (
   <div
-    className={classNames(
+    className={cn(
       "transition-transform duration-300 ease-in-out",
       isOpen ? "rotate-0" : "-rotate-90",
       className
@@ -99,7 +100,7 @@ export const Accordion: FC<{
 
   return (
     <motion.div
-      className={classNames("overflow-y-hidden", className)}
+      className={cn("overflow-y-hidden", className)}
       style={style}
       ref={refContainer}
       animate={animate}

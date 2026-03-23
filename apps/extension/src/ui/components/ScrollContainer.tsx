@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { cn } from "@ui/util/cn"
 import { provideContext } from "@ui/util/provideContext"
 import { forwardRef, type RefObject, useEffect, useMemo, useRef, useState } from "react"
 
@@ -57,7 +57,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
 
     return (
       <div
-        className={classNames(
+        className={cn(
           "relative z-0 overflow-hidden",
           more.top && "more-top",
           more.bottom && "more-bottom",
@@ -66,7 +66,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
       >
         <div
           ref={ref}
-          className={classNames(
+          className={cn(
             "no-scrollbar h-full w-full overflow-y-auto overflow-x-hidden",
             innerClassName
           )}
@@ -74,13 +74,13 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
           <ScrollContainerProvider container={{ ref }}>{children}</ScrollContainerProvider>
         </div>
         <div
-          className={classNames(
+          className={cn(
             "pointer-events-none absolute top-0 left-0 h-12 w-full bg-linear-to-b from-black to-transparent",
             more.top ? "opacity-100" : "opacity-0"
           )}
         ></div>
         <div
-          className={classNames(
+          className={cn(
             "pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-linear-to-t from-black to-transparent",
             more.bottom ? "opacity-100" : "opacity-0"
           )}

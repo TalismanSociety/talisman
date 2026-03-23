@@ -1,8 +1,8 @@
 import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@common/constants"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useNetworkById } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useId } from "react"
 
 type NetworkLogoBaseProps = {
@@ -20,10 +20,7 @@ const NetworkLogoBase: FC<NetworkLogoBaseProps> = ({ network, className }) => {
       key={`${rid}::${src}`}
       data-id={network?.id}
       src={src}
-      className={classNames(
-        "relative block aspect-square w-[1em] shrink-0 rounded-full",
-        className
-      )}
+      className={cn("relative block aspect-square w-[1em] shrink-0 rounded-full", className)}
       alt=""
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in chain lists
@@ -45,7 +42,7 @@ const NetworkLogoInner: FC<NetworkLogoProps> = ({ networkId: id, className }) =>
 
 const NetworkLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
-    className={classNames(
+    className={cn(
       "block! h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full bg-body-disabled!",
       className
     )}

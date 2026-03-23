@@ -2,7 +2,6 @@ import type { ActiveNetworks } from "@core/domains/balances/store.activeNetworks
 import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
@@ -18,6 +17,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useActiveNetworksState, useNetworks } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
+import { cn } from "@ui/util/cn"
 import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -115,7 +115,7 @@ export const NetworksList: FC<{
 
   return (
     <div className="flex flex-col gap-4">
-      <div className={classNames("flex w-full items-center justify-end gap-4")}>
+      <div className={cn("flex w-full items-center justify-end gap-4")}>
         <button
           type="button"
           onClick={() => ocResetAllModal.open()}
