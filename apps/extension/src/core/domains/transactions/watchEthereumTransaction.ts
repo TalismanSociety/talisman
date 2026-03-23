@@ -9,7 +9,6 @@ import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { settingsStore } from "../app/store.settings"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
-import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { addEvmTransaction, updateTransactionStatus } from "./helpers"
 import type { WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
@@ -107,9 +106,6 @@ export const watchEthereumTransaction = async (
 
       // if not found, mark tx as unknown so user can still cancel/speed-up if necessary
       updateTransactionStatus(hash, isNotFound ? "unknown" : "error")
-
-      // observed on polygon, some submitted transactions are not found, in which case we must reset the nonce counter to avoid being stuck
-      if (unsigned.from) resetTransactionCount(unsigned.from, evmNetworkId)
 
       if (withNotifications)
         await createNotification(

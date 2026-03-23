@@ -23,7 +23,7 @@ import { watchEthereumTransaction } from "../transactions"
 import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
-import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
+import { getNextNonce } from "./nonceManager"
 
 export class EthHandler extends ExtensionHandler {
   private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
@@ -45,8 +45,6 @@ export class EthHandler extends ExtensionHandler {
           siteUrl: queued.url,
           notifications: true,
         })
-
-        if (unsigned.from) incrementTransactionCount(unsigned.from, ethChainId)
 
         resolve(hash)
 
@@ -79,7 +77,7 @@ export class EthHandler extends ExtensionHandler {
     assert(isEthereumAddress(account.address), "Invalid ethereum address")
 
     const tx = parseTransactionRequest(transaction)
-    if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
+    if (tx.nonce === undefined) tx.nonce = await getNextNonce(account.address, ethChainId)
 
     const result = await withSecretKey(account.address, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
@@ -100,8 +98,6 @@ export class EthHandler extends ExtensionHandler {
         siteUrl: queued.url,
         notifications: true,
       })
-
-      incrementTransactionCount(account.address, ethChainId)
 
       resolve(result.val)
 
@@ -164,14 +160,19 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
 
+    // Explicitly assign nonce so it's recorded in Dexie via addEvmTransaction
+    const tx = parseTransactionRequest(unsigned)
+    if (tx.nonce === undefined) tx.nonce = await getNextNonce(unsigned.from, evmNetworkId)
+
+    // Serialize back so the unsigned payload passed to the watcher has the nonce
+    const unsignedWithNonce = { ...unsigned, nonce: tx.nonce }
+
     const result = await withSecretKey(unsigned.from, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, `Missing client for chain ${evmNetworkId}`)
 
       const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
-
-      const tx = parseTransactionRequest(unsigned)
 
       return await client.sendTransaction({
         chain: client.chain,
@@ -181,7 +182,7 @@ export class EthHandler extends ExtensionHandler {
     })
 
     if (result.ok) {
-      watchEthereumTransaction(evmNetworkId, result.val, unsigned, {
+      watchEthereumTransaction(evmNetworkId, result.val, unsignedWithNonce, {
         notifications: true,
         txInfo,
       })
@@ -464,7 +465,7 @@ export class EthHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(eth.transactions.count)": {
         const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
-        return getTransactionCount(address, evmNetworkId)
+        return getNextNonce(address, evmNetworkId)
       }
 
       case "pri(eth.request)":
