@@ -5,7 +5,15 @@ import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsBalanceInitializing } from "@ui/state/balances"
-import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  type ChangeEventHandler,
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { SelectSenderAccountPill } from "./SelectSenderAccountPill"
 import { useSwapBuy } from "./SwapBuyProvider"
@@ -136,14 +144,19 @@ const TokenInput: FC<{
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
   const [inputValue, setInputValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
   useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
     setInputValue(formattedValue)
   }, [formattedValue])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      // refSkipSync.current = true
+      refSkipSync.current = true
       const nextValue = e.target.value
       setInputValue(nextValue)
 

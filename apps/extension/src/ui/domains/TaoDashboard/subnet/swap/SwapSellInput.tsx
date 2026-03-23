@@ -8,7 +8,15 @@ import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useIsBalanceInitializing } from "@ui/state/balances"
-import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  type ChangeEventHandler,
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { SwapSellPositionPickerModal } from "./SwapSellPositionPickerModal"
 import { useSwapSell } from "./SwapSellProvider"
@@ -244,13 +252,19 @@ const TokenInput: FC<{
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
   const [inputValue, setInputValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
   useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
     setInputValue(formattedValue)
   }, [formattedValue])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      refSkipSync.current = true
       const nextValue = e.target.value
       setInputValue(nextValue)
 
