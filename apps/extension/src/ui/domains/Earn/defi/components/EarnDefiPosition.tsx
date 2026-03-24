@@ -11,6 +11,7 @@ import { useDefiPosition } from "@ui/state/defi"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
+import { useDefiItemValueUsd } from "../useDefiItemValueUsd"
 import { PositionContextMenu } from "./PositionContextMenu"
 import { PositionItemAssetLogo } from "./PositionItemAssetLogo"
 import { PositionItemTokens } from "./PositionItemTokens"
@@ -100,6 +101,8 @@ const DefiPositionItemRow: FC<{
   networkId: string
   item: DefiPositionItem
 }> = ({ networkId, item }) => {
+  const valueUsd = useDefiItemValueUsd(item, networkId)
+
   return (
     <div className="flex h-32 w-full shrink-0 items-center gap-8">
       <PositionItemAssetLogo networkId={networkId} item={item} className="size-16 shrink-0" />
@@ -115,7 +118,7 @@ const DefiPositionItemRow: FC<{
             <PositionItemType type={item.type} />
           </div>
           <div className="shrink-0">
-            <FiatFromUsd amount={item.valueUsd} isBalance />
+            <FiatFromUsd amount={valueUsd} isBalance />
           </div>
         </div>
       </div>

@@ -1,23 +1,17 @@
 import type { DefiPosition } from "@core/domains/defi/exports"
 import type { TokenDto, YieldxyzProvider } from "@core/domains/earn/exports"
-import {
-  evmErc20TokenId,
-  evmNativeTokenId,
-  type Network,
-  type NetworkId,
-  solNativeTokenId,
-  solSplTokenId,
-  subNativeTokenId,
-  type TokenId,
-} from "@talismn/chaindata-provider"
+import type { Network, NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { TokenRatesList } from "@talismn/token-rates"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { useDefiPositions } from "@ui/state/defi"
+import { useTokenRatesMap } from "@ui/state/tokenRates"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { useYieldxyzPositionsEnhanced, useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { keyBy } from "lodash-es"
 import { useMemo } from "react"
 
+import { calcDefiItemValueUsd, resolveDefiTokenId } from "../defi/useDefiItemValueUsd"
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
 
 export type EarnPositionDisplayToken = {
@@ -42,35 +36,6 @@ export type EarnPosition = {
 }
 
 const PRIMARY_DEFI_ITEM_TYPES = new Set(["deposit", "loan", "locked", "staked", "margin"])
-
-const resolveDefiTokenId = (
-  networkId: string,
-  contractAddress: string | null,
-  networksMap: Record<NetworkId, Network>,
-  tokensMap: Record<string, unknown>
-): TokenId | null => {
-  const network = networksMap[networkId]
-  if (!network) return null
-
-  let tokenId: string | null = null
-  switch (network.platform) {
-    case "ethereum":
-      tokenId = contractAddress
-        ? evmErc20TokenId(networkId, contractAddress as `0x${string}`)
-        : evmNativeTokenId(networkId)
-      break
-    case "solana":
-      tokenId = contractAddress
-        ? solSplTokenId(networkId, contractAddress)
-        : solNativeTokenId(networkId)
-      break
-    case "polkadot":
-      if (!contractAddress) tokenId = subNativeTokenId(networkId)
-      break
-  }
-
-  return tokenId && tokensMap[tokenId] ? (tokenId as TokenId) : null
-}
 
 const mapYieldPosition = (
   yp: YieldxyzPositionEnhanced,
@@ -130,7 +95,8 @@ const mapYieldPosition = (
 const mapDefiPosition = (
   dp: DefiPosition,
   networksMap: Record<NetworkId, Network>,
-  tokensMap: Record<string, unknown>
+  tokensMap: Record<string, unknown>,
+  tokenRatesMap: TokenRatesList
 ): EarnPosition | null => {
   const primaryItems = dp.breakdown.filter((item) => PRIMARY_DEFI_ITEM_TYPES.has(item.type))
   const groupingItems = primaryItems.length ? primaryItems : dp.breakdown
@@ -159,7 +125,11 @@ const mapDefiPosition = (
     displayTokens.push({ tokenId, symbol: item.symbol, logoUrl: item.logo })
   }
 
-  const totalAmountUsd = dp.breakdown.reduce((sum, item) => sum + item.valueUsd, 0)
+  const totalAmountUsd = dp.breakdown.reduce(
+    (sum, item) =>
+      sum + calcDefiItemValueUsd(item, dp.networkId, networksMap, tokensMap, tokenRatesMap),
+    0
+  )
 
   return {
     id: `defi-${dp.id}`,
@@ -190,6 +160,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
+  const tokenRatesMap = useTokenRatesMap()
 
   const providerByKey = useMemo(() => keyBy(providers ?? [], (p) => p.id), [providers])
 
@@ -207,12 +178,20 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     }
 
     for (const dp of defiPositions ?? []) {
-      const mapped = mapDefiPosition(dp, networksMap, tokensMap)
+      const mapped = mapDefiPosition(dp, networksMap, tokensMap, tokenRatesMap)
       if (mapped) result.push(mapped)
     }
 
     return result
-  }, [yieldPositions, defiPositions, providerByKey, getYieldxyzTokenId, tokensMap, networksMap])
+  }, [
+    yieldPositions,
+    defiPositions,
+    providerByKey,
+    getYieldxyzTokenId,
+    tokensMap,
+    networksMap,
+    tokenRatesMap,
+  ])
 
   const status =
     yieldStatus === "loading" || defiStatus === "loading"
