@@ -111,7 +111,7 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]
   const discoverProducts = useMemo(
     () =>
       allProducts
-        .filter((p) => !(p.balances.sum.fiat(currency).transferable ?? 0))
+        .filter((p) => (p.balances.sum.fiat(currency).transferable ?? 0) === 0)
         .sort((a, b) => b.bestApr - a.bestApr),
     [allProducts, currency]
   )

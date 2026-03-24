@@ -6,21 +6,17 @@ import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
-import { PositionContextMenu } from "@ui/domains/Portfolio/DeFi/PositionContextMenu"
-import { PositionItemAssetLogo } from "@ui/domains/Portfolio/DeFi/PositionItemAssetLogo"
-import { PositionItemTokens } from "@ui/domains/Portfolio/DeFi/PositionItemTokens"
-import { PositionItemType } from "@ui/domains/Portfolio/DeFi/PositionItemType"
-import {
-  PositionSectionLabel,
-  type PositionSectionType,
-} from "@ui/domains/Portfolio/DeFi/PositionSectionLabel"
-import { PositionTotal } from "@ui/domains/Portfolio/DeFi/PositionTotal"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useDefiPosition } from "@ui/state/defi"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { EarnTypeBadge } from "../components/EarnTypeBadge"
+import { EarnTypeBadge } from "../../components/EarnTypeBadge"
+import { PositionContextMenu } from "./PositionContextMenu"
+import { PositionItemAssetLogo } from "./PositionItemAssetLogo"
+import { PositionItemTokens } from "./PositionItemTokens"
+import { PositionItemType } from "./PositionItemType"
+import { PositionSectionLabel, type PositionSectionType } from "./PositionSectionLabel"
+import { PositionTotal } from "./PositionTotal"
 
 export const EarnDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
   const position = useDefiPosition(positionId)

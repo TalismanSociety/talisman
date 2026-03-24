@@ -143,7 +143,7 @@ const TokenProducts: FC<{
           </div>
           <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-body-secondary">
             <div className="flex w-full items-center gap-2 overflow-hidden">
-              <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
+              <NetworkLogo networkId={token.networkId} className="size-8 shrink-0" />
               <NetworkName networkId={token.networkId} className="truncate" />
             </div>
             <div className={cn("shrink-0", isLoading && "animate-pulse")}>
