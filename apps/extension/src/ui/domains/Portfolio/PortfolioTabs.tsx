@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom"
 
 const URL_TAB_TOKENS = "/portfolio/tokens"
 const URL_TAB_NFTS = "/portfolio/nfts"
+const URL_TAB_DEFI = "/earn/positions"
 
 export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
@@ -16,6 +17,7 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
     () => [
       { label: t("Tokens"), value: URL_TAB_TOKENS },
       { label: t("NFTs"), value: URL_TAB_NFTS },
+      { label: t("DeFi"), value: URL_TAB_DEFI },
     ],
     [t]
   )
