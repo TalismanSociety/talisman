@@ -67,7 +67,7 @@ export const SwapBuyInput: FC = () => {
           <TooltipTrigger asChild>
             <div
               className={cn(
-                "invisible w-full truncate text-alert-error text-xs",
+                "invisible line-clamp-1 w-full text-alert-error text-xs",
                 inputErrorMessage && "visible"
               )}
             >
