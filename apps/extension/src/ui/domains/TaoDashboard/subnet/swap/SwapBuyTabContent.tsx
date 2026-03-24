@@ -78,10 +78,9 @@ const SubmitButton = () => {
 }
 
 const AlphaPrice = () => {
-  const { t } = useTranslation()
   const { swapPrice, taoToken } = useSwapBuy()
 
-  if (!taoToken || !swapPrice) return t("N/A")
+  if (!taoToken || !swapPrice) return <span className="text-body-disabled">-</span>
 
   return <TokensAndFiat planck={swapPrice} tokenId={taoToken.id} noCountUp noFiat />
 }
