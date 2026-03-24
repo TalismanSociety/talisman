@@ -264,6 +264,7 @@ const useBittensorBondWizardProvider = () => {
         return {
           ...prev,
           netuid,
+          amountIn: null,
           stakeType: netuid ? "subnet" : "root",
           hotkey:
             prev.stakeDirection === "bond"
