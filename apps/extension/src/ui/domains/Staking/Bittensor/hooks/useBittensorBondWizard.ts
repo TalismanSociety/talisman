@@ -364,11 +364,8 @@ const useBittensorBondWizardProvider = () => {
       return totalStakedPlancks
     }
     if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
-    if (existentialDeposit.planck + feeEstimate * 11n > nativeBalance.transferable.planck)
-      return null
-    const maxRootStake =
-      nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
-    return maxRootStake
+    if (existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck) return null
+    return nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate
   }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, totalStakedPlancks])
 
   const newStakeTotal = useMemo(() => {
@@ -407,18 +404,6 @@ const useBittensorBondWizardProvider = () => {
       existentialDeposit.planck + amountTao.planck + feeEstimate > nativeBalance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
-
-    if (
-      !!nativeBalance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
-      !!amountTao.planck &&
-      existentialDeposit.planck + amountTao.planck + feeEstimate * 10n >
-        nativeBalance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
-    )
-      return t(
-        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
-      )
 
     // if not staking yet, need minTaoBondForInput or more
     if (!dtaoBalance?.free.planck && amountTao.planck < minTaoBondForInput)

@@ -62,14 +62,6 @@ export const useBittensorStakeInputError = ({
     if (existentialDeposit + taoAmountIn + effectiveFeeEstimate > taoBalance)
       return t("Insufficient balance to cover fee and keep account alive")
 
-    if (
-      existentialDeposit + taoAmountIn + effectiveFeeEstimate * 10n >
-      taoBalance // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
-    )
-      return t(
-        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
-      )
-
     // if not staking yet, need minTaoBondForInput or more
     if (!dtaoBalance && taoAmountIn < minTaoBondForInput)
       return t("Minimum bond is {{amount}} {{symbol}}", {
