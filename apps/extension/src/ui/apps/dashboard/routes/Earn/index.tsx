@@ -3,6 +3,7 @@ import type { FC } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardEarnDefiPositionPage } from "./DashboardEarnDefiPositionPage"
 import {
   DashboardEarnDiscoverRoute,
   DashboardEarnPage,
@@ -24,6 +25,7 @@ export const DashboardEarnRoutes: FC = () => {
             path="positions/yieldxyz/:yieldId/:address"
             element={<DashboardYieldxyzYieldPositionsPage />}
           />
+          <Route path="positions/defi/:positionId" element={<DashboardEarnDefiPositionPage />} />
         </Routes>
       </DashboardLayout>
     </PortfolioContainer>

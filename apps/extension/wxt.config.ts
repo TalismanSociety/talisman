@@ -458,8 +458,8 @@ export default defineConfig({
   // Dev server configuration
   dev: {
     server: {
-      port: 3000,
       host: "0.0.0.0",
+      port: 3000,
     },
     // Persist browser profile between restarts (keeps extension storage, logins, etc.)
     reloadCommand: "Alt+R",

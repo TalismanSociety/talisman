@@ -1,10 +1,8 @@
 import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
-import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
-import { getLoadableQuery$, isNotNil, keepAlive, type Loadable } from "@talismn/util"
-import { isEqual, uniq } from "lodash-es"
+import { getLoadableQuery$, keepAlive, type Loadable } from "@talismn/util"
+import { isEqual } from "lodash-es"
 import {
-  combineLatest,
   concatMap,
   defer,
   distinctUntilChanged,
@@ -17,8 +15,7 @@ import {
 } from "rxjs"
 
 import { remoteConfigStore } from "../../app/store.remoteConfig"
-import { walletBalances$ } from "../../balances/walletBalances"
-import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
+import { getYieldxyzNetworkIdToTalismanNetworkIdMap } from "./helpers"
 import { isSupportedYieldxyzProduct } from "./isSupportedYieldxyzProduct"
 import { updateYieldxyzProductsStore, yieldxyzProductsStore$ } from "./store.products"
 import type { YieldDto } from "./types"
@@ -26,20 +23,10 @@ import type { YieldDto } from "./types"
 const REFRESH_INTERVAL = 30_000
 const KEEP_ALIVE = 3_000
 
-const ownedTokenIds$ = walletBalances$.pipe(
-  map((balances) => uniq(balances.balances.map((b) => b.tokenId)).sort()),
-  distinctUntilChanged<TokenId[]>(isEqual)
-)
-
-const yieldxyzNetworkIds$ = combineLatest([ownedTokenIds$, remoteConfigStore.observable]).pipe(
-  map(([tokenIds, remoteConfig]) => {
-    const toYieldxyzNetworkIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
-
-    return uniq(
-      tokenIds
-        .map((tokenId) => toYieldxyzNetworkIdMap[parseTokenId(tokenId).networkId])
-        .filter(isNotNil)
-    ).sort()
+const yieldxyzNetworkIds$ = remoteConfigStore.observable.pipe(
+  map((remoteConfig) => {
+    const yieldxyzToTalismanMap = getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig)
+    return Object.keys(yieldxyzToTalismanMap).sort()
   }),
   distinctUntilChanged<string[]>(isEqual)
 )

@@ -18,7 +18,10 @@ import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
-import { useYieldxyzOpportunitiesByTokenId } from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
+import {
+  type TokenOpportunity,
+  useYieldxyzOpportunitiesByTokenId,
+} from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { EarnTypeBadge } from "./EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{
@@ -29,25 +32,35 @@ export const EarnAvailableProducts: FC<{
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
 
-  const { status, data: products } = useYieldxyzOpportunitiesByTokenId()
+  const { status, heldProducts, discoverProducts } = useYieldxyzOpportunitiesByTokenId()
 
-  const displayProducts = useMemo(() => {
-    if (!search) return products
+  const filterBySearch = useMemo(() => {
+    if (!search) return null
 
     const lowerSearch = search.toLowerCase()
-    return products?.filter((p) => {
+    return (p: TokenOpportunity) => {
       const token = tokensMap[p.tokenId]
       const network = token ? networksMap[token.networkId] : null
       const searcheable = [token?.symbol ?? "", token.name ?? "", network?.name ?? ""]
         .join(" ")
         .toLowerCase()
       return searcheable.includes(lowerSearch)
-    })
-  }, [products, search, tokensMap, networksMap])
+    }
+  }, [search, tokensMap, networksMap])
+
+  const displayHeld = useMemo(
+    () => (filterBySearch ? heldProducts?.filter(filterBySearch) : heldProducts),
+    [heldProducts, filterBySearch]
+  )
+
+  const displayDiscover = useMemo(
+    () => (filterBySearch ? discoverProducts?.filter(filterBySearch) : discoverProducts),
+    [discoverProducts, filterBySearch]
+  )
 
   return (
     <div className="flex w-full flex-col gap-4 overflow-hidden">
-      {displayProducts?.map(({ tokenId, products, bestApr, balances }) => (
+      {displayHeld?.map(({ tokenId, products, bestApr, balances }) => (
         <TokenProducts
           key={tokenId}
           products={products}
@@ -57,10 +70,28 @@ export const EarnAvailableProducts: FC<{
           isLoading={status === "loading"}
         />
       ))}
+      {!!displayDiscover?.length && (
+        <>
+          <h2 className="mt-4 font-medium text-body-secondary text-sm">
+            {t("Discover Opportunities")}
+          </h2>
+          <div className={cn("grid gap-4", IS_POPUP ? "grid-cols-1" : "grid-cols-2")}>
+            {displayDiscover.map(({ tokenId, products, bestApr }) => (
+              <DiscoverTokenCard
+                key={tokenId}
+                tokenId={tokenId}
+                products={products}
+                bestApr={bestApr}
+                isLoading={status === "loading"}
+              />
+            ))}
+          </div>
+        </>
+      )}
       {status === "loading" && <TokenProductsShimmer />}
-      {status === "success" && !products?.length && (
+      {status === "success" && !heldProducts?.length && !discoverProducts?.length && (
         <div className="rounded-sm bg-black-secondary py-10 text-center text-base text-body-secondary">
-          {t("No opportunities found for your assets")}
+          {t("No opportunities found")}
         </div>
       )}
     </div>
@@ -179,6 +210,60 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
         </span>
       </div>
     </button>
+  )
+}
+
+const DiscoverTokenCard: FC<{
+  tokenId: TokenId
+  products: YieldDto[]
+  bestApr: number
+  isLoading?: boolean
+}> = ({ tokenId, products, bestApr, isLoading }) => {
+  const { t } = useTranslation()
+  const token = useToken(tokenId)
+  const network = useNetworkById(token?.networkId)
+  const { isOpen, toggle } = useOpenClose()
+
+  if (!token || !network) return null
+
+  return (
+    <div className="self-start overflow-hidden rounded bg-grey-900">
+      <button
+        type="button"
+        onClick={toggle}
+        className={cn(
+          "flex w-full flex-col gap-2 p-6 text-left text-sm hover:bg-grey-750",
+          isOpen && "bg-grey-800"
+        )}
+      >
+        <div className="flex w-full items-center gap-4">
+          <TokenLogo tokenId={tokenId} className="size-16 shrink-0" />
+          <div className="flex grow flex-col gap-2 overflow-hidden">
+            <div className="truncate font-bold text-body">
+              <TokenDisplaySymbol tokenId={tokenId} />
+            </div>
+            <div className="flex items-center gap-2 overflow-hidden text-body-secondary">
+              <NetworkLogo networkId={token.networkId} className="size-8 shrink-0" />
+              <NetworkName networkId={token.networkId} className="truncate" />
+            </div>
+          </div>
+          <ChevronRightIcon
+            className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
+          />
+        </div>
+        <div className={cn("ml-20 text-body-secondary", isLoading && "animate-pulse")}>
+          <Trans
+            t={t}
+            defaults="Up to <Highlight>{{bestApr}}%</Highlight>"
+            values={{ bestApr: bestApr.toFixed(2) }}
+            components={{ Highlight: <span className="font-bold text-primary" /> }}
+          />
+        </div>
+      </button>
+      <div className={cn("flex w-full flex-col", isOpen ? "block" : "hidden")}>
+        {isOpen && products.map((product) => <ProductRow key={product.id} product={product} />)}
+      </div>
+    </div>
   )
 }
 

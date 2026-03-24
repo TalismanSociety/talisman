@@ -1,9 +1,10 @@
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
-import { isNotNil, type LoadableStatus } from "@talismn/util"
+import type { LoadableStatus } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { NoAssetsFoundSymbol } from "@ui/components/NoAssetsFoundSymbol"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -14,20 +15,19 @@ import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useTokensMap } from "@ui/state/chaindata"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
-import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
-import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
-import { isNil, toPairs, uniq } from "lodash-es"
+import { toPairs } from "lodash-es"
 import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPositions"
+import { useEarnPositions } from "../hooks/useEarnPositions"
 import { AccountDisplay } from "../shared/AccountDisplay"
-import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
-import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
 import { EarnTypeBadge } from "./EarnTypeBadge"
 
-const YieldPositionRow: FC<{
-  position: YieldxyzPositionEnhanced
+const EarnPositionRow: FC<{
+  position: EarnPosition
   status: LoadableStatus
 }> = ({ position, status }) => {
   const navigate = useNavigateWithQuery()
@@ -39,23 +39,19 @@ const YieldPositionRow: FC<{
         "flex h-28 w-full items-center gap-6 px-8 text-sm hover:bg-grey-750",
         IS_POPUP && "gap-4 px-6 text-xs"
       )}
-      onClick={() =>
-        navigate(
-          `/earn/positions/yieldxyz/${encodeURIComponent(position.yieldId)}/${encodeURIComponent(position.address)}`
-        )
-      }
+      onClick={() => navigate(position.detailUrl)}
     >
-      <YieldxyzProviderLogo providerId={position.product.providerId} className="size-16" />
+      <AssetLogo url={position.logoUrl} className="size-16" />
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
           <div className="h-9 w-full truncate text-body">
-            {position.product.metadata.name}{" "}
+            {position.title}{" "}
             <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
-              {position.product.mechanics?.type}
+              {position.type}
             </EarnTypeBadge>
           </div>
           <div>
-            <TokensList position={position} />
+            <DisplayTokensList displayTokens={position.displayTokens} />
           </div>
         </div>
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-body-secondary">
@@ -75,32 +71,27 @@ const YieldPositionRow: FC<{
   )
 }
 
-const TokensList: FC<{ position: YieldxyzPositionEnhanced; className?: string }> = ({
-  position,
-  className,
-}) => {
-  const { getYieldxyzTokenId } = useGetYieldxyzToken()
-  const tokensMap = useTokensMap()
-  const tokenIds = useMemo(() => {
-    return uniq([
-      ...position.product.inputTokens.map((token) => getYieldxyzTokenId(token)),
-      ...(position.product.outputToken ? [getYieldxyzTokenId(position.product.outputToken)] : []),
-      ...position.balances.map((balance) => getYieldxyzTokenId(balance.token)).filter(isNotNil),
-    ])
-      .filter(isNotNil)
-      .filter((tokenId) => !!tokensMap[tokenId]) // only known tokens
-      .sort((a, b) => a.localeCompare(b))
-  }, [getYieldxyzTokenId, position, tokensMap])
-
+const DisplayTokensList: FC<{
+  displayTokens: EarnPositionDisplayToken[]
+  className?: string
+}> = ({ displayTokens, className }) => {
   return (
     <div
       className={cn("flex w-full shrink-0 items-center truncate font-bold text-body", className)}
     >
-      {tokenIds.map((tokenId, i, arr) => (
-        <Fragment key={tokenId}>
-          <span key={tokenId} className="inline-flex shrink-0 items-center gap-2">
-            <TokenLogo tokenId={tokenId} className="size-8" />
-            <TokenDisplaySymbol tokenId={tokenId} />
+      {displayTokens.map((token, i, arr) => (
+        <Fragment key={token.tokenId ?? token.symbol}>
+          <span className="inline-flex shrink-0 items-center gap-2">
+            {token.tokenId ? (
+              <TokenLogo tokenId={token.tokenId} className="size-8" />
+            ) : (
+              <AssetLogo url={token.logoUrl} className="size-8" />
+            )}
+            {token.tokenId ? (
+              <TokenDisplaySymbol tokenId={token.tokenId} />
+            ) : (
+              <span>{token.symbol}</span>
+            )}
           </span>
           {i < arr.length - 1 && <span className="mx-2 text-white">/</span>}
         </Fragment>
@@ -112,7 +103,7 @@ const TokensList: FC<{ position: YieldxyzPositionEnhanced; className?: string }>
 const TokenRow: FC<{
   status: LoadableStatus
   token: Token
-  positions: YieldxyzPositionEnhanced[]
+  positions: EarnPosition[]
   totalUsd: number
 }> = ({ token, positions, totalUsd, status }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -158,17 +149,14 @@ const TokenRow: FC<{
       </button>
       <div className={cn("flex w-full flex-col", !isCollapsed ? "block" : "hidden")}>
         {!isCollapsed &&
-          positions.map((position, i) => (
-            <YieldPositionRow
-              key={`${position.yieldId}-${i}`}
-              status={status}
-              position={position}
-            />
+          positions.map((position) => (
+            <EarnPositionRow key={position.id} status={status} position={position} />
           ))}
       </div>
     </div>
   )
 }
+
 const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
@@ -203,28 +191,20 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
   const navigate = useNavigateWithQuery()
   const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccounts } = usePortfolioNavigation()
-  const { status, data: positions } = useYieldxyzPositionsEnhanced()
+  const { status, data: positions } = useEarnPositions()
   const isLoading = status === "loading"
 
-  const { getYieldxyzToken } = useGetYieldxyzToken()
   const tokensMay = useTokensMap()
 
   const positionsByTokenIdMap = useMemo(() => {
-    return positions
-      ?.map((position) => {
-        const tokens = position.product.inputTokens.map((token) => getYieldxyzToken(token))
-        if (tokens.some(isNil)) return null // ignore positions with unknown tokens
-        return { position, tokenIds: tokens.filter(isNotNil).map((t) => t.id) }
-      })
-      .filter(isNotNil)
-      .reduce<Record<TokenId, YieldxyzPositionEnhanced[]>>((acc, { position, tokenIds }) => {
-        for (const tokenId of tokenIds) {
-          if (!acc[tokenId]) acc[tokenId] = []
-          acc[tokenId].push(position)
-        }
-        return acc
-      }, {})
-  }, [positions, getYieldxyzToken])
+    return (positions ?? []).reduce<Record<TokenId, EarnPosition[]>>((acc, position) => {
+      for (const tokenId of position.tokenIds) {
+        if (!acc[tokenId]) acc[tokenId] = []
+        acc[tokenId].push(position)
+      }
+      return acc
+    }, {})
+  }, [positions])
 
   const selectedAccountsPositions = useMemo(() => {
     const accountAddresses = selectedAccounts.map((acc) => normalizeAddress(acc.address))
@@ -233,11 +213,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
         const positions = allPositions.filter((position) =>
           accountAddresses.some((address) => isAddressEqual(address, position.address))
         )
-        const totalUsd = positions.reduce((sum, pos) => {
-          return (
-            sum + pos.balances.reduce((bSum, bal) => bSum + parseFloat(bal.amountUsd || "0"), 0)
-          )
-        }, 0)
+        const totalUsd = positions.reduce((sum, pos) => sum + pos.totalAmountUsd, 0)
         return {
           token: tokensMay[tokenId],
           positions,
@@ -253,28 +229,19 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     if (!lowerSearch) return selectedAccountsPositions
 
     return selectedAccountsPositions.filter(({ token, positions }) => {
-      const search = [token.symbol, token.name]
+      const terms = [token.symbol, token.name]
       for (const position of positions) {
-        search.push(
-          position.product.metadata.name,
-          position.product.providerId,
-          ...(position.product.tags ?? [])
-        )
-        for (const balance of position.balances)
-          search.push(balance.token.symbol, balance.token.name)
+        terms.push(...position.searchTerms)
       }
-
-      return search.join(" ").toLowerCase().includes(lowerSearch)
+      return terms.join(" ").toLowerCase().includes(lowerSearch)
     })
   }, [search, selectedAccountsPositions])
 
-  //   Toggle handlers
   const { isOpen: isDefiExpanded, toggle: toggleDefiExpanded } = useOpenClose(true)
   const handleDefiToggle = useCallback(() => {
     toggleDefiExpanded()
   }, [toggleDefiExpanded])
 
-  // Calculate total fiat value from all Defi positions
   const totalDefiAmountUsd = useMemo(
     () => displayPositions.reduce((sum, { totalUsd }) => sum + totalUsd, 0),
     [displayPositions]
