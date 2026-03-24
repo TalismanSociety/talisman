@@ -41,7 +41,7 @@ export const EarnAvailableProducts: FC<{
     return (p: TokenOpportunity) => {
       const token = tokensMap[p.tokenId]
       const network = token ? networksMap[token.networkId] : null
-      const searcheable = [token?.symbol ?? "", token.name ?? "", network?.name ?? ""]
+      const searcheable = [token?.symbol ?? "", token?.name ?? "", network?.name ?? ""]
         .join(" ")
         .toLowerCase()
       return searcheable.includes(lowerSearch)

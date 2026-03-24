@@ -214,7 +214,12 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     return result
   }, [yieldPositions, defiPositions, providerByKey, getYieldxyzTokenId, tokensMap, networksMap])
 
-  const status = yieldStatus === "loading" || defiStatus === "loading" ? "loading" : "success"
+  const status =
+    yieldStatus === "loading" || defiStatus === "loading"
+      ? "loading"
+      : yieldStatus === "error" || defiStatus === "error"
+        ? "error"
+        : "success"
 
   return useMemo(
     () => ({ status, data: positions }) as Loadable<EarnPosition[]>,
