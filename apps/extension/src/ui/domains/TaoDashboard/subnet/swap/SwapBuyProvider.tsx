@@ -115,7 +115,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
       balanceTokenIn.transferable.planck <= existentialDeposit.planck
     )
       return 0n
-    const max = balanceTokenIn.transferable.planck - existentialDeposit.planck - lastKnownFee
+    // Add a 5% safety margin on the fee estimate to absorb variance between
+    // the estimated fee and the actual fee charged at execution time.
+    // Without this, even 1 RAO of fee overshoot exhausts the budget and
+    // causes a Token::Frozen error on-chain.
+    const feeWithMargin = lastKnownFee + lastKnownFee / 20n
+    const max = balanceTokenIn.transferable.planck - existentialDeposit.planck - feeWithMargin
     return max > 0n ? max : 0n
   }, [balanceTokenIn, existentialDeposit, lastKnownFee])
 

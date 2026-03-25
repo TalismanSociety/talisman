@@ -364,8 +364,11 @@ const useBittensorBondWizardProvider = () => {
       return totalStakedPlancks
     }
     if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
-    if (existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck) return null
-    return nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate
+    // Add a 5% safety margin on the fee estimate to absorb variance between
+    // the estimated fee and the actual fee charged at execution time.
+    const feeWithMargin = feeEstimate + feeEstimate / 20n
+    if (existentialDeposit.planck + feeWithMargin > nativeBalance.transferable.planck) return null
+    return nativeBalance.transferable.planck - existentialDeposit.planck - feeWithMargin
   }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, totalStakedPlancks])
 
   const newStakeTotal = useMemo(() => {
