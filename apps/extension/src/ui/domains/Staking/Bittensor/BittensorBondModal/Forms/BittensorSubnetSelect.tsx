@@ -33,41 +33,8 @@ import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { ROOT_NETUID } from "../../utils/constants"
+import { normalizeGreek } from "../../utils/normalizeGreek"
 import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
-
-// Maps Greek letters to their visually similar Latin equivalents for search matching.
-// Subnet symbols use Greek letters (α, β, τ, etc.) that users will type as Latin (a, b, t, etc.)
-const GREEK_TO_LATIN: Record<string, string> = {
-  α: "a",
-  β: "b",
-  γ: "y",
-  δ: "d",
-  ε: "e",
-  ζ: "z",
-  η: "n",
-  θ: "th",
-  ι: "i",
-  κ: "k",
-  λ: "l",
-  μ: "u",
-  ν: "v",
-  ξ: "x",
-  ο: "o",
-  π: "p",
-  ρ: "p",
-  σ: "s",
-  ς: "s",
-  τ: "t",
-  υ: "u",
-  φ: "f",
-  χ: "x",
-  ψ: "ps",
-  ω: "w",
-}
-
-const greekRegex = new RegExp(`[${Object.keys(GREEK_TO_LATIN).join("")}]`, "g")
-
-const normalizeGreek = (str: string) => str.replace(greekRegex, (ch) => GREEK_TO_LATIN[ch] ?? ch)
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
@@ -76,6 +43,10 @@ const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] 
   const sorted = data
     .filter((sn) => typeof sn.netuid === "number")
     .sort((a, b) => {
+      // Root subnet always pinned to top
+      if (a.netuid === 0) return -1
+      if (b.netuid === 0) return 1
+
       if (descendingFilters.includes(sortBy)) {
         // Sort other fields in descending order
         if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1

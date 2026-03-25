@@ -88,21 +88,28 @@ export const getBittensorStakingPayload = async ({
       { address }
     )
   }
+  // transfer_keep_alive must come before add_stake_limit:
+  // when using max, the budget is tight (transferable - ED - fee = amountIn).
+  // If add_stake_limit runs first it drains most of the balance, leaving
+  // transfer_keep_alive with only the fee‐estimate margin — any slight fee
+  // variance causes Token::Frozen. Sending the fee while balance is still
+  // high avoids this, and add_stake_limit's BestEffort withdrawal adapts to
+  // whatever remains.
   return sapi.getExtrinsicPayload(
     "Utility",
     "batch_all",
     {
       calls: [
+        sapi.getDecodedCall("Balances", "transfer_keep_alive", {
+          dest: Enum("Id", TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR),
+          value: talismanFee,
+        }),
         sapi.getDecodedCall("SubtensorModule", "add_stake_limit", {
           hotkey,
           netuid,
           amount_staked: amount,
           limit_price: priceLimit,
           allow_partial: false,
-        }),
-        sapi.getDecodedCall("Balances", "transfer_keep_alive", {
-          dest: Enum("Id", TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR),
-          value: talismanFee,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
           remark: Binary.fromText("talisman-bittensor"),
@@ -161,6 +168,9 @@ export const getBittensorUnbondPayload = ({
       { address }
     )
   }
+  // remove_stake_limit DEPOSITS TAO back into the user's account, so
+  // transfer_keep_alive runs with a higher balance — the opposite of
+  // the buy flow where the order must be reversed.
   return sapi.getExtrinsicPayload(
     "Utility",
     "batch_all",

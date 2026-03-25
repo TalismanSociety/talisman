@@ -7,9 +7,11 @@ import {
   ZapOffIcon,
   ZapPlusIcon,
 } from "@talismn/icons"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
+import { normalizeGreek } from "@ui/domains/Staking/Bittensor/utils/normalizeGreek"
 import { cn } from "@ui/util/cn"
 import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -94,7 +96,7 @@ const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ senti
   return (
     <span
       className={cn(
-        "rounded px-4 py-1 text-[10px]",
+        "rounded px-4 py-1 text-tiny",
         sentiment === "bullish" && "bg-buy/20 text-buy",
         sentiment === "bearish" && "bg-sell/20 text-sell"
       )}
@@ -144,13 +146,13 @@ export const TaoDashboardSubnetsTable: FC<{
   const setSortSetting = useSetSortSetting()
 
   const filteredSubnets = useMemo(() => {
-    const trimmedSearch = search.trim().toLowerCase()
+    const trimmedSearch = normalizeGreek(search.trim().toLowerCase())
     if (!trimmedSearch) return subnets
 
     return subnets.filter((subnet) => {
       return (
-        subnet.token.subnetName?.toLowerCase().includes(trimmedSearch) ||
-        subnet.token.symbol.toLowerCase().includes(trimmedSearch) ||
+        normalizeGreek(subnet.token.subnetName?.toLowerCase() ?? "").includes(trimmedSearch) ||
+        normalizeGreek(subnet.token.symbol.toLowerCase()).includes(trimmedSearch) ||
         `sn${subnet.netuid}`.includes(trimmedSearch) ||
         String(subnet.netuid).includes(trimmedSearch)
       )
@@ -452,7 +454,7 @@ const SubnetRow: FC<{
       )}
     >
       {/* Subnet */}
-      <DataCell className="max-w-[160px] flex-row items-center gap-6 overflow-hidden">
+      <DataCell className="max-w-80 flex-row items-center gap-6 overflow-hidden">
         <TokenLogo tokenId={subnet.token.id} className="size-16 shrink-0" />
         <div className="flex grow flex-col gap-1 overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -549,9 +551,11 @@ const SubnetRow: FC<{
             <div className="text-white">
               {subnet.stakedTao !== undefined ? `${formatNumber(subnet.stakedTao)} τ` : "-"}
             </div>
-            <div className="text-body-secondary text-xs">
-              {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
-            </div>
+            {subnet.netuid !== 0 && (
+              <div className="text-body-secondary text-xs">
+                {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
+              </div>
+            )}
           </>
         )}
       </DataCell>
@@ -560,8 +564,6 @@ const SubnetRow: FC<{
       <DataCell error={errors.volume}>
         {loading.volume ? (
           <SkeletonBar className="h-8 w-20" />
-        ) : isRoot ? (
-          <span className="text-body-inactive">-</span>
         ) : (
           <FiatFromUsd amount={subnet.volumeUsd} className="text-white" noCountUp compact />
         )}
@@ -612,33 +614,40 @@ const SubnetRow: FC<{
             disabled={!canStake}
             onClick={handleStakeClick}
             className={cn(
-              "inline-flex size-[28px] items-center justify-center rounded-full",
+              "inline-flex size-14 items-center justify-center rounded-full",
               canStake
                 ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
                 : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
             )}
           >
-            <ZapPlusIcon className="size-[16px]" />
+            <ZapPlusIcon className="size-8" />
           </button>
-          <button
-            type="button"
-            aria-label={t("Unstake")}
-            disabled={!canUnstake}
-            onClick={handleUnstakeClick}
-            className={cn(
-              "inline-flex size-[28px] items-center justify-center rounded-full",
-              canUnstake
-                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
-                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
-            )}
-          >
-            <ZapOffIcon className="size-[16px]" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <button
+                  type="button"
+                  aria-label={t("Unstake")}
+                  disabled={!canUnstake}
+                  onClick={handleUnstakeClick}
+                  className={cn(
+                    "inline-flex size-14 items-center justify-center rounded-full",
+                    canUnstake
+                      ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                      : "cursor-default bg-grey-800/50 text-body-disabled"
+                  )}
+                >
+                  <ZapOffIcon className="size-8" />
+                </button>
+              </span>
+            </TooltipTrigger>
+            {!canUnstake && <TooltipContent>{t("No subnet balance")}</TooltipContent>}
+          </Tooltip>
         </div>
       </DataCell>
 
       {/* Chevron — only for navigable subnets */}
-      <DataCell>{!isRoot && <ChevronRightIcon className="size-[16px] opacity-60" />}</DataCell>
+      <DataCell>{!isRoot && <ChevronRightIcon className="size-8 opacity-60" />}</DataCell>
     </div>
   )
 })

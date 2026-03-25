@@ -264,6 +264,7 @@ const useBittensorBondWizardProvider = () => {
         return {
           ...prev,
           netuid,
+          amountIn: null,
           stakeType: netuid ? "subnet" : "root",
           hotkey:
             prev.stakeDirection === "bond"
@@ -363,11 +364,11 @@ const useBittensorBondWizardProvider = () => {
       return totalStakedPlancks
     }
     if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
-    if (existentialDeposit.planck + feeEstimate * 11n > nativeBalance.transferable.planck)
-      return null
-    const maxRootStake =
-      nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
-    return maxRootStake
+    // Add a 5% safety margin on the fee estimate to absorb variance between
+    // the estimated fee and the actual fee charged at execution time.
+    const feeWithMargin = feeEstimate + feeEstimate / 20n
+    if (existentialDeposit.planck + feeWithMargin > nativeBalance.transferable.planck) return null
+    return nativeBalance.transferable.planck - existentialDeposit.planck - feeWithMargin
   }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, totalStakedPlancks])
 
   const newStakeTotal = useMemo(() => {
@@ -406,18 +407,6 @@ const useBittensorBondWizardProvider = () => {
       existentialDeposit.planck + amountTao.planck + feeEstimate > nativeBalance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
-
-    if (
-      !!nativeBalance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
-      !!amountTao.planck &&
-      existentialDeposit.planck + amountTao.planck + feeEstimate * 10n >
-        nativeBalance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
-    )
-      return t(
-        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
-      )
 
     // if not staking yet, need minTaoBondForInput or more
     if (!dtaoBalance?.free.planck && amountTao.planck < minTaoBondForInput)

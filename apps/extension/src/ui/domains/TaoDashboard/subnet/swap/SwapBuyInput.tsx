@@ -1,12 +1,21 @@
 import { BalanceFormatter } from "@talismn/balances"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { tokensToPlanck } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsBalanceInitializing } from "@ui/state/balances"
 import { cn } from "@ui/util/cn"
-import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  type ChangeEventHandler,
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { SelectSenderAccountPill } from "./SelectSenderAccountPill"
 import { useSwapBuy } from "./SwapBuyProvider"
@@ -54,15 +63,20 @@ export const SwapBuyInput: FC = () => {
           <TokenInput token={tokenIn} value={valueIn} onValueChanged={onValueChange} />
           <TokenDisplay tokenId={tokenIn.id} />
         </div>
-        <div
-          className={cn(
-            "invisible w-full truncate text-alert-error text-xs",
-            inputErrorMessage && "visible"
-          )}
-        >
-          {/* fallback invisible label to prevent layout shift */}
-          {inputErrorMessage || "Error placeholder"}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className={cn(
+                "invisible line-clamp-1 w-full text-alert-error text-xs",
+                inputErrorMessage && "visible"
+              )}
+            >
+              {/* fallback invisible label to prevent layout shift */}
+              {inputErrorMessage || "Error placeholder"}
+            </div>
+          </TooltipTrigger>
+          {inputErrorMessage && <TooltipContent>{inputErrorMessage}</TooltipContent>}
+        </Tooltip>
       </div>
     </div>
   )
@@ -137,14 +151,19 @@ const TokenInput: FC<{
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
   const [inputValue, setInputValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
   useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
     setInputValue(formattedValue)
   }, [formattedValue])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      // refSkipSync.current = true
+      refSkipSync.current = true
       const nextValue = e.target.value
       setInputValue(nextValue)
 
@@ -169,7 +188,7 @@ const TokenInput: FC<{
       step="any"
       value={inputValue}
       className={
-        "peer inline-block grow text-ellipsis bg-transparent text-[14px] text-body placeholder:text-body-disabled"
+        "peer inline-block grow text-ellipsis bg-transparent text-body text-sm placeholder:text-body-disabled"
       }
       onChange={handleChange}
     />

@@ -32,7 +32,11 @@ export const sortValidatorOptions = (
       if (a.isFeatured) return -1
       if (b.isFeatured) return 1
 
-      // non-featured sorted by composite metric
+      // non-featured: inactive validators (no yield/APR) sink to bottom
+      const yieldSort = compareYieldAvailability(a, b)
+      if (yieldSort !== 0) return yieldSort
+
+      // then sorted by composite metric
       const metricSort = compareNumberDescending(getFeaturedSortMetric(a), getFeaturedSortMetric(b))
       if (metricSort !== 0) return metricSort
 

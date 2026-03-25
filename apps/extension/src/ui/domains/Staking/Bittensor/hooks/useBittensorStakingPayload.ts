@@ -204,8 +204,9 @@ export const useBittensorStakingPayload = ({
     netuid,
     hotkey: hotkey ?? MOCKED_HOTKEY,
     amount: amount ?? minTaoBond,
-    priceLimit: priceLimit ?? 1_000n,
-    talismanFee: talismanFee ?? 1_000n,
+    // Use fallbacks >= 16384 to match real values' 4-byte SCALE compact encoding - less would provide a fee estimate that is 2 plancks short
+    priceLimit: priceLimit ?? 100_000n,
+    talismanFee: talismanFee ?? 100_000n,
   })
 
   return {

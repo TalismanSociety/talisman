@@ -20,6 +20,7 @@ import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
 import { useSwapSubmit } from "./useSwapSubmit"
 
 // keep track of the last selected account globally, as the provider will be reset each time its unmounted
@@ -104,6 +105,9 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
 
   const existentialDeposit = useExistentialDeposit(tokenIdIn)
 
+  // Track last known fee so maxValueIn accounts for fees without causing a circular dependency
+  const [lastKnownFee, setLastKnownFee] = useState(0n)
+
   const maxValueIn = useMemo(() => {
     if (
       !balanceTokenIn ||
@@ -111,8 +115,14 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
       balanceTokenIn.transferable.planck <= existentialDeposit.planck
     )
       return 0n
-    return balanceTokenIn.transferable.planck - existentialDeposit.planck
-  }, [balanceTokenIn, existentialDeposit])
+    // Add a 5% safety margin on the fee estimate to absorb variance between
+    // the estimated fee and the actual fee charged at execution time.
+    // Without this, even 1 RAO of fee overshoot exhausts the budget and
+    // causes a Token::Frozen error on-chain.
+    const feeWithMargin = lastKnownFee + lastKnownFee / 20n
+    const max = balanceTokenIn.transferable.planck - existentialDeposit.planck - feeWithMargin
+    return max > 0n ? max : 0n
+  }, [balanceTokenIn, existentialDeposit, lastKnownFee])
 
   const onValueChange = useCallback((value: bigint | null) => {
     setState((s) => ({ ...s, valueIn: value }))
@@ -216,12 +226,35 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
 
+  const {
+    data: mevShieldFeeEstimate,
+    isLoading: isLoadingMevShieldFee,
+    error: errorMevShieldFee,
+  } = useMevShieldFeeEstimate({
+    sapi,
+    address,
+    innerFeeEstimatePayload: feeEstimatePayload,
+    enabled: !isMevShieldDisabled,
+  })
+
+  const combinedFeeEstimate = useMemo(() => {
+    if (typeof feeEstimate !== "bigint") return feeEstimate
+    if (!withMevShield) return feeEstimate
+    if (typeof mevShieldFeeEstimate !== "bigint") return feeEstimate
+    return feeEstimate + mevShieldFeeEstimate
+  }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
+
+  // Keep the fee tracker current so maxValueIn stays accurate
+  useEffect(() => {
+    if (typeof combinedFeeEstimate === "bigint") setLastKnownFee(combinedFeeEstimate)
+  }, [combinedFeeEstimate])
+
   const { isValid, inputErrorMessage } = useBittensorStakeInputError({
     networkId: BITTENSOR_NETWORK_ID,
     taoAmountIn: valueIn,
     taoBalance: isBalancesLoading ? null : (balanceTokenIn?.transferable.planck ?? 0n),
     dtaoBalance: isBalancesLoading ? null : (balanceTokenOut?.transferable.planck ?? 0n),
-    feeEstimate,
+    feeEstimate: combinedFeeEstimate,
     minTaoBondForInput,
     minTaoStakeForInput,
   })
@@ -260,9 +293,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
 
-    feeEstimate,
-    isLoadingFeeEstimate: isLoading || isLoadingFeeEstimate,
-    errorFeeEstimate,
+    feeEstimate: combinedFeeEstimate,
+    innerFeeEstimate: feeEstimate,
+    mevShieldFeeEstimate,
+    isLoadingFeeEstimate:
+      isLoading || isLoadingFeeEstimate || (withMevShield && isLoadingMevShieldFee),
+    errorFeeEstimate: errorFeeEstimate || (withMevShield ? errorMevShieldFee : null),
 
     inputErrorMessage,
     payload,

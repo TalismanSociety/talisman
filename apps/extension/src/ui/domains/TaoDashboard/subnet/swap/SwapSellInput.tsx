@@ -2,6 +2,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { ChevronDownIcon, SettingsIcon } from "@talismn/icons"
 import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -9,7 +10,15 @@ import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/Dashb
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useIsBalanceInitializing } from "@ui/state/balances"
 import { cn } from "@ui/util/cn"
-import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  type ChangeEventHandler,
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { SwapSellPositionPickerModal } from "./SwapSellPositionPickerModal"
 import { useSwapSell } from "./SwapSellProvider"
@@ -80,14 +89,19 @@ export const SwapSellInput: FC = () => {
               />
             </div>
           </div>
-          <div
-            className={cn(
-              "invisible w-full truncate text-alert-error text-xs",
-              inputErrorMessage && "visible"
-            )}
-          >
-            {inputErrorMessage || t("Error")}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "invisible w-full truncate text-alert-error text-xs",
+                  inputErrorMessage && "visible"
+                )}
+              >
+                {inputErrorMessage || t("Error")}
+              </div>
+            </TooltipTrigger>
+            {inputErrorMessage && <TooltipContent>{inputErrorMessage}</TooltipContent>}
+          </Tooltip>
         </div>
 
         <SwapSellPositionPickerModal
@@ -245,13 +259,19 @@ const TokenInput: FC<{
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
   const [inputValue, setInputValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
   useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
     setInputValue(formattedValue)
   }, [formattedValue])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      refSkipSync.current = true
       const nextValue = e.target.value
       setInputValue(nextValue)
 

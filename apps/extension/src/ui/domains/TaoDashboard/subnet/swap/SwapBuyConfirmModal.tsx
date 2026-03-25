@@ -186,7 +186,15 @@ const MevShieldValue = () => {
 }
 
 const FeeEstimateValue = () => {
-  const { feeEstimate, taoToken, isLoadingFeeEstimate, errorFeeEstimate } = useSwapBuy()
+  const {
+    feeEstimate,
+    innerFeeEstimate,
+    mevShieldFeeEstimate,
+    withMevShield,
+    taoToken,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+  } = useSwapBuy()
 
   return (
     <SwapConfirmFeeEstimateValue
@@ -194,6 +202,9 @@ const FeeEstimateValue = () => {
       tokenId={taoToken?.id}
       isLoading={isLoadingFeeEstimate}
       error={errorFeeEstimate}
+      withMevShield={withMevShield}
+      innerFeeEstimate={innerFeeEstimate}
+      mevShieldFeeEstimate={mevShieldFeeEstimate}
     />
   )
 }

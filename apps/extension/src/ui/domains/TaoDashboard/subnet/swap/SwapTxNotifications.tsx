@@ -6,6 +6,7 @@ import { useNetworkById } from "@ui/state/chaindata"
 import { useTransaction } from "@ui/state/transactions"
 import { capitalize } from "lodash-es"
 import { type FC, useEffect } from "react"
+import { toast } from "react-toastify"
 import { useSwapTxWatcher } from "./SwapTxWatcher"
 
 export const SwapTxNotifications = () => {
@@ -53,6 +54,13 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
       }
     )
   }, [transaction, hash, label, network, removeTransaction])
+
+  // Dismiss the toast when the user navigates away (component unmounts)
+  useEffect(() => {
+    return () => {
+      toast.dismiss(hash)
+    }
+  }, [hash])
 
   return null
 }

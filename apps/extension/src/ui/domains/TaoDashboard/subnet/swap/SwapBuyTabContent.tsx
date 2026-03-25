@@ -1,17 +1,20 @@
 import { Button } from "@ui/components/Button"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { type FC, useCallback } from "react"
+import { useBalances } from "@ui/state/balances"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
+import { SwapConfirmMevShieldLabel, SwapConfirmMevShieldValue } from "./SwapConfirmShared"
 import {
   SwapDetailsRow,
   SwapFeeEstimate,
   SwapInputsContainer,
-  SwapPriceImpact,
   SwapSlippageRow,
 } from "./SwapTabShared"
 import { useBittensorSlippageModal } from "./useBittensorSlippageModal"
@@ -22,16 +25,18 @@ export const SwapBuyTabContent: FC<{ netuid: number }> = ({ netuid }) => (
   </SwapBuyProvider>
 )
 
+const SWAP_TAB_CONTAINER_ID = "tao-swap-buy-tab"
+
 const TabContent: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex size-full flex-col overflow-hidden">
+    <div id={SWAP_TAB_CONTAINER_ID} className="flex size-full flex-col overflow-hidden">
       <div className="flex w-full grow flex-col gap-10 overflow-hidden p-8">
         <SwapInputsContainer label={t("Spend")}>
           <SwapBuyInput />
         </SwapInputsContainer>
-        <SwapInputsContainer label={t("Receive")}>
+        <SwapInputsContainer label={t("Receive")} right={<StakedBalance />}>
           <SwapBuyOutput />
         </SwapInputsContainer>
       </div>
@@ -40,8 +45,11 @@ const TabContent: FC = () => {
           <SwapDetailsRow label={t("Estimated Fee")}>
             <FeeEstimate />
           </SwapDetailsRow>
-          <SwapDetailsRow label={t("Price Impact")}>
-            <PriceImpact />
+          <SwapDetailsRow label={<MevShieldLabel />}>
+            <MevShieldToggle />
+          </SwapDetailsRow>
+          <SwapDetailsRow label={t("Alpha Price")}>
+            <AlphaPrice />
           </SwapDetailsRow>
           <SwapDetailsRow label={t("Max Slippage")}>
             <SlippageEdit />
@@ -75,14 +83,24 @@ const SubmitButton = () => {
   )
 }
 
-const PriceImpact = () => {
-  const { priceImpact, isLoading } = useSwapBuy()
+const AlphaPrice = () => {
+  const { swapPrice, taoToken } = useSwapBuy()
 
-  return <SwapPriceImpact priceImpact={priceImpact} isLoading={isLoading} />
+  if (!taoToken || !swapPrice) return <span className="text-body-disabled">-</span>
+
+  return <TokensAndFiat planck={swapPrice} tokenId={taoToken.id} noCountUp noFiat />
 }
 
 const FeeEstimate = () => {
-  const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, tokenIdIn } = useSwapBuy()
+  const {
+    feeEstimate,
+    innerFeeEstimate,
+    mevShieldFeeEstimate,
+    withMevShield,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    tokenIdIn,
+  } = useSwapBuy()
 
   return (
     <SwapFeeEstimate
@@ -90,7 +108,61 @@ const FeeEstimate = () => {
       feeEstimate={feeEstimate}
       isLoading={isLoadingFeeEstimate}
       error={errorFeeEstimate}
+      withMevShield={withMevShield}
+      innerFeeEstimate={innerFeeEstimate}
+      mevShieldFeeEstimate={mevShieldFeeEstimate}
     />
+  )
+}
+
+const MevShieldLabel = () => {
+  return <SwapConfirmMevShieldLabel containerId={SWAP_TAB_CONTAINER_ID} />
+}
+
+const MevShieldToggle = () => {
+  const {
+    withMevShield,
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    setIsMevProtectionEnabled,
+  } = useSwapBuy()
+
+  return (
+    <SwapConfirmMevShieldValue
+      withMevShield={withMevShield}
+      isMevShieldDisabled={isMevShieldDisabled}
+      isMevShieldFeatureDisabled={isMevShieldFeatureDisabled}
+      setIsMevProtectionEnabled={setIsMevProtectionEnabled}
+    />
+  )
+}
+
+const StakedBalance: FC = () => {
+  const { t } = useTranslation()
+  const { address, netuid, tokenOutGeneric } = useSwapBuy()
+  const ownedBalances = useBalances("owned")
+
+  const stakedPlanck = useMemo(() => {
+    if (!address) return 0n
+    return ownedBalances.each
+      .filter(
+        (b) =>
+          b.address === address &&
+          b.token?.type === "substrate-dtao" &&
+          b.token.networkId === BITTENSOR_NETWORK_ID &&
+          b.token.netuid === netuid &&
+          b.free.planck > 0n
+      )
+      .reduce((sum, b) => sum + b.free.planck, 0n)
+  }, [ownedBalances, address, netuid])
+
+  if (!tokenOutGeneric) return null
+
+  return (
+    <div className="text-body-secondary text-sm">
+      {t("Bal:")}{" "}
+      <TokensAndFiat planck={stakedPlanck} tokenId={tokenOutGeneric.id} noCountUp noFiat />
+    </div>
   )
 }
 

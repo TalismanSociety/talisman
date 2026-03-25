@@ -12,13 +12,20 @@ export const calculateFee = ({
     throw new Error("Fee percentage cannot be negative")
   }
 
+  // Convert each floating-point value to BigInt independently to avoid
+  // IEEE 754 compound-rounding errors.
+  // e.g. 0.3 * (1 - 0.05) * 100 = 28.499… in JS instead of 28.5,
+  // which causes Math.round to pick the wrong integer.
+  const SCALE = 10000n
+  const feeBps = BigInt(Math.round(feePercent * Number(SCALE)))
+
   if (seekDiscount === 0 || !seekDiscount) {
-    return (amount * BigInt(Math.round(feePercent * 100))) / 10000n
+    return (amount * feeBps) / (SCALE * 100n)
   }
 
-  const discountedFee = feePercent * (1 - seekDiscount)
+  const discountBps = BigInt(Math.round(seekDiscount * Number(SCALE)))
 
-  return (amount * BigInt(Math.round(discountedFee * 100))) / 10000n
+  return (amount * feeBps * (SCALE - discountBps)) / (SCALE * SCALE * 100n)
 }
 
 export const calculateEffectiveFeeRate = (
@@ -27,8 +34,11 @@ export const calculateEffectiveFeeRate = (
   seekDiscount: number
 ): number => {
   if (netuid === 0 || netuid === null) return 0
-  const discountedFee = subnetFeePercent * (1 - (seekDiscount || 0))
-  return discountedFee / 100
+  // Scale each term independently to avoid IEEE 754 compound-rounding errors.
+  const SCALE = 10000
+  const feeBps = Math.round(subnetFeePercent * SCALE)
+  const discountBps = Math.round((seekDiscount || 0) * SCALE)
+  return (feeBps * (SCALE - discountBps)) / (SCALE * SCALE * 100)
 }
 
 // calculates the minimum input that accounts for swap fee and talisman fee

@@ -28,6 +28,7 @@ import {
   useMemo,
 } from "react"
 import { useTranslation } from "react-i18next"
+import { FeeBreakdownTooltipContent } from "./SwapTabShared"
 
 export const SwapConfirmContainer: FC<PropsWithChildren<{ className?: string }>> = ({
   children,
@@ -255,15 +256,50 @@ export const SwapConfirmFeeEstimateValue: FC<{
   tokenId?: string
   isLoading?: boolean
   error?: unknown
-}> = ({ feeEstimate, tokenId, isLoading, error }) => {
+  withMevShield?: boolean
+  innerFeeEstimate?: bigint | null
+  mevShieldFeeEstimate?: bigint | null
+}> = ({
+  feeEstimate,
+  tokenId,
+  isLoading,
+  error,
+  withMevShield,
+  innerFeeEstimate,
+  mevShieldFeeEstimate,
+}) => {
+  const showBreakdown =
+    withMevShield &&
+    tokenId &&
+    typeof innerFeeEstimate === "bigint" &&
+    typeof mevShieldFeeEstimate === "bigint"
+
   return (
-    <StakingFeeEstimate
-      plancks={feeEstimate}
-      tokenId={tokenId}
-      isLoading={isLoading}
-      error={error}
-      noCountUp
-    />
+    <div className="flex items-center gap-2">
+      {showBreakdown && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-body-secondary">
+              <InfoIcon className="cursor-help" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <FeeBreakdownTooltipContent
+              tokenId={tokenId}
+              innerFeeEstimate={innerFeeEstimate}
+              mevShieldFeeEstimate={mevShieldFeeEstimate}
+            />
+          </TooltipContent>
+        </Tooltip>
+      )}
+      <StakingFeeEstimate
+        plancks={feeEstimate}
+        tokenId={tokenId}
+        isLoading={isLoading}
+        error={error}
+        noCountUp
+      />
+    </div>
   )
 }
 
