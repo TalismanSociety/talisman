@@ -18,7 +18,7 @@ import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 export const YieldxyzEnterStepProduct: FC = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { pickerTokenId, onProductChanged, productId, goTo } = useYieldxyzEnterWizard()
+  const { pickerTokenId, onProductChanged, productId, canGoBack, goBack } = useYieldxyzEnterWizard()
 
   if (!pickerTokenId) throw new Error("PickerTokenId is not defined")
 
@@ -28,7 +28,7 @@ export const YieldxyzEnterStepProduct: FC = () => {
       title={t("Select Yield Opportunity")}
       contentClassName="p-0"
       onCloseClick={close}
-      onBackClick={() => goTo("token")}
+      onBackClick={canGoBack ? goBack : undefined}
     >
       <YieldxyzProductPicker
         tokenId={pickerTokenId}
@@ -117,24 +117,24 @@ const ProductRow: FC<{
       <YieldxyzProviderLogo providerId={product.providerId} className="shrink-0 text-xl!" />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex w-full flex-col gap-2 overflow-hidden">
-          <div className="line-clamp-2">{product.metadata.name}</div>
+          <div className="truncate">{product.metadata.name}</div>
+          <Metric
+            icon={<LockIcon />}
+            tooltip={t("Total value locked")}
+            className="text-body-secondary text-xs"
+          >
+            {product.statistics &&
+              Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                notation: "compact",
+              }).format(Number(product.statistics?.tvlUsd ?? 0))}
+          </Metric>
         </div>
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
-      <div className="flex shrink-0 flex-col items-end justify-center gap-1 text-right">
+      <div className="shrink-0 text-right">
         <YieldxyzProductYieldDisplay product={product} />
-        <Metric
-          icon={<LockIcon />}
-          tooltip={t("Total value locked")}
-          className="text-body-secondary text-xs"
-        >
-          {product.statistics &&
-            Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-              notation: "compact",
-            }).format(Number(product.statistics?.tvlUsd ?? 0))}
-        </Metric>
       </div>
     </button>
   )

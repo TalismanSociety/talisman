@@ -26,7 +26,7 @@ import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 export const YieldxyzEnterStepConfirm = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { tokenIn, amountIn, address, action, network, product, transaction, goTo } =
+  const { tokenIn, amountIn, address, action, network, product, transaction, canGoBack, goBack } =
     useYieldxyzEnterWizard()
 
   if (!tokenIn || !amountIn || !address || !product || !action) return null
@@ -39,7 +39,7 @@ export const YieldxyzEnterStepConfirm = () => {
       <WizardModalDialog
         className="size-full border-none"
         title={t("Enter Position")}
-        onBackClick={() => goTo("amount")}
+        onBackClick={canGoBack ? goBack : undefined}
         onCloseClick={close}
       >
         <div className="flex size-full flex-col gap-8 overflow-hidden">

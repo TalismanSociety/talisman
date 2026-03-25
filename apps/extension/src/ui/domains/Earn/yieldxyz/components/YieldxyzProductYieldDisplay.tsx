@@ -36,7 +36,7 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-1.5 text-body">
+        <div className="flex items-center gap-1.5 text-primary">
           <InfoIcon className="inline-block size-6 align-sub" />
           <span>{text}</span>
         </div>

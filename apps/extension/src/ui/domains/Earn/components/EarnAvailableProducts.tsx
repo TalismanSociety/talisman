@@ -1,28 +1,23 @@
 import type { YieldDto } from "@core/domains/earn/exports"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { ChevronRightIcon } from "@talismn/icons"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
-import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
-import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
 import {
   type TokenOpportunity,
   useYieldxyzOpportunitiesByTokenId,
 } from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
-import { EarnTypeBadge } from "./EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{
   search: string
@@ -104,11 +99,11 @@ const TokenProducts: FC<{
   bestApr: number
   balances: Balances
   isLoading?: boolean
-}> = ({ tokenId, products, bestApr, balances, isLoading }) => {
+}> = ({ tokenId, bestApr, balances, isLoading }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
-  const { isOpen, toggle } = useOpenClose()
+  const { open } = useYieldxyzEnterModal()
 
   if (!token || !network) return null
 
@@ -116,10 +111,9 @@ const TokenProducts: FC<{
     <div className="w-full overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={toggle}
+        onClick={() => open({ pickerTokenId: tokenId })}
         className={cn(
           "flex h-28 w-full items-center gap-6 overflow-hidden px-8 hover:bg-grey-750",
-          isOpen && "bg-grey-800",
           IS_POPUP && "gap-4 px-6"
         )}
       >
@@ -156,60 +150,9 @@ const TokenProducts: FC<{
             </div>
           </div>
         </div>
-        <ChevronRightIcon
-          className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
-        />
+        <ChevronRightIcon className="size-10 shrink-0" />
       </button>
-      <div className={cn("flex w-full flex-col", isOpen ? "block" : "hidden")}>
-        {isOpen && products.map((product) => <ProductRow key={product.id} product={product} />)}
-      </div>
     </div>
-  )
-}
-
-const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
-  const { t } = useTranslation()
-  const { selectedAccount } = usePortfolioNavigation()
-  const { open } = useYieldxyzEnterModal()
-
-  return (
-    <button
-      type="button"
-      className={cn(
-        "flex h-28 w-full items-center gap-6 px-8 text-sm hover:bg-grey-750",
-        IS_POPUP && "gap-4 px-6"
-      )}
-      onClick={() => open({ productId: product.id, address: selectedAccount?.address })}
-    >
-      <YieldxyzProviderLogo providerId={product.providerId} className="size-16 shrink-0" />
-      <div className="flex grow flex-col items-start justify-start gap-2 overflow-hidden">
-        <div className="flex h-9 w-full gap-1 overflow-hidden text-left text-body">
-          <span className="truncate">{product.metadata.name}</span>
-          {!IS_POPUP && (
-            <EarnTypeBadge className="shrink-0">{product.mechanics?.type}</EarnTypeBadge>
-          )}
-        </div>
-        <div className="flex w-full items-center gap-4 truncate text-left">
-          <Metric icon={<UsersIcon />} tooltip={t("Number of unique holders")}>
-            {product.statistics?.uniqueUsers}
-          </Metric>
-          <Metric icon={<LockIcon />} tooltip={t("Total value locked")}>
-            {product.statistics &&
-              Intl.NumberFormat(undefined, {
-                style: "currency",
-                currency: "USD",
-                notation: "compact",
-              }).format(Number(product.statistics?.tvlUsd ?? 0))}
-          </Metric>
-        </div>
-      </div>
-      <div className="shrink-0 text-nowrap">
-        {product.rewardRate.rateType}:{" "}
-        <span className="font-bold text-primary-500">
-          {(product.rewardRate.total * 100).toFixed(2)}%
-        </span>
-      </div>
-    </button>
   )
 }
 
@@ -218,11 +161,11 @@ const DiscoverTokenCard: FC<{
   products: YieldDto[]
   bestApr: number
   isLoading?: boolean
-}> = ({ tokenId, products, bestApr, isLoading }) => {
+}> = ({ tokenId, bestApr, isLoading }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
-  const { isOpen, toggle } = useOpenClose()
+  const { open } = useYieldxyzEnterModal()
 
   if (!token || !network) return null
 
@@ -230,11 +173,8 @@ const DiscoverTokenCard: FC<{
     <div className="self-start overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={toggle}
-        className={cn(
-          "flex w-full flex-col gap-2 p-6 text-left text-sm hover:bg-grey-750",
-          isOpen && "bg-grey-800"
-        )}
+        onClick={() => open({ pickerTokenId: tokenId })}
+        className="flex w-full flex-col gap-2 p-6 text-left text-sm hover:bg-grey-750"
       >
         <div className="flex w-full items-center gap-4">
           <TokenLogo tokenId={tokenId} className="size-16 shrink-0" />
@@ -247,9 +187,7 @@ const DiscoverTokenCard: FC<{
               <NetworkName networkId={token.networkId} className="truncate" />
             </div>
           </div>
-          <ChevronRightIcon
-            className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
-          />
+          <ChevronRightIcon className="size-10 shrink-0" />
         </div>
         <div className={cn("ml-20 text-body-secondary", isLoading && "animate-pulse")}>
           <Trans
@@ -260,27 +198,7 @@ const DiscoverTokenCard: FC<{
           />
         </div>
       </button>
-      <div className={cn("flex w-full flex-col", isOpen ? "block" : "hidden")}>
-        {isOpen && products.map((product) => <ProductRow key={product.id} product={product} />)}
-      </div>
     </div>
-  )
-}
-
-const Metric: FC<
-  PropsWithChildren<{ icon: ReactNode; tooltip: ReactNode; className?: string }>
-> = ({ children, icon, tooltip, className }) => {
-  const { t } = useTranslation()
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className={cn("inline-flex shrink-0 items-center gap-2", className)}>
-          <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
-          <div>{children ?? t("N/A")}</div>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
-    </Tooltip>
   )
 }
 

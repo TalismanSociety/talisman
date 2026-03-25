@@ -24,7 +24,8 @@ import { EarnDisclaimerDrawer } from "./EarnDisclaimerDrawer"
 export const YieldxyzEnterStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { address, goTo, canCreateAction, createAction, product } = useYieldxyzEnterWizard()
+  const { address, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
+    useYieldxyzEnterWizard()
 
   const [processing, setProcessing] = useState(false)
   const [hideDisclaimer] = useAppState("hideEarnDisclaimer")
@@ -56,6 +57,7 @@ export const YieldxyzEnterStepAmount = () => {
       className="size-full border-none"
       title={"Enter Position"}
       onCloseClick={close}
+      onBackClick={canGoBack ? goBack : undefined}
     >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>

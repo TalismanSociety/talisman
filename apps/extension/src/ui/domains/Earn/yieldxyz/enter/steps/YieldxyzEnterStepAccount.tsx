@@ -9,7 +9,7 @@ import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 export const YieldxyzEnterStepAccount: FC = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { address, tokenIn, onAccountChanged } = useYieldxyzEnterWizard()
+  const { address, tokenIn, onAccountChanged, canGoBack, goBack } = useYieldxyzEnterWizard()
 
   if (!tokenIn) throw new Error("TokenIn is not defined")
 
@@ -19,6 +19,7 @@ export const YieldxyzEnterStepAccount: FC = () => {
       title={t("Select Account")}
       contentClassName="p-0"
       onCloseClick={close}
+      onBackClick={canGoBack ? goBack : undefined}
     >
       <SenderAccountPicker address={address} tokenId={tokenIn?.id} onSelect={onAccountChanged} />
     </WizardModalDialog>

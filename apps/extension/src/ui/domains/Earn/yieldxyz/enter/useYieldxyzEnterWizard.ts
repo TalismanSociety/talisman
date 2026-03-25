@@ -21,6 +21,7 @@ import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
 export type YieldxyzEnterWizardInit = {
   address?: string
+  pickerTokenId?: TokenId // used to open the wizard at the "product" step for a specific token
   pickerTokenIds?: TokenId[] // used to restrict token selection when opening the wizard from portfolio
   productId?: string
 }
@@ -48,10 +49,19 @@ const advanceStep = (state: YieldxyzEnterWizardState): YieldxyzEnterWizardState 
 const initializeState = (init: YieldxyzEnterWizardInit | null): YieldxyzEnterWizardState =>
   advanceStep({
     step: "amount",
+    pickerTokenId: init?.pickerTokenId ?? null,
     address: init?.address ?? null,
     productId: init?.productId ?? null,
     amountIn: null,
   })
+
+const STEP_ORDER: YieldxyzEnterWizardState["step"][] = [
+  "token",
+  "product",
+  "account",
+  "amount",
+  "confirm",
+]
 
 const useYieldxyzEnterWizardProvider = ({
   stateInit,
@@ -61,6 +71,7 @@ const useYieldxyzEnterWizardProvider = ({
   const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzEnterModal()
   const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
+  const [initialStep] = useState(() => initializeState(stateInit).step)
   const { status, data: product } = useYieldxyzProduct(state.productId)
   const { getYieldxyzToken } = useGetYieldxyzToken()
 
@@ -158,6 +169,27 @@ const useYieldxyzEnterWizardProvider = ({
     setState((state) => ({ ...state, step }))
   }, [])
 
+  const canGoBack = useMemo(() => {
+    return STEP_ORDER.indexOf(state.step) > STEP_ORDER.indexOf(initialStep)
+  }, [state.step, initialStep])
+
+  const goBack = useCallback(() => {
+    setState((state) => {
+      const currentIndex = STEP_ORDER.indexOf(state.step)
+      if (currentIndex <= 0) return state
+      const prevStep = STEP_ORDER[currentIndex - 1]!
+      // clear state that was set by the current step so re-advancing works correctly
+      switch (state.step) {
+        case "account":
+          return { ...state, step: prevStep, address: null }
+        case "amount":
+          return { ...state, step: prevStep, amountIn: null }
+        default:
+          return { ...state, step: prevStep }
+      }
+    })
+  }, [])
+
   const onCompleted = useCallback(() => {
     // do not await the refresh or UI will flicker
     if (state.address && state.productId)
@@ -206,6 +238,8 @@ const useYieldxyzEnterWizardProvider = ({
     product,
     validationError: talismanValidationError ?? yieldxyzValidationError,
     goTo,
+    goBack,
+    canGoBack,
     onAmountInChanged,
     setMaxAmountIn,
     onAccountChanged,
