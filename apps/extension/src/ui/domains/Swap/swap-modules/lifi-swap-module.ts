@@ -250,7 +250,7 @@ const getRoutes = async (
     const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
     const slippage = await getSwapSlippageDecimal()
     if (signal.aborted) return null
-    return await lifiSdk.getRoutes(
+    const response = await lifiSdk.getRoutes(
       {
         fromAddress: effectiveFromAddress,
         toAddress: effectiveToAddress,
@@ -263,6 +263,11 @@ const getRoutes = async (
       },
       { signal }
     )
+
+    // Filter out multi-step routes — our execution/signing flow only handles a single transaction per swap
+    response.routes = response.routes.filter((route) => route.steps.length <= 1)
+
+    return response
   } catch (cause) {
     if (signal.aborted || isAbortError(cause)) return null
 
