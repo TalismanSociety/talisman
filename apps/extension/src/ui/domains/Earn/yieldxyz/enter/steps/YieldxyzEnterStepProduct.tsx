@@ -57,7 +57,7 @@ const YieldxyzProductPicker: FC<{
     [disabled, token?.symbol, t]
   )
 
-  const products = useYieldxyzOpportunitiesForTokenId(tokenId) // hypothetical hook to get available products
+  const products = useYieldxyzOpportunitiesForTokenId(tokenId)
 
   const displayProducts = useMemo(() => {
     if (!search) return products

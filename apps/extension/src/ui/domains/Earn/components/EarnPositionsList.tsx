@@ -134,7 +134,7 @@ const TokenRow: FC<{
             {token.name}
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden">
-            <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
+            <NetworkLogo networkId={token.networkId} className="size-8 shrink-0" />
             <NetworkName networkId={token.networkId} className="truncate" />
           </div>
         </div>
@@ -249,10 +249,18 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     toggleDefiExpanded()
   }, [toggleDefiExpanded])
 
-  const totalDefiAmountUsd = useMemo(
-    () => displayPositions.reduce((sum, { totalUsd }) => sum + totalUsd, 0),
-    [displayPositions]
-  )
+  const totalDefiAmountUsd = useMemo(() => {
+    const seen = new Set<string>()
+    let sum = 0
+    for (const { positions } of displayPositions) {
+      for (const pos of positions) {
+        if (seen.has(pos.id)) continue
+        seen.add(pos.id)
+        sum += pos.totalAmountUsd
+      }
+    }
+    return sum
+  }, [displayPositions])
 
   if (!displayPositions.length && !isInitialising && !isLoading)
     return (

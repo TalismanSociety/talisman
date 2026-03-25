@@ -74,9 +74,9 @@ const DefiPositionSection: FC<{ position: DefiPosition; type: PositionSectionTyp
   const items = useMemo(() => {
     switch (type) {
       case "supplied":
-        return position.breakdown.filter((item) => item.type !== "reward") || []
+        return position.breakdown.filter((item) => item.type !== "reward")
       case "rewards":
-        return position.breakdown.filter((item) => item.type === "reward") || []
+        return position.breakdown.filter((item) => item.type === "reward")
     }
   }, [position.breakdown, type])
 
