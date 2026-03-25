@@ -1,5 +1,12 @@
 # @talismn/crypto
 
+## 0.3.3
+
+### Patch Changes
+
+- 177feec: bittensor mev shield update
+- e1a736f: fix comment
+
 ## 0.3.2
 
 ### Patch Changes

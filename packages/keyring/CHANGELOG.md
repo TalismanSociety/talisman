@@ -1,5 +1,14 @@
 # @talismn/keyring
 
+## 1.0.9
+
+### Patch Changes
+
+- e1a736f: cleanup dead code and exports
+- Updated dependencies [177feec]
+- Updated dependencies [e1a736f]
+  - @talismn/crypto@0.3.3
+
 ## 1.0.8
 
 ### Patch Changes

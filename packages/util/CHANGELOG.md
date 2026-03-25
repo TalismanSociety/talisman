@@ -1,5 +1,15 @@
 # @talismn/util
 
+## 1.0.0
+
+### Major Changes
+
+- 19fd19d: remove classNames/cn utilities
+
+### Patch Changes
+
+- 51e0da6: bump tailwind-merge
+
 ## 0.5.8
 
 ### Patch Changes

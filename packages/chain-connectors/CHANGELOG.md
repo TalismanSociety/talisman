@@ -1,5 +1,23 @@
 # @talismn/chain-connectors
 
+## 0.0.16
+
+### Patch Changes
+
+- 6d4ee42: performance improvements + new tests
+- a8a0727: bump papi deps
+- Updated dependencies [6d4ee42]
+- Updated dependencies [e1a736f]
+- Updated dependencies [6577dce]
+- Updated dependencies [7609ac1]
+- Updated dependencies [9929e2d]
+- Updated dependencies [51e0da6]
+- Updated dependencies [19fd19d]
+- Updated dependencies [6d4ee42]
+  - @talismn/chaindata-provider@1.3.7
+  - @talismn/connection-meta@0.2.36
+  - @talismn/util@1.0.0
+
 ## 0.0.15
 
 ### Patch Changes

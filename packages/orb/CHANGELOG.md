@@ -1,5 +1,14 @@
 # @talismn/orb
 
+## 0.4.1
+
+### Patch Changes
+
+- e1a736f: simplify getTalsimanOrbDataUrl
+- Updated dependencies [177feec]
+- Updated dependencies [e1a736f]
+  - @talismn/crypto@0.3.3
+
 ## 0.4.0
 
 ### Minor Changes

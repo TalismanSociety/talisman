@@ -1,5 +1,19 @@
 # @talismn/chaindata-provider
 
+## 1.3.7
+
+### Patch Changes
+
+- 6d4ee42: performance improvements + new tests
+- e1a736f: cleanup dead code and exports
+- 6577dce: init data
+- 7609ac1: update readme
+- 9929e2d: performance log
+- 6d4ee42: improve performance
+- Updated dependencies [51e0da6]
+- Updated dependencies [19fd19d]
+  - @talismn/util@1.0.0
+
 ## 1.3.6
 
 ### Patch Changes

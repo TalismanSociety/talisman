@@ -1,5 +1,13 @@
 # @talismn/sapi
 
+## 0.1.3
+
+### Patch Changes
+
+- a8a0727: bump papi deps
+- Updated dependencies [a8a0727]
+  - @talismn/scale@0.3.3
+
 ## 0.1.2
 
 ### Patch Changes
