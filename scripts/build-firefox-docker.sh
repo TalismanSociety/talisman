@@ -85,6 +85,12 @@ unzip -q "$SOURCES_ZIP" -d "$TEMP_DIR/sources"
 cd "$TEMP_DIR/sources"
 chmod +x scripts/*.sh 2>/dev/null || true
 
+# The sources.zip normalizes all file timestamps to 2000-01-01 for reproducible builds.
+# BuildKit uses mtime to detect changes in the build context, so identical timestamps
+# cause it to reuse stale cached file content from previous builds.
+# Touching all files forces BuildKit to re-read their actual content.
+find . -exec touch {} + 2>/dev/null || true
+
 log_info "Building Docker image from sources (no cache)..."
 docker build --no-cache -t "${IMAGE_NAME}-pass2" -f Dockerfile.firefox .
 

@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -90,7 +90,7 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.0.9",
     "dexie-react-hooks": "^1.1.7",
-    "dompurify": "^3.2.6",
+    "dompurify": "^3.3.3",
     "eth-phishing-detect": "1.2.0",
     "framer-motion": "11.11.9",
     "highlight.js": "11.10.0",
@@ -116,7 +116,7 @@
     "react-dropzone": "14.2.10",
     "react-hook-form": "7.53.1",
     "react-i18next": "^15.1.0",
-    "react-router-dom": "6.27.0",
+    "react-router-dom": "6.30.3",
     "react-toastify": "^10.0.6",
     "react-use": "17.5.1",
     "rxjs": "^7.8.1",
