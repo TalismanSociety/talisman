@@ -183,14 +183,17 @@ describe("cleanupDroppedTransactions", () => {
       expect(tx?.status).toBe("error")
     })
 
-    it("leaves unknown substrate tx when nonce was consumed", async () => {
+    it("marks unknown substrate tx as error when nonce was consumed", async () => {
       mockChainConnectorSend.mockResolvedValue(6) // next index = 6, nonce 5 consumed
       await db.transactionsV2.put(makeSubstrateTx(5))
 
       await cleanupAllDroppedTransactions()
 
+      // Even when the nonce was consumed (by this tx or a replacement),
+      // we mark as error because the real-time watcher should have caught
+      // a successful inclusion. Leaving it as "unknown" forever is worse UX.
       const tx = await db.transactionsV2.get("sub-polkadot-5")
-      expect(tx?.status).toBe("unknown")
+      expect(tx?.status).toBe("error")
     })
 
     it("leaves substrate tx when chain is unavailable (fail-safe)", async () => {

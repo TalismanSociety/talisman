@@ -13,7 +13,7 @@ import type { WalletTransactionDot, WalletTransactionEth, WalletTransactionSol }
  *
  * Platform-specific verification:
  * - EVM: eth_getTransactionByHash — not found means dropped
- * - Substrate: system_accountNextIndex — nonce not consumed means dropped
+ * - Substrate: chain reachability check — marks all unknown txs as dropped
  * - Solana: getSignatureStatuses — null means dropped
  *
  * All checks are fail-safe: RPC errors leave the tx as "unknown".
@@ -110,26 +110,18 @@ const cleanupEvmTransactions = async (txs: WalletTransactionEth[]): Promise<void
 const cleanupSubstrateTransactions = async (txs: WalletTransactionDot[]): Promise<void> => {
   if (txs.length === 0) return
 
-  // Group by networkId + account: one system_accountNextIndex call per address per chain
-  const byKey = groupBy(txs, (tx) => `${tx.networkId}:${tx.account}`)
-  for (const [, accountTxs] of byKey) {
-    const first = accountTxs[0]!
+  // Group by network: one reachability check per chain
+  const byNetwork = groupBy(txs, (tx) => tx.networkId)
+  for (const [networkId, networkTxs] of byNetwork) {
     try {
-      const nextIndex = await chainConnector.send<number>(
-        first.networkId,
-        "system_accountNextIndex",
-        [first.account]
-      )
+      // Verify chain is reachable — if unavailable, skip and retry next startup
+      await chainConnector.send(networkId, "system_chain", [])
 
-      for (const tx of accountTxs) {
-        if (typeof tx.nonce !== "number") continue
-        // nextIndex <= nonce: nonce not consumed, tx not in pool → dropped
-        if (nextIndex <= tx.nonce) {
-          await updateTransactionStatus(tx.id, "error")
-        }
-        // nextIndex > nonce: nonce consumed (included or superseded).
-        // Leave as "unknown" — we can't determine the outcome without
-        // looking up the extrinsic in block history.
+      for (const tx of networkTxs) {
+        // The real-time watcher (90s window) should have caught any successful
+        // inclusion. Since it didn't, treat as dropped so the tx doesn't stay
+        // stuck as "unknown" forever. The user can verify on a block explorer.
+        await updateTransactionStatus(tx.id, "error")
       }
     } catch {
       // Chain unavailable — skip
