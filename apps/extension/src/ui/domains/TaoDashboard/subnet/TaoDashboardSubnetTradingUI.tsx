@@ -39,7 +39,6 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
               {/* Right Column - Analytics Sidebar */}
               <div className="h-full w-95 shrink-0 overflow-hidden">
                 <TaoDashboardSidebar netuid={netuid} />
-                {/* <SubnetRightSidebar netuid={netuid} className="h-full" /> */}
               </div>
             </div>
           </div>
