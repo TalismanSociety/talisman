@@ -30,6 +30,7 @@ const EarnPositionRow: FC<{
   position: EarnPosition
   status: LoadableStatus
 }> = ({ position, status }) => {
+  const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
 
   return (
@@ -49,6 +50,11 @@ const EarnPositionRow: FC<{
             <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
               {position.type}
             </EarnTypeBadge>
+            {position.isReadOnly && (
+              <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
+                {t("View Only")}
+              </EarnTypeBadge>
+            )}
           </div>
           <div>
             <DisplayTokensList displayTokens={position.displayTokens} />

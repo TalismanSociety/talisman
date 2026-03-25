@@ -4,6 +4,7 @@ import {
   FloatingPortal,
   flip,
   offset,
+  safePolygon,
   shift,
   useDismiss,
   useFloating,
@@ -25,9 +26,11 @@ import {
   useState,
 } from "react"
 
+export type TooltipPlacement = Placement | "center"
+
 interface TooltipOptions {
   initialOpen?: boolean
-  placement?: Placement
+  placement?: TooltipPlacement
   open?: boolean
   onOpenChange?: (open: boolean) => void
   delay?: number
@@ -52,18 +55,26 @@ function useTooltip({
   const open = controlledOpen ?? uncontrolledOpen
   const setOpen = setControlledOpen ?? setUncontrolledOpen
 
+  const isCenter = placement === "center"
+
   const data = useFloating({
-    placement,
+    placement: isCenter ? "bottom" : placement,
     open,
     onOpenChange: setOpen,
     whileElementsMounted: autoUpdate,
-    middleware: [
-      offset(5),
-      flip({
-        fallbackAxisSideDirection: "start",
-      }),
-      shift({ padding: 5 }),
-    ],
+    middleware: isCenter
+      ? [
+          offset(({ rects }) => ({
+            mainAxis: -(rects.reference.height / 2 + rects.floating.height / 2),
+          })),
+        ]
+      : [
+          offset(5),
+          flip({
+            fallbackAxisSideDirection: "start",
+          }),
+          shift({ padding: 5 }),
+        ],
   })
 
   const context = data.context
@@ -71,6 +82,9 @@ function useTooltip({
   const hover = useHover(context, {
     move: false,
     enabled: controlledOpen == null,
+    // safePolygon keeps the tooltip open while the cursor moves between the trigger and floating element,
+    // preventing flicker when the tooltip overlaps the trigger (e.g. center placement)
+    handleClose: isCenter ? safePolygon() : undefined,
     delay: {
       open: delay,
       // delay on close has side-effects, don't use it

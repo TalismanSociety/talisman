@@ -193,7 +193,7 @@ const DiscoverTokenCard: FC<{
     <div className="self-start overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={() => open({ pickerTokenId: tokenId })}
+        onClick={() => open({ pickerTokenId: tokenId, discoverOnly: true })}
         className="flex w-full flex-col gap-2 p-6 text-left text-sm hover:bg-grey-750"
       >
         <div className="flex w-full items-center gap-4">

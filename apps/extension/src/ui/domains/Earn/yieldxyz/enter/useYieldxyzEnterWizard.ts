@@ -24,6 +24,7 @@ export type YieldxyzEnterWizardInit = {
   pickerTokenId?: TokenId // used to open the wizard at the "product" step for a specific token
   pickerTokenIds?: TokenId[] // used to restrict token selection when opening the wizard from portfolio
   productId?: string
+  discoverOnly?: boolean // when true, products are shown as read-only (user doesn't hold the token)
 }
 
 export type YieldxyzEnterWizardState = {
@@ -257,6 +258,7 @@ const useYieldxyzEnterWizardProvider = ({
     canCreateAction,
     createAction,
     pickerTokenIds: stateInit?.pickerTokenIds,
+    discoverOnly: stateInit?.discoverOnly ?? false,
   }
 }
 

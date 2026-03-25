@@ -28,6 +28,7 @@ export type EarnPosition = {
   providerName: string
   title: string
   type: string | null
+  isReadOnly: boolean
   displayTokens: EarnPositionDisplayToken[]
   totalAmountUsd: number
   detailUrl: string
@@ -77,6 +78,7 @@ const mapYieldPosition = (
     providerName: provider?.name ?? yp.product.providerId,
     title: yp.product.metadata.name,
     type: yp.product.mechanics?.type ?? null,
+    isReadOnly: false,
     displayTokens,
     totalAmountUsd: yp.totalAmountUsd,
     detailUrl: `/earn/positions/yieldxyz/${encodeURIComponent(yp.yieldId)}/${encodeURIComponent(yp.address)}`,
@@ -139,6 +141,7 @@ const mapDefiPosition = (
     providerName: dp.defiName,
     title: dp.name,
     type: dp.type,
+    isReadOnly: true,
     displayTokens,
     totalAmountUsd,
     detailUrl: `/earn/positions/defi/${dp.id}`,
