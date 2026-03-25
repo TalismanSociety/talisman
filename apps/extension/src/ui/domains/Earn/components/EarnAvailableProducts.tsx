@@ -14,7 +14,7 @@ import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
 import {
   type TokenOpportunity,
@@ -87,7 +87,7 @@ export const EarnAvailableProducts: FC<{
           <h2 className="mt-4 font-medium text-body-secondary text-sm">
             {t("Discover Opportunities")}
           </h2>
-          <div className={cn("grid gap-4", IS_POPUP ? "grid-cols-1" : "grid-cols-2")}>
+          <div className="grid grid-cols-2 gap-4">
             {displayDiscover.map(({ tokenId, products, bestApr }) => (
               <DiscoverTokenCard
                 key={tokenId}
@@ -207,15 +207,15 @@ const DiscoverTokenCard: FC<{
               <NetworkName networkId={token.networkId} className="truncate" />
             </div>
           </div>
-          <ChevronRightIcon className="size-10 shrink-0" />
         </div>
-        <div className={cn("ml-20 text-body-secondary", isLoading && "animate-pulse")}>
-          <Trans
-            t={t}
-            defaults="Up to <Highlight>{{bestApr}}%</Highlight>"
-            values={{ bestApr: bestApr.toFixed(2) }}
-            components={{ Highlight: <span className="font-bold text-primary" /> }}
-          />
+        <div
+          className={cn(
+            "ml-20 flex items-center gap-1 font-bold text-primary text-xs",
+            isLoading && "animate-pulse"
+          )}
+        >
+          {t("Up to {{bestApr}}%", { bestApr: bestApr.toFixed(2) })}
+          <ChevronRightIcon className="size-7 shrink-0 text-body-secondary" />
         </div>
       </button>
     </div>
