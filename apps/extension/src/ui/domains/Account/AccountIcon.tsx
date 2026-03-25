@@ -1,19 +1,13 @@
 import type { IdenticonType } from "@core/domains/accounts/types"
 import type { Address } from "@core/types/base"
-import type { IconTheme } from "@polkadot/react-identicon/types"
-import { detectAddressEncoding } from "@talismn/crypto"
 import { TalismanOrb } from "@talismn/orb"
-import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { type CSSProperties, type FC, lazy, Suspense, useMemo } from "react"
+import { type FC, memo, Suspense } from "react"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
-
-const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
-
-const IDENTICON_STYLE: CSSProperties = { cursor: "inherit" }
+import { PolkadotAvatar } from "./AccountIcon/PolkadotAvatar"
 
 export type AccountIconProps = {
   address: Address
@@ -33,53 +27,62 @@ const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
   ) : null
 }
 
-export const PolkadotAvatar = ({ seed }: { seed: string }) => {
-  const theme = useMemo<IconTheme>(() => {
-    try {
-      const encoding = detectAddressEncoding(seed)
-      return encoding === "ss58" ? "polkadot" : "ethereum"
-    } catch {
-      return "ethereum" // works for any string
-    }
-  }, [seed])
+const AccountIconWithSettings = memo(
+  ({ address, className, genesisHash }: Omit<AccountIconProps, "type">) => {
+    const [identiconType] = useSetting("identiconType")
+
+    return (
+      <AccountIconBase
+        address={address}
+        className={className}
+        genesisHash={genesisHash}
+        displayType={identiconType ?? "talisman-orb"}
+      />
+    )
+  }
+)
+
+const AccountIconBase = memo(
+  ({
+    address,
+    className,
+    genesisHash,
+    displayType,
+  }: Omit<AccountIconProps, "type"> & { displayType: IdenticonType }) => {
+    return (
+      <div className={cn("relative inline-block shrink-0", className)}>
+        {displayType === "polkadot-identicon" ? (
+          <PolkadotAvatar address={address} className="block! h-[1em] w-[1em]" />
+        ) : (
+          <TalismanOrb seed={address} />
+        )}
+        {genesisHash ? <ChainBadge genesisHash={genesisHash} /> : null}
+      </div>
+    )
+  }
+)
+
+const AccountIconInner: FC<AccountIconProps> = memo(({ address, className, genesisHash, type }) => {
+  if (type) {
+    return (
+      <AccountIconBase
+        address={address}
+        className={className}
+        genesisHash={genesisHash}
+        displayType={type}
+      />
+    )
+  }
 
   return (
-    <IdentIcon
-      value={seed}
-      theme={theme}
-      className="block! overflow-hidden rounded-full [&>img]:h-[1em] [&>img]:w-[1em]"
-      style={IDENTICON_STYLE}
-    />
+    <AccountIconWithSettings address={address} className={className} genesisHash={genesisHash} />
   )
-}
-
-const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHash, type }) => {
-  const [identiconType] = useSetting("identiconType")
-
-  // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
-  // fallbacks to settings store, or default talisman-orb value
-  const displayType = useMemo(() => type ?? identiconType ?? "talisman-orb", [identiconType, type])
-
-  return (
-    <div className={cn("relative inline-block shrink-0", className)}>
-      {displayType === "polkadot-identicon" ? (
-        <PolkadotAvatar seed={address} />
-      ) : (
-        <TalismanOrb seed={address} />
-      )}
-      {genesisHash && (
-        <Suspense fallback={<SuspenseTracker name="AccountIconInner.Badge" />}>
-          <ChainBadge genesisHash={genesisHash} />
-        </Suspense>
-      )}
-    </div>
-  )
-}
+})
 
 const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={cn(
-      "block! h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full bg-body-disabled!",
+      "block! aspect-square h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full bg-body-disabled!",
       className
     )}
   ></div>

@@ -4,6 +4,7 @@ import type { HexString } from "@polkadot/util/types"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
 import merge from "lodash-es/merge"
 import type { Hex, TransactionRequest } from "viem"
@@ -71,19 +72,24 @@ export const addEvmTransaction = async (
     if (!networkId || !payload.from || payload.nonce === undefined)
       throw new Error("Invalid transaction")
 
-    const isReplacement =
-      (await db.transactionsV2
-        .filter(
-          (row) =>
-            row.platform === "ethereum" &&
-            row.networkId === networkId &&
-            row.nonce === payload.nonce
-        )
-        .count()) > 0
-
     await db.transaction("rw", db.transactionsV2, async () => {
       const existingEvm = await db.transactionsV2.get(hash)
       if (existingEvm && ["success", "error", "replaced"].includes(existingEvm.status)) return
+
+      // Only flag as replacement if there's a pending tx with the same nonce from the same account.
+      // Terminated txs (error, unknown, replaced, success) should not trigger the replacement flag —
+      // the original tx is already dead and the new tx is a fresh attempt, not a cancellation/speed-up.
+      const isReplacement =
+        (await db.transactionsV2
+          .filter(
+            (row) =>
+              row.platform === "ethereum" &&
+              row.networkId === networkId &&
+              row.nonce === payload.nonce &&
+              row.status === "pending" &&
+              isAddressEqual(row.account, payload.from!)
+          )
+          .count()) > 0
 
       await db.transactionsV2.put({
         id: hash,

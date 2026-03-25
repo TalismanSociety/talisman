@@ -1,4 +1,5 @@
 import { RAMPS_COINBASE_API_BASE_PATH, RAMPS_COINBASE_PAY_URL } from "@common/constants"
+import { gandalfFetch } from "@ui/util/gandalfFetch"
 import urlJoin from "url-join"
 
 export const getCoinbaseBuyUrl = async (
@@ -72,7 +73,7 @@ const getCoinbaseSessionToken = async (assetId: string, network: string, address
   })
 
   try {
-    const response = await fetch(url, { method, headers, body })
+    const response = await gandalfFetch(url, { method, headers, body })
     const json = await response.json()
     const sessionToken = json?.token
     if (!sessionToken) throw new Error("Coinbase API returned an invalid session token")

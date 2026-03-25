@@ -28,6 +28,7 @@ import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
+import { cleanupAllDroppedTransactions } from "../domains/transactions/cleanupDroppedTransactions"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { resumeSwapWatchers } from "../domains/transactions/watchSwapStatus"
 import { talismanAnalytics } from "../libs/Analytics"
@@ -197,8 +198,9 @@ export default class Extension extends ExtensionHandler {
       // }
     })
 
-    // marks all pending transaction as status unknown
-    updateTransactionsRestart()
+    // marks all pending transaction as status unknown, then verifies
+    // "unknown" txs against the chain and cleans up dropped ones
+    updateTransactionsRestart().then(() => cleanupAllDroppedTransactions())
 
     // resume background swap status watchers for in-progress swaps
     resumeSwapWatchers()

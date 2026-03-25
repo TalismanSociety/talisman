@@ -275,7 +275,7 @@ type TxProgressSolProps = {
 }
 
 const TxProgressSol: FC<TxProgressSolProps> = ({ tx, className, onClose }) => {
-  const network = useNetworkById(tx.networkId, "ethereum")
+  const network = useNetworkById(tx.networkId, "solana")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.signature), [network, tx.signature])
 
   return <TxProgressBase tx={tx} className={className} onClose={onClose} href={href} />
