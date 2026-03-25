@@ -155,8 +155,9 @@ const TokenRow: FC<{
       </button>
       <div className={cn("flex w-full flex-col", !isCollapsed ? "block" : "hidden")}>
         {!isCollapsed &&
-          positions.map((position) => (
-            <EarnPositionRow key={position.id} status={status} position={position} />
+          positions.map((position, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: earn positions for e.g. LPs have multiple tokens, and are therefore rendered in multiple TokenRows, so the index is the only stable key available
+            <EarnPositionRow key={index} status={status} position={position} />
           ))}
       </div>
     </div>
