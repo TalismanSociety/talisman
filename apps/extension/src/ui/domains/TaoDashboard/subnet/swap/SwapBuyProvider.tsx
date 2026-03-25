@@ -104,6 +104,9 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
 
   const existentialDeposit = useExistentialDeposit(tokenIdIn)
 
+  // Track last known fee so maxValueIn accounts for fees without causing a circular dependency
+  const [lastKnownFee, setLastKnownFee] = useState(0n)
+
   const maxValueIn = useMemo(() => {
     if (
       !balanceTokenIn ||
@@ -111,8 +114,9 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
       balanceTokenIn.transferable.planck <= existentialDeposit.planck
     )
       return 0n
-    return balanceTokenIn.transferable.planck - existentialDeposit.planck
-  }, [balanceTokenIn, existentialDeposit])
+    const max = balanceTokenIn.transferable.planck - existentialDeposit.planck - lastKnownFee
+    return max > 0n ? max : 0n
+  }, [balanceTokenIn, existentialDeposit, lastKnownFee])
 
   const onValueChange = useCallback((value: bigint | null) => {
     setState((s) => ({ ...s, valueIn: value }))
@@ -215,6 +219,11 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
+
+  // Keep the fee tracker current so maxValueIn stays accurate
+  useEffect(() => {
+    if (typeof feeEstimate === "bigint") setLastKnownFee(feeEstimate)
+  }, [feeEstimate])
 
   const { isValid, inputErrorMessage } = useBittensorStakeInputError({
     networkId: BITTENSOR_NETWORK_ID,

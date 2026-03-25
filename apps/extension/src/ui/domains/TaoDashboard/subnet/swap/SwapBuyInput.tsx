@@ -188,7 +188,7 @@ const TokenInput: FC<{
       step="any"
       value={inputValue}
       className={
-        "peer inline-block grow text-ellipsis bg-transparent text-[14px] text-body placeholder:text-body-disabled"
+        "peer inline-block grow text-ellipsis bg-transparent text-body text-sm placeholder:text-body-disabled"
       }
       onChange={handleChange}
     />
