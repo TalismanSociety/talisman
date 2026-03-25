@@ -4,6 +4,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
+import { SwapConfirmMevShieldLabel, SwapConfirmMevShieldValue } from "./SwapConfirmShared"
 import { SwapSellConfirmModal } from "./SwapSellConfirmModal"
 import { SwapSellInput } from "./SwapSellInput"
 import { SwapSellOutput } from "./SwapSellOutput"
@@ -23,11 +24,13 @@ export const SwapSellTabContent: FC<{ netuid: number }> = ({ netuid }) => (
   </SwapSellProvider>
 )
 
+const SWAP_TAB_CONTAINER_ID = "tao-swap-sell-tab"
+
 const TabContent: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex size-full flex-col overflow-hidden">
+    <div id={SWAP_TAB_CONTAINER_ID} className="flex size-full flex-col overflow-hidden">
       <div className="flex w-full grow flex-col gap-5 overflow-hidden p-8">
         <SwapInputsContainer label={t("Spend")}>
           <SwapSellInput />
@@ -40,6 +43,9 @@ const TabContent: FC = () => {
         <div className="flex w-full flex-col overflow-hidden">
           <SwapDetailsRow label={t("Estimated Fee")}>
             <FeeEstimate />
+          </SwapDetailsRow>
+          <SwapDetailsRow label={<MevShieldLabel />}>
+            <MevShieldToggle />
           </SwapDetailsRow>
           <SwapDetailsRow label={t("Price Impact")}>
             <PriceImpact />
@@ -83,7 +89,15 @@ const PriceImpact = () => {
 }
 
 const FeeEstimate = () => {
-  const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, tokenIdOut } = useSwapSell()
+  const {
+    feeEstimate,
+    innerFeeEstimate,
+    mevShieldFeeEstimate,
+    withMevShield,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    tokenIdOut,
+  } = useSwapSell()
 
   return (
     <SwapFeeEstimate
@@ -91,6 +105,31 @@ const FeeEstimate = () => {
       feeEstimate={feeEstimate}
       isLoading={isLoadingFeeEstimate}
       error={errorFeeEstimate}
+      withMevShield={withMevShield}
+      innerFeeEstimate={innerFeeEstimate}
+      mevShieldFeeEstimate={mevShieldFeeEstimate}
+    />
+  )
+}
+
+const MevShieldLabel = () => {
+  return <SwapConfirmMevShieldLabel containerId={SWAP_TAB_CONTAINER_ID} />
+}
+
+const MevShieldToggle = () => {
+  const {
+    withMevShield,
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    setIsMevProtectionEnabled,
+  } = useSwapSell()
+
+  return (
+    <SwapConfirmMevShieldValue
+      withMevShield={withMevShield}
+      isMevShieldDisabled={isMevShieldDisabled}
+      isMevShieldFeatureDisabled={isMevShieldFeatureDisabled}
+      setIsMevProtectionEnabled={setIsMevProtectionEnabled}
     />
   )
 }

@@ -1,8 +1,12 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { EditIcon } from "@talismn/icons"
+import { EditIcon, InfoIcon } from "@talismn/icons"
+import { planckToTokens } from "@talismn/util"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import type { FC, PropsWithChildren, ReactNode } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 type SwapInputsContainerProps = PropsWithChildren<{
@@ -65,6 +69,9 @@ type SwapFeeEstimateProps = {
   feeEstimate?: bigint | null
   isLoading?: boolean
   error?: unknown
+  withMevShield?: boolean
+  innerFeeEstimate?: bigint | null
+  mevShieldFeeEstimate?: bigint | null
 }
 
 export const SwapFeeEstimate: FC<SwapFeeEstimateProps> = ({
@@ -72,20 +79,47 @@ export const SwapFeeEstimate: FC<SwapFeeEstimateProps> = ({
   feeEstimate,
   isLoading,
   error,
+  withMevShield,
+  innerFeeEstimate,
+  mevShieldFeeEstimate,
 }) => {
   const { t } = useTranslation()
 
   if (!tokenId) return null
 
-  if (typeof feeEstimate === "bigint")
+  if (typeof feeEstimate === "bigint") {
+    const showBreakdown =
+      withMevShield &&
+      typeof innerFeeEstimate === "bigint" &&
+      typeof mevShieldFeeEstimate === "bigint"
+
     return (
-      <TokensAndFiat
-        tokenId={tokenId}
-        planck={feeEstimate}
-        className={cn("text-body-secondary", isLoading && "animate-pulse")}
-        tokensClassName="text-body"
-      />
+      <div className="flex items-center gap-2">
+        {showBreakdown && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-body-secondary">
+                <InfoIcon className="cursor-help" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <FeeBreakdownTooltipContent
+                tokenId={tokenId}
+                innerFeeEstimate={innerFeeEstimate}
+                mevShieldFeeEstimate={mevShieldFeeEstimate}
+              />
+            </TooltipContent>
+          </Tooltip>
+        )}
+        <TokensAndFiat
+          tokenId={tokenId}
+          planck={feeEstimate}
+          className={cn("text-body-secondary", isLoading && "animate-pulse")}
+          tokensClassName="text-body"
+        />
+      </div>
     )
+  }
 
   if (isLoading) {
     return (
@@ -102,6 +136,43 @@ export const SwapFeeEstimate: FC<SwapFeeEstimateProps> = ({
   }
 
   return <div>{t("N/A")}</div>
+}
+
+const FEE_DISPLAY_DECIMALS = 9
+
+export const FeeBreakdownTooltipContent: FC<{
+  tokenId: string
+  innerFeeEstimate: bigint
+  mevShieldFeeEstimate: bigint
+}> = ({ tokenId, innerFeeEstimate, mevShieldFeeEstimate }) => {
+  const { t } = useTranslation()
+  const token = useToken(tokenId)
+
+  const format = useMemo(() => {
+    if (!token) return (planck: bigint) => String(planck)
+    return (planck: bigint) => {
+      const tokens = planckToTokens(planck.toString(), token.decimals)
+      return `${Number(tokens).toFixed(FEE_DISPLAY_DECIMALS)} ${token.symbol}`
+    }
+  }, [token])
+
+  return (
+    <div className="flex flex-col gap-1 tabular-nums">
+      <div className="flex items-center justify-between gap-4">
+        <span>{t("Transaction")}</span>
+        <span>{format(innerFeeEstimate)}</span>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <span>{t("MEV Shield")}</span>
+        <span>{format(mevShieldFeeEstimate)}</span>
+      </div>
+      <hr className="my-1 text-grey-700" />
+      <div className="flex items-center justify-between gap-4">
+        <span>{t("Total")}</span>
+        <span>{format(innerFeeEstimate + mevShieldFeeEstimate)}</span>
+      </div>
+    </div>
+  )
 }
 
 type SwapSlippageRowProps = {

@@ -11,6 +11,7 @@ import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
 import { useSwapSubmit } from "./useSwapSubmit"
 
 type SwapSellInputs = {
@@ -156,6 +157,24 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
 
+  const {
+    data: mevShieldFeeEstimate,
+    isLoading: isLoadingMevShieldFee,
+    error: errorMevShieldFee,
+  } = useMevShieldFeeEstimate({
+    sapi,
+    address,
+    innerFeeEstimatePayload: feeEstimatePayload,
+    enabled: !isMevShieldDisabled,
+  })
+
+  const combinedFeeEstimate = useMemo(() => {
+    if (typeof feeEstimate !== "bigint") return feeEstimate
+    if (!withMevShield) return feeEstimate
+    if (typeof mevShieldFeeEstimate !== "bigint") return feeEstimate
+    return feeEstimate + mevShieldFeeEstimate
+  }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
+
   const inputErrorMessage = useMemo(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
@@ -165,9 +184,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     if (state.valueIn > transferablePlanck) return t("Insufficient balance")
 
     if (
-      typeof feeEstimate === "bigint" &&
+      typeof combinedFeeEstimate === "bigint" &&
       balanceTokenOut &&
-      feeEstimate > balanceTokenOut.transferable.planck
+      combinedFeeEstimate > balanceTokenOut.transferable.planck
     )
       return t("Insufficient balance to cover fee")
 
@@ -178,7 +197,15 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
       })
 
     return null
-  }, [balanceTokenIn, balanceTokenOut, feeEstimate, minAlphaUnstake, state.valueIn, t, tokenIn])
+  }, [
+    balanceTokenIn,
+    balanceTokenOut,
+    combinedFeeEstimate,
+    minAlphaUnstake,
+    state.valueIn,
+    t,
+    tokenIn,
+  ])
 
   const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
 
@@ -214,9 +241,12 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isMevShieldFeatureDisabled,
     setIsMevProtectionEnabled,
 
-    feeEstimate,
-    isLoadingFeeEstimate: isLoading || isLoadingFeeEstimate,
-    errorFeeEstimate,
+    feeEstimate: combinedFeeEstimate,
+    innerFeeEstimate: feeEstimate,
+    mevShieldFeeEstimate,
+    isLoadingFeeEstimate:
+      isLoading || isLoadingFeeEstimate || (withMevShield && isLoadingMevShieldFee),
+    errorFeeEstimate: errorFeeEstimate || (withMevShield ? errorMevShieldFee : null),
 
     inputErrorMessage,
     canSubmit,

@@ -10,6 +10,7 @@ import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
+import { SwapConfirmMevShieldLabel, SwapConfirmMevShieldValue } from "./SwapConfirmShared"
 import {
   SwapDetailsRow,
   SwapFeeEstimate,
@@ -24,11 +25,13 @@ export const SwapBuyTabContent: FC<{ netuid: number }> = ({ netuid }) => (
   </SwapBuyProvider>
 )
 
+const SWAP_TAB_CONTAINER_ID = "tao-swap-buy-tab"
+
 const TabContent: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex size-full flex-col overflow-hidden">
+    <div id={SWAP_TAB_CONTAINER_ID} className="flex size-full flex-col overflow-hidden">
       <div className="flex w-full grow flex-col gap-10 overflow-hidden p-8">
         <SwapInputsContainer label={t("Spend")}>
           <SwapBuyInput />
@@ -41,6 +44,9 @@ const TabContent: FC = () => {
         <div className="flex w-full flex-col overflow-hidden">
           <SwapDetailsRow label={t("Estimated Fee")}>
             <FeeEstimate />
+          </SwapDetailsRow>
+          <SwapDetailsRow label={<MevShieldLabel />}>
+            <MevShieldToggle />
           </SwapDetailsRow>
           <SwapDetailsRow label={t("Alpha Price")}>
             <AlphaPrice />
@@ -86,7 +92,15 @@ const AlphaPrice = () => {
 }
 
 const FeeEstimate = () => {
-  const { feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, tokenIdIn } = useSwapBuy()
+  const {
+    feeEstimate,
+    innerFeeEstimate,
+    mevShieldFeeEstimate,
+    withMevShield,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    tokenIdIn,
+  } = useSwapBuy()
 
   return (
     <SwapFeeEstimate
@@ -94,6 +108,31 @@ const FeeEstimate = () => {
       feeEstimate={feeEstimate}
       isLoading={isLoadingFeeEstimate}
       error={errorFeeEstimate}
+      withMevShield={withMevShield}
+      innerFeeEstimate={innerFeeEstimate}
+      mevShieldFeeEstimate={mevShieldFeeEstimate}
+    />
+  )
+}
+
+const MevShieldLabel = () => {
+  return <SwapConfirmMevShieldLabel containerId={SWAP_TAB_CONTAINER_ID} />
+}
+
+const MevShieldToggle = () => {
+  const {
+    withMevShield,
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    setIsMevProtectionEnabled,
+  } = useSwapBuy()
+
+  return (
+    <SwapConfirmMevShieldValue
+      withMevShield={withMevShield}
+      isMevShieldDisabled={isMevShieldDisabled}
+      isMevShieldFeatureDisabled={isMevShieldFeatureDisabled}
+      setIsMevProtectionEnabled={setIsMevProtectionEnabled}
     />
   )
 }

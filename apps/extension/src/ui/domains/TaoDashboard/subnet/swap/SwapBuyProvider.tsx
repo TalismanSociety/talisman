@@ -20,6 +20,7 @@ import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
 import { useSwapSubmit } from "./useSwapSubmit"
 
 // keep track of the last selected account globally, as the provider will be reset each time its unmounted
@@ -220,17 +221,35 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
 
+  const {
+    data: mevShieldFeeEstimate,
+    isLoading: isLoadingMevShieldFee,
+    error: errorMevShieldFee,
+  } = useMevShieldFeeEstimate({
+    sapi,
+    address,
+    innerFeeEstimatePayload: feeEstimatePayload,
+    enabled: !isMevShieldDisabled,
+  })
+
+  const combinedFeeEstimate = useMemo(() => {
+    if (typeof feeEstimate !== "bigint") return feeEstimate
+    if (!withMevShield) return feeEstimate
+    if (typeof mevShieldFeeEstimate !== "bigint") return feeEstimate
+    return feeEstimate + mevShieldFeeEstimate
+  }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
+
   // Keep the fee tracker current so maxValueIn stays accurate
   useEffect(() => {
-    if (typeof feeEstimate === "bigint") setLastKnownFee(feeEstimate)
-  }, [feeEstimate])
+    if (typeof combinedFeeEstimate === "bigint") setLastKnownFee(combinedFeeEstimate)
+  }, [combinedFeeEstimate])
 
   const { isValid, inputErrorMessage } = useBittensorStakeInputError({
     networkId: BITTENSOR_NETWORK_ID,
     taoAmountIn: valueIn,
     taoBalance: isBalancesLoading ? null : (balanceTokenIn?.transferable.planck ?? 0n),
     dtaoBalance: isBalancesLoading ? null : (balanceTokenOut?.transferable.planck ?? 0n),
-    feeEstimate,
+    feeEstimate: combinedFeeEstimate,
     minTaoBondForInput,
     minTaoStakeForInput,
   })
@@ -269,9 +288,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
 
-    feeEstimate,
-    isLoadingFeeEstimate: isLoading || isLoadingFeeEstimate,
-    errorFeeEstimate,
+    feeEstimate: combinedFeeEstimate,
+    innerFeeEstimate: feeEstimate,
+    mevShieldFeeEstimate,
+    isLoadingFeeEstimate:
+      isLoading || isLoadingFeeEstimate || (withMevShield && isLoadingMevShieldFee),
+    errorFeeEstimate: errorFeeEstimate || (withMevShield ? errorMevShieldFee : null),
 
     inputErrorMessage,
     payload,
