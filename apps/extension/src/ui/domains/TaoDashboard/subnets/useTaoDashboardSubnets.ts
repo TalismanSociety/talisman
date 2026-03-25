@@ -84,6 +84,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
 
         const priceChange = leaderboard?.priceChange ?? undefined
         const stakedAlpha = raoToTao(leaderboard?.stakedAlpha)
+        const stakedTao = raoToTao(leaderboard?.stakedTao)
         const volume = raoToTao(leaderboard?.volume)
 
         const emission = leaderboard?.emissionPct ?? 0
@@ -117,7 +118,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           balance: balances?.sum.planck.transferable ?? null,
           balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
           unstakeAddress,
-          stakedTao: priceTao ? stakedAlpha * priceTao : undefined,
+          stakedTao: stakedTao || (priceTao ? stakedAlpha * priceTao : undefined),
           stakedAlpha,
           mcapUsd: mcap,
           volumeUsd: volume * taoUsdPrice,

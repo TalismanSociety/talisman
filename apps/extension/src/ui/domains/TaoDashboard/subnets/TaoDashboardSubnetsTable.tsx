@@ -96,7 +96,7 @@ const SentimentBadge: FC<{ sentiment: "bullish" | "bearish" | null }> = ({ senti
   return (
     <span
       className={cn(
-        "rounded px-4 py-1 text-[10px]",
+        "rounded px-4 py-1 text-tiny",
         sentiment === "bullish" && "bg-buy/20 text-buy",
         sentiment === "bearish" && "bg-sell/20 text-sell"
       )}
@@ -454,7 +454,7 @@ const SubnetRow: FC<{
       )}
     >
       {/* Subnet */}
-      <DataCell className="max-w-[160px] flex-row items-center gap-6 overflow-hidden">
+      <DataCell className="max-w-80 flex-row items-center gap-6 overflow-hidden">
         <TokenLogo tokenId={subnet.token.id} className="size-16 shrink-0" />
         <div className="flex grow flex-col gap-1 overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -546,16 +546,16 @@ const SubnetRow: FC<{
             <SkeletonBar className="h-8 w-24" />
             <SkeletonBar className="h-6 w-20" />
           </>
-        ) : isRoot ? (
-          <span className="text-body-inactive">-</span>
         ) : (
           <>
             <div className="text-white">
               {subnet.stakedTao !== undefined ? `${formatNumber(subnet.stakedTao)} τ` : "-"}
             </div>
-            <div className="text-body-secondary text-xs">
-              {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
-            </div>
+            {subnet.netuid !== 0 && (
+              <div className="text-body-secondary text-xs">
+                {formatNumber(subnet.stakedAlpha)} {subnet.token.symbol}
+              </div>
+            )}
           </>
         )}
       </DataCell>
@@ -564,8 +564,6 @@ const SubnetRow: FC<{
       <DataCell error={errors.volume}>
         {loading.volume ? (
           <SkeletonBar className="h-8 w-20" />
-        ) : isRoot ? (
-          <span className="text-body-inactive">-</span>
         ) : (
           <FiatFromUsd amount={subnet.volumeUsd} className="text-white" noCountUp compact />
         )}
@@ -616,13 +614,13 @@ const SubnetRow: FC<{
             disabled={!canStake}
             onClick={handleStakeClick}
             className={cn(
-              "inline-flex size-[28px] items-center justify-center rounded-full",
+              "inline-flex size-14 items-center justify-center rounded-full",
               canStake
                 ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
                 : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
             )}
           >
-            <ZapPlusIcon className="size-[16px]" />
+            <ZapPlusIcon className="size-8" />
           </button>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -633,13 +631,13 @@ const SubnetRow: FC<{
                   disabled={!canUnstake}
                   onClick={handleUnstakeClick}
                   className={cn(
-                    "inline-flex size-[28px] items-center justify-center rounded-full",
+                    "inline-flex size-14 items-center justify-center rounded-full",
                     canUnstake
                       ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
                       : "cursor-default bg-grey-800/50 text-body-disabled"
                   )}
                 >
-                  <ZapOffIcon className="size-[16px]" />
+                  <ZapOffIcon className="size-8" />
                 </button>
               </span>
             </TooltipTrigger>
@@ -649,7 +647,7 @@ const SubnetRow: FC<{
       </DataCell>
 
       {/* Chevron — only for navigable subnets */}
-      <DataCell>{!isRoot && <ChevronRightIcon className="size-[16px] opacity-60" />}</DataCell>
+      <DataCell>{!isRoot && <ChevronRightIcon className="size-8 opacity-60" />}</DataCell>
     </div>
   )
 })
