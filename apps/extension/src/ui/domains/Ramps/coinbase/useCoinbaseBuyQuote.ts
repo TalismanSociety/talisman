@@ -3,6 +3,7 @@ import { isTokenDot, isTokenEth } from "@talismn/chaindata-provider"
 import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { type UseQueryResult, useQuery } from "@tanstack/react-query"
 import { useToken } from "@ui/state/chaindata"
+import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
@@ -156,7 +157,7 @@ const fetchCoinbaseBuyQuote = async (
     ...coinbaseToken,
   }
 
-  const response = await fetch(urlJoin(RAMPS_COINBASE_API_BASE_PATH, "/buy/quote"), {
+  const response = await gandalfFetch(urlJoin(RAMPS_COINBASE_API_BASE_PATH, "/buy/quote"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
