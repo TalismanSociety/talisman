@@ -143,7 +143,7 @@ const NetworkFilterRow: FC<{
       {network ? (
         <NetworkLogo networkId={network.id} className="shrink-0 text-xl" />
       ) : (
-        <GlobeIcon className="shrink-0 text-xl" />
+        <GlobeIcon className="shrink-0 text-body-secondary! text-xl" />
       )}
       <div className="flex grow flex-col gap-1 truncate text-left text-body">
         <div>{network ? network.name : t("All Networks")}</div>

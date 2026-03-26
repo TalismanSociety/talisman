@@ -365,14 +365,11 @@
     @apply border-grey-750 box-border border;
   }
 
-  /* number inputs */
+  /* number input spinners: webkit rules stay in base (pseudo-elements aren't overridden by utilities) */
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-  }
-  input[type="number"] {
-    -moz-appearance: textfield;
   }
 
   /* hide dcent iframe */
@@ -394,6 +391,16 @@
 body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
+}
+
+/*
+ * Hide number input spinners (Firefox).
+ * Must be outside @layer so it overrides Tailwind's `appearance-none` utility
+ * (which sets `appearance: none` in @layer utilities — that does NOT hide spinners in Firefox).
+ */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 @font-face {
