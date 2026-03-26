@@ -39,9 +39,18 @@ export const cleanupAllDroppedTransactions = async (): Promise<void> => {
   }
 }
 
+// "pending" txs younger than this are assumed to still be propagating through
+// the RPC layer and are not checked against eth_getTransactionByHash.
+export const PENDING_TX_AGE_THRESHOLD_MS = 15_000
+
 /**
- * Verifies unknown EVM transactions for a specific address and network.
+ * Verifies "unknown" and stale "pending" EVM transactions for a specific address and network.
  * Called from getNextNonce() when local nonce exceeds on-chain nonce.
+ *
+ * "unknown" txs are always checked (the watcher already gave up on them).
+ * "pending" txs are only checked after PENDING_TX_AGE_THRESHOLD_MS to avoid
+ * false-positiving on just-submitted txs that the RPC hasn't propagated yet.
+ *
  * Returns true if any txs were cleaned up.
  */
 export const cleanupDroppedEvmTransactions = async (
@@ -49,25 +58,27 @@ export const cleanupDroppedEvmTransactions = async (
   evmNetworkId: string
 ): Promise<boolean> => {
   const normalizedAddress = address.toLowerCase()
+  const now = Date.now()
 
-  const unknownTxs = await db.transactionsV2
+  const staleTxs = await db.transactionsV2
     .where("status")
-    .equals("unknown")
+    .anyOf("unknown", "pending")
     .filter(
       (tx): tx is WalletTransactionEth =>
         tx.platform === "ethereum" &&
         tx.networkId === evmNetworkId &&
-        tx.account.toLowerCase() === normalizedAddress
+        tx.account.toLowerCase() === normalizedAddress &&
+        (tx.status === "unknown" || now - tx.timestamp >= PENDING_TX_AGE_THRESHOLD_MS)
     )
     .toArray()
 
-  if (unknownTxs.length === 0) return false
+  if (staleTxs.length === 0) return false
 
   const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
   if (!provider) return false
 
   let cleaned = false
-  for (const tx of unknownTxs) {
+  for (const tx of staleTxs) {
     try {
       await provider.getTransaction({ hash: tx.hash })
     } catch (err) {

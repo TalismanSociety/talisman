@@ -16,6 +16,7 @@ vi.mock("../../rpcs/chain-connector-evm", () => ({
 
 // Use real Dexie with fake-indexeddb (auto-imported in setup)
 import { db } from "../../db"
+import { PENDING_TX_AGE_THRESHOLD_MS } from "../transactions/cleanupDroppedTransactions"
 import { _resetNonceState, getNextNonce, releaseReservedNonce } from "./nonceManager"
 
 const ADDRESS = "0x1111111111111111111111111111111111111111" as const
@@ -223,6 +224,30 @@ describe("nonceManager", () => {
       const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
       // unknown tx (7) cleaned up, but pending tx (5) stays → max(5, 5+1) = 6
       expect(nonce).toBe(6)
+    })
+
+    it("cleans up dropped stale pending tx and returns on-chain nonce", async () => {
+      mockGetTransactionCount.mockResolvedValue(0)
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+
+      const tx = makeTx(0, "pending")
+      tx.timestamp = Date.now() - PENDING_TX_AGE_THRESHOLD_MS - 1000
+      await db.transactionsV2.put(tx)
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(0) // stale pending tx cleaned up → falls back to on-chain nonce
+
+      const dbTx = await db.transactionsV2.get(tx.id)
+      expect(dbTx?.status).toBe("error")
+    })
+
+    it("does not clean up recent pending tx even when dropped", async () => {
+      mockGetTransactionCount.mockResolvedValue(0)
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      await db.transactionsV2.put(makeTx(0, "pending")) // timestamp = Date.now()
+
+      const nonce = await getNextNonce(ADDRESS, NETWORK_ID)
+      expect(nonce).toBe(1) // recent pending tx not checked → max(0, 0+1) = 1
     })
   })
 

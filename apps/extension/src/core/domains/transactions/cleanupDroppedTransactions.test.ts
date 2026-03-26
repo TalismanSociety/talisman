@@ -36,6 +36,7 @@ import { db } from "../../db"
 import {
   cleanupAllDroppedTransactions,
   cleanupDroppedEvmTransactions,
+  PENDING_TX_AGE_THRESHOLD_MS,
 } from "./cleanupDroppedTransactions"
 
 // --- Helpers ---
@@ -169,6 +170,65 @@ describe("cleanupDroppedTransactions", () => {
         "1"
       )
       expect(cleaned).toBe(false)
+    })
+
+    it("marks stale pending tx as error when not found in mempool", async () => {
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      const tx = makeEvmTx(0, "pending")
+      tx.timestamp = Date.now() - PENDING_TX_AGE_THRESHOLD_MS - 1000
+      await db.transactionsV2.put(tx)
+
+      const cleaned = await cleanupDroppedEvmTransactions(
+        "0x1111111111111111111111111111111111111111",
+        "1"
+      )
+
+      expect(cleaned).toBe(true)
+      expect((await db.transactionsV2.get("evm-1-0"))?.status).toBe("error")
+    })
+
+    it("keeps recent pending tx even when not found in mempool", async () => {
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      await db.transactionsV2.put(makeEvmTx(0, "pending")) // timestamp = Date.now()
+
+      const cleaned = await cleanupDroppedEvmTransactions(
+        "0x1111111111111111111111111111111111111111",
+        "1"
+      )
+
+      expect(cleaned).toBe(false)
+      expect((await db.transactionsV2.get("evm-1-0"))?.status).toBe("pending")
+    })
+
+    it("keeps stale pending tx when found in mempool", async () => {
+      mockGetTransaction.mockResolvedValue({ hash: "0x..." })
+      const tx = makeEvmTx(0, "pending")
+      tx.timestamp = Date.now() - PENDING_TX_AGE_THRESHOLD_MS - 1000
+      await db.transactionsV2.put(tx)
+
+      const cleaned = await cleanupDroppedEvmTransactions(
+        "0x1111111111111111111111111111111111111111",
+        "1"
+      )
+
+      expect(cleaned).toBe(false)
+      expect((await db.transactionsV2.get("evm-1-0"))?.status).toBe("pending")
+    })
+
+    it("cleans up both stale pending and unknown txs in one pass", async () => {
+      mockGetTransaction.mockRejectedValue(makeTransactionNotFoundError())
+      const stalePendingTx = makeEvmTx(0, "pending")
+      stalePendingTx.timestamp = Date.now() - PENDING_TX_AGE_THRESHOLD_MS - 1000
+      await db.transactionsV2.bulkPut([stalePendingTx, makeEvmTx(1, "unknown")])
+
+      const cleaned = await cleanupDroppedEvmTransactions(
+        "0x1111111111111111111111111111111111111111",
+        "1"
+      )
+
+      expect(cleaned).toBe(true)
+      expect((await db.transactionsV2.get("evm-1-0"))?.status).toBe("error")
+      expect((await db.transactionsV2.get("evm-1-1"))?.status).toBe("error")
     })
   })
 

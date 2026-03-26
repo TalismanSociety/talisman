@@ -106,7 +106,7 @@ const computeNextNonce = async (
   if (highestLocalNonce === null) {
     nextNonce = onChainNonce
   } else if (highestLocalNonce + 1 > onChainNonce) {
-    // If local nonce would push ahead of on-chain, verify unknown txs are still in the mempool
+    // If local nonce would push ahead of on-chain, verify unknown/stale-pending txs are still in the mempool
     const cleaned = await cleanupDroppedEvmTransactions(normalizedAddress, evmNetworkId)
     if (cleaned) {
       const updatedHighest = await getHighestLocalNonce(normalizedAddress, evmNetworkId)
