@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.8
+
+### Patch Changes
+
+- 0bde3c0: tao icon
+
 ## 0.1.7
 
 ### Patch Changes
