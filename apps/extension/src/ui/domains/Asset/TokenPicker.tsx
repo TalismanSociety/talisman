@@ -554,14 +554,16 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   return (
     <div className={cn("flex h-full min-h-full w-full flex-col overflow-hidden", className)}>
       <div className="flex min-h-fit w-full flex-col items-center gap-3 px-12 pb-8">
-        <div className="flex w-full items-center gap-4">
-          <SearchInput
-            onChange={setSearch}
-            placeholder={t("Search by token or network name")}
-            initialValue={initialSearch}
-            autoFocus={!initialSearch}
-            containerClassName="rounded-sm"
-          />
+        <div className="flex w-full items-center gap-4 overflow-hidden">
+          <div className="grow overflow-hidden">
+            <SearchInput
+              onChange={setSearch}
+              placeholder={t("Search by token or network name")}
+              initialValue={initialSearch}
+              autoFocus={!initialSearch}
+              containerClassName="rounded-sm"
+            />
+          </div>
           {!!networkFilterContainerId && (
             <NetworkFilterButton
               selectedNetworkId={selectedNetworkId}
