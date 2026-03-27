@@ -40,6 +40,7 @@ export const useGetBittensorClaimType = ({ networkId, address }: GetBittensorCla
         subnets,
       }
     },
+    gcTime: 0, // force refresh when popup reopens
     enabled: !!sapi && !!address,
   })
 }
