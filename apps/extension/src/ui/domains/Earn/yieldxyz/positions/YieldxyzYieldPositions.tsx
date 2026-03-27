@@ -92,9 +92,9 @@ const NavHeader: FC<{
 
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
           <div className="flex w-full items-center gap-8 overflow-hidden">
-            <div className="flex grow items-center overflow-hidden truncate text-body">
+            <div className="flex grow items-center gap-2 overflow-hidden truncate text-body">
               <div className="truncate">{product.metadata.name}</div>
-              <EarnTypeBadge className="shrink-0 text-xs">{product.mechanics?.type}</EarnTypeBadge>
+              <EarnTypeBadge className="shrink-0">{product.mechanics?.type}</EarnTypeBadge>
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>

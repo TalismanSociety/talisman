@@ -23,6 +23,8 @@ export interface SettingsStoreData {
   nftsViewMode: "list" | "tiles"
   nftsSortBy: "value" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
+  earnPositionsSortBy: "total" | "name"
+  earnPositionsGroupBy: "token" | "network" | "none"
   developerMode: boolean
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
@@ -45,6 +47,8 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   newFeaturesDismissed: "0",
   nftsViewMode: "tiles",
   tokensSortBy: "total",
+  earnPositionsSortBy: "total",
+  earnPositionsGroupBy: "none",
   nftsSortBy: "date",
   developerMode: false,
   polkadotVaultSignWithProof: true,

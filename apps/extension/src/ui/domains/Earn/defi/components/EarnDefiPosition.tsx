@@ -47,9 +47,10 @@ const DefiNavHeader: FC<{ position: DefiPosition }> = ({ position }) => {
         <AssetLogo url={position.defiLogoUrl} className="size-[2.25rem]" />
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
           <div className="flex w-full items-center gap-8 overflow-hidden">
-            <div className="flex grow items-center overflow-hidden truncate text-body">
+            <div className="flex grow items-center gap-2 overflow-hidden truncate text-body">
               <div className="truncate">{position.name}</div>
-              <EarnTypeBadge className="shrink-0 text-xs">{position.type}</EarnTypeBadge>
+              <EarnTypeBadge className="shrink-0">{position.type}</EarnTypeBadge>
+              <EarnTypeBadge className="shrink-0">{t("View Only")}</EarnTypeBadge>
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>

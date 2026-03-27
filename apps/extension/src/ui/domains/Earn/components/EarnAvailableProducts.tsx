@@ -160,13 +160,14 @@ const TokenProducts: FC<{
               tokenId={tokenId}
               planck={balances.sum.planck.transferable}
               noFiat
+              isBalance
               tokensClassName="font-bold text-body"
             />
             <Fiat amount={fiatTransferable} isBalance className="text-body-secondary" />
           </div>
         )}
         <div className="flex items-center justify-end gap-4">
-          <div className={cn("font-bold text-primary", isLoading && "animate-pulse")}>
+          <div className={cn("font-bold text-primary text-sm", isLoading && "animate-pulse")}>
             {bestApr.toFixed(2)}%
           </div>
           <ChevronRightIcon className="size-10 shrink-0" />

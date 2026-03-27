@@ -1,9 +1,10 @@
-import type { Token, TokenId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
 import type { LoadableStatus } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { NoAssetsFoundSymbol } from "@ui/components/NoAssetsFoundSymbol"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -12,13 +13,13 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useTokensMap } from "@ui/state/chaindata"
+import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
+import type { NetworkOption } from "@ui/state/portfolio"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { toPairs } from "lodash-es"
-import { type FC, Fragment, useCallback, useMemo, useState } from "react"
+import { type FC, Fragment, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPositions"
@@ -45,8 +46,20 @@ const EarnPositionRow: FC<{
       <AssetLogo url={position.logoUrl} className="size-16" />
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
-          <div className="h-9 w-full truncate text-body">
-            {position.title}{" "}
+          <div className="flex h-9 w-full items-center gap-2 truncate text-body">
+            <span className="truncate">{position.title}</span>
+            {position.networkId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex shrink-0">
+                    <NetworkLogo networkId={position.networkId} className="size-[1.2em]" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <NetworkName networkId={position.networkId} />
+                </TooltipContent>
+              </Tooltip>
+            )}
             <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
               {position.type}
             </EarnTypeBadge>
@@ -69,7 +82,7 @@ const EarnPositionRow: FC<{
             />
           </div>
           <div className={cn("shrink-0", status === "loading" && "animate-pulse")}>
-            <FiatFromUsd amount={position.totalAmountUsd} noCountUp />
+            <FiatFromUsd amount={position.totalAmountUsd} noCountUp isBalance />
           </div>
         </div>
       </div>
@@ -145,7 +158,7 @@ const TokenRow: FC<{
             status === "loading" && "animate-pulse"
           )}
         >
-          <FiatFromUsd amount={totalUsd} noCountUp />
+          <FiatFromUsd amount={totalUsd} noCountUp isBalance />
         </div>
         {!isCollapsed ? (
           <ChevronDownIcon className="size-8 shrink-0 text-body-secondary" />
@@ -158,6 +171,55 @@ const TokenRow: FC<{
           positions.map((position, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: earn positions for e.g. LPs have multiple tokens, and are therefore rendered in multiple TokenRows, so the index is the only stable key available
             <EarnPositionRow key={index} status={status} position={position} />
+          ))}
+      </div>
+    </div>
+  )
+}
+
+const NetworkRow: FC<{
+  status: LoadableStatus
+  networkId: NetworkId
+  network: Network | undefined
+  positions: EarnPosition[]
+  totalUsd: number
+}> = ({ networkId, network, positions, totalUsd, status }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  return (
+    <div className="w-full overflow-hidden rounded bg-grey-900">
+      <button
+        type="button"
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        className={cn(
+          "flex h-28 w-full items-center gap-6 overflow-hidden px-8 hover:bg-grey-750",
+          !isCollapsed && "bg-grey-800",
+          IS_POPUP && "gap-4 px-6"
+        )}
+      >
+        <NetworkLogo networkId={networkId} className="size-16" />
+        <div className="flex grow flex-col justify-center gap-2 overflow-hidden text-left font-medium text-body-secondary text-sm">
+          <div className="truncate font-bold text-body">{network?.name ?? networkId}</div>
+        </div>
+
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-4",
+            status === "loading" && "animate-pulse"
+          )}
+        >
+          <FiatFromUsd amount={totalUsd} noCountUp isBalance />
+        </div>
+        {!isCollapsed ? (
+          <ChevronDownIcon className="size-8 shrink-0 text-body-secondary" />
+        ) : (
+          <ChevronRightIcon className="size-8 shrink-0 text-body-secondary" />
+        )}
+      </button>
+      <div className={cn("flex w-full flex-col", !isCollapsed ? "block" : "hidden")}>
+        {!isCollapsed &&
+          positions.map((position) => (
+            <EarnPositionRow key={position.id} status={status} position={position} />
           ))}
       </div>
     </div>
@@ -193,7 +255,12 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   )
 }
 
-export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
+export const EarnPositionsList: FC<{
+  search: string
+  sortBy?: "total" | "name"
+  groupBy?: "token" | "network" | "none"
+  networkFilter?: NetworkOption | null
+}> = ({ search, sortBy = "total", groupBy = "none", networkFilter }) => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
   const { isInitialising } = usePortfolioGlobalData()
@@ -202,16 +269,24 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
   const isLoading = status === "loading"
 
   const tokensMay = useTokensMap()
+  const networksMap = useNetworksMapById()
+
+  const filteredPositions = useMemo(() => {
+    if (!networkFilter) return positions ?? []
+    return (positions ?? []).filter((p) =>
+      p.networkId ? networkFilter.networkIds.includes(p.networkId) : false
+    )
+  }, [positions, networkFilter])
 
   const positionsByTokenIdMap = useMemo(() => {
-    return (positions ?? []).reduce<Record<TokenId, EarnPosition[]>>((acc, position) => {
+    return filteredPositions.reduce<Record<TokenId, EarnPosition[]>>((acc, position) => {
       for (const tokenId of position.tokenIds) {
         if (!acc[tokenId]) acc[tokenId] = []
         acc[tokenId].push(position)
       }
       return acc
     }, {})
-  }, [positions])
+  }, [filteredPositions])
 
   const selectedAccountsPositions = useMemo(() => {
     const accountAddresses = selectedAccounts.map((acc) => normalizeAddress(acc.address))
@@ -228,10 +303,14 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
         }
       })
       .filter(({ token, positions }) => !!token && !!positions.length)
-      .sort((p1, p2) => p2.totalUsd - p1.totalUsd)
-  }, [positionsByTokenIdMap, selectedAccounts, tokensMay])
+      .sort((p1, p2) =>
+        sortBy === "name"
+          ? p1.token.symbol.localeCompare(p2.token.symbol)
+          : p2.totalUsd - p1.totalUsd
+      )
+  }, [positionsByTokenIdMap, selectedAccounts, tokensMay, sortBy])
 
-  const displayPositions = useMemo(() => {
+  const tokenGroupedPositions = useMemo(() => {
     const lowerSearch = (search || "").toLowerCase().trim()
     if (!lowerSearch) return selectedAccountsPositions
 
@@ -244,25 +323,50 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     })
   }, [search, selectedAccountsPositions])
 
-  const { isOpen: isDefiExpanded, toggle: toggleDefiExpanded } = useOpenClose(true)
-  const handleDefiToggle = useCallback(() => {
-    toggleDefiExpanded()
-  }, [toggleDefiExpanded])
-
-  const totalDefiAmountUsd = useMemo(() => {
+  const deduplicatedPositions = useMemo(() => {
     const seen = new Set<string>()
-    let sum = 0
-    for (const { positions } of displayPositions) {
+    const result: EarnPosition[] = []
+    for (const { positions } of tokenGroupedPositions) {
       for (const pos of positions) {
         if (seen.has(pos.id)) continue
         seen.add(pos.id)
-        sum += pos.totalAmountUsd
+        result.push(pos)
       }
     }
-    return sum
-  }, [displayPositions])
+    result.sort((a, b) =>
+      sortBy === "name" ? a.title.localeCompare(b.title) : b.totalAmountUsd - a.totalAmountUsd
+    )
+    return result
+  }, [tokenGroupedPositions, sortBy])
 
-  if (!displayPositions.length && !isInitialising && !isLoading)
+  const networkGroupedPositions = useMemo(() => {
+    if (groupBy !== "network") return []
+    const byNetwork = new Map<string, EarnPosition[]>()
+    for (const pos of deduplicatedPositions) {
+      const key = pos.networkId ?? "unknown"
+      if (!byNetwork.has(key)) byNetwork.set(key, [])
+      byNetwork.get(key)!.push(pos)
+    }
+    return Array.from(byNetwork.entries())
+      .map(([networkId, positions]) => ({
+        networkId,
+        network: networksMap[networkId],
+        positions,
+        totalUsd: positions.reduce((sum, p) => sum + p.totalAmountUsd, 0),
+      }))
+      .sort((a, b) =>
+        sortBy === "name"
+          ? (a.network?.name ?? a.networkId).localeCompare(b.network?.name ?? b.networkId)
+          : b.totalUsd - a.totalUsd
+      )
+  }, [deduplicatedPositions, groupBy, networksMap, sortBy])
+
+  const totalDefiAmountUsd = useMemo(
+    () => deduplicatedPositions.reduce((sum, pos) => sum + pos.totalAmountUsd, 0),
+    [deduplicatedPositions]
+  )
+
+  if (!tokenGroupedPositions.length && !isInitialising && !isLoading)
     return (
       <div className="flex flex-col items-center justify-center gap-8 py-12">
         <div className="flex flex-col items-center justify-center gap-2">
@@ -277,26 +381,15 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
 
   return (
     <div className="mb-6">
-      <button
-        type="button"
-        onClick={handleDefiToggle}
-        className="mb-4 flex w-full items-center justify-between pr-2 font-medium text-body-secondary text-sm hover:text-body"
-      >
+      <div className="mb-4 flex w-full items-center justify-between pr-2 font-medium text-body-secondary text-sm">
         <h2 className="font-medium text-body-secondary text-sm">{t("DeFi Positions")}</h2>
-        <div className="flex items-center gap-2">
-          <div className="font-normal text-base text-body-secondary">
-            <FiatFromUsd amount={totalDefiAmountUsd} />
-          </div>
-          {isDefiExpanded ? (
-            <ChevronDownIcon className="h-8 w-8 text-body-secondary" />
-          ) : (
-            <ChevronRightIcon className="h-8 w-8 text-body-secondary" />
-          )}
+        <div className="font-normal text-base text-body-secondary">
+          <FiatFromUsd amount={totalDefiAmountUsd} isBalance />
         </div>
-      </button>
-      {isDefiExpanded && (
-        <div className="flex flex-col gap-4">
-          {displayPositions.map(({ token, positions, totalUsd }) => (
+      </div>
+      <div className="flex flex-col gap-4">
+        {groupBy === "token" &&
+          tokenGroupedPositions.map(({ token, positions, totalUsd }) => (
             <TokenRow
               key={token.id}
               token={token}
@@ -305,9 +398,25 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
               status={status}
             />
           ))}
-          {(isInitialising || isLoading) && <EarnTokenRowSkeleton />}
-        </div>
-      )}
+        {groupBy === "network" &&
+          networkGroupedPositions.map(({ networkId, network, positions, totalUsd }) => (
+            <NetworkRow
+              key={networkId}
+              networkId={networkId}
+              network={network}
+              positions={positions}
+              totalUsd={totalUsd}
+              status={status}
+            />
+          ))}
+        {groupBy === "none" &&
+          deduplicatedPositions.map((position) => (
+            <div key={position.id} className="w-full overflow-hidden rounded bg-grey-900">
+              <EarnPositionRow position={position} status={status} />
+            </div>
+          ))}
+        {(isInitialising || isLoading) && <EarnTokenRowSkeleton />}
+      </div>
     </div>
   )
 }

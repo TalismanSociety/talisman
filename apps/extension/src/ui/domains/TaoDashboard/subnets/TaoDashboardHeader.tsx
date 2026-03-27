@@ -78,7 +78,7 @@ export const TaoDashboardHeader = () => {
   }, [dtaoBalances])
 
   return (
-    <div className="flex items-center rounded-[12px] border border-grey-800 px-3 py-4">
+    <div className="flex h-64 items-center rounded-[12px] border border-grey-800 px-3 py-4">
       <div className="flex shrink-0 items-center gap-2 px-1.5">
         <BalanceStat
           label={t("Total Tao Balance")}
