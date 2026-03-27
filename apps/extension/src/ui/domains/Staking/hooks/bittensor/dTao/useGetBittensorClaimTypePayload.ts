@@ -72,6 +72,5 @@ export const useGetBittensorClaimTypePayload = ({
       return getExtrinsicPayload({ sapi, address, claimType, selectedSubnets })
     },
     enabled: !!sapi && !!address && !!claimType,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
