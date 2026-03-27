@@ -9,7 +9,7 @@ import type { RootClaimType, RootClaimTypeEnum } from "./types"
 type SetBittensorClaimType = {
   networkId: DotNetworkId | null | undefined
   address: string | undefined
-  claimType: RootClaimType
+  claimType: RootClaimType | null
   selectedSubnets?: number[]
 }
 
@@ -67,7 +67,7 @@ export const useGetBittensorClaimTypePayload = ({
   return useQuery<ExtrinsicPayload>({
     queryKey: ["setBittensorClaimType", sapi?.id, address, claimType, selectedSubnets],
     queryFn: async () => {
-      if (!sapi || !address) return null
+      if (!sapi || !address || !claimType) return null
 
       return getExtrinsicPayload({ sapi, address, claimType, selectedSubnets })
     },

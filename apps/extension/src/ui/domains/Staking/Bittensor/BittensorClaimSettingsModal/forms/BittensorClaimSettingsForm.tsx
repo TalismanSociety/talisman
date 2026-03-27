@@ -1,5 +1,4 @@
 import { Button } from "@ui/components/Button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { cn } from "@ui/util/cn"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,6 +21,8 @@ export const BittensorClaimSettingsForm = () => {
     accountPicker,
     selectedClaimType,
     isClaimTypeLoading,
+    isClaimTypeError,
+    refetchClaimType,
     canSubmit,
     setAddress,
     setStep,
@@ -55,7 +56,6 @@ export const BittensorClaimSettingsForm = () => {
         description: t(
           "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao."
         ),
-        disabled: false,
       },
     ],
     [t]
@@ -101,15 +101,15 @@ export const BittensorClaimSettingsForm = () => {
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
-                onClick={() => !option.disabled && setSelectedClaimType(option.value)}
-                disabled={isClaimTypeLoading}
+                disabled={!selectedClaimType}
+                onClick={() => setSelectedClaimType(option.value)}
                 className={cn(
                   "relative w-full rounded-sm border border-light-gray px-6 py-5 text-left transition-colors",
-                  "bg-black-tertiary text-sm",
+                  "bg-black-tertiary text-sm disabled:opacity-25",
                   isSelected
                     ? "text-body"
                     : "border-transparent text-body-secondary hover:border-grey-700 hover:text-body",
-                  option.disabled && "cursor-not-allowed opacity-50"
+                  isClaimTypeLoading && "animate-pulse"
                 )}
               >
                 <div className="flex flex-col gap-1 pr-10">
@@ -135,17 +135,20 @@ export const BittensorClaimSettingsForm = () => {
               </button>
             )
 
-            if (option.disabled) {
-              return (
-                <Tooltip key={option.value}>
-                  <TooltipTrigger asChild>{button}</TooltipTrigger>
-                  <TooltipContent>{t("Coming soon")}</TooltipContent>
-                </Tooltip>
-              )
-            }
-
             return <div key={option.value}>{button}</div>
           })}
+          {isClaimTypeError && (
+            <div className="flex items-center gap-4 text-alert-warn text-sm">
+              <div>{t("Unable to load claim settings from chain.")}</div>
+              <button
+                type="button"
+                className="rounded-sm border bg-grey-800 px-3 py-1 text-body-secondary hover:text-body"
+                onClick={() => refetchClaimType()}
+              >
+                {t("Retry")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

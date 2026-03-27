@@ -2,15 +2,15 @@ import { log } from "@common/log"
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import { LoaderIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
+import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
-import { isUserRejectionError } from "@ui/util/isUserRejectionError"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
@@ -69,7 +69,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   mode,
   color,
 }) => {
-  const [error, setError] = useState<string>()
+  const { t } = useTranslation()
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
   const { lockedInputs, setIsLocked } = useLockedInputs({
@@ -92,32 +92,32 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
       const { payload, txInfo, txMode } = lockedInputs
       if (!payload || !signature || !sapi) return
 
-      setError(undefined)
       try {
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
-        // biome-ignore lint/suspicious/noExplicitAny: legacy
-        setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
+        notify({
+          type: "error",
+          title: t("Failed to submit"),
+          // biome-ignore lint/suspicious/noExplicitAny: legacy
+          subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+        })
       }
     },
-    [onSubmitted, sapi, lockedInputs]
+    [onSubmitted, sapi, lockedInputs, t]
   )
 
   return (
-    <div className="flex w-full shrink-0 flex-col gap-6 overflow-hidden">
-      <SubmitErrorDisplay error={error} />
-      <SignHardwareSubstrate
-        className={className}
-        containerId={containerId}
-        onSigned={handleSigned}
-        onSentToDevice={setIsLocked}
-        color={color}
-        registry={registry}
-        {...lockedInputs}
-      />
-    </div>
+    <SignHardwareSubstrate
+      className={className}
+      containerId={containerId}
+      onSigned={handleSigned}
+      onSentToDevice={setIsLocked}
+      color={color}
+      registry={registry}
+      {...lockedInputs}
+    />
   )
 }
 
@@ -131,7 +131,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   mode,
   color,
 }) => {
-  const [error, setError] = useState<string>()
+  const { t } = useTranslation()
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
   const { lockedInputs, setIsLocked } = useLockedInputs({
@@ -149,35 +149,35 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       const { payload, txMode, txInfo } = lockedInputs
       if (!payload || !signature || !sapi) return
 
-      setError(undefined)
       try {
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
-        // biome-ignore lint/suspicious/noExplicitAny: legacy
-        setError((err as any)?.message?.slice(0, 200) ?? "Failed to submit")
+        notify({
+          type: "error",
+          title: t("Failed to submit"),
+          // biome-ignore lint/suspicious/noExplicitAny: legacy
+          subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+        })
       }
     },
-    [lockedInputs, onSubmitted, sapi]
+    [lockedInputs, onSubmitted, sapi, t]
   )
 
   if (!account) return null
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <SubmitErrorDisplay error={error} />
-      <QrSubstrate
-        containerId={containerId ?? "main"}
-        buttonClassName={className}
-        genesisHash={lockedInputs.payload?.genesisHash}
-        account={account as AccountPolkadotVault}
-        onSignature={handleSigned}
-        color={color}
-        onQrDisplayed={setIsLocked}
-        {...lockedInputs}
-      />
-    </div>
+    <QrSubstrate
+      containerId={containerId ?? "main"}
+      buttonClassName={className}
+      genesisHash={lockedInputs.payload?.genesisHash}
+      account={account as AccountPolkadotVault}
+      onSignature={handleSigned}
+      color={color}
+      onQrDisplayed={setIsLocked}
+      {...lockedInputs}
+    />
   )
 }
 
@@ -194,47 +194,39 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
 
-  const [{ isSubmitting, error }, setState] = useState<{
-    isSubmitting: boolean
-    error: string | null
-  }>({ isSubmitting: false, error: null })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmitClick = useCallback(async () => {
     if (!sapi) return
     if (!payload) return
-    setState({ isSubmitting: true, error: null })
+    setIsSubmitting(true)
     try {
       const { hash } = await sapi.submit(payload, undefined, txInfo, mode)
-      setState({ isSubmitting: false, error: null })
+      setIsSubmitting(false)
       onSubmitted(hash)
     } catch (err) {
-      if (isUserRejectionError(err)) {
-        setState({ isSubmitting: false, error: null })
-      } else {
-        log.error("Failed to submit", { payload, err })
-        setState({
-          isSubmitting: false,
-          // biome-ignore lint/suspicious/noExplicitAny: legacy
-          error: (err as any)?.message?.slice(0, 200) ?? "Failed to submit",
-        })
-      }
+      setIsSubmitting(false)
+      log.error("Failed to submit", { payload, err })
+      notify({
+        type: "error",
+        title: t("Failed to submit"),
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
+        subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+      })
     }
-  }, [mode, onSubmitted, payload, sapi, txInfo])
+  }, [mode, onSubmitted, payload, sapi, t, txInfo])
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <SubmitErrorDisplay error={error} />
-      <Button
-        className={cn("w-full", className)}
-        primary
-        disabled={disabled}
-        onClick={handleSubmitClick}
-        processing={isSubmitting}
-        color={color}
-      >
-        {label ?? t("Confirm")}
-      </Button>
-    </div>
+    <Button
+      className={cn("w-full", className)}
+      primary
+      disabled={disabled}
+      onClick={handleSubmitClick}
+      processing={isSubmitting}
+      color={color}
+    >
+      {label ?? t("Confirm")}
+    </Button>
   )
 }
 
@@ -283,14 +275,6 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     </Suspense>
   )
 }
-
-const SubmitErrorDisplay: FC<{ error: string | null | undefined }> = ({ error }) =>
-  error ? (
-    <div className="flex w-full items-center gap-5 rounded-sm bg-grey-900 px-5 py-6 pr-0 text-alert-warn text-xs">
-      <AlertCircleIcon className="shrink-0 text-lg" />
-      <div className="scrollable scrollable-800 max-h-40 overflow-y-auto pr-5">{error}</div>
-    </div>
-  ) : null
 
 const getHexShortMetadata = (
   txMetadata?: Uint8Array | `0x${string}`
