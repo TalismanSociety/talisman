@@ -109,7 +109,6 @@ export const BittensorClaimSettingsForm = () => {
                   isSelected
                     ? "text-body"
                     : "border-transparent text-body-secondary hover:border-grey-700 hover:text-body",
-
                   isClaimTypeLoading && "animate-pulse"
                 )}
               >
