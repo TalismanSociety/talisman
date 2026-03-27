@@ -1,5 +1,4 @@
 import { Button } from "@ui/components/Button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { cn } from "@ui/util/cn"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -57,7 +56,6 @@ export const BittensorClaimSettingsForm = () => {
         description: t(
           "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao."
         ),
-        disabled: false,
       },
     ],
     [t]
@@ -95,71 +93,62 @@ export const BittensorClaimSettingsForm = () => {
         </div>
 
         <div className="mt-6 flex flex-col gap-6" role="radiogroup" aria-label={t("Reward Type")}>
-          {isClaimTypeError ? (
-            <div className="flex flex-col items-center gap-4 rounded-sm bg-black-tertiary px-6 py-8">
-              <span className="text-alert-warn text-sm">
-                {t("Unable to load claim settings from chain.")}
-              </span>
-              <Button className="w-auto px-8" small onClick={() => refetchClaimType()}>
-                {t("Retry")}
-              </Button>
-            </div>
-          ) : (
-            claimTypeOptions.map((option) => {
-              const isSelected = selectedClaimType === option.value
-              const button = (
-                // biome-ignore lint/a11y/useSemanticElements: legacy
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  disabled={!selectedClaimType}
-                  onClick={() => !option.disabled && setSelectedClaimType(option.value)}
-                  className={cn(
-                    "relative w-full rounded-sm border border-light-gray px-6 py-5 text-left transition-colors",
-                    "bg-black-tertiary text-sm",
-                    isSelected
-                      ? "text-body"
-                      : "border-transparent text-body-secondary hover:border-grey-700 hover:text-body",
-                    option.disabled && "cursor-not-allowed opacity-50",
-                    "disabled:opacity-25",
-                    isClaimTypeLoading && "animate-pulse"
-                  )}
-                >
-                  <div className="flex flex-col gap-1 pr-10">
-                    <span className="font-semibold text-[14px] text-body leading-base">
-                      {option.title}
-                    </span>
-                    <span className="text-[12px] text-body-secondary leading-paragraph">
-                      {option.description}
-                    </span>
-                  </div>
-                  <span
-                    className={
-                      "absolute top-5 right-6 flex h-7 w-7 items-center justify-center rounded-full bg-grey-700 transition-colors"
-                    }
-                  >
-                    <span
-                      className={cn(
-                        "h-3.5 w-3.5 rounded-full transition-colors",
-                        isSelected ? "bg-primary" : "bg-transparent"
-                      )}
-                    />
+          {claimTypeOptions.map((option) => {
+            const isSelected = selectedClaimType === option.value
+            const button = (
+              // biome-ignore lint/a11y/useSemanticElements: legacy
+              <button
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                disabled={!selectedClaimType}
+                onClick={() => setSelectedClaimType(option.value)}
+                className={cn(
+                  "relative w-full rounded-sm border border-light-gray px-6 py-5 text-left transition-colors",
+                  "bg-black-tertiary text-sm disabled:opacity-25",
+                  isSelected
+                    ? "text-body"
+                    : "border-transparent text-body-secondary hover:border-grey-700 hover:text-body",
+
+                  isClaimTypeLoading && "animate-pulse"
+                )}
+              >
+                <div className="flex flex-col gap-1 pr-10">
+                  <span className="font-semibold text-[14px] text-body leading-base">
+                    {option.title}
                   </span>
-                </button>
-              )
+                  <span className="text-[12px] text-body-secondary leading-paragraph">
+                    {option.description}
+                  </span>
+                </div>
+                <span
+                  className={
+                    "absolute top-5 right-6 flex h-7 w-7 items-center justify-center rounded-full bg-grey-700 transition-colors"
+                  }
+                >
+                  <span
+                    className={cn(
+                      "h-3.5 w-3.5 rounded-full transition-colors",
+                      isSelected ? "bg-primary" : "bg-transparent"
+                    )}
+                  />
+                </span>
+              </button>
+            )
 
-              if (option.disabled) {
-                return (
-                  <Tooltip key={option.value}>
-                    <TooltipTrigger asChild>{button}</TooltipTrigger>
-                    <TooltipContent>{t("Coming soon")}</TooltipContent>
-                  </Tooltip>
-                )
-              }
-
-              return <div key={option.value}>{button}</div>
-            })
+            return <div key={option.value}>{button}</div>
+          })}
+          {isClaimTypeError && (
+            <div className="flex items-center gap-4 text-alert-warn text-sm">
+              <div>{t("Unable to load claim settings from chain.")}</div>
+              <button
+                type="button"
+                className="rounded-sm border bg-grey-800 px-3 py-1 text-body-secondary hover:text-body"
+                onClick={() => refetchClaimType()}
+              >
+                {t("Retry")}
+              </button>
+            </div>
           )}
         </div>
       </div>
