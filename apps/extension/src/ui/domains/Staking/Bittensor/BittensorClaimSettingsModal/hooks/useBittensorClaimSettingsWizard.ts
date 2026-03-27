@@ -9,7 +9,6 @@ import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
-import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_NETWORK_ID } from "../constants"
 
 export type ClaimSettingsStep = "claim-settings" | "select-subnets" | "follow-up"
@@ -18,7 +17,7 @@ type WizardState = {
   step: ClaimSettingsStep
   address: Address | null
   hash: Hex | null
-  selectedClaimType: RootClaimType
+  selectedClaimType: RootClaimType | null
   selectedSubnets: number[]
   onSubmittedCallback: (() => void) | null
 }
@@ -33,7 +32,7 @@ const DEFAULT_STATE: WizardState = {
   step: "claim-settings",
   address: null,
   hash: null,
-  selectedClaimType: DEFAULT_ROOT_CLAIM_TYPE,
+  selectedClaimType: null,
   selectedSubnets: [],
   onSubmittedCallback: null,
 }
@@ -65,7 +64,12 @@ const useBittensorClaimSettingsWizardProvider = () => {
   const accountPicker = useOpenClose()
 
   // Fetch the current claim type from chain
-  const { data: claimTypeData, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
+  const {
+    data: claimTypeData,
+    isLoading: isClaimTypeLoading,
+    isError: isClaimTypeError,
+    refetch: refetchClaimType,
+  } = useGetBittensorClaimType({
     networkId: nativeToken?.networkId,
     address: account?.address,
   })
@@ -101,7 +105,13 @@ const useBittensorClaimSettingsWizardProvider = () => {
   }, [claimTypeData, selectedClaimType, selectedSubnets])
 
   const setAddress = useCallback(
-    (newAddress: Address) => setWizardState((prev) => ({ ...prev, address: newAddress })),
+    (newAddress: Address) =>
+      setWizardState((prev) => ({
+        ...prev,
+        address: newAddress,
+        selectedClaimType: null,
+        selectedSubnets: [],
+      })),
     []
   )
 
@@ -144,6 +154,8 @@ const useBittensorClaimSettingsWizardProvider = () => {
     accountPicker,
     claimTypeData,
     isClaimTypeLoading,
+    isClaimTypeError,
+    refetchClaimType,
     canSubmit,
     setAddress,
     setStep,
