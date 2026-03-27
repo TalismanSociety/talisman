@@ -1,5 +1,4 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import { sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { DEFAULT_ROOT_CLAIM_TYPE } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -22,8 +21,6 @@ export const useGetBittensorClaimType = ({ networkId, address }: GetBittensorCla
     queryKey: ["useGetBittensorClaimType", sapi?.id, address],
     queryFn: async () => {
       if (!sapi || !address) return null
-
-      await sleep(4000)
 
       const result = await sapi.getStorage<RootClaimTypeEnum>("SubtensorModule", "RootClaimType", [
         address,
