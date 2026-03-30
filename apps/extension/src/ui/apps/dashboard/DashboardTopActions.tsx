@@ -129,8 +129,16 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   )
 
   return (
-    <div className={cn("flex w-full items-center justify-between gap-8", className)}>
-      <div className="flex justify-center gap-4" data-testid="top-actions-buttons">
+    <div
+      className={cn(
+        "flex w-full max-w-full items-center justify-between gap-8 overflow-hidden",
+        className
+      )}
+    >
+      <div
+        className="flex grow justify-center gap-4 overflow-hidden"
+        data-testid="top-actions-buttons"
+      >
         {actions.map((action, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <Action key={index} analyticsPage={analyticsPage} {...action} />
@@ -186,7 +194,7 @@ const Action: FC<ActionProps> = ({
         <button
           type="button"
           className={cn(
-            "pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-xs disabled:opacity-70",
+            "pointer-events-auto flex h-14 items-center gap-4 truncate rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-xs disabled:opacity-70",
             "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}
           onClick={handleClick}
