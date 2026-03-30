@@ -99,7 +99,7 @@ export const SwapForm = () => {
   return (
     <WizardModalDialog
       className="size-full border-none"
-      title={t("Multi-chain Swap")}
+      title={t("Multi-Chain Swap")}
       onCloseClick={close}
       contentClassName="relative overflow-hidden! p-0!"
     >
@@ -228,7 +228,7 @@ export const SwapFormShimmer = () => {
   return (
     <WizardModalDialog
       className="size-full border-none"
-      title={t("Multi-chain Swap")}
+      title={t("Multi-Chain Swap")}
       onCloseClick={close}
     >
       <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
