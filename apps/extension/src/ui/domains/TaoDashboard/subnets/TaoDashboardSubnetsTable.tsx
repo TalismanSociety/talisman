@@ -460,7 +460,7 @@ const SubnetRow: FC<{
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="truncate font-semibold text-white">
               {isRoot
-                ? t("Root")
+                ? "Root"
                 : subnet.token.subnetName ||
                   t("Subnet {{netuid}}", { netuid: subnet.token.netuid })}
             </span>
