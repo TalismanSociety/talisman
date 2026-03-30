@@ -25,6 +25,9 @@ export interface SettingsStoreData {
   tokensSortBy: "name" | "total" | "locked" | "available"
   earnPositionsSortBy: "total" | "name"
   earnPositionsGroupBy: "token" | "network" | "none"
+  earnDiscoverSortBy: "yield" | "name"
+  earnDiscoverTypeFilter: string | null
+  earnDiscoverProviderFilter: string | null
   developerMode: boolean
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
@@ -49,6 +52,9 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   tokensSortBy: "total",
   earnPositionsSortBy: "total",
   earnPositionsGroupBy: "none",
+  earnDiscoverSortBy: "yield",
+  earnDiscoverTypeFilter: null,
+  earnDiscoverProviderFilter: null,
   nftsSortBy: "date",
   developerMode: false,
   polkadotVaultSignWithProof: true,

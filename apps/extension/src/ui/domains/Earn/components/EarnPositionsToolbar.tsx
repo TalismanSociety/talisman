@@ -40,12 +40,12 @@ const EarnPositionsSortButton: FC<{ className?: string }> = ({ className }) => {
             </ContextMenuTrigger>
             <ContextMenuContent>
               <ContextMenuOptionItem
-                label={t("Balance")}
+                label={t("Sort by Balance")}
                 selected={sortBy === "total"}
                 onClick={() => setSortBy("total")}
               />
               <ContextMenuOptionItem
-                label={t("Name")}
+                label={t("Sort by Name")}
                 selected={sortBy === "name"}
                 onClick={() => setSortBy("name")}
               />
@@ -123,7 +123,7 @@ const EarnPositionsNetworkFilterButton: FC<{
             className={cn(className, networkFilter && "text-primary")}
           >
             {networkFilter ? (
-              <NetworkLogo className="text-lg" networkId={networkFilter.networkIds[0]} />
+              <NetworkLogo className="text-base" networkId={networkFilter.networkIds[0]} />
             ) : (
               <GlobeIcon />
             )}

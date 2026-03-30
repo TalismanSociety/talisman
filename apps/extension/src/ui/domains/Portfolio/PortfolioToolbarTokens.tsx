@@ -54,7 +54,7 @@ const NetworkFilterButton = () => {
         <TooltipTrigger asChild>
           <PortfolioToolbarButton onClick={open} className={cn(networkFilter && "text-primary")}>
             {networkFilter ? (
-              <NetworkLogo className="text-lg" networkId={networkFilter.networkIds[0]} />
+              <NetworkLogo className="text-base" networkId={networkFilter.networkIds[0]} />
             ) : (
               <GlobeIcon />
             )}

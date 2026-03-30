@@ -9,6 +9,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state/chaindata"
+import type { NetworkOption } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
@@ -25,7 +26,11 @@ const EARN_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30
 
 export const EarnAvailableProducts: FC<{
   search: string
-}> = ({ search }) => {
+  sortBy?: "yield" | "name"
+  typeFilter?: string | null
+  providerFilter?: string | null
+  networkFilter?: NetworkOption | null
+}> = ({ search, sortBy = "yield", typeFilter, providerFilter, networkFilter }) => {
   useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)
   const { t } = useTranslation()
   const tokensMap = useTokensMap()
@@ -33,29 +38,78 @@ export const EarnAvailableProducts: FC<{
 
   const { status, heldProducts, discoverProducts } = useYieldxyzOpportunitiesByTokenId()
 
-  const filterBySearch = useMemo(() => {
-    if (!search) return null
+  const applyFilters = useMemo(() => {
+    const hasTypeFilter = !!typeFilter
+    const hasProviderFilter = !!providerFilter
+    const hasNetworkFilter = !!networkFilter
+    const lowerSearch = search?.toLowerCase().trim() ?? ""
+    const hasSearch = lowerSearch.length > 0
 
-    const lowerSearch = search.toLowerCase()
-    return (p: TokenOpportunity) => {
-      const token = tokensMap[p.tokenId]
-      const network = token ? networksMap[token.networkId] : null
-      const searcheable = [token?.symbol ?? "", token?.name ?? "", network?.name ?? ""]
-        .join(" ")
-        .toLowerCase()
-      return searcheable.includes(lowerSearch)
+    if (!hasTypeFilter && !hasProviderFilter && !hasNetworkFilter && !hasSearch) return null
+
+    return (opportunities: TokenOpportunity[]): TokenOpportunity[] => {
+      return opportunities
+        .map((opp) => {
+          // Filter by network at the token level
+          if (hasNetworkFilter) {
+            const token = tokensMap[opp.tokenId]
+            if (!token || !networkFilter.networkIds.includes(token.networkId)) return null
+          }
+
+          // Filter by search at the token level
+          if (hasSearch) {
+            const token = tokensMap[opp.tokenId]
+            const network = token ? networksMap[token.networkId] : null
+            const searcheable = [token?.symbol ?? "", token?.name ?? "", network?.name ?? ""]
+              .join(" ")
+              .toLowerCase()
+            if (!searcheable.includes(lowerSearch)) return null
+          }
+
+          // Filter individual products by type/provider
+          if (hasTypeFilter || hasProviderFilter) {
+            const filtered = opp.products.filter((p) => {
+              if (hasTypeFilter && p.mechanics.type !== typeFilter) return false
+              if (hasProviderFilter && p.providerId !== providerFilter) return false
+              return true
+            })
+            if (!filtered.length) return null
+
+            return {
+              ...opp,
+              products: filtered,
+              bestApr: Math.max(...filtered.map((p) => p.rewardRate.total * 100)),
+            }
+          }
+
+          return opp
+        })
+        .filter((opp): opp is TokenOpportunity => opp !== null)
     }
-  }, [search, tokensMap, networksMap])
+  }, [search, typeFilter, providerFilter, networkFilter, tokensMap, networksMap])
 
-  const displayHeld = useMemo(
-    () => (filterBySearch ? heldProducts?.filter(filterBySearch) : heldProducts),
-    [heldProducts, filterBySearch]
-  )
+  const sortFn = useMemo(() => {
+    if (sortBy === "name") {
+      return (a: TokenOpportunity, b: TokenOpportunity) => {
+        const tokenA = tokensMap[a.tokenId]
+        const tokenB = tokensMap[b.tokenId]
+        return (tokenA?.symbol ?? "").localeCompare(tokenB?.symbol ?? "")
+      }
+    }
+    return null
+  }, [sortBy, tokensMap])
 
-  const displayDiscover = useMemo(
-    () => (filterBySearch ? discoverProducts?.filter(filterBySearch) : discoverProducts),
-    [discoverProducts, filterBySearch]
-  )
+  const displayHeld = useMemo(() => {
+    let result = applyFilters ? applyFilters(heldProducts ?? []) : (heldProducts ?? [])
+    if (sortFn) result = [...result].sort(sortFn)
+    return result
+  }, [heldProducts, applyFilters, sortFn])
+
+  const displayDiscover = useMemo(() => {
+    let result = applyFilters ? applyFilters(discoverProducts ?? []) : (discoverProducts ?? [])
+    if (sortFn) result = [...result].sort(sortFn)
+    return result
+  }, [discoverProducts, applyFilters, sortFn])
 
   return (
     <div className="flex w-full flex-col gap-4 overflow-hidden">
@@ -101,7 +155,7 @@ export const EarnAvailableProducts: FC<{
         </>
       )}
       {status === "loading" && <TokenProductsShimmer />}
-      {status === "success" && !heldProducts?.length && !discoverProducts?.length && (
+      {status === "success" && !displayHeld?.length && !displayDiscover?.length && (
         <div className="rounded-sm bg-black-secondary py-10 text-center text-base text-body-secondary">
           {t("No opportunities found")}
         </div>

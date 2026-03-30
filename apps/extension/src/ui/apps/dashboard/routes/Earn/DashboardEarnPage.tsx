@@ -2,6 +2,7 @@ import { Balances } from "@talismn/balances"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToolbar"
 import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
@@ -34,6 +35,7 @@ export const DashboardEarnPage: FC = () => {
   const location = useLocation()
 
   const isPositionsTab = location.pathname.startsWith("/earn/positions")
+  const isDiscoverTab = location.pathname.startsWith("/earn/discover")
 
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
@@ -56,6 +58,7 @@ export const DashboardEarnPage: FC = () => {
             />
           </div>
           {isPositionsTab && <EarnPositionsToolbar />}
+          {isDiscoverTab && <EarnDiscoverToolbar />}
         </div>
       </div>
 

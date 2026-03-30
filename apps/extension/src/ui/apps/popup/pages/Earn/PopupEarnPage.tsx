@@ -5,6 +5,7 @@ import type { AnalyticsPage } from "@ui/api/analytics"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToolbar"
 import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
@@ -113,6 +114,7 @@ export const PopupEarnPage: FC = () => {
   const [search, setSearch] = useState("")
 
   const isPositionsTab = selectedTab === "assets"
+  const isDiscoverTab = selectedTab === "discover"
 
   const handleTabChange = useCallback(
     async (tab: EarnTabsKey) => {
@@ -158,6 +160,7 @@ export const PopupEarnPage: FC = () => {
                 />
               </div>
               {isPositionsTab && <EarnPositionsToolbar buttonClassName="size-16" />}
+              {isDiscoverTab && <EarnDiscoverToolbar buttonClassName="size-16" />}
             </div>
           </div>
 
