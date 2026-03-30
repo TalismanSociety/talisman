@@ -29,7 +29,7 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
 
   const handleChange = useCallback(
     (value: string) => {
-      navigate(`${value}`)
+      navigate(`${value}`, true)
     },
     [navigate]
   )
