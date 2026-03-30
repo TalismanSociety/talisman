@@ -22,7 +22,9 @@ export const ToAmountDisplay = () => {
   if (!isQuoteDataCurrent)
     return (
       <div className="flex flex-col items-end gap-2">
-        <Skeleton>{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
+        <div className="h-12">
+          <Skeleton className="text-[20px]">{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
+        </div>
         <Skeleton className="text-xs">$0.00</Skeleton>
       </div>
     )
@@ -32,7 +34,9 @@ export const ToAmountDisplay = () => {
   if (!toAmount || !toToken || !formatter)
     return (
       <div className="flex flex-col items-end gap-2">
-        <div className="text-body-secondary">{toToken ? `0 ${toToken.symbol}` : "0"}</div>
+        <div className="h-12">
+          <div className="text-[20px]">{toToken ? `0 ${toToken.symbol}` : "0"}</div>
+        </div>
         {formatter ? (
           <Fiat amount={formatter} className="text-body-secondary text-xs" />
         ) : (
@@ -45,7 +49,14 @@ export const ToAmountDisplay = () => {
 
   return (
     <div className={cn("flex flex-col items-end gap-2", isRefreshing && "animate-pulse")}>
-      <Tokens amount={formatter.tokens} decimals={toToken.decimals} symbol={toToken.symbol} />
+      <div className="h-12">
+        <Tokens
+          amount={formatter.tokens}
+          decimals={toToken.decimals}
+          symbol={toToken.symbol}
+          className="text-[20px]"
+        />
+      </div>
       <Fiat amount={formatter} className="text-body-secondary text-xs" />
     </div>
   )
