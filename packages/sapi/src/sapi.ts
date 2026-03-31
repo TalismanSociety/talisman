@@ -14,6 +14,7 @@ import { getSapiConnector } from "./helpers/getSapiConnector"
 import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
 import { getTypeRegistry } from "./helpers/getTypeRegistry"
+import { hasEvent } from "./helpers/hasEvent"
 import { isApiAvailable } from "./helpers/isApiAvailable"
 import { submit } from "./helpers/submit"
 import type { Chain } from "./helpers/types"
@@ -108,5 +109,7 @@ export const getScaleApi = (
       getDryRunCall<T>(chain, from, decodedCall),
 
     isApiAvailable: (name: string, method: string) => isApiAvailable(chain, name, method),
+
+    hasEvent: (pallet: string, event: string) => hasEvent(chain, pallet, event),
   }
 }

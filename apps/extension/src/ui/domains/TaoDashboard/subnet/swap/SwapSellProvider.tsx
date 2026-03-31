@@ -175,6 +175,14 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
+  // Bittensor's runtime can pay unstake fees from staked Alpha when free TAO is insufficient,
+  // but only when the Alpha fee mechanism is active on-chain.
+  // This check is in preparation of https://github.com/opentensor/subtensor/pull/2353 and can be removed after release
+  const supportsAlphaFees = useMemo(
+    () => !!sapi?.hasEvent("SubtensorModule", "TransactionFeePaidWithAlpha"),
+    [sapi]
+  )
+
   const inputErrorMessage = useMemo(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
@@ -184,11 +192,12 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     if (state.valueIn > transferablePlanck) return t("Insufficient balance")
 
     if (
+      !supportsAlphaFees &&
       typeof combinedFeeEstimate === "bigint" &&
       balanceTokenOut &&
       combinedFeeEstimate > balanceTokenOut.transferable.planck
     )
-      return t("Insufficient balance to cover fee")
+      return t("Insufficient TAO to cover fee")
 
     if (typeof minAlphaUnstake === "bigint" && state.valueIn < minAlphaUnstake)
       return t("Minimum unbond is {{amount}} {{symbol}}", {
@@ -198,6 +207,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
     return null
   }, [
+    supportsAlphaFees,
     balanceTokenIn,
     balanceTokenOut,
     combinedFeeEstimate,

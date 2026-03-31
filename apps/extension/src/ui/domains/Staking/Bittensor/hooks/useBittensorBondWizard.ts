@@ -436,16 +436,27 @@ const useBittensorBondWizardProvider = () => {
     minTaoStakeForInput,
   ])
 
+  // Bittensor's runtime can pay remove_stake fees from staked Alpha when free TAO is insufficient,
+  // but this requires the Alpha fee mechanism to be active on-chain (detected via TransactionFeePaidWithAlpha event).
+  // This check is in preparation of https://github.com/opentensor/subtensor/pull/2353 and can be removed after release
+  const supportsAlphaFees = useMemo(
+    () => !!sapi?.hasEvent("SubtensorModule", "TransactionFeePaidWithAlpha"),
+    [sapi]
+  )
+
   const unstakeInputErrorMessage = useMemo(() => {
+    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees
     if (
+      !supportsAlphaFees &&
       !!amountIn &&
-      !!nativeBalance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
+      existentialDeposit?.planck &&
+      feeEstimate &&
+      nativeBalance &&
       existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck
     ) {
-      return t("Insufficient balance to cover fee and keep account alive")
+      return t("Insufficient TAO to cover fee and keep account alive")
     }
+
     if ((amountIn || 0n) > totalStakedPlancks) {
       return t("Insufficient balance")
     }
@@ -467,10 +478,11 @@ const useBittensorBondWizardProvider = () => {
 
     return null
   }, [
-    nativeBalance,
-    feeEstimate,
-    existentialDeposit?.planck,
+    supportsAlphaFees,
     amountIn,
+    existentialDeposit?.planck,
+    feeEstimate,
+    nativeBalance,
     totalStakedPlancks,
     newStakeTotal,
     minAlphaBond,
