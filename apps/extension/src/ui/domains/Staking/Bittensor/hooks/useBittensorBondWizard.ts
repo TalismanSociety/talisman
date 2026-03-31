@@ -438,6 +438,7 @@ const useBittensorBondWizardProvider = () => {
 
   const unstakeInputErrorMessage = useMemo(() => {
     if (
+      !!amountIn &&
       !!nativeBalance &&
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
