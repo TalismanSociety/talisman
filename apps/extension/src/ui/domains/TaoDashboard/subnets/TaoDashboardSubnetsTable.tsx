@@ -160,7 +160,15 @@ export const TaoDashboardSubnetsTable: FC<{
   }, [search, subnets])
 
   const sortedSubnets = useMemo(() => {
+    const pinRoot = sortSetting.key !== "balanceUsd"
+
     return filteredSubnets.concat().sort((a, b) => {
+      // Pin Root subnet (netuid 0) to the top unless sorting by balance
+      if (pinRoot) {
+        if (a.netuid === 0) return -1
+        if (b.netuid === 0) return 1
+      }
+
       const valA = a[sortSetting.key]
       const valB = b[sortSetting.key]
 
