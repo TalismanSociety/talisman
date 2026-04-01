@@ -1,5 +1,6 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
+import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
@@ -35,6 +36,9 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const [quoteSorting, setQuoteSorting] = useState<
     "decentalised" | "cheapest" | "fastest" | "bestRate"
   >("bestRate")
+
+  // Register selected swap tokens for rate fetching so fiat values can displayed even for disabled tokens
+  useAdditionalTokenRates([fromTokenId, toTokenId])
 
   // -- Unified address state --
   const [fromAddressRaw, setFromAddressRaw] = useState<string | null>(null)

@@ -15,10 +15,7 @@ export const BittensorRootBondForm = () => {
       <div className="flex items-center justify-between gap-8">
         <div className="whitespace-nowrap">{t("Select Subnet")}</div>
         <div className="truncate text-body">
-          <BittensorSelectButton
-            label={dtaoToken?.subnetName || t("Root")}
-            nextStep="select-subnet"
-          />
+          <BittensorSelectButton label={dtaoToken?.subnetName || "Root"} nextStep="select-subnet" />
         </div>
       </div>
     )

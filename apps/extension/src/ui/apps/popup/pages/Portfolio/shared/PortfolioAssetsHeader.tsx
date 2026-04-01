@@ -23,7 +23,7 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
@@ -82,7 +82,7 @@ const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
   )
 }
 
-export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo }) => {
+export const PortfolioAssetsHeader = () => {
   const { t } = useTranslation()
   const currency = useSelectedCurrency()
 
@@ -119,12 +119,10 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
 
   const formattedAddress = useFormattedAddress(account?.address, getAccountGenesisHash(account))
 
-  const location = useLocation()
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
-    if (backBtnTo) navigate(backBtnTo + location.search)
-    else navigate(-1)
-  }, [backBtnTo, location.search, navigate])
+    navigate(-1)
+  }, [navigate])
 
   return (
     // top margin hack is to prevent account genesis hash icon from being truncated

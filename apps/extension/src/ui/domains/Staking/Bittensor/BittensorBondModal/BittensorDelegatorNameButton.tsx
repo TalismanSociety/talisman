@@ -1,20 +1,16 @@
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 import { BittensorSelectButton } from "./BittensorSelectButton"
 
-type BittensorDelegatorNameButtonProps = {
+export const BittensorDelegatorNameButton: FC<{
   hotkey: string | undefined | null
   isDisabled?: boolean
-}
-
-export const BittensorDelegatorNameButton = ({
-  hotkey,
-  isDisabled,
-}: BittensorDelegatorNameButtonProps) => {
+  className?: string
+}> = ({ hotkey, isDisabled, className }) => {
   const { t } = useTranslation()
   const { netuid } = useBittensorBondWizard()
   const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
@@ -29,5 +25,12 @@ export const BittensorDelegatorNameButton = ({
     return poolName ?? t("Validator")
   }, [validator, hotkey, t])
 
-  return <BittensorSelectButton isDisabled={isDisabled} label={label} nextStep="select-delegate" />
+  return (
+    <BittensorSelectButton
+      isDisabled={isDisabled}
+      label={label}
+      nextStep="select-delegate"
+      className={className}
+    />
+  )
 }

@@ -56,7 +56,7 @@ const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, accou
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
+  return <div className="max-w-66 truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -157,7 +157,7 @@ const TokenInput = () => {
   useInputAutoWidth(refTokensInput)
 
   return (
-    <div className={"flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4"}>
+    <div className={"flex w-full max-w-100 flex-nowrap items-center justify-center gap-4"}>
       <input
         key="tokenInput"
         ref={refTokensInput}
@@ -255,7 +255,7 @@ const FiatInput = () => {
   return (
     <div
       // display flex in reverse order to leverage peer css
-      className="end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center"
+      className="end flex w-full max-w-100 flex-row-reverse flex-nowrap items-center justify-center"
     >
       <input
         key="fiatInput"
@@ -267,7 +267,6 @@ const FiatInput = () => {
         className="peer inline-block min-w-0 bg-transparent text-body text-xl"
         onChange={handleChange}
       />
-      {/* {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>} */}
       <div className="block shrink-0">{currencyConfig[currency]?.symbol}</div>
     </div>
   )

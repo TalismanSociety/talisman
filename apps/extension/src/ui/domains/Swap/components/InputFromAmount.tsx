@@ -213,14 +213,14 @@ export const InputFromAmount = () => {
 
   const [errorClassName, errorMessage] = useMemo(() => {
     if (!!value && parsedAmount.kind === "invalid") return ["text-alert-error", t("Invalid amount")]
-    if (
-      parsedAmount.kind === "valid" &&
-      fromBalance &&
-      parsedAmount.amount > fromBalance.transferable.planck
-    )
-      return ["text-alert-error", t("Insufficient balance")]
+    if (parsedAmount.kind === "valid" && parsedAmount.amount > 0n) {
+      // No balance record means user holds 0 of this token
+      if (!fromBalance && fromToken) return ["text-alert-error", t("Insufficient balance")]
+      if (fromBalance && parsedAmount.amount > fromBalance.transferable.planck)
+        return ["text-alert-error", t("Insufficient balance")]
+    }
     return [undefined, undefined]
-  }, [value, parsedAmount, fromBalance, t])
+  }, [value, parsedAmount, fromBalance, fromToken, t])
 
   const formattedFiat = useMemo(
     () => (fiatValue ?? 0).toLocaleString(undefined, { currency, style: "currency" }),
@@ -245,7 +245,7 @@ export const InputFromAmount = () => {
           autoComplete="off"
           aria-label={t("Amount to swap")}
           disabled={!fromToken}
-          className="w-full flex-1 bg-transparent text-right font-semibold text-[20px] text-white placeholder-grey-400"
+          className="w-full flex-1 bg-transparent text-right text-md text-white placeholder-body-secondary"
           value={value}
           placeholder="0.00"
           onChange={handleChange}
@@ -258,7 +258,7 @@ export const InputFromAmount = () => {
           autoComplete="off"
           aria-label={t("Amount to swap")}
           disabled={!fromToken}
-          className="w-full bg-transparent text-right font-semibold text-[20px] text-white placeholder-grey-400"
+          className="w-full bg-transparent text-right text-md text-white placeholder-body-secondary"
           value={value}
           placeholder="0"
           onChange={handleChange}
@@ -276,17 +276,17 @@ export const InputFromAmount = () => {
           {errorMessage}
         </div>
       ) : (
-        <div className="flex items-center justify-end gap-[4px]">
+        <div className="flex items-center justify-end gap-2">
           {canEditFiat && (
             <button
               type="button"
               onClick={toggleEditMode}
-              className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-grey-750 hover:text-body"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-grey-750 hover:text-body"
             >
-              <ArrowUpDownIcon className="size-[8px]" />
+              <ArrowUpDownIcon className="size-4" />
             </button>
           )}
-          <p className="truncate text-[12px] text-body-inactive leading-none">
+          <p className="truncate text-body-inactive text-xs leading-none">
             {editFiat ? formattedTokenValue : formattedFiat}
           </p>
         </div>

@@ -64,6 +64,12 @@ vi.mock("../hooks/useSwapSlippage", () => ({
   useSwapSlippage: () => [0.5],
 }))
 
+vi.mock("@ui/api", () => ({
+  api: {
+    registerAdditionalTokenRates: vi.fn(),
+  },
+}))
+
 vi.mock("@ui/hooks/useBalancesByParams", () => ({
   useBalanceByParams: () => null,
 }))
