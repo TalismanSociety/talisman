@@ -1,7 +1,7 @@
 import type { TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { FolderIcon, MoreHorizontalIcon } from "@talismn/icons"
+import { EyeIcon, EyeOffIcon, FolderIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardTopActions } from "@ui/apps/dashboard/DashboardTopActions"
@@ -14,19 +14,49 @@ import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { FolderContextMenu } from "@ui/domains/Account/FolderContextMenu"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
-import { useSelectedCurrency } from "@ui/state/settings"
+import { useSelectedCurrency, useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { type FC, useMemo } from "react"
+import { type FC, type MouseEventHandler, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { useHoverDirty } from "react-use"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
-const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }> = ({
-  account,
-  folder,
-}) => {
+const HideBalancesButton: FC<{ visible: boolean }> = ({ visible }) => {
+  const [hideBalances, setHideBalances] = useSetting("hideBalances")
+  const { genericEvent } = useAnalytics()
+
+  const toggleHideBalance: MouseEventHandler<HTMLButtonElement> = useCallback(
+    (event) => {
+      event.stopPropagation()
+      genericEvent("toggle hide balance")
+      setHideBalances((prev) => !prev)
+    },
+    [genericEvent, setHideBalances]
+  )
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "pointer-events-auto shrink-0 text-base text-grey-200 opacity-0 transition-opacity hover:text-body focus:text-body",
+        (hideBalances || visible) && "opacity-100"
+      )}
+      onClick={toggleHideBalance}
+    >
+      {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
+    </button>
+  )
+}
+
+const SelectionScope: FC<{
+  account: Account | null
+  folder?: TreeFolder | null
+  suffix?: React.ReactNode
+}> = ({ account, folder, suffix }) => {
   const { t } = useTranslation()
 
   if (account)
@@ -40,6 +70,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
           />
           <div className="truncate">{account.name ?? shortenAddress(account.address)}</div>
           <AccountTypeIcon type={account.type} className="text-primary" />
+          {suffix}
         </div>
         <div className="shrink-0">
           <AccountContextMenu
@@ -64,6 +95,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
             <FolderIcon className="shrink-0 text-primary text-xs" />
           </div>
           <div className="truncate">{folder.name}</div>
+          {suffix}
         </div>
         <div className="shrink-0">
           <FolderContextMenu
@@ -83,6 +115,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
     <div className="flex h-14 items-center gap-3 text-base">
       <AllAccountsIcon className="shrink-0 text-[1.25rem]" />
       <div>{t("All Accounts")}</div>
+      {suffix}
     </div>
   )
 }
@@ -94,12 +127,16 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
+  const headerRef = useRef<HTMLDivElement>(null)
+  const mouseOver = useHoverDirty(headerRef)
+
   const selectedTotal = useMemo(() => {
     return selectedAccounts.reduce((total, acc) => total + (balanceTotals[acc.address] ?? 0), 0)
   }, [selectedAccounts, balanceTotals])
 
   return (
     <div
+      ref={headerRef}
       className={cn(
         "relative z-0 flex h-96 flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
         className
@@ -112,7 +149,11 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
         />
       )}
       <div className="z-1 flex w-full flex-col gap-4 overflow-hidden font-inter">
-        <SelectionScope folder={selectedFolder} account={selectedAccount} />
+        <SelectionScope
+          folder={selectedFolder}
+          account={selectedAccount}
+          suffix={<HideBalancesButton visible={mouseOver} />}
+        />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
             type="button"
