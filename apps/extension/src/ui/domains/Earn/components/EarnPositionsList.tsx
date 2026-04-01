@@ -69,7 +69,7 @@ const EarnPositionRow: FC<{
               </EarnTypeBadge>
             )}
           </div>
-          <div>
+          <div className="shrink-0">
             <DisplayTokensList displayTokens={position.displayTokens} />
           </div>
         </div>
@@ -94,11 +94,14 @@ const DisplayTokensList: FC<{
   displayTokens: EarnPositionDisplayToken[]
   className?: string
 }> = ({ displayTokens, className }) => {
-  return (
+  const isTruncated = displayTokens.length > 2
+  const visibleTokens = isTruncated ? displayTokens.slice(0, 2) : displayTokens
+
+  const content = (
     <div
       className={cn("flex w-full shrink-0 items-center truncate font-bold text-body", className)}
     >
-      {displayTokens.map((token, i, arr) => (
+      {visibleTokens.map((token, i, arr) => (
         <Fragment key={token.tokenId ?? token.symbol}>
           <span className="inline-flex shrink-0 items-center gap-2">
             {token.tokenId ? (
@@ -115,7 +118,34 @@ const DisplayTokensList: FC<{
           {i < arr.length - 1 && <span className="mx-2 text-white">/</span>}
         </Fragment>
       ))}
+      {isTruncated && <span className="mx-2 text-white">/ …</span>}
     </div>
+  )
+
+  if (!isTruncated) return content
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
+      <TooltipContent>
+        <div className="flex flex-col gap-2">
+          {displayTokens.map((token) => (
+            <span key={token.tokenId ?? token.symbol} className="inline-flex items-center gap-2">
+              {token.tokenId ? (
+                <TokenLogo tokenId={token.tokenId} className="size-8" />
+              ) : (
+                <AssetLogo url={token.logoUrl} className="size-8" />
+              )}
+              {token.tokenId ? (
+                <TokenDisplaySymbol tokenId={token.tokenId} />
+              ) : (
+                <span>{token.symbol}</span>
+              )}
+            </span>
+          ))}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 

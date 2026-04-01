@@ -141,7 +141,7 @@ export const EarnAvailableProducts: FC<{
           <h2 className="mt-4 font-medium text-body-secondary text-sm">
             {t("Discover Opportunities")}
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className={cn("grid gap-4", IS_POPUP ? "grid-cols-2" : "grid-cols-4")}>
             {displayDiscover.map(({ tokenId, products, bestApr }) => (
               <DiscoverTokenCard
                 key={tokenId}
