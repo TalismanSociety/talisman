@@ -14,7 +14,7 @@ export const ToAmountDisplay = () => {
   const tokenRates = useTokenRates(toTokenId)
 
   const formatter = useMemo(() => {
-    if (!toToken) return null
+    if (!toToken) return new BalanceFormatter(0n, 18)
     return new BalanceFormatter(toAmount ?? 0n, toToken.decimals, tokenRates)
   }, [toAmount, toToken, tokenRates])
 
@@ -23,7 +23,7 @@ export const ToAmountDisplay = () => {
     return (
       <div className="flex flex-col items-end gap-2">
         <div className="h-12">
-          <Skeleton className="text-[20px]">{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
+          <Skeleton className="w-40 text-[20px]">{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
         </div>
         <Skeleton className="text-xs">$0.00</Skeleton>
       </div>
@@ -35,15 +35,11 @@ export const ToAmountDisplay = () => {
     return (
       <div className="flex flex-col items-end gap-2">
         <div className="h-12">
-          <div className="text-[20px]">{toToken ? `0 ${toToken.symbol}` : "0"}</div>
-        </div>
-        {formatter ? (
-          <Fiat amount={formatter} className="text-body-secondary text-xs" />
-        ) : (
-          <div aria-hidden="true" className="invisible text-body-secondary text-xs">
-            0
+          <div className="text-[20px] text-body-secondary">
+            {toToken ? `0 ${toToken.symbol}` : "0"}
           </div>
-        )}
+        </div>
+        <Fiat amount={formatter} className="text-body-secondary text-xs" />
       </div>
     )
 
