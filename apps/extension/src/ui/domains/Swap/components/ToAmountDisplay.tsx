@@ -23,7 +23,7 @@ export const ToAmountDisplay = () => {
     return (
       <div className="flex flex-col items-end">
         <div className="h-12">
-          <Skeleton className="w-40 text-md">{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
+          <Skeleton className="w-40 text-md">0</Skeleton>
         </div>
         <Skeleton className="text-xs">$0.00</Skeleton>
       </div>
@@ -35,7 +35,7 @@ export const ToAmountDisplay = () => {
     return (
       <div className="flex flex-col items-end">
         <div className="h-12">
-          <div className="text-body-secondary text-md">{toToken ? `0 ${toToken.symbol}` : "0"}</div>
+          <div className="text-body-secondary text-md">0</div>
         </div>
         <Fiat amount={formatter} className="text-body-inactive text-xs" />
       </div>
@@ -44,12 +44,7 @@ export const ToAmountDisplay = () => {
   return (
     <div className={cn("flex flex-col items-end", isRefreshing && "animate-pulse")}>
       <div className="h-12">
-        <Tokens
-          amount={formatter.tokens}
-          decimals={toToken.decimals}
-          symbol={toToken.symbol}
-          className="text-md"
-        />
+        <Tokens amount={formatter.tokens} decimals={toToken.decimals} className="text-md" />
       </div>
       <Fiat amount={formatter} className="text-body-inactive text-xs" />
     </div>
