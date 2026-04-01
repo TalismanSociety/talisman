@@ -34,6 +34,8 @@ const YIELD_TYPES = [
   { value: "vault", label: "Vault" },
   { value: "fixed_yield", label: "Fixed Yield" },
   { value: "real_world_asset", label: "Real World Asset" },
+  { value: "liquidity_pool", label: "LP" },
+  { value: "concentrated_liquidity_pool", label: "Concentrated LP" },
 ] as const
 
 const EarnDiscoverSortButton: FC<{ className?: string }> = ({ className }) => {
