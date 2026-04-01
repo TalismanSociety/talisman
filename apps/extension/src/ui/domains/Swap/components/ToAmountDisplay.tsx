@@ -21,9 +21,9 @@ export const ToAmountDisplay = () => {
   // Input changed — show skeleton placeholder while waiting for new quote
   if (!isQuoteDataCurrent)
     return (
-      <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-col items-end">
         <div className="h-12">
-          <Skeleton className="w-40 text-[20px]">{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
+          <Skeleton className="w-40 text-md">{toToken ? `0 ${toToken.symbol}` : "0"}</Skeleton>
         </div>
         <Skeleton className="text-xs">$0.00</Skeleton>
       </div>
@@ -33,27 +33,25 @@ export const ToAmountDisplay = () => {
 
   if (!toAmount || !toToken || !formatter)
     return (
-      <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-col items-end">
         <div className="h-12">
-          <div className="text-[20px] text-body-secondary">
-            {toToken ? `0 ${toToken.symbol}` : "0"}
-          </div>
+          <div className="text-body-secondary text-md">{toToken ? `0 ${toToken.symbol}` : "0"}</div>
         </div>
-        <Fiat amount={formatter} className="text-body-secondary text-xs" />
+        <Fiat amount={formatter} className="text-body-inactive text-xs" />
       </div>
     )
 
   return (
-    <div className={cn("flex flex-col items-end gap-2", isRefreshing && "animate-pulse")}>
+    <div className={cn("flex flex-col items-end", isRefreshing && "animate-pulse")}>
       <div className="h-12">
         <Tokens
           amount={formatter.tokens}
           decimals={toToken.decimals}
           symbol={toToken.symbol}
-          className="text-[20px]"
+          className="text-md"
         />
       </div>
-      <Fiat amount={formatter} className="text-body-secondary text-xs" />
+      <Fiat amount={formatter} className="text-body-inactive text-xs" />
     </div>
   )
 }

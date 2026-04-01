@@ -213,14 +213,14 @@ export const InputFromAmount = () => {
 
   const [errorClassName, errorMessage] = useMemo(() => {
     if (!!value && parsedAmount.kind === "invalid") return ["text-alert-error", t("Invalid amount")]
-    if (
-      parsedAmount.kind === "valid" &&
-      fromBalance &&
-      parsedAmount.amount > fromBalance.transferable.planck
-    )
-      return ["text-alert-error", t("Insufficient balance")]
+    if (parsedAmount.kind === "valid" && parsedAmount.amount > 0n) {
+      // No balance record means user holds 0 of this token
+      if (!fromBalance && fromToken) return ["text-alert-error", t("Insufficient balance")]
+      if (fromBalance && parsedAmount.amount > fromBalance.transferable.planck)
+        return ["text-alert-error", t("Insufficient balance")]
+    }
     return [undefined, undefined]
-  }, [value, parsedAmount, fromBalance, t])
+  }, [value, parsedAmount, fromBalance, fromToken, t])
 
   const formattedFiat = useMemo(
     () => (fiatValue ?? 0).toLocaleString(undefined, { currency, style: "currency" }),
@@ -245,7 +245,7 @@ export const InputFromAmount = () => {
           autoComplete="off"
           aria-label={t("Amount to swap")}
           disabled={!fromToken}
-          className="w-full flex-1 bg-transparent text-right text-[20px] text-white placeholder-body-secondary"
+          className="w-full flex-1 bg-transparent text-right text-md text-white placeholder-body-secondary"
           value={value}
           placeholder="0.00"
           onChange={handleChange}
@@ -258,7 +258,7 @@ export const InputFromAmount = () => {
           autoComplete="off"
           aria-label={t("Amount to swap")}
           disabled={!fromToken}
-          className="w-full bg-transparent text-right text-[20px] text-white placeholder-body-secondary"
+          className="w-full bg-transparent text-right text-md text-white placeholder-body-secondary"
           value={value}
           placeholder="0"
           onChange={handleChange}

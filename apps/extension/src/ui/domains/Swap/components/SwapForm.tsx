@@ -91,10 +91,12 @@ export const SwapForm = () => {
   )
 
   const insufficientBalance = useMemo(() => {
-    if (!fromBalance || !fromAmount) return undefined
+    if (!fromAmount) return undefined
+    // No balance record means user holds 0 of this token
+    if (!fromBalance) return !!fromTokenId && !!fromAddress
     const gasBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
     return fromAmount + gasBuffer > fromBalance.transferable.planck
-  }, [fromBalance, fromAmount, selectedQuote?.maxNativeTokenGasBuffer])
+  }, [fromBalance, fromAmount, fromTokenId, fromAddress, selectedQuote?.maxNativeTokenGasBuffer])
 
   return (
     <WizardModalDialog
@@ -125,7 +127,11 @@ export const SwapForm = () => {
               />
             }
             accountBalance={
-              <AvailableBalance balance={fromBalance} onMaxClick={onMaxFromAmountClick} />
+              <AvailableBalance
+                balance={fromBalance}
+                tokenId={fromTokenId}
+                onMaxClick={onMaxFromAmountClick}
+              />
             }
             isError={!!insufficientBalance}
           />
@@ -151,7 +157,7 @@ export const SwapForm = () => {
                 onAccountChange={setToAddress}
               />
             }
-            accountBalance={<AvailableBalance balance={toBalance} />}
+            accountBalance={<AvailableBalance balance={toBalance} tokenId={toTokenId} />}
             isError={false}
           />
 
