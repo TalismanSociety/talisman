@@ -537,6 +537,8 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
       ].join(" ")
       throw new Error(message)
     }
+    if (exchange.code === 500) throw new Error("Failed to create exchange. Please try again later")
+
     // verify that the created exchange has the same assets we are trying to swap
     if (exchange.currency_from !== currency_from || exchange.currency_to !== currency_to) {
       // biome-ignore lint/suspicious/noConsole: legacy
