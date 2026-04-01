@@ -41,7 +41,7 @@ const DefiNavHeader: FC<{ position: DefiPosition }> = ({ position }) => {
   return (
     <div className="flex h-28 w-full items-center gap-8 overflow-hidden">
       <div className="flex h-full grow items-center gap-4 overflow-hidden">
-        <IconButton onClick={() => navigate("/earn", true)}>
+        <IconButton onClick={() => navigate("/earn/positions", true)}>
           <ChevronLeftIcon />
         </IconButton>
         <AssetLogo url={position.defiLogoUrl} className="size-[2.25rem]" />

@@ -85,7 +85,7 @@ const NavHeader: FC<{
   return (
     <div className="flex h-28 w-full items-center gap-8 overflow-hidden">
       <div className="flex h-full grow items-center gap-4 overflow-hidden">
-        <IconButton onClick={() => navigate("/earn", true)}>
+        <IconButton onClick={() => navigate("/earn/positions", true)}>
           <ChevronLeftIcon />
         </IconButton>
         <YieldxyzProviderLogo providerId={product.providerId} className="size-[2.25rem]" />
