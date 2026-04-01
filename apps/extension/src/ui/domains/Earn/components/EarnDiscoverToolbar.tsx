@@ -201,7 +201,7 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
                   type="button"
                   onClick={protocolModal.open}
                   className={cn(
-                    "flex w-full items-center gap-8 rounded border border-grey-700 px-12 py-6 text-left text-sm transition-colors hover:border-grey-600 hover:text-grey-300",
+                    "flex w-full items-center gap-8 rounded border border-grey-700 px-6 py-6 text-left text-sm transition-colors hover:border-grey-600 hover:text-grey-300",
                     selectedProtocol ? "text-body" : "text-body-secondary"
                   )}
                 >
