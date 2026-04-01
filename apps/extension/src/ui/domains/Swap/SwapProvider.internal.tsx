@@ -1,6 +1,6 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
+import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
@@ -36,6 +36,9 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const [quoteSorting, setQuoteSorting] = useState<
     "decentalised" | "cheapest" | "fastest" | "bestRate"
   >("bestRate")
+
+  // Register selected swap tokens for rate fetching so fiat values can displayed even for disabled tokens
+  useAdditionalTokenRates([fromTokenId, toTokenId])
 
   // -- Unified address state --
   const [fromAddressRaw, setFromAddressRaw] = useState<string | null>(null)
@@ -176,14 +179,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     enabled: swapView !== "submitted",
     freezeQuote: swapView === "confirm",
   })
-
-  // Register selected swap tokens for rate fetching so fiat values are displayed
-  // even if the tokens aren't in the user's enabled list
-  useEffect(() => {
-    const tokenIds = [fromTokenId, toTokenId].filter(Boolean) as string[]
-    if (tokenIds.length === 0) return
-    api.registerAdditionalTokenRates(tokenIds)
-  }, [fromTokenId, toTokenId])
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet
   const isInitializing = Boolean(
