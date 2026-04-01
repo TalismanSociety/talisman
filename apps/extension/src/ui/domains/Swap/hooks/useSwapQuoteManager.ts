@@ -49,7 +49,6 @@ export const useSwapQuoteManager = (params: {
   selectedProtocol: SupportedSwapProtocol | null
   selectedSubProtocol: string | undefined
   quoteSorting: "decentalised" | "cheapest" | "fastest" | "bestRate"
-  slippagePercent: number
   enabled?: boolean
   /** When true, background refetching is paused to freeze the quote (e.g. on the confirm screen) */
   freezeQuote?: boolean
@@ -65,7 +64,6 @@ export const useSwapQuoteManager = (params: {
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
-    slippagePercent,
     enabled: enabledProp = true,
     freezeQuote = false,
   } = params
@@ -81,9 +79,8 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString() ?? "",
         fromAddress ?? "",
         toAddress ?? "",
-        slippagePercent.toString(),
       ].join("|"),
-    [fromAmount, fromAddress, fromTokenId, slippagePercent, toAddress, toTokenId]
+    [fromAmount, fromAddress, fromTokenId, toAddress, toTokenId]
   )
 
   const applicableModules = useMemo(
@@ -108,7 +105,6 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString(),
         fromAddress,
         toAddress,
-        module.supportsSlippageSetting ? slippagePercent.toString() : "",
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(
