@@ -384,11 +384,7 @@ const useBittensorBondWizardProvider = () => {
   const stakeInputErrorMessage = useMemo(() => {
     if (!amountTao || typeof minTaoBondForInput !== "bigint") return null
 
-    if (
-      !!nativeBalance &&
-      !!amountTao.planck &&
-      amountTao.planck > nativeBalance.transferable.planck
-    )
+    if (!!amountTao.planck && amountTao.planck > (nativeBalance?.transferable?.planck ?? 0n))
       return t("Insufficient balance")
 
     if (
