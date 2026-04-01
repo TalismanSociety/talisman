@@ -174,6 +174,42 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
       if (signal.aborted) throw new Error("Aborted")
 
+      // For modules that don't create an exchange (e.g. LI.FI returns null) but support
+      // slippage, fetch a fresh quote so the route reflects the user's current slippage.
+      // The main quote manager intentionally omits slippage from its cache key so that
+      // editing slippage on the confirm screen doesn't destabilise quote selection.
+      let exchangeQuote: unknown = exchange?.data ?? null
+      if (!exchangeQuote && supportsSlippage) {
+        const freshQuotes = await swapModule.getQuote(
+          {
+            fromTokenId,
+            toTokenId,
+            fromAmount,
+            fromAddress,
+            toAddress,
+            selectedSubProtocol: subProtocol,
+          },
+          signal
+        )
+        if (signal.aborted) throw new Error("Aborted")
+
+        const quotesArray = freshQuotes
+          ? Array.isArray(freshQuotes)
+            ? freshQuotes
+            : [freshQuotes]
+          : []
+
+        // Prefer the route matching the user's selected protocol/subProtocol
+        exchangeQuote =
+          quotesArray.find(
+            (q) =>
+              q.protocol === selectedQuote?.protocol &&
+              (!q.subProtocol || q.subProtocol === selectedQuote?.subProtocol)
+          ) ??
+          quotesArray[0] ??
+          null
+      }
+
       const context: SwapTransactionContext = sapi
         ? { platform: "polkadot", sapi, allowReap }
         : solanaConnection
@@ -183,7 +219,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       const transaction = await swapModule.getTransaction({
         fromTokenId,
         fromAddress,
-        exchange: exchange?.data ?? selectedQuote,
+        exchange: exchangeQuote ?? selectedQuote,
         context,
       })
 

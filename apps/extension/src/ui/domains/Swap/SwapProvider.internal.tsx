@@ -6,7 +6,6 @@ import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
-import { useSwapSlippage } from "./hooks/useSwapSlippage"
 import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
 
@@ -151,8 +150,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setFromAddressManuallySet(true)
   }, [stateInit?.fromAddress, setFromAddressManuallySet])
 
-  const [slippagePercent] = useSwapSlippage()
-
   const {
     isLoadingQuotes,
     isQuoteDataCurrent,
@@ -175,7 +172,6 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
-    slippagePercent,
     enabled: swapView !== "submitted",
     freezeQuote: swapView === "confirm",
   })
