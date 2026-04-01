@@ -57,6 +57,13 @@ const fetchDefiPositions = async (addresses: string[]) => {
 
   const positions = (await response.json()) as DefiPosition[]
 
+  for (const p of positions) {
+    if (p.type === "unknown" && p._dbg_type) {
+      // biome-ignore lint/suspicious/noConsole: useful for auditing unmapped defi position types
+      console.warn(`unknown defi position type: ${p._dbg_type} (${p.defiName} / ${p.name})`)
+    }
+  }
+
   // yield.xyz positions are fetched separately via the yield.xyz API
   return positions.filter((p) => p.defiName !== "Yield.xyz")
 }
