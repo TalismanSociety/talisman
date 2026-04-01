@@ -136,7 +136,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
       )}
     >
       <div
-        className="flex grow justify-center gap-4 overflow-hidden"
+        className="flex grow justify-start gap-4 overflow-hidden"
         data-testid="top-actions-buttons"
       >
         {actions.map((action, index) => (
