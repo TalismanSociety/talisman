@@ -94,13 +94,17 @@ export const YieldxyzEnterStepAmount = () => {
             <FormFieldSetRow label={t("Claim Mechanism")} variant="xs">
               <ClaimMechanismDisplay />
             </FormFieldSetRow>
-            <FormFieldSetRow
-              label={t("Warmup Period")}
-              description={t("Warmup period before rewards start accruing")}
-              variant="xs"
-            >
-              <PeriodDisplay period={product.mechanics.warmupPeriod} />
-            </FormFieldSetRow>
+            {!!(
+              product.mechanics.warmupPeriod?.seconds || product.mechanics.cooldownPeriod?.seconds
+            ) && (
+              <FormFieldSetRow
+                label={t("Warmup Period")}
+                description={t("Warmup period before rewards start accruing")}
+                variant="xs"
+              >
+                <PeriodDisplay period={product.mechanics.warmupPeriod} />
+              </FormFieldSetRow>
+            )}
             <FormFieldSetRow
               label={t("Lockup Period")}
               description={t("Minimum time before exit can be initiated")}
@@ -108,13 +112,17 @@ export const YieldxyzEnterStepAmount = () => {
             >
               <PeriodDisplay period={product.mechanics.lockupPeriod} />
             </FormFieldSetRow>
-            <FormFieldSetRow
-              label={t("Cooldown Period")}
-              description={t("Time required before exit is allowed")}
-              variant="xs"
-            >
-              <PeriodDisplay period={product.mechanics.cooldownPeriod} />
-            </FormFieldSetRow>
+            {!!(
+              product.mechanics.warmupPeriod?.seconds || product.mechanics.cooldownPeriod?.seconds
+            ) && (
+              <FormFieldSetRow
+                label={t("Cooldown Period")}
+                description={t("Time required before exit is allowed")}
+                variant="xs"
+              >
+                <PeriodDisplay period={product.mechanics.cooldownPeriod} />
+              </FormFieldSetRow>
+            )}
           </FormFieldSet>
         </div>
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
