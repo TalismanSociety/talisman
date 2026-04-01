@@ -1,5 +1,6 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
+import { api } from "@ui/api"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
@@ -175,6 +176,14 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     enabled: swapView !== "submitted",
     freezeQuote: swapView === "confirm",
   })
+
+  // Register selected swap tokens for rate fetching so fiat values are displayed
+  // even if the tokens aren't in the user's enabled list
+  useEffect(() => {
+    const tokenIds = [fromTokenId, toTokenId].filter(Boolean) as string[]
+    if (tokenIds.length === 0) return
+    api.registerAdditionalTokenRates(tokenIds)
+  }, [fromTokenId, toTokenId])
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet
   const isInitializing = Boolean(

@@ -219,6 +219,7 @@ export default interface MessageTypes {
 
   // tokenRates message types
   tokenRates: (cb: (rates: TokenRatesStorage) => void) => UnsubscribeFn
+  registerAdditionalTokenRates: (tokenIds: TokenId[]) => Promise<boolean>
 
   // eth related messages
   ethSignAndSend: (

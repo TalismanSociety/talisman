@@ -189,6 +189,8 @@ export const api: MessageTypes = {
 
   // tokenRates message types
   tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),
+  registerAdditionalTokenRates: (tokenIds) =>
+    messageService.sendMessage("pri(tokenRates.registerAdditional)", tokenIds),
 
   // eth related messages
   ethSignAndSend: (evmNetworkId, unsigned, txInfo) =>

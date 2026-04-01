@@ -1,6 +1,6 @@
 import { COINS_API_URL } from "@common/constants"
 import { log } from "@common/log"
-import type { TokenList } from "@talismn/chaindata-provider"
+import type { TokenId, TokenList } from "@talismn/chaindata-provider"
 import {
   fetchTokenRates,
   type TokenRateCurrency,
@@ -68,6 +68,10 @@ export class TokenRatesStore {
   #subscriptions = new BehaviorSubject<Record<string, TokenRatesSubscriptionCallback>>({})
   #isWatching = false
 
+  // In-memory set of additional token IDs registered by the frontend (e.g. swap tokens).
+  // Accumulated across the session, cleared naturally on service worker restart.
+  #additionalTokenIds = new Set<TokenId>()
+
   constructor() {
     this.#storage$ = tokenRates$
 
@@ -106,7 +110,7 @@ export class TokenRatesStore {
         subTokenList = combineLatest([obsTokens, obsActiveTokens, obsCurrencies]).subscribe(
           debounce(async ([tokens, activeTokens, currencies]) => {
             if (this.#subscriptions.observed) {
-              const tokensList = filterActiveTokens(tokens, activeTokens)
+              const tokensList = this.getTokensForRates(tokens, activeTokens)
               await this.updateTokenRates(tokensList, currencies)
             }
           }, 500)
@@ -137,7 +141,7 @@ export class TokenRatesStore {
         settingsStore.get("selectableCurrencies"),
       ])
 
-      const tokensList = filterActiveTokens(tokens, activeTokens)
+      const tokensList = this.getTokensForRates(tokens, activeTokens)
       await this.updateTokenRates(tokensList, currencies)
 
       return true
@@ -148,7 +152,33 @@ export class TokenRatesStore {
   }
 
   /**
-   * WARNING: Make sure the tokens list `tokens` only includes active tokens.
+   * Registers additional token IDs for rate fetching (e.g. tokens selected in swap UI).
+   * Accumulated in memory; clears on service worker restart.
+   */
+  registerAdditional(tokenIds: TokenId[]): void {
+    let changed = false
+    for (const id of tokenIds) {
+      if (!this.#additionalTokenIds.has(id)) {
+        this.#additionalTokenIds.add(id)
+        changed = true
+      }
+    }
+    if (changed) this.hydrateStore()
+  }
+
+  /** Returns active tokens merged with any additionally registered tokens. */
+  private getTokensForRates(allTokens: TokenList, activeTokens: Record<string, boolean>) {
+    const tokensList = filterActiveTokens(allTokens, activeTokens)
+
+    for (const tokenId of this.#additionalTokenIds) {
+      if (!tokensList[tokenId] && allTokens[tokenId]) tokensList[tokenId] = allTokens[tokenId]
+    }
+
+    return tokensList
+  }
+
+  /**
+   * WARNING: Make sure the tokens list `tokens` only includes active and additionally registered tokens.
    */
   private async updateTokenRates(
     tokens: TokenList,
