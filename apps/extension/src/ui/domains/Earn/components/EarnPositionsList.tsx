@@ -60,9 +60,11 @@ const EarnPositionRow: FC<{
                 </TooltipContent>
               </Tooltip>
             )}
-            <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
-              {position.type}
-            </EarnTypeBadge>
+            {!!position.type && position.type !== "unknown" && (
+              <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
+                {position.type}
+              </EarnTypeBadge>
+            )}
             {position.isReadOnly && (
               <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
                 {t("View Only")}

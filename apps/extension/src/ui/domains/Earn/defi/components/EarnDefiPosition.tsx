@@ -49,7 +49,9 @@ const DefiNavHeader: FC<{ position: DefiPosition }> = ({ position }) => {
           <div className="flex w-full items-center gap-8 overflow-hidden">
             <div className="flex grow items-center gap-2 overflow-hidden truncate text-body">
               <div className="truncate">{position.name}</div>
-              <EarnTypeBadge className="shrink-0">{position.type}</EarnTypeBadge>
+              {!!position.type && position.type !== "unknown" && (
+                <EarnTypeBadge className="shrink-0">{position.type}</EarnTypeBadge>
+              )}
               <EarnTypeBadge className="shrink-0">{t("View Only")}</EarnTypeBadge>
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
