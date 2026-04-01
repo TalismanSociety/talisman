@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
+import { ChevronLeftIcon, MoreHorizontalIcon, ZapPlusIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import {
   ContextMenu,
@@ -10,6 +10,7 @@ import {
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
 import { IconButton } from "@ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -223,8 +224,31 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
           <NetworkName networkId={networkId} className="truncate text-sm" />
         </div>
       </div>
+      <AddStakeButton position={position} />
       <PositionContextMenuButton position={position} />
     </div>
+  )
+}
+
+const AddStakeButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+  const { t } = useTranslation()
+  const { canEnter, onAddToPositionClick } = usePositionActions(position)
+
+  if (!canEnter) return null
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onAddToPositionClick}
+          className="flex size-9.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[1.25rem] text-primary hover:bg-primary/20"
+        >
+          <ZapPlusIcon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{t("Add to Position")}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -281,20 +305,15 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
 
 const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
   const { t } = useTranslation()
-  const {
-    canEnter,
-    canManage,
-    onAddToPositionClick,
-    claimableBalances,
-    onClaimClick,
-    withdrawableBalances,
-    onWithdrawClick,
-  } = usePositionActions(position)
+  const { canManage, claimableBalances, onClaimClick, withdrawableBalances, onWithdrawClick } =
+    usePositionActions(position)
 
   const isGridLayout = useMemo(
-    () => IS_POPUP && (withdrawableBalances.length || claimableBalances.length),
+    () => IS_POPUP && withdrawableBalances.length > 0 && claimableBalances.length > 0,
     [claimableBalances.length, withdrawableBalances.length]
   )
+
+  if (!withdrawableBalances.length && !claimableBalances.length) return null
 
   return (
     <div
@@ -303,13 +322,6 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         isGridLayout && "grid grid-cols-2 gap-8"
       )}
     >
-      <Button
-        className={cn(!isGridLayout && "w-43.75 text-base")}
-        disabled={!canEnter}
-        onClick={onAddToPositionClick}
-      >
-        {t("Add to Position")}
-      </Button>
       {withdrawableBalances.length > 0 && (
         <Button
           primary
