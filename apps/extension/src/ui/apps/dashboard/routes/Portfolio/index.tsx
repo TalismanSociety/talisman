@@ -2,6 +2,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
+import { PortfolioDefiContent } from "@ui/domains/Portfolio/PortfolioDefiContent"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -23,6 +24,7 @@ export const PortfolioRoutes = () => (
           <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
           <Route path="tokens" element={<PortfolioAssets />} />
           <Route path="nfts" element={<PortfolioNfts />} />
+          <Route path="defi" element={<PortfolioDefiContent />} />
           <Route path="*" element={<NavigateWithQuery url="tokens" />} />
         </Routes>
       </PortfolioLayout>

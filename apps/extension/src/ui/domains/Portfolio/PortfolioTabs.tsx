@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom"
 
 const URL_TAB_TOKENS = "/portfolio/tokens"
 const URL_TAB_NFTS = "/portfolio/nfts"
-const URL_TAB_DEFI = "/earn/positions"
+const URL_TAB_DEFI = "/portfolio/defi"
 
 export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
