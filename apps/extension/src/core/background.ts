@@ -37,7 +37,7 @@ actionApi?.setBadgeBackgroundColor?.({ color: "#d90000" })
 // Onboarding and migrations
 chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
   // on install or upgrade, reset remote config to build-time defaults
-  await remoteConfigStore.resetToDefaults()
+  if (["install", "update"].includes(reason)) await remoteConfigStore.resetToDefaults()
 
   if (reason === "install") {
     // if install, we want to check the storage for prev onboarded info
