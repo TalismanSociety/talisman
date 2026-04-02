@@ -5,6 +5,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 
 import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
+import { remoteConfigStore } from "./domains/app/store.remoteConfig"
 import { sessionStore } from "./domains/app/store.session"
 import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
 import { initialiseSolanaAssetDiscovery } from "./domains/assetDiscovery/solana"
@@ -35,6 +36,9 @@ actionApi?.setBadgeBackgroundColor?.({ color: "#d90000" })
 
 // Onboarding and migrations
 chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+  // on install or upgrade, reset remote config to build-time defaults
+  await remoteConfigStore.resetToDefaults()
+
   if (reason === "install") {
     // if install, we want to check the storage for prev onboarded info
     // if not onboarded, show the onboard screen
