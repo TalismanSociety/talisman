@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react"
-
+import { expect, test } from "vitest"
 import { useAnalytics } from "../useAnalytics"
 
 test("Can send generic event", async () => {

@@ -14,6 +14,7 @@
 - Write/maintain unit tests (Vitest) and E2E tests (Playwright). Commands:
   - `pnpm test` (workspace-wide Vitest)
   - `pnpm exec playwright test` (E2E) and variants in `package.json`
+- **Always use explicit vitest imports in test files** — e.g., `import { describe, it, expect } from "vitest"`. Do not rely on vitest globals; they are not in the global TypeScript scope.
 - Use `pnpm changeset` for versioned packages; respect CI expectations in `.github/workflows/ci.yml`.
 - I18n: UI strings should be wrapped with `t()`/`Trans`.
 - **No barrel files (`index.ts` that only re-export).**  Import directly from the source module (e.g., `./flow-chart/SubnetTaoFlowChart`) instead of creating an `index.ts` barrel. Barrels hurt tree-shaking, slow down TypeScript, and obscure dependency graphs.

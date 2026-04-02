@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import { addressEncodingFromCurve, addressFromPublicKey } from "../address"
 import { entropyToSeed, mnemonicToEntropy } from "../mnemonic"
 import type { KeypairCurve } from "../types"

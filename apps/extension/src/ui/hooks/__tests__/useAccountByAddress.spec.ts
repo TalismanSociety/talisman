@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { expect, test } from "vitest"
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
 

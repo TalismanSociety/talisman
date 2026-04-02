@@ -1,5 +1,5 @@
 import type { EthNetwork } from "@talismn/chaindata-provider"
-
+import { beforeEach, describe, expect, it } from "vitest"
 import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
 
 const makeEthNetwork = (overrides: Partial<EthNetwork> = {}): EthNetwork =>

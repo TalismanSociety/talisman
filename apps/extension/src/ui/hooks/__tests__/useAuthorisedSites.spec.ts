@@ -1,6 +1,7 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { renderHook, waitFor } from "@testing-library/react"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
+import { expect, test } from "vitest"
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
 

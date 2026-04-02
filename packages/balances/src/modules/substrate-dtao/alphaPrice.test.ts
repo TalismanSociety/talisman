@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import {
   ALPHA_PRICE_SCALE,
   alphaToTao,

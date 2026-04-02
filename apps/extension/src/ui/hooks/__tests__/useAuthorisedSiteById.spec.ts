@@ -1,7 +1,7 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import type { AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { act, renderHook, waitFor } from "@testing-library/react"
-
+import { expect, test } from "vitest"
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
 import useAuthorisedSiteById from "../useAuthorisedSiteById"

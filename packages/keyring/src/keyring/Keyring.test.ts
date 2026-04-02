@@ -5,7 +5,7 @@ import {
   type KeypairCurve,
   mnemonicToEntropy,
 } from "@talismn/crypto"
-
+import { beforeAll, describe, expect, it } from "vitest"
 import { Keyring } from "./Keyring"
 
 const MNEMONIC = {
