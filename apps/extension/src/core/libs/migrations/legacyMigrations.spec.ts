@@ -2,7 +2,7 @@ import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import type { KeypairType } from "@polkadot/util-crypto/types"
-
+import { beforeAll, describe, expect, test } from "vitest"
 import {
   type LegacyAccountType as AccountType,
   LegacyAccountTypes as AccountTypes,

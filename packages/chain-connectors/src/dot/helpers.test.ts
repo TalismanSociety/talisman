@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import { ExponentialBackoff } from "./helpers"
 
 describe("ExponentialBackoff", () => {

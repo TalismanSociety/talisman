@@ -2,7 +2,7 @@ import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest"
 import { getMessageSenderFn } from "../../../../../tests/core/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"

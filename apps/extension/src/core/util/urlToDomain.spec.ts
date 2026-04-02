@@ -1,5 +1,5 @@
 import { Err, Ok } from "ts-results"
-
+import { describe, expect, it } from "vitest"
 import { Errors, urlToDomain } from "./urlToDomain"
 
 describe("Tests urlToDomain function", () => {

@@ -1,5 +1,5 @@
 import type { DotNetwork } from "@talismn/chaindata-provider"
-
+import { describe, expect, it } from "vitest"
 import { ChainConnectorDotStub } from "./ChainConnectorDotStub"
 
 describe("ChainConnectorDotStub", () => {

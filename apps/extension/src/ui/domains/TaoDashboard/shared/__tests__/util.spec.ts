@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import {
   convertScore1To100Neg,
   convertScore1To100Pos,

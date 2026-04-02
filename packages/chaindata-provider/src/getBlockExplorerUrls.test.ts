@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import type { Network } from "./chaindata"
 import { getBlockExplorerLabel, getBlockExplorerUrls } from "./getBlockExplorerUrls"
 
