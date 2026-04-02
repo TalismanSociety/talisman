@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.1.4
+
+### Patch Changes
+
+- a37f6f9: add hasEvent utility
+
 ## 0.1.3
 
 ### Patch Changes

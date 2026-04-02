@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 1.3.8
+
+### Patch Changes
+
+- 185c24f: init data
+
 ## 1.3.7
 
 ### Patch Changes
