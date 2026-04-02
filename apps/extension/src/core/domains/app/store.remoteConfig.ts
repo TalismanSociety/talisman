@@ -1,6 +1,5 @@
 import { DEBUG, TEST } from "@common/constants"
 import { log } from "@common/log"
-import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
 import { fetchRemoteConfig } from "./remote-config/fetchRemoteConfig"
@@ -26,7 +25,7 @@ class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
-        await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
+        await this.replace(config)
       } catch (err) {
         log.error("Unable to fetch remote config", { cause: err })
       }
