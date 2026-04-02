@@ -19,9 +19,8 @@ describe("RemoteConfigStore", () => {
     mockFetchRemoteConfig.mockReset()
   })
 
-  describe("resetToDefaults", () => {
-    test("resets store to build-time defaults", async () => {
-      // simulate stale config in storage
+  describe("reset", () => {
+    test("replaces store with fresh remote config when fetch succeeds", async () => {
       await chrome.storage.local.set({
         remoteConfig: {
           ...DEFAULT_REMOTE_CONFIG,
@@ -29,7 +28,28 @@ describe("RemoteConfigStore", () => {
         },
       })
 
-      await remoteConfigStore.resetToDefaults()
+      const freshConfig = {
+        ...DEFAULT_REMOTE_CONFIG,
+        postHogUrl: "https://fresh-from-server.url",
+      }
+      mockFetchRemoteConfig.mockResolvedValue(freshConfig)
+
+      await remoteConfigStore.reset()
+
+      const config = await remoteConfigStore.get()
+      expect(config.postHogUrl).toBe("https://fresh-from-server.url")
+    })
+
+    test("falls back to build-time defaults when fetch fails", async () => {
+      await chrome.storage.local.set({
+        remoteConfig: {
+          ...DEFAULT_REMOTE_CONFIG,
+          postHogUrl: "https://stale.posthog.url",
+        },
+      })
+      mockFetchRemoteConfig.mockRejectedValue(new Error("Network error"))
+
+      await remoteConfigStore.reset()
 
       const config = await remoteConfigStore.get()
       expect(config.postHogUrl).toBe(DEFAULT_REMOTE_CONFIG.postHogUrl)
@@ -77,9 +97,8 @@ describe("RemoteConfigStore", () => {
     })
   })
 
-  describe("upgrade flow (resetToDefaults then init)", () => {
-    test("resets to defaults then fetches fresh config", async () => {
-      // simulate stale config from previous version
+  describe("upgrade flow (reset then init)", () => {
+    test("fetches fresh config in reset, init reuses it", async () => {
       await chrome.storage.local.set({
         remoteConfig: {
           ...DEFAULT_REMOTE_CONFIG,
@@ -93,8 +112,8 @@ describe("RemoteConfigStore", () => {
       }
       mockFetchRemoteConfig.mockResolvedValue(freshConfig)
 
-      // onInstalled calls resetToDefaults, then Extension constructor calls init
-      await remoteConfigStore.resetToDefaults()
+      // onInstalled calls reset (fetches fresh), then Extension constructor calls init
+      await remoteConfigStore.reset()
       await remoteConfigStore.init()
 
       const config = await remoteConfigStore.get()
@@ -110,7 +129,7 @@ describe("RemoteConfigStore", () => {
       })
       mockFetchRemoteConfig.mockRejectedValue(new Error("Network blocked"))
 
-      await remoteConfigStore.resetToDefaults()
+      await remoteConfigStore.reset()
       await remoteConfigStore.init()
 
       const config = await remoteConfigStore.get()

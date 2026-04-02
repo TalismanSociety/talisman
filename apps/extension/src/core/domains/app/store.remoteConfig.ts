@@ -38,14 +38,21 @@ class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
     if (!TEST) setInterval(updateConfig, CONFIG_TIMEOUT)
   }
 
-  /** Reset store to build-time defaults. Call from onInstalled hook on install/upgrade. */
-  async resetToDefaults() {
+  /** Called from onInstalled hook on install/upgrade. resets to defaults if fetch fails */
+  async reset() {
     try {
-      log.debug("Resetting remote config to build-time defaults")
-      await this.replace(DEFAULT_REMOTE_CONFIG)
-    } catch (cause) {
-      // non-critical, don't crash
-      log.error("Failed to reset remote config to defaults", { cause })
+      // prioritize fresh remote config
+      const config = await fetchRemoteConfig()
+      await this.replace(config)
+    } catch {
+      try {
+        // fallback to defaults
+        log.debug("Resetting remote config to build-time defaults")
+        await this.replace(DEFAULT_REMOTE_CONFIG)
+      } catch (cause) {
+        // non-critical, don't crash
+        log.error("Failed to reset remote config to defaults", { cause })
+      }
     }
   }
 }
