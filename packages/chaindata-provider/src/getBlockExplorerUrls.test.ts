@@ -33,6 +33,16 @@ const BITTENSOR = {
   blockExplorerUrls: ["https://taostats.io"],
 } as unknown as Network
 
+const EXPLORER_WITH_BASE_PATH = {
+  id: "bittensor",
+  blockExplorerUrls: ["https://bittensor.ai/chain"],
+} as unknown as Network
+
+const EXPLORER_WITH_BASE_PATH_TRAILING_SLASH = {
+  id: "bittensor",
+  blockExplorerUrls: ["https://bittensor.ai/chain/"],
+} as unknown as Network
+
 describe("getExplorerUrls", () => {
   it("ethereum block number", () => {
     const urls = getBlockExplorerUrls(ETHEREUM, {
@@ -130,5 +140,64 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://taostats.io/extrinsic/6035238-0012")
+  })
+
+  it("explorer with base path - account", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH, {
+      type: "account",
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    })
+
+    expect(urls).toContain(
+      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
+  })
+
+  it("explorer with base path - block", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH, {
+      type: "block",
+      id: 6036407,
+    })
+
+    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
+  })
+
+  it("explorer with base path - transaction", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH, {
+      type: "transaction",
+      id: "0xabc123",
+    })
+
+    expect(urls).toContain("https://bittensor.ai/chain/tx/0xabc123")
+  })
+
+  it("explorer with base path - extrinsic", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH, {
+      type: "extrinsic",
+      blockNumber: 6035238,
+      extrinsicIndex: 12,
+    })
+
+    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+  })
+
+  it("explorer with base path and trailing slash - account", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH_TRAILING_SLASH, {
+      type: "account",
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    })
+
+    expect(urls).toContain(
+      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
+  })
+
+  it("explorer with base path and trailing slash - block", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH_TRAILING_SLASH, {
+      type: "block",
+      id: 6036407,
+    })
+
+    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
   })
 })
