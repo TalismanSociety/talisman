@@ -17,7 +17,7 @@ async function generateRemoteConfigInitData() {
   console.log(`Writing default config to ${OUTPUT_PATH}`)
   writeFileSync(OUTPUT_PATH, JSON.stringify(config, null, 2))
 
-  execSync(`prettier --write '${OUTPUT_PATH}'`, { stdio: "inherit" })
+  execSync(`biome format --write '${OUTPUT_PATH}'`, { stdio: "inherit" })
 
   console.log("Done")
 }
