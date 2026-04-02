@@ -1,5 +1,5 @@
 import type { Network } from "./chaindata"
-import { getBlockExplorerUrls } from "./getBlockExplorerUrls"
+import { getBlockExplorerLabel, getBlockExplorerUrls } from "./getBlockExplorerUrls"
 
 const ETHEREUM = {
   id: "ethereum",
@@ -41,6 +41,11 @@ const EXPLORER_WITH_BASE_PATH = {
 const EXPLORER_WITH_BASE_PATH_TRAILING_SLASH = {
   id: "bittensor",
   blockExplorerUrls: ["https://bittensor.ai/chain/"],
+} as unknown as Network
+
+const BITTENSOR_BOTH_EXPLORERS = {
+  id: "bittensor",
+  blockExplorerUrls: ["https://taostats.io", "https://bittensor.ai/chain"],
 } as unknown as Network
 
 describe("getExplorerUrls", () => {
@@ -149,7 +154,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/chain/accounts/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
   })
 
@@ -159,7 +164,7 @@ describe("getExplorerUrls", () => {
       id: 6036407,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
+    expect(urls).toContain("https://bittensor.ai/chain/blocks/6036407")
   })
 
   it("explorer with base path - transaction", () => {
@@ -168,17 +173,17 @@ describe("getExplorerUrls", () => {
       id: "0xabc123",
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/tx/0xabc123")
+    expect(urls).toContain("https://bittensor.ai/chain/extrinsics/0xabc123")
   })
 
-  it("explorer with base path - extrinsic", () => {
+  it("explorer with base path - extrinsic returns nothing (unsupported)", () => {
     const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH, {
       type: "extrinsic",
       blockNumber: 6035238,
       extrinsicIndex: 12,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+    expect(urls).toEqual([])
   })
 
   it("explorer with base path and trailing slash - account", () => {
@@ -188,7 +193,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/chain/accounts/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
   })
 
@@ -198,6 +203,68 @@ describe("getExplorerUrls", () => {
       id: 6036407,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
+    expect(urls).toContain("https://bittensor.ai/chain/blocks/6036407")
+  })
+
+  it("explorer with base path and trailing slash - extrinsic returns nothing (unsupported)", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH_TRAILING_SLASH, {
+      type: "extrinsic",
+      blockNumber: 6035238,
+      extrinsicIndex: 12,
+    })
+
+    expect(urls).toEqual([])
+  })
+
+  it("bittensor with both explorers - block", () => {
+    const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
+      type: "block",
+      id: 6036407,
+    })
+
+    expect(urls).toContain("https://taostats.io/block/6036407/extrinsics")
+    expect(urls).toContain("https://bittensor.ai/chain/blocks/6036407")
+    expect(urls.length).toBe(2)
+  })
+
+  it("bittensor with both explorers - account", () => {
+    const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
+      type: "account",
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    })
+
+    expect(urls).toContain(
+      "https://taostats.io/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
+    expect(urls).toContain(
+      "https://bittensor.ai/chain/accounts/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
+    expect(urls.length).toBe(2)
+  })
+
+  it("bittensor with both explorers - extrinsic", () => {
+    const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
+      type: "extrinsic",
+      blockNumber: 6035238,
+      extrinsicIndex: 12,
+    })
+
+    expect(urls).toContain("https://taostats.io/extrinsic/6035238-0012")
+    expect(urls.length).toBe(1)
+  })
+})
+
+describe("getBlockExplorerLabel", () => {
+  it("returns Bittensor.ai for bittensor.ai explorer", () => {
+    expect(getBlockExplorerLabel("https://bittensor.ai/chain")).toBe("Bittensor.ai")
+  })
+
+  it("returns Polkadot.js for polkadot.js.org explorer", () => {
+    expect(getBlockExplorerLabel("https://polkadot.js.org/apps")).toBe("Polkadot.js")
+  })
+
+  it("returns startCase hostname for standard explorers", () => {
+    expect(getBlockExplorerLabel("https://etherscan.io")).toBe("Etherscan")
+    expect(getBlockExplorerLabel("https://taostats.io")).toBe("Taostats")
   })
 })
