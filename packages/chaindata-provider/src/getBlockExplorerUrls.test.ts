@@ -252,6 +252,26 @@ describe("getExplorerUrls", () => {
     expect(urls).toContain("https://explorer.bittensor.ai/extrinsic/6035238-12")
   })
 
+  it("explorer.bittensor.ai - transaction", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "transaction",
+      id: "0xabc123",
+    })
+
+    expect(urls).toContain("https://explorer.bittensor.ai/tx/0xabc123")
+  })
+
+  it("explorer.bittensor.ai - address (contract)", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "address",
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    })
+
+    expect(urls).toContain(
+      "https://explorer.bittensor.ai/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
+  })
+
   it("bittensor with both explorers - block", () => {
     const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
       type: "block",

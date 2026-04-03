@@ -88,7 +88,6 @@ type ExplorerHost =
   | "blockscout.com"
   | "moonscan.io"
   | "bittensor.ai"
-  | "explorer.bittensor.ai"
   | (string & {})
 
 const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
@@ -125,7 +124,6 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "subscan.io":
         case "taostats.io":
         case "bittensor.ai":
-        case "explorer.bittensor.ai":
           return `/account/${query.address}`
         default:
           return `/address/${query.address}`
@@ -189,7 +187,6 @@ export const getBlockExplorerLabel = (blockExplorerUrl: string): string => {
     case "polkadot.js":
       return "Polkadot.js"
     case "bittensor.ai":
-    case "explorer.bittensor.ai":
       return "Bittensor.ai"
     default: {
       const parts = url.hostname.split(".")
