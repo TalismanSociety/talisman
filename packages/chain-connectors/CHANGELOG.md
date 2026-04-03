@@ -1,5 +1,19 @@
 # @talismn/chain-connectors
 
+## 0.0.18
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+- Updated dependencies [c83c063]
+- Updated dependencies [c83c063]
+- Updated dependencies [b3e61b3]
+- Updated dependencies [2bdb305]
+- Updated dependencies [95118f2]
+  - @talismn/chaindata-provider@1.3.9
+  - @talismn/connection-meta@0.2.38
+  - @talismn/util@1.0.1
+
 ## 0.0.17
 
 ### Patch Changes

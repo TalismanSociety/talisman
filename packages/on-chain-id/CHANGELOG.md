@@ -1,5 +1,15 @@
 # @talismn/on-chain-id
 
+## 0.2.9
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+- Updated dependencies [c83c063]
+  - @talismn/chain-connectors@0.0.18
+  - @talismn/crypto@0.3.4
+  - @talismn/util@1.0.1
+
 ## 0.2.8
 
 ### Patch Changes
