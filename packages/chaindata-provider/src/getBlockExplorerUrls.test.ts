@@ -44,6 +44,11 @@ const EXPLORER_WITH_BASE_PATH_TRAILING_SLASH = {
   blockExplorerUrls: ["https://bittensor.ai/chain/"],
 } as unknown as Network
 
+const EXPLORER_BITTENSOR_AI = {
+  id: "bittensor",
+  blockExplorerUrls: ["https://explorer.bittensor.ai"],
+} as unknown as Network
+
 const BITTENSOR_BOTH_EXPLORERS = {
   id: "bittensor",
   blockExplorerUrls: ["https://taostats.io", "https://bittensor.ai/chain"],
@@ -155,7 +160,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://bittensor.ai/chain/accounts/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
   })
 
@@ -165,7 +170,7 @@ describe("getExplorerUrls", () => {
       id: 6036407,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/blocks/6036407")
+    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
   })
 
   it("explorer with base path - transaction", () => {
@@ -174,17 +179,17 @@ describe("getExplorerUrls", () => {
       id: "0xabc123",
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/extrinsics/0xabc123")
+    expect(urls).toContain("https://bittensor.ai/chain/tx/0xabc123")
   })
 
-  it("explorer with base path - extrinsic returns nothing (unsupported)", () => {
+  it("explorer with base path - extrinsic", () => {
     const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH, {
       type: "extrinsic",
       blockNumber: 6035238,
       extrinsicIndex: 12,
     })
 
-    expect(urls).toEqual([])
+    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
   })
 
   it("explorer with base path and trailing slash - account", () => {
@@ -194,7 +199,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://bittensor.ai/chain/accounts/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
   })
 
@@ -204,17 +209,67 @@ describe("getExplorerUrls", () => {
       id: 6036407,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/blocks/6036407")
+    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
   })
 
-  it("explorer with base path and trailing slash - extrinsic returns nothing (unsupported)", () => {
+  it("explorer with base path and trailing slash - extrinsic", () => {
     const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH_TRAILING_SLASH, {
       type: "extrinsic",
       blockNumber: 6035238,
       extrinsicIndex: 12,
     })
 
-    expect(urls).toEqual([])
+    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+  })
+
+  it("explorer.bittensor.ai - account", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "account",
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    })
+
+    expect(urls).toContain(
+      "https://explorer.bittensor.ai/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
+  })
+
+  it("explorer.bittensor.ai - block", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "block",
+      id: 6036407,
+    })
+
+    expect(urls).toContain("https://explorer.bittensor.ai/block/6036407")
+  })
+
+  it("explorer.bittensor.ai - extrinsic", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "extrinsic",
+      blockNumber: 6035238,
+      extrinsicIndex: 12,
+    })
+
+    expect(urls).toContain("https://explorer.bittensor.ai/extrinsic/6035238-12")
+  })
+
+  it("explorer.bittensor.ai - transaction", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "transaction",
+      id: "0xabc123",
+    })
+
+    expect(urls).toContain("https://explorer.bittensor.ai/tx/0xabc123")
+  })
+
+  it("explorer.bittensor.ai - address (contract)", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "address",
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    })
+
+    expect(urls).toContain(
+      "https://explorer.bittensor.ai/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    )
   })
 
   it("bittensor with both explorers - block", () => {
@@ -224,7 +279,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://taostats.io/block/6036407/extrinsics")
-    expect(urls).toContain("https://bittensor.ai/chain/blocks/6036407")
+    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
     expect(urls.length).toBe(2)
   })
 
@@ -238,7 +293,7 @@ describe("getExplorerUrls", () => {
       "https://taostats.io/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
     expect(urls).toContain(
-      "https://bittensor.ai/chain/accounts/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
     expect(urls.length).toBe(2)
   })
@@ -251,11 +306,16 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://taostats.io/extrinsic/6035238-0012")
-    expect(urls.length).toBe(1)
+    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+    expect(urls.length).toBe(2)
   })
 })
 
 describe("getBlockExplorerLabel", () => {
+  it("returns Bittensor.ai for explorer.bittensor.ai explorer", () => {
+    expect(getBlockExplorerLabel("https://explorer.bittensor.ai")).toBe("Bittensor.ai")
+  })
+
   it("returns Bittensor.ai for bittensor.ai explorer", () => {
     expect(getBlockExplorerLabel("https://bittensor.ai/chain")).toBe("Bittensor.ai")
   })
