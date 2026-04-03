@@ -88,6 +88,7 @@ type ExplorerHost =
   | "blockscout.com"
   | "moonscan.io"
   | "bittensor.ai"
+  | "explorer.bittensor.ai"
   | (string & {})
 
 const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
@@ -108,7 +109,6 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "polkadot.js":
           return null
         case "statescan.io":
-        case "bittensor.ai":
           return `/extrinsics/${query.id}`
         case "taostats.io":
           return `/transaction/${query.id}`
@@ -121,10 +121,11 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "polkadot.js":
           return null
         case "statescan.io":
-        case "bittensor.ai":
           return `/accounts/${query.address}`
         case "subscan.io":
         case "taostats.io":
+        case "bittensor.ai":
+        case "explorer.bittensor.ai":
           return `/account/${query.address}`
         default:
           return `/address/${query.address}`
@@ -135,7 +136,6 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "polkadot.js":
           return null
         case "statescan.io":
-        case "bittensor.ai":
           return `/accounts/${query.address}`
         default:
           return `/account/${query.address}`
@@ -148,7 +148,6 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "polkadot.js":
           return isNumber ? null : `/explorer/query/${query.id}` // supports block hash only
         case "statescan.io":
-        case "bittensor.ai":
           return isNumber ? `/blocks/${query.id}` : null
         case "taostats.io":
           return isNumber ? `/block/${query.id}/extrinsics` : null
@@ -160,7 +159,6 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
       switch (host) {
         case "avail.so":
         case "polkadot.js":
-        case "bittensor.ai":
           return null // unsupported
         case "statescan.io":
           return `/extrinsics/${query.blockNumber}-${query.extrinsicIndex}`
@@ -191,6 +189,7 @@ export const getBlockExplorerLabel = (blockExplorerUrl: string): string => {
     case "polkadot.js":
       return "Polkadot.js"
     case "bittensor.ai":
+    case "explorer.bittensor.ai":
       return "Bittensor.ai"
     default: {
       const parts = url.hostname.split(".")
