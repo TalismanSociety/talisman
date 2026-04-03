@@ -1,5 +1,23 @@
 # @talismn/balances
 
+## 1.3.6
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+- Updated dependencies [c83c063]
+- Updated dependencies [c83c063]
+- Updated dependencies [b3e61b3]
+- Updated dependencies [2bdb305]
+- Updated dependencies [95118f2]
+  - @talismn/chaindata-provider@1.3.9
+  - @talismn/chain-connectors@0.0.18
+  - @talismn/crypto@0.3.4
+  - @talismn/scale@0.3.4
+  - @talismn/sapi@0.1.5
+  - @talismn/util@1.0.1
+  - @talismn/token-rates@3.0.20
+
 ## 1.3.5
 
 ### Patch Changes

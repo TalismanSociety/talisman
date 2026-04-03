@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 0.3.4
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+
 ## 0.3.3
 
 ### Patch Changes

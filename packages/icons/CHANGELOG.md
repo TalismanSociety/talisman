@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.9
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+
 ## 0.1.8
 
 ### Patch Changes

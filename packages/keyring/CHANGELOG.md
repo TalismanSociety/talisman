@@ -1,5 +1,13 @@
 # @talismn/keyring
 
+## 1.0.10
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+- Updated dependencies [c83c063]
+  - @talismn/crypto@0.3.4
+
 ## 1.0.9
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @talismn/solana
 
+## 0.0.9
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+- Updated dependencies [c83c063]
+  - @talismn/crypto@0.3.4
+
 ## 0.0.8
 
 ### Patch Changes

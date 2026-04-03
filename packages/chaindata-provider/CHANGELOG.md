@@ -1,5 +1,17 @@
 # @talismn/chaindata-provider
 
+## 1.3.9
+
+### Patch Changes
+
+- c83c063: support for explorers with a pathname in the url
+- c83c063: fix: explicit vitest imports
+- b3e61b3: init data
+- 2bdb305: format init data with biome
+- 95118f2: explorer url adjustments
+- Updated dependencies [c83c063]
+  - @talismn/util@1.0.1
+
 ## 1.3.8
 
 ### Patch Changes

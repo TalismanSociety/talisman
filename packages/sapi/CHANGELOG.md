@@ -1,5 +1,13 @@
 # @talismn/sapi
 
+## 0.1.5
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+- Updated dependencies [c83c063]
+  - @talismn/scale@0.3.4
+
 ## 0.1.4
 
 ### Patch Changes

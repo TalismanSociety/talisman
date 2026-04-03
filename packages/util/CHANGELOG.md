@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 1.0.1
+
+### Patch Changes
+
+- c83c063: fix: explicit vitest imports
+
 ## 1.0.0
 
 ### Major Changes
