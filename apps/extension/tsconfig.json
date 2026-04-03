@@ -23,6 +23,7 @@
     "src",
     "src/**/*.json",
     "entrypoints",
+    "scripts",
     "wxt.config.ts",
     "tests"
   ],

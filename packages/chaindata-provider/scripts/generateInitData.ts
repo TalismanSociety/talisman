@@ -45,7 +45,7 @@ async function generateInitData() {
     JSON.stringify(initData, null, 2)
   )
 
-  execSync(`prettier --write '${path.resolve(__dirname, "../src/state/initChaindata.json")}'`, {
+  execSync(`biome format --write '${path.resolve(__dirname, "../src/state/initChaindata.json")}'`, {
     stdio: "inherit",
   })
 }

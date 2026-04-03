@@ -1,5 +1,5 @@
 {
   "extends": "@talismn/tsconfig/es6-node.json",
-  "include": ["src", "src/state/initChaindata.json", "package.json"],
+  "include": ["src", "src/state/initChaindata.json", "package.json", "scripts"],
   "exclude": ["**/node_modules", "**/.*/"]
 }
