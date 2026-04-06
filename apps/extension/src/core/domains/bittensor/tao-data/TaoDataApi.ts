@@ -321,10 +321,11 @@ export class TaoDataApi<
     /**
      * @description Returns the latest snapshot of every registered Bittensor subnet with its netuid, emission value, and tempo parameter.
      *
-     * @tags Subnets
+     * @tags Deprecated
      * @name ListSubnets
-     * @summary List all Bittensor subnets
+     * @summary [Deprecated] List all Bittensor subnets
      * @request GET:/subnets
+     * @deprecated
      */
     listSubnets: (params: RequestParams = {}) =>
       this.request<
@@ -419,6 +420,77 @@ export class TaoDataApi<
         }
       >({
         path: `/validators`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns every subnet a validator is registered on with their current stake and trailing 30-day APY.
+     *
+     * @tags Validators
+     * @name ListValidatorSubnets
+     * @summary List subnets for a validator
+     * @request GET:/validators/{hotkey}/subnets
+     */
+    listValidatorSubnets: (hotkey: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Subnet identifier (netuid) where this validator is active. */
+          netuid: number;
+          /** Validator stake value on this subnet. */
+          stake: number;
+          /** Validator 30-day APY on this subnet when available. */
+          thirty_day_apy: number | null;
+        }[],
+        {
+          error: {
+            /** Machine-readable error code. */
+            code: string;
+            /** Human-readable error message. */
+            message: string;
+          };
+        }
+      >({
+        path: `/validators/${hotkey}/subnets`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
+  price = {
+    /**
+     * @description Returns the current TAO token price, market capitalization, 24-hour trading volume, circulating supply, and fully diluted market cap.
+     *
+     * @tags Price
+     * @name GetPrice
+     * @summary Get current TAO price and market data
+     * @request GET:/price
+     */
+    getPrice: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Current TAO price in USD. */
+          price: string;
+          /** Current market capitalization in USD. */
+          market_cap: string;
+          /** 24-hour trading volume in USD. */
+          volume_24h: string;
+          /** Current circulating supply of TAO. */
+          circulating_supply: string;
+          /** Fully diluted market capitalization in USD. */
+          fully_diluted_market_cap: string;
+        },
+        {
+          error: {
+            /** Machine-readable error code. */
+            code: string;
+            /** Human-readable error message. */
+            message: string;
+          };
+        }
+      >({
+        path: `/price`,
         method: "GET",
         format: "json",
         ...params,
