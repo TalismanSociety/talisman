@@ -1,3 +1,4 @@
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
@@ -10,13 +11,18 @@ type DynamicInfoEntry = {
   tao_in_emission: bigint
 } | null
 
-export const useGetSubnets = (networkId: string) => {
-  const { data: sapi, isLoading: isSapiLoading } = useScaleApi(networkId)
+export const useGetSubnets = (networkId: NetworkId) => {
+  const {
+    data: sapi,
+    isLoading: isSapiLoading,
+    isError: isSapiError,
+    error: sapiError,
+  } = useScaleApi(networkId)
 
   const query = useQuery<SubnetSummary[]>({
-    queryKey: ["subnets", "onchain", sapi?.id],
+    queryKey: ["subnets", "onchain", networkId, sapi?.id],
     queryFn: async () => {
-      if (!sapi) return []
+      if (!sapi) throw new Error("sapi not available")
 
       const dynamicInfos = await sapi.getRuntimeCallValue<DynamicInfoEntry[]>(
         "SubnetInfoRuntimeApi",
@@ -33,12 +39,18 @@ export const useGetSubnets = (networkId: string) => {
       )
     },
     enabled: !!sapi,
+    retry: 2,
     staleTime: 5 * 60 * 1000, // 5 mins
     gcTime: 10 * 60 * 1000, // 10 mins
     refetchOnReconnect: true,
     placeholderData: keepPreviousData,
-    persister: createQueryStoragePersister(),
+    persister: createQueryStoragePersister({ maxAge: 60 * 60 * 1000 }), // 1 hour
   })
 
-  return { ...query, isLoading: isSapiLoading || query.isLoading }
+  return {
+    ...query,
+    isLoading: isSapiLoading || query.isLoading,
+    isError: isSapiError || query.isError,
+    error: sapiError ?? query.error ?? null,
+  }
 }
