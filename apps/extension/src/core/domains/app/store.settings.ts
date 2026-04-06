@@ -25,7 +25,7 @@ export interface SettingsStoreData {
   tokensSortBy: "name" | "total" | "locked" | "available"
   earnPositionsSortBy: "total" | "name"
   earnPositionsGroupBy: "token" | "network" | "none"
-  earnDiscoverSortBy: "yield" | "name"
+  earnDiscoverSortBy: "yield" | "name" | "assets"
   earnDiscoverTypeFilter: string | null
   earnDiscoverProviderFilter: string | null
   developerMode: boolean

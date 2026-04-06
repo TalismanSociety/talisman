@@ -26,7 +26,7 @@ const EARN_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30
 
 export const EarnAvailableProducts: FC<{
   search: string
-  sortBy?: "yield" | "name"
+  sortBy?: "yield" | "name" | "assets"
   typeFilter?: string | null
   providerFilter?: string | null
   networkFilter?: NetworkOption | null
@@ -88,6 +88,8 @@ export const EarnAvailableProducts: FC<{
     }
   }, [search, typeFilter, providerFilter, networkFilter, tokensMap, networksMap])
 
+  const currency = useSelectedCurrency()
+
   const sortFn = useMemo(() => {
     if (sortBy === "name") {
       return (a: TokenOpportunity, b: TokenOpportunity) => {
@@ -96,18 +98,26 @@ export const EarnAvailableProducts: FC<{
         return (tokenA?.symbol ?? "").localeCompare(tokenB?.symbol ?? "")
       }
     }
-    return null
-  }, [sortBy, tokensMap])
+    if (sortBy === "assets") {
+      return (a: TokenOpportunity, b: TokenOpportunity) => {
+        const balanceA = a.balances.sum.fiat(currency).transferable ?? 0
+        const balanceB = b.balances.sum.fiat(currency).transferable ?? 0
+        return balanceB - balanceA
+      }
+    }
+    // sortBy === "yield"
+    return (a: TokenOpportunity, b: TokenOpportunity) => b.bestApr - a.bestApr
+  }, [sortBy, tokensMap, currency])
 
   const displayHeld = useMemo(() => {
     let result = applyFilters ? applyFilters(heldProducts ?? []) : (heldProducts ?? [])
-    if (sortFn) result = [...result].sort(sortFn)
+    result = [...result].sort(sortFn)
     return result
   }, [heldProducts, applyFilters, sortFn])
 
   const displayDiscover = useMemo(() => {
     let result = applyFilters ? applyFilters(discoverProducts ?? []) : (discoverProducts ?? [])
-    if (sortFn) result = [...result].sort(sortFn)
+    result = [...result].sort(sortFn)
     return result
   }, [discoverProducts, applyFilters, sortFn])
 

@@ -59,6 +59,11 @@ const EarnDiscoverSortButton: FC<{ className?: string }> = ({ className }) => {
                 onClick={() => setSortBy("yield")}
               />
               <ContextMenuOptionItem
+                label={t("Sort by Eligible Assets")}
+                selected={sortBy === "assets"}
+                onClick={() => setSortBy("assets")}
+              />
+              <ContextMenuOptionItem
                 label={t("Sort by Token Name")}
                 selected={sortBy === "name"}
                 onClick={() => setSortBy("name")}
