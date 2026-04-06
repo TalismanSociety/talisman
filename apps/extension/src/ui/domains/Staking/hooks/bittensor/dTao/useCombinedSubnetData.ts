@@ -34,7 +34,7 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
     isLoading: isSubnetsLoading,
     isError: isSubnetsError,
     error: subnetsError,
-  } = useGetSubnets()
+  } = useGetSubnets(networkId)
 
   const {
     data: subnetPoolsData,

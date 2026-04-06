@@ -10,7 +10,12 @@ type TaoDataResponseData<T> = T extends (...args: infer _Args) => Promise<infer 
 
 export type SubnetPool = TaoDataResponseData<TaoDataClient["pools"]["listPools"]>[number]
 
-export type SubnetSummary = TaoDataResponseData<TaoDataClient["subnets"]["listSubnets"]>[number]
+export type SubnetSummary = {
+  netuid: number
+  /** Per-block TAO-side emission in rao (string). Consumers multiply ×2 for total emission rate. */
+  emission: string
+  tempo: number
+}
 
 export type SubnetData = Partial<SubnetPool> &
   Partial<SubnetSummary> & {
