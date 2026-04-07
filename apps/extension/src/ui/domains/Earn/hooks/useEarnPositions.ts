@@ -196,12 +196,12 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     tokenRatesMap,
   ])
 
+  // Show cached data immediately — only report "loading" when no positions are available
+  const isAnyLoading = yieldStatus === "loading" || defiStatus === "loading"
+  const isAnyError = yieldStatus === "error" || defiStatus === "error"
+
   const status =
-    yieldStatus === "loading" || defiStatus === "loading"
-      ? "loading"
-      : yieldStatus === "error" || defiStatus === "error"
-        ? "error"
-        : "success"
+    positions.length > 0 ? "success" : isAnyLoading ? "loading" : isAnyError ? "error" : "success"
 
   return useMemo(
     () => ({ status, data: positions }) as Loadable<EarnPosition[]>,

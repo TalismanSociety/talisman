@@ -23,7 +23,7 @@ import {
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
 import { keyBy } from "lodash-es"
-import { combineLatest, map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, ReplaySubject } from "rxjs"
 
 import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
@@ -51,13 +51,21 @@ const [_useYieldNetworkIdFromTalismanNetworkId, _getYieldNetworkIdFromTalismanNe
   null
 )
 
+// Use ReplaySubject to retain cached values across navigations (matches DeFi pattern)
+const subjectRawYieldxyzProviders$ = new ReplaySubject<Loadable<YieldxyzProvider[]>>(1)
+
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
+  const sub = subjectRawYieldxyzProviders$.subscribe(subscriber)
+
   const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
-    subscriber.next(loadable)
+    subjectRawYieldxyzProviders$.next(loadable)
   })
 
-  return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+  return () => {
+    sub.unsubscribe()
+    unsubscribe()
+  }
+})
 
 export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
   status: "loading",
@@ -77,13 +85,21 @@ const [useYieldxyzProvider, _yieldxyzProvider$] = bind(
   { status: "loading", data: null }
 )
 
+// Use ReplaySubject to retain cached values across navigations (matches DeFi pattern)
+const subjectRawYieldxyzProducts$ = new ReplaySubject<Loadable<YieldDto[]>>(1)
+
 const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
+  const sub = subjectRawYieldxyzProducts$.subscribe(subscriber)
+
   const unsubscribe = api.yieldxyzProductsSubscribe((loadable: Loadable<YieldDto[]>) => {
-    subscriber.next(loadable)
+    subjectRawYieldxyzProducts$.next(loadable)
   })
 
-  return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+  return () => {
+    sub.unsubscribe()
+    unsubscribe()
+  }
+})
 
 export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
   combineLatest([
@@ -125,26 +141,37 @@ const [useYieldxyzProduct, _yieldxyzProduct$] = bind(
   { status: "loading", data: null }
 )
 
-// Add new observable for grouped yield balances using bind()
+// Use ReplaySubject to retain cached values across navigations (matches DeFi pattern)
+const subjectRawYieldxyzPositions$ = new ReplaySubject<Loadable<YieldxyzPosition[]>>(1)
+
 const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
+  const sub = subjectRawYieldxyzPositions$.subscribe(subscriber)
+
   const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
-    subscriber.next(loadable)
+    subjectRawYieldxyzPositions$.next(loadable)
   })
 
-  return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+  return () => {
+    sub.unsubscribe()
+    unsubscribe()
+  }
+})
 
 const [useYieldxyzPositionsEnhanced, _yieldxyzPositionsEnhanced$] = bind(
   combineLatest([rawYieldxyzPositions$, rawYieldxyzProducts$]).pipe(
     map(([positionsLoadable, productsLoadable]) => {
-      const status =
-        positionsLoadable.status === "loading" || productsLoadable.status === "loading"
-          ? "loading"
-          : "success"
       const data =
         positionsLoadable.data && productsLoadable.data
           ? enhanceYieldxyzPositions(positionsLoadable.data, productsLoadable.data)
           : undefined
+
+      // Show cached data immediately — only report "loading" when no data is available
+      const status =
+        data && data.length > 0
+          ? "success"
+          : positionsLoadable.status === "loading" || productsLoadable.status === "loading"
+            ? "loading"
+            : "success"
 
       return { status, data } as Loadable<YieldxyzPositionEnhanced[]>
     })
