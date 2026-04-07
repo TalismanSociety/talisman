@@ -33,7 +33,11 @@ export const YieldxyzEnterStepConfirm = () => {
 
   return (
     <RiskAnalysisProvider
-      riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
+      riskAnalysis={
+        transaction?.platform === "ethereum" || transaction?.platform === "solana"
+          ? transaction.riskAnalysis
+          : undefined
+      }
       containerId="earn-modal"
     >
       <WizardModalDialog
@@ -89,7 +93,7 @@ export const YieldxyzEnterStepConfirm = () => {
 const RiskAnalysisButton = () => {
   const { transaction } = useYieldxyzEnterWizard()
 
-  if (transaction?.platform !== "ethereum") return null
+  if (transaction?.platform !== "ethereum" && transaction?.platform !== "solana") return null
 
   return (
     <div>
@@ -152,6 +156,12 @@ const SubmitButton = () => {
           payload: transaction.transaction as TransactionRequest,
           networkId: transaction.networkId,
         }
+      case "solana":
+        return {
+          platform: "solana",
+          payload: transaction.transaction,
+          networkId: transaction.networkId,
+        }
       default:
         return null
     }
@@ -189,6 +199,8 @@ const NetworkFeeRow = () => {
   switch (network?.platform) {
     case "ethereum":
       return <NetworkFeeRowEth />
+    case "solana":
+      return <NetworkFeeRowSol />
     default:
       return null
   }
@@ -200,27 +212,27 @@ const NetworkFeeRowEth = () => {
 
   // keep the latest valid tx in state so we still have content to display after tx is submitted.
   // without this we'd be getting a lot of flickering and bad UX
-  const [tx, setTx] = useState(transaction)
+  const [ethTx, setEthTx] = useState(transaction?.platform === "ethereum" ? transaction : null)
   useEffect(() => {
     if (transaction?.platform === "ethereum" && transaction.transaction && transaction.txDetails)
-      setTx(transaction)
+      setEthTx(transaction)
   }, [transaction])
 
   return (
     <>
       <FormFieldSetRow label={t("Transaction Priority")} variant="small">
-        {!!tx?.transaction && !!tx.txDetails && (
+        {!!ethTx?.transaction && !!ethTx.txDetails && (
           <EthFeeSelect
-            key={tx.transaction.nonce} // reset internal state when tx changes
-            tokenId={tx.feeTokenId}
+            key={ethTx.transaction.nonce} // reset internal state when tx changes
+            tokenId={ethTx.feeTokenId}
             drawerContainerId="earn-modal"
-            gasSettingsByPriority={tx.gasSettingsByPriority}
-            priority={tx.priority}
-            txDetails={tx.txDetails}
-            networkUsage={tx.networkUsage}
-            tx={tx.transaction}
-            setCustomSettings={tx.setCustomSettings}
-            onChange={tx.setPriority}
+            gasSettingsByPriority={ethTx.gasSettingsByPriority}
+            priority={ethTx.priority}
+            txDetails={ethTx.txDetails}
+            networkUsage={ethTx.networkUsage}
+            tx={ethTx.transaction}
+            setCustomSettings={ethTx.setCustomSettings}
+            onChange={ethTx.setPriority}
           />
         )}
       </FormFieldSetRow>
@@ -229,14 +241,31 @@ const NetworkFeeRowEth = () => {
         variant="small"
         valueClassName="text-body-secondary"
       >
-        {!!tx?.txDetails && (
+        {!!ethTx?.txDetails && (
           <TokensAndFiat
-            planck={tx.txDetails.estimatedFee.toString()}
-            tokenId={tx.feeTokenId}
+            planck={ethTx.txDetails.estimatedFee.toString()}
+            tokenId={ethTx.feeTokenId}
             tokensClassName="text-body"
           />
         )}
       </FormFieldSetRow>
     </>
+  )
+}
+
+const NetworkFeeRowSol = () => {
+  const { t } = useTranslation()
+  const { transaction } = useYieldxyzEnterWizard()
+
+  if (transaction?.platform !== "solana" || !transaction.estimatedFee) return null
+
+  return (
+    <FormFieldSetRow label={t("Network Fee")} variant="small" valueClassName="text-body-secondary">
+      <TokensAndFiat
+        planck={transaction.estimatedFee}
+        tokenId={transaction.feeTokenId}
+        tokensClassName="text-body"
+      />
+    </FormFieldSetRow>
   )
 }

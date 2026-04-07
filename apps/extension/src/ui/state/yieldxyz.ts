@@ -111,14 +111,10 @@ export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
       return {
         ...productsLoadable,
         data: productsLoadable.data?.filter((product) => {
-          // filter out non-EVM networks. this is only a safety net as all yieldxyz products for Talisman are EVM at this time.
-          // this filter should be removed as soon as we support signing for other platforms (see useYieldxyzTransactionDot / Sol)
-          // our wizards are platform agnostic but we did not have any working example to finalize the platform specific transaction hooks.
           const talismanNetworkId = yieldNetworkIdToTalismanNetworkIdMap[product.network]
           if (!talismanNetworkId) return false
           const network = networksMap[talismanNetworkId]
-          if (!network) return false
-          return network.platform === "ethereum"
+          return !!network
         }),
       }
     })
