@@ -264,8 +264,11 @@ const DiscoverTokenCard: FC<{
         <div className="flex w-full items-center gap-4">
           <TokenLogo tokenId={tokenId} className="size-16 shrink-0" />
           <div className="flex grow flex-col gap-2 overflow-hidden">
-            <div className="truncate font-bold text-body">
-              <TokenDisplaySymbol tokenId={tokenId} />
+            <div className="flex items-center gap-2 overflow-hidden font-bold">
+              <span className="shrink-0 text-body">
+                <TokenDisplaySymbol tokenId={tokenId} />
+              </span>
+              <span className="truncate font-normal text-body-secondary">{token.name}</span>
             </div>
             <div className="flex items-center gap-2 overflow-hidden text-body-secondary">
               <NetworkLogo networkId={token.networkId} className="size-8 shrink-0" />
