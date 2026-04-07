@@ -650,6 +650,14 @@ export default defineConfig({
               } satisfies Plugin,
             ]
           : []),
+        // Rewrite favicon href in HTML entrypoints to match the current build variant
+        {
+          name: "favicon-variant",
+          transformIndexHtml(html) {
+            const faviconSuffix = isDev ? "-dev" : BUILD_TYPE === "canary" ? "-canary" : "-prod"
+            return html.replace(/href="\/favicon\.svg"/, `href="/favicon${faviconSuffix}.svg"`)
+          },
+        } satisfies Plugin,
         // Replace environment variables in all code including bundled dependencies
         // This handles cases where variable names get mangled (e.g., process$1.env)
         replace({
