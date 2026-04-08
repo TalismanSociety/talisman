@@ -1,4 +1,3 @@
-import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
 import type { Balance, Balances } from "@talismn/balances"
@@ -71,8 +70,7 @@ export const useBondButton = ({
           break
         }
         case "seek": {
-          const seekStakingPath = remoteConfig.seek.webAppStakingPath
-          window.open(`${TALISMAN_WEB_APP_URL}${seekStakingPath}`, "_blank", "noopener")
+          window.open(remoteConfig.seek.stakingUrl, "_blank", "noopener")
           break
         }
         case "nominationPool": {
@@ -87,7 +85,7 @@ export const useBondButton = ({
       genericEvent,
       handleOpenBittensorModal,
       ignoreExistingSettings,
-      remoteConfig.seek.webAppStakingPath,
+      remoteConfig.seek.stakingUrl,
       open,
     ]
   )

@@ -408,6 +408,11 @@ export class RemoteConfigApi<
              */
             stakingUrl: string;
             /**
+             * URL to the SEEK unstaking page in the Talisman web app
+             * @format uri
+             */
+            unstakingUrl: string;
+            /**
              * URL to the SEEK benefits documentation
              * @format uri
              */

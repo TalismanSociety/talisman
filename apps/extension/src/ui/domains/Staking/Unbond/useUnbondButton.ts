@@ -1,4 +1,3 @@
-import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Balance, Balances } from "@talismn/balances"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
@@ -94,8 +93,7 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
           break
         }
         case "seek": {
-          const seekStakingPath = remoteConfig.seek.webAppStakingPath
-          window.open(`${TALISMAN_WEB_APP_URL}${seekStakingPath}`, "_blank", "noopener")
+          window.open(remoteConfig.seek.unstakingUrl, "_blank", "noopener")
           break
         }
         case "nominationPool": {
@@ -109,7 +107,7 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       bestUnbondableBalance,
       genericEvent,
       openBittensorModal,
-      remoteConfig.seek.webAppStakingPath,
+      remoteConfig.seek.unstakingUrl,
       openUnbondModal,
     ]
   )
