@@ -33,6 +33,8 @@ export interface SettingsStoreData {
   ledgerTransportType: LedgerTransportType
   dtaoSlippage?: number
   swapSlippage: number
+  /** Dev-only: disables live balance fetching while preserving cached balances */
+  disableBalanceFetching: boolean
 }
 
 class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -60,6 +62,7 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   polkadotVaultSignWithProof: true,
   ledgerTransportType: "hid",
   swapSlippage: 0.5,
+  disableBalanceFetching: false,
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)
@@ -70,5 +73,14 @@ if (DEBUG) {
 
   hostObj.resetSettings = () => {
     settingsStore.mutate(() => DEFAULT_SETTINGS)
+  }
+
+  hostObj.toggleBalanceFetching = () => {
+    settingsStore.mutate((prev) => {
+      const next = !prev.disableBalanceFetching
+      // biome-ignore lint/suspicious/noConsole: dev helper
+      console.log(`[balances] fetching ${next ? "DISABLED" : "ENABLED"}`)
+      return { ...prev, disableBalanceFetching: next }
+    })
   }
 }
