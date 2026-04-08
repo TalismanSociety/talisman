@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next"
 
 import { ForfeitWarningDrawer } from "../Drawers/ForfeitWarningDrawer"
 import { RecipientWarningDrawer } from "../Drawers/RecipientWarningDrawer"
+import { RootStakedTaoWarningDrawer } from "../Drawers/RootStakedTaoWarningDrawer"
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"
 import { AddContact } from "./AddContact"
@@ -21,27 +22,39 @@ import { FeesSummary } from "./FeesSummary"
 const ReviewButton = () => {
   const { t } = useTranslation()
   const { gotoReview } = useSendFundsWizard()
-  const { isValid, tokensToBeReaped, recipientWarning } = useSendFunds()
+  const { isValid, tokensToBeReaped, recipientWarning, token } = useSendFunds()
   const forfeitDrawer = useGlobalOpenClose("sendFundsForfeitDrawer")
   const recipientWarningDrawer = useGlobalOpenClose("sendFundsRecipientWarningDrawer")
+  const rootStakedTaoDrawer = useGlobalOpenClose("sendFundsRootStakedTaoWarningDrawer")
   const [warnings, setWarnings] = useState<string[]>([])
   const [acceptedWarnings, setAcceptedWarnings] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState(false)
 
+  const isRootStakedTao = token?.type === "substrate-dtao" && token.netuid === 0
+
   useEffect(() => {
+    if (isRootStakedTao)
+      setWarnings((prev) => Array.from(new Set([...prev, "rootStakedTaoWarning"])))
+    if (!isRootStakedTao) setWarnings((prev) => prev.filter((w) => w !== "rootStakedTaoWarning"))
+
     if (recipientWarning) setWarnings((prev) => Array.from(new Set([...prev, "recipientWarning"])))
     if (!recipientWarning) setWarnings((prev) => prev.filter((w) => w !== "recipientWarning"))
 
     if (tokensToBeReaped?.length)
       setWarnings((prev) => Array.from(new Set([...prev, "forfeitWarning"])))
     if (!tokensToBeReaped?.length) setWarnings((prev) => prev.filter((w) => w !== "forfeitWarning"))
-  }, [recipientWarning, tokensToBeReaped])
+  }, [isRootStakedTao, recipientWarning, tokensToBeReaped])
 
   useEffect(() => {
     // once the confirmed state has been set, component will cycle through all warnings until all are accepted
     if (!confirmed) return
 
-    if (warnings.includes("forfeitWarning") && !acceptedWarnings.includes("forfeitWarning"))
+    if (
+      warnings.includes("rootStakedTaoWarning") &&
+      !acceptedWarnings.includes("rootStakedTaoWarning")
+    )
+      rootStakedTaoDrawer.open()
+    else if (warnings.includes("forfeitWarning") && !acceptedWarnings.includes("forfeitWarning"))
       forfeitDrawer.open()
     else if (
       warnings.includes("recipientWarning") &&
@@ -49,7 +62,15 @@ const ReviewButton = () => {
     )
       recipientWarningDrawer.open()
     else gotoReview(acceptedWarnings.includes("forfeitWarning"))
-  }, [confirmed, warnings, acceptedWarnings, forfeitDrawer, recipientWarningDrawer, gotoReview])
+  }, [
+    confirmed,
+    warnings,
+    acceptedWarnings,
+    rootStakedTaoDrawer,
+    forfeitDrawer,
+    recipientWarningDrawer,
+    gotoReview,
+  ])
 
   const handleAcceptWarning = useCallback((warning: string) => {
     setAcceptedWarnings((prev) => [...prev, warning])
@@ -67,6 +88,17 @@ const ReviewButton = () => {
       >
         {t("Review")}
       </Button>
+      <RootStakedTaoWarningDrawer
+        isOpen={rootStakedTaoDrawer.isOpen}
+        close={() => {
+          setConfirmed(false)
+          rootStakedTaoDrawer.close()
+        }}
+        handleAccept={() => {
+          rootStakedTaoDrawer.close()
+          handleAcceptWarning("rootStakedTaoWarning")
+        }}
+      />
       <ForfeitWarningDrawer
         isOpen={forfeitDrawer.isOpen}
         close={() => {
@@ -121,7 +153,7 @@ export const SendFundsAmountForm = () => {
           <div>{t("From")}</div>
           <div>
             <AddressPillButton
-              className="max-w-[260px]!"
+              className="max-w-65!"
               address={from}
               genesisHash={genesisHash}
               onClick={handleGotoClick("from")}
@@ -132,7 +164,7 @@ export const SendFundsAmountForm = () => {
           <div>{t("To")}</div>
           <div className="flex items-center gap-4">
             <AddressPillButton
-              className="max-w-[260px]!"
+              className="max-w-65!"
               address={to}
               genesisHash={genesisHash}
               onClick={handleGotoClick("to")}
