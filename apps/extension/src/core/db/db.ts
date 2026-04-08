@@ -4,6 +4,7 @@ import type { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import type { TalismanMetadataDef } from "../domains/substrate/types"
 import type { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
 import type { DbBlobId, DbBlobItem } from "./blobs"
+import type { ImageCacheEntry } from "./imageCache"
 import type { QueryCacheItem } from "./queryCache"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 
@@ -16,6 +17,7 @@ class TalismanDatabase extends Dexie {
   transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
   queryCache!: Dexie.Table<QueryCacheItem, string>
+  imageCache!: Dexie.Table<ImageCacheEntry, string>
 
   constructor() {
     super("Talisman")
@@ -62,6 +64,11 @@ class TalismanDatabase extends Dexie {
     // v13: query cache table for persisted React Query data
     this.version(13).stores({
       queryCache: "key, purgeAt",
+    })
+
+    // v14: SWR image cache for non-GitHub logo URLs
+    this.version(14).stores({
+      imageCache: "url",
     })
   }
 }

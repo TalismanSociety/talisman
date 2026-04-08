@@ -1,6 +1,8 @@
 import { DEBUG } from "@common/constants"
 import { useCallback, useEffect, useState } from "react"
 
+import { useImageSwr } from "./imageCache"
+
 const GITRAW_URL = "https://raw.githubusercontent.com/"
 const GITHACK_URL = "https://rawcdn.githack.com/"
 const STATICALLY_URL = "https://cdn.statically.io/gh/"
@@ -11,6 +13,9 @@ const STATICALLY_URL = "https://cdn.statically.io/gh/"
 const GITHUB_SOURCE_FLOW = DEBUG
   ? [GITRAW_URL, STATICALLY_URL, GITHACK_URL]
   : [STATICALLY_URL, GITHACK_URL, GITRAW_URL]
+
+const isGithubUrl = (url: string): boolean =>
+  url.startsWith(GITRAW_URL) || url.startsWith(GITHACK_URL) || url.startsWith(STATICALLY_URL)
 
 const getFileUrl = (url: string | null | undefined, fallbackUrl: string, rotate?: boolean) => {
   // our chaindata urls are generated for gitraw, but for production we want to default to statically
@@ -32,6 +37,11 @@ const getFileUrl = (url: string | null | undefined, fallbackUrl: string, rotate?
 }
 
 export const useGithubImageUrl = (url: string | null | undefined, fallbackUrl: string) => {
+  // SWR data-URL cache for non-GitHub images (provider logos, defi logos, etc.)
+  const shouldCache =
+    !!url && (url.startsWith("https://") || url.startsWith("http://")) && !isGithubUrl(url)
+  const cachedSrc = useImageSwr(shouldCache ? url : null)
+
   const [src, setSrc] = useState(() => getFileUrl(url, fallbackUrl))
 
   // if error, use another img provider
@@ -44,5 +54,6 @@ export const useGithubImageUrl = (url: string | null | undefined, fallbackUrl: s
     setSrc(getFileUrl(url, fallbackUrl))
   }, [fallbackUrl, url])
 
-  return { src, onError }
+  // Prefer cached data-URL for non-GitHub images
+  return { src: cachedSrc ?? src, onError }
 }
