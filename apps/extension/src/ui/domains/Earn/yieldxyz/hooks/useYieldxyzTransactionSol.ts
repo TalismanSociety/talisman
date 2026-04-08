@@ -36,9 +36,9 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
   const connection = useSolanaConnection(props?.networkId)
 
   const solTx = useMemo(() => {
-    if (!props?.transaction) return null
+    if (!network || !props?.transaction) return null
     return deserializeYieldxyzSolTransaction(props.transaction)
-  }, [props?.transaction])
+  }, [network, props?.transaction])
 
   const { data: estimatedFee, ...feeQuery } = useQuery({
     queryKey: ["yieldxyz-sol-fee", props?.transaction?.id, connection?.rpcEndpoint],
