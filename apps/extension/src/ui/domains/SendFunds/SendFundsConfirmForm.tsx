@@ -145,7 +145,7 @@ const ExternalRecipientWarning = () => {
         {warningType === "alpha" && (
           <div>
             {t(
-              "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds."
+              "Warning: Sending alpha tokens or root staked tokens to a centralized exchange may result in loss of funds."
             )}
           </div>
         )}
