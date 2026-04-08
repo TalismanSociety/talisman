@@ -19,7 +19,7 @@ import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { toPairs } from "lodash-es"
-import { type FC, Fragment, useMemo, useState } from "react"
+import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPositions"
@@ -156,14 +156,14 @@ const TokenRow: FC<{
   token: Token
   positions: EarnPosition[]
   totalUsd: number
-}> = ({ token, positions, totalUsd, status }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-
+  isCollapsed: boolean
+  onToggleCollapsed: () => void
+}> = ({ token, positions, totalUsd, status, isCollapsed, onToggleCollapsed }) => {
   return (
     <div className="w-full overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={() => setIsCollapsed((prev) => !prev)}
+        onClick={onToggleCollapsed}
         className={cn(
           "flex h-28 w-full items-center gap-6 overflow-hidden px-8 hover:bg-grey-750",
           !isCollapsed && "bg-grey-800",
@@ -215,14 +215,14 @@ const NetworkRow: FC<{
   network: Network | undefined
   positions: EarnPosition[]
   totalUsd: number
-}> = ({ networkId, network, positions, totalUsd, status }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-
+  isCollapsed: boolean
+  onToggleCollapsed: () => void
+}> = ({ networkId, network, positions, totalUsd, status, isCollapsed, onToggleCollapsed }) => {
   return (
     <div className="w-full overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={() => setIsCollapsed((prev) => !prev)}
+        onClick={onToggleCollapsed}
         className={cn(
           "flex h-28 w-full items-center gap-6 overflow-hidden px-8 hover:bg-grey-750",
           !isCollapsed && "bg-grey-800",
@@ -302,6 +302,17 @@ export const EarnPositionsList: FC<{
 
   const tokensMay = useTokensMap()
   const networksMap = useNetworksMapById()
+
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set())
+
+  const toggleGroup = useCallback((key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }, [])
 
   const filteredPositions = useMemo(() => {
     if (!networkFilter) return positions ?? []
@@ -393,6 +404,25 @@ export const EarnPositionsList: FC<{
       )
   }, [deduplicatedPositions, groupBy, networksMap, sortBy])
 
+  const allGroupKeys = useMemo(() => {
+    if (groupBy === "token") return tokenGroupedPositions.map((g) => g.token.id)
+    if (groupBy === "network") return networkGroupedPositions.map((g) => g.networkId)
+    return []
+  }, [groupBy, tokenGroupedPositions, networkGroupedPositions])
+
+  const allCollapsed = useMemo(
+    () => allGroupKeys.length > 0 && allGroupKeys.every((k) => collapsedGroups.has(k)),
+    [allGroupKeys, collapsedGroups]
+  )
+
+  const toggleAll = useCallback(() => {
+    if (allCollapsed) {
+      setCollapsedGroups(new Set())
+    } else {
+      setCollapsedGroups(new Set(allGroupKeys))
+    }
+  }, [allCollapsed, allGroupKeys])
+
   const totalDefiAmountUsd = useMemo(
     () => deduplicatedPositions.reduce((sum, pos) => sum + pos.totalAmountUsd, 0),
     [deduplicatedPositions]
@@ -415,9 +445,24 @@ export const EarnPositionsList: FC<{
     <div className="mb-6">
       <div className="mb-4 flex w-full items-center justify-between pr-2 font-medium text-body-secondary text-sm">
         <h2 className="font-medium text-body-secondary text-sm">{t("DeFi Positions")}</h2>
-        <div className="font-normal text-base text-body-secondary">
-          <FiatFromUsd amount={totalDefiAmountUsd} isBalance />
-        </div>
+        {groupBy === "token" || groupBy === "network" ? (
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="flex items-center gap-2 font-normal text-base text-body-secondary hover:text-body"
+          >
+            <FiatFromUsd amount={totalDefiAmountUsd} isBalance />
+            {allCollapsed ? (
+              <ChevronRightIcon className="size-8" />
+            ) : (
+              <ChevronDownIcon className="size-8" />
+            )}
+          </button>
+        ) : (
+          <div className="font-normal text-base text-body-secondary">
+            <FiatFromUsd amount={totalDefiAmountUsd} isBalance />
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-4">
         {groupBy === "token" &&
@@ -428,6 +473,8 @@ export const EarnPositionsList: FC<{
               positions={positions}
               totalUsd={totalUsd}
               status={status}
+              isCollapsed={collapsedGroups.has(token.id)}
+              onToggleCollapsed={() => toggleGroup(token.id)}
             />
           ))}
         {groupBy === "network" &&
@@ -439,6 +486,8 @@ export const EarnPositionsList: FC<{
               positions={positions}
               totalUsd={totalUsd}
               status={status}
+              isCollapsed={collapsedGroups.has(networkId)}
+              onToggleCollapsed={() => toggleGroup(networkId)}
             />
           ))}
         {groupBy === "none" &&
