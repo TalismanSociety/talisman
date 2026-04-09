@@ -56,21 +56,41 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     })
   }
 
-  public async resetAutolockTimer(minutes?: number) {
+  public async resetAutolockTimer(
+    minutes?: number,
+    { preserveExisting = false }: { preserveExisting?: boolean } = {}
+  ) {
     // Don't modify the alarm while login status is still being determined.
     // This prevents clearing a valid alarm from a previous session during startup,
     // when the settings subscription fires before hasPassword() has resolved.
     if (this.isLoggedIn.value === UNKNOWN) return
 
-    const alarm = await chrome.alarms.get(ALARM_NAME)
-    if (alarm) await chrome.alarms.clear(ALARM_NAME)
+    // When logged out, clear any existing alarm and stop.
+    if (this.isLoggedIn.value !== TRUE) {
+      await chrome.alarms.clear(ALARM_NAME)
+      return
+    }
 
-    // don't set alarm if user is not logged in
-    if (this.isLoggedIn.value !== TRUE) return
-    // don't set alarm if minutes is less than or equal to 0
-    if (!minutes || minutes <= 0) return
+    // minutes === undefined means settings haven't loaded yet — preserve any existing alarm.
+    if (minutes === undefined) return
 
-    await chrome.alarms.create(ALARM_NAME, { delayInMinutes: minutes, periodInMinutes: minutes })
+    // minutes === 0 means the user explicitly disabled auto-lock — clear and stop.
+    if (minutes <= 0) {
+      await chrome.alarms.clear(ALARM_NAME)
+      return
+    }
+
+    // When preserveExisting is set (startup/settings-sync), keep an alarm that
+    // would fire sooner than the new one. This prevents service worker restarts
+    // from extending the unlock window.
+    if (preserveExisting) {
+      const existing = await chrome.alarms.get(ALARM_NAME)
+      if (existing && existing.scheduledTime <= Date.now() + minutes * 60_000) return
+    }
+
+    // Replace the existing alarm with a fresh one-shot alarm.
+    await chrome.alarms.clear(ALARM_NAME)
+    await chrome.alarms.create(ALARM_NAME, { delayInMinutes: minutes })
   }
 
   async reset() {

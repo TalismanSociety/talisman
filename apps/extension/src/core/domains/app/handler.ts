@@ -61,6 +61,7 @@ export default class AppHandler extends ExtensionHandler {
     this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
     talismanAnalytics.capture("password created")
+
     return true
   }
 

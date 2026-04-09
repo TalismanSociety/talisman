@@ -8,7 +8,6 @@ export const useKeepBackgroundOpen = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       // making any runtime call keeps the background page open
-      // and resets the autolock timer
       api.keepalive()
     }, 10_000)
 

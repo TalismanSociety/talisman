@@ -41,7 +41,8 @@ import { unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
-  #autoLockMinutes = 0
+  #autoLockMinutes: number | undefined = undefined
+  #settingsHydrated = false
 
   constructor(stores: ExtensionStore) {
     super(stores)
@@ -73,21 +74,36 @@ export default class Extension extends ExtensionHandler {
     }
 
     // connect auto lock timeout setting to the password store
+    //
+    // On service worker startup there is a race between the settings observable
+    // (which fires when settings load from storage) and PasswordStore.hasPassword()
+    // (which determines isLoggedIn from session storage). Either signal may
+    // resolve first. Both subscriptions below call resetAutolockTimer so that the
+    // autolock alarm is created as soon as BOTH conditions are met, regardless
+    // of resolution order.
+    //
+    // Both subscriptions use preserveExisting during startup so that a service
+    // worker restart doesn't extend a nearly-expired alarm back to full duration.
+    // After the initial settings hydration, the settings subscription switches to
+    // normal replacement so that user changes take effect immediately.
+    // The settings subscription also skips calling resetAutolockTimer when
+    // autoLockMinutes hasn't changed, to avoid extending the timer on unrelated
+    // settings updates.
     this.stores.settings.observable.subscribe(({ autoLockMinutes }) => {
+      const isInitialHydration = !this.#settingsHydrated
+      this.#settingsHydrated = true
+
+      // Skip if autoLockMinutes hasn't changed (unrelated settings update)
+      if (!isInitialHydration && autoLockMinutes === this.#autoLockMinutes) return
+
       this.#autoLockMinutes = autoLockMinutes
-      stores.password.resetAutolockTimer(autoLockMinutes)
+      this.stores.password.resetAutolockTimer(this.#autoLockMinutes, {
+        preserveExisting: isInitialHydration,
+      })
     })
 
-    // Re-set the autolock timer when login status becomes known.
-    // On service worker startup there is a race between the settings subscription above
-    // (which fires when settings load from storage) and PasswordStore.hasPassword()
-    // (which determines isLoggedIn from session storage). If settings fire first,
-    // resetAutolockTimer skips because isLoggedIn is still UNKNOWN. This subscription
-    // ensures the alarm is properly created once isLoggedIn resolves to TRUE.
-    stores.password.isLoggedIn.subscribe((loggedIn) => {
-      if (loggedIn === "TRUE" && this.#autoLockMinutes > 0) {
-        stores.password.resetAutolockTimer(this.#autoLockMinutes)
-      }
+    stores.password.isLoggedIn.subscribe(() => {
+      this.stores.password.resetAutolockTimer(this.#autoLockMinutes, { preserveExisting: true })
     })
 
     // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
