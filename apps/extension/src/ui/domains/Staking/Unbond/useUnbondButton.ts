@@ -10,6 +10,7 @@ import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { type MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useBittensorBondModal } from "../Bittensor/hooks/useBittensorBondModal"
+import type { BittensorStakingWizardOpenOptions } from "../Bittensor/hooks/useBittensorBondWizard"
 import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStatus"
 import { useGetSeekStaked } from "../Seek/hooks/useGetSeekStaked"
 import { useUnbondModal } from "./useUnbondModal"
@@ -41,10 +42,9 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
 
   const { data: nomPoolStakingStatus } = useNomPoolStakingStatus(nomPoolTokenId)
 
-  const bestUnbondableBalance = useMemo(() => {
-    if (!balances?.each) return null
-
-    const unbondableBalances = balances.each
+  const unbondableBalances = useMemo(() => {
+    if (!balances?.each) return []
+    return balances.each
       .filter((b) => ownedAddresses.includes(b.address))
       .map((b) =>
         getUnbondableBalance(
@@ -58,8 +58,6 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       )
       .filter(isNotNil)
       .sort((a, b) => (a.amount === b.amount ? 0 : a.amount > b.amount ? -1 : 1))
-
-    return unbondableBalances.length ? unbondableBalances[0] : null
   }, [
     allBalances,
     balances,
@@ -69,6 +67,10 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
     remoteConfig,
     seekStaked.data.balances,
   ])
+
+  const bestUnbondableBalance = useMemo(() => {
+    return unbondableBalances.length ? unbondableBalances[0] : null
+  }, [unbondableBalances])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -83,13 +85,18 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       switch (bestUnbondableBalance.type) {
         case "bittensor": {
           const { address, networkId, hotkey, netuid } = bestUnbondableBalance
-          openBittensorModal({
-            stakeDirection: "unbond",
-            address,
-            networkId,
-            hotkey,
-            netuid,
-          })
+          // if multiple positions for this netuid, specify only the netuid to force the position picker to display
+          const args: BittensorStakingWizardOpenOptions =
+            unbondableBalances.length > 1
+              ? { stakeDirection: "unbond", networkId, netuid }
+              : {
+                  stakeDirection: "unbond",
+                  address,
+                  networkId,
+                  hotkey,
+                  netuid,
+                }
+          openBittensorModal(args)
           break
         }
         case "seek": {
@@ -109,6 +116,7 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       openBittensorModal,
       remoteConfig.seek.unstakingUrl,
       openUnbondModal,
+      unbondableBalances.length,
     ]
   )
 
