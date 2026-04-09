@@ -138,9 +138,8 @@ class WindowManager {
 
       // retry with default size and without position constraints,
       // as invalid size or out-of-bounds position could be the source of the error
-      const { top: _, left: __, ...fallbackArgs } = popupCreateArgs
       popup = await chrome.windows.create({
-        ...fallbackArgs,
+        url: popupCreateArgs.url,
         width: WINDOW_OPTS.width,
         height: WINDOW_OPTS.height,
       })
