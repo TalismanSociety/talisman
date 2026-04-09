@@ -153,14 +153,16 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
     [setProviderFilter, protocolModal.close]
   )
 
-  // Auto-clear stale filter selections
+  // Auto-clear stale filter selections (only once data is loaded)
   useEffect(() => {
+    if (!allOpportunities) return
     if (typeFilter && !availableTypes.has(typeFilter)) setTypeFilter(null)
-  }, [typeFilter, availableTypes, setTypeFilter])
+  }, [typeFilter, availableTypes, setTypeFilter, allOpportunities])
 
   useEffect(() => {
+    if (!allOpportunities) return
     if (providerFilter && !availableProviderIds.has(providerFilter)) setProviderFilter(null)
-  }, [providerFilter, availableProviderIds, setProviderFilter])
+  }, [providerFilter, availableProviderIds, setProviderFilter, allOpportunities])
 
   const hasActiveFilter = !!typeFilter || !!providerFilter
 

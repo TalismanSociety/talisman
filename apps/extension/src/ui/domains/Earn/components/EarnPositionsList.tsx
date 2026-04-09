@@ -300,7 +300,7 @@ export const EarnPositionsList: FC<{
   const { status, data: positions } = useEarnPositions()
   const isLoading = status === "loading"
 
-  const tokensMay = useTokensMap()
+  const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
 
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set())
@@ -340,7 +340,7 @@ export const EarnPositionsList: FC<{
         )
         const totalUsd = positions.reduce((sum, pos) => sum + pos.totalAmountUsd, 0)
         return {
-          token: tokensMay[tokenId],
+          token: tokensMap[tokenId],
           positions,
           totalUsd,
         }
@@ -354,7 +354,7 @@ export const EarnPositionsList: FC<{
           ? p1.token.symbol.localeCompare(p2.token.symbol)
           : p2.totalUsd - p1.totalUsd
       )
-  }, [positionsByTokenIdMap, selectedAccounts, tokensMay, sortBy])
+  }, [positionsByTokenIdMap, selectedAccounts, tokensMap, sortBy])
 
   const tokenGroupedPositions = useMemo(() => {
     const lowerSearch = (search || "").toLowerCase().trim()

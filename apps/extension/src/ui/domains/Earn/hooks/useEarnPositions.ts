@@ -144,7 +144,7 @@ const mapDefiPosition = (
     isReadOnly: true,
     displayTokens,
     totalAmountUsd,
-    detailUrl: `/earn/positions/defi/${dp.id}`,
+    detailUrl: `/earn/positions/defi/${encodeURIComponent(dp.id)}`,
     tokenIds,
     searchTerms: [
       dp.name,

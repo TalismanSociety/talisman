@@ -57,8 +57,8 @@ export const SenderAccountPicker: FC<{
         if (fiat1 > fiat2) return -1
         if (fiat1 < fiat2) return 1
 
-        const planck1 = a.balances.sum.fiat("usd").transferable || 0n
-        const planck2 = b.balances.sum.fiat("usd").transferable || 0n
+        const planck1 = a.balances.sum.planck.transferable || 0n
+        const planck2 = b.balances.sum.planck.transferable || 0n
         if (planck1 > planck2) return -1
         if (planck1 < planck2) return 1
 

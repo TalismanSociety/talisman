@@ -57,8 +57,7 @@ export const useYieldxyzTransactionManager = ({
     async (txId: string) => {
       setIsSubmitting(true)
       try {
-        if (stepIndex === null) return
-        const transactionId = action?.transactions[stepIndex]?.id
+        const transactionId = nextTransaction?.id
         if (!transactionId) return
         await submitActionTransaction(transactionId, txId)
         setPendingTxId(transactionId)
@@ -66,7 +65,7 @@ export const useYieldxyzTransactionManager = ({
         setIsSubmitting(false)
       }
     },
-    [action, stepIndex, submitActionTransaction]
+    [nextTransaction, submitActionTransaction]
   )
 
   // simple polling to refresh action while a tx is pending
