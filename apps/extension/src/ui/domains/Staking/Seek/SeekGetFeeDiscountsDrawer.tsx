@@ -1,4 +1,3 @@
-import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
@@ -33,7 +32,7 @@ export const SeekGetFeeDiscountsDrawer = ({
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
   const { open: openSwapModal } = useSwapModal()
-  const { tokenId, webAppStakingPath, docsUrl } = remoteConfig.seek
+  const { tokenId, stakingUrl, docsUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
   const accounts = useAccounts("owned")
@@ -91,7 +90,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               />
               <div>
                 <div className="text-white">{tokenSymbol}</div>
-                <div className="text-[14px]">
+                <div className="text-sm">
                   {t("Available")}:{" "}
                   <Tokens amount={totalOwned?.tokens || 0} decimals={token?.decimals} />
                 </div>
@@ -102,7 +101,7 @@ export const SeekGetFeeDiscountsDrawer = ({
                 <div className="text-white">
                   <Tokens amount={totalStaked.tokens} decimals={token?.decimals} /> {tokenSymbol}
                 </div>
-                <div className="text-end text-[14px]">{t("Staked")}</div>
+                <div className="text-end text-sm">{t("Staked")}</div>
               </div>
             )}
           </div>
@@ -111,7 +110,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               {hasSeekStaked ? t("Applied Discount") : t("Get Discounts")}
             </div>
             <div className={cn("rounded-[43px] px-4 py-2", !hasSeekStaked && "bg-[#D5FF5C]/10")}>
-              <div className="text-[#D5FF5C] text-[14px]">
+              <div className="text-[#D5FF5C] text-sm">
                 {hasSeekStaked ? discountPercent : t("Up to 25%")} {t("off fees")}
               </div>
             </div>
@@ -126,7 +125,7 @@ export const SeekGetFeeDiscountsDrawer = ({
           {totalOwned && totalOwned.planck > 0n && (
             <Button
               onClick={() => {
-                open(`${TALISMAN_WEB_APP_URL}${webAppStakingPath}`, "_blank", "noopener,noreferrer")
+                open(stakingUrl, "_blank", "noopener,noreferrer")
                 onCloseModal()
               }}
             >

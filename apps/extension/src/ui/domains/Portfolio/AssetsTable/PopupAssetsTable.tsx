@@ -9,8 +9,9 @@ import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
+import { StakeUnstakeButtons } from "@ui/domains/Staking/StakeUnstakeButtons"
+import { useUnbondButton } from "@ui/domains/Staking/Unbond/useUnbondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -96,7 +97,8 @@ const AssetRow: FC<{
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBond } = useBondButton({ balances })
-  const showStakingButton = canBond && !locked
+  const { canUnbond } = useUnbondButton({ balances })
+  const showStakingButton = (canBond || canUnbond) && !locked
   const { canEarn, openEarnModal } = usePortfolioEarnButton(balances)
 
   if (!token || !summary || !network) return null
@@ -183,12 +185,8 @@ const AssetRow: FC<{
       </button>
 
       {showStakingButton ? (
-        <div className="absolute top-0 right-4 hidden h-28 flex-col justify-center group-hover:flex">
-          <BondPillButton
-            balances={balances}
-            isPortfolio
-            className="text-base [>svg]:text-[1.25rem]"
-          />
+        <div className="absolute top-0 right-4 hidden h-28 items-center justify-center group-hover:flex">
+          <StakeUnstakeButtons balances={balances} isPortfolio />
         </div>
       ) : canEarn ? (
         <div className="absolute top-0 right-4 hidden h-28 flex-col justify-center group-hover:flex">
