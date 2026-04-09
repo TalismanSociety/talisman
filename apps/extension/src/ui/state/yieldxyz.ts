@@ -23,7 +23,7 @@ import {
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
 import { keyBy } from "lodash-es"
-import { combineLatest, map, Observable, ReplaySubject } from "rxjs"
+import { combineLatest, map, Observable, ReplaySubject, share } from "rxjs"
 
 import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
@@ -55,17 +55,14 @@ const [_useYieldNetworkIdFromTalismanNetworkId, _getYieldNetworkIdFromTalismanNe
 const subjectRawYieldxyzProviders$ = new ReplaySubject<Loadable<YieldxyzProvider[]>>(1)
 
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
-  const sub = subjectRawYieldxyzProviders$.subscribe(subscriber)
-
   const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
-    subjectRawYieldxyzProviders$.next(loadable)
+    subscriber.next(loadable)
   })
 
   return () => {
-    sub.unsubscribe()
     unsubscribe()
   }
-})
+}).pipe(share({ connector: () => subjectRawYieldxyzProviders$, resetOnRefCountZero: false }))
 
 export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
   status: "loading",
@@ -89,17 +86,14 @@ const [useYieldxyzProvider, _yieldxyzProvider$] = bind(
 const subjectRawYieldxyzProducts$ = new ReplaySubject<Loadable<YieldDto[]>>(1)
 
 const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
-  const sub = subjectRawYieldxyzProducts$.subscribe(subscriber)
-
   const unsubscribe = api.yieldxyzProductsSubscribe((loadable: Loadable<YieldDto[]>) => {
-    subjectRawYieldxyzProducts$.next(loadable)
+    subscriber.next(loadable)
   })
 
   return () => {
-    sub.unsubscribe()
     unsubscribe()
   }
-})
+}).pipe(share({ connector: () => subjectRawYieldxyzProducts$, resetOnRefCountZero: false }))
 
 export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
   combineLatest([
@@ -142,17 +136,14 @@ const [useYieldxyzProduct, _yieldxyzProduct$] = bind(
 const subjectRawYieldxyzPositions$ = new ReplaySubject<Loadable<YieldxyzPosition[]>>(1)
 
 const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
-  const sub = subjectRawYieldxyzPositions$.subscribe(subscriber)
-
   const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
-    subjectRawYieldxyzPositions$.next(loadable)
+    subscriber.next(loadable)
   })
 
   return () => {
-    sub.unsubscribe()
     unsubscribe()
   }
-})
+}).pipe(share({ connector: () => subjectRawYieldxyzPositions$, resetOnRefCountZero: false }))
 
 const [useYieldxyzPositionsEnhanced, _yieldxyzPositionsEnhanced$] = bind(
   combineLatest([rawYieldxyzPositions$, rawYieldxyzProducts$]).pipe(
