@@ -42,7 +42,6 @@ export const YieldxyzProviderLogo: FC<{
 export const YieldxyzProviderDisplay: FC<{
   providerId: string | null | undefined
   className?: string
-  logoClassName?: string
 }> = ({ providerId, className }) => {
   const { data: provider } = useYieldxyzProvider(providerId)
 

@@ -1,4 +1,5 @@
-import { db, type ImageCacheEntry } from "@core/db"
+import { db } from "@core/db/db"
+import type { ImageCacheEntry } from "@core/db/imageCache"
 import { isSafeImageUrl } from "@core/domains/ethereum/helpers"
 import { useEffect, useSyncExternalStore } from "react"
 
@@ -24,7 +25,7 @@ const emitChange = () => {
 }
 
 // Hydrate: load Dexie entries into memory, but never overwrite fresher in-memory data
-const hydrate = async () => {
+const hydratePromise = (async () => {
   try {
     const entries = await db.imageCache.toArray()
     for (const entry of entries) {
@@ -35,12 +36,10 @@ const hydrate = async () => {
     // DB unavailable — empty cache is fine
   }
   emitChange()
-}
+})()
 
-hydrate()
-
-// Dedup in-flight fetches
-const pending = new Set<string>()
+// Dedup in-flight fetches; maps url → AbortController for cancellation
+const pending = new Map<string, AbortController>()
 
 const blobToDataUrl = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -53,9 +52,11 @@ const blobToDataUrl = (blob: Blob): Promise<string> =>
 const fetchAndCache = (url: string) => {
   if (!isSafeImageUrl(url)) return
   if (pending.has(url)) return
-  pending.add(url)
 
-  fetch(url)
+  const controller = new AbortController()
+  pending.set(url, controller)
+
+  fetch(url, { signal: controller.signal })
     .then(async (res) => {
       if (!res.ok) return
 
@@ -75,6 +76,15 @@ const fetchAndCache = (url: string) => {
     .finally(() => pending.delete(url))
 }
 
+/** Cancel an in-flight fetch (e.g. when the requesting component unmounts) */
+const cancelFetch = (url: string) => {
+  const controller = pending.get(url)
+  if (controller) {
+    controller.abort()
+    pending.delete(url)
+  }
+}
+
 const evictIfNeeded = async () => {
   if (cache.size <= MAX_ENTRIES) return
 
@@ -88,7 +98,8 @@ const evictIfNeeded = async () => {
 }
 
 /** @knipignore — used internally by useImageSwr; exported for tests */
-export const ensureCached = (url: string) => {
+export const ensureCached = async (url: string) => {
+  await hydratePromise
   const entry = cache.get(url)
   if (!entry) fetchAndCache(url)
   else if (Date.now() - entry.fetchedAt > STALE_AFTER_MS) fetchAndCache(url)
@@ -115,7 +126,9 @@ export const useImageSwr = (url: string | null | undefined): string | null => {
   )
 
   useEffect(() => {
-    if (url) ensureCached(url)
+    if (!url) return
+    ensureCached(url)
+    return () => cancelFetch(url)
   }, [url])
 
   return snapshot

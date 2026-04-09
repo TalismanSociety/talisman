@@ -181,6 +181,8 @@ const useYieldxyzEnterWizardProvider = ({
       const prevStep = STEP_ORDER[currentIndex - 1]!
       // clear state that was set by the current step so re-advancing works correctly
       switch (state.step) {
+        case "product":
+          return { ...state, step: prevStep, productId: null }
         case "account":
           return { ...state, step: prevStep, address: null }
         case "amount":

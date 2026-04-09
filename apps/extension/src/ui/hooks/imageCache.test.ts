@@ -1,4 +1,4 @@
-import { db } from "@core/db"
+import { db } from "@core/db/db"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("@core/domains/ethereum/helpers", () => ({

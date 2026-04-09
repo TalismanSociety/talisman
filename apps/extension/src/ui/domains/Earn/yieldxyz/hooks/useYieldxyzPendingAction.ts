@@ -2,7 +2,7 @@ import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { ActionDto, PendingActionDto } from "@core/domains/earn/exports"
 import { notify } from "@ui/components/Notifications"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 
 import {
   fetchYieldxyzAction,
@@ -31,6 +31,9 @@ export const useYieldxyzPendingAction = ({
     error: null,
     action: null,
   })
+
+  const actionIdRef = useRef<string | null>(null)
+  actionIdRef.current = state.action?.id ?? null
 
   const canCreateAction = useMemo(() => {
     return !!(address && yieldId && pendingAction)
@@ -67,7 +70,7 @@ export const useYieldxyzPendingAction = ({
     })
 
     try {
-      const actionId = state.action?.id
+      const actionId = actionIdRef.current
       if (!actionId) return
       const refreshedAction = await fetchYieldxyzAction(actionId)
       // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
@@ -79,7 +82,7 @@ export const useYieldxyzPendingAction = ({
       setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
       throw err
     }
-  }, [state.action?.id])
+  }, [])
 
   const submitActionTransaction = useCallback(async (transactionId: string, hash: string) => {
     setState((prev) => {
