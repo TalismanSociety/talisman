@@ -2,7 +2,7 @@ import { IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
 import { sleep } from "@talismn/util"
 
-import { appStore } from "../domains/app/store.app"
+import { appStore, DEFAULT_APP_STATE } from "../domains/app/store.app"
 import type { RequestRoute } from "../domains/app/types"
 
 const WINDOW_OPTS: chrome.windows.CreateData & { width: number; height: number } = {
@@ -143,6 +143,9 @@ class WindowManager {
         url: popupCreateArgs.url,
       })
       usedFallback = true
+
+      // reset stored delta so next popup doesn't repeat the same failure
+      await appStore.set({ popupSizeDelta: DEFAULT_APP_STATE.popupSizeDelta })
     }
 
     if (typeof popup?.id !== "undefined") {
