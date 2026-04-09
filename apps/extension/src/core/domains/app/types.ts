@@ -4,9 +4,21 @@ import type { ValidRequests } from "../../libs/requests/types"
 import type { Address } from "../../types/base"
 import type { PostHogCaptureProperties } from "../analytics/types"
 import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
-import type { BiometricStoreData } from "./store.biometric"
 
 export type RemoteConfigStoreData = RemoteConfigData
+
+export interface BiometricStoreData {
+  /** Base64url-encoded WebAuthn credential ID */
+  credentialId?: string
+  /** Base64url-encoded WebAuthn user ID (needed for credential deletion) */
+  userId?: string
+  /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
+  encryptedPassword?: string
+  /** AES-GCM initialization vector (Base64) */
+  iv?: string
+  /** Salt passed to the WebAuthn PRF extension (Base64) */
+  prfSalt?: string
+}
 
 export interface RequestOnboardCreatePassword {
   pass: string
@@ -85,8 +97,6 @@ export interface BiometricEnrollRequest {
 export interface BiometricAuthenticateRequest {
   hashedPassword: string
 }
-
-export type { BiometricStoreData }
 
 export interface AppMessages {
   "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]

@@ -13,12 +13,12 @@ import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
 import { keyringStore } from "../keyring/store"
 import { addException } from "./protector"
-import type { BiometricStoreData } from "./store.biometric"
 import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
   BiometricAuthenticateRequest,
   BiometricEnrollRequest,
+  BiometricStoreData,
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,

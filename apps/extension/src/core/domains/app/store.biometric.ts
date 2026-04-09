@@ -1,17 +1,5 @@
 import { StorageProvider } from "../../libs/Store"
-
-export interface BiometricStoreData {
-  /** Base64url-encoded WebAuthn credential ID */
-  credentialId?: string
-  /** Base64url-encoded WebAuthn user ID (needed for credential deletion) */
-  userId?: string
-  /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
-  encryptedPassword?: string
-  /** AES-GCM initialization vector (Base64) */
-  iv?: string
-  /** Salt passed to the WebAuthn PRF extension (Base64) */
-  prfSalt?: string
-}
+import type { BiometricStoreData } from "./types"
 
 class BiometricStore extends StorageProvider<BiometricStoreData> {
   async isEnrolled(): Promise<boolean> {
