@@ -1,6 +1,7 @@
 import { accountsCatalogStore } from "../domains/accounts"
 import type { AccountsCatalogData } from "../domains/accounts/store.catalog"
 import { type AppStoreData, appStore } from "../domains/app/store.app"
+import { type BiometricStoreData, biometricStore } from "../domains/app/store.biometric"
 import { type ErrorsStoreData, errorsStore } from "../domains/app/store.errors"
 import { type PasswordStoreData, passwordStore } from "../domains/app/store.password"
 import { remoteConfigStore } from "../domains/app/store.remoteConfig"
@@ -22,12 +23,14 @@ export type TabStore = {
 
 export type ExtensionStore = TabStore & {
   accountsCatalog: typeof accountsCatalogStore
+  biometric: typeof biometricStore
   password: typeof passwordStore
 }
 
 type GettableStores = {
   accountsCatalog: [typeof accountsCatalogStore, AccountsCatalogData]
   app: [typeof appStore, AppStoreData]
+  biometric: [typeof biometricStore, BiometricStoreData]
   errors: [typeof errorsStore, ErrorsStoreData]
   password: [typeof passwordStore, PasswordStoreData]
   settings: [typeof settingsStore, SettingsStoreData]
@@ -51,12 +54,14 @@ export const tabStores = {
 export const extensionStores = {
   ...tabStores,
   accountsCatalog: accountsCatalogStore,
+  biometric: biometricStore,
   password: passwordStore,
 }
 
 const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   accountsCatalog: accountsCatalogStore,
   app: appStore,
+  biometric: biometricStore,
   errors: errorsStore,
   password: passwordStore,
   settings: settingsStore,
