@@ -25,7 +25,7 @@ export const StakeUnstakeButtons: FC<{
   if (!canBond && !canUnbond) return null
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-4">
       <RoundButton
         ariaLabel={t("Stake")}
         enabled={canBond}

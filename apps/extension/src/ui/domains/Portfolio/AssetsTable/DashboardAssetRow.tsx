@@ -1,5 +1,5 @@
 import type { Balances } from "@talismn/balances"
-import { TrendingUpIcon } from "@talismn/icons"
+import { TrendingUpIcon, ZapFastIcon } from "@talismn/icons"
 import { PillButton } from "@ui/components/PillButton"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -121,9 +121,16 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
         </div>
       </button>
       {showStakeButtons ? (
-        <div className="absolute top-0 right-8 hidden h-16.5 items-center justify-center group-hover:flex">
-          <StakeUnstakeButtons balances={balances} isPortfolio />
-        </div>
+        <>
+          <div className="absolute top-0 right-8 hidden h-16.5 items-center justify-center group-hover:flex">
+            <StakeUnstakeButtons balances={balances} isPortfolio />
+          </div>
+          <div className="absolute -top-2 -right-5 size-10 overflow-hidden rounded-full bg-black p-1">
+            <div className="flex size-full items-center justify-center rounded-full bg-primary/25 text-primary text-xs">
+              <ZapFastIcon className="size-6" />
+            </div>
+          </div>
+        </>
       ) : canEarn ? (
         <>
           <div className="absolute top-0 right-8 hidden h-16.5 flex-col justify-center group-hover:flex">
