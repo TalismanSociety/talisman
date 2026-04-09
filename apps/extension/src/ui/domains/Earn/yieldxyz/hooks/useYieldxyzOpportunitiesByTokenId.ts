@@ -7,7 +7,6 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useBalances } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useYieldxyzProducts } from "@ui/state/yieldxyz"
-import { uniq } from "lodash-es"
 import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
@@ -15,14 +14,17 @@ import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 const MIN_REWARD_RATE = 0.01
 const ALLOW_NO_STATISTICS = true
 
-export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
-  {
-    tokenId: string
-    products: YieldDto[]
-    bestApr: number
-    balances: Balances
-  }[]
-> => {
+export type TokenOpportunity = {
+  tokenId: string
+  products: YieldDto[]
+  bestApr: number
+  balances: Balances
+}
+
+export const useYieldxyzOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & {
+  heldProducts: TokenOpportunity[]
+  discoverProducts: TokenOpportunity[]
+} => {
   const { selectedAccounts } = usePortfolioNavigation()
   const balances = useBalances()
   const products = useYieldxyzProducts()
@@ -32,15 +34,9 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
     return balances.find((b) => accountIds.has(normalizeAddress(b.address)))
   }, [balances, selectedAccounts])
 
-  // all token ids where the selected accounts have any balance
-  const availableTokenIds = useMemo(() => {
-    return uniq(accountBalances.each.map((b) => b.tokenId)).sort()
-  }, [accountBalances])
-
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
 
   const productsByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
-    // keep only products for which we have one the input tokens (or the native token if multiple input tokens)
     const oppsByTokenId =
       products.data
         ?.filter(
@@ -69,8 +65,7 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
                   )
                 )
 
-          // ensure we have balance for it
-          if (inputTokenId && availableTokenIds.includes(inputTokenId)) {
+          if (inputTokenId) {
             if (!acc[inputTokenId]) acc[inputTokenId] = []
             acc[inputTokenId].push(product)
           }
@@ -88,27 +83,43 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
       },
       {} as Record<TokenId, YieldDto[]>
     )
-  }, [products.data, getYieldxyzTokenId, availableTokenIds])
+  }, [products.data, getYieldxyzTokenId])
 
   const currency = useSelectedCurrency()
 
-  const data = useMemo(() => {
-    return Object.entries(productsByTokenId)
-      .map(([tokenId, products]) => ({
-        tokenId,
-        products,
-        bestApr: Math.max(...products.map((opp) => opp.rewardRate.total * 100)),
-        balances: accountBalances.find({ tokenId }),
-      }))
-      .sort((a, b) => {
-        const balance1 = a.balances.sum.fiat(currency).transferable
-        const balance2 = b.balances.sum.fiat(currency).transferable
-        return (balance2 || 0) - (balance1 || 0)
-      })
-  }, [productsByTokenId, accountBalances, currency])
+  const allProducts = useMemo(() => {
+    return Object.entries(productsByTokenId).map(([tokenId, products]) => ({
+      tokenId,
+      products,
+      bestApr: Math.max(...products.map((opp) => opp.rewardRate.total * 100)),
+      balances: accountBalances.find({ tokenId }),
+    }))
+  }, [productsByTokenId, accountBalances])
+
+  const heldProducts = useMemo(
+    () =>
+      allProducts
+        .filter((p) => (p.balances.sum.fiat(currency).transferable ?? 0) > 0)
+        .sort((a, b) => {
+          const balance1 = a.balances.sum.fiat(currency).transferable ?? 0
+          const balance2 = b.balances.sum.fiat(currency).transferable ?? 0
+          return balance2 - balance1
+        }),
+    [allProducts, currency]
+  )
+
+  const discoverProducts = useMemo(
+    () =>
+      allProducts
+        .filter((p) => (p.balances.sum.fiat(currency).transferable ?? 0) === 0)
+        .sort((a, b) => b.bestApr - a.bestApr),
+    [allProducts, currency]
+  )
 
   return {
     ...products,
-    data,
+    data: allProducts,
+    heldProducts,
+    discoverProducts,
   }
 }

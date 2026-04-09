@@ -271,7 +271,7 @@ export const GenericAmountEdit: FC<{
   return (
     <div className="size-full">
       <div className="flex h-[50%] flex-col justify-end font-bold text-xl">
-        {isTokenEdit || !priceUsd ? (
+        {isTokenEdit || priceUsd == null ? (
           <TokenInput
             decimals={decimals}
             symbol={symbol}
@@ -290,7 +290,7 @@ export const GenericAmountEdit: FC<{
         )}
       </div>
       <div className={cn("mt-4 flex max-w-full items-center justify-center gap-4")}>
-        {priceUsd && (
+        {priceUsd != null && (
           <>
             {!isTokenEdit ? (
               <TokenDisplay symbol={symbol} decimals={decimals} value={value} />

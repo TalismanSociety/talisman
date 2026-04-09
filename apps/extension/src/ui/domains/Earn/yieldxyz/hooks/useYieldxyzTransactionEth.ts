@@ -61,9 +61,9 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
   })
 
   const tx = useMemo(() => {
-    if (!props?.transaction) return null
+    if (!network || !props?.transaction) return null
     return deserializeYieldxyzEthTransaction(props.transaction, nonce ?? undefined)
-  }, [props?.transaction, nonce])
+  }, [network, props?.transaction, nonce])
 
   const result = useEthTransaction(tx ?? undefined, props?.networkId, props?.lockTransaction, true) // mark as replacement so we can force the nonce
 

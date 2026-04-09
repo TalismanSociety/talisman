@@ -1,3 +1,4 @@
+import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
 import type { Address } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -8,10 +9,12 @@ import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap }
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
+import { settingsStore } from "../app/store.settings"
 import { keyringStore } from "../keyring/store"
 import { balancesProvider } from "./balancesProvider"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
+import { balancesStore$ } from "./store.balances"
 
 const walletAddressesByTokenId$ = combineLatest({
   networks: chaindataProvider.networks$,
@@ -39,16 +42,33 @@ const walletAddressesByTokenId$ = combineLatest({
   distinctUntilChanged<Record<TokenId, Address[]>>(isEqual)
 )
 
-export const walletBalances$ = walletAddressesByTokenId$.pipe(
-  switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
-  firstThenDebounce(500),
-  tap({
-    subscribe: () => log.debug("[balances] starting main subscription"),
-    unsubscribe: () => {
-      log.debug("[balances] stopping main subscription")
-      // doing it on unsubscribe ensures we do not restart while subscriptions are active
-      chaindataProvider.syncDynamicTokens()
-    },
+export const walletBalances$ = settingsStore.observable.pipe(
+  map((settings) => DEBUG && settings.disableBalanceFetching),
+  distinctUntilChanged(),
+  switchMap((disabled) => {
+    if (disabled) {
+      log.debug("[balances] fetching disabled, serving cached balances")
+      return balancesStore$.pipe(
+        map((storage) => ({
+          status: "live" as const,
+          balances: storage.balances,
+          failedBalanceIds: [],
+        }))
+      )
+    }
+
+    return walletAddressesByTokenId$.pipe(
+      switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
+      firstThenDebounce(500),
+      tap({
+        subscribe: () => log.debug("[balances] starting main subscription"),
+        unsubscribe: () => {
+          log.debug("[balances] stopping main subscription")
+          // doing it on unsubscribe ensures we do not restart while subscriptions are active
+          chaindataProvider.syncDynamicTokens()
+        },
+      })
+    )
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(3000)

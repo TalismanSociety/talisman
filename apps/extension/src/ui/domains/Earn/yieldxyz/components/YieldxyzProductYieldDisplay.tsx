@@ -31,50 +31,54 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
     )
   }, [product, getYieldxyzToken])
 
+  const showTooltip = rewards.length > 1
+
   if (!text) return null
+
+  if (!showTooltip) {
+    return <div className="text-primary">{text}</div>
+  }
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-1.5 text-body">
+        <div className="flex items-center gap-1.5 text-primary">
           <InfoIcon className="inline-block size-6 align-sub" />
           <span>{text}</span>
         </div>
       </TooltipTrigger>
-      {!!rewards.length && (
-        <TooltipContent>
-          <div className="flex min-w-37.5 flex-col gap-2 text-body">
-            {rewards.map((reward, idx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: legacy
-              <div key={idx}>
-                <div className="flex items-center gap-2">
-                  {reward.talismanToken ? (
-                    <TokenLogo
-                      className="size-[1.2em] text-[1.2em]"
-                      tokenId={reward.talismanToken.id}
-                    />
-                  ) : (
-                    <AssetLogo className="size-[1.2em] text-[1.2em]" url={reward.token.logoURI} />
-                  )}
-                  {reward.talismanToken ? (
-                    <TokenDisplaySymbol tokenId={reward.talismanToken.id} />
-                  ) : (
-                    <div>{reward.token.symbol}</div>
-                  )}
-                  <div className="grow"></div>
-                  <div>
-                    {Intl.NumberFormat(undefined, {
-                      style: "percent",
-                      maximumFractionDigits: 1,
-                    }).format(reward.rate)}{" "}
-                    {reward.rateType}
-                  </div>
+      <TooltipContent>
+        <div className="flex min-w-37.5 flex-col gap-2 text-body">
+          {rewards.map((reward, idx) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: legacy
+            <div key={idx}>
+              <div className="flex items-center gap-2">
+                {reward.talismanToken ? (
+                  <TokenLogo
+                    className="size-[1.2em] text-[1.2em]"
+                    tokenId={reward.talismanToken.id}
+                  />
+                ) : (
+                  <AssetLogo className="size-[1.2em] text-[1.2em]" url={reward.token.logoURI} />
+                )}
+                {reward.talismanToken ? (
+                  <TokenDisplaySymbol tokenId={reward.talismanToken.id} />
+                ) : (
+                  <div>{reward.token.symbol}</div>
+                )}
+                <div className="grow"></div>
+                <div>
+                  {Intl.NumberFormat(undefined, {
+                    style: "percent",
+                    maximumFractionDigits: 1,
+                  }).format(reward.rate)}{" "}
+                  {reward.rateType}
                 </div>
               </div>
-            ))}
-          </div>
-        </TooltipContent>
-      )}
+            </div>
+          ))}
+        </div>
+      </TooltipContent>
     </Tooltip>
   )
 }

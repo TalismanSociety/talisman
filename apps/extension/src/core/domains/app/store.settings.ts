@@ -23,11 +23,18 @@ export interface SettingsStoreData {
   nftsViewMode: "list" | "tiles"
   nftsSortBy: "value" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
+  earnPositionsSortBy: "total" | "name"
+  earnPositionsGroupBy: "token" | "network" | "none"
+  earnDiscoverSortBy: "yield" | "name" | "assets"
+  earnDiscoverTypeFilter: string | null
+  earnDiscoverProviderFilter: string | null
   developerMode: boolean
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
   dtaoSlippage?: number
   swapSlippage: number
+  /** Dev-only: disables live balance fetching while preserving cached balances */
+  disableBalanceFetching: boolean
 }
 
 class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -45,11 +52,17 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   newFeaturesDismissed: "0",
   nftsViewMode: "tiles",
   tokensSortBy: "total",
+  earnPositionsSortBy: "total",
+  earnPositionsGroupBy: "none",
+  earnDiscoverSortBy: "yield",
+  earnDiscoverTypeFilter: null,
+  earnDiscoverProviderFilter: null,
   nftsSortBy: "date",
   developerMode: false,
   polkadotVaultSignWithProof: true,
   ledgerTransportType: "hid",
   swapSlippage: 0.5,
+  disableBalanceFetching: false,
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)
@@ -60,5 +73,14 @@ if (DEBUG) {
 
   hostObj.resetSettings = () => {
     settingsStore.mutate(() => DEFAULT_SETTINGS)
+  }
+
+  hostObj.toggleBalanceFetching = () => {
+    settingsStore.mutate((prev) => {
+      const next = !prev.disableBalanceFetching
+      // biome-ignore lint/suspicious/noConsole: dev helper
+      console.log(`[balances] fetching ${next ? "DISABLED" : "ENABLED"}`)
+      return { ...prev, disableBalanceFetching: next }
+    })
   }
 }

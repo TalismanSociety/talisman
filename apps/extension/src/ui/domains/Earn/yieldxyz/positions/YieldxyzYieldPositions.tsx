@@ -1,7 +1,9 @@
+import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
+import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import { ChevronLeftIcon, MoreHorizontalIcon, ZapPlusIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import {
   ContextMenu,
@@ -10,6 +12,7 @@ import {
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
 import { IconButton } from "@ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -20,11 +23,12 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useNetworkById } from "@ui/state/chaindata"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { useYieldNetworkIdToTalismanNetworkIdMap, useYieldxyzProduct } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
-import { type FC, useCallback, useEffect, useMemo } from "react"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
@@ -46,6 +50,7 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
 }) => {
   const { data: product } = useYieldxyzProduct(yieldId)
   const { status, data: positions } = useYieldxyzYieldPositions(yieldId, address)
+  const contractAddress = useYieldxyzContractAddress(yieldId, product)
 
   useEffect(() => {
     log.debug("[earn] YieldxyzYieldPositions", { positions })
@@ -62,8 +67,13 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
         positions={positions}
       />
       {positions?.map((position, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
-        <Position key={index} position={position} isLoading={status === "loading"} />
+        <Position
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
+          key={index}
+          position={position}
+          isLoading={status === "loading"}
+          contractAddress={contractAddress}
+        />
       ))}
     </div>
   )
@@ -85,16 +95,18 @@ const NavHeader: FC<{
   return (
     <div className="flex h-28 w-full items-center gap-8 overflow-hidden">
       <div className="flex h-full grow items-center gap-4 overflow-hidden">
-        <IconButton onClick={() => navigate("/earn", true)}>
+        <IconButton onClick={() => navigate("/earn/positions", true)}>
           <ChevronLeftIcon />
         </IconButton>
         <YieldxyzProviderLogo providerId={product.providerId} className="size-[2.25rem]" />
 
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
           <div className="flex w-full items-center gap-8 overflow-hidden">
-            <div className="flex grow items-center overflow-hidden truncate text-body">
+            <div className="flex grow items-center gap-2 overflow-hidden truncate text-body">
               <div className="truncate">{product.metadata.name}</div>
-              <EarnTypeBadge className="shrink-0 text-xs">{product.mechanics?.type}</EarnTypeBadge>
+              {!!product.mechanics?.type && (
+                <EarnTypeBadge className="shrink-0">{product.mechanics.type}</EarnTypeBadge>
+              )}
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>
@@ -112,10 +124,11 @@ const NavHeader: FC<{
   )
 }
 
-const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> = ({
-  position,
-  isLoading,
-}) => {
+const Position: FC<{
+  position: YieldxyzPositionEnhanced
+  isLoading: boolean
+  contractAddress: string | null
+}> = ({ position, isLoading, contractAddress }) => {
   const { t } = useTranslation()
 
   const { supplied, rewards } = useMemo(() => {
@@ -137,7 +150,7 @@ const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> =
 
   return (
     <div className="flex w-full flex-col gap-6 overflow-hidden">
-      <PositionHeader position={position} />
+      <PositionHeader position={position} contractAddress={contractAddress} />
       <PositionBalancesGroup label={t("Supplied")} balances={supplied} isLoading={isLoading} />
       <PositionBalancesGroup label={t("Rewards")} balances={rewards} isLoading={isLoading} />
       <PositionActions position={position} />
@@ -200,7 +213,10 @@ const PositionBalancesGroupRow: FC<{ balance: BalanceDto; isLoading: boolean }> 
   )
 }
 
-const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+const PositionHeader: FC<{
+  position: YieldxyzPositionEnhanced
+  contractAddress: string | null
+}> = ({ position, contractAddress }) => {
   const toTalismanNetworkId = useYieldNetworkIdToTalismanNetworkIdMap()
 
   const networkId = useMemo(
@@ -221,13 +237,40 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
           <NetworkName networkId={networkId} className="truncate text-sm" />
         </div>
       </div>
-      <PositionContextMenuButton position={position} />
+      <AddStakeButton position={position} />
+      <PositionContextMenuButton position={position} contractAddress={contractAddress} />
     </div>
   )
 }
 
-const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+const AddStakeButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
   const { t } = useTranslation()
+  const { canEnter, onAddToPositionClick } = usePositionActions(position)
+
+  if (!canEnter) return null
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onAddToPositionClick}
+          className="flex size-9.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[1.25rem] text-primary hover:bg-primary/20"
+        >
+          <ZapPlusIcon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{t("Add to Position")}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const PositionContextMenuButton: FC<{
+  position: YieldxyzPositionEnhanced
+  contractAddress: string | null
+}> = ({ position, contractAddress }) => {
+  const { t } = useTranslation()
+  const network = useNetworkById(position.networkId)
   const {
     claimableBalances,
     withdrawableBalances,
@@ -239,6 +282,11 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
     onClaimClick,
     onWithdrawClick,
   } = usePositionActions(position)
+
+  const blockExplorerUrl = useMemo(() => {
+    if (!contractAddress || !network?.blockExplorerUrls.length) return null
+    return getBlockExplorerUrls(network, { type: "address", address: contractAddress })[0] ?? null
+  }, [network, contractAddress])
 
   return (
     <ContextMenu placement="bottom-end">
@@ -272,6 +320,13 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
             </div>
           </ContextMenuItem>
         ))}
+        {!!blockExplorerUrl && (
+          <ContextMenuItem
+            onClick={() => window.open(blockExplorerUrl, "_blank", "noopener,noreferrer")}
+          >
+            {t("View on Block Explorer")}
+          </ContextMenuItem>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   )
@@ -279,20 +334,15 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
 
 const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
   const { t } = useTranslation()
-  const {
-    canEnter,
-    canManage,
-    onAddToPositionClick,
-    claimableBalances,
-    onClaimClick,
-    withdrawableBalances,
-    onWithdrawClick,
-  } = usePositionActions(position)
+  const { canManage, claimableBalances, onClaimClick, withdrawableBalances, onWithdrawClick } =
+    usePositionActions(position)
 
   const isGridLayout = useMemo(
-    () => IS_POPUP && (withdrawableBalances.length || claimableBalances.length),
+    () => IS_POPUP && withdrawableBalances.length > 0 && claimableBalances.length > 0,
     [claimableBalances.length, withdrawableBalances.length]
   )
+
+  if (!withdrawableBalances.length && !claimableBalances.length) return null
 
   return (
     <div
@@ -301,13 +351,6 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         isGridLayout && "grid grid-cols-2 gap-8"
       )}
     >
-      <Button
-        className={cn(!isGridLayout && "w-43.75 text-base")}
-        disabled={!canEnter}
-        onClick={onAddToPositionClick}
-      >
-        {t("Add to Position")}
-      </Button>
       {withdrawableBalances.length > 0 && (
         <Button
           primary
@@ -406,4 +449,48 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
     onClaimClick,
     onWithdrawClick,
   }
+}
+
+type YieldWithState = YieldDto & {
+  state?: {
+    pricePerShareState?: {
+      shareToken?: { address?: string }
+    }
+  }
+}
+
+const getContractAddress = (yield_: YieldWithState | null | undefined): string | null =>
+  yield_?.state?.pricePerShareState?.shareToken?.address ?? null
+
+const useYieldxyzContractAddress = (
+  yieldId: string,
+  product: YieldDto | null | undefined
+): string | null => {
+  const [contractAddress, setContractAddress] = useState<string | null>(() =>
+    getContractAddress(product as YieldWithState)
+  )
+
+  useEffect(() => {
+    const fromProduct = getContractAddress(product as YieldWithState)
+    if (fromProduct) return setContractAddress(fromProduct)
+
+    const controller = new AbortController()
+    const fetchYield = async () => {
+      try {
+        const res = await fetch(`${YIELD_API_BASE_URL}/v1/yields/${encodeURIComponent(yieldId)}`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) throw new Error(`Failed to fetch yield: ${res.status}`)
+        const result = (await res.json()) as YieldWithState
+        setContractAddress(getContractAddress(result))
+      } catch (err) {
+        if (!controller.signal.aborted) log.error("[earn] Failed to fetch yield detail", err)
+      }
+    }
+    fetchYield()
+
+    return () => controller.abort()
+  }, [yieldId, product])
+
+  return contractAddress
 }

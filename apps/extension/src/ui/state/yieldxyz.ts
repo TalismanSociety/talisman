@@ -23,7 +23,7 @@ import {
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
 import { keyBy } from "lodash-es"
-import { combineLatest, map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, ReplaySubject, share } from "rxjs"
 
 import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
@@ -51,13 +51,18 @@ const [_useYieldNetworkIdFromTalismanNetworkId, _getYieldNetworkIdFromTalismanNe
   null
 )
 
+// Use ReplaySubject to retain cached values across navigations (matches DeFi pattern)
+const subjectRawYieldxyzProviders$ = new ReplaySubject<Loadable<YieldxyzProvider[]>>(1)
+
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
   const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
     subscriber.next(loadable)
   })
 
-  return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+  return () => {
+    unsubscribe()
+  }
+}).pipe(share({ connector: () => subjectRawYieldxyzProviders$, resetOnRefCountZero: false }))
 
 export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
   status: "loading",
@@ -77,13 +82,18 @@ const [useYieldxyzProvider, _yieldxyzProvider$] = bind(
   { status: "loading", data: null }
 )
 
+// Use ReplaySubject to retain cached values across navigations (matches DeFi pattern)
+const subjectRawYieldxyzProducts$ = new ReplaySubject<Loadable<YieldDto[]>>(1)
+
 const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
   const unsubscribe = api.yieldxyzProductsSubscribe((loadable: Loadable<YieldDto[]>) => {
     subscriber.next(loadable)
   })
 
-  return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+  return () => {
+    unsubscribe()
+  }
+}).pipe(share({ connector: () => subjectRawYieldxyzProducts$, resetOnRefCountZero: false }))
 
 export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
   combineLatest([
@@ -95,14 +105,11 @@ export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
       return {
         ...productsLoadable,
         data: productsLoadable.data?.filter((product) => {
-          // filter out non-EVM networks. this is only a safety net as all yieldxyz products for Talisman are EVM at this time.
-          // this filter should be removed as soon as we support signing for other platforms (see useYieldxyzTransactionDot / Sol)
-          // our wizards are platform agnostic but we did not have any working example to finalize the platform specific transaction hooks.
           const talismanNetworkId = yieldNetworkIdToTalismanNetworkIdMap[product.network]
           if (!talismanNetworkId) return false
           const network = networksMap[talismanNetworkId]
-          if (!network) return false
-          return network.platform === "ethereum"
+          // Only show products on platforms with working signing support
+          return !!network && (network.platform === "ethereum" || network.platform === "solana")
         }),
       }
     })
@@ -125,26 +132,34 @@ const [useYieldxyzProduct, _yieldxyzProduct$] = bind(
   { status: "loading", data: null }
 )
 
-// Add new observable for grouped yield balances using bind()
+// Use ReplaySubject to retain cached values across navigations (matches DeFi pattern)
+const subjectRawYieldxyzPositions$ = new ReplaySubject<Loadable<YieldxyzPosition[]>>(1)
+
 const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
   const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
     subscriber.next(loadable)
   })
 
-  return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+  return () => {
+    unsubscribe()
+  }
+}).pipe(share({ connector: () => subjectRawYieldxyzPositions$, resetOnRefCountZero: false }))
 
 const [useYieldxyzPositionsEnhanced, _yieldxyzPositionsEnhanced$] = bind(
   combineLatest([rawYieldxyzPositions$, rawYieldxyzProducts$]).pipe(
     map(([positionsLoadable, productsLoadable]) => {
-      const status =
-        positionsLoadable.status === "loading" || productsLoadable.status === "loading"
-          ? "loading"
-          : "success"
       const data =
         positionsLoadable.data && productsLoadable.data
           ? enhanceYieldxyzPositions(positionsLoadable.data, productsLoadable.data)
           : undefined
+
+      // Show cached data immediately — only report "loading" when no data is available
+      const status =
+        data && data.length > 0
+          ? "success"
+          : positionsLoadable.status === "loading" || productsLoadable.status === "loading"
+            ? "loading"
+            : "success"
 
       return { status, data } as Loadable<YieldxyzPositionEnhanced[]>
     })

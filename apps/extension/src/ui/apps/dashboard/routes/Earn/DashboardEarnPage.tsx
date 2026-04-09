@@ -2,6 +2,8 @@ import { Balances } from "@talismn/balances"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToolbar"
+import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -9,7 +11,7 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Outlet, useOutletContext } from "react-router-dom"
+import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 import { DashboardTopActions } from "../../DashboardTopActions"
 import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
 import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
@@ -30,31 +32,36 @@ const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutlet
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
+  const location = useLocation()
+
+  const isPositionsTab = location.pathname.startsWith("/earn/positions")
+  const isDiscoverTab = location.pathname.startsWith("/earn/discover")
 
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
   return (
     <div className="flex w-full min-w-112.5 flex-col gap-6 overflow-hidden text-left text-base text-body-secondary">
-      {/* Header with total balance - always show */}
       <EarnPageHeader />
 
-      {/* Tabs and Search in same row */}
       <div className="mb-6 flex w-full items-center justify-between overflow-hidden">
         <div className="shrink-0">
           <EarnTabsDashboard />
         </div>
-        <div className="w-70">
-          <SearchInput
-            containerClassName="h-[2.25rem] w-full rounded-sm border px-4! bg-field! ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
-            className="text-sm"
-            placeholder={t("Search")}
-            onChange={setSearch}
-            initialValue={search}
-          />
+        <div className="flex items-center gap-4">
+          <div className="w-70">
+            <SearchInput
+              containerClassName="h-[2.25rem] w-full rounded-sm border px-4! bg-field! ring-transparent focus-within:border-grey-700 border-field [&>svg]:size-8"
+              className="text-sm"
+              placeholder={t("Search")}
+              onChange={setSearch}
+              initialValue={search}
+            />
+          </div>
+          {isPositionsTab && <EarnPositionsToolbar />}
+          {isDiscoverTab && <EarnDiscoverToolbar />}
         </div>
       </div>
 
-      {/* Tab Content */}
       <div>
         <Outlet context={outletContext} />
       </div>
@@ -110,7 +117,11 @@ const EarnPageHeader = () => {
           {!eligibleTotal && status === "loading" ? (
             <div className="animate-pulse rounded bg-grey-700 text-grey-700">$0.00</div>
           ) : (
-            <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
+            <Fiat
+              amount={eligibleTotal}
+              isBalance
+              className={cn(status === "loading" && "animate-pulse")}
+            />
           )}
         </div>
         <DashboardTopActions analyticsPage={ANALYTICS_PAGE} />

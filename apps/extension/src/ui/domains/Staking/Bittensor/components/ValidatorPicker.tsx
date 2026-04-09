@@ -189,7 +189,7 @@ const ValidatorRow: FC<{
                 <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
               )}
               {option.isFeatured && (
-                <EarnTypeBadge className="mx-0 inline-flex h-[18px] shrink-0 items-center gap-[4px] rounded-[12px] border-none bg-primary/10 px-[8px] font-light text-[10px] text-primary normal-case">
+                <EarnTypeBadge className="inline-flex h-[18px] shrink-0 items-center gap-[4px] rounded-[12px] border-none bg-primary/10 px-[8px] font-light text-[10px] text-primary normal-case">
                   <TalismanHandIcon className="size-[12px]" />
                   {t("Featured")}
                 </EarnTypeBadge>

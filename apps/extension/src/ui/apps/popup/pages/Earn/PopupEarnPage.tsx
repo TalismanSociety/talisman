@@ -5,6 +5,8 @@ import type { AnalyticsPage } from "@ui/api/analytics"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToolbar"
+import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -36,7 +38,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Earn Home",
 }
 
-type DashboardEarnOutletContext = {
+type PopupEarnOutletContext = {
   search: string
 }
 
@@ -54,7 +56,7 @@ const getTabFromPath = (pathname: string): EarnTabsKey => {
   )
 }
 
-const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutletContext>()
+const usePopupEarnOutletContext = () => useOutletContext<PopupEarnOutletContext>()
 
 const PageHeader = () => {
   const { t } = useTranslation()
@@ -88,7 +90,11 @@ const PopupEarnHeader = () => {
           {!eligibleTotal && status === "loading" ? (
             <div className="animate-pulse rounded bg-grey-700 text-grey-700">$0.00</div>
           ) : (
-            <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
+            <Fiat
+              amount={eligibleTotal}
+              isBalance
+              className={cn(status === "loading" && "animate-pulse")}
+            />
           )}
         </div>
         <TopActions analyticsPage={ANALYTICS_PAGE} />
@@ -106,6 +112,9 @@ export const PopupEarnPage: FC = () => {
     [location.pathname]
   )
   const [search, setSearch] = useState("")
+
+  const isPositionsTab = selectedTab === "assets"
+  const isDiscoverTab = selectedTab === "discover"
 
   const handleTabChange = useCallback(
     async (tab: EarnTabsKey) => {
@@ -129,32 +138,32 @@ export const PopupEarnPage: FC = () => {
     [navigate, selectedTab]
   )
 
-  const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
+  const outletContext = useMemo<PopupEarnOutletContext>(() => ({ search }), [search])
+
   return (
     <>
       <Content>
         <div className="flex w-full flex-col gap-6 text-left text-base text-body-secondary">
-          {/* Page Header */}
           <PageHeader />
-
-          {/* Header with total balance */}
           <PopupEarnHeader />
 
-          {/* Tabs and Search */}
           <div className="flex flex-col gap-4">
             <EarnTabs onTabChange={handleTabChange} value={selectedTab} />
-            <div className="w-full">
-              <SearchInput
-                containerClassName="bg-field! ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs px-4!"
-                className="text-xs"
-                placeholder={t("Search DeFi positions")}
-                onChange={setSearch}
-                initialValue={search}
-              />
+            <div className="flex w-full items-center gap-2">
+              <div className="grow">
+                <SearchInput
+                  containerClassName="bg-field! ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs px-4!"
+                  className="text-xs"
+                  placeholder={t("Search DeFi positions")}
+                  onChange={setSearch}
+                  initialValue={search}
+                />
+              </div>
+              {isPositionsTab && <EarnPositionsToolbar buttonClassName="size-16" />}
+              {isDiscoverTab && <EarnDiscoverToolbar buttonClassName="size-16" />}
             </div>
           </div>
 
-          {/* Tab Content */}
           <div>
             <Outlet context={outletContext} />
           </div>
@@ -184,7 +193,7 @@ const Content: FC<PropsWithChildren> = ({ children }) => {
 }
 
 export const PopupEarnPositionsRoute: FC = () => {
-  const { search } = useDashboardEarnOutletContext()
+  const { search } = usePopupEarnOutletContext()
 
   useAnalyticsPageView({
     container: "Popup",
@@ -197,7 +206,7 @@ export const PopupEarnPositionsRoute: FC = () => {
 }
 
 export const PopupEarnDiscoverRoute: FC = () => {
-  const { search } = useDashboardEarnOutletContext()
+  const { search } = usePopupEarnOutletContext()
 
   useAnalyticsPageView({
     container: "Popup",

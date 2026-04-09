@@ -1,4 +1,4 @@
-import { ASSET_DISCOVERY_API_URL } from "@common/constants"
+import { ASSET_DISCOVERY_API_URL, DEBUG } from "@common/constants"
 import { log } from "@common/log"
 import { isAddressEqual } from "@talismn/crypto"
 import { isAccountNotContact } from "@talismn/keyring"
@@ -39,9 +39,12 @@ const accountAddresses$ = keyringStore.accounts$.pipe(
 )
 
 const filterDefiPositions = (addresses: string[], positions: DefiPosition[]) => {
-  // keep only positions that match any of the provided addresses
-  return positions.filter((position) =>
-    addresses.some((addr) => isAddressEqual(addr, position.address))
+  return positions.filter(
+    (position) =>
+      // keep only positions that match any of the provided addresses
+      addresses.some((addr) => isAddressEqual(addr, position.address)) &&
+      // yield.xyz positions are fetched separately via the yield.xyz API
+      position.defiName !== "Yield.xyz"
   )
 }
 
@@ -52,7 +55,16 @@ const fetchDefiPositions = async (addresses: string[]) => {
   const response = await fetch(url, { method: "POST", body: JSON.stringify({ addresses }) })
   if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)
 
-  return (await response.json()) as DefiPosition[]
+  const positions = (await response.json()) as DefiPosition[]
+
+  for (const p of positions) {
+    if (DEBUG && p.type === "unknown" && p._dbg_type) {
+      log.warn(`unknown defi position type: ${p._dbg_type} (${p.defiName} / ${p.name})`)
+    }
+  }
+
+  // yield.xyz positions are fetched separately via the yield.xyz API
+  return positions.filter((p) => p.defiName !== "Yield.xyz")
 }
 
 const getDefiPositions$ = (addresses: string[], storage: DefiPosition[]) =>

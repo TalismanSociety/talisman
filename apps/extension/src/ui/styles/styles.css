@@ -283,10 +283,10 @@
   /*****************************************************************************
    *                                Balances
    ****************************************************************************/
-  @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent;
+  @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent!;
 
   &.balance-reveal {
-    @apply overflow-visible rounded-none text-inherit;
+    @apply overflow-visible rounded-none text-inherit!;
   }
 
   &::after {
@@ -302,7 +302,7 @@
 }
 @utility balance-reveal {
   &.balance-revealable {
-    @apply overflow-visible rounded-none text-inherit;
+    @apply overflow-visible rounded-none text-inherit!;
   }
 
   &.balance-revealable::after {

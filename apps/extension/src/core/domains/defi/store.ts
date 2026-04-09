@@ -29,8 +29,12 @@ walletReady.then(async () => {
 // persist to db when store is updated
 subjectDefiPositionsStore$
   .pipe(skip(1), debounceTime(2_000), distinctUntilChanged(isEqual))
-  .subscribe((positions) => {
-    blobStore.set({ positions })
+  .subscribe(async (positions) => {
+    try {
+      await blobStore.set({ positions })
+    } catch (error) {
+      log.error("Error saving defi positions:", error)
+    }
   })
 
 const getPositionId = (position: DefiPosition) =>

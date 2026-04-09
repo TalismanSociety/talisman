@@ -4,6 +4,7 @@ import {
   evmNativeTokenId,
   solNativeTokenId,
   solSplTokenId,
+  subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isHexString } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -25,7 +26,10 @@ export const PositionItemAssetLogo: FC<{
       return tokensById[solSplTokenId(networkId, item.contract_address)]
     } else {
       return (
-        tokensById[evmNativeTokenId(networkId)] ?? tokensById[solNativeTokenId(networkId)] ?? null
+        tokensById[evmNativeTokenId(networkId)] ??
+        tokensById[solNativeTokenId(networkId)] ??
+        tokensById[subNativeTokenId(networkId)] ??
+        null
       )
     }
   }, [networkId, item, tokensById])

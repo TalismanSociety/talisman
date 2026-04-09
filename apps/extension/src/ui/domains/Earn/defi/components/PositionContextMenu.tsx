@@ -38,12 +38,16 @@ export const PositionContextMenu: FC<{ position: DefiPosition; className?: strin
       </ContextMenuTrigger>
       <ContextMenuContent className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg">
         {!!position.defiUrl && (
-          <ContextMenuItem onClick={() => window.open(position.defiUrl!, "_blank")}>
-            {t("Browse {{defiName}}", position)}
+          <ContextMenuItem
+            onClick={() => window.open(position.defiUrl!, "_blank", "noopener,noreferrer")}
+          >
+            {t("Browse {{defiName}}", { defiName: position.defiName })}
           </ContextMenuItem>
         )}
         {!!blockExplorerUrl && (
-          <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
+          <ContextMenuItem
+            onClick={() => window.open(blockExplorerUrl, "_blank", "noopener,noreferrer")}
+          >
             {t("View on Block Explorer")}
           </ContextMenuItem>
         )}

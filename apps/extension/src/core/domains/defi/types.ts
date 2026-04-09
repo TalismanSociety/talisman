@@ -8,6 +8,8 @@ export type DefiPositionType =
   | "lp"
   | "staking"
   | "stream"
+  | "yield"
+  | "farming"
   | "unknown"
 
 // copy of UserPositionBalanceLockType
@@ -51,6 +53,8 @@ export type DefiPosition = {
   rewardsUsdChange1d: number
 
   breakdown: DefiPositionItem[]
+
+  _dbg_type?: string
 }
 
 export type DefiPositionsResponse = Loadable<DefiPosition[]>

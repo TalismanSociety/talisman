@@ -14,6 +14,9 @@ export const useYieldxyzOpportunitiesForTokenId = (tokenId: TokenId) => {
     return (
       allProducts
         ?.filter((product) => {
+          // hide products that cannot be entered
+          if (!product.status.enter) return false
+
           // here we consider a product can only have one input token id.
           // if technically it has multiple, then pick the native token from the list (we ensure at the store level that if multiple input tokens, one is a native token)
           const inputTokenIds = product.inputTokens

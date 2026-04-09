@@ -22,7 +22,16 @@ export const YieldxyzProviderLogo: FC<{
           <div className="flex max-w-100 flex-col gap-2 p-2 text-body-secondary text-sm">
             <div className="text-body">{provider.name}</div>
             {!!provider.description && <p>{provider.description}</p>}
-            {typeof provider.tvlUsd === "number" && <div>TVL: {provider.tvlUsd}</div>}
+            {typeof provider.tvlUsd === "number" && (
+              <div>
+                TVL:{" "}
+                {Intl.NumberFormat(undefined, {
+                  style: "currency",
+                  currency: "USD",
+                  notation: "compact",
+                }).format(provider.tvlUsd)}
+              </div>
+            )}
           </div>
         </TooltipContent>
       )}
@@ -33,7 +42,6 @@ export const YieldxyzProviderLogo: FC<{
 export const YieldxyzProviderDisplay: FC<{
   providerId: string | null | undefined
   className?: string
-  logoClassName?: string
 }> = ({ providerId, className }) => {
   const { data: provider } = useYieldxyzProvider(providerId)
 
@@ -50,7 +58,16 @@ export const YieldxyzProviderDisplay: FC<{
           <div className="flex max-w-100 flex-col gap-2 p-2 text-body-secondary text-sm">
             <div className="text-body">{provider.name}</div>
             {!!provider.description && <p>{provider.description}</p>}
-            {typeof provider.tvlUsd === "number" && <div>TVL: {provider.tvlUsd}</div>}
+            {typeof provider.tvlUsd === "number" && (
+              <div>
+                TVL:{" "}
+                {Intl.NumberFormat(undefined, {
+                  style: "currency",
+                  currency: "USD",
+                  notation: "compact",
+                }).format(provider.tvlUsd)}
+              </div>
+            )}
             {!!provider.website && <div className="text-body-secondary">{provider.website}</div>}
           </div>
         </TooltipContent>

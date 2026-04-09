@@ -15,10 +15,13 @@ export const AccountDisplay: FC<{
   iconClassName?: string
   textClassName?: string
 }> = ({ address, ss58Format, className, iconClassName, textClassName }) => {
-  const formattedAddress = useMemo(
-    () => encodeAnyAddress(address, { ss58Format }),
-    [address, ss58Format]
-  )
+  const formattedAddress = useMemo(() => {
+    try {
+      return encodeAnyAddress(address, { ss58Format })
+    } catch {
+      return address
+    }
+  }, [address, ss58Format])
 
   const account = useAccountByAddress(address)
 

@@ -27,9 +27,13 @@ export const YieldxyzTokensAndFiat: FC<{
   const tokenId = useMemo(() => getYieldxyzTokenId(token), [getYieldxyzTokenId, token])
 
   const priceUsd = useMemo(() => {
-    if (!amountUsd || !Number(amountUsd) || !BigInt(amountRaw)) return undefined
-    const amount = Number(amountRaw) / 10 ** token.decimals
-    return Number(amountUsd) / amount
+    try {
+      if (!amountUsd || !Number(amountUsd) || !BigInt(amountRaw)) return undefined
+      const amount = Number(amountRaw) / 10 ** token.decimals
+      return Number(amountUsd) / amount
+    } catch {
+      return undefined
+    }
   }, [token, amountRaw, amountUsd])
 
   if (tokenId) return <TokensAndFiat tokenId={tokenId} planck={amountRaw} {...props} />

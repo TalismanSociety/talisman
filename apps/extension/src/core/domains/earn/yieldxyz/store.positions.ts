@@ -28,7 +28,7 @@ const normalizeYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosition
     items
       ?.map((p) => ({
         ...p,
-        balances: p.balances.sort((a, b) => {
+        balances: [...p.balances].sort((a, b) => {
           const getSortKey = (balance: BalanceDto) =>
             [
               balance.address,

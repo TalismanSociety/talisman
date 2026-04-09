@@ -2,7 +2,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
-import { PortfolioToolbarDeFi } from "@ui/domains/Portfolio/PortfolioToolbarDeFi"
+import { PortfolioDefiContent } from "@ui/domains/Portfolio/PortfolioDefiContent"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -10,8 +10,6 @@ import { Route, Routes } from "react-router-dom"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
-import { PortfolioDefiPosition } from "./PortfolioDefiPosition"
-import { PortfolioDefiPositions } from "./PortfolioDefiPositions"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
 import { PortfolioLayout } from "./Shared/PortfolioLayout"
@@ -26,8 +24,7 @@ export const PortfolioRoutes = () => (
           <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
           <Route path="tokens" element={<PortfolioAssets />} />
           <Route path="nfts" element={<PortfolioNfts />} />
-          <Route path="defi" element={<PortfolioDefiPositions />} />
-          <Route path="defi/:positionId" element={<PortfolioDefiPosition />} />
+          <Route path="defi" element={<PortfolioDefiContent />} />
           <Route path="*" element={<NavigateWithQuery url="tokens" />} />
         </Routes>
       </PortfolioLayout>
@@ -41,7 +38,6 @@ const PortfolioToolbar = () => {
   return (
     <Routes>
       <Route path="tokens" element={<PortfolioToolbarTokens />} />
-      <Route path="defi" element={<PortfolioToolbarDeFi />} />
       <Route path="nfts" element={!!showNfts && <PortfolioToolbarNfts />} />
     </Routes>
   )
