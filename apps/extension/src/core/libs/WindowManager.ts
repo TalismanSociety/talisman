@@ -130,23 +130,28 @@ class WindowManager {
     }
 
     let popup: chrome.windows.Window
+    let usedFallback = false
     try {
       popup = await chrome.windows.create(popupCreateArgs)
     } catch (err) {
       log.error("Failed to open popup", err)
 
-      // retry with default size, as an invalid size could be the source of the error
+      // retry with default size and without position constraints,
+      // as invalid size or out-of-bounds position could be the source of the error
+      const { top: _, left: __, ...fallbackArgs } = popupCreateArgs
       popup = await chrome.windows.create({
-        ...popupCreateArgs,
+        ...fallbackArgs,
         width: WINDOW_OPTS.width,
         height: WINDOW_OPTS.height,
       })
+      usedFallback = true
     }
 
     if (typeof popup?.id !== "undefined") {
       this.#windows.push(popup.id || 0)
       // firefox compatibility (cannot be set at creation)
-      if (IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
+      // skip repositioning if fallback was used, as original position was invalid
+      if (!usedFallback && IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
         await chrome.windows.update(popup.id, { left, top })
       }
     }
