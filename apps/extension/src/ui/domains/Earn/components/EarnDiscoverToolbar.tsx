@@ -147,7 +147,7 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
 
   const handleProtocolChange = useCallback(
     (item: ProtocolOption | null) => {
-      setProviderFilter(item?.id || null)
+      setProviderFilter(item?.id ? item.id : null)
       protocolModal.close()
     },
     [setProviderFilter, protocolModal.close]

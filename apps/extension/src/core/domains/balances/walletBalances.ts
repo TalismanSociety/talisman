@@ -1,3 +1,4 @@
+import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
 import type { Address } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -42,7 +43,7 @@ const walletAddressesByTokenId$ = combineLatest({
 )
 
 export const walletBalances$ = settingsStore.observable.pipe(
-  map((settings) => settings.disableBalanceFetching),
+  map((settings) => DEBUG && settings.disableBalanceFetching),
   distinctUntilChanged(),
   switchMap((disabled) => {
     if (disabled) {

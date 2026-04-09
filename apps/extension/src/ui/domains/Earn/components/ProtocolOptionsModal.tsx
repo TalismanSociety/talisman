@@ -72,10 +72,10 @@ const ProtocolOptionsModalContent: FC<{
 }> = ({ options, selected, onChange, onClose }) => {
   const { t } = useTranslation()
 
-  const [allOptions] = useState<ProtocolOption[]>(() => [
-    { id: "", name: t("All Protocols"), logoURI: "" },
-    ...options,
-  ])
+  const allOptions = useMemo<ProtocolOption[]>(
+    () => [{ id: "", name: t("All Protocols"), logoURI: "" }, ...options],
+    [options, t]
+  )
 
   const handleChange = useCallback(
     (option: ProtocolOption) => {

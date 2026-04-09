@@ -42,7 +42,7 @@ export const YieldxyzExitStepConfirm = () => {
     >
       <WizardModalDialog
         className="size-full border-none"
-        title={t("Enter Position")}
+        title={t("Exit Position")}
         onBackClick={() => goTo("amount")}
         onCloseClick={close}
       >

@@ -345,7 +345,10 @@ export const EarnPositionsList: FC<{
           totalUsd,
         }
       })
-      .filter(({ token, positions }) => !!token && !!positions.length)
+      .filter(
+        (entry): entry is { token: Token; positions: EarnPosition[]; totalUsd: number } =>
+          !!entry.token && !!entry.positions.length
+      )
       .sort((p1, p2) =>
         sortBy === "name"
           ? p1.token.symbol.localeCompare(p2.token.symbol)

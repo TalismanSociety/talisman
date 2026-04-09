@@ -1,4 +1,4 @@
-import { ASSET_DISCOVERY_API_URL } from "@common/constants"
+import { ASSET_DISCOVERY_API_URL, DEBUG } from "@common/constants"
 import { log } from "@common/log"
 import { isAddressEqual } from "@talismn/crypto"
 import { isAccountNotContact } from "@talismn/keyring"
@@ -58,9 +58,8 @@ const fetchDefiPositions = async (addresses: string[]) => {
   const positions = (await response.json()) as DefiPosition[]
 
   for (const p of positions) {
-    if (p.type === "unknown" && p._dbg_type) {
-      // biome-ignore lint/suspicious/noConsole: useful for auditing unmapped defi position types
-      console.warn(`unknown defi position type: ${p._dbg_type} (${p.defiName} / ${p.name})`)
+    if (DEBUG && p.type === "unknown" && p._dbg_type) {
+      log.warn(`unknown defi position type: ${p._dbg_type} (${p.defiName} / ${p.name})`)
     }
   }
 

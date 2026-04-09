@@ -321,7 +321,9 @@ const PositionContextMenuButton: FC<{
           </ContextMenuItem>
         ))}
         {!!blockExplorerUrl && (
-          <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
+          <ContextMenuItem
+            onClick={() => window.open(blockExplorerUrl, "_blank", "noopener,noreferrer")}
+          >
             {t("View on Block Explorer")}
           </ContextMenuItem>
         )}

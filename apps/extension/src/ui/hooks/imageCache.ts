@@ -79,6 +79,7 @@ const evictIfNeeded = async () => {
 
   for (const url of urls) cache.delete(url)
   await db.imageCache.bulkDelete(urls).catch(() => {})
+  emitChange()
 }
 
 /** @knipignore — used internally by useImageSwr; exported for tests */
@@ -86,6 +87,13 @@ export const ensureCached = (url: string) => {
   const entry = cache.get(url)
   if (!entry) fetchAndCache(url)
   else if (Date.now() - entry.fetchedAt > STALE_AFTER_MS) fetchAndCache(url)
+}
+
+/** Removes a URL from the in-memory + Dexie cache (e.g. when the cached image is broken) */
+export const invalidateCachedImage = (url: string) => {
+  cache.delete(url)
+  db.imageCache.delete(url).catch(() => {})
+  emitChange()
 }
 
 export const getCachedUrl = (url: string): string | null => cache.get(url)?.dataUrl ?? null

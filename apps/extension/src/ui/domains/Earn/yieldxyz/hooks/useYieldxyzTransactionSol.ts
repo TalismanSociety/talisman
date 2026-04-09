@@ -41,7 +41,12 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
   }, [network, props?.transaction])
 
   const { data: estimatedFee, ...feeQuery } = useQuery({
-    queryKey: ["yieldxyz-sol-fee", props?.transaction?.id, connection?.rpcEndpoint],
+    queryKey: [
+      "yieldxyz-sol-fee",
+      props?.transaction?.id,
+      props?.transaction?.unsignedTransaction,
+      connection?.rpcEndpoint,
+    ],
     queryFn: async () => {
       if (!solTx || !connection) return null
 
@@ -69,7 +74,7 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
     networkId: network.id,
     feeTokenId: network.nativeTokenId,
     transaction: solTx,
-    estimatedFee: estimatedFee ? String(estimatedFee) : null,
+    estimatedFee: estimatedFee != null ? String(estimatedFee) : null,
     isLoading: feeQuery.isLoading,
     error: feeQuery.error ? (feeQuery.error as Error).message : undefined,
     errorDetails: feeQuery.error ? (feeQuery.error as Error).message : undefined,

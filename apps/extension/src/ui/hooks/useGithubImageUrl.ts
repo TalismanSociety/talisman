@@ -1,7 +1,7 @@
 import { DEBUG } from "@common/constants"
 import { useCallback, useEffect, useState } from "react"
 
-import { useImageSwr } from "./imageCache"
+import { invalidateCachedImage, useImageSwr } from "./imageCache"
 
 const GITRAW_URL = "https://raw.githubusercontent.com/"
 const GITHACK_URL = "https://rawcdn.githack.com/"
@@ -44,10 +44,11 @@ export const useGithubImageUrl = (url: string | null | undefined, fallbackUrl: s
 
   const [src, setSrc] = useState(() => getFileUrl(url, fallbackUrl))
 
-  // if error, use another img provider
+  // if error, invalidate cache (if any) and use another img provider
   const onError = useCallback(() => {
+    if (cachedSrc && url) invalidateCachedImage(url)
     setSrc(getFileUrl(src, fallbackUrl, true))
-  }, [fallbackUrl, src])
+  }, [cachedSrc, url, fallbackUrl, src])
 
   // if props changes, reset
   useEffect(() => {

@@ -114,7 +114,8 @@ export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
           const talismanNetworkId = yieldNetworkIdToTalismanNetworkIdMap[product.network]
           if (!talismanNetworkId) return false
           const network = networksMap[talismanNetworkId]
-          return !!network
+          // Only show products on platforms with working signing support
+          return !!network && (network.platform === "ethereum" || network.platform === "solana")
         }),
       }
     })
