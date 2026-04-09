@@ -1,4 +1,5 @@
 import { db, type ImageCacheEntry } from "@core/db"
+import { isSafeImageUrl } from "@core/domains/ethereum/helpers"
 import { useEffect, useSyncExternalStore } from "react"
 
 const STALE_AFTER_MS = 7 * 24 * 60 * 60 * 1000
@@ -22,11 +23,14 @@ const emitChange = () => {
   for (const cb of listeners) cb()
 }
 
-// Hydrate: load all Dexie entries into memory on module load
+// Hydrate: load Dexie entries into memory, but never overwrite fresher in-memory data
 const hydrate = async () => {
   try {
     const entries = await db.imageCache.toArray()
-    for (const entry of entries) cache.set(entry.url, entry)
+    for (const entry of entries) {
+      const existing = cache.get(entry.url)
+      if (!existing || existing.fetchedAt < entry.fetchedAt) cache.set(entry.url, entry)
+    }
   } catch {
     // DB unavailable — empty cache is fine
   }
@@ -47,6 +51,7 @@ const blobToDataUrl = (blob: Blob): Promise<string> =>
   })
 
 const fetchAndCache = (url: string) => {
+  if (!isSafeImageUrl(url)) return
   if (pending.has(url)) return
   pending.add(url)
 

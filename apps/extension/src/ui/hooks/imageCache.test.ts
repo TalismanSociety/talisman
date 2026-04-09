@@ -1,6 +1,21 @@
 import { db } from "@core/db"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+vi.mock("@core/domains/ethereum/helpers", () => ({
+  isSafeImageUrl: (url?: string) => {
+    if (!url) return true
+    try {
+      const urlObj = new URL(url)
+      if (urlObj.protocol !== "https:") return false
+      if (urlObj.port) return false
+      if (!urlObj.pathname.match(/\.(jpeg|jpg|gif|png|svg|webp)$/)) return false
+      return true
+    } catch {
+      return false
+    }
+  },
+}))
+
 // Dynamic import so we get a fresh module per test via vi.resetModules()
 let imageCache: typeof import("./imageCache")
 
@@ -138,6 +153,65 @@ describe("imageCache", () => {
     })
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+  })
+
+  it("rejects http:// URLs", async () => {
+    const httpUrl = "http://example.com/logo.png"
+    imageCache.ensureCached(httpUrl)
+
+    await new Promise((r) => setTimeout(r, 100))
+
+    expect(imageCache.getCachedUrl(httpUrl)).toBeNull()
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled()
+  })
+
+  it("rejects URLs that fail isSafeImageUrl", async () => {
+    const unsafeUrl = "https://example.com/script.js"
+    imageCache.ensureCached(unsafeUrl)
+
+    await new Promise((r) => setTimeout(r, 100))
+
+    expect(imageCache.getCachedUrl(unsafeUrl)).toBeNull()
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled()
+  })
+
+  it("hydration does not overwrite fresher in-memory entries", async () => {
+    // First, cache a fresh entry via network fetch
+    imageCache.ensureCached(TEST_URL)
+    await vi.waitFor(() => {
+      expect(imageCache.getCachedUrl(TEST_URL)).not.toBeNull()
+    })
+
+    const freshDataUrl = imageCache.getCachedUrl(TEST_URL)
+
+    // Now put a stale entry into the DB (simulating an older DB row)
+    const staleEntry = { url: TEST_URL, dataUrl: "data:image/png;base64,STALE", fetchedAt: 1000 }
+    await db.imageCache.put(staleEntry)
+
+    // Re-import to trigger hydration
+    vi.resetModules()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        blob: () => Promise.resolve(makePngBlob()),
+      })
+    )
+
+    const freshModule = await import("./imageCache")
+
+    // Trigger a fresh fetch that completes before hydration finishes
+    freshModule.ensureCached(TEST_URL)
+    await vi.waitFor(() => {
+      expect(freshModule.getCachedUrl(TEST_URL)).not.toBeNull()
+    })
+
+    const afterHydration = freshModule.getCachedUrl(TEST_URL)
+    // The fresher network fetch should not be overwritten by stale DB data
+    expect(afterHydration).not.toBe("data:image/png;base64,STALE")
+    expect(afterHydration).toMatch(/^data:image\/png;base64,/)
+    // The fresh data URL from the network fetch should be preserved
+    expect(afterHydration).toBe(freshDataUrl)
   })
 
   it("persists to and hydrates from Dexie", async () => {
