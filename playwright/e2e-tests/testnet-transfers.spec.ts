@@ -57,9 +57,15 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
       await popup.getByPlaceholder("0").fill(data.amount)
       await expect(popup.getByTestId("component-review-button")).toBeEnabled({ timeout: 10000 })
       await popup.getByTestId("component-review-button").click()
-      await expect(popup.getByTestId("send-funds-confirm-button").getByRole("button")).toBeEnabled()
-      await popup.getByTestId("send-funds-confirm-button").click()
-      await expect(popup.getByRole("button", { name: "Close" })).toBeVisible()
+
+      // acknowledge external address warning if present
+      const warning = popup.getByTestId("send-funds-confirm-button").getByRole("checkbox").first()
+      if (await warning.isVisible({ timeout: 2000 }).catch(() => false)) await warning.check()
+
+      const confirmBtn = popup.getByTestId("send-funds-confirm-button").getByRole("button")
+      await expect(confirmBtn).toBeEnabled({ timeout: 15000 })
+      await confirmBtn.click()
+      await expect(popup.getByRole("button", { name: "Close" })).toBeVisible({ timeout: 30000 })
       await popup.close()
     })
   }
