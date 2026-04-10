@@ -49,12 +49,13 @@ const adjustPopupSize = async () => {
       throw new Error(`Invalid width (${width}) or height (${height})`)
 
     if (width !== window.outerWidth || height !== window.outerHeight) {
-      chrome.windows.update(chrome.windows.WINDOW_ID_CURRENT, {
+      await chrome.windows.update(chrome.windows.WINDOW_ID_CURRENT, {
         width,
         height,
       })
 
       // store delta to open next popups at the right size
+      // only persisted after successful resize to avoid storing invalid values
       await appStore.set({ popupSizeDelta: [deltaWidth, deltaHeight] })
     }
   } catch (cause) {
