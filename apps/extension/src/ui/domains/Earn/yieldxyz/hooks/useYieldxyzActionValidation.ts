@@ -17,15 +17,16 @@ export const useYieldxyzActionValidation = ({
     const result = { args: {} as ActionArgumentsDto | null, error: null as string | null }
 
     try {
+      const inputsRecord = inputs as Record<string, unknown>
       for (const field of schema.fields) {
-        if (field.required && !inputs[field.name]) {
+        if (field.required && !inputsRecord[field.name]) {
           result.error = `${field.name} is required`
           result.args = null
           break
         }
 
-        if (inputs[field.name]) {
-          const value = inputs[field.name as keyof ActionArgumentsDto]
+        if (inputsRecord[field.name]) {
+          const value = inputsRecord[field.name]
 
           if (field.minimum && Number(value) < Number(field.minimum)) {
             result.error = `Minimum ${field.name} is ${field.minimum}`

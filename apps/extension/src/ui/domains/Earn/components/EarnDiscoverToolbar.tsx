@@ -11,11 +11,10 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkOptionsModal } from "@ui/domains/Portfolio/NetworkOptionsModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useTokensMap } from "@ui/state/chaindata"
+import { useNetworks, useTokensMap } from "@ui/state/chaindata"
 import {
   type NetworkOption,
   setPortfolioNetworkFilter,
-  useAllNetworkOptions,
   usePortfolioNetworkFilter,
 } from "@ui/state/portfolio"
 import { useSetting } from "@ui/state/settings"
@@ -292,7 +291,7 @@ const EarnDiscoverNetworkFilterButton: FC<{
 }
 
 export const EarnDiscoverToolbar: FC<{ buttonClassName?: string }> = ({ buttonClassName }) => {
-  const allNetworkOptions = useAllNetworkOptions()
+  const allNetworks = useNetworks()
   const { data: allProducts } = useYieldxyzOpportunitiesByTokenId()
   const tokensMap = useTokensMap()
   const networkFilter = usePortfolioNetworkFilter() ?? null
@@ -306,8 +305,17 @@ export const EarnDiscoverToolbar: FC<{ buttonClassName?: string }> = ({ buttonCl
     const networkIds = new Set(
       (allProducts ?? []).map((p) => tokensMap[p.tokenId]?.networkId).filter(Boolean) as string[]
     )
-    return allNetworkOptions.filter((n) => n.networkIds.some((id) => networkIds.has(id)))
-  }, [allNetworkOptions, allProducts, tokensMap])
+    return allNetworks
+      .filter((n) => networkIds.has(n.id))
+      .map(
+        (n): NetworkOption => ({
+          id: n.id,
+          networkIds: [n.id],
+          name: n.name,
+        })
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [allNetworks, allProducts, tokensMap])
 
   return (
     <div className="flex shrink-0 gap-2">
