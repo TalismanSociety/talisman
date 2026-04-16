@@ -101,51 +101,29 @@ const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: str
     const mintPubKey = new PublicKey(mintAddress)
     const mintInfo = await connection.getAccountInfo(mintPubKey)
     if (!mintInfo?.data) throw new Error(ERROR_NO_MINT)
-    // Slice to MintLayout.span bytes to support Token-2022 mints which have extension data appended
-    const mint = MintLayout.decode(mintInfo.data.subarray(0, MintLayout.span))
+    const mint = MintLayout.decode(mintInfo.data)
 
-    let symbol: string | undefined
-    let name: string | undefined
-
-    // Try Metaplex metadata first
     const [metadataPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPubKey.toBuffer()],
       METAPLEX_PROGRAM_ID
     )
+
+    // 3. Fetch metadata account directly (traditional way)
     const metadataAccount = await connection.getAccountInfo(new PublicKey(metadataPDA))
+    if (!metadataAccount) throw new Error(ERROR_NO_METADATA)
 
-    if (metadataAccount) {
-      const metadata = deserializeMetadata({
-        publicKey: publicKey(metadataPDA),
-        executable: metadataAccount.executable,
-        owner: publicKey(metadataAccount.owner),
-        lamports: sol(metadataAccount.lamports),
-        data: metadataAccount.data,
-      })
-      symbol = metadata.symbol.trim()
-      name = metadata.name.trim()
-    } else {
-      // Fall back to Token-2022 on-chain metadata via jsonParsed encoding
-      const parsedMint = await connection.getParsedAccountInfo(mintPubKey)
-      const parsedData = parsedMint?.value?.data
-      if (parsedData && "parsed" in parsedData) {
-        const extensions = parsedData.parsed?.info?.extensions as
-          | Array<{ extension: string; state?: { symbol?: string; name?: string } }>
-          | undefined
-        const tokenMetadata = extensions?.find((e) => e.extension === "tokenMetadata")
-        if (tokenMetadata?.state) {
-          symbol = tokenMetadata.state.symbol?.trim()
-          name = tokenMetadata.state.name?.trim()
-        }
-      }
-    }
-
-    if (!symbol || !name) throw new Error(ERROR_NO_METADATA)
+    const metadata = deserializeMetadata({
+      publicKey: publicKey(metadataPDA),
+      executable: metadataAccount.executable,
+      owner: publicKey(metadataAccount.owner),
+      lamports: sol(metadataAccount.lamports),
+      data: metadataAccount.data,
+    })
 
     const parsed = TokenCacheSchema.safeParse({
       id: tokenId,
-      symbol,
-      name,
+      symbol: metadata.symbol.trim(),
+      name: metadata.name.trim(),
       decimals: mint.decimals,
       isValid: true,
     })
