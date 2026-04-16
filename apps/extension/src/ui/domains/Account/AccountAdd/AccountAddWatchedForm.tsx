@@ -46,11 +46,18 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         .test("is-valid-address", t("Invalid address"), (val, ctx) => {
           const { platform, address } = val
 
-          if (platform !== getAccountPlatformFromAddress(address))
+          try {
+            if (platform !== getAccountPlatformFromAddress(address))
+              return ctx.createError({
+                path: "address",
+                message: t("Invalid address"),
+              })
+          } catch {
             return ctx.createError({
               path: "address",
               message: t("Invalid address"),
             })
+          }
 
           return true
         })
@@ -220,6 +227,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
+            data-testid="account-add-watched-button"
           >
             {t("Add")}
           </Button>
