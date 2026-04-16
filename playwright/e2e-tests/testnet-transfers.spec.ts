@@ -1,11 +1,13 @@
-import { DOT_ACC_NAME, ETH_ACC_NAME } from "./constants"
 import { expect, test } from "./fixtures"
 import { testAssets } from "./transfers"
 
+const dotAccName = "DOT Transfer"
+const ethAccName = "ETH Transfer"
+
 test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, extensionId }) => {
   test.setTimeout(120_000)
-  await importAccount({ type: "substrate", name: DOT_ACC_NAME })
-  await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
+  await importAccount({ type: "substrate", name: dotAccName })
+  await importAccount({ type: "ethereum", name: ethAccName })
   await onboardedPage.goto(
     `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks`
   )
@@ -33,9 +35,9 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
   for (const data of testAssets) {
     await test.step(`Transferring ${data.assetName} on ${data.chain}`, async () => {
       if (data.chainType === "substrate") {
-        await onboardedPage.getByTestId("sidebar-account-list").getByText(DOT_ACC_NAME).click()
+        await onboardedPage.getByTestId("sidebar-account-list").getByText(dotAccName).click()
       } else {
-        await onboardedPage.getByTestId("sidebar-account-list").getByText(ETH_ACC_NAME).click()
+        await onboardedPage.getByTestId("sidebar-account-list").getByText(ethAccName).click()
       }
       const popup = await walletPopup({ locator: sendButton })
       // searches for the specific token by asset name, type and chain.
