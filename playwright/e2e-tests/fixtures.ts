@@ -9,7 +9,7 @@ type AccountType = "ethereum" | "substrate" | "solana"
 type WatchedAccountType = "ethereum" | "substrate" | "solana"
 type PrivateKeyAccountType = "ethereum" | "solana"
 
-export const randomName = (prefix: string) => {
+const randomName = (prefix: string) => {
   const suffix = xxhashAsHex(randomBytes(16)).slice("0x".length, "0x".length + 3)
   return `${prefix} (${suffix})`
 }
