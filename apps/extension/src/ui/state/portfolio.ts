@@ -27,7 +27,7 @@ type PortfolioGlobalData = {
 }
 
 // ⚠️ suspenses
-export const [useAllNetworkOptions, allNetworkOptions$] = bind(
+const [useAllNetworkOptions, _allNetworkOptions$] = bind(
   combineLatest([
     getNetworks$({ activeOnly: true, includeTestnets: true }),
     networkDisplayNamesMapById$,
@@ -60,6 +60,8 @@ export const [useAllNetworkOptions, allNetworkOptions$] = bind(
     })
   )
 )
+
+export { useAllNetworkOptions }
 
 // Currently selected network filter option
 // feels like this should be in the location state, not in an observable
