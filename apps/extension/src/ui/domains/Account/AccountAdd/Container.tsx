@@ -41,7 +41,7 @@ export const AccountCreateContainer = ({ className }: { className?: string }) =>
 
   return (
     <div className={cn("justify-left flex flex-col gap-8", className)}>
-      <div className="flex overflow-auto">
+      <div className="flex overflow-auto" data-testid="container-account-method">
         <MethodTypeTab
           icon={<PlusIcon />}
           title={t("New")}
