@@ -64,5 +64,5 @@ const fetchJsonFromGithubUrl = async <T>(
 }
 
 // export because of generate-init-data script
-export const fetchChaindata = (signal?: AbortSignal) =>
-  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, { schema: ChaindataFileSchema, signal })
+export const fetchChaindata = (signal?: AbortSignal, url?: string) =>
+  fetchJsonFromGithubUrl(url ?? CHAINDATA_CONSOLIDATED_URL, { schema: ChaindataFileSchema, signal })
