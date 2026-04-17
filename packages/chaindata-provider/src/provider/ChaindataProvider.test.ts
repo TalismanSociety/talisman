@@ -19,7 +19,7 @@ import { ChaindataProvider, type ChaindataStorage } from "./ChaindataProvider"
 let githubSubject: Subject<Chaindata>
 
 vi.mock("../state/githubChaindata", () => ({
-  get githubChaindata$() {
+  getGithubChaindata$() {
     return githubSubject
   },
 }))

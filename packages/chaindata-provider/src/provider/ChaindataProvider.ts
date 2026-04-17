@@ -56,6 +56,7 @@ export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
   dynamicTokens$?: ReplaySubject<Token[]>
+  chaindataSlimUrl?: string
 }
 
 export class ChaindataProvider implements IChaindataProvider {
@@ -67,6 +68,7 @@ export class ChaindataProvider implements IChaindataProvider {
     persistedStorage,
     customChaindata$,
     dynamicTokens$,
+    chaindataSlimUrl,
   }: ChaindataProviderOptions = {}) {
     tryToDeleteOldChaindataDb()
 
@@ -75,7 +77,7 @@ export class ChaindataProvider implements IChaindataProvider {
       ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
       : { ...DEFAULT_STORAGE, ...persistedStorage }
     this.#storage$ = replaySubjectFrom(mergedStorage)
-    const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, chaindataSlimUrl)
 
     this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
 

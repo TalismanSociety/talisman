@@ -3,13 +3,16 @@ import { firstValueFrom, map, Observable, type Subject, shareReplay } from "rxjs
 
 import log from "../log"
 import type { ChaindataStorage } from "../provider/ChaindataProvider"
-import { githubChaindata$ } from "./githubChaindata"
+import { getGithubChaindata$ } from "./githubChaindata"
 import initChaindata from "./initChaindata.json"
 import { type Chaindata, ChaindataFileSchema } from "./schema"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
 
-export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
+export const getDefaultChaindata$ = (
+  storage$: Subject<ChaindataStorage>,
+  chaindataUrl?: string
+) => {
   const storageValidated$ = storage$.pipe(
     map((data) => {
       const start = performance.now()
@@ -30,7 +33,7 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
   )
 
   return new Observable<Chaindata>((subscriber) => {
-    const githubToStorageSubscription = githubChaindata$.subscribe({
+    const githubToStorageSubscription = getGithubChaindata$(chaindataUrl).subscribe({
       error: async () => {
         const storageData = await firstValueFrom(storageValidated$)
 

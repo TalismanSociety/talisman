@@ -21,7 +21,7 @@ import type { Chaindata } from "./schema"
 let mockGithubChaindata$: Subject<Chaindata>
 
 vi.mock("./githubChaindata", () => ({
-  get githubChaindata$() {
+  getGithubChaindata$() {
     return mockGithubChaindata$
   },
 }))
