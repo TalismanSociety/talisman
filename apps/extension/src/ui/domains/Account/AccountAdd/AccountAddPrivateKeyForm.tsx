@@ -161,7 +161,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
   }, [fldPlatform.state.value, fldPrivateKey.state.value])
 
   return (
-    <div className="flex w-full flex-col gap-8">
+    <div className="flex w-full flex-col gap-8" data-testid="private-key-add-form">
       <HeaderBlock title={t("Import via Private Key")} />
 
       <form

@@ -1,11 +1,22 @@
+import { existsSync } from "node:fs"
+
 import { randomBytes } from "@noble/hashes/utils"
 import type { BrowserContext, Locator, Page } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 
-import * as constants from "./constants"
+type AccountType = "ethereum" | "substrate" | "solana"
+type WatchedAccountType = "ethereum" | "substrate" | "solana"
+type PrivateKeyAccountType = "ethereum" | "solana"
 
-type AccountType = "ethereum" | "substrate"
+const randomName = (prefix: string) => {
+  const suffix = xxhashAsHex(randomBytes(16)).slice("0x".length, "0x".length + 3)
+  return `${prefix} (${suffix})`
+}
+
+// Default values if nothing gets defined
+export const DEFAULT_PASSWORD = "talismanwallet"
+const DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
 export const test = base.extend<{
   context: BrowserContext
@@ -13,11 +24,23 @@ export const test = base.extend<{
   onboardedPage: Page
   importAccount: (opts: { type: AccountType; name?: string; mnemonic?: string }) => Promise<Page>
   addNewAccount: (opts: { type: AccountType; name?: string }) => Promise<Page>
+  addWatchedAccount: (opts: {
+    type: WatchedAccountType
+    address: string
+    name?: string
+  }) => Promise<Page>
+  importPrivateKey: (opts: {
+    type: PrivateKeyAccountType
+    privateKey: string
+    name?: string
+  }) => Promise<Page>
   walletPopup: (opts: { locator: Locator }) => Promise<Page>
 }>({
   // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require destructuring pattern
   context: async ({}, utilize) => {
-    const pathToExtension = "./apps/extension/dist/chrome-mv3"
+    const prodPath = "./apps/extension/dist/chrome-mv3"
+    const devPath = "./apps/extension/dist/chrome-mv3-dev"
+    const pathToExtension = existsSync(prodPath) ? prodPath : devPath
     const context = await chromium.launchPersistentContext("", {
       headless: false,
       args: [
@@ -60,16 +83,17 @@ export const test = base.extend<{
     // Password validation
     await page.getByPlaceholder("Enter password").fill("12345")
     await expect(page.getByText("Password must be at least 6 characters long")).toBeVisible()
-    await page.getByPlaceholder("Enter password").fill(constants.DEFAULT_PASSWORD)
+    await page.getByPlaceholder("Enter password").fill(DEFAULT_PASSWORD)
     await page.getByPlaceholder("Confirm password").fill("wrong-confirmation-password")
     await expect(page.getByText("Passwords must match")).toBeVisible()
     await expect(page.getByTestId("onboarding-password-confirm-button")).toBeDisabled()
-    await page.getByPlaceholder("Confirm password").fill(constants.DEFAULT_PASSWORD)
+    await page.getByPlaceholder("Confirm password").fill(DEFAULT_PASSWORD)
     await page.getByTestId("onboarding-password-confirm-button").click()
     // accepting privacy terms
     await page.getByTestId("onboarding-privacy-accept-button").click()
     // Enter Talisman
     await page.getByTestId("onboarding-enter-talisman-button").click()
+    await expect(page.getByTestId("section-get-started")).toBeVisible({ timeout: 5000 })
     await utilize(page)
   },
 
@@ -80,26 +104,53 @@ export const test = base.extend<{
       name,
       mnemonic,
     }: {
-      type: "ethereum" | "substrate"
+      type: "ethereum" | "substrate" | "solana"
       name?: string
       mnemonic?: string
     }) => {
-      const accName =
-        name || (type === "ethereum" ? constants.ETH_ACC_NAME : constants.DOT_ACC_NAME)
-      const seed =
-        mnemonic ||
-        (type === "ethereum"
-          ? process.env.E2E_TESTS_MNEMONIC || constants.ETH_TEST_MNEMONIC
-          : process.env.E2E_TESTS_MNEMONIC || constants.DOT_TEST_MNEMONIC)
-
+      const defaultNames: Record<AccountType, string> = {
+        ethereum: randomName("PW e2e - ETH"),
+        substrate: randomName("PW e2e - DOT"),
+        solana: randomName("PW e2e - SOL"),
+      }
+      const accName = name || defaultNames[type]
+      const seed = mnemonic || process.env.E2E_TESTS_MNEMONIC || DEFAULT_TEST_MNEMONIC
       await onboardedPage.goto(
         `chrome-extension://${extensionId}/dashboard.html#/accounts/add/mnemonic`
       )
       await onboardedPage.getByTestId(`account-platform-selector-${type}`).click()
-      await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
-      await onboardedPage.getByPlaceholder("Enter your 12 or 24 word recovery phrase").fill(seed)
-      await expect(onboardedPage.getByTestId("account-add-mnemonic-import-button")).toBeEnabled()
-      await onboardedPage.getByTestId("account-add-mnemonic-import-button").click()
+
+      const nameInput = onboardedPage.getByPlaceholder("Choose a name")
+      const mnemonicInput = onboardedPage.getByPlaceholder(
+        "Enter your 12 or 24 word recovery phrase"
+      )
+      const importButton = onboardedPage.getByTestId("account-add-mnemonic-import-button")
+
+      await nameInput.fill(accName)
+
+      const mnemonicError = onboardedPage.getByTestId("mnemonic-error-message")
+
+      // Try to submit a short seed phrase
+      await mnemonicInput.fill("test test test")
+      await expect(mnemonicError).toHaveText("Invalid recovery phrase")
+      await expect(importButton).toBeDisabled()
+
+      // Try to submit an invalid seed phrase
+      await mnemonicInput.fill("aaa bbb ccc ddd eee fff ggg hhh iii jjj kkk lll")
+      await expect(mnemonicError).toHaveText("Invalid recovery phrase")
+      await expect(importButton).toBeDisabled()
+
+      // Try to submit a very long seed phrase
+      await mnemonicInput.fill(
+        "test test test test test test test test test test test test test test test test test test test test test test test test test"
+      )
+      await expect(mnemonicError).toHaveText("Invalid recovery phrase")
+      await expect(importButton).toBeDisabled()
+
+      // Try to submit a valid seed phrase
+      await mnemonicInput.fill(seed)
+      await expect(importButton).toBeEnabled()
+      await importButton.click()
       await expect(onboardedPage.getByTestId("top-actions-buttons")).toBeVisible()
       expect(onboardedPage.url()).toContain("portfolio")
       return onboardedPage
@@ -111,19 +162,17 @@ export const test = base.extend<{
       type,
       name,
     }: {
-      type: "ethereum" | "substrate"
+      type: "ethereum" | "substrate" | "solana"
       name?: string
     }) => {
-      // randomize the name of the account if not provided
-      const suffixLength = 3
-      const randomBuffer = randomBytes(16)
-      const getRandomChars = xxhashAsHex(randomBuffer).slice(
-        "0x".length,
-        "0x".length + suffixLength
-      )
-      const accName = name || `${constants.NEW_ACC_NAME} (${getRandomChars})`
+      const accName = name || randomName("PW - E2E - Fresh")
 
-      const convertedType = type === "substrate" ? "polkadot" : "ethereum"
+      const platformMap: Record<AccountType, string> = {
+        substrate: "polkadot",
+        ethereum: "ethereum",
+        solana: "solana",
+      }
+      const convertedType = platformMap[type]
 
       await onboardedPage.goto(
         `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${convertedType}`
@@ -151,6 +200,68 @@ export const test = base.extend<{
       return onboardedPage
     }
     await utilize(addNewAccount)
+  },
+  addWatchedAccount: async ({ onboardedPage, extensionId }, utilize) => {
+    const addWatchedAccount = async ({
+      type,
+      address,
+      name,
+    }: {
+      type: WatchedAccountType
+      address: string
+      name?: string
+    }) => {
+      const accName = name || address
+
+      await onboardedPage.goto(`chrome-extension://${extensionId}/dashboard.html#/accounts/add/`)
+      await onboardedPage
+        .getByTestId("container-account-method")
+        .getByText("Add a Watched Account")
+        .click()
+      await onboardedPage.getByRole("button", { name: `Watch ${type} Account` }).click()
+      await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
+      await onboardedPage.getByPlaceholder("Enter wallet address").fill(address)
+
+      const addButton = onboardedPage.getByTestId("account-add-watched-button")
+      await expect(addButton).toBeEnabled()
+      await addButton.click()
+
+      await expect(onboardedPage.getByTestId("top-actions-buttons")).toBeVisible()
+      expect(onboardedPage.url()).toContain("portfolio")
+      return onboardedPage
+    }
+    await utilize(addWatchedAccount)
+  },
+  importPrivateKey: async ({ onboardedPage, extensionId }, utilize) => {
+    const importPrivateKey = async ({
+      type,
+      privateKey,
+      name,
+    }: {
+      type: PrivateKeyAccountType
+      privateKey: string
+      name?: string
+    }) => {
+      const accName = name || randomName("PW - PrivKey")
+
+      await onboardedPage.goto(`chrome-extension://${extensionId}/dashboard.html#/accounts/add/pk`)
+
+      await onboardedPage.getByText("Select account platform").click()
+      const platformLabel = type === "ethereum" ? "Ethereum" : "Solana"
+      await onboardedPage.getByTestId("private-key-add-form").getByText(platformLabel).click()
+
+      await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
+      await onboardedPage.getByPlaceholder("Enter your private key").fill(privateKey)
+
+      const saveButton = onboardedPage.getByRole("button", { name: "Save" })
+      await expect(saveButton).toBeEnabled()
+      await saveButton.click()
+
+      await expect(onboardedPage.getByTestId("top-actions-buttons")).toBeVisible()
+      expect(onboardedPage.url()).toContain("portfolio")
+      return onboardedPage
+    }
+    await utilize(importPrivateKey)
   },
   walletPopup: async ({ context }, utilize) => {
     const walletPopup = async ({ locator }: { locator: Locator }): Promise<Page> => {

@@ -49,7 +49,10 @@ export const GetStarted = () => {
   if (hasAccounts && isHidden) return null
 
   return (
-    <div className="@container relative flex w-full flex-col gap-8 rounded-sm bg-black-secondary p-8">
+    <div
+      className="@container relative flex w-full flex-col gap-8 rounded-sm bg-black-secondary p-8"
+      data-testid="section-get-started"
+    >
       {hasAccounts && (
         <IconButton
           className="absolute top-6 right-6 text-body-disabled enabled:focus-visible:text-body-secondary enabled:hover:text-body-secondary"
