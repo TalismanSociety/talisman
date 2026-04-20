@@ -333,17 +333,16 @@ jobs:
         if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
         run: exit 1
 
-  # When a PR is merged into dev, this job will create a PR to version bump the packages which have changesets
-  # When the PR is merged, this job will publish the new package versions to npm
+  # When a PR is created or updated, bump package versions and publish to npm
   release_changesets:
-    name: "Create a PR to bump package versions on dev, and publish the new versions to npm when the PR is merged"
+    name: "Bump package versions and publish to npm on PR"
+    needs: ensure_pr_has_changeset
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
+    if: github.event_name == 'pull_request'
     permissions:
       id-token: write
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -360,19 +359,9 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Create pull request
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          commit: "chore: bump package versions"
-          title: "chore: bump package versions"
-          createGithubReleases: false
-        env:
-          # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Bump package versions
+        run: pnpm changeset version
       - name: Build packages for npm publish
-        if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build:packages
       - name: Publish packages
-        if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm --filter './packages/*' publish --no-git-checks --access public
