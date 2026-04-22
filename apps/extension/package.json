@@ -75,7 +75,7 @@
     "@types/sinon-chrome": "2.2.16",
     "@wallet-standard/base": "^1.1.0",
     "@wallet-standard/features": "^1.1.0",
-    "@yieldxyz/sdk": "^0.0.4",
+    "@yieldxyz/sdk": "^0.0.6",
     "@zondax/ledger-substrate": "1.1.2",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",

@@ -58,3 +58,16 @@ class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 }
 
 export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)
+
+if (DEBUG) {
+  // biome-ignore lint/suspicious/noExplicitAny: dev helper
+  const hostObj = globalThis as any
+
+  hostObj.refreshRemoteConfig = async () => {
+    const config = await fetchRemoteConfig()
+    await remoteConfigStore.replace(config)
+    // biome-ignore lint/suspicious/noConsole: dev helper
+    console.log("[remoteConfig] refreshed", config)
+    return config
+  }
+}
