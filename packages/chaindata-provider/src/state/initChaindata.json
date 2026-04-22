@@ -82,7 +82,7 @@
         "https://bsc-dataseed2.binance.org",
         "https://bsc-dataseed3.binance.org",
         "https://bsc-dataseed4.binance.org",
-        "https://1rpc.io/bnb"
+        "https://bsc-rpc.publicnode.com"
       ],
       "contracts": {
         "Erc20Aggregator": "0x21741D68121db79Fd1e9eA34028D3B2e87056DBd",
@@ -226,17 +226,13 @@
       "platform": "polkadot",
       "chainName": "Bifrost Polkadot",
       "specName": "bifrost_polkadot",
-      "specVersion": 24000,
+      "specVersion": 24001,
       "account": "*25519",
       "chainspecQrUrl": "https://metadata.novasama.io/qr/bifrost_polkadot_specs.png",
       "latestMetadataQrUrl": "https://metadata.novasama.io/qr/bifrost_polkadot_metadata_latest.apng",
       "prefix": 0,
       "oldPrefix": 6,
-      "rpcs": [
-        "wss://bifrost-polkadot.ibp.network",
-        "wss://bifrost-polkadot.dotters.network",
-        "wss://eu.bifrost-polkadot-rpc.liebi.com/ws"
-      ],
+      "rpcs": ["wss://bifrost-polkadot.ibp.network", "wss://eu.bifrost-polkadot-rpc.liebi.com/ws"],
       "hasCheckMetadataHash": true,
       "topology": {
         "type": "parachain",
@@ -319,7 +315,7 @@
     },
     {
       "id": "kusama",
-      "isDefault": true,
+      "isDefault": false,
       "name": "Kusama",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/kusama.svg",
       "nativeTokenId": "kusama:substrate-native",
@@ -336,7 +332,7 @@
       "platform": "polkadot",
       "chainName": "Kusama",
       "specName": "kusama",
-      "specVersion": 2001000,
+      "specVersion": 2002000,
       "account": "*25519",
       "chainspecQrUrl": "https://metadata.parity.io/qr/kusama_specs.png",
       "latestMetadataQrUrl": "https://metadata.parity.io/qr/kusama_metadata_latest.apng",
@@ -372,7 +368,7 @@
       "platform": "polkadot",
       "chainName": "Kusama Asset Hub",
       "specName": "statemine",
-      "specVersion": 2001000,
+      "specVersion": 2002000,
       "account": "*25519",
       "chainspecQrUrl": "https://metadata.parity.io/qr/kusama-statemine_specs.png",
       "latestMetadataQrUrl": "https://metadata.parity.io/qr/kusama-statemine_metadata_latest.apng",
@@ -393,7 +389,7 @@
     },
     {
       "id": "polkadot",
-      "isDefault": true,
+      "isDefault": false,
       "name": "Polkadot",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/polkadot.svg",
       "nativeTokenId": "polkadot:substrate-native",
@@ -1868,12 +1864,12 @@
       "type": "substrate-dtao",
       "symbol": "Ѐ",
       "decimals": 9,
-      "name": "SN110 | Rich Kids of TAO Ѐ",
+      "name": "SN110 | Green Compute Ѐ",
       "coingeckoId": "rich-kids-of-tao",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/rich-kids-of-tao.webp",
       "isDefault": true,
       "netuid": 110,
-      "subnetName": "Rich Kids of TAO",
+      "subnetName": "Green Compute",
       "isTransferable": true
     },
     {
@@ -1988,12 +1984,12 @@
       "type": "substrate-dtao",
       "symbol": "ⲁ",
       "decimals": 9,
-      "name": "SN118 | HODL Exchange ⲁ",
+      "name": "SN118 | HODL ⲁ",
       "coingeckoId": "hodl-etf",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/hodl-etf.webp",
       "isDefault": true,
       "netuid": 118,
-      "subnetName": "HODL Exchange",
+      "subnetName": "HODL",
       "isTransferable": true
     },
     {
@@ -2374,14 +2370,14 @@
       "platform": "polkadot",
       "networkId": "bittensor",
       "type": "substrate-dtao",
-      "symbol": "ඞ",
+      "symbol": "ב",
       "decimals": 9,
-      "name": "SN26 | Kinitro ඞ",
+      "name": "SN26 | beqar ב",
       "coingeckoId": "storb",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/storb.webp",
       "isDefault": true,
       "netuid": 26,
-      "subnetName": "Kinitro",
+      "subnetName": "beqar",
       "isTransferable": true
     },
     {
@@ -2406,11 +2402,11 @@
       "type": "substrate-dtao",
       "symbol": "ד",
       "decimals": 9,
-      "name": "SN28 | Subnet 28 ד",
+      "name": "SN28 | gm ד",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
       "netuid": 28,
-      "subnetName": "Subnet 28",
+      "subnetName": "gm",
       "isTransferable": true
     },
     {
@@ -2435,12 +2431,12 @@
       "type": "substrate-dtao",
       "symbol": "γ",
       "decimals": 9,
-      "name": "SN3 | τemplar γ",
+      "name": "SN3 | deprecated γ",
       "coingeckoId": "templar",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/templar.webp",
       "isDefault": true,
       "netuid": 3,
-      "subnetName": "τemplar",
+      "subnetName": "deprecated",
       "isTransferable": true
     },
     {
@@ -2525,12 +2521,12 @@
       "type": "substrate-dtao",
       "symbol": "ך",
       "decimals": 9,
-      "name": "SN35 | Cartha ך",
+      "name": "SN35 | OxMarkets ך",
       "coingeckoId": "logicnet",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/logicnet.webp",
       "isDefault": true,
       "netuid": 35,
-      "subnetName": "Cartha",
+      "subnetName": "OxMarkets",
       "isTransferable": true
     },
     {
@@ -2585,12 +2581,12 @@
       "type": "substrate-dtao",
       "symbol": "מ",
       "decimals": 9,
-      "name": "SN39 | basilica מ",
+      "name": "SN39 | deprecated מ",
       "coingeckoId": "w-ai-parked",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/w-ai-parked.webp",
       "isDefault": true,
       "netuid": 39,
-      "subnetName": "basilica",
+      "subnetName": "deprecated",
       "isTransferable": true
     },
     {
@@ -3034,12 +3030,12 @@
       "type": "substrate-dtao",
       "symbol": "ض",
       "decimals": 9,
-      "name": "SN66 | Tau coding agent ض",
+      "name": "SN66 | ninja ض",
       "coingeckoId": "fakenews",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/fakenews.webp",
       "isDefault": true,
       "netuid": 66,
-      "subnetName": "Tau coding agent",
+      "subnetName": "ninja",
       "isTransferable": true
     },
     {
@@ -3228,12 +3224,12 @@
       "type": "substrate-dtao",
       "symbol": "و",
       "decimals": 9,
-      "name": "SN78 | Loosh و",
+      "name": "SN78 | Subnet 78 و",
       "coingeckoId": "loosh",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/loosh.webp",
       "isDefault": true,
       "netuid": 78,
-      "subnetName": "Loosh",
+      "subnetName": "Subnet 78",
       "isTransferable": true
     },
     {
@@ -3288,12 +3284,12 @@
       "type": "substrate-dtao",
       "symbol": "ᚠ",
       "decimals": 9,
-      "name": "SN81 | grail ᚠ",
+      "name": "SN81 | deprecated ᚠ",
       "coingeckoId": "patrol-tao-com",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/patrol-tao-com.webp",
       "isDefault": true,
       "netuid": 81,
-      "subnetName": "grail",
+      "subnetName": "deprecated",
       "isTransferable": true
     },
     {
@@ -4446,6 +4442,20 @@
       "existentialDeposit": "10000000000000000"
     },
     {
+      "id": "hydradx:substrate-hydration:1816",
+      "platform": "polkadot",
+      "networkId": "hydradx",
+      "type": "substrate-hydration",
+      "symbol": "aSIGIL",
+      "decimals": 18,
+      "name": "aSIGIL",
+      "isDefault": true,
+      "onChainId": 1816,
+      "assetType": "Erc20",
+      "isSufficient": true,
+      "existentialDeposit": "20000000000000000"
+    },
+    {
       "id": "hydradx:substrate-hydration:19",
       "platform": "polkadot",
       "networkId": "hydradx",
@@ -5041,6 +5051,20 @@
       "assetType": "Token",
       "isSufficient": true,
       "existentialDeposit": "54945054945"
+    },
+    {
+      "id": "hydradx:substrate-hydration:816",
+      "platform": "polkadot",
+      "networkId": "hydradx",
+      "type": "substrate-hydration",
+      "symbol": "SIGIL",
+      "decimals": 18,
+      "name": "Sigil Stable",
+      "isDefault": true,
+      "onChainId": 816,
+      "assetType": "Token",
+      "isSufficient": true,
+      "existentialDeposit": "20000000000000000"
     },
     {
       "id": "hydradx:substrate-hydration:9",
