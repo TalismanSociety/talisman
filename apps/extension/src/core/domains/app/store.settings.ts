@@ -83,4 +83,18 @@ if (DEBUG) {
       return { ...prev, disableBalanceFetching: next }
     })
   }
+
+  // Warn loudly on every startup if balance fetching has been disabled
+  settingsStore.get().then((settings) => {
+    if (settings.disableBalanceFetching) {
+      // biome-ignore lint/suspicious/noConsole: dev helper
+      console.warn(
+        "%c ⚠️ BALANCE FETCHING IS DISABLED ⚠️ %c\nLive balance updates are turned off. Cached/stale balances will be shown instead.\nRun %ctoggleBalanceFetching()%c in this console to re-enable.",
+        "background: #ff4400; color: white; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 4px;",
+        "font-size: 13px; padding: 4px 0;",
+        "background: #333; color: #0f0; font-size: 13px; padding: 2px 6px; border-radius: 3px;",
+        "font-size: 13px;"
+      )
+    }
+  })
 }
