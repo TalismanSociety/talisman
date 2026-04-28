@@ -247,8 +247,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const exchange = exchangeAndTransactionQuery.data?.exchange
   const transaction = exchangeAndTransactionQuery.data?.transaction ?? null
-  const isExchangeLoading = exchangeAndTransactionQuery.isLoading
   const exchangeError = exchangeAndTransactionQuery.error
+  const isExchangeLoading = !exchangeAndTransactionQuery.data && !exchangeError
 
   const swapEthTx = useEthTransaction(
     transaction?.platform === "ethereum" ? transaction.transaction : undefined,
