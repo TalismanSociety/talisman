@@ -31,6 +31,14 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "api",
+      testDir: "./playwright/api-tests",
+      use: {
+        // API tests don't need a browser
+        extraHTTPHeaders: { Accept: "application/json" },
+      },
+    },
+    {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
