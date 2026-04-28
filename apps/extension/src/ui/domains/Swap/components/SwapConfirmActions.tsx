@@ -68,6 +68,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const publicClient = usePublicClient(approvalData?.chainId?.toString())
   const [isApproving, setIsApproving] = useState(false)
+  const [hasSubmittedApproval, setHasSubmittedApproval] = useState(false)
 
   const approvalTxInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!fromTokenId || !approvalData) return
@@ -100,6 +101,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         return
       }
 
+      setHasSubmittedApproval(true)
       setIsApproving(true)
       try {
         const approved = await publicClient.waitForTransactionReceipt({
@@ -553,7 +555,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             label={t("Confirm Swap")}
             onSubmit={onSwapSubmitted}
             disabled={isDisabled}
-            isProcessing={isExchangeLoading}
+            isProcessing={isExchangeLoading && hasSubmittedApproval}
           />
         )}
       </div>
