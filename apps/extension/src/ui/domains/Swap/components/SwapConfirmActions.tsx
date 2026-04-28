@@ -248,7 +248,10 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   const exchange = exchangeAndTransactionQuery.data?.exchange
   const transaction = exchangeAndTransactionQuery.data?.transaction ?? null
   const exchangeError = exchangeAndTransactionQuery.error
-  const isExchangeLoading = !exchangeAndTransactionQuery.data && !exchangeError
+  // Use !data && !error (instead of TanStack's .isLoading) so we stay "loading" during the brief
+  // gap between approval completing and the exchange query starting to fetch, preventing button flicker.
+  // Gate on !needsApproval so we report false while the query is intentionally disabled during the approval phase.
+  const isExchangeLoading = !needsApproval && !exchangeAndTransactionQuery.data && !exchangeError
 
   const swapEthTx = useEthTransaction(
     transaction?.platform === "ethereum" ? transaction.transaction : undefined,
