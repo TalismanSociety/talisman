@@ -545,7 +545,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             tx={approvalTx}
             label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
             onSubmit={onApprovalSubmitted}
-            disabled={!isReady || !approvalTx || isDisabled}
+            disabled={!isReady || !approvalTx || !!approvalEthTx.errorDetails} // cant use isDisabled here, it's always true if tx needs approval
             isProcessing={isApproving}
           />
         ) : (
