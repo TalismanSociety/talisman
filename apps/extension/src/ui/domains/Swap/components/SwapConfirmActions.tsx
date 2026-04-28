@@ -317,6 +317,28 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     return fromAmount + gasBuffer > fromBalance.transferable.planck
   }, [fromAmount, fromBalance?.transferable.planck, selectedQuote?.maxNativeTokenGasBuffer])
 
+  const activeTransaction: SwapModuleTransaction | null = useMemo(() => {
+    if (needsApproval && approveTx) return { platform: "ethereum", transaction: approveTx }
+    return transaction
+  }, [approveTx, needsApproval, transaction])
+
+  const errorMessage = useMemo<string | null>(() => {
+    if (exchangeError) {
+      // biome-ignore lint/suspicious/noExplicitAny: shape is unknown but may extend viem error
+      const anyError = exchangeError as any
+      return anyError?.shortMessage || anyError?.message || t("Transaction is likely to fail")
+    }
+    if (needsApproval) return approvalEthTx.errorDetails || null
+    return swapEthTx.error || substrateFee.error?.message || null
+  }, [
+    needsApproval,
+    approvalEthTx.errorDetails,
+    exchangeError,
+    swapEthTx.error,
+    substrateFee.error?.message,
+    t,
+  ])
+
   const isDisabled = useMemo(
     () =>
       !isReady ||
@@ -326,14 +348,19 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       !toAddress ||
       isInsufficientBalance !== false ||
       isExchangeLoading ||
-      !swapTx,
-    [fromAddress, isExchangeLoading, isInsufficientBalance, isReady, swapTx, toAddress, toAmount]
+      !swapTx ||
+      !!errorMessage,
+    [
+      fromAddress,
+      isExchangeLoading,
+      isInsufficientBalance,
+      isReady,
+      swapTx,
+      toAddress,
+      toAmount,
+      errorMessage,
+    ]
   )
-
-  const activeTransaction: SwapModuleTransaction | null = useMemo(() => {
-    if (needsApproval && approveTx) return { platform: "ethereum", transaction: approveTx }
-    return transaction
-  }, [approveTx, needsApproval, transaction])
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
@@ -417,13 +444,6 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     swapEthTx.txDetails,
   ])
 
-  const errorMessage = useMemo(() => {
-    if (!exchangeError) return null
-    // biome-ignore lint/suspicious/noExplicitAny: error shape is unknown and may not extend Error
-    const anyError = exchangeError as any
-    return anyError?.shortMessage || anyError?.message || t("Transaction is likely to fail")
-  }, [exchangeError, t])
-
   return (
     <>
       <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
@@ -495,7 +515,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       </div>
 
       <div className="absolute bottom-0 left-0 w-full bg-black/40 px-12 py-8 pb-12">
-        {!needsApproval && errorMessage && (
+        {!!errorMessage && (
           <div
             role="alert"
             className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
@@ -504,7 +524,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           </div>
         )}
 
-        {needsApproval && (
+        {!errorMessage && needsApproval && (
           <div
             role="alert"
             className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-body-secondary text-tiny"
@@ -523,7 +543,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             tx={approvalTx}
             label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
             onSubmit={onApprovalSubmitted}
-            disabled={!isReady || !approvalTx}
+            disabled={!isReady || !approvalTx || isDisabled}
             isProcessing={isApproving}
           />
         ) : (
