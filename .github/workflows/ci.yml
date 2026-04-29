@@ -23,6 +23,20 @@ jobs:
     env:
       E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
 
+    services:
+      anvil:
+        image: ghcr.io/foundry-rs/foundry:latest
+        ports:
+          - 8545:8545
+        options: >-
+          --health-cmd "cast block-number --rpc-url http://localhost:8545"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 5s
+        env:
+          ANVIL_IP_ADDR: "0.0.0.0"
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -116,6 +130,8 @@ jobs:
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
           pnpm test:e2e
+        env:
+          ANVIL_RPC_URL: http://localhost:8545
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
