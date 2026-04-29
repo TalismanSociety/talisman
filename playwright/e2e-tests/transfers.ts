@@ -1,20 +1,11 @@
 export const testAssets = [
   {
-    assetName: "PAS",
-    chain: "Paseo Asset Hub",
+    assetName: "ETH",
+    chain: "Ethereum Mainnet",
     needsEnabling: true,
-    chainType: "substrate",
+    chainType: "ethereum",
     tokenType: "Native",
-    sendTo: "5DHyKJK9qY5nosXAvyGiSRTdnC76Z45RcuAMq5223T1Vrtbc",
-    amount: "0.001",
-  },
-  {
-    assetName: "AVAIL",
-    chain: "Avail Turing Testnet",
-    needsEnabling: true,
-    chainType: "substrate",
-    tokenType: "Native",
-    sendTo: "5DHyKJK9qY5nosXAvyGiSRTdnC76Z45RcuAMq5223T1Vrtbc",
+    sendTo: "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67",
     amount: "0.001",
   },
 ]
