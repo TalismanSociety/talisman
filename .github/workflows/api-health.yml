@@ -2,7 +2,7 @@ name: API Health Tests
 
 on:
   schedule:
-    - cron: "0 */2 * * *" # every 2 hours
+    - cron: "*/30 * * * *" # every 30 minutes
   workflow_dispatch: # allow manual trigger
 
 concurrency:
