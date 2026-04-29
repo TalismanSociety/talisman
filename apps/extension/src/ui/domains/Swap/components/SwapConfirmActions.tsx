@@ -529,6 +529,23 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         <QuoteProvider />
         <QuoteDuration />
         <QuoteExchangeRate />
+        {supportsSlippage ? (
+          <div className="flex h-11 items-center justify-between gap-8">
+            <div className="whitespace-nowrap text-body-secondary text-xs">
+              {t("Slippage Tolerance")}
+            </div>
+            <button
+              type="button"
+              onClick={slippageDrawer.open}
+              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
+            >
+              <EditIcon />
+              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
+                {slippagePercent.toFixed(2)}%
+              </div>
+            </button>
+          </div>
+        ) : null}
         {fromToken?.platform === "ethereum" ? (
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="text-body-secondary text-xs">{t("Priority")}</div>
@@ -554,23 +571,6 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
                 <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
               )}
             </div>
-          </div>
-        ) : null}
-        {supportsSlippage ? (
-          <div className="flex h-11 items-center justify-between gap-8">
-            <div className="whitespace-nowrap text-body-secondary text-xs">
-              {t("Slippage Tolerance")}
-            </div>
-            <button
-              type="button"
-              onClick={slippageDrawer.open}
-              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
-            >
-              <EditIcon />
-              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
-                {slippagePercent.toFixed(2)}%
-              </div>
-            </button>
           </div>
         ) : null}
         <div className="flex h-11 items-center justify-between gap-8">
