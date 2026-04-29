@@ -128,7 +128,6 @@ jobs:
       - name: Install xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: Run playwright tests with xvfb
-        continue-on-error: true
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
           pnpm test:e2e
