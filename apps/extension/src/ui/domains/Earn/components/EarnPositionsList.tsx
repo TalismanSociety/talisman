@@ -435,8 +435,8 @@ export const EarnPositionsList: FC<{
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center gap-12 rounded bg-grey-900",
-          IS_POPUP ? "py-8" : "py-24"
+          "flex flex-col items-center justify-center gap-12",
+          IS_POPUP ? "py-8" : "rounded bg-grey-900 py-24"
         )}
       >
         <div className="flex flex-col items-center justify-center">
