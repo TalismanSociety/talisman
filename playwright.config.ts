@@ -7,7 +7,6 @@ dotenv.config({ path: "apps/extension/.env" })
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: "./playwright/e2e-tests",
   timeout: 60_000, // 60 seconds for all tests
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -34,12 +33,12 @@ export default defineConfig({
       name: "api",
       testDir: "./playwright/api-tests",
       use: {
-        // API tests don't need a browser
         extraHTTPHeaders: { Accept: "application/json" },
       },
     },
     {
       name: "chromium",
+      testDir: "./playwright/e2e-tests",
       use: { ...devices["Desktop Chrome"] },
     },
     /* Deactivated for now
