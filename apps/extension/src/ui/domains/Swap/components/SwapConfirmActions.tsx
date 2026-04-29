@@ -15,6 +15,8 @@ import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
+import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
+import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
@@ -24,6 +26,12 @@ import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
+import {
+  classifyFeeEstimationError,
+  classifySwapError,
+  getSwapErrorMessage,
+  type SwapConfirmError,
+} from "../swap-errors"
 import type {
   SwapModuleTransaction,
   SwapTransactionContext,
@@ -68,6 +76,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const publicClient = usePublicClient(approvalData?.chainId?.toString())
   const [isApproving, setIsApproving] = useState(false)
+  const [hasSubmittedApproval, setHasSubmittedApproval] = useState(false)
 
   const approvalTxInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!fromTokenId || !approvalData) return
@@ -100,6 +109,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         return
       }
 
+      setHasSubmittedApproval(true)
       setIsApproving(true)
       try {
         const approved = await publicClient.waitForTransactionReceipt({
@@ -245,8 +255,11 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const exchange = exchangeAndTransactionQuery.data?.exchange
   const transaction = exchangeAndTransactionQuery.data?.transaction ?? null
-  const isExchangeLoading = exchangeAndTransactionQuery.isLoading
   const exchangeError = exchangeAndTransactionQuery.error
+  // Use !data && !error (instead of TanStack's .isLoading) so we stay "loading" during the brief
+  // gap between approval completing and the exchange query starting to fetch, preventing button flicker.
+  // Gate on !needsApproval so we report false while the query is intentionally disabled during the approval phase.
+  const isExchangeLoading = !needsApproval && !exchangeAndTransactionQuery.data && !exchangeError
 
   const swapEthTx = useEthTransaction(
     transaction?.platform === "ethereum" ? transaction.transaction : undefined,
@@ -258,6 +271,12 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     sapi,
     payload:
       !needsApproval && transaction?.platform === "polkadot" ? transaction.payload : undefined,
+  })
+
+  const solanaFee = useGetSolanaFeeEstimate({
+    connection: solanaConnection,
+    transaction:
+      !needsApproval && transaction?.platform === "solana" ? transaction.transaction : undefined,
   })
 
   const txInfo = useSwapTxInfo({
@@ -313,22 +332,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   const isInsufficientBalance = useMemo(() => {
     if (!fromBalance?.transferable.planck || !fromAmount) return undefined
-    const gasBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
-    return fromAmount + gasBuffer > fromBalance.transferable.planck
-  }, [fromAmount, fromBalance?.transferable.planck, selectedQuote?.maxNativeTokenGasBuffer])
-
-  const isDisabled = useMemo(
-    () =>
-      !isReady ||
-      !toAmount ||
-      toAmount === 0n ||
-      !fromAddress ||
-      !toAddress ||
-      isInsufficientBalance !== false ||
-      isExchangeLoading ||
-      !swapTx,
-    [fromAddress, isExchangeLoading, isInsufficientBalance, isReady, swapTx, toAddress, toAmount]
-  )
+    return fromAmount > fromBalance.transferable.planck
+  }, [fromAmount, fromBalance?.transferable.planck])
 
   const activeTransaction: SwapModuleTransaction | null = useMemo(() => {
     if (needsApproval && approveTx) return { platform: "ethereum", transaction: approveTx }
@@ -336,6 +341,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   }, [approveTx, needsApproval, transaction])
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
+  const feeToken = useToken(activeFeeTokenId ?? undefined)
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
   const feePlanck = useMemo(() => {
@@ -352,12 +358,24 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       case "polkadot":
         return substrateFee.data?.toString() ?? null
       case "solana": {
-        // Base fee: 5000 lamports per signature
-        // SPL token transfers may also need ATA creation (~2,039,280 lamports rent)
-        const baseFee = 5000n
+        if (solanaFee.data === null || solanaFee.data === undefined) return null
+        // Network fee from `getFeeForMessage` only covers signature/priority
+        // costs — it does NOT include lamports the payer must front for
+        // rent-exempt account creation (e.g. destination ATA on SPL transfers).
+        // We bound the required SOL by the larger of two estimates:
+        //  - networkPath: getFeeForMessage + a conservative ATA rent when
+        //    swapping FROM an SPL token (matches pre-PR behaviour).
+        //  - quoteNativeBuffer: LI.FI's per-route gas/rent cost, populated when
+        //    swapping FROM the native token. Covers SOL→SPL routes that create
+        //    a destination ATA (rent paid by signer), which getFeeForMessage
+        //    omits. Note: this includes rent (recoverable on account close),
+        //    not just fee — accepted trade-off to keep users from submitting
+        //    txs that fail on-chain due to insufficient lamports.
         const isSplToken = fromToken?.platform === "solana" && fromToken.type !== "sol-native"
         const ataRent = isSplToken ? 2_039_280n : 0n
-        return (baseFee + ataRent).toString()
+        const networkPath = solanaFee.data + ataRent
+        const quoteNativeBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
+        return (networkPath > quoteNativeBuffer ? networkPath : quoteNativeBuffer).toString()
       }
       default:
         return null
@@ -367,6 +385,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     approvalEthTx.txDetails,
     fromToken,
     needsApproval,
+    selectedQuote?.maxNativeTokenGasBuffer,
+    solanaFee.data,
     substrateFee.data,
     swapEthTx.txDetails,
   ])
@@ -378,6 +398,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         return (needsApproval ? approvalEthTx.isLoading : swapEthTx.isLoading) || isExchangeLoading
       case "polkadot":
         return substrateFee.isLoading || isExchangeLoading
+      case "solana":
+        return solanaFee.isLoading || isExchangeLoading
       default:
         return isExchangeLoading
     }
@@ -386,6 +408,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     approvalEthTx.isLoading,
     isExchangeLoading,
     needsApproval,
+    solanaFee.isLoading,
     substrateFee.isLoading,
     swapEthTx.isLoading,
   ])
@@ -397,12 +420,12 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         if (exchangeError) return true
         const ethError = needsApproval ? approvalEthTx.error : swapEthTx.error
         if (!ethError) return false
-        // Transaction validation errors can coexist with a computed fee.
-        // In that case we still want to display the fee estimate.
         return !(needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails)
       }
       case "polkadot":
         return Boolean(substrateFee.error || exchangeError)
+      case "solana":
+        return Boolean(solanaFee.error || exchangeError)
       default:
         return Boolean(exchangeError)
     }
@@ -412,17 +435,93 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     approvalEthTx.txDetails,
     exchangeError,
     needsApproval,
+    solanaFee.error,
     substrateFee.error,
     swapEthTx.error,
     swapEthTx.txDetails,
   ])
 
-  const errorMessage = useMemo(() => {
-    if (!exchangeError) return null
-    // biome-ignore lint/suspicious/noExplicitAny: error shape is unknown and may not extend Error
-    const anyError = exchangeError as any
-    return anyError?.shortMessage || anyError?.message || t("Transaction is likely to fail")
-  }, [exchangeError, t])
+  const feeBalanceCheck = useFeeBalanceCheck({
+    fromAddress,
+    feeTokenId: activeFeeTokenId,
+    feePlanck,
+    isFeeLoading,
+    fromTokenId,
+    fromAmount,
+  })
+
+  const swapError = useMemo<SwapConfirmError | null>(() => {
+    // 1. Balance errors — most actionable for the user
+    if (isInsufficientBalance === true && fromTokenId) {
+      return { type: "insufficient-swap-balance", tokenId: fromTokenId }
+    }
+    if (feeBalanceCheck.status === "insufficient" && feeBalanceCheck.feeTokenId) {
+      return {
+        type: "insufficient-fee-balance",
+        feeTokenId: feeBalanceCheck.feeTokenId,
+        required: feeBalanceCheck.required ?? 0n,
+        available: feeBalanceCheck.available ?? 0n,
+      }
+    }
+
+    // 2. Exchange / transaction crafting errors
+    if (exchangeError) return classifySwapError(exchangeError)
+
+    // 3. Fee estimation / simulation errors (only relevant when not in approval phase)
+    if (needsApproval)
+      return approvalEthTx.errorDetails
+        ? classifyFeeEstimationError(new Error(approvalEthTx.errorDetails))
+        : null
+    if (swapEthTx.error) return classifyFeeEstimationError(new Error(swapEthTx.error))
+    if (substrateFee.error) return classifyFeeEstimationError(substrateFee.error)
+    if (solanaFee.error) return classifyFeeEstimationError(solanaFee.error)
+
+    return null
+  }, [
+    isInsufficientBalance,
+    fromTokenId,
+    feeBalanceCheck,
+    exchangeError,
+    needsApproval,
+    approvalEthTx.errorDetails,
+    swapEthTx.error,
+    substrateFee.error,
+    solanaFee.error,
+  ])
+
+  const errorMessage = useMemo<string | null>(() => {
+    if (!swapError) return null
+    return getSwapErrorMessage(swapError, t, {
+      tokenSymbol: fromToken?.symbol,
+      feeTokenSymbol: feeToken?.symbol,
+    })
+  }, [swapError, t, fromToken?.symbol, feeToken?.symbol])
+
+  const isDisabled = useMemo(
+    () =>
+      !isReady ||
+      !toAmount ||
+      toAmount === 0n ||
+      !fromAddress ||
+      !toAddress ||
+      isInsufficientBalance !== false ||
+      feeBalanceCheck.status === "insufficient" ||
+      feeBalanceCheck.status === "loading" ||
+      isExchangeLoading ||
+      !swapTx ||
+      !!swapError,
+    [
+      fromAddress,
+      isExchangeLoading,
+      isInsufficientBalance,
+      feeBalanceCheck.status,
+      isReady,
+      swapTx,
+      toAddress,
+      toAmount,
+      swapError,
+    ]
+  )
 
   return (
     <>
@@ -430,6 +529,23 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         <QuoteProvider />
         <QuoteDuration />
         <QuoteExchangeRate />
+        {supportsSlippage ? (
+          <div className="flex h-11 items-center justify-between gap-8">
+            <div className="whitespace-nowrap text-body-secondary text-xs">
+              {t("Slippage Tolerance")}
+            </div>
+            <button
+              type="button"
+              onClick={slippageDrawer.open}
+              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
+            >
+              <EditIcon />
+              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
+                {slippagePercent.toFixed(2)}%
+              </div>
+            </button>
+          </div>
+        ) : null}
         {fromToken?.platform === "ethereum" ? (
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="text-body-secondary text-xs">{t("Priority")}</div>
@@ -457,23 +573,6 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             </div>
           </div>
         ) : null}
-        {supportsSlippage ? (
-          <div className="flex h-11 items-center justify-between gap-8">
-            <div className="whitespace-nowrap text-body-secondary text-xs">
-              {t("Slippage Tolerance")}
-            </div>
-            <button
-              type="button"
-              onClick={slippageDrawer.open}
-              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
-            >
-              <EditIcon />
-              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
-                {slippagePercent.toFixed(2)}%
-              </div>
-            </button>
-          </div>
-        ) : null}
         <div className="flex h-11 items-center justify-between gap-8">
           <div className="whitespace-nowrap text-body-secondary text-xs">
             {t("Estimated TX Fee")}
@@ -495,7 +594,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       </div>
 
       <div className="absolute bottom-0 left-0 w-full bg-black/40 px-12 py-8 pb-12">
-        {!needsApproval && errorMessage && (
+        {!!errorMessage && (
           <div
             role="alert"
             className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
@@ -504,7 +603,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           </div>
         )}
 
-        {needsApproval && (
+        {!errorMessage && needsApproval && (
           <div
             role="alert"
             className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-body-secondary text-tiny"
@@ -523,7 +622,13 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             tx={approvalTx}
             label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
             onSubmit={onApprovalSubmitted}
-            disabled={!isReady || !approvalTx}
+            disabled={
+              !isReady ||
+              !approvalTx ||
+              !!approvalEthTx.errorDetails ||
+              feeBalanceCheck.status === "insufficient" ||
+              feeBalanceCheck.status === "loading"
+            } // cant use isDisabled here, it's always true if tx needs approval
             isProcessing={isApproving}
           />
         ) : (
@@ -533,7 +638,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             label={t("Confirm Swap")}
             onSubmit={onSwapSubmitted}
             disabled={isDisabled}
-            isProcessing={isExchangeLoading}
+            isProcessing={isExchangeLoading && hasSubmittedApproval}
           />
         )}
       </div>

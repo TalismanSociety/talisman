@@ -69,9 +69,9 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
   return (
     <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
       <div className="relative shrink-0">
-        <TokenLogo tokenId={tokenId} className="h-[32px] w-[32px] min-w-[32px] rounded-full" />
+        <TokenLogo tokenId={tokenId} className="size-16 shrink-0 rounded-full" />
         <NetworkLogo
-          className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-900 text-[12px]"
+          className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-900 text-xs"
           networkId={token.networkId}
         />
       </div>
@@ -85,8 +85,8 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
         />
         <div className="flex w-full items-center gap-4 overflow-hidden text-sm">
           <div className="truncate text-body-secondary">{token.name || token.symbol}</div>
-          <div className="flex shrink-0 items-center gap-[5px] rounded-full bg-grey-800 py-[4px] pr-[8px] pl-[5px]">
-            <NetworkLogo className="text-[16px]" networkId={network.id} />
+          <div className="flex shrink-0 items-center gap-2.5 rounded-full bg-grey-800 py-2 pr-4 pl-2.5">
+            <NetworkLogo className="text-base" networkId={network.id} />
             <span className="truncate text-xs opacity-60">{network.name}</span>
           </div>
         </div>
