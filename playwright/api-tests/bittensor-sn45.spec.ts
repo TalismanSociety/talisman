@@ -12,7 +12,8 @@ const TEST_NETUID = Math.floor(Math.random() * 125) + 1
 test.describe("SN45 Data API", () => {
   test.describe.configure({ retries: 2 })
 
-  test.beforeEach((_fixtures, testInfo) => {
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright requires destructured fixtures as first arg
+  test.beforeEach(({}, testInfo) => {
     testInfo.annotations.push({ type: "TEST_NETUID", description: String(TEST_NETUID) })
   })
 
