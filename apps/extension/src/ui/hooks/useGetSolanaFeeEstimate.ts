@@ -36,7 +36,14 @@ export const useGetSolanaFeeEstimate = ({
         : transaction.compileMessage()
 
       const result = await connection.getFeeForMessage(message)
-      return result.value ? BigInt(result.value) : null
+      // Solana RPC returns `value: null` when the message can't be processed
+      // (e.g. expired blockhash). Surface this as an error so React-Query
+      // populates `error` instead of `data: null`, otherwise downstream
+      // consumers (useFeeBalanceCheck) get stuck in a permanent loading state.
+      // Use `== null` to allow a legitimate (theoretical) zero fee.
+      if (result.value == null) throw new Error("Failed to estimate Solana transaction fee")
+
+      return BigInt(result.value)
     },
     enabled: !!connection && !!transaction,
     placeholderData: keepPreviousData,

@@ -324,12 +324,26 @@ const getRouteQuote = async (
   })
 
   const lifiSolanaChainId = await getLifiSolanaChainId()
-  const isSolanaFrom = String(fromAsset.chainId) === String(lifiSolanaChainId)
+  // Solana assets in this module are stored with `chainId: SOLANA_NETWORK_ID`
+  // (string), but LI.FI gas tokens use the numeric LI.FI Solana chain ID. We
+  // need to accept either form to detect Solana-source swaps and to match
+  // their gas tokens; otherwise `maxNativeTokenGasBuffer` is always 0 for
+  // Solana.
+  const isSolanaFrom =
+    fromAsset.chainId === SOLANA_NETWORK_ID ||
+    String(fromAsset.chainId) === String(lifiSolanaChainId)
 
-  const isNativeGasToken = (gasToken: { address: string; chainId: number }) =>
-    String(gasToken.chainId) === String(fromAsset.chainId) &&
-    (gasToken.address === zeroAddress ||
-      (isSolanaFrom && SOLANA_NATIVE_ADDRESSES.has(gasToken.address)))
+  const isNativeGasToken = (gasToken: { address: string; chainId: number }) => {
+    if (isSolanaFrom) {
+      return (
+        String(gasToken.chainId) === String(lifiSolanaChainId) &&
+        SOLANA_NATIVE_ADDRESSES.has(gasToken.address)
+      )
+    }
+    return (
+      String(gasToken.chainId) === String(fromAsset.chainId) && gasToken.address === zeroAddress
+    )
+  }
 
   const maxNativeTokenGasBuffer =
     fromAsset.contractAddress === undefined

@@ -357,15 +357,35 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         )
       case "polkadot":
         return substrateFee.data?.toString() ?? null
-      case "solana":
-        return solanaFee.data?.toString() ?? null
+      case "solana": {
+        if (solanaFee.data === null || solanaFee.data === undefined) return null
+        // Network fee from `getFeeForMessage` only covers signature/priority
+        // costs — it does NOT include lamports the payer must front for
+        // rent-exempt account creation (e.g. destination ATA on SPL transfers).
+        // We bound the required SOL by the larger of two estimates:
+        //  - networkPath: getFeeForMessage + a conservative ATA rent when
+        //    swapping FROM an SPL token (matches pre-PR behaviour).
+        //  - quoteNativeBuffer: LI.FI's per-route gas/rent cost, populated when
+        //    swapping FROM the native token. Covers SOL→SPL routes that create
+        //    a destination ATA (rent paid by signer), which getFeeForMessage
+        //    omits. Note: this includes rent (recoverable on account close),
+        //    not just fee — accepted trade-off to keep users from submitting
+        //    txs that fail on-chain due to insufficient lamports.
+        const isSplToken = fromToken?.platform === "solana" && fromToken.type !== "sol-native"
+        const ataRent = isSplToken ? 2_039_280n : 0n
+        const networkPath = solanaFee.data + ataRent
+        const quoteNativeBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
+        return (networkPath > quoteNativeBuffer ? networkPath : quoteNativeBuffer).toString()
+      }
       default:
         return null
     }
   }, [
     activeTransaction,
     approvalEthTx.txDetails,
+    fromToken,
     needsApproval,
+    selectedQuote?.maxNativeTokenGasBuffer,
     solanaFee.data,
     substrateFee.data,
     swapEthTx.txDetails,
@@ -602,7 +622,13 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
             tx={approvalTx}
             label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
             onSubmit={onApprovalSubmitted}
-            disabled={!isReady || !approvalTx || !!approvalEthTx.errorDetails} // cant use isDisabled here, it's always true if tx needs approval
+            disabled={
+              !isReady ||
+              !approvalTx ||
+              !!approvalEthTx.errorDetails ||
+              feeBalanceCheck.status === "insufficient" ||
+              feeBalanceCheck.status === "loading"
+            } // cant use isDisabled here, it's always true if tx needs approval
             isProcessing={isApproving}
           />
         ) : (
