@@ -323,15 +323,20 @@ const getRouteQuote = async (
     tokenId: fromTokenId,
   })
 
+  const lifiSolanaChainId = await getLifiSolanaChainId()
+  const isSolanaFrom = String(fromAsset.chainId) === String(lifiSolanaChainId)
+
+  const isNativeGasToken = (gasToken: { address: string; chainId: number }) =>
+    String(gasToken.chainId) === String(fromAsset.chainId) &&
+    (gasToken.address === zeroAddress ||
+      (isSolanaFrom && SOLANA_NATIVE_ADDRESSES.has(gasToken.address)))
+
   const maxNativeTokenGasBuffer =
     fromAsset.contractAddress === undefined
       ? route.steps
           .flatMap((step) =>
             (step.estimate.gasCosts ?? []).flatMap((gas) =>
-              String(gas.token.chainId) === String(fromAsset.chainId) &&
-              gas.token.address === zeroAddress
-                ? gas.amount
-                : "0"
+              isNativeGasToken(gas.token) ? gas.amount : "0"
             )
           )
           .reduce((a, c) => a.plus(c), BigNumber(0))
