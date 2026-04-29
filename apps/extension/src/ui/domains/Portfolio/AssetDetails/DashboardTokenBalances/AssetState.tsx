@@ -22,7 +22,7 @@ export const AssetState = ({
 }: AssetStateProps) => {
   if (!render) return null
   return (
-    <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
+    <div className="flex h-full flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
         <div className="shrink-0 whitespace-nowrap font-bold text-white capitalize">{title}</div>
         {/* show description next to title when address is set */}
