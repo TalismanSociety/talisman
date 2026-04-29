@@ -18,7 +18,7 @@ const randomName = (prefix: string) => {
 export const DEFAULT_PASSWORD = "talismanwallet"
 const DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
-export const ethDevChain = "http://localhost:8545"
+const ethDevChain = "http://localhost:8545"
 
 export const test = base.extend<{
   context: BrowserContext
