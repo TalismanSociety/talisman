@@ -23,22 +23,6 @@ jobs:
     env:
       E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
 
-    services:
-      anvil:
-        image: ghcr.io/foundry-rs/foundry:latest
-        ports:
-          - 8545:8545
-        options: >-
-          --health-cmd "cast block-number --rpc-url http://localhost:8545"
-          --health-interval 2s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 5s
-          --entrypoint anvil
-        env:
-          ANVIL_IP_ADDR: "0.0.0.0"
-          ANVIL_CHAIN_ID: "1"
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -128,6 +112,21 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Install xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Start Anvil
+        run: |
+          docker run -d --name anvil -p 8545:8545 \
+            ghcr.io/foundry-rs/foundry:latest \
+            "anvil --host 0.0.0.0 --chain-id 1 --block-time 1"
+          # Wait for Anvil to be ready
+          for i in $(seq 1 30); do
+            if curl -sf -X POST http://localhost:8545 \
+              -H "Content-Type: application/json" \
+              -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' > /dev/null 2>&1; then
+              echo "Anvil is ready (chain ID: $(curl -s -X POST http://localhost:8545 -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' | jq -r .result))"
+              break
+            fi
+            sleep 1
+          done
       - name: Run playwright tests with xvfb
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
