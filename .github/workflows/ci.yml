@@ -37,6 +37,7 @@ jobs:
           --entrypoint anvil
         env:
           ANVIL_IP_ADDR: "0.0.0.0"
+          ANVIL_CHAIN_ID: "1"
 
     steps:
       - name: Checkout repo
