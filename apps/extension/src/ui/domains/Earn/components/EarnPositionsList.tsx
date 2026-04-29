@@ -433,12 +433,22 @@ export const EarnPositionsList: FC<{
 
   if (!tokenGroupedPositions.length && !isInitialising && !isLoading)
     return (
-      <div className="flex flex-col items-center justify-center gap-12 rounded bg-grey-900 py-24">
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-12 rounded bg-grey-900",
+          IS_POPUP ? "py-8" : "py-24"
+        )}
+      >
         <div className="flex flex-col items-center justify-center">
           <NoAssetsFoundSymbol className="h-48 w-48" />
           <div className="text-white/30">{t("No positions found")}</div>
         </div>
-        <Button primary className="px-16" onClick={() => navigate("/earn/discover")}>
+        <Button
+          primary
+          small={IS_POPUP}
+          className="px-16"
+          onClick={() => navigate("/earn/discover")}
+        >
           {t("Discover")}
         </Button>
       </div>
