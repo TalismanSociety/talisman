@@ -4,6 +4,7 @@ import { isAccountOwned } from "@talismn/keyring"
 
 import { db } from "../db"
 import { queryCacheStore } from "../db/queryCache"
+import { AccountProxiesHandler } from "../domains/accountProxies"
 import { AccountsHandler } from "../domains/accounts"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
@@ -50,6 +51,7 @@ export default class Extension extends ExtensionHandler {
     // routing to sub-handlers
     this.#routes = {
       accounts: new AccountsHandler(stores),
+      accountProxies: new AccountProxiesHandler(stores),
       chains: new ChainsHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),

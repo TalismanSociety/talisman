@@ -15,11 +15,14 @@ import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { useAddProxyModal } from "@ui/domains/AccountProxies/AddProxy/useAddProxyModal"
+import { useManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/useManageProxyModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAccountCanWriteProxies, useAccountProxiesCount } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
@@ -142,6 +145,27 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
 
   const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
 
+  // proxy management entry — only surfaced for substrate-compatible accounts.
+  // We use the "any non-ethereum" heuristic here; the modals themselves perform
+  // the more precise compatibility/network checks.
+  const isSubstrate = !!account && !isEthereumAddress(account.address)
+  const proxyCount = useAccountProxiesCount(account?.address)
+  const canWriteProxies = useAccountCanWriteProxies(account?.address)
+  const { open: openManageProxy } = useManageProxyModal()
+  const { open: openAddProxy } = useAddProxyModal()
+  const proxyMenuKind: "manage" | "add" | null = useMemo(() => {
+    if (!account || !isSubstrate) return null
+    if (proxyCount > 0) return "manage"
+    if (canWriteProxies) return "add"
+    return null
+  }, [account, canWriteProxies, isSubstrate, proxyCount])
+
+  const onProxyMenuClick = useCallback(() => {
+    if (!account || !proxyMenuKind) return
+    if (proxyMenuKind === "manage") openManageProxy({ address: account.address })
+    else openAddProxy({ address: account.address })
+  }, [account, openAddProxy, openManageProxy, proxyMenuKind])
+
   return (
     <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
@@ -180,6 +204,12 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
                 <ContextMenuItem onClick={openAccountExportPkModal}>
                   {t("Export private key")}
                 </ContextMenuItem>
+              )}
+              {proxyMenuKind === "manage" && (
+                <ContextMenuItem onClick={onProxyMenuClick}>{t("Manage Proxies")}</ContextMenuItem>
+              )}
+              {proxyMenuKind === "add" && (
+                <ContextMenuItem onClick={onProxyMenuClick}>{t("Add Proxy")}</ContextMenuItem>
               )}
               <ContextMenuItem onClick={openAccountRemoveModal}>
                 {t("Remove account")}

@@ -1,3 +1,7 @@
+import type {
+  AccountProxiesSubscriptionResponse,
+  RequestAccountProxiesRefresh,
+} from "@core/domains/accountProxies/types"
 import type { RequestAccountsCatalogAction, Trees } from "@core/domains/accounts/helpers.catalog"
 import type {
   RequestAccountContactUpdate,
@@ -175,6 +179,10 @@ export default interface MessageTypes {
     addressesAndTokens: AddressesAndTokens,
     cb: (balances: BalanceSubscriptionResponse) => void
   ) => UnsubscribeFn
+
+  // account proxy message types ---------------------------------------------
+  accountProxies: (cb: (response: AccountProxiesSubscriptionResponse) => void) => UnsubscribeFn
+  accountProxiesRefresh: (request: RequestAccountProxiesRefresh) => Promise<boolean>
 
   // authorized sites message types ------------------------------------------
   authorizedSites: () => Promise<AuthorizedSites>
