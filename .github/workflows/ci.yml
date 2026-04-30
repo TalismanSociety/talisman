@@ -133,6 +133,10 @@ jobs:
           pnpm exec playwright test --project=chromium --grep-invert "Visual Regression"
         env:
           ANVIL_RPC_URL: http://localhost:8545
+      - name: Checkout visual regression snapshots from base branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git checkout origin/${{ github.base_ref }} -- playwright/e2e-tests/visual-regression.spec.ts-snapshots/ || true
       - name: Run visual regression tests
         continue-on-error: true
         run: |
