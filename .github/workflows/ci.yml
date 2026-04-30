@@ -130,7 +130,7 @@ jobs:
       - name: Run playwright tests with xvfb
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
-          pnpm exec playwright test --project=chromium --grep-invert "Visual Regression"
+          pnpm exec playwright test --project=chromium --grep-invert "Visual Regression" --reporter=blob --output=blob-report/regular
         env:
           ANVIL_RPC_URL: http://localhost:8545
       - name: Checkout visual regression snapshots from base branch
@@ -141,9 +141,12 @@ jobs:
         continue-on-error: true
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
-          pnpm exec playwright test --project=chromium --grep "Visual Regression"
+          pnpm exec playwright test --project=chromium --grep "Visual Regression" --reporter=blob --output=blob-report/visual
         env:
           ANVIL_RPC_URL: http://localhost:8545
+      - name: Merge playwright reports
+        if: ${{ !cancelled() }}
+        run: pnpm exec playwright merge-reports --reporter=html blob-report/
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
