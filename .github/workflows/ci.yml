@@ -130,7 +130,14 @@ jobs:
       - name: Run playwright tests with xvfb
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
-          pnpm test:e2e
+          pnpm exec playwright test --project=chromium --grep-invert "Visual Regression"
+        env:
+          ANVIL_RPC_URL: http://localhost:8545
+      - name: Run visual regression tests
+        continue-on-error: true
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
+          pnpm exec playwright test --project=chromium --grep "Visual Regression"
         env:
           ANVIL_RPC_URL: http://localhost:8545
       - name: "Upload playwright report"

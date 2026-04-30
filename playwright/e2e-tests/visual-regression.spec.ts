@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures"
 
-const maxDiffPixelRatio = 0.3
+const maxDiffPixelRatio = 0.02
 
 test("Visual Regression Test", async ({ onboardedPage, extensionId }) => {
   await onboardedPage.getByTestId("onboarding-toast-animated").click()
