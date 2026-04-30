@@ -2,11 +2,11 @@ import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { ChevronRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
+import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { PasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
@@ -107,21 +107,21 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({ address
           </div>
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary">{t("Network")}</div>
-            <button
-              type="button"
+            <PillButton
+              className="h-16 max-w-full px-4!"
               onClick={() => setShowNetworkPicker(true)}
-              className="flex items-center gap-4 text-body"
             >
-              {network ? (
-                <>
-                  <NetworkLogo networkId={network.id} className="text-md" />
-                  <span>{network.name}</span>
-                </>
-              ) : (
-                <span className="text-body-disabled">{t("Select network")}</span>
-              )}
-              <ChevronRightIcon className="text-body-secondary text-md" />
-            </button>
+              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
+                {network ? (
+                  <>
+                    <NetworkLogo networkId={network.id} className="shrink-0 text-lg!" />
+                    <div className="grow truncate leading-base">{network.name}</div>
+                  </>
+                ) : (
+                  <div className="text-body-disabled">{t("Select network")}</div>
+                )}
+              </div>
+            </PillButton>
           </div>
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary">{t("Delegate")}</div>
