@@ -1,4 +1,5 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
@@ -14,13 +15,15 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountCanWriteProxies } from "@ui/state/accountProxies"
-import { useAccountByAddress } from "@ui/state/accounts"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
-import { type FC, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
-import { AddressDisplay } from "../../SendFunds/AddressDisplay"
+import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
+import { AccountPicker } from "./AccountPicker"
+import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
 import { useAddProxyModal } from "./useAddProxyModal"
 
@@ -44,11 +47,24 @@ export const AddProxyModal: FC = () => {
   )
 }
 
-const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({ address, onClose }) => {
+const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
+  address: initialAddress,
+  onClose,
+}) => {
   const { t } = useTranslation()
+  const [address, setAddress] = useState(initialAddress)
   const account = useAccountByAddress(address)
   const canWrite = useAccountCanWriteProxies(address)
+  const allAccounts = useAccounts("all")
   const dotNetworks = useNetworks({ activeOnly: true, includeTestnets: true, platform: "polkadot" })
+
+  const ownedSubstrateAccounts = useMemo(
+    () =>
+      allAccounts.filter(
+        (a) => isAccountOwned(a) && dotNetworks.some((n) => isAccountCompatibleWithNetwork(n, a))
+      ),
+    [allAccounts, dotNetworks]
+  )
 
   const compatibleNetworks = useMemo<DotNetwork[]>(
     () => (account ? dotNetworks.filter((n) => isAccountCompatibleWithNetwork(n, account)) : []),
@@ -66,7 +82,15 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({ address
   const [delay, setDelay] = useState("0")
   const [step, setStep] = useState<"form" | "confirm">("form")
   const [showNetworkPicker, setShowNetworkPicker] = useState(false)
+  const [showDelegatePicker, setShowDelegatePicker] = useState(false)
+  const [showAccountPicker, setShowAccountPicker] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  const handleAccountChange = useCallback((newAddress: string) => {
+    setAddress(newAddress)
+    setNetworkId("")
+    setDelegate("")
+  }, [])
 
   const isAddressValid = useMemo(() => {
     if (!delegate) return false
@@ -100,10 +124,15 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({ address
   if (step === "form") {
     return (
       <WizardModalDialog title={t("Add Proxy")} onCloseClick={onClose}>
-        <div className="flex flex-col rounded bg-grey-900 px-12 py-8 text-body-secondary leading-[140%]">
+        <div className="flex flex-col gap-4 rounded bg-grey-900 px-12 py-8 text-body-secondary leading-[140%]">
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary">{t("Account")}</div>
-            <AddressDisplay className="h-16" address={address} networkId={networkId || undefined} />
+            <AddressPillButton
+              className="max-w-65!"
+              address={address}
+              genesisHash={network?.genesisHash}
+              onClick={() => setShowAccountPicker(true)}
+            />
           </div>
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary">{t("Network")}</div>
@@ -126,30 +155,25 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({ address
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary">{t("Delegate")}</div>
             {isAddressValid ? (
-              <AddressDisplay
-                className="h-16"
+              <AddressPillButton
+                className="max-w-65!"
                 address={delegate}
-                networkId={networkId || undefined}
+                genesisHash={network?.genesisHash}
+                onClick={() => setShowDelegatePicker(true)}
               />
             ) : (
-              <div className="truncate text-base text-body-disabled">
-                {delegate ? t("Invalid address") : t("Not set")}
-              </div>
+              <PillButton
+                className="h-16 max-w-full px-4!"
+                onClick={() => setShowDelegatePicker(true)}
+              >
+                <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body-disabled">
+                  {t("Select delegate")}
+                </div>
+              </PillButton>
             )}
           </div>
         </div>
         <div className="flex grow flex-col gap-8">
-          <label className="flex flex-col gap-2 text-sm">
-            <span className="text-body-secondary">{t("Delegate address")}</span>
-            <input
-              type="text"
-              spellCheck={false}
-              value={delegate}
-              onChange={(e) => setDelegate(e.target.value.trim())}
-              className="rounded bg-grey-800 p-4 font-mono"
-              placeholder="5..."
-            />
-          </label>
           <label className="flex flex-col gap-2 text-sm">
             <span className="text-body-secondary">{t("Proxy type")}</span>
             <select
@@ -195,6 +219,26 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({ address
             setShowNetworkPicker(false)
           }}
           onDismiss={() => setShowNetworkPicker(false)}
+        />
+        <DelegatePicker
+          isOpen={showDelegatePicker}
+          containerId="add-proxy-modal"
+          address={address}
+          network={network}
+          selectedDelegate={delegate}
+          onSelect={(selectedAddress) => {
+            setDelegate(selectedAddress)
+            setShowDelegatePicker(false)
+          }}
+          onDismiss={() => setShowDelegatePicker(false)}
+        />
+        <AccountPicker
+          isOpen={showAccountPicker}
+          containerId="add-proxy-modal"
+          accounts={ownedSubstrateAccounts}
+          selectedAddress={address}
+          onSelect={handleAccountChange}
+          onDismiss={() => setShowAccountPicker(false)}
         />
       </WizardModalDialog>
     )
