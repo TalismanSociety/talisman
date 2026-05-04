@@ -10,7 +10,6 @@ import {
   from,
   interval,
   map,
-  mergeMap,
   Observable,
   of,
   Subject,
@@ -231,7 +230,8 @@ export const accountProxies$ = defer(() => {
         status,
         proxySets: Object.values(snapshot.sets),
       }
-    })
+    }),
+    distinctUntilChanged((a, b) => isEqual(a, b))
   )
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }), keepAlive(3000))
 
@@ -239,6 +239,3 @@ export const accountProxies$ = defer(() => {
 export const refreshAccountProxies = (req: RequestAccountProxiesRefresh) => {
   refresh$.next(req)
 }
-
-// Mark `mergeMap` import as used (compiled out otherwise).
-void mergeMap
