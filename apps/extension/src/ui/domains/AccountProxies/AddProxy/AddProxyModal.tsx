@@ -415,7 +415,7 @@ const AddProxyConfirm: FC<{
       onCloseClick={onClose}
     >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
-        <h2 className="mb-8 text-center font-bold text-md">{t("Review transaction")}</h2>
+        <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
         {/* Account and delegate section */}
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6">
           <div className="flex items-center justify-between gap-8">
@@ -427,6 +427,13 @@ const AddProxyConfirm: FC<{
             />
           </div>
           <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary text-sm">{t("Network")}</span>
+            <div className="flex items-center gap-4 text-body">
+              <NetworkLogo networkId={network.id} className="shrink-0 text-lg!" />
+              <span className="truncate">{network.name}</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-8">
             <span className="whitespace-nowrap text-body-secondary text-sm">{t("Delegate")}</span>
             <AccountDisplay
               address={delegate}
@@ -434,29 +441,28 @@ const AddProxyConfirm: FC<{
               className="overflow-hidden text-body text-sm"
             />
           </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary text-sm">{t("Proxy type")}</span>
+            <span className="truncate text-body">{proxyType}</span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary text-sm">{t("Delay")}</span>
+            <span className="text-body">{`${delay} ${t("blocks")}`}</span>
+          </div>
         </div>
         {/* Transaction details section */}
         <div className="mt-4 flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
           <div className="flex items-center justify-between gap-8">
-            <span className="text-body-secondary">{t("Network")}</span>
-            <div className="flex items-center gap-4 text-body">
-              <NetworkLogo networkId={network.id} className="shrink-0 text-lg!" />
-              <span className="truncate">{network.name}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-8">
-            <span className="text-body-secondary">{t("Proxy type")}</span>
-            <span className="truncate text-body">{proxyType}</span>
-          </div>
-          <div className="flex items-center justify-between gap-8">
-            <span className="text-body-secondary">{t("Delay")}</span>
-            <span className="text-body">{`${delay} ${t("blocks")}`}</span>
-          </div>
-          <div className="flex items-center justify-between gap-8">
-            <span className="text-body-secondary">{t("Deposit reserved")}</span>
+            <span className="text-body-secondary">{t("Reserved deposit")}</span>
             <span className="text-body">
               {proxyDeposit !== null && nativeToken?.id ? (
-                <TokensAndFiat tokenId={nativeToken.id} planck={proxyDeposit} noCountUp />
+                <TokensAndFiat
+                  tokenId={nativeToken.id}
+                  planck={proxyDeposit}
+                  noCountUp
+                  className="text-body-secondary"
+                  tokensClassName="text-body"
+                />
               ) : (
                 <span className="animate-pulse text-body-disabled">…</span>
               )}
@@ -474,14 +480,10 @@ const AddProxyConfirm: FC<{
               />
             </span>
           </div>
-          <div className="flex items-center justify-between gap-8">
-            <span className="text-body-secondary">{t("Extrinsic")}</span>
-            <span className="text-body-secondary text-xs">{t("Proxy.addProxy")}</span>
-          </div>
         </div>
         {/* Deposit info banner */}
         {proxyDeposit !== null && nativeToken && (
-          <div className="mt-4 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
+          <div className="mt-4 flex items-start gap-4 rounded bg-primary/10 px-8 py-6 text-primary text-xs">
             <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
             <span>
               {t(
