@@ -144,7 +144,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
         contentClassName="overflow-hidden flex flex-col gap-8"
       >
         <ScrollContainer>
-          <div className="flex flex-col gap-4 rounded bg-grey-900 px-12 py-8 text-body-secondary leading-[140%]">
+          <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
             <div className="flex h-16 items-center justify-between gap-8">
               <div className="whitespace-nowrap text-body-secondary">{t("Account")}</div>
               <AddressPillButton
@@ -196,7 +196,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
               )}
             </div>
           </div>
-          <div className="flex grow flex-col gap-8">
+          <div className="flex grow flex-col gap-8 pt-8">
             <div className="flex flex-col gap-4">
               <span className="text-body-secondary text-sm">{t("Proxy type")}</span>
               {proxyTypes.length === 0 ? (
