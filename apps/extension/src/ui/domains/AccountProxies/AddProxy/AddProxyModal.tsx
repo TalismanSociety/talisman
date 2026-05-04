@@ -3,7 +3,7 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { InfoIcon, PlusIcon, SettingsIcon } from "@talismn/icons"
+import { AlertCircleIcon, InfoIcon, PlusIcon, SettingsIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -13,20 +13,23 @@ import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { PasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
-import { useAccountCanWriteProxies } from "@ui/state/accountProxies"
+import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
-import { useNetworks } from "@ui/state/chaindata"
+import { useNetworks, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
+import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
@@ -83,7 +86,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const [showDelegatePicker, setShowDelegatePicker] = useState(false)
   const [showAccountPicker, setShowAccountPicker] = useState(false)
   const delayDrawer = useOpenClose()
-  const [submitting, setSubmitting] = useState(false)
+  const [, setSubmitting] = useState(false)
 
   // Reset selected proxy type when available types change (e.g. network switch)
   useEffect(() => {
@@ -299,7 +302,6 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
       delegate={delegate}
       proxyType={proxyType}
       delay={delayNum}
-      submitting={submitting}
       setSubmitting={setSubmitting}
       onBack={() => setStep("form")}
       onClose={onClose}
@@ -313,26 +315,45 @@ const AddProxyConfirm: FC<{
   delegate: string
   proxyType: string
   delay: number
-  submitting: boolean
   setSubmitting: (v: boolean) => void
   onBack: () => void
   onClose: () => void
-}> = ({
-  address,
-  network,
-  delegate,
-  proxyType,
-  delay,
-  submitting,
-  setSubmitting,
-  onBack,
-  onClose,
-}) => {
+}> = ({ address, network, delegate, proxyType, delay, setSubmitting, onBack, onClose }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(network.id)
+  const nativeToken = useToken(network.nativeTokenId)
   const [payload, setPayload] = useState<Awaited<
     ReturnType<NonNullable<typeof sapi>["getExtrinsicPayload"]>
   > | null>(null)
+
+  // Existing proxy count for this network to compute accurate deposit
+  const proxySets = useAccountProxySetsForAddress(address)
+  const existingProxyCount = useMemo(
+    () =>
+      proxySets
+        .filter((s) => s.networkId === network.id)
+        .reduce((sum, s) => sum + s.proxies.length, 0),
+    [proxySets, network.id]
+  )
+
+  // Proxy deposit: base + factor * (existingCount + 1)
+  const proxyDeposit = useMemo(() => {
+    if (!sapi) return null
+    try {
+      const base = sapi.getConstant<bigint>("Proxy", "ProxyDepositBase")
+      const factor = sapi.getConstant<bigint>("Proxy", "ProxyDepositFactor")
+      return base + factor * BigInt(existingProxyCount + 1)
+    } catch {
+      return null
+    }
+  }, [sapi, existingProxyCount])
+
+  // Fee estimate
+  const {
+    data: feeEstimate,
+    isLoading: isLoadingFee,
+    error: feeError,
+  } = useGetFeeEstimate({ sapi: sapi ?? null, payload: payload?.payload })
 
   useEffect(() => {
     if (!sapi) return
@@ -372,40 +393,111 @@ const AddProxyConfirm: FC<{
   }
 
   return (
-    <WizardModalDialog title={t("Confirm Add Proxy")} onCloseClick={onClose}>
-      <div className="flex grow flex-col gap-4 text-sm">
-        <Field label={t("Network")} value={network.name} />
-        <Field label={t("Delegate")} value={delegate} mono />
-        <Field label={t("Proxy type")} value={proxyType} />
-        <Field label={t("Delay")} value={`${delay} ${t("blocks")}`} />
-      </div>
-      <p className="my-4 text-body-secondary text-xs">
-        {t("Enter your password to authorise this transaction.")}
-      </p>
-      <div className="flex flex-col gap-4">
-        <Button onClick={onBack} disabled={submitting}>
-          {t("Back")}
-        </Button>
-        <PasswordUnlock buttonText={t("Unlock to sign")}>
-          <SapiSendButton
-            containerId="add-proxy-modal"
-            label={t("Sign and submit")}
-            payload={payload?.payload}
-            txMetadata={payload?.txMetadata}
-            onSubmitted={handleSubmitted}
-          />
-        </PasswordUnlock>
+    <WizardModalDialog
+      title={t("Add Proxy")}
+      contentClassName="flex flex-col"
+      onBackClick={onBack}
+      onCloseClick={onClose}
+    >
+      <div className="flex size-full flex-col gap-8 overflow-hidden">
+        <h2 className="mb-8 text-center font-bold text-md">{t("Review transaction")}</h2>
+        {/* Account and delegate section */}
+        <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6">
+          <div className="flex items-center justify-between gap-8">
+            <span className="whitespace-nowrap text-body-secondary text-sm">{t("Account")}</span>
+            <AccountDisplay
+              address={address}
+              ss58Format={network.prefix}
+              className="overflow-hidden text-body text-sm"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="whitespace-nowrap text-body-secondary text-sm">{t("Delegate")}</span>
+            <AccountDisplay
+              address={delegate}
+              ss58Format={network.prefix}
+              className="overflow-hidden text-body text-sm"
+            />
+          </div>
+        </div>
+        {/* Transaction details section */}
+        <div className="mt-4 flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Network")}</span>
+            <div className="flex items-center gap-4 text-body">
+              <NetworkLogo networkId={network.id} className="shrink-0 text-lg!" />
+              <span className="truncate">{network.name}</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Proxy type")}</span>
+            <span className="truncate text-body">{proxyType}</span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Delay")}</span>
+            <span className="text-body">{`${delay} ${t("blocks")}`}</span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Deposit reserved")}</span>
+            <span className="text-body">
+              {proxyDeposit !== null && nativeToken?.id ? (
+                <TokensAndFiat tokenId={nativeToken.id} planck={proxyDeposit} noCountUp />
+              ) : (
+                <span className="animate-pulse text-body-disabled">…</span>
+              )}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Network fee")}</span>
+            <span className="text-body">
+              <StakingFeeEstimate
+                plancks={feeEstimate}
+                tokenId={nativeToken?.id}
+                isLoading={isLoadingFee}
+                error={feeError}
+                noCountUp
+              />
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Extrinsic")}</span>
+            <span className="text-body-secondary text-xs">{t("Proxy.addProxy")}</span>
+          </div>
+        </div>
+        {/* Deposit info banner */}
+        {proxyDeposit !== null && nativeToken && (
+          <div className="mt-4 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
+            <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+            <span>
+              {t(
+                "{{amount}} will be reserved from your balance and returned when this proxy is removed.",
+                {
+                  amount: `${formatPlanck(proxyDeposit, nativeToken.decimals)} ${nativeToken.symbol}`,
+                }
+              )}
+            </span>
+          </div>
+        )}
+        <div className="grow" />
+        <SapiSendButton
+          containerId="add-proxy-modal"
+          label={t("Confirm")}
+          payload={payload?.payload}
+          txMetadata={payload?.txMetadata}
+          onSubmitted={handleSubmitted}
+        />
       </div>
     </WizardModalDialog>
   )
 }
 
-const Field: FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (
-  <div className="flex justify-between gap-4 border-grey-800 border-b pb-2">
-    <span className="text-body-secondary">{label}</span>
-    <span className={mono ? "truncate font-mono text-xs" : "truncate"}>{value}</span>
-  </div>
-)
+/** Formats a planck bigint into a human-readable decimal string. */
+const formatPlanck = (planck: bigint, decimals: number): string => {
+  const str = planck.toString().padStart(decimals + 1, "0")
+  const intPart = str.slice(0, str.length - decimals)
+  const fracPart = str.slice(str.length - decimals).replace(/0+$/, "")
+  return fracPart ? `${intPart}.${fracPart}` : intPart
+}
 
 /** Formats PascalCase proxy type names into readable labels (e.g. "NonTransfer" → "Non-transfer") */
 const formatProxyTypeName = (name: string): string =>
