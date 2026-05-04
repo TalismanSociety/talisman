@@ -18,6 +18,7 @@ import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
@@ -81,12 +82,12 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const [delegate, setDelegate] = useState("")
   const [proxyType, setProxyType] = useState<string>("")
   const [delay, setDelay] = useState("0")
-  const [step, setStep] = useState<"form" | "confirm">("form")
+  const [step, setStep] = useState<"form" | "confirm" | "submitted">("form")
+  const [submittedHash, setSubmittedHash] = useState<string | null>(null)
   const [showNetworkPicker, setShowNetworkPicker] = useState(false)
   const [showDelegatePicker, setShowDelegatePicker] = useState(false)
   const [showAccountPicker, setShowAccountPicker] = useState(false)
   const delayDrawer = useOpenClose()
-  const [, setSubmitting] = useState(false)
 
   // Reset selected proxy type when available types change (e.g. network switch)
   useEffect(() => {
@@ -124,6 +125,15 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     !!proxyType &&
     proxyTypes.some((pt) => pt.name === proxyType) &&
     isDelayValid
+
+  const handleSubmitted = useCallback(
+    (hash: Hex) => {
+      setSubmittedHash(hash)
+      setStep("submitted")
+      if (network) api.accountProxiesRefresh({ networkId: network.id, address }).catch(() => {})
+    },
+    [network, address]
+  )
 
   if (!canWrite) {
     return (
@@ -295,6 +305,14 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     )
   }
 
+  if (step === "submitted" && submittedHash && networkId) {
+    return (
+      <div className="size-full p-12">
+        <TxProgress hash={submittedHash} networkIdOrHash={networkId} onClose={onClose} />
+      </div>
+    )
+  }
+
   return (
     <AddProxyConfirm
       address={address}
@@ -302,7 +320,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
       delegate={delegate}
       proxyType={proxyType}
       delay={delayNum}
-      setSubmitting={setSubmitting}
+      onSubmitted={handleSubmitted}
       onBack={() => setStep("form")}
       onClose={onClose}
     />
@@ -315,10 +333,10 @@ const AddProxyConfirm: FC<{
   delegate: string
   proxyType: string
   delay: number
-  setSubmitting: (v: boolean) => void
+  onSubmitted: (hash: Hex) => void
   onBack: () => void
   onClose: () => void
-}> = ({ address, network, delegate, proxyType, delay, setSubmitting, onBack, onClose }) => {
+}> = ({ address, network, delegate, proxyType, delay, onSubmitted, onBack, onClose }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(network.id)
   const nativeToken = useToken(network.nativeTokenId)
@@ -386,10 +404,7 @@ const AddProxyConfirm: FC<{
   }, [address, delay, delegate, proxyType, sapi, t])
 
   const handleSubmitted = (hash: Hex) => {
-    setSubmitting(true)
-    api.accountProxiesRefresh({ networkId: network.id, address }).catch(() => {})
-    notify({ type: "success", title: t("Add proxy submitted"), subtitle: hash })
-    onClose()
+    onSubmitted(hash)
   }
 
   return (
