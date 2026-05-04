@@ -3,7 +3,7 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { InfoIcon, SettingsIcon } from "@talismn/icons"
+import { InfoIcon, PlusIcon, SettingsIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -186,8 +186,11 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
                   className="h-16 max-w-full px-4!"
                   onClick={() => setShowDelegatePicker(true)}
                 >
-                  <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body-disabled">
-                    {t("Select delegate")}
+                  <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-grey-750 text-primary">
+                      <PlusIcon className="text-primary" />
+                    </div>
+                    {t("Select Account")}
                   </div>
                 </PillButton>
               )}
@@ -222,7 +225,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
                     </TooltipTrigger>
                     <TooltipContent>
                       {t(
-                        "Delayed proxies require an announcement workflow which Talisman doesn't support yet."
+                        "Delayed proxies require an announcement workflow which Talisman doesn't support at this time."
                       )}
                     </TooltipContent>
                   </Tooltip>

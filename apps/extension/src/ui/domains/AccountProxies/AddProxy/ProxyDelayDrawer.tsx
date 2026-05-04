@@ -34,12 +34,4 @@ const Content: FC<{ delay: string; onSave: (delay: string) => void; onClose: () 
       <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
     </WizardModalDialog>
   )
-
-  // return (
-  //   <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-black-secondary p-12">
-
-  //     <div className="pb-8 font-bold text-body">{t("Announcement Delay")}</div>
-  //     <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
-  //   </div>
-  // )
 }
