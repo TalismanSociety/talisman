@@ -10,10 +10,11 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { PasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
-import { type FC, useEffect, useState } from "react"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
@@ -110,7 +111,13 @@ const ProxyRow: FC<{
 }> = ({ set, entry, canDelete, onDelete }) => {
   const { t } = useTranslation()
   const network = useNetworkById(set.networkId)
+  const proxyTypes = useProxyTypesForNetwork(set.networkId)
   const requiresAnnouncement = entry.delay !== "0"
+
+  const proxyTypeDocs = useMemo(
+    () => proxyTypes.find((pt) => pt.name === entry.proxyType)?.docs ?? "",
+    [proxyTypes, entry.proxyType]
+  )
 
   return (
     <div className="flex items-center gap-4 rounded bg-grey-900 p-4">
@@ -119,7 +126,7 @@ const ProxyRow: FC<{
         <div className="flex gap-2 text-body-secondary text-xs">
           <span>{network?.name ?? set.networkId}</span>
           <span>·</span>
-          <span>{entry.proxyType}</span>
+          <span title={proxyTypeDocs || undefined}>{entry.proxyType}</span>
           {requiresAnnouncement && (
             <>
               <span>·</span>

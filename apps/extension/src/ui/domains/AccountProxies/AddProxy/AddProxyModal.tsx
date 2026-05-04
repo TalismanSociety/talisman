@@ -14,6 +14,7 @@ import { PasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies } from "@ui/state/accountProxies"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
@@ -26,15 +27,6 @@ import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
 import { useAddProxyModal } from "./useAddProxyModal"
-
-const PROXY_TYPES = [
-  "Any",
-  "NonTransfer",
-  "Governance",
-  "Staking",
-  "IdentityJudgement",
-  "CancelProxy",
-]
 
 export const AddProxyModal: FC = () => {
   const { isOpen, args, close } = useAddProxyModal()
@@ -77,14 +69,31 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   }, [compatibleNetworks, networkId])
 
   const network = compatibleNetworks.find((n) => n.id === networkId)
+  const proxyTypes = useProxyTypesForNetwork(networkId || null)
   const [delegate, setDelegate] = useState("")
-  const [proxyType, setProxyType] = useState<string>("Any")
+  const [proxyType, setProxyType] = useState<string>("")
   const [delay, setDelay] = useState("0")
   const [step, setStep] = useState<"form" | "confirm">("form")
   const [showNetworkPicker, setShowNetworkPicker] = useState(false)
   const [showDelegatePicker, setShowDelegatePicker] = useState(false)
   const [showAccountPicker, setShowAccountPicker] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  // Reset selected proxy type when available types change (e.g. network switch)
+  useEffect(() => {
+    if (!proxyTypes.length) {
+      setProxyType("")
+      return
+    }
+    if (!proxyType || !proxyTypes.some((pt) => pt.name === proxyType)) {
+      setProxyType(proxyTypes[0].name)
+    }
+  }, [proxyType, proxyTypes])
+
+  const selectedProxyTypeDocs = useMemo(
+    () => proxyTypes.find((pt) => pt.name === proxyType)?.docs ?? "",
+    [proxyType, proxyTypes]
+  )
 
   const handleAccountChange = useCallback((newAddress: string) => {
     setAddress(newAddress)
@@ -105,7 +114,12 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const delayNum = useMemo(() => Number.parseInt(delay, 10), [delay])
   const isDelayValid = Number.isInteger(delayNum) && delayNum >= 0
 
-  const canProceed = !!network && isAddressValid && PROXY_TYPES.includes(proxyType) && isDelayValid
+  const canProceed =
+    !!network &&
+    isAddressValid &&
+    !!proxyType &&
+    proxyTypes.some((pt) => pt.name === proxyType) &&
+    isDelayValid
 
   if (!canWrite) {
     return (
@@ -179,14 +193,21 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
             <select
               value={proxyType}
               onChange={(e) => setProxyType(e.target.value)}
-              className="rounded bg-grey-800 p-4"
+              disabled={!proxyTypes.length}
+              className="rounded bg-grey-800 p-4 disabled:opacity-50"
             >
-              {PROXY_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
+              {proxyTypes.length === 0 && <option value="">{t("Loading…")}</option>}
+              {proxyTypes.map((pt) => (
+                <option key={pt.name} value={pt.name}>
+                  {pt.name}
                 </option>
               ))}
             </select>
+            {selectedProxyTypeDocs && (
+              <span className="text-body-disabled text-xs leading-snug">
+                {selectedProxyTypeDocs}
+              </span>
+            )}
           </label>
           <label className="flex flex-col gap-2 text-sm">
             <span className="text-body-secondary">{t("Delay (blocks)")}</span>
