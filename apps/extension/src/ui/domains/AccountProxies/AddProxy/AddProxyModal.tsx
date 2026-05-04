@@ -3,6 +3,7 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
+import { InfoIcon, SettingsIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -10,11 +11,13 @@ import { notify } from "@ui/components/Notifications"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { PasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies } from "@ui/state/accountProxies"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -27,6 +30,7 @@ import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPi
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
+import { ProxyDelayDrawer } from "./ProxyDelayDrawer"
 import { useAddProxyModal } from "./useAddProxyModal"
 
 export const AddProxyModal: FC = () => {
@@ -78,6 +82,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const [showNetworkPicker, setShowNetworkPicker] = useState(false)
   const [showDelegatePicker, setShowDelegatePicker] = useState(false)
   const [showAccountPicker, setShowAccountPicker] = useState(false)
+  const delayDrawer = useOpenClose()
   const [submitting, setSubmitting] = useState(false)
 
   // Reset selected proxy type when available types change (e.g. network switch)
@@ -208,21 +213,29 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
               )}
             </div>
             <label className="flex flex-col gap-2 text-sm">
-              <span className="text-body-secondary">{t("Delay (blocks)")}</span>
-              <input
-                type="number"
-                min={0}
-                value={delay}
-                onChange={(e) => setDelay(e.target.value)}
-                className="rounded bg-grey-800 p-4"
-              />
-              {delayNum > 0 && (
-                <span className="text-alert-warn text-xs">
-                  {t(
-                    "Delayed proxies require an announcement workflow which Talisman doesn't support yet."
-                  )}
-                </span>
-              )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-body-secondary">
+                  <span>{t("Announcement delay")}</span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="text-xs" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t(
+                        "Delayed proxies require an announcement workflow which Talisman doesn't support yet."
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <button
+                  type="button"
+                  onClick={delayDrawer.open}
+                  className="flex cursor-pointer items-center gap-2 rounded-full bg-grey-750 px-4 py-2 text-body text-xs hover:bg-grey-700"
+                >
+                  <SettingsIcon className="shrink-0 text-body-secondary" />
+                  <span>{delay}</span>
+                </button>
+              </div>
             </label>
           </div>
         </ScrollContainer>
@@ -264,6 +277,13 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
           selectedAddress={address}
           onSelect={handleAccountChange}
           onDismiss={() => setShowAccountPicker(false)}
+        />
+        <ProxyDelayDrawer
+          isOpen={delayDrawer.isOpen}
+          onClose={delayDrawer.close}
+          containerId="add-proxy-modal"
+          delay={delay}
+          onSave={setDelay}
         />
       </WizardModalDialog>
     )
