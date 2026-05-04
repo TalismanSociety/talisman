@@ -9,6 +9,7 @@ import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { PasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -18,10 +19,10 @@ import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies } from "@ui/state/accountProxies"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
-
 import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
@@ -90,11 +91,6 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     }
   }, [proxyType, proxyTypes])
 
-  const selectedProxyTypeDocs = useMemo(
-    () => proxyTypes.find((pt) => pt.name === proxyType)?.docs ?? "",
-    [proxyType, proxyTypes]
-  )
-
   const handleAccountChange = useCallback((newAddress: string) => {
     setAddress(newAddress)
     setNetworkId("")
@@ -137,97 +133,105 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
 
   if (step === "form") {
     return (
-      <WizardModalDialog title={t("Add Proxy")} onCloseClick={onClose}>
-        <div className="flex flex-col gap-4 rounded bg-grey-900 px-12 py-8 text-body-secondary leading-[140%]">
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap text-body-secondary">{t("Account")}</div>
-            <AddressPillButton
-              className="max-w-65!"
-              address={address}
-              genesisHash={network?.genesisHash}
-              onClick={() => setShowAccountPicker(true)}
-            />
-          </div>
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap text-body-secondary">{t("Network")}</div>
-            <PillButton
-              className="h-16 max-w-full px-4!"
-              onClick={() => setShowNetworkPicker(true)}
-            >
-              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                {network ? (
-                  <>
-                    <NetworkLogo networkId={network.id} className="shrink-0 text-lg!" />
-                    <div className="grow truncate leading-base">{network.name}</div>
-                  </>
-                ) : (
-                  <div className="text-body-disabled">{t("Select network")}</div>
-                )}
-              </div>
-            </PillButton>
-          </div>
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap text-body-secondary">{t("Delegate")}</div>
-            {isAddressValid ? (
+      <WizardModalDialog
+        title={t("Add Proxy")}
+        onCloseClick={onClose}
+        contentClassName="overflow-hidden flex flex-col gap-8"
+      >
+        <ScrollContainer>
+          <div className="flex flex-col gap-4 rounded bg-grey-900 px-12 py-8 text-body-secondary leading-[140%]">
+            <div className="flex h-16 items-center justify-between gap-8">
+              <div className="whitespace-nowrap text-body-secondary">{t("Account")}</div>
               <AddressPillButton
                 className="max-w-65!"
-                address={delegate}
+                address={address}
                 genesisHash={network?.genesisHash}
-                onClick={() => setShowDelegatePicker(true)}
+                onClick={() => setShowAccountPicker(true)}
               />
-            ) : (
+            </div>
+            <div className="flex h-16 items-center justify-between gap-8">
+              <div className="whitespace-nowrap text-body-secondary">{t("Network")}</div>
               <PillButton
                 className="h-16 max-w-full px-4!"
-                onClick={() => setShowDelegatePicker(true)}
+                onClick={() => setShowNetworkPicker(true)}
               >
-                <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body-disabled">
-                  {t("Select delegate")}
+                <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
+                  {network ? (
+                    <>
+                      <NetworkLogo networkId={network.id} className="shrink-0 text-lg!" />
+                      <div className="grow truncate leading-base">{network.name}</div>
+                    </>
+                  ) : (
+                    <div className="text-body-disabled">{t("Select network")}</div>
+                  )}
                 </div>
               </PillButton>
-            )}
+            </div>
+            <div className="flex h-16 items-center justify-between gap-8">
+              <div className="whitespace-nowrap text-body-secondary">{t("Delegate")}</div>
+              {isAddressValid ? (
+                <AddressPillButton
+                  className="max-w-65!"
+                  address={delegate}
+                  genesisHash={network?.genesisHash}
+                  onClick={() => setShowDelegatePicker(true)}
+                />
+              ) : (
+                <PillButton
+                  className="h-16 max-w-full px-4!"
+                  onClick={() => setShowDelegatePicker(true)}
+                >
+                  <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body-disabled">
+                    {t("Select delegate")}
+                  </div>
+                </PillButton>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="flex grow flex-col gap-8">
-          <label className="flex flex-col gap-2 text-sm">
-            <span className="text-body-secondary">{t("Proxy type")}</span>
-            <select
-              value={proxyType}
-              onChange={(e) => setProxyType(e.target.value)}
-              disabled={!proxyTypes.length}
-              className="rounded bg-grey-800 p-4 disabled:opacity-50"
-            >
-              {proxyTypes.length === 0 && <option value="">{t("Loading…")}</option>}
-              {proxyTypes.map((pt) => (
-                <option key={pt.name} value={pt.name}>
-                  {pt.name}
-                </option>
-              ))}
-            </select>
-            {selectedProxyTypeDocs && (
-              <span className="text-body-disabled text-xs leading-snug">
-                {selectedProxyTypeDocs}
-              </span>
-            )}
-          </label>
-          <label className="flex flex-col gap-2 text-sm">
-            <span className="text-body-secondary">{t("Delay (blocks)")}</span>
-            <input
-              type="number"
-              min={0}
-              value={delay}
-              onChange={(e) => setDelay(e.target.value)}
-              className="rounded bg-grey-800 p-4"
-            />
-            {delayNum > 0 && (
-              <span className="text-alert-warn text-xs">
-                {t(
-                  "Delayed proxies require an announcement workflow which Talisman doesn't support yet."
-                )}
-              </span>
-            )}
-          </label>
-        </div>
-        <Button primary onClick={() => setStep("confirm")} disabled={!canProceed}>
+          <div className="flex grow flex-col gap-8">
+            <div className="flex flex-col gap-4">
+              <span className="text-body-secondary text-sm">{t("Proxy type")}</span>
+              {proxyTypes.length === 0 ? (
+                <div className="text-body-disabled text-sm">{t("Loading…")}</div>
+              ) : (
+                <div className="flex flex-col gap-4" role="radiogroup" aria-label={t("Proxy type")}>
+                  {proxyTypes.map((pt) => (
+                    <ProxyTypeRadioCard
+                      key={pt.name}
+                      name={pt.name}
+                      docs={pt.docs}
+                      selected={proxyType === pt.name}
+                      onClick={() => setProxyType(pt.name)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="text-body-secondary">{t("Delay (blocks)")}</span>
+              <input
+                type="number"
+                min={0}
+                value={delay}
+                onChange={(e) => setDelay(e.target.value)}
+                className="rounded bg-grey-800 p-4"
+              />
+              {delayNum > 0 && (
+                <span className="text-alert-warn text-xs">
+                  {t(
+                    "Delayed proxies require an announcement workflow which Talisman doesn't support yet."
+                  )}
+                </span>
+              )}
+            </label>
+          </div>
+        </ScrollContainer>
+        <Button
+          primary
+          onClick={() => setStep("confirm")}
+          disabled={!canProceed}
+          className="shrink-0"
+        >
           {t("Continue")}
         </Button>
         <NetworkPicker
@@ -378,4 +382,39 @@ const Field: FC<{ label: string; value: string; mono?: boolean }> = ({ label, va
     <span className="text-body-secondary">{label}</span>
     <span className={mono ? "truncate font-mono text-xs" : "truncate"}>{value}</span>
   </div>
+)
+
+/** Formats PascalCase proxy type names into readable labels (e.g. "NonTransfer" → "Non-transfer") */
+const formatProxyTypeName = (name: string): string =>
+  name
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
+    .replace(/^./, (c) => c.toUpperCase())
+    .replace(/-./, (c) => c.toLowerCase())
+
+const ProxyTypeRadioCard: FC<{
+  name: string
+  docs: string
+  selected: boolean
+  onClick: () => void
+}> = ({ name, docs, selected, onClick }) => (
+  // biome-ignore lint/a11y/useSemanticElements: radio card pattern
+  <button
+    type="button"
+    role="radio"
+    aria-checked={selected}
+    onClick={onClick}
+    className={cn("relative w-full rounded-sm bg-black-tertiary px-12 py-10 text-left text-sm")}
+  >
+    <div className="flex flex-col gap-1 pr-10">
+      <span className="font-semibold text-body text-sm leading-base">
+        {formatProxyTypeName(name)}
+      </span>
+      {!!docs && <span className="text-body-secondary text-xs leading-paragraph">{docs}</span>}
+    </div>
+    <span className="absolute top-1/2 right-12 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-grey-700">
+      <span
+        className={cn("h-3.5 w-3.5 rounded-full", selected ? "bg-primary" : "bg-transparent")}
+      />
+    </span>
+  </button>
 )
