@@ -80,11 +80,8 @@ const candidates$: Observable<ProxyPollCandidate[]> = combineLatest({
           if (!detection.hasProxyPallet) return null
 
           const delegators = compatibleAccounts
-            .map((a) => {
-              const accountId = addressToAccountId(a.address, network.account)
-              return accountId ? { address: a.address, accountId } : null
-            })
-            .filter((p): p is { address: string; accountId: Uint8Array } => p !== null)
+            .filter((a) => addressToAccountId(a.address, network.account) !== null)
+            .map((a) => ({ address: a.address }))
           if (!delegators.length) return null
 
           return { network, delegators } as ProxyPollCandidate

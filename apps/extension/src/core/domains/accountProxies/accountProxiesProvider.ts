@@ -187,8 +187,8 @@ export const decodeProxiesValue = (
 
 export type ProxyPollCandidate = {
   network: DotNetwork
-  /** Compatible accounts paired with their raw AccountId bytes. */
-  delegators: Array<{ address: string; accountId: Uint8Array }>
+  /** Addresses of compatible accounts to query. */
+  delegators: Array<{ address: string }>
 }
 
 export type ProxyPollOutcome =
@@ -221,9 +221,9 @@ export const pollNetworkProxies = async (
     const storageCodec = builder.buildStorage("Proxy", "Proxies")
 
     const keysByAddress = new Map<`0x${string}`, string>()
-    for (const { address, accountId } of delegators) {
+    for (const { address } of delegators) {
       try {
-        const key = storageCodec.keys.enc(accountId) as `0x${string}`
+        const key = storageCodec.keys.enc(address) as `0x${string}`
         keysByAddress.set(key, address)
       } catch (err) {
         log.warn("[accountProxies] failed to build storage key", { network: network.id, err })
