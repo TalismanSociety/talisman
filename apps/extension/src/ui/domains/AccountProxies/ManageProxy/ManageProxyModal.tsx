@@ -14,7 +14,6 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -81,25 +80,20 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
     )
   }
 
-  const totalProxies = sets.reduce((acc, s) => acc + s.proxies.length, 0)
-
   return (
     <WizardModalDialog title={t("Manage Proxies")} onCloseClick={onClose}>
       <div className="flex grow flex-col gap-8">
-        <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">
-            {t("{{count}} proxy", { count: totalProxies })}
-          </span>
+        <div className="flex items-center justify-between gap-4">
+          <AccountDisplay address={address} className="overflow-hidden text-base" />
           <Button
             small
-            primary
             disabled={!canWrite}
             onClick={() => {
               closeManage()
               triggerOpenAdd({ address })
             }}
           >
-            {t("+ Add")}
+            {t("Add Proxy")}
           </Button>
         </div>
         {!canWrite && (
@@ -109,11 +103,11 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
             )}
           </p>
         )}
-        <div className="scrollable scrollable-800 flex grow flex-col gap-2 overflow-auto">
+        <div className="scrollable scrollable-800 flex grow flex-col gap-4 overflow-auto">
           {sets.length === 0 && <p className="text-body-secondary">{t("No proxies found.")}</p>}
           {sets.flatMap((set) =>
             set.proxies.map((entry, i) => (
-              <ProxyRow
+              <ProxyCard
                 key={`${set.networkId}-${entry.delegate}-${entry.proxyType}-${entry.delay}-${i}`}
                 set={set}
                 entry={entry}
@@ -128,49 +122,48 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   )
 }
 
-const ProxyRow: FC<{
+const ProxyCard: FC<{
   set: AccountProxySet
   entry: AccountProxyEntry
   canDelete: boolean
   onDelete: () => void
 }> = ({ set, entry, canDelete, onDelete }) => {
   const { t } = useTranslation()
-  const network = useNetworkById(set.networkId)
-  const proxyTypes = useProxyTypesForNetwork(set.networkId)
-  const requiresAnnouncement = entry.delay !== "0"
-
-  const proxyTypeDocs = useMemo(
-    () => proxyTypes.find((pt) => pt.name === entry.proxyType)?.docs ?? "",
-    [proxyTypes, entry.proxyType]
-  )
+  const network = useNetworkById(set.networkId, "polkadot")
 
   return (
-    <div className="flex items-center gap-4 rounded bg-grey-900 p-4">
-      <div className="flex grow flex-col overflow-hidden text-sm">
-        <span className="truncate font-mono text-xs">{entry.delegate}</span>
-        <div className="flex gap-2 text-body-secondary text-xs">
-          <span>{network?.name ?? set.networkId}</span>
-          <span>·</span>
-          <span title={proxyTypeDocs || undefined}>{entry.proxyType}</span>
-          {requiresAnnouncement && (
-            <>
-              <span>·</span>
-              <span className="text-alert-warn" title={t("Requires announcement workflow")}>
-                {t("delayed")}
-              </span>
-            </>
-          )}
-        </div>
+    <div className="flex flex-col gap-4 rounded bg-grey-900 p-8">
+      <div className="flex items-center justify-between gap-4">
+        <AccountDisplay
+          address={entry.delegate}
+          ss58Format={network?.prefix}
+          className="overflow-hidden text-base"
+        />
+        <button
+          type="button"
+          disabled={!canDelete}
+          onClick={onDelete}
+          className="shrink-0 rounded p-2 text-body-secondary hover:text-alert-warn disabled:cursor-not-allowed disabled:opacity-50"
+          title={t("Remove proxy")}
+        >
+          <TrashIcon />
+        </button>
       </div>
-      <button
-        type="button"
-        disabled={!canDelete}
-        onClick={onDelete}
-        className="rounded p-2 text-body-secondary hover:text-alert-warn disabled:cursor-not-allowed disabled:opacity-50"
-        title={t("Remove proxy")}
-      >
-        <TrashIcon />
-      </button>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-body-secondary">{t("Network")}</span>
+        <span className="flex items-center gap-2">
+          <NetworkLogo networkId={set.networkId} className="text-base" />
+          {network?.name ?? set.networkId}
+        </span>
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-body-secondary">{t("Proxy type")}</span>
+        <span>{entry.proxyType}</span>
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-body-secondary">{t("Delay")}</span>
+        <span>{entry.delay}</span>
+      </div>
     </div>
   )
 }
@@ -263,7 +256,7 @@ const RemoveProxyConfirm: FC<{
       onCloseClick={onClose}
     >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
-        <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
+        <h2 className="mb-4 text-center font-bold text-md">{t("Confirm Proxy Removal")}</h2>
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6">
           <div className="flex items-center justify-between gap-8">
             <span className="whitespace-nowrap text-body-secondary text-sm">{t("Account")}</span>
@@ -330,7 +323,7 @@ const RemoveProxyConfirm: FC<{
         <div className="grow" />
         <SapiSendButton
           containerId="manage-proxy-modal"
-          label={t("Confirm")}
+          label={t("Remove")}
           payload={payload?.payload}
           txMetadata={payload?.txMetadata}
           onSubmitted={handleSubmitted}
