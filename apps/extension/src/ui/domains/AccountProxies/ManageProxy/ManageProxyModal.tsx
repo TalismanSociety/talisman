@@ -1,5 +1,4 @@
 import type { AccountProxyEntry, AccountProxySet } from "@core/domains/accountProxies/types"
-import { Enum } from "@polkadot-api/substrate-bindings"
 import { TrashIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -22,6 +21,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
 import { useAddProxyModal } from "../AddProxy/useAddProxyModal"
+import { buildProxyPayload } from "../buildProxyPayload"
 import { getProxyDeposit } from "../proxyDeposit"
 import { useManageProxyModal } from "./useManageProxyModal"
 
@@ -233,17 +233,14 @@ const RemoveProxyConfirm: FC<{
   useEffect(() => {
     if (!sapi) return
     let cancelled = false
-    sapi
-      .getExtrinsicPayload(
-        "Proxy",
-        "remove_proxy",
-        {
-          delegate: { type: "Id", value: target.entry.delegate },
-          proxy_type: Enum(target.entry.proxyType),
-          delay: Number(target.entry.delay),
-        },
-        { address }
-      )
+    buildProxyPayload(
+      sapi,
+      "remove_proxy",
+      target.entry.delegate,
+      target.entry.proxyType,
+      Number(target.entry.delay),
+      address
+    )
       .then((p) => {
         if (!cancelled) setPayload(p)
       })

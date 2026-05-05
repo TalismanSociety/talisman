@@ -1,6 +1,5 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { AlertCircleIcon, InfoIcon, PlusIcon } from "@talismn/icons"
@@ -30,6 +29,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
+import { buildProxyPayload } from "../buildProxyPayload"
 import { getProxyDeposit } from "../proxyDeposit"
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
@@ -398,17 +398,7 @@ const AddProxyConfirm: FC<{
   useEffect(() => {
     if (!sapi) return
     let cancelled = false
-    sapi
-      .getExtrinsicPayload(
-        "Proxy",
-        "add_proxy",
-        {
-          delegate: { type: "Id", value: delegate },
-          proxy_type: Enum(proxyType),
-          delay,
-        },
-        { address }
-      )
+    buildProxyPayload(sapi, "add_proxy", delegate, proxyType, delay, address)
       .then((p) => {
         if (!cancelled) setPayload(p)
       })
