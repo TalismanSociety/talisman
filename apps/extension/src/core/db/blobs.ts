@@ -17,6 +17,7 @@ export type DbBlobId =
   | "phishing-metamask"
   | "phishing-polkadot"
   | "account-proxies"
+  | "proxy-pallet-cache"
 
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 

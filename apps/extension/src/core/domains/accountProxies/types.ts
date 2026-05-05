@@ -28,8 +28,17 @@ export type AccountProxyEntry = {
 export type AccountProxySet = {
   delegator: Address
   networkId: NetworkId
+  /**
+   * Number of proxy entries, available without metadata (decoded from
+   * the SCALE compact prefix of the raw storage value).
+   */
+  proxyCount: number
   deposit: string // bigint serialised as decimal string
   isStale: boolean
+  /**
+   * May be empty when only the lightweight poll has run. Populated on-demand
+   * when the user opens a proxy management form (requires metadata download).
+   */
   proxies: AccountProxyEntry[]
 }
 
@@ -50,7 +59,13 @@ export type RequestAccountProxiesRefresh = {
   address: Address
 }
 
+export type RequestAccountProxiesLoadDetails = {
+  networkId: NetworkId
+  address: Address
+}
+
 export interface AccountProxiesMessages {
   "pri(accountProxies.subscribe)": [null, boolean, AccountProxiesSubscriptionResponse]
   "pri(accountProxies.refresh)": [RequestAccountProxiesRefresh, boolean]
+  "pri(accountProxies.loadDetails)": [RequestAccountProxiesLoadDetails, boolean]
 }

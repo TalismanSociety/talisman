@@ -6,6 +6,8 @@ import { throwAfter } from "@talismn/util"
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { addressToAccountId } from "../assetDiscovery/substrate"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
+import { decodeProxyCount, getProxyProxiesKey } from "./storageKeys"
+import { setProxyPalletStatus } from "./store.proxyPalletCache"
 import type { AccountProxyEntry, AccountProxySet } from "./types"
 
 const PROBE_TIMEOUT_MS = 15_000
@@ -191,15 +193,86 @@ export type ProxyPollCandidate = {
   delegators: Array<{ address: string }>
 }
 
+export type LightweightProxyPollOutcome =
+  | {
+      ok: true
+      networkId: NetworkId
+      results: Array<{ address: string; proxyCount: number }>
+      /** true when at least one delegator had proxies (pallet confirmed). */
+      palletConfirmed: boolean
+    }
+  | { ok: false; networkId: NetworkId; error: unknown }
+
+/**
+ * Lightweight proxy poll: builds raw storage keys (no metadata), queries
+ * `state_queryStorageAt`, and extracts proxy counts from the SCALE compact
+ * prefix.
+ *
+ * Also updates the proxy pallet cache when the probe confirms pallet existence.
+ */
+export const pollNetworkProxiesLightweight = async (
+  candidate: ProxyPollCandidate,
+  signal: AbortSignal
+): Promise<LightweightProxyPollOutcome> => {
+  const { network, delegators } = candidate
+  if (!Array.isArray(network.rpcs) || network.rpcs.length === 0) {
+    return { ok: false, networkId: network.id, error: new Error("No RPC endpoints configured") }
+  }
+  if (delegators.length === 0) {
+    return { ok: true, networkId: network.id, results: [], palletConfirmed: false }
+  }
+
+  try {
+    const keysByAddress = new Map<`0x${string}`, string>()
+    for (const { address } of delegators) {
+      const accountId = addressToAccountId(address, network.account)
+      if (!accountId) continue
+      keysByAddress.set(getProxyProxiesKey(accountId), address)
+    }
+
+    const storageKeys = Array.from(keysByAddress.keys())
+    if (!storageKeys.length) {
+      return { ok: true, networkId: network.id, results: [], palletConfirmed: false }
+    }
+
+    const result = await probeNetworkRpcs(network.rpcs, storageKeys, signal)
+    const valuesByKey = new Map(result.changes)
+
+    let palletConfirmed = false
+    const results: Array<{ address: string; proxyCount: number }> = []
+    for (const [key, address] of keysByAddress.entries()) {
+      const raw = valuesByKey.get(key) ?? null
+      const proxyCount = decodeProxyCount(raw)
+      if (raw !== null) palletConfirmed = true
+      results.push({ address, proxyCount })
+    }
+
+    // Update the pallet cache when we can confirm the pallet exists.
+    // When all results are null we leave the existing cache entry intact
+    // (we can't distinguish "no proxies" from "no pallet" without metadata).
+    if (palletConfirmed && typeof network.specVersion === "number") {
+      setProxyPalletStatus(network.id, network.specVersion, true)
+    }
+
+    return { ok: true, networkId: network.id, results, palletConfirmed }
+  } catch (err) {
+    return { ok: false, networkId: network.id, error: err }
+  }
+}
+
 export type ProxyPollOutcome =
   | { ok: true; networkId: NetworkId; sets: AccountProxySet[] }
   | { ok: false; networkId: NetworkId; error: unknown }
 
 /**
- * Poll the `Proxy.Proxies` storage entry for every (delegator, network) tuple in
- * a single `state_queryStorageAt` request, then decode the result.
+ * Full proxy decode: downloads metadata for one chain, builds storage codecs,
+ * queries `state_queryStorageAt`, and decodes the full proxy entries including
+ * types, delegates, delays and deposit.
+ *
+ * Used on-demand (when user opens proxy management forms) and after the wizard
+ * submits a proxy transaction (refresh path).
  */
-export const pollNetworkProxies = async (
+export const loadNetworkProxyDetails = async (
   candidate: ProxyPollCandidate,
   signal: AbortSignal
 ): Promise<ProxyPollOutcome> => {
@@ -245,6 +318,7 @@ export const pollNetworkProxies = async (
         sets.push({
           delegator: address,
           networkId: network.id,
+          proxyCount: proxies.length,
           deposit: deposit.toString(),
           isStale: false,
           proxies,

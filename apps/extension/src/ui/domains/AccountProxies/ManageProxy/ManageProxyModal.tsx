@@ -49,6 +49,18 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   const { close: closeManage } = useManageProxyModal()
   const { open: triggerOpenAdd } = useAddProxyModal()
 
+  // Trigger on-demand full decode for networks that have proxies but no details yet
+  useEffect(() => {
+    for (const set of sets) {
+      if (set.proxyCount > 0 && set.proxies.length === 0) {
+        api.accountProxiesLoadDetails({ networkId: set.networkId, address }).catch(() => {})
+      }
+    }
+  }, [sets, address])
+
+  const hasProxiesWithCount = sets.some((s) => s.proxyCount > 0)
+  const isLoadingDetails = sets.some((s) => s.proxyCount > 0 && s.proxies.length === 0)
+
   const handleSubmitted = useCallback(
     (hash: Hex) => {
       if (!removeTarget) return
@@ -105,7 +117,10 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
           </p>
         )}
         <div className="scrollable scrollable-800 flex grow flex-col gap-4 overflow-auto">
-          {sets.length === 0 && <p className="text-body-secondary">{t("No proxies found.")}</p>}
+          {!hasProxiesWithCount && !isLoadingDetails && (
+            <p className="text-body-secondary">{t("No proxies found.")}</p>
+          )}
+          {isLoadingDetails && <p className="text-body-secondary">{t("Loading proxy details…")}</p>}
           {sets.flatMap((set) =>
             set.proxies.map((entry, i) => (
               <ProxyCard

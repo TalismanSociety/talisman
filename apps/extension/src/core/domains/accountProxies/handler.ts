@@ -2,7 +2,7 @@ import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
-import { accountProxies$, refreshAccountProxies } from "./accountProxies"
+import { accountProxies$, loadProxyDetails, refreshAccountProxies } from "./accountProxies"
 
 export class AccountProxiesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -19,6 +19,11 @@ export class AccountProxiesHandler extends ExtensionHandler {
         const { networkId, address } = request as RequestTypes["pri(accountProxies.refresh)"]
         refreshAccountProxies({ networkId, address })
         return true as ResponseType<TMessageType>
+      }
+
+      case "pri(accountProxies.loadDetails)": {
+        const { networkId, address } = request as RequestTypes["pri(accountProxies.loadDetails)"]
+        return loadProxyDetails(networkId, address) as ResponseType<TMessageType>
       }
 
       default:

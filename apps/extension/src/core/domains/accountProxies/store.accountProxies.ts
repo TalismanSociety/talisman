@@ -72,7 +72,21 @@ walletReady.then(() => {
   Promise.all([blobStore.get(), keyringStore.getAccounts()])
     .then(([blobData, accounts]) => {
       const validAddresses = new Set(accounts.filter(isAccountNotContact).map((a) => a.address))
-      const snapshot = blobData ? pruneSnapshot(blobData, validAddresses) : DEFAULT_DATA
+      let snapshot = blobData ? pruneSnapshot(blobData, validAddresses) : DEFAULT_DATA
+
+      // Backward compatibility: derive proxyCount from proxies.length for old data
+      const migrated: Record<string, AccountProxySet> = {}
+      let needsMigration = false
+      for (const [key, set] of Object.entries(snapshot.sets)) {
+        if (typeof set.proxyCount !== "number") {
+          needsMigration = true
+          migrated[key] = { ...set, proxyCount: set.proxies?.length ?? 0 }
+        } else {
+          migrated[key] = set
+        }
+      }
+      if (needsMigration) snapshot = { sets: migrated }
+
       emit(snapshot)
     })
     .catch((err) => {

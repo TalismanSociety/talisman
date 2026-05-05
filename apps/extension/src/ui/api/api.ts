@@ -143,6 +143,8 @@ export const api: MessageTypes = {
   accountProxies: (cb) => messageService.subscribe("pri(accountProxies.subscribe)", null, cb),
   accountProxiesRefresh: (request) =>
     messageService.sendMessage("pri(accountProxies.refresh)", request),
+  accountProxiesLoadDetails: (request) =>
+    messageService.sendMessage("pri(accountProxies.loadDetails)", request),
 
   // authorized sites messages ------------------------------------------
   authorizedSites: () => messageService.sendMessage("pri(sites.list)"),

@@ -43,10 +43,7 @@ export const useAccountProxiesCount = (address: string | null | undefined): numb
   const sets = useAccountProxySets()
   return useMemo(() => {
     if (!address) return 0
-    return sets.reduce(
-      (total, s) => (s.delegator === address ? total + s.proxies.length : total),
-      0
-    )
+    return sets.reduce((total, s) => (s.delegator === address ? total + s.proxyCount : total), 0)
   }, [sets, address])
 }
 
