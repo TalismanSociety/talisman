@@ -2,7 +2,7 @@ name: API Health Tests
 
 on:
   schedule:
-    - cron: "*/30 * * * *" # every 30 minutes
+    - cron: "0 */4 * * *" # every 4 hours
   workflow_dispatch: # allow manual trigger
 
 concurrency:
@@ -47,3 +47,22 @@ jobs:
           name: api-health-report
           path: playwright-report/
           retention-days: 7
+
+      - name: Notify Discord on success
+        if: success()
+        run: |
+          curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"content":"✅ Playwright API Health check passed."}'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}
+
+      - name: Notify Discord on failure
+        if: failure()
+        run: |
+          zip -r api-health-report.zip playwright-report/
+          curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+            -F "content=⚠️ Playwright API Health check failed." \
+            -F "files[0]=@api-health-report.zip"
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}

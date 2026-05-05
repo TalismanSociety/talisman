@@ -98,7 +98,11 @@ test("Change password, lock the wallet and try to backup seedphrase", async ({
 
     // Open navigation drawer and lock the wallet
     await popupPage.getByRole("button", { name: "More" }).click()
-    await popupPage.getByText("Lock Wallet").click()
+    await expect(popupPage.getByText("Lock Wallet")).toBeVisible()
+    await popupPage
+      .getByText("Lock Wallet")
+      .click()
+      .catch(() => {})
 
     // Extension pages close on lock — open a fresh popup to unlock
     const loginPage = await context.newPage()

@@ -3,7 +3,7 @@ services:
   # Exposes JSON-RPC on port 8545
   # 10 pre-funded accounts with 10,000 ETH each
   anvil:
-    image: ghcr.io/foundry-rs/foundry:latest
+    image: ghcr.io/foundry-rs/foundry:v1.6.0-rc1
     entrypoint: anvil
     command: --host 0.0.0.0 --chain-id 1 --block-time 1
     ports:

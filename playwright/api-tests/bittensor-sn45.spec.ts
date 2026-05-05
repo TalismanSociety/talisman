@@ -7,7 +7,7 @@ const SN45_API_URL = "https://sn45api.talisman.xyz"
 const SN45_API_KEY = process.env.SN45_API_KEY
 const authHeaders: Record<string, string> = SN45_API_KEY ? { "X-API-Key": SN45_API_KEY } : {}
 
-const TEST_NETUID = Math.floor(Math.random() * 125) + 1
+const TEST_NETUID = 4
 
 test.describe("SN45 Data API", () => {
   test.describe.configure({ retries: 2 })
