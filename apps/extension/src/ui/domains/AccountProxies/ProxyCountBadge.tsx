@@ -18,15 +18,16 @@ export const ProxyCountBadge: FC<Props> = ({ address, className }) => {
 
   if (!count) return null
 
+  const label = count === 1 ? t("{{count}} proxy", { count }) : t("{{count}} proxies", { count })
+
   return (
     <span
       className={cn(
-        "inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-grey-700 px-2 text-body-secondary text-xs",
+        "inline-flex shrink-0 items-center justify-center rounded-sm bg-primary/10 px-4 py-1.5 text-primary text-sm",
         className
       )}
-      title={t("{{count}} proxy", { count })}
     >
-      {count}
+      {label}
     </span>
   )
 }
