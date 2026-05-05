@@ -31,6 +31,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
+import { getProxyDeposit } from "../proxyDeposit"
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
@@ -354,13 +355,15 @@ const AddProxyConfirm: FC<{
     [proxySets, network.id]
   )
 
-  // Proxy deposit: base + factor * (existingCount + 1)
-  const proxyDeposit = useMemo(() => {
+  // Additional deposit reserved by adding this proxy.
+  const additionalReservedDeposit = useMemo(() => {
     if (!sapi) return null
     try {
       const base = sapi.getConstant<bigint>("Proxy", "ProxyDepositBase")
       const factor = sapi.getConstant<bigint>("Proxy", "ProxyDepositFactor")
-      return base + factor * BigInt(existingProxyCount + 1)
+      const currentDeposit = getProxyDeposit(existingProxyCount, base, factor)
+      const nextDeposit = getProxyDeposit(existingProxyCount + 1, base, factor)
+      return nextDeposit - currentDeposit
     } catch {
       return null
     }
@@ -455,10 +458,10 @@ const AddProxyConfirm: FC<{
           <div className="flex items-center justify-between gap-8">
             <span className="text-body-secondary">{t("Reserved deposit")}</span>
             <span className="text-body">
-              {proxyDeposit !== null && nativeToken?.id ? (
+              {additionalReservedDeposit !== null && nativeToken?.id ? (
                 <TokensAndFiat
                   tokenId={nativeToken.id}
-                  planck={proxyDeposit}
+                  planck={additionalReservedDeposit}
                   noCountUp
                   className="text-body-secondary"
                   tokensClassName="text-body"
@@ -482,14 +485,14 @@ const AddProxyConfirm: FC<{
           </div>
         </div>
         {/* Deposit info banner */}
-        {proxyDeposit !== null && nativeToken && (
+        {additionalReservedDeposit !== null && nativeToken && (
           <div className="mt-4 flex items-start gap-4 rounded bg-primary/10 px-8 py-6 text-primary text-xs">
             <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
             <span>
               {t(
                 "{{amount}} will be reserved from your balance and returned when this proxy is removed.",
                 {
-                  amount: `${formatPlanck(proxyDeposit, nativeToken.decimals)} ${nativeToken.symbol}`,
+                  amount: `${formatPlanck(additionalReservedDeposit, nativeToken.decimals)} ${nativeToken.symbol}`,
                 }
               )}
             </span>

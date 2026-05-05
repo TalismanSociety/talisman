@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
 import { useAddProxyModal } from "../AddProxy/useAddProxyModal"
+import { getProxyDeposit } from "../proxyDeposit"
 import { useManageProxyModal } from "./useManageProxyModal"
 
 type RemoveTarget = { networkId: string; entry: AccountProxyEntry }
@@ -198,9 +199,9 @@ const RemoveProxyConfirm: FC<{
     try {
       const base = sapi.getConstant<bigint>("Proxy", "ProxyDepositBase")
       const factor = sapi.getConstant<bigint>("Proxy", "ProxyDepositFactor")
-      const currentDeposit = base + factor * BigInt(existingProxyCount)
+      const currentDeposit = getProxyDeposit(existingProxyCount, base, factor)
       const newCount = existingProxyCount - 1
-      const newDeposit = newCount > 0 ? base + factor * BigInt(newCount) : 0n
+      const newDeposit = getProxyDeposit(newCount, base, factor)
       return currentDeposit - newDeposit
     } catch {
       return null

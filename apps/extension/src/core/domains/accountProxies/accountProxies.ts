@@ -8,7 +8,6 @@ import {
   defer,
   distinctUntilChanged,
   from,
-  interval,
   map,
   Observable,
   of,
@@ -28,6 +27,7 @@ import {
   pollNetworkProxies,
 } from "./accountProxiesProvider"
 import { hasProxyPallet } from "./hasProxyPallet"
+import { createPollingTrigger$ } from "./polling"
 import {
   accountProxiesStore$,
   getAccountProxySetKey,
@@ -173,22 +173,18 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
   let currentCandidates: ProxyPollCandidate[] = []
   let initialResolved = false
 
-  const candidatesSub = candidates$.subscribe((cs) => {
+  const pollSub = createPollingTrigger$(candidates$, POLL_INTERVAL_MS, (cs) => {
     currentCandidates = cs
+  }).subscribe((candidates) => {
+    runPollCycle(candidates, abortController)
+      .catch((err) => log.error("[accountProxies] poll cycle failed", err))
+      .finally(() => {
+        if (!initialResolved) {
+          initialResolved = true
+          subscriber.next("live")
+        }
+      })
   })
-
-  const tickSub = interval(POLL_INTERVAL_MS)
-    .pipe(startWith(-1))
-    .subscribe(() => {
-      runPollCycle(currentCandidates, abortController)
-        .catch((err) => log.error("[accountProxies] poll cycle failed", err))
-        .finally(() => {
-          if (!initialResolved) {
-            initialResolved = true
-            subscriber.next("live")
-          }
-        })
-    })
 
   const refreshSub = refresh$.subscribe((req) => {
     runPollCycle(currentCandidates, abortController, (candidate) => {
@@ -201,8 +197,7 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
 
   return () => {
     abortController.abort()
-    candidatesSub.unsubscribe()
-    tickSub.unsubscribe()
+    pollSub.unsubscribe()
     refreshSub.unsubscribe()
   }
 })
