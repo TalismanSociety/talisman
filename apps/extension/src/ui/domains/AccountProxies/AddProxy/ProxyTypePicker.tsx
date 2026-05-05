@@ -58,9 +58,7 @@ const ProxyTypePickerContent: FC<{
     if (!lowerSearch) return allProxyTypes
     return allProxyTypes.filter(
       (pt) =>
-        pt.name.toLowerCase().includes(lowerSearch) ||
-        formatProxyTypeName(pt.name).toLowerCase().includes(lowerSearch) ||
-        pt.docs.toLowerCase().includes(lowerSearch)
+        pt.name.toLowerCase().includes(lowerSearch) || pt.docs.toLowerCase().includes(lowerSearch)
     )
   }, [allProxyTypes, search])
 
@@ -102,13 +100,6 @@ const ProxyTypePickerContent: FC<{
   )
 }
 
-/** Formats PascalCase proxy type names into readable labels (e.g. "NonTransfer" → "Non-transfer") */
-const formatProxyTypeName = (name: string): string =>
-  name
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/^./, (c) => c.toUpperCase())
-    .replace(/-./, (c) => c.toLowerCase())
-
 const ProxyTypeRow: FC<{
   proxyType: ProxyTypeInfo
   selected?: boolean
@@ -125,7 +116,7 @@ const ProxyTypeRow: FC<{
       )}
     >
       <div className="flex grow flex-col gap-1 overflow-hidden text-left">
-        <div className="truncate text-body">{formatProxyTypeName(proxyType.name)}</div>
+        <div className="truncate text-body">{proxyType.name}</div>
         {!!proxyType.docs && (
           <div className="line-clamp-2 text-body-secondary text-xs leading-paragraph">
             {proxyType.docs}

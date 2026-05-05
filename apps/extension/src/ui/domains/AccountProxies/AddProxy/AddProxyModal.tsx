@@ -3,7 +3,7 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
-import { AlertCircleIcon, InfoIcon, PlusIcon, SettingsIcon } from "@talismn/icons"
+import { AlertCircleIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -218,9 +218,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
                   onClick={() => setShowProxyTypePicker(true)}
                 >
                   <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                    <div className="grow truncate leading-base">
-                      {formatProxyTypeName(proxyType)}
-                    </div>
+                    <div className="grow truncate leading-base">{proxyType}</div>
                   </div>
                 </PillButton>
               ) : (
@@ -242,33 +240,28 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
                 </Tooltip>
               )}
             </div>
-          </div>
-          <div className="flex grow flex-col gap-8 pt-8">
-            <label className="flex flex-col gap-2 text-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-body-secondary">
-                  <span>{t("Announcement delay")}</span>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="text-xs" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {t(
-                        "Delayed proxies require an announcement workflow which Talisman doesn't support at this time."
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <button
-                  type="button"
-                  onClick={delayDrawer.open}
-                  className="flex cursor-pointer items-center gap-2 rounded-full bg-grey-750 px-4 py-2 text-body text-xs hover:bg-grey-700"
-                >
-                  <SettingsIcon className="shrink-0 text-body-secondary" />
-                  <span>{delay}</span>
-                </button>
+            <div className="flex h-16 items-center justify-between gap-8">
+              <div className="flex items-center gap-2 whitespace-nowrap text-body-secondary">
+                <span>{t("Delay")}</span>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <InfoIcon className="text-xs" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t(
+                      "Delayed proxies require an announcement workflow which Talisman doesn't support at this time."
+                    )}
+                  </TooltipContent>
+                </Tooltip>
               </div>
-            </label>
+              <PillButton className="h-16 max-w-full px-4!" onClick={delayDrawer.open}>
+                <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
+                  <div className="grow truncate leading-base">
+                    {delay} {t("blocks")}
+                  </div>
+                </div>
+              </PillButton>
+            </div>
           </div>
         </ScrollContainer>
         <Button
@@ -544,10 +537,3 @@ const formatPlanck = (planck: bigint, decimals: number): string => {
   const fracPart = str.slice(str.length - decimals).replace(/0+$/, "")
   return fracPart ? `${intPart}.${fracPart}` : intPart
 }
-
-/** Formats PascalCase proxy type names into readable labels (e.g. "NonTransfer" → "Non-transfer") */
-const formatProxyTypeName = (name: string): string =>
-  name
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/^./, (c) => c.toUpperCase())
-    .replace(/-./, (c) => c.toLowerCase())
