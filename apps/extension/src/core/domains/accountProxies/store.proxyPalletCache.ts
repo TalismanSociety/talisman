@@ -19,11 +19,21 @@ const [setCache, proxyPalletCache$] = splitSubject(new ReplaySubject<ProxyPallet
 
 let currentCache: ProxyPalletCache = {}
 
+/** Strip entries with `hasProxyPallet: false` — raw storage probes can never
+ *  reliably distinguish "no pallet" from "no proxies for this account". */
+const sanitiseCache = (raw: ProxyPalletCache): ProxyPalletCache => {
+  const cleaned: ProxyPalletCache = {}
+  for (const [id, entry] of Object.entries(raw)) {
+    if (entry.hasProxyPallet) cleaned[id] = entry
+  }
+  return cleaned
+}
+
 walletReady.then(() => {
   blobStore
     .get()
     .then((data) => {
-      currentCache = data ?? {}
+      currentCache = data ? sanitiseCache(data) : {}
       log.debug("[proxyPalletCache] loaded from store", currentCache)
       setCache(currentCache)
     })
@@ -44,8 +54,9 @@ walletReady.then(() => {
 /**
  * Check the cached proxy pallet status for a network.
  *
- * Returns `true` / `false` when we have a cached result at the given
- * `specVersion`, or `undefined` when we need to probe.
+ * Returns `true` when pallet existence is confirmed, `false` when
+ * definitively ruled out via metadata inspection, or `undefined`
+ * when no cached result exists (probe required).
  */
 export const getProxyPalletStatus = (
   networkId: NetworkId,
@@ -57,7 +68,13 @@ export const getProxyPalletStatus = (
   return entry.hasProxyPallet
 }
 
-/** Update the cached pallet detection result for a network. */
+/**
+ * Record a positive pallet-existence confirmation for a network.
+ *
+ * `false` should only be set from **metadata-based** callers that can
+ * definitively determine pallet absence. Raw storage probes must only
+ * pass `true` (non-null storage confirms existence, but null is ambiguous).
+ */
 export const setProxyPalletStatus = (
   networkId: NetworkId,
   specVersion: number,

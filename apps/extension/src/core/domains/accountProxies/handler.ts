@@ -3,6 +3,7 @@ import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { accountProxies$, loadProxyDetails, refreshAccountProxies } from "./accountProxies"
+import { setProxyPalletStatus } from "./store.proxyPalletCache"
 
 export class AccountProxiesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -24,6 +25,13 @@ export class AccountProxiesHandler extends ExtensionHandler {
       case "pri(accountProxies.loadDetails)": {
         const { networkId, address } = request as RequestTypes["pri(accountProxies.loadDetails)"]
         return loadProxyDetails(networkId, address) as ResponseType<TMessageType>
+      }
+
+      case "pri(accountProxies.updatePalletCache)": {
+        const { networkId, specVersion, hasProxyPallet } =
+          request as RequestTypes["pri(accountProxies.updatePalletCache)"]
+        setProxyPalletStatus(networkId, specVersion, hasProxyPallet)
+        return true as ResponseType<TMessageType>
       }
 
       default:

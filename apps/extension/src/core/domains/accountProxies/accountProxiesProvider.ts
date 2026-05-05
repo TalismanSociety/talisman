@@ -291,7 +291,19 @@ export const loadNetworkProxyDetails = async (
     if (!metadataRpc) throw new Error("Metadata RPC not available")
 
     const { builder } = parseMetadataRpc(metadataRpc)
-    const storageCodec = builder.buildStorage("Proxy", "Proxies")
+
+    // Definitive pallet check via metadata — cache the result
+    let storageCodec: ReturnType<typeof builder.buildStorage>
+    try {
+      storageCodec = builder.buildStorage("Proxy", "Proxies")
+      if (typeof network.specVersion === "number")
+        setProxyPalletStatus(network.id, network.specVersion, true)
+    } catch {
+      // buildStorage throws when the pallet/entry doesn't exist in metadata
+      if (typeof network.specVersion === "number")
+        setProxyPalletStatus(network.id, network.specVersion, false)
+      return { ok: true, networkId: network.id, sets: [] }
+    }
 
     const keysByAddress = new Map<`0x${string}`, string>()
     for (const { address } of delegators) {

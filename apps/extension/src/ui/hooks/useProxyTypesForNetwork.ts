@@ -4,6 +4,7 @@ import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useDotNetwork } from "@ui/state/chaindata"
+import { useEffect, useRef } from "react"
 
 const EMPTY: ProxyTypeInfo[] = []
 
@@ -11,15 +12,19 @@ const EMPTY: ProxyTypeInfo[] = []
  * Returns the `ProxyType` enum variants (name + docs) for a given network,
  * extracted from that network's runtime metadata.
  *
- * Returns an empty array while loading, on error, or when the network has no
- * recognisable Proxy pallet.
+ * - `proxyTypes`: the list of proxy type variants (empty while loading or when the pallet is absent)
+ * - `isFetched`: `true` once the metadata query has completed (success or error),
+ *   allowing callers to distinguish "still loading" from "no proxy pallet"
+ *
+ * As a side effect, updates the proxy pallet cache in the backend after the
+ * metadata query completes so the lightweight poll can skip networks without the pallet.
  */
 export const useProxyTypesForNetwork = (
   networkId: DotNetworkId | null | undefined
-): ProxyTypeInfo[] => {
+): { proxyTypes: ProxyTypeInfo[]; isFetched: boolean } => {
   const chain = useDotNetwork(networkId)
 
-  const { data } = useQuery({
+  const { data, isFetched } = useQuery({
     queryKey: ["proxyTypesForNetwork", chain?.genesisHash],
     queryFn: async () => {
       if (!chain?.genesisHash) return EMPTY
@@ -39,5 +44,22 @@ export const useProxyTypesForNetwork = (
     staleTime: Number.POSITIVE_INFINITY,
   })
 
-  return data ?? EMPTY
+  const proxyTypes = data ?? EMPTY
+  const resolvedFetched = isFetched || !chain?.genesisHash
+
+  // Update the pallet cache once we have a definitive answer from metadata
+  const cacheUpdatedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!resolvedFetched || !networkId || typeof chain?.specVersion !== "number") return
+    const cacheKey = `${networkId}:${chain.specVersion}`
+    if (cacheUpdatedRef.current === cacheKey) return
+    cacheUpdatedRef.current = cacheKey
+    api.accountProxiesUpdatePalletCache({
+      networkId,
+      specVersion: chain.specVersion,
+      hasProxyPallet: proxyTypes.length > 0,
+    })
+  }, [resolvedFetched, networkId, chain?.specVersion, proxyTypes.length])
+
+  return { proxyTypes, isFetched: resolvedFetched }
 }

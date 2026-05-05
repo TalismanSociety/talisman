@@ -70,7 +70,9 @@ const candidates$: Observable<ProxyPollCandidate[]> = combineLatest({
 
     const candidates: ProxyPollCandidate[] = []
     for (const network of activeDotNetworks) {
-      // Skip networks where the cache says "no proxy pallet" for the current specVersion
+      // `true` = confirmed via non-null storage or metadata inspection.
+      // `false` = definitively ruled out via metadata (pallet absent).
+      // `undefined` = unknown, must probe.
       const cachedStatus = getProxyPalletStatus(
         network.id,
         typeof network.specVersion === "number" ? network.specVersion : undefined

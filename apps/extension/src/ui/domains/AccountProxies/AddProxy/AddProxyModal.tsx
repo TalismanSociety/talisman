@@ -79,7 +79,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   }, [compatibleNetworks, networkId])
 
   const network = compatibleNetworks.find((n) => n.id === networkId)
-  const proxyTypes = useProxyTypesForNetwork(networkId || null)
+  const { proxyTypes, isFetched: isProxyTypesFetched } = useProxyTypesForNetwork(networkId || null)
   const [delegate, setDelegate] = useState("")
   const [proxyType, setProxyType] = useState<string>("")
   const [delay, setDelay] = useState("0")
@@ -157,7 +157,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
         onCloseClick={onClose}
         contentClassName="overflow-hidden flex flex-col gap-8"
       >
-        <ScrollContainer>
+        <ScrollContainer className="grow">
           <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
             <div className="flex h-16 items-center justify-between gap-8">
               <div className="whitespace-nowrap text-body-secondary">{t("Account")}</div>
@@ -214,7 +214,11 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
             <div className="flex flex-col gap-4">
               <span className="text-body-secondary text-sm">{t("Proxy type")}</span>
               {proxyTypes.length === 0 ? (
-                <div className="text-body-disabled text-sm">{t("Loading…")}</div>
+                <div className="text-body-disabled text-sm">
+                  {isProxyTypesFetched
+                    ? t("Proxies are not supported on this network.")
+                    : t("Loading…")}
+                </div>
               ) : (
                 <div className="flex flex-col gap-4" role="radiogroup" aria-label={t("Proxy type")}>
                   {proxyTypes.map((pt) => (

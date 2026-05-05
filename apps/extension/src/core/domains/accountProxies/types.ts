@@ -64,8 +64,15 @@ export type RequestAccountProxiesLoadDetails = {
   address: Address
 }
 
+export type RequestAccountProxiesUpdatePalletCache = {
+  networkId: NetworkId
+  specVersion: number
+  hasProxyPallet: boolean
+}
+
 export interface AccountProxiesMessages {
   "pri(accountProxies.subscribe)": [null, boolean, AccountProxiesSubscriptionResponse]
   "pri(accountProxies.refresh)": [RequestAccountProxiesRefresh, boolean]
   "pri(accountProxies.loadDetails)": [RequestAccountProxiesLoadDetails, boolean]
+  "pri(accountProxies.updatePalletCache)": [RequestAccountProxiesUpdatePalletCache, boolean]
 }
