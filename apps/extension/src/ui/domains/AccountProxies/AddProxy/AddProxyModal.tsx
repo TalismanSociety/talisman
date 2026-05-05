@@ -10,6 +10,7 @@ import { notify } from "@ui/components/Notifications"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -19,6 +20,8 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
@@ -395,6 +398,40 @@ const AddProxyConfirm: FC<{
     error: feeError,
   } = useGetFeeEstimate({ sapi: sapi ?? null, payload: payload?.payload })
 
+  // Balance check: account must afford deposit + fee while staying alive (>= ED)
+  const addressesAndTokens = useMemo(
+    () => ({
+      addresses: [address],
+      tokenIds: nativeToken?.id ? [nativeToken.id] : [],
+    }),
+    [address, nativeToken?.id]
+  )
+  const { status: balanceStatus, balances } = useBalancesByParams({ addressesAndTokens })
+  const balance = useMemo(
+    () =>
+      nativeToken?.id
+        ? (balances.find({ address, tokenId: nativeToken.id }).each[0] ?? null)
+        : null,
+    [balances, address, nativeToken?.id]
+  )
+  const isBalanceLoading = balanceStatus === "initialising"
+  // When subscription is live but no entry exists, account has 0 balance
+  const transferablePlanck = isBalanceLoading ? null : (balance?.transferable.planck ?? 0n)
+
+  const existentialDeposit = useExistentialDeposit(nativeToken?.id)
+
+  const insufficientBalance = useMemo(() => {
+    if (
+      transferablePlanck === null ||
+      additionalReservedDeposit === null ||
+      !feeEstimate ||
+      !existentialDeposit
+    )
+      return false
+    const required = additionalReservedDeposit + feeEstimate + existentialDeposit.planck
+    return transferablePlanck < required
+  }, [transferablePlanck, additionalReservedDeposit, feeEstimate, existentialDeposit])
+
   useEffect(() => {
     if (!sapi) return
     let cancelled = false
@@ -422,11 +459,11 @@ const AddProxyConfirm: FC<{
   return (
     <WizardModalDialog
       title={t("Add Proxy")}
-      contentClassName="flex flex-col"
+      contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
       onCloseClick={onClose}
     >
-      <div className="flex size-full flex-col gap-8 overflow-hidden">
+      <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">
         <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
         {/* Account and delegate section */}
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6">
@@ -465,6 +502,24 @@ const AddProxyConfirm: FC<{
         {/* Transaction details section */}
         <div className="mt-4 flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
           <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Available balance")}</span>
+            <span className="text-body">
+              {!nativeToken?.id ? (
+                <span className="text-body-disabled">{t("N/A")}</span>
+              ) : isBalanceLoading ? (
+                <Skeleton>{`0 ${nativeToken.symbol}`}</Skeleton>
+              ) : (
+                <TokensAndFiat
+                  tokenId={nativeToken.id}
+                  planck={transferablePlanck ?? 0n}
+                  noCountUp
+                  className="text-body-secondary"
+                  tokensClassName="text-body"
+                />
+              )}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
             <span className="text-body-secondary">{t("Reserved deposit")}</span>
             <span className="text-body">
               {additionalReservedDeposit !== null && nativeToken?.id ? (
@@ -493,29 +548,43 @@ const AddProxyConfirm: FC<{
             </span>
           </div>
         </div>
-        {/* Deposit info banner */}
-        {additionalReservedDeposit !== null && nativeToken && (
-          <div className="mt-4 flex items-start gap-4 rounded bg-primary/10 px-8 py-6 text-primary text-xs">
+        {insufficientBalance ? (
+          /* Insufficient balance warning */
+          <div className="flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
             <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
             <span>
               {t(
-                "{{amount}} will be reserved from your balance and returned when this proxy is removed.",
-                {
-                  amount: `${formatPlanck(additionalReservedDeposit, nativeToken.decimals)} ${nativeToken.symbol}`,
-                }
+                "Insufficient balance to cover the proxy deposit, network fee, and keep the account alive."
               )}
             </span>
           </div>
+        ) : (
+          /* Deposit info banner */
+          additionalReservedDeposit !== null &&
+          nativeToken && (
+            <div className="flex items-start gap-4 rounded bg-primary/10 px-8 py-6 text-primary text-xs">
+              <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+              <span>
+                {t(
+                  "{{amount}} will be reserved from your balance and returned when this proxy is removed.",
+                  {
+                    amount: `${formatPlanck(additionalReservedDeposit, nativeToken.decimals)} ${nativeToken.symbol}`,
+                  }
+                )}
+              </span>
+            </div>
+          )
         )}
-        <div className="grow" />
-        <SapiSendButton
-          containerId="add-proxy-modal"
-          label={t("Confirm")}
-          payload={payload?.payload}
-          txMetadata={payload?.txMetadata}
-          onSubmitted={handleSubmitted}
-        />
-      </div>
+      </ScrollContainer>
+      <SapiSendButton
+        containerId="add-proxy-modal"
+        label={t("Confirm")}
+        payload={payload?.payload}
+        txMetadata={payload?.txMetadata}
+        onSubmitted={handleSubmitted}
+        disabled={insufficientBalance}
+        className="shrink-0"
+      />
     </WizardModalDialog>
   )
 }
