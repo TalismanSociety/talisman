@@ -1,10 +1,11 @@
 import type { AccountProxyEntry, AccountProxySet } from "@core/domains/accountProxies/types"
-import { TrashIcon } from "@talismn/icons"
+import { AlertCircleIcon, TrashIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
+import { Skeleton } from "@ui/components/Skeleton"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -13,6 +14,8 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -230,6 +233,33 @@ const RemoveProxyConfirm: FC<{
     error: feeError,
   } = useGetFeeEstimate({ sapi: sapi ?? null, payload: payload?.payload })
 
+  // Balance check: account must afford fee while staying alive (>= ED)
+  const addressesAndTokens = useMemo(
+    () => ({
+      addresses: [address],
+      tokenIds: nativeToken?.id ? [nativeToken.id] : [],
+    }),
+    [address, nativeToken?.id]
+  )
+  const { status: balanceStatus, balances } = useBalancesByParams({ addressesAndTokens })
+  const balance = useMemo(
+    () =>
+      nativeToken?.id
+        ? (balances.find({ address, tokenId: nativeToken.id }).each[0] ?? null)
+        : null,
+    [balances, address, nativeToken?.id]
+  )
+  const isBalanceLoading = balanceStatus === "initialising"
+  const transferablePlanck = isBalanceLoading ? null : (balance?.transferable.planck ?? 0n)
+
+  const existentialDeposit = useExistentialDeposit(nativeToken?.id)
+
+  const insufficientBalance = useMemo(() => {
+    if (transferablePlanck === null || !feeEstimate || !existentialDeposit) return false
+    const required = feeEstimate + existentialDeposit.planck
+    return transferablePlanck < required
+  }, [transferablePlanck, feeEstimate, existentialDeposit])
+
   useEffect(() => {
     if (!sapi) return
     let cancelled = false
@@ -305,6 +335,24 @@ const RemoveProxyConfirm: FC<{
         </div>
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
           <div className="flex items-center justify-between gap-8">
+            <span className="text-body-secondary">{t("Available balance")}</span>
+            <span className="text-body">
+              {!nativeToken?.id ? (
+                <span className="text-body-disabled">{t("N/A")}</span>
+              ) : isBalanceLoading ? (
+                <Skeleton>{`0 ${nativeToken.symbol}`}</Skeleton>
+              ) : (
+                <TokensAndFiat
+                  tokenId={nativeToken.id}
+                  planck={transferablePlanck ?? 0n}
+                  noCountUp
+                  className="text-body-secondary"
+                  tokensClassName="text-body"
+                />
+              )}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-8">
             <span className="text-body-secondary">{t("Deposit unlocked")}</span>
             <span className="text-body">
               {depositUnlocked !== null && nativeToken?.id ? (
@@ -333,6 +381,14 @@ const RemoveProxyConfirm: FC<{
             </span>
           </div>
         </div>
+        {insufficientBalance && (
+          <div className="flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
+            <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+            <span>
+              {t("Insufficient balance to cover the network fee and keep the account alive.")}
+            </span>
+          </div>
+        )}
         <div className="grow" />
         <SapiSendButton
           containerId="manage-proxy-modal"
@@ -340,6 +396,7 @@ const RemoveProxyConfirm: FC<{
           payload={payload?.payload}
           txMetadata={payload?.txMetadata}
           onSubmitted={handleSubmitted}
+          disabled={insufficientBalance}
         />
       </div>
     </WizardModalDialog>
