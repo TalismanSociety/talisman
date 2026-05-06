@@ -31,13 +31,13 @@ export const ProxyActionSummary: FC<ProxyActionSummaryProps> = ({
         <AccountDisplay
           address={accountAddress}
           ss58Format={networkPrefix}
-          className="overflow-hidden text-body text-sm"
+          className="shrink-0 overflow-hidden text-body text-sm [&_svg]:size-10"
         />
       </div>
       <div className="flex items-center justify-between gap-8">
         <span className="text-body-secondary text-sm">{t("Network")}</span>
         <div className="flex items-center gap-4 text-body text-sm">
-          <NetworkLogo networkId={networkId} className="shrink-0 text-lg!" />
+          <NetworkLogo networkId={networkId} className="size-10 shrink-0" />
           <span className="truncate">{networkName ?? networkId}</span>
         </div>
       </div>
@@ -46,14 +46,14 @@ export const ProxyActionSummary: FC<ProxyActionSummaryProps> = ({
         <AccountDisplay
           address={delegateAddress}
           ss58Format={networkPrefix}
-          className="overflow-hidden text-body text-sm"
+          className="overflow-hidden text-body text-sm [&_svg]:size-10"
         />
       </div>
-      <div className="flex items-center justify-between gap-8">
+      <div className="flex h-10 items-center justify-between gap-8">
         <span className="text-body-secondary text-sm">{t("Proxy type")}</span>
         <span className="truncate text-body text-sm">{proxyType}</span>
       </div>
-      <div className="flex items-center justify-between gap-8">
+      <div className="flex h-10 items-center justify-between gap-8">
         <span className="text-body-secondary text-sm">{t("Delay")}</span>
         <span className="text-body text-sm">{`${delay} ${t("blocks")}`}</span>
       </div>
