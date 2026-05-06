@@ -208,6 +208,8 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
   let initialResolved = false
   let latestSnapshot: { sets: Record<string, AccountProxySet> } = { sets: {} }
   let pollSub: { unsubscribe: () => void } | null = null
+  // Per-cycle abort controller to cancel in-progress cycles when new candidates arrive
+  let cycleAbortController: AbortController | null = null
 
   // Track the latest snapshot for preserving loaded details during lightweight polls
   const snapshotSub = accountProxiesStore$.subscribe((s) => {
@@ -222,9 +224,22 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
 
     pollSub = createPollingTrigger$(candidates$, POLL_INTERVAL_MS, () => {}).subscribe(
       (candidates) => {
-        runLightweightPollCycle(candidates, abortController, latestSnapshot)
-          .catch((err) => log.error("[accountProxies] poll cycle failed", err))
+        // Abort any in-progress cycle to prevent stale writes
+        cycleAbortController?.abort()
+        cycleAbortController = new AbortController()
+        const currentCycleAbort = cycleAbortController
+
+        // Link to parent: if the parent aborts, also abort this cycle
+        const onParentAbort = () => currentCycleAbort.abort()
+        abortController.signal.addEventListener("abort", onParentAbort)
+
+        runLightweightPollCycle(candidates, currentCycleAbort, latestSnapshot)
+          .catch((err) => {
+            if (!currentCycleAbort.signal.aborted)
+              log.error("[accountProxies] poll cycle failed", err)
+          })
           .finally(() => {
+            abortController.signal.removeEventListener("abort", onParentAbort)
             if (!initialResolved) {
               initialResolved = true
               subscriber.next("live")
@@ -236,6 +251,7 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
 
   return () => {
     abortController.abort()
+    cycleAbortController?.abort()
     pollSub?.unsubscribe()
     snapshotSub.unsubscribe()
   }

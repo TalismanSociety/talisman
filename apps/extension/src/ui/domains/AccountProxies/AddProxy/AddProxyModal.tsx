@@ -3,6 +3,7 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { AlertCircleIcon, InfoIcon, PlusIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
@@ -30,7 +31,7 @@ import {
 } from "@ui/state/accountProxies"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useNetworks, useToken } from "@ui/state/chaindata"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
@@ -387,6 +388,30 @@ const AddProxyConfirm: FC<{
     [proxySets, network.id]
   )
 
+  // Load full proxy details for this network so we can detect duplicates
+  const loadAttemptedRef = useRef(false)
+  useEffect(() => {
+    if (loadAttemptedRef.current) return
+    const set = proxySets.find((s) => s.networkId === network.id)
+    if (set && set.proxyCount > 0 && set.proxies.length === 0) {
+      loadAttemptedRef.current = true
+      api.accountProxiesLoadDetails({ networkId: network.id, address }).catch(() => {})
+    }
+  }, [proxySets, network.id, address])
+
+  // Detect if this exact proxy already exists on-chain
+  const isDuplicate = useMemo(() => {
+    const set = proxySets.find((s) => s.networkId === network.id)
+    if (!set?.proxies?.length) return false
+    const normalizedDelegate = encodeAnyAddress(delegate, { ss58Format: 42 })
+    return set.proxies.some(
+      (p) =>
+        encodeAnyAddress(p.delegate, { ss58Format: 42 }) === normalizedDelegate &&
+        p.proxyType === proxyType &&
+        p.delay === String(delay)
+    )
+  }, [proxySets, network.id, delegate, proxyType, delay])
+
   // Additional deposit reserved by adding this proxy.
   // Null while proxy store is still initialising to avoid over-estimation.
   const additionalReservedDeposit = useMemo(() => {
@@ -577,7 +602,17 @@ const AddProxyConfirm: FC<{
             </span>
           </div>
         </div>
-        {insufficientBalance ? (
+        {isDuplicate ? (
+          /* Duplicate proxy warning */
+          <div className="flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
+            <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+            <span>
+              {t(
+                "This proxy already exists on-chain. Submitting a duplicate will fail and still deduct a network fee."
+              )}
+            </span>
+          </div>
+        ) : insufficientBalance ? (
           /* Insufficient balance warning */
           <div className="flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
             <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
@@ -611,7 +646,7 @@ const AddProxyConfirm: FC<{
         payload={payload?.payload}
         txMetadata={payload?.txMetadata}
         onSubmitted={handleSubmitted}
-        disabled={isAffordabilityCheckUnavailable || insufficientBalance}
+        disabled={isAffordabilityCheckUnavailable || insufficientBalance || isDuplicate}
         className="shrink-0"
       />
     </WizardModalDialog>
