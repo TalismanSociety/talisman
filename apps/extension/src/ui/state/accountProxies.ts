@@ -3,6 +3,7 @@ import type {
   AccountProxiesSubscriptionStatus,
   AccountProxySet,
 } from "@core/domains/accountProxies/types"
+import { isAccountOwned, isAccountPlatformPolkadot } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { useMemo } from "react"
@@ -70,13 +71,10 @@ export const useAccountProxySetsForAddress = (
 }
 
 /**
- * True when the connected wallet account at `address` can sign add/remove proxy
- * extrinsics locally (i.e. it's a `keypair` account managed by the keystore).
- *
- * Ledger / Vault / Signet are read-only in v1 because the password-gated sign
- * path can't drive their hardware/QR/multisig flows yet.
+ * True when the account at `address` is owned (i.e. the user can sign
+ * extrinsics with it — keypair, ledger, polkadot-vault, etc.).
  */
 export const useAccountCanWriteProxies = (address: string | null | undefined): boolean => {
   const account = useAccountByAddress(address ?? null)
-  return account?.type === "keypair"
+  return useMemo(() => isAccountPlatformPolkadot(account) && isAccountOwned(account), [account])
 }
