@@ -4,10 +4,20 @@ import { testAssets } from "./transfers"
 const dotAccName = "DOT Transfer"
 const ethAccName = "ETH Transfer"
 
-test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, extensionId }) => {
-  test.setTimeout(120_000)
-  await importAccount({ type: "substrate", name: dotAccName })
-  await importAccount({ type: "ethereum", name: ethAccName })
+test("Transfer Assets", async ({
+  extensionId,
+  onboardedPage,
+  importAccount,
+  walletPopup,
+  useDevChains,
+}) => {
+  await importAccount({
+    type: "ethereum",
+    mnemonic: "test test test test test test test test test test test junk",
+    name: ethAccName,
+  })
+  await useDevChains()
+  await onboardedPage.waitForTimeout(500)
   await onboardedPage.goto(
     `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks`
   )
@@ -59,6 +69,10 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
       await popup.getByPlaceholder("0").fill(data.amount)
       await expect(popup.getByTestId("component-review-button")).toBeEnabled({ timeout: 10000 })
       await popup.getByTestId("component-review-button").click()
+
+      //risk analysis assesment drawer
+      await expect(popup.getByTestId("risk-analysis-button-no")).toBeVisible()
+      await popup.getByTestId("risk-analysis-button-no").click()
 
       // acknowledge external address warning if present
       const warning = popup.getByTestId("send-funds-confirm-button").getByRole("checkbox").first()
