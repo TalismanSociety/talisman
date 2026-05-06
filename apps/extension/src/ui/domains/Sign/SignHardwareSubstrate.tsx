@@ -13,6 +13,7 @@ export type SignHardwareSubstrateProps = {
   fee?: string
   containerId?: string | undefined
   className?: string
+  disabled?: boolean
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
   onSigned: (result: { signature: HexString; payload?: SignerPayloadJSON }) => Promise<void> | void

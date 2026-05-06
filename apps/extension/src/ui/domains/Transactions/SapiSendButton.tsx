@@ -64,6 +64,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   txMetadata,
   txInfo,
+  disabled,
   className,
   onSubmitted,
   mode,
@@ -112,6 +113,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
     <SignHardwareSubstrate
       className={className}
       containerId={containerId}
+      disabled={disabled}
       onSigned={handleSigned}
       onSentToDevice={setIsLocked}
       color={color}
@@ -126,6 +128,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   txInfo,
   txMetadata,
+  disabled,
   className,
   onSubmitted,
   mode,
@@ -170,6 +173,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   return (
     <QrSubstrate
       containerId={containerId ?? "main"}
+      disabled={disabled}
       buttonClassName={className}
       genesisHash={lockedInputs.payload?.genesisHash}
       account={account as AccountPolkadotVault}
