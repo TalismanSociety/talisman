@@ -1,13 +1,9 @@
 import type { ProxyTypeInfo } from "@core/domains/accountProxies/getProxyTypes"
 import { CheckmarkIcon } from "@talismn/icons"
-import { Modal } from "@ui/components/Modal"
-import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { SearchInput } from "@ui/components/SearchInput"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { cn } from "@ui/util/cn"
-import { type FC, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { SearchablePickerLayout } from "./SearchablePickerLayout"
 
 type ProxyTypePickerProps = {
   isOpen: boolean
@@ -26,32 +22,38 @@ export const ProxyTypePicker: FC<ProxyTypePickerProps> = ({
   onSelect,
   onDismiss,
 }) => {
+  const { t } = useTranslation()
+
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
-      <ProxyTypePickerContent
-        proxyTypes={proxyTypes}
-        selectedProxyType={selectedProxyType}
-        onSelect={onSelect}
-        onDismiss={onDismiss}
-      />
-    </Modal>
+    <SearchablePickerLayout
+      isOpen={isOpen}
+      containerId={containerId}
+      title={t("Select Proxy Type")}
+      searchPlaceholder={t("Search by name")}
+      onDismiss={onDismiss}
+    >
+      {(search) => (
+        <ProxyTypeList
+          proxyTypes={proxyTypes}
+          search={search}
+          selectedProxyType={selectedProxyType}
+          onSelect={(type) => {
+            onSelect(type)
+            onDismiss()
+          }}
+        />
+      )}
+    </SearchablePickerLayout>
   )
 }
 
-const ProxyTypePickerContent: FC<{
+const ProxyTypeList: FC<{
   proxyTypes: ProxyTypeInfo[]
+  search: string
   selectedProxyType: string
   onSelect: (proxyType: string) => void
-  onDismiss: () => void
-}> = ({ proxyTypes: allProxyTypes, selectedProxyType, onSelect, onDismiss }) => {
+}> = ({ proxyTypes: allProxyTypes, search, selectedProxyType, onSelect }) => {
   const { t } = useTranslation()
-  const [search, setSearch] = useState("")
-
-  const refSearchInput = useRef<HTMLInputElement>(null)
-  const status = useOpenCloseStatus()
-  useEffect(() => {
-    if (status === "open") refSearchInput.current?.focus()
-  }, [status])
 
   const proxyTypes = useMemo(() => {
     const lowerSearch = search.trim().toLowerCase()
@@ -63,40 +65,19 @@ const ProxyTypePickerContent: FC<{
   }, [allProxyTypes, search])
 
   return (
-    <WizardModalDialog
-      className="border-none"
-      contentClassName="p-0!"
-      title={t("Select Proxy Type")}
-      onBackClick={onDismiss}
-    >
-      <div className="flex size-full flex-col overflow-hidden">
-        <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-          <SearchInput
-            ref={refSearchInput}
-            onChange={setSearch}
-            placeholder={t("Search by name")}
-          />
-        </div>
-        <ScrollContainer className="scrollable grow border-grey-700 border-t bg-black-secondary">
-          {proxyTypes.map((pt) => (
-            <ProxyTypeRow
-              key={pt.name}
-              proxyType={pt}
-              selected={pt.name === selectedProxyType}
-              onClick={() => {
-                onSelect(pt.name)
-                onDismiss()
-              }}
-            />
-          ))}
-          {proxyTypes.length === 0 && (
-            <div className="p-16 text-center text-body-secondary">
-              {t("No proxy types available")}
-            </div>
-          )}
-        </ScrollContainer>
-      </div>
-    </WizardModalDialog>
+    <>
+      {proxyTypes.map((pt) => (
+        <ProxyTypeRow
+          key={pt.name}
+          proxyType={pt}
+          selected={pt.name === selectedProxyType}
+          onClick={() => onSelect(pt.name)}
+        />
+      ))}
+      {proxyTypes.length === 0 && (
+        <div className="p-16 text-center text-body-secondary">{t("No proxy types available")}</div>
+      )}
+    </>
   )
 }
 
