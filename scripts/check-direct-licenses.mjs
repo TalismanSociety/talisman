@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
- * Direct-dependency license gate.
+ * License compliance gate for GPL-3.0-or-later.
  *
- * Reads `dependencies` and `devDependencies` from every workspace package.json
- * (root, apps/*, packages/*) and verifies the license of each declared package
- * against an allowlist. Transitive dependencies are not checked.
+ * Two-pass check:
+ *   1. **Production (transitive)** — uses `pnpm licenses list --prod --json`
+ *      to verify every package that ships in the built extension.
+ *   2. **Dev (direct only)** — reads `devDependencies` from workspace
+ *      package.json files and checks only the declared (non-transitive) deps.
  *
- * Exits with code 1 if any direct dependency uses a disallowed license, or
- * if a license cannot be determined.
+ * Exits with code 1 if any dependency uses a disallowed license, has an
+ * unrecognised license, or cannot be resolved.
  *
  * Usage: node scripts/check-direct-licenses.mjs
  */
 
+import { execSync } from "node:child_process"
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -44,10 +47,9 @@ const DISALLOWED_PATTERNS = [
 ]
 
 /**
- * Allowlist of license strings (or compound expressions) we know are
- * compatible with GPL-3.0-or-later. Used as a fast-path; anything not in
- * this list is checked against the disallowed patterns and otherwise
- * reported as "needs review".
+ * Allowlist of license strings we know are compatible with GPL-3.0-or-later.
+ * Used as a fast-path; anything not in this list is checked against the
+ * disallowed patterns and otherwise reported as "needs review".
  */
 const KNOWN_COMPATIBLE = new Set(
   [
@@ -59,6 +61,7 @@ const KNOWN_COMPATIBLE = new Set(
     "BSD-3-Clause",
     "0BSD",
     "MPL-2.0",
+    "LGPL",
     "LGPL-2.1",
     "LGPL-3.0",
     "LGPL-3.0-only",
@@ -79,6 +82,129 @@ const KNOWN_COMPATIBLE = new Set(
   ].map((s) => s.toLowerCase())
 )
 
+/**
+ * Packages whose license field is missing or "Unknown" in the pnpm registry
+ * metadata but whose actual license has been manually verified as compatible.
+ * Key: package name, Value: verified SPDX identifier (for display only).
+ */
+const MANUALLY_VERIFIED = new Map([
+  // All @metamask scoped packages below are MIT-licensed per their GitHub repos
+  // and NPM pages; pnpm just cannot resolve the field from the registry metadata.
+  ["@metamask/eth-json-rpc-provider", "MIT"],
+  ["@metamask/eth-snap-keyring", "MIT"],
+  ["@metamask/keyring-api", "MIT"],
+  ["@metamask/keyring-internal-snap-client", "MIT"],
+  ["@metamask/keyring-snap-client", "MIT"],
+  ["@metamask/keyring-snap-sdk", "MIT"],
+  ["@metamask/keyring-utils", "MIT"],
+  ["@metamask/sdk", "MIT"],
+  ["@metamask/sdk-communication-layer", "MIT"],
+  ["@metamask/sdk-install-modal-web", "MIT"],
+  ["@metamask/snaps-controllers", "MIT"],
+  ["@metamask/snaps-rpc-methods", "MIT"],
+  // Other packages with missing/incorrect metadata
+  ["eyes", "MIT"],
+  ["fast-shallow-equal", "MIT"],
+  ["react-universal-interface", "Unlicense"],
+  ["text-encoding-utf-8", "MIT"],
+  ["valid-url", "MIT"],
+])
+
+/** Normalise a license expression to its constituent identifiers. */
+function tokeniseLicense(expr) {
+  if (!expr) return []
+  return expr
+    .replace(/[()]/g, " ")
+    .split(/\s+(?:OR|AND)\s+/i)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+/**
+ * Strip "WITH <exception>" suffixes (e.g. "GPL-3.0-or-later WITH
+ * Classpath-exception-2.0"). Exceptions relax the license — never restrict
+ * it — so they don't affect GPL-3 compatibility.
+ */
+function stripExceptions(expr) {
+  return expr.replace(/\s+WITH\s+\S+/gi, "").trim()
+}
+
+/**
+ * Classify a license expression: returns "ok", "disallowed", or "review".
+ * For OR-disjunctions, "ok" if ANY branch is ok and none are disallowed.
+ */
+function classify(licenseExpr) {
+  if (!licenseExpr) return "review"
+
+  const normalised = stripExceptions(licenseExpr)
+
+  for (const re of DISALLOWED_PATTERNS) {
+    if (re.test(normalised)) return "disallowed"
+  }
+
+  const isOrExpression = /\sOR\s/i.test(normalised)
+  const tokens = tokeniseLicense(normalised)
+
+  if (isOrExpression) {
+    if (tokens.some((t) => KNOWN_COMPATIBLE.has(t.toLowerCase()))) return "ok"
+    return "review"
+  }
+
+  if (tokens.every((t) => KNOWN_COMPATIBLE.has(t.toLowerCase()))) return "ok"
+  return "review"
+}
+
+// ---------------------------------------------------------------------------
+// Pass 1 — production transitive deps via `pnpm licenses list`
+// ---------------------------------------------------------------------------
+
+function checkProductionDeps() {
+  let json
+  try {
+    const raw = execSync("pnpm licenses list --prod --json", {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 50 * 1024 * 1024,
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+    json = JSON.parse(raw)
+  } catch (err) {
+    console.error("Failed to run `pnpm licenses list --prod --json`:")
+    console.error(err.stderr?.toString() ?? err.message)
+    process.exit(1)
+  }
+
+  const disallowed = []
+  const review = []
+  let okCount = 0
+
+  for (const [license, packages] of Object.entries(json)) {
+    const expr = license === "Unknown" ? null : license
+    for (const pkg of packages) {
+      // Check manual override for packages with missing metadata
+      if ((!expr || expr === "Unknown") && MANUALLY_VERIFIED.has(pkg.name)) {
+        okCount++
+        continue
+      }
+
+      const verdict = classify(expr)
+      if (verdict === "ok") {
+        okCount++
+      } else if (verdict === "disallowed") {
+        disallowed.push({ dep: pkg.name, license: expr })
+      } else {
+        review.push({ dep: pkg.name, license: expr })
+      }
+    }
+  }
+
+  return { okCount, disallowed, review }
+}
+
+// ---------------------------------------------------------------------------
+// Pass 2 — dev direct deps (not shipped, but avoid disallowed licenses)
+// ---------------------------------------------------------------------------
+
 /** Read JSON file, returning null on any error. */
 function readJson(path) {
   try {
@@ -88,7 +214,6 @@ function readJson(path) {
   }
 }
 
-/** Collect every workspace package.json (root + apps/* + packages/*). */
 function findWorkspacePackageJsons() {
   const result = [join(ROOT, "package.json")]
   for (const sub of ["apps", "packages"]) {
@@ -103,11 +228,6 @@ function findWorkspacePackageJsons() {
   return result
 }
 
-/**
- * Resolve a dep's installed package.json, walking up from the workspace
- * package.json's directory. pnpm hoists most deps to the workspace root, but
- * occasionally a workspace has its own local node_modules.
- */
 function resolveInstalledPackageJson(depName, workspacePkgJsonPath) {
   let dir = dirname(workspacePkgJsonPath)
   while (true) {
@@ -119,70 +239,30 @@ function resolveInstalledPackageJson(depName, workspacePkgJsonPath) {
   }
 }
 
-/** Normalise a license expression to its constituent identifiers. */
-function tokeniseLicense(expr) {
-  if (!expr) return []
-  // Strip parens and split on OR/AND while keeping individual identifiers.
-  return expr
-    .replace(/[()]/g, " ")
-    .split(/\s+(?:OR|AND)\s+/i)
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
-/**
- * Classify a license expression: returns "ok", "disallowed", or "review".
- * For OR-disjunctions, "ok" if ANY branch is ok and none are disallowed.
- */
-function classify(licenseExpr) {
-  if (!licenseExpr) return "review"
-
-  // Block on disallowed pattern anywhere in the raw string.
-  for (const re of DISALLOWED_PATTERNS) {
-    if (re.test(licenseExpr)) return "disallowed"
-  }
-
-  const isOrExpression = /\sOR\s/i.test(licenseExpr)
-  const tokens = tokeniseLicense(licenseExpr)
-
-  if (isOrExpression) {
-    // OR — any compatible branch is sufficient.
-    if (tokens.some((t) => KNOWN_COMPATIBLE.has(t.toLowerCase()))) return "ok"
-    return "review"
-  }
-
-  // AND or single license — every constituent must be compatible.
-  if (tokens.every((t) => KNOWN_COMPATIBLE.has(t.toLowerCase()))) return "ok"
-  return "review"
-}
-
-function main() {
-  const workspacePkgs = findWorkspacePackageJsons()
-  const directDeps = new Map() // name -> Set<string> (which workspace declared it)
+function checkDevDirectDeps(workspacePkgs, prodPackageNames) {
+  const devDeps = new Map() // name -> Set<string>
 
   for (const pkgPath of workspacePkgs) {
     const pkg = readJson(pkgPath)
     if (!pkg) continue
-    for (const field of ["dependencies", "devDependencies"]) {
-      for (const dep of Object.keys(pkg[field] ?? {})) {
-        // Skip workspace-internal packages (workspace:* protocol).
-        const version = pkg[field][dep]
-        if (typeof version === "string" && version.startsWith("workspace:")) continue
-        if (!directDeps.has(dep)) directDeps.set(dep, new Set())
-        directDeps.get(dep).add(pkg.name ?? pkgPath)
-      }
+    for (const dep of Object.keys(pkg.devDependencies ?? {})) {
+      const version = pkg.devDependencies[dep]
+      if (typeof version === "string" && version.startsWith("workspace:")) continue
+      // Skip if already covered by the production pass
+      if (prodPackageNames.has(dep)) continue
+      if (!devDeps.has(dep)) devDeps.set(dep, new Set())
+      devDeps.get(dep).add(pkg.name ?? pkgPath)
     }
   }
 
   const disallowed = []
   const review = []
   const missing = []
+  let okCount = 0
 
-  for (const [dep, declarers] of directDeps) {
-    // Try resolving from any of the declaring workspaces, falling back to root.
+  for (const [dep, declarers] of devDeps) {
     let resolved = null
     for (const declarer of declarers) {
-      // declarer may be a package name; find its package.json path.
       const pkgPath = workspacePkgs.find((p) => readJson(p)?.name === declarer || p === declarer)
       if (pkgPath) {
         resolved = resolveInstalledPackageJson(dep, pkgPath)
@@ -207,54 +287,114 @@ function main() {
             : null
 
     const verdict = classify(licenseExpr)
-    if (verdict === "disallowed") {
+    if (verdict === "ok") {
+      okCount++
+    } else if (verdict === "disallowed") {
       disallowed.push({ dep, license: licenseExpr, declarers: [...declarers] })
-    } else if (verdict === "review") {
+    } else {
       review.push({ dep, license: licenseExpr, declarers: [...declarers] })
     }
   }
 
-  const total = directDeps.size
-  const okCount = total - disallowed.length - review.length - missing.length
-  console.log(`Checked ${total} direct dependencies across ${workspacePkgs.length} workspaces.`)
-  console.log(`  ✅ ${okCount} compatible`)
-  if (missing.length) console.log(`  ⚠️  ${missing.length} could not be resolved`)
-  if (review.length) console.log(`  ⚠️  ${review.length} need manual review (unrecognised license)`)
-  if (disallowed.length) console.log(`  ❌ ${disallowed.length} disallowed`)
+  return { total: devDeps.size, okCount, disallowed, review, missing }
+}
 
-  if (missing.length) {
-    console.error("\nUnresolved direct dependencies (run `pnpm install` first):")
-    for (const m of missing) {
-      console.error(`  - ${m.dep} (declared in ${m.declarers.join(", ")})`)
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+function main() {
+  let failed = false
+
+  // Pass 1: production (transitive)
+  console.log("── Production dependencies (transitive) ──")
+  const prod = checkProductionDeps()
+  const prodTotal = prod.okCount + prod.disallowed.length + prod.review.length
+  console.log(`Checked ${prodTotal} production packages (via pnpm licenses list --prod).`)
+  console.log(`  ✅ ${prod.okCount} compatible`)
+  if (prod.review.length) console.log(`  ⚠️  ${prod.review.length} need manual review`)
+  if (prod.disallowed.length) console.log(`  ❌ ${prod.disallowed.length} disallowed`)
+
+  if (prod.review.length) {
+    console.error("\nProduction packages needing manual license review:")
+    for (const r of prod.review) {
+      console.error(`  - ${r.dep}: license=${JSON.stringify(r.license)}`)
     }
+    console.error("  → Verify the license is GPL-3-compatible, then add it to KNOWN_COMPATIBLE")
+    console.error("    or MANUALLY_VERIFIED in scripts/check-direct-licenses.mjs.")
+    failed = true
   }
 
-  if (review.length) {
-    console.error("\nDirect dependencies needing manual license review:")
-    for (const r of review) {
+  if (prod.disallowed.length) {
+    console.error("\n❌ Production packages with disallowed licenses:")
+    for (const d of prod.disallowed) {
+      console.error(`  - ${d.dep}: license=${JSON.stringify(d.license)}`)
+    }
+    console.error("\nGPL-3.0-or-later does not permit shipping these. Remove or replace them.")
+    failed = true
+  }
+
+  // Collect prod package names so pass 2 can skip them
+  let prodJson
+  try {
+    const raw = execSync("pnpm licenses list --prod --json", {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 50 * 1024 * 1024,
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+    prodJson = JSON.parse(raw)
+  } catch {
+    prodJson = {}
+  }
+  const prodPackageNames = new Set()
+  for (const packages of Object.values(prodJson)) {
+    for (const pkg of packages) prodPackageNames.add(pkg.name)
+  }
+
+  // Pass 2: dev direct deps
+  console.log("\n── Dev dependencies (direct only) ──")
+  const workspacePkgs = findWorkspacePackageJsons()
+  const dev = checkDevDirectDeps(workspacePkgs, prodPackageNames)
+  console.log(
+    `Checked ${dev.total} dev-only direct dependencies across ${workspacePkgs.length} workspaces.`
+  )
+  console.log(`  ✅ ${dev.okCount} compatible`)
+  if (dev.missing.length) console.log(`  ⚠️  ${dev.missing.length} could not be resolved`)
+  if (dev.review.length) console.log(`  ⚠️  ${dev.review.length} need manual review`)
+  if (dev.disallowed.length) console.log(`  ❌ ${dev.disallowed.length} disallowed`)
+
+  if (dev.missing.length) {
+    console.error("\nUnresolved dev dependencies (run `pnpm install` first):")
+    for (const m of dev.missing) {
+      console.error(`  - ${m.dep} (declared in ${m.declarers.join(", ")})`)
+    }
+    failed = true
+  }
+
+  if (dev.review.length) {
+    console.error("\nDev dependencies needing manual license review:")
+    for (const r of dev.review) {
       console.error(
         `  - ${r.dep}: license=${JSON.stringify(r.license)} (${r.declarers.join(", ")})`
       )
     }
     console.error(
-      "  → Either add the license to KNOWN_COMPATIBLE in scripts/check-direct-licenses.mjs"
+      "  → Add the license to KNOWN_COMPATIBLE if it's GPL-3-compatible, or remove the dep."
     )
-    console.error(
-      "    if you've verified it's compatible with GPL-3.0-or-later, or remove the dep."
-    )
+    failed = true
   }
 
-  if (disallowed.length) {
-    console.error("\n❌ Direct dependencies with disallowed licenses:")
-    for (const d of disallowed) {
+  if (dev.disallowed.length) {
+    console.error("\n❌ Dev dependencies with disallowed licenses:")
+    for (const d of dev.disallowed) {
       console.error(
         `  - ${d.dep}: license=${JSON.stringify(d.license)} (${d.declarers.join(", ")})`
       )
     }
-    console.error("\nGPL-3.0-or-later does not permit shipping these. Remove or replace them.")
+    failed = true
   }
 
-  const failed = disallowed.length + review.length + missing.length > 0
   process.exit(failed ? 1 : 0)
 }
 
