@@ -30,7 +30,7 @@ export class AccountProxiesHandler extends ExtensionHandler {
       case "pri(accountProxies.updatePalletCache)": {
         const { networkId, specVersion, hasProxyPallet } =
           request as RequestTypes["pri(accountProxies.updatePalletCache)"]
-        setProxyPalletStatus(networkId, specVersion, hasProxyPallet)
+        if (hasProxyPallet) setProxyPalletStatus(networkId, specVersion, true)
         return true as ResponseType<TMessageType>
       }
 

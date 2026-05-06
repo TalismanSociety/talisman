@@ -3,7 +3,6 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { AlertCircleIcon, InfoIcon, PlusIcon } from "@talismn/icons"
-import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
@@ -33,7 +32,8 @@ import type { Hex } from "viem"
 import { AddressPillButton } from "../../SendFunds/SendFundsAmountForm/AddressPillButton"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
 import { buildProxyPayload } from "../buildProxyPayload"
-import { getProxyDeposit } from "../proxyDeposit"
+import { getProxyCountForNetwork, getProxyDeposit } from "../proxyDeposit"
+import { useRefreshAccountProxiesOnTxSuccess } from "../useRefreshAccountProxiesOnTxSuccess"
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
@@ -88,6 +88,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const [delay, setDelay] = useState("0")
   const [step, setStep] = useState<"form" | "confirm" | "submitted">("form")
   const [submittedHash, setSubmittedHash] = useState<string | null>(null)
+  const [submittedNetworkId, setSubmittedNetworkId] = useState<string | null>(null)
   const [showNetworkPicker, setShowNetworkPicker] = useState(false)
   const [showDelegatePicker, setShowDelegatePicker] = useState(false)
   const [showAccountPicker, setShowAccountPicker] = useState(false)
@@ -133,12 +134,19 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
 
   const handleSubmitted = useCallback(
     (hash: Hex) => {
+      if (!network) return
       setSubmittedHash(hash)
+      setSubmittedNetworkId(network.id)
       setStep("submitted")
-      if (network) api.accountProxiesRefresh({ networkId: network.id, address }).catch(() => {})
     },
-    [network, address]
+    [network]
   )
+
+  useRefreshAccountProxiesOnTxSuccess({
+    hash: submittedHash,
+    networkId: submittedNetworkId,
+    address,
+  })
 
   if (!canWrite) {
     return (
@@ -328,10 +336,10 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     )
   }
 
-  if (step === "submitted" && submittedHash && networkId) {
+  if (step === "submitted" && submittedHash && submittedNetworkId) {
     return (
       <div className="size-full p-12">
-        <TxProgress hash={submittedHash} networkIdOrHash={networkId} onClose={onClose} />
+        <TxProgress hash={submittedHash} networkIdOrHash={submittedNetworkId} onClose={onClose} />
       </div>
     )
   }
@@ -370,10 +378,7 @@ const AddProxyConfirm: FC<{
   // Existing proxy count for this network to compute accurate deposit
   const proxySets = useAccountProxySetsForAddress(address)
   const existingProxyCount = useMemo(
-    () =>
-      proxySets
-        .filter((s) => s.networkId === network.id)
-        .reduce((sum, s) => sum + s.proxies.length, 0),
+    () => getProxyCountForNetwork(proxySets, network.id),
     [proxySets, network.id]
   )
 

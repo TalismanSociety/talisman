@@ -25,7 +25,8 @@ import type { Hex } from "viem"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
 import { useAddProxyModal } from "../AddProxy/useAddProxyModal"
 import { buildProxyPayload } from "../buildProxyPayload"
-import { getProxyDeposit } from "../proxyDeposit"
+import { getProxyCountForNetwork, getProxyDeposit } from "../proxyDeposit"
+import { useRefreshAccountProxiesOnTxSuccess } from "../useRefreshAccountProxiesOnTxSuccess"
 import { useManageProxyModal } from "./useManageProxyModal"
 
 type RemoveTarget = { networkId: string; entry: AccountProxyEntry }
@@ -69,10 +70,15 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
       if (!removeTarget) return
       setSubmittedHash(hash)
       setSubmittedNetworkId(removeTarget.networkId)
-      api.accountProxiesRefresh({ networkId: removeTarget.networkId, address }).catch(() => {})
     },
-    [removeTarget, address]
+    [removeTarget]
   )
+
+  useRefreshAccountProxiesOnTxSuccess({
+    hash: submittedHash,
+    networkId: submittedNetworkId,
+    address,
+  })
 
   if (!account) return null
 
@@ -205,10 +211,7 @@ const RemoveProxyConfirm: FC<{
   // Compute deposit that will be unlocked after removing this proxy
   const proxySets = useAccountProxySetsForAddress(address)
   const existingProxyCount = useMemo(
-    () =>
-      proxySets
-        .filter((s) => s.networkId === target.networkId)
-        .reduce((sum, s) => sum + s.proxies.length, 0),
+    () => getProxyCountForNetwork(proxySets, target.networkId),
     [proxySets, target.networkId]
   )
 

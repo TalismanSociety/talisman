@@ -47,17 +47,18 @@ export const useProxyTypesForNetwork = (
   const proxyTypes = data ?? EMPTY
   const resolvedFetched = isFetched || !chain?.genesisHash
 
-  // Update the pallet cache once we have a definitive answer from metadata
+  // Renderer metadata can confirm pallet presence, but an empty result may be a transient fetch failure.
   const cacheUpdatedRef = useRef<string | null>(null)
   useEffect(() => {
     if (!resolvedFetched || !networkId || typeof chain?.specVersion !== "number") return
+    if (proxyTypes.length === 0) return
     const cacheKey = `${networkId}:${chain.specVersion}`
     if (cacheUpdatedRef.current === cacheKey) return
     cacheUpdatedRef.current = cacheKey
     api.accountProxiesUpdatePalletCache({
       networkId,
       specVersion: chain.specVersion,
-      hasProxyPallet: proxyTypes.length > 0,
+      hasProxyPallet: true,
     })
   }, [resolvedFetched, networkId, chain?.specVersion, proxyTypes.length])
 

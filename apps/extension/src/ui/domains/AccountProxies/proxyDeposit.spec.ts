@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getProxyDeposit } from "./proxyDeposit"
+import { getProxyCountForNetwork, getProxyDeposit } from "./proxyDeposit"
 
 describe("getProxyDeposit", () => {
   const base = 20n
@@ -25,5 +25,39 @@ describe("getProxyDeposit", () => {
     expect(secondProxyReserve).toBe(5n)
     expect(secondProxyRelease).toBe(5n)
     expect(lastProxyRelease).toBe(25n)
+  })
+})
+
+describe("getProxyCountForNetwork", () => {
+  it("uses proxyCount even when lightweight polling has not decoded proxy details", () => {
+    expect(
+      getProxyCountForNetwork(
+        [
+          {
+            networkId: "polkadot",
+            proxyCount: 5,
+          },
+        ],
+        "polkadot"
+      )
+    ).toBe(5)
+  })
+
+  it("ignores proxy sets from other networks", () => {
+    expect(
+      getProxyCountForNetwork(
+        [
+          {
+            networkId: "polkadot",
+            proxyCount: 5,
+          },
+          {
+            networkId: "kusama",
+            proxyCount: 2,
+          },
+        ],
+        "polkadot"
+      )
+    ).toBe(5)
   })
 })
