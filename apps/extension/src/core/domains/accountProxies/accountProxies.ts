@@ -29,39 +29,16 @@ import {
 import { createPollingTrigger$ } from "./polling"
 import {
   accountProxiesStore$,
-  getAccountProxySetKey,
   markAccountProxySetsStale,
+  mergeLightweightPollResults,
   storeHydrated$,
   upsertAccountProxySets,
 } from "./store.accountProxies"
 import { getProxyPalletStatus } from "./store.proxyPalletCache"
-import type { AccountProxiesSubscriptionResponse, AccountProxySet } from "./types"
+import type { AccountProxiesSubscriptionResponse } from "./types"
 
 const POLL_INTERVAL_MS = 5 * 60 * 1000
 const NETWORK_CONCURRENCY = 6
-/** Details older than this are cleared so loadDetails re-triggers. */
-const DETAILS_TTL_MS = 30 * 60 * 1000
-
-/**
- * Determine whether a proxy set's cached details should be cleared.
- *
- * Returns `true` when:
- * - proxy count changed (entries were added/removed)
- * - count is unchanged but loaded details are older than `DETAILS_TTL_MS`
- */
-export const shouldClearDetails = (
-  existing: AccountProxySet | undefined,
-  newProxyCount: number
-): boolean => {
-  const countChanged = existing?.proxyCount !== newProxyCount
-  if (countChanged) return true
-  if (!existing?.proxies?.length) return false
-  if (existing.lastDetailsFetchedAt === undefined) return false
-  return Date.now() - existing.lastDetailsFetchedAt > DETAILS_TTL_MS
-}
-
-/** Tuples currently in flight (debug + future race protection). */
-const inFlight = new Set<string>()
 
 /**
  * Build the candidate map: for each active substrate network, the list of owned
@@ -126,12 +103,12 @@ const candidates$: Observable<ProxyPollCandidate[]> = combineLatest({
 
 /**
  * Lightweight poll cycle: uses raw storage keys (no metadata download).
- * Updates proxy counts and preserves any previously loaded full details.
+ * Counts are merged into the store atomically against the live snapshot, so
+ * any concurrent `loadProxyDetails` writes are preserved.
  */
 const runLightweightPollCycle = async (
   candidates: ProxyPollCandidate[],
-  abortController: AbortController,
-  currentSnapshot: { sets: Record<string, AccountProxySet> }
+  abortController: AbortController
 ): Promise<void> => {
   if (!candidates.length) return
 
@@ -140,60 +117,22 @@ const runLightweightPollCycle = async (
   await queue.addAll(
     candidates.map((candidate) => async () => {
       if (abortController.signal.aborted) return
-      const tupleKeys = candidate.delegators.map((d) =>
-        getAccountProxySetKey(candidate.network.id, d.address)
-      )
-      for (const k of tupleKeys) inFlight.add(k)
-      try {
-        const outcome = await pollNetworkProxiesLightweight(candidate, abortController.signal)
-        if (abortController.signal.aborted) return
-        if (outcome.ok) {
-          const sets: AccountProxySet[] = []
-          const seen = new Set<string>()
-          for (const { address, proxyCount } of outcome.results) {
-            seen.add(address)
-            const key = getAccountProxySetKey(candidate.network.id, address)
-            const existing = currentSnapshot.sets[key]
-            const clearDetails = shouldClearDetails(existing, proxyCount)
-            sets.push({
-              delegator: address,
-              networkId: candidate.network.id,
-              proxyCount,
-              deposit: clearDetails ? "0" : (existing?.deposit ?? "0"),
-              isStale: false,
-              proxies: clearDetails ? [] : (existing?.proxies ?? []),
-              lastDetailsFetchedAt: clearDetails ? undefined : existing?.lastDetailsFetchedAt,
-            })
-          }
-          // Ensure every requested delegator gets a set entry
-          for (const d of candidate.delegators) {
-            if (!seen.has(d.address)) {
-              sets.push({
-                delegator: d.address,
-                networkId: candidate.network.id,
-                proxyCount: 0,
-                deposit: "0",
-                isStale: false,
-                proxies: [],
-              })
-            }
-          }
-          upsertAccountProxySets(sets)
-        } else {
-          log.warn(
-            "[accountProxies] lightweight poll failed for network",
-            candidate.network.id,
-            outcome.error
-          )
-          markAccountProxySetsStale(
-            candidate.delegators.map((d) => ({
-              networkId: candidate.network.id,
-              delegator: d.address,
-            }))
-          )
-        }
-      } finally {
-        for (const k of tupleKeys) inFlight.delete(k)
+      const outcome = await pollNetworkProxiesLightweight(candidate, abortController.signal)
+      if (abortController.signal.aborted) return
+      if (outcome.ok) {
+        mergeLightweightPollResults(candidate.network.id, outcome.results, candidate.delegators)
+      } else {
+        log.warn(
+          "[accountProxies] lightweight poll failed for network",
+          candidate.network.id,
+          outcome.error
+        )
+        markAccountProxySetsStale(
+          candidate.delegators.map((d) => ({
+            networkId: candidate.network.id,
+            delegator: d.address,
+          }))
+        )
       }
     })
   )
@@ -206,15 +145,9 @@ const runLightweightPollCycle = async (
 const pollingDriver$ = new Observable<"live">((subscriber) => {
   const abortController = new AbortController()
   let initialResolved = false
-  let latestSnapshot: { sets: Record<string, AccountProxySet> } = { sets: {} }
   let pollSub: { unsubscribe: () => void } | null = null
   // Per-cycle abort controller to cancel in-progress cycles when new candidates arrive
   let cycleAbortController: AbortController | null = null
-
-  // Track the latest snapshot for preserving loaded details during lightweight polls
-  const snapshotSub = accountProxiesStore$.subscribe((s) => {
-    latestSnapshot = s
-  })
 
   // Wait for the store to hydrate from disk before starting poll cycles.
   // This prevents the first lightweight poll from running against an empty
@@ -233,7 +166,7 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
         const onParentAbort = () => currentCycleAbort.abort()
         abortController.signal.addEventListener("abort", onParentAbort)
 
-        runLightweightPollCycle(candidates, currentCycleAbort, latestSnapshot)
+        runLightweightPollCycle(candidates, currentCycleAbort)
           .catch((err) => {
             if (!currentCycleAbort.signal.aborted)
               log.error("[accountProxies] poll cycle failed", err)
@@ -253,7 +186,6 @@ const pollingDriver$ = new Observable<"live">((subscriber) => {
     abortController.abort()
     cycleAbortController?.abort()
     pollSub?.unsubscribe()
-    snapshotSub.unsubscribe()
   }
 })
 

@@ -1,42 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-// Mock all heavy dependencies so the module can be imported without side effects.
+// Mock the heavy dependencies that store.accountProxies pulls in transitively.
 vi.mock("@common/log", () => ({ log: { debug: vi.fn(), warn: vi.fn(), error: vi.fn() } }))
-vi.mock("@talismn/util", async (importActual) => {
-  const actual = (await importActual()) as Record<string, unknown>
-  return { ...actual }
-})
-vi.mock("../../rpcs/chaindata", () => ({
-  chaindataProvider: { getNetworks$: vi.fn(), getNetworks: vi.fn() },
+vi.mock("../../db", () => ({
+  getBlobStore: () => ({ get: vi.fn(), set: vi.fn() }),
 }))
-vi.mock("../accounts/helpers", () => ({ isAccountCompatibleWithNetwork: vi.fn() }))
-vi.mock("../balances/store.activeNetworks", () => ({
-  activeNetworksStore: { observable: { pipe: vi.fn() } },
-  isNetworkActive: vi.fn(),
-}))
+vi.mock("../../libs/isWalletReady", () => ({ walletReady: new Promise(() => {}) }))
 vi.mock("../keyring/store", () => ({
-  keyringStore: { accounts$: { pipe: vi.fn() } },
-}))
-vi.mock("./accountProxiesProvider", () => ({
-  addressToAccountId: vi.fn(),
-  loadNetworkProxyDetails: vi.fn(),
-  pollNetworkProxiesLightweight: vi.fn(),
-}))
-vi.mock("./polling", () => ({
-  createPollingTrigger$: vi.fn(),
-}))
-vi.mock("./store.accountProxies", () => ({
-  accountProxiesStore$: { subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) },
-  getAccountProxySetKey: (nId: string, addr: string) => `${nId}|${addr}`,
-  markAccountProxySetsStale: vi.fn(),
-  storeHydrated$: { pipe: vi.fn() },
-  upsertAccountProxySets: vi.fn(),
-}))
-vi.mock("./store.proxyPalletCache", () => ({
-  getProxyPalletStatus: vi.fn(),
+  keyringStore: { getAccounts: vi.fn() },
 }))
 
-import { shouldClearDetails } from "./accountProxies"
+import { shouldClearDetails } from "./store.accountProxies"
 import type { AccountProxySet } from "./types"
 
 describe("shouldClearDetails", () => {

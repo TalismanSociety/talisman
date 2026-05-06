@@ -42,6 +42,79 @@ export const upsertAccountProxySets = (sets: AccountProxySet[]) => {
   emit(next)
 }
 
+/** Details older than this are cleared so loadDetails re-triggers. */
+const DETAILS_TTL_MS = 30 * 60 * 1000
+
+/**
+ * Determine whether a proxy set's cached details should be cleared.
+ *
+ * Returns `true` when the proxy count changed, or when full details are older
+ * than `DETAILS_TTL_MS`.
+ */
+export const shouldClearDetails = (
+  existing: AccountProxySet | undefined,
+  newProxyCount: number
+): boolean => {
+  const countChanged = existing?.proxyCount !== newProxyCount
+  if (countChanged) return true
+  if (!existing?.proxies?.length) return false
+  if (existing.lastDetailsFetchedAt === undefined) return false
+  return Date.now() - existing.lastDetailsFetchedAt > DETAILS_TTL_MS
+}
+
+/**
+ * Atomically merge lightweight poll results for one network into the store,
+ * reading the live snapshot at write time so concurrent `loadProxyDetails`
+ * writes are preserved (no read-stale/write-stale race).
+ *
+ * - For each `result`, preserves existing `proxies`/`deposit` unless count
+ *   changed or details are stale (see `shouldClearDetails`).
+ * - For requested delegators with no result (RPC didn't return them), creates
+ *   an empty entry only if none exists yet — never clobbers existing state.
+ */
+export const mergeLightweightPollResults = (
+  networkId: string,
+  results: Array<{ address: string; proxyCount: number }>,
+  delegators: Array<{ address: string }>
+) => {
+  if (!results.length && !delegators.length) return
+
+  const next: AccountProxiesSnapshot = { sets: { ...currentSnapshot.sets } }
+  const seen = new Set<string>()
+
+  for (const { address, proxyCount } of results) {
+    seen.add(address)
+    const key = getAccountProxySetKey(networkId, address)
+    const existing = currentSnapshot.sets[key]
+    const clearDetails = shouldClearDetails(existing, proxyCount)
+    next.sets[key] = {
+      delegator: address,
+      networkId,
+      proxyCount,
+      deposit: clearDetails ? "0" : (existing?.deposit ?? "0"),
+      isStale: false,
+      proxies: clearDetails ? [] : (existing?.proxies ?? []),
+      lastDetailsFetchedAt: clearDetails ? undefined : existing?.lastDetailsFetchedAt,
+    }
+  }
+
+  for (const { address } of delegators) {
+    if (seen.has(address)) continue
+    const key = getAccountProxySetKey(networkId, address)
+    if (next.sets[key]) continue
+    next.sets[key] = {
+      delegator: address,
+      networkId,
+      proxyCount: 0,
+      deposit: "0",
+      isStale: false,
+      proxies: [],
+    }
+  }
+
+  emit(next)
+}
+
 /** Mark sets as stale without touching their proxies/deposit. */
 export const markAccountProxySetsStale = (
   keys: Array<{ networkId: string; delegator: string }>
@@ -91,7 +164,9 @@ walletReady.then(() => {
       }
       if (needsMigration) snapshot = { sets: migrated }
 
-      emit(snapshot)
+      // Merge any writes that landed during hydration (e.g. an early
+      // `loadProxyDetails` call) so they aren't wiped by the disk snapshot.
+      emit({ sets: { ...snapshot.sets, ...currentSnapshot.sets } })
       setHydrated(true)
     })
     .catch((err) => {

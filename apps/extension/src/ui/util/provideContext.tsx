@@ -1,3 +1,5 @@
+import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import { createContext, type FC, type ReactNode, useContext } from "react"
 
 const UNSET_CONTEXT = Symbol("UNSET_CONTEXT")
@@ -18,7 +20,18 @@ export const provideContext = <P, T>(useProviderContext: (props: P) => T) => {
     return <Context.Provider value={ctx}>{children}</Context.Provider>
   }
 
-  const useProvidedContext = () => useContext(Context)
+  const useProvidedContext = () => {
+    const ctx = useContext(Context)
+
+    // if default value is found, the hook is used outside of a provider
+    if (DEBUG && ctx === UNSET_CONTEXT) {
+      // Once the problems are fixed all round the wallet, replace the warning trace by an error throw
+      log.warn("useProvidedContext must be used within a Provider.")
+      // throw new Error("useProvidedContext must be used within a Provider")
+    }
+
+    return ctx
+  }
 
   return [Provider, useProvidedContext] as [ProviderType, () => ContextType]
 }

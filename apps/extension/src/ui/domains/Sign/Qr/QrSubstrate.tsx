@@ -94,12 +94,6 @@ export const QrSubstrate = ({
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
   const { qrCodeSource } = qrCodeSourceSelectorState
 
-  // When disabled changes, reset to INIT to prevent interaction with the QR flow
-  useEffect(() => {
-    if (disabled) setScanState({ page: "INIT" })
-    else if (skipInit) setScanState({ page: "SEND" })
-  }, [disabled, skipInit])
-
   const [isQrDisplayed, setIsQrDisplayed] = useState(false)
   useEffect(() => {
     setIsQrDisplayed(scanState.page !== "INIT")

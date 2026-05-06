@@ -1,5 +1,6 @@
 import { log } from "@common/log"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
+import { encodeAddressSs58 } from "@talismn/crypto"
 import { parseMetadataRpc } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
 
@@ -61,13 +62,28 @@ const stringifyProxyType = (raw: unknown): string => {
 }
 
 /**
+ * Convert a delegate field (as produced by the Proxy storage codec) to an SS58
+ * address. polkadot-api decodes `AccountId32` as a `FixedSizeBinary` (raw
+ * bytes), not as an SS58 string — calling `.asText()` on that would produce
+ * UTF-8 garbage. Some metadata may resolve directly to a string; handle both.
+ */
+const decodeDelegate = (raw: unknown, ss58Format: number): string => {
+  if (typeof raw === "string") return raw
+  if (raw instanceof Uint8Array) return encodeAddressSs58(raw, ss58Format)
+  if (raw && typeof raw === "object" && "asBytes" in raw && typeof raw.asBytes === "function")
+    return encodeAddressSs58((raw as { asBytes: () => Uint8Array }).asBytes(), ss58Format)
+  throw new Error(`Unrecognised delegate shape: ${typeof raw}`)
+}
+
+/**
  * Decode a single `state_queryStorageAt` result row. Raw `null` (absent storage)
  * is treated as the runtime default `{ deposit: 0, proxies: [] }`.
  */
 export const decodeProxiesValue = (
   rawValue: `0x${string}` | null,
   // biome-ignore lint/suspicious/noExplicitAny: dynamic codec
-  storageCodec: any
+  storageCodec: any,
+  ss58Format: number
 ): DecodedProxiesValue => {
   if (!rawValue) return { deposit: 0n, proxies: [] }
 
@@ -78,23 +94,11 @@ export const decodeProxiesValue = (
   ]
 
   const [rawProxies, deposit] = decoded
-  const proxies: AccountProxyEntry[] = (rawProxies ?? []).map((row) => {
-    const delegateRaw = row.delegate
-    let delegate: string
-    if (typeof delegateRaw === "string") {
-      delegate = delegateRaw
-    } else if (delegateRaw && typeof delegateRaw === "object" && "asText" in delegateRaw) {
-      // FixedSizeBinary or AccountId object
-      delegate = (delegateRaw as { asText: () => string }).asText()
-    } else {
-      delegate = String(delegateRaw)
-    }
-    return {
-      delegate,
-      proxyType: stringifyProxyType(row.proxyType ?? row.proxy_type),
-      delay: BigInt(row.delay as number | bigint | string).toString(),
-    }
-  })
+  const proxies: AccountProxyEntry[] = (rawProxies ?? []).map((row) => ({
+    delegate: decodeDelegate(row.delegate, ss58Format),
+    proxyType: stringifyProxyType(row.proxyType ?? row.proxy_type),
+    delay: BigInt(row.delay as number | bigint | string).toString(),
+  }))
 
   return { deposit: BigInt(deposit), proxies }
 }
@@ -159,9 +163,11 @@ export const pollNetworkProxiesLightweight = async (
       results.push({ address, proxyCount })
     }
 
-    // Update the pallet cache when we can confirm the pallet exists.
-    // When all results are null we leave the existing cache entry intact
-    // (we can't distinguish "no proxies" from "no pallet" without metadata).
+    // The lightweight probe can confirm pallet *presence* (any non-null storage
+    // result) but never pallet *absence* — `state_queryStorageAt` returns null
+    // both when the pallet is missing and when it exists with no entries for
+    // these accounts. Definitive negative caching happens via metadata
+    // inspection in `loadNetworkProxyDetails` and `useProxyTypesForNetwork`.
     if (palletConfirmed && typeof network.specVersion === "number") {
       setProxyPalletStatus(network.id, network.specVersion, true)
     }
@@ -235,10 +241,11 @@ export const loadNetworkProxyDetails = async (
     const valuesByKey = new Map(result.changes)
 
     const sets: AccountProxySet[] = []
+    const ss58Format = network.prefix ?? 42
     for (const [key, address] of keysByAddress.entries()) {
       const raw = valuesByKey.get(key) ?? null
       try {
-        const { deposit, proxies } = decodeProxiesValue(raw, storageCodec)
+        const { deposit, proxies } = decodeProxiesValue(raw, storageCodec, ss58Format)
         sets.push({
           delegator: address,
           networkId: network.id,

@@ -10,7 +10,7 @@ import { useToken } from "@ui/state/chaindata"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { buildProxyPayload } from "./buildProxyPayload"
-import { getProxyCountForNetwork, getProxyDeposit } from "./proxyDeposit"
+import { getProxyDeposit } from "./proxyDeposit"
 
 type ProxyTxPreviewParams = {
   networkId: string
@@ -63,10 +63,20 @@ export const useProxyTxPreview = ({
   // Proxy count & deposit
   const proxyStoreStatus = useAccountProxiesStatus()
   const proxySets = useAccountProxySetsForAddress(accountAddress)
-  const existingProxyCount = useMemo(
-    () => getProxyCountForNetwork(proxySets, networkId),
+  const selectedNetworkProxySet = useMemo(
+    () => proxySets.find((s) => s.networkId === networkId),
     [proxySets, networkId]
   )
+  const existingProxyCount = selectedNetworkProxySet?.proxyCount ?? 0
+
+  // For add_proxy duplicate detection we need the full proxy entries. While
+  // they're still loading, the UI must wait — otherwise a user can submit a
+  // duplicate that the pallet will reject (still charging the network fee).
+  const isCheckingDuplicates =
+    method === "add_proxy" &&
+    !!selectedNetworkProxySet &&
+    selectedNetworkProxySet.proxyCount > 0 &&
+    selectedNetworkProxySet.proxies.length === 0
 
   const depositDelta = useMemo(() => {
     if (!sapi || proxyStoreStatus !== "live") return null
@@ -146,16 +156,18 @@ export const useProxyTxPreview = ({
     method,
   ])
 
-  // Load proxy details on-demand for duplicate detection
-  const loadAttemptedRef = useRef(false)
+  // Load proxy details on-demand for duplicate detection.
+  // Keyed by (networkId, accountAddress) so changing either tuple re-attempts.
+  const loadAttemptedKeysRef = useRef<Set<string>>(new Set())
   useEffect(() => {
-    if (loadAttemptedRef.current) return
-    const set = proxySets.find((s) => s.networkId === networkId)
-    if (set && set.proxyCount > 0 && set.proxies.length === 0) {
-      loadAttemptedRef.current = true
-      api.accountProxiesLoadDetails({ networkId, address: accountAddress }).catch(() => {})
-    }
-  }, [proxySets, networkId, accountAddress])
+    if (!selectedNetworkProxySet) return
+    if (selectedNetworkProxySet.proxyCount === 0) return
+    if (selectedNetworkProxySet.proxies.length > 0) return
+    const key = `${networkId}|${accountAddress}`
+    if (loadAttemptedKeysRef.current.has(key)) return
+    loadAttemptedKeysRef.current.add(key)
+    api.accountProxiesLoadDetails({ networkId, address: accountAddress }).catch(() => {})
+  }, [selectedNetworkProxySet, networkId, accountAddress])
 
   return {
     sapi,
@@ -171,6 +183,7 @@ export const useProxyTxPreview = ({
     isAffordabilityCheckUnavailable,
     insufficientBalance,
     proxySets,
+    isCheckingDuplicates,
   } as const
 }
 

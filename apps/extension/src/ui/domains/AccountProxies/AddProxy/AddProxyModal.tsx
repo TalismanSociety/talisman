@@ -377,8 +377,14 @@ const AddProxyConfirm: FC<{
     method: "add_proxy",
   })
 
-  const { nativeToken, payload, isAffordabilityCheckUnavailable, insufficientBalance, proxySets } =
-    preview
+  const {
+    nativeToken,
+    payload,
+    isAffordabilityCheckUnavailable,
+    insufficientBalance,
+    proxySets,
+    isCheckingDuplicates,
+  } = preview
 
   // Detect if this exact proxy already exists on-chain
   const isDuplicate = useMemo(() => {
@@ -455,7 +461,12 @@ const AddProxyConfirm: FC<{
         payload={payload?.payload}
         txMetadata={payload?.txMetadata}
         onSubmitted={onSubmitted}
-        disabled={isAffordabilityCheckUnavailable || insufficientBalance || isDuplicate}
+        disabled={
+          isAffordabilityCheckUnavailable ||
+          insufficientBalance ||
+          isDuplicate ||
+          isCheckingDuplicates
+        }
         className="shrink-0"
       />
     </WizardModalDialog>
