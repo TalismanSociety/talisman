@@ -38,10 +38,9 @@ export const useProxyTypesForNetwork = (
       return getProxyTypes(metadataRpc)
     },
     enabled: !!chain?.genesisHash,
-    refetchInterval: false,
+    refetchInterval: 60_000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    staleTime: Number.POSITIVE_INFINITY,
   })
 
   const proxyTypes = data ?? EMPTY

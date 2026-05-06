@@ -297,11 +297,11 @@ export const loadNetworkProxyDetails = async (
     try {
       storageCodec = builder.buildStorage("Proxy", "Proxies")
       if (typeof network.specVersion === "number")
-        setProxyPalletStatus(network.id, network.specVersion, true)
+        setProxyPalletStatus(network.id, network.specVersion, true, "metadata")
     } catch {
       // buildStorage throws when the pallet/entry doesn't exist in metadata
       if (typeof network.specVersion === "number")
-        setProxyPalletStatus(network.id, network.specVersion, false)
+        setProxyPalletStatus(network.id, network.specVersion, false, "metadata")
       return { ok: true, networkId: network.id, sets: [] }
     }
 
@@ -334,6 +334,7 @@ export const loadNetworkProxyDetails = async (
           deposit: deposit.toString(),
           isStale: false,
           proxies,
+          lastDetailsFetchedAt: Date.now(),
         })
       } catch (err) {
         // Decoding failure for one delegator shouldn't fail the whole network.

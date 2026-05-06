@@ -7,10 +7,10 @@ import {
   combineLatest,
   defer,
   distinctUntilChanged,
+  firstValueFrom,
   map,
   Observable,
   of,
-  Subject,
   shareReplay,
   startWith,
   switchMap,
@@ -31,20 +31,34 @@ import {
   accountProxiesStore$,
   getAccountProxySetKey,
   markAccountProxySetsStale,
+  storeHydrated$,
   upsertAccountProxySets,
 } from "./store.accountProxies"
 import { getProxyPalletStatus } from "./store.proxyPalletCache"
-import type {
-  AccountProxiesSubscriptionResponse,
-  AccountProxySet,
-  RequestAccountProxiesRefresh,
-} from "./types"
+import type { AccountProxiesSubscriptionResponse, AccountProxySet } from "./types"
 
 const POLL_INTERVAL_MS = 5 * 60 * 1000
 const NETWORK_CONCURRENCY = 6
+/** Details older than this are cleared so loadDetails re-triggers. */
+const DETAILS_TTL_MS = 30 * 60 * 1000
 
-/** External refresh requests pushed by `refreshAccountProxies`. */
-const refresh$ = new Subject<RequestAccountProxiesRefresh>()
+/**
+ * Determine whether a proxy set's cached details should be cleared.
+ *
+ * Returns `true` when:
+ * - proxy count changed (entries were added/removed)
+ * - count is unchanged but loaded details are older than `DETAILS_TTL_MS`
+ */
+export const shouldClearDetails = (
+  existing: AccountProxySet | undefined,
+  newProxyCount: number
+): boolean => {
+  const countChanged = existing?.proxyCount !== newProxyCount
+  if (countChanged) return true
+  if (!existing?.proxies?.length) return false
+  if (existing.lastDetailsFetchedAt === undefined) return false
+  return Date.now() - existing.lastDetailsFetchedAt > DETAILS_TTL_MS
+}
 
 /** Tuples currently in flight (debug + future race protection). */
 const inFlight = new Set<string>()
@@ -140,15 +154,15 @@ const runLightweightPollCycle = async (
             seen.add(address)
             const key = getAccountProxySetKey(candidate.network.id, address)
             const existing = currentSnapshot.sets[key]
-            // Preserve previously loaded full details when count is unchanged
-            const countChanged = existing?.proxyCount !== proxyCount
+            const clearDetails = shouldClearDetails(existing, proxyCount)
             sets.push({
               delegator: address,
               networkId: candidate.network.id,
               proxyCount,
-              deposit: countChanged ? "0" : (existing?.deposit ?? "0"),
+              deposit: clearDetails ? "0" : (existing?.deposit ?? "0"),
               isStale: false,
-              proxies: countChanged ? [] : (existing?.proxies ?? []),
+              proxies: clearDetails ? [] : (existing?.proxies ?? []),
+              lastDetailsFetchedAt: clearDetails ? undefined : existing?.lastDetailsFetchedAt,
             })
           }
           // Ensure every requested delegator gets a set entry
@@ -186,75 +200,43 @@ const runLightweightPollCycle = async (
 }
 
 /**
- * Full-decode refresh cycle: downloads metadata for ONE network and decodes
- * full proxy entries. Used after the wizard submits a proxy transaction.
- */
-const runRefreshCycle = async (
-  candidates: ProxyPollCandidate[],
-  abortController: AbortController,
-  req: RequestAccountProxiesRefresh
-): Promise<void> => {
-  const candidate = candidates.find((c) => c.network.id === req.networkId)
-  if (!candidate) return
-
-  const matching = candidate.delegators.find((d) => d.address === req.address)
-  if (!matching) return
-
-  const filtered = { network: candidate.network, delegators: [matching] }
-  const tupleKey = getAccountProxySetKey(req.networkId, req.address)
-  inFlight.add(tupleKey)
-  try {
-    const outcome = await loadNetworkProxyDetails(filtered, abortController.signal)
-    if (abortController.signal.aborted) return
-    if (outcome.ok) {
-      upsertAccountProxySets(outcome.sets)
-    } else {
-      log.warn("[accountProxies] refresh failed for network", req.networkId, outcome.error)
-      markAccountProxySetsStale([{ networkId: req.networkId, delegator: req.address }])
-    }
-  } finally {
-    inFlight.delete(tupleKey)
-  }
-}
-
-/**
- * Inner observable: while subscribed, polls every 5 minutes, plus on demand
- * refresh requests via `refreshAccountProxies`. Tears down on unsubscribe.
+ * Inner observable: while subscribed, polls every 5 minutes.
+ * Tears down on unsubscribe.
  */
 const pollingDriver$ = new Observable<"live">((subscriber) => {
   const abortController = new AbortController()
-  let currentCandidates: ProxyPollCandidate[] = []
   let initialResolved = false
   let latestSnapshot: { sets: Record<string, AccountProxySet> } = { sets: {} }
+  let pollSub: { unsubscribe: () => void } | null = null
 
   // Track the latest snapshot for preserving loaded details during lightweight polls
   const snapshotSub = accountProxiesStore$.subscribe((s) => {
     latestSnapshot = s
   })
 
-  const pollSub = createPollingTrigger$(candidates$, POLL_INTERVAL_MS, (cs) => {
-    currentCandidates = cs
-  }).subscribe((candidates) => {
-    runLightweightPollCycle(candidates, abortController, latestSnapshot)
-      .catch((err) => log.error("[accountProxies] poll cycle failed", err))
-      .finally(() => {
-        if (!initialResolved) {
-          initialResolved = true
-          subscriber.next("live")
-        }
-      })
-  })
+  // Wait for the store to hydrate from disk before starting poll cycles.
+  // This prevents the first lightweight poll from running against an empty
+  // snapshot and wiping persisted proxy details.
+  firstValueFrom(storeHydrated$).then(() => {
+    if (abortController.signal.aborted) return
 
-  const refreshSub = refresh$.subscribe((req) => {
-    runRefreshCycle(currentCandidates, abortController, req).catch((err) =>
-      log.error("[accountProxies] refresh cycle failed", err)
+    pollSub = createPollingTrigger$(candidates$, POLL_INTERVAL_MS, () => {}).subscribe(
+      (candidates) => {
+        runLightweightPollCycle(candidates, abortController, latestSnapshot)
+          .catch((err) => log.error("[accountProxies] poll cycle failed", err))
+          .finally(() => {
+            if (!initialResolved) {
+              initialResolved = true
+              subscriber.next("live")
+            }
+          })
+      }
     )
   })
 
   return () => {
     abortController.abort()
-    pollSub.unsubscribe()
-    refreshSub.unsubscribe()
+    pollSub?.unsubscribe()
     snapshotSub.unsubscribe()
   }
 })
@@ -286,11 +268,6 @@ export const accountProxies$ = defer(() => {
     distinctUntilChanged((a, b) => isEqual(a, b))
   )
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }), keepAlive(3000))
-
-/** Pushed by `pri(accountProxies.refresh)` from the wizard after a successful tx. */
-export const refreshAccountProxies = (req: RequestAccountProxiesRefresh) => {
-  refresh$.next(req)
-}
 
 /**
  * Load full proxy details for a specific (network, delegator) tuple.

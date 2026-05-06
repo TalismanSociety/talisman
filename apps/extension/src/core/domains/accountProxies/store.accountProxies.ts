@@ -18,6 +18,10 @@ const [setSnapshot, accountProxiesStore$] = splitSubject(
 )
 export { accountProxiesStore$ }
 
+/** Emits once after the initial blob load completes (success or error). */
+const [setHydrated, storeHydrated$] = splitSubject(new ReplaySubject<true>(1))
+export { storeHydrated$ }
+
 export const getAccountProxySetKey = (networkId: string, delegator: string) =>
   `${networkId}|${delegator}`
 
@@ -88,10 +92,12 @@ walletReady.then(() => {
       if (needsMigration) snapshot = { sets: migrated }
 
       emit(snapshot)
+      setHydrated(true)
     })
     .catch((err) => {
       log.error("[accountProxies] failed to load store on startup", err)
       emit(DEFAULT_DATA)
+      setHydrated(true)
     })
 
   // persist data to db when store is updated

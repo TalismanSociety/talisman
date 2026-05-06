@@ -40,6 +40,8 @@ export type AccountProxySet = {
    * when the user opens a proxy management form (requires metadata download).
    */
   proxies: AccountProxyEntry[]
+  /** Epoch ms when full details (proxies + deposit) were last decoded. */
+  lastDetailsFetchedAt?: number
 }
 
 export type AccountProxiesSnapshot = {

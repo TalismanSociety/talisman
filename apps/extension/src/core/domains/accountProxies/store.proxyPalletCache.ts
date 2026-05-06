@@ -9,6 +9,8 @@ import { walletReady } from "../../libs/isWalletReady"
 type ProxyPalletCacheEntry = {
   specVersion: number
   hasProxyPallet: boolean
+  /** Whether pallet status was determined via metadata or a raw storage probe. */
+  source?: "metadata" | "probe"
 }
 
 export type ProxyPalletCache = Record<NetworkId, ProxyPalletCacheEntry>
@@ -19,12 +21,13 @@ const [setCache, proxyPalletCache$] = splitSubject(new ReplaySubject<ProxyPallet
 
 let currentCache: ProxyPalletCache = {}
 
-/** Strip entries with `hasProxyPallet: false` — raw storage probes can never
- *  reliably distinguish "no pallet" from "no proxies for this account". */
+/** Strip `false` entries from raw storage probes — they can never reliably
+ *  distinguish "no pallet" from "no proxies for this account".
+ *  Metadata-derived `false` entries are kept because they are definitive. */
 const sanitiseCache = (raw: ProxyPalletCache): ProxyPalletCache => {
   const cleaned: ProxyPalletCache = {}
   for (const [id, entry] of Object.entries(raw)) {
-    if (entry.hasProxyPallet) cleaned[id] = entry
+    if (entry.hasProxyPallet || entry.source === "metadata") cleaned[id] = entry
   }
   return cleaned
 }
@@ -78,10 +81,16 @@ export const getProxyPalletStatus = (
 export const setProxyPalletStatus = (
   networkId: NetworkId,
   specVersion: number,
-  hasProxyPallet: boolean
+  hasProxyPallet: boolean,
+  source: "metadata" | "probe" = "probe"
 ): void => {
   const existing = currentCache[networkId]
-  if (existing?.specVersion === specVersion && existing.hasProxyPallet === hasProxyPallet) return
-  currentCache = { ...currentCache, [networkId]: { specVersion, hasProxyPallet } }
+  if (
+    existing?.specVersion === specVersion &&
+    existing.hasProxyPallet === hasProxyPallet &&
+    existing.source === source
+  )
+    return
+  currentCache = { ...currentCache, [networkId]: { specVersion, hasProxyPallet, source } }
   setCache(currentCache)
 }

@@ -1,11 +1,12 @@
 import type {
   AccountProxiesSubscriptionResponse,
+  AccountProxiesSubscriptionStatus,
   AccountProxySet,
 } from "@core/domains/accountProxies/types"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { useMemo } from "react"
-import { map, Observable, ReplaySubject, shareReplay } from "rxjs"
+import { distinctUntilChanged, map, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { useAccountByAddress } from "./accounts"
 
@@ -34,6 +35,16 @@ const [, accountProxies$] = bind(rawAccountProxies$, EMPTY_RESPONSE)
 const accountProxySets$ = accountProxies$.pipe(map((res) => res.proxySets))
 
 export const [useAccountProxySets] = bind(accountProxySets$, [] as AccountProxySet[])
+
+const accountProxiesStatus$ = accountProxies$.pipe(
+  map((res) => res.status),
+  distinctUntilChanged()
+)
+
+export const [useAccountProxiesStatus] = bind<AccountProxiesSubscriptionStatus>(
+  accountProxiesStatus$,
+  "initialising"
+)
 
 /**
  * Total number of proxies (not deposit) across all networks for `address`.

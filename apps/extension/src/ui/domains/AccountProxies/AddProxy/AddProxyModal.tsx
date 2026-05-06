@@ -23,7 +23,11 @@ import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
-import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
+import {
+  useAccountCanWriteProxies,
+  useAccountProxiesStatus,
+  useAccountProxySetsForAddress,
+} from "@ui/state/accountProxies"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useNetworks, useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -376,6 +380,7 @@ const AddProxyConfirm: FC<{
   > | null>(null)
 
   // Existing proxy count for this network to compute accurate deposit
+  const proxyStoreStatus = useAccountProxiesStatus()
   const proxySets = useAccountProxySetsForAddress(address)
   const existingProxyCount = useMemo(
     () => getProxyCountForNetwork(proxySets, network.id),
@@ -383,8 +388,9 @@ const AddProxyConfirm: FC<{
   )
 
   // Additional deposit reserved by adding this proxy.
+  // Null while proxy store is still initialising to avoid over-estimation.
   const additionalReservedDeposit = useMemo(() => {
-    if (!sapi) return null
+    if (!sapi || proxyStoreStatus !== "live") return null
     try {
       const base = sapi.getConstant<bigint>("Proxy", "ProxyDepositBase")
       const factor = sapi.getConstant<bigint>("Proxy", "ProxyDepositFactor")
@@ -394,12 +400,13 @@ const AddProxyConfirm: FC<{
     } catch {
       return null
     }
-  }, [sapi, existingProxyCount])
+  }, [sapi, existingProxyCount, proxyStoreStatus])
 
   // Fee estimate
   const {
     data: feeEstimate,
     isLoading: isLoadingFee,
+    isFetching: isFetchingFee,
     error: feeError,
   } = useGetFeeEstimate({ sapi: sapi ?? null, payload: payload?.payload })
 
@@ -425,17 +432,34 @@ const AddProxyConfirm: FC<{
 
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
 
+  const isAffordabilityCheckUnavailable =
+    isFetchingFee ||
+    !!feeError ||
+    transferablePlanck === null ||
+    additionalReservedDeposit === null ||
+    typeof feeEstimate !== "bigint" ||
+    !existentialDeposit
+
   const insufficientBalance = useMemo(() => {
     if (
+      isFetchingFee ||
+      feeError ||
       transferablePlanck === null ||
       additionalReservedDeposit === null ||
-      !feeEstimate ||
+      typeof feeEstimate !== "bigint" ||
       !existentialDeposit
     )
       return false
     const required = additionalReservedDeposit + feeEstimate + existentialDeposit.planck
     return transferablePlanck < required
-  }, [transferablePlanck, additionalReservedDeposit, feeEstimate, existentialDeposit])
+  }, [
+    isFetchingFee,
+    feeError,
+    transferablePlanck,
+    additionalReservedDeposit,
+    feeEstimate,
+    existentialDeposit,
+  ])
 
   useEffect(() => {
     if (!sapi) return
@@ -587,7 +611,7 @@ const AddProxyConfirm: FC<{
         payload={payload?.payload}
         txMetadata={payload?.txMetadata}
         onSubmitted={handleSubmitted}
-        disabled={insufficientBalance}
+        disabled={isAffordabilityCheckUnavailable || insufficientBalance}
         className="shrink-0"
       />
     </WizardModalDialog>

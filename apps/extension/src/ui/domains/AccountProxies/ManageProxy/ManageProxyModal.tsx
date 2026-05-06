@@ -16,7 +16,11 @@ import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
-import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
+import {
+  useAccountCanWriteProxies,
+  useAccountProxiesStatus,
+  useAccountProxySetsForAddress,
+} from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -209,6 +213,7 @@ const RemoveProxyConfirm: FC<{
   > | null>(null)
 
   // Compute deposit that will be unlocked after removing this proxy
+  const proxyStoreStatus = useAccountProxiesStatus()
   const proxySets = useAccountProxySetsForAddress(address)
   const existingProxyCount = useMemo(
     () => getProxyCountForNetwork(proxySets, target.networkId),
@@ -216,7 +221,7 @@ const RemoveProxyConfirm: FC<{
   )
 
   const depositUnlocked = useMemo(() => {
-    if (!sapi || existingProxyCount <= 0) return null
+    if (!sapi || proxyStoreStatus !== "live" || existingProxyCount <= 0) return null
     try {
       const base = sapi.getConstant<bigint>("Proxy", "ProxyDepositBase")
       const factor = sapi.getConstant<bigint>("Proxy", "ProxyDepositFactor")
@@ -227,12 +232,13 @@ const RemoveProxyConfirm: FC<{
     } catch {
       return null
     }
-  }, [sapi, existingProxyCount])
+  }, [sapi, existingProxyCount, proxyStoreStatus])
 
   // Fee estimate
   const {
     data: feeEstimate,
     isLoading: isLoadingFee,
+    isFetching: isFetchingFee,
     error: feeError,
   } = useGetFeeEstimate({ sapi: sapi ?? null, payload: payload?.payload })
 
@@ -257,11 +263,25 @@ const RemoveProxyConfirm: FC<{
 
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
 
+  const isAffordabilityCheckUnavailable =
+    isFetchingFee ||
+    !!feeError ||
+    transferablePlanck === null ||
+    typeof feeEstimate !== "bigint" ||
+    !existentialDeposit
+
   const insufficientBalance = useMemo(() => {
-    if (transferablePlanck === null || !feeEstimate || !existentialDeposit) return false
+    if (
+      isFetchingFee ||
+      feeError ||
+      transferablePlanck === null ||
+      typeof feeEstimate !== "bigint" ||
+      !existentialDeposit
+    )
+      return false
     const required = feeEstimate + existentialDeposit.planck
     return transferablePlanck < required
-  }, [transferablePlanck, feeEstimate, existentialDeposit])
+  }, [isFetchingFee, feeError, transferablePlanck, feeEstimate, existentialDeposit])
 
   useEffect(() => {
     if (!sapi) return
@@ -399,7 +419,7 @@ const RemoveProxyConfirm: FC<{
           payload={payload?.payload}
           txMetadata={payload?.txMetadata}
           onSubmitted={handleSubmitted}
-          disabled={insufficientBalance}
+          disabled={isAffordabilityCheckUnavailable || insufficientBalance}
         />
       </div>
     </WizardModalDialog>
