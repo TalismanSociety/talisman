@@ -434,6 +434,7 @@ const NetworkCreateForm: FC = () => {
                     type="submit"
                     processing={isSubmitting || isValidating}
                     disabled={!isSubmitting && !isValidating && !canSubmit}
+                    data-testid="add-network-save-button"
                   >
                     {t("Save")}
                   </Button>

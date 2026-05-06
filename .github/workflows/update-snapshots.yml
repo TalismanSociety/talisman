@@ -1,0 +1,79 @@
+name: Update Visual Regression Snapshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to update snapshots on"
+        required: true
+        default: "dev"
+
+concurrency:
+  group: update-snapshots-${{ github.event.inputs.branch }}
+  cancel-in-progress: true
+
+jobs:
+  update-snapshots:
+    name: "Update Playwright snapshots"
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update & enable corepack
+        run: npm install -g corepack@latest && corepack enable
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build extension
+        run: pnpm build:extension
+        env:
+          COMMIT_SHA_SHORT: ${{ github.sha }}
+          E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
+
+      - name: Install playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Update snapshots
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
+          pnpm exec playwright test visual-regression --project=chromium --update-snapshots
+
+      - name: Commit updated snapshots and create PR
+        run: |
+          SNAPSHOT_BRANCH="chore/update-snapshots-$(date +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$SNAPSHOT_BRANCH"
+          git add "**/*-snapshots/**"
+          if git diff --staged --quiet; then
+            echo "No snapshot changes to commit"
+          else
+            git commit -m "test: update visual regression snapshots"
+            git push origin "$SNAPSHOT_BRANCH"
+            gh pr create \
+              --base "${{ github.event.inputs.branch }}" \
+              --head "$SNAPSHOT_BRANCH" \
+              --title "test: update visual regression snapshots" \
+              --body "Automated update of Playwright visual regression snapshots."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

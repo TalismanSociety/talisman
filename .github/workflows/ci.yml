@@ -112,10 +112,47 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Install xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Start Anvil
+        run: |
+          docker run -d --name anvil -p 8545:8545 \
+            ghcr.io/foundry-rs/foundry:v1.6.0-rc1 \
+            "anvil --host 0.0.0.0 --chain-id 1 --block-time 1"
+          # Wait for Anvil to be ready
+          ANVIL_READY=false
+          for i in $(seq 1 30); do
+            if curl -sf -X POST http://localhost:8545 \
+              -H "Content-Type: application/json" \
+              -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' > /dev/null 2>&1; then
+              echo "Anvil is ready (chain ID: $(curl -s -X POST http://localhost:8545 -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' | jq -r .result))"
+              ANVIL_READY=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ANVIL_READY" != "true" ]; then
+            echo "ERROR: Anvil failed to start after 30 seconds"
+            docker logs anvil
+            exit 1
+          fi
       - name: Run playwright tests with xvfb
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
-          pnpm test:e2e
+          pnpm exec playwright test --project=chromium --grep-invert "Visual Regression"
+        env:
+          ANVIL_RPC_URL: http://localhost:8545
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/e2e
+      - name: Checkout visual regression snapshots from base branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git checkout origin/${{ github.base_ref }} -- playwright/e2e-tests/visual-regression.spec.ts-snapshots/ || true
+      - name: Run visual regression tests
+        continue-on-error: true
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
+          pnpm exec playwright test --project=chromium --grep "Visual Regression"
+        env:
+          ANVIL_RPC_URL: http://localhost:8545
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/visual-regression
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

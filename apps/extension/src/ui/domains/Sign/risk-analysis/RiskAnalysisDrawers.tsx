@@ -67,8 +67,10 @@ const RiskAnalysisPromptAutoRiskScan: FC = () => {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-8">
-        <Button onClick={handleClick(false)}>{t("No")}</Button>
-        <Button onClick={handleClick(true)} primary>
+        <Button onClick={handleClick(false)} data-testid="risk-analysis-button-no">
+          {t("No")}
+        </Button>
+        <Button onClick={handleClick(true)} data-testid="risk-analysis-button-yes" primary>
           {t("Yes")}
         </Button>
       </div>

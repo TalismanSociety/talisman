@@ -127,6 +127,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
             <FormFieldInputText
               placeholder={placeholder}
               value={field.state.value}
+              data-testid="form-field-input-rpc"
               onChange={(e) => field.handleChange(e.target.value)}
               before={
                 <button
@@ -147,6 +148,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
                   <button
                     type="button"
                     className="allow-focus -mr-6 shrink-0 px-2 text-md opacity-80 outline-hidden hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+                    data-testid="network-rpcs-delete-button"
                     onClick={onDelete}
                   >
                     <TrashIcon className="transition-none" />
