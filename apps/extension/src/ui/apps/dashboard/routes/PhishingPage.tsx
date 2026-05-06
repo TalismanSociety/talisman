@@ -42,7 +42,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
               </div>
               <div className="leading-10">
                 <Trans t={t}>
-                  This URL has been reported as a known phishing site on a community maintained
+                  This domain has been reported as a known phishing site on a community maintained
                   list.
                 </Trans>
               </div>
