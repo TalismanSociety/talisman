@@ -95,17 +95,6 @@
       }
     },
     {
-      // CLI scripts intentionally write to stdout/stderr.
-      "includes": ["scripts/**/*.mjs", "scripts/**/*.js", "scripts/**/*.cjs"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noConsole": "off"
-          }
-        }
-      }
-    },
-    {
       // workaround Tailwind CSS false positives
       "includes": ["**/*.css"],
       "linter": {
