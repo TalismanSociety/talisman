@@ -2,7 +2,7 @@ name: API Health Tests
 
 on:
   schedule:
-    - cron: "0 */4 * * *" # every 4 hours
+    - cron: "0 7 * * *" # daily at 9:00 AM (UTC+2)
   workflow_dispatch: # allow manual trigger
 
 concurrency:
@@ -53,7 +53,7 @@ jobs:
         run: |
           curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -d '{"content":"✅ Playwright API Health check passed."}'
+            -d '{"content":"Playwright API Health check passed ✅."}'
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}
 
@@ -62,7 +62,7 @@ jobs:
         run: |
           zip -r api-health-report.zip playwright-report/
           curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
-            -F "content=⚠️ Playwright API Health check failed." \
+            -F "content= Playwright API Health check failed ⚠️." \
             -F "files[0]=@api-health-report.zip"
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}

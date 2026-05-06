@@ -221,7 +221,11 @@ export const test = base.extend<{
         .getByTestId("container-account-method")
         .getByText("Add a Watched Account")
         .click()
-      await onboardedPage.getByRole("button", { name: `Watch ${type} Account` }).click()
+      const watchedAccountButton = onboardedPage.getByRole("button", {
+        name: `Watch ${type} Account`,
+      })
+      await expect(watchedAccountButton).toBeVisible()
+      await watchedAccountButton.click()
       await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
       await onboardedPage.getByPlaceholder("Enter wallet address").fill(address)
 
