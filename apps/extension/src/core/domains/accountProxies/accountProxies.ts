@@ -276,7 +276,11 @@ export const accountProxies$ = defer(() => {
  * Called on-demand from `pri(accountProxies.loadDetails)` when the user
  * opens a proxy management form.
  */
-export const loadProxyDetails = async (networkId: string, address: string): Promise<boolean> => {
+export const loadProxyDetails = async (
+  networkId: string,
+  address: string,
+  signal?: AbortSignal
+): Promise<boolean> => {
   try {
     const networks = await chaindataProvider.getNetworks("polkadot")
     const network = networks.find((n) => n.id === networkId)
@@ -285,13 +289,12 @@ export const loadProxyDetails = async (networkId: string, address: string): Prom
       return false
     }
 
-    const abortController = new AbortController()
     const candidate: ProxyPollCandidate = {
       network,
       delegators: [{ address }],
     }
 
-    const outcome = await loadNetworkProxyDetails(candidate, abortController.signal)
+    const outcome = await loadNetworkProxyDetails(candidate, signal ?? AbortSignal.timeout(15_000))
     if (outcome.ok) {
       upsertAccountProxySets(outcome.sets)
       return true

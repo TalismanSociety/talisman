@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { splitSubject } from "@talismn/util"
+import { isEqual } from "lodash-es"
 import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
 
 import { getBlobStore } from "../../db"
@@ -47,7 +48,7 @@ walletReady.then(() => {
 
   // persist when updated
   proxyPalletCache$
-    .pipe(skip(1), debounceTime(2_000), distinctUntilChanged())
+    .pipe(skip(1), debounceTime(2_000), distinctUntilChanged(isEqual))
     .subscribe((cache) => {
       log.debug(`[proxyPalletCache] persisting (${Object.keys(cache).length} entries)`, cache)
       blobStore.set(cache)

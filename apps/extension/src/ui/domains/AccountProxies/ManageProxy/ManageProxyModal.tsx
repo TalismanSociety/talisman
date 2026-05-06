@@ -23,7 +23,7 @@ import {
 } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { useGetFeeEstimate } from "../../Staking/shared/useGetFeeEstimate"
@@ -57,10 +57,15 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   const { close: closeManage } = useManageProxyModal()
   const { open: triggerOpenAdd } = useAddProxyModal()
 
+  // Track which (networkId, address) tuples have already been requested
+  const attemptedRef = useRef(new Set<string>())
+
   // Trigger on-demand full decode for networks that have proxies but no details yet
   useEffect(() => {
     for (const set of sets) {
-      if (set.proxyCount > 0 && set.proxies.length === 0) {
+      const key = `${set.networkId}:${address}`
+      if (set.proxyCount > 0 && set.proxies.length === 0 && !attemptedRef.current.has(key)) {
+        attemptedRef.current.add(key)
         api.accountProxiesLoadDetails({ networkId: set.networkId, address }).catch(() => {})
       }
     }
