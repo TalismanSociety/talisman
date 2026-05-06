@@ -22,8 +22,7 @@ export { accountProxiesStore$ }
 const [setHydrated, storeHydrated$] = splitSubject(new ReplaySubject<true>(1))
 export { storeHydrated$ }
 
-export const getAccountProxySetKey = (networkId: string, delegator: string) =>
-  `${networkId}|${delegator}`
+const getAccountProxySetKey = (networkId: string, delegator: string) => `${networkId}|${delegator}`
 
 let currentSnapshot: AccountProxiesSnapshot = DEFAULT_DATA
 

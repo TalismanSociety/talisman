@@ -32,6 +32,7 @@ import { DelegatePicker } from "./DelegatePicker"
 import { NetworkPicker } from "./NetworkPicker"
 import { ProxyDelayDrawer } from "./ProxyDelayDrawer"
 import { ProxyTypePicker } from "./ProxyTypePicker"
+import { parseProxyDelay } from "./proxyDelay"
 import { useAddProxyModal } from "./useAddProxyModal"
 
 type ActivePicker = "network" | "delegate" | "account" | "proxyType" | null
@@ -121,8 +122,8 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     }
   }, [delegate])
 
-  const delayNum = useMemo(() => Number.parseInt(delay, 10), [delay])
-  const isDelayValid = Number.isInteger(delayNum) && delayNum >= 0
+  const delayNum = useMemo(() => parseProxyDelay(delay), [delay])
+  const isDelayValid = delayNum !== null
 
   const canProceed =
     !!network &&
@@ -169,7 +170,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     )
   }
 
-  if (step === "confirm" && network) {
+  if (step === "confirm" && network && delayNum !== null) {
     return (
       <AddProxyConfirm
         address={address}

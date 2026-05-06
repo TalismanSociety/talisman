@@ -4,6 +4,7 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { parseProxyDelay } from "./proxyDelay"
 
 export const ProxyDelayForm: FC<{
   delay: string
@@ -14,14 +15,14 @@ export const ProxyDelayForm: FC<{
   const [value, setValue] = useState(delay)
   const refInput = useRef<HTMLInputElement>(null)
 
-  const parsedValue = useMemo(() => Number.parseInt(value, 10), [value])
-  const isValid = useMemo(() => Number.isInteger(parsedValue) && parsedValue >= 0, [parsedValue])
+  const parsedValue = useMemo(() => parseProxyDelay(value), [value])
+  const isValid = parsedValue !== null
 
   const handleSubmit = useCallback(() => {
-    if (!isValid) return
-    onSave(value)
+    if (parsedValue === null) return
+    onSave(String(parsedValue))
     onClose()
-  }, [isValid, onClose, onSave, value])
+  }, [onClose, onSave, parsedValue])
 
   const status = useOpenCloseStatus()
   useEffect(() => {
@@ -41,7 +42,9 @@ export const ProxyDelayForm: FC<{
         <FormFieldInputText
           ref={refInput}
           small
-          type="number"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           containerProps={{ className: "px-6 text-right" }}
           after={<div className="text-body-secondary">{t("blocks")}</div>}
           placeholder="0"
