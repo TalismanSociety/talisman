@@ -1,25 +1,24 @@
-import { WsProvider } from "@polkadot/rpc-provider"
-import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 
 import type { IChainConnectorDot } from "./IChainConnectorDot"
+import type { ProviderInterface, ProviderInterfaceCallback } from "./types"
+import { Websocket } from "./Websocket"
 
-const AUTO_CONNECT_TIMEOUT = 3_000
 const TIMEOUT = 10_000
 
 export class ChainConnectorDotStub implements IChainConnectorDot {
   // biome-ignore lint/correctness/noUnusedPrivateClassMembers: legacy
   #network: DotNetwork
-  #provider: WsProvider
+  #provider: Websocket
 
   constructor(network: DotNetwork) {
     this.#network = network
-    this.#provider = new WsProvider(network.rpcs, AUTO_CONNECT_TIMEOUT, undefined, TIMEOUT)
+    this.#provider = new Websocket(network.rpcs, {}, TIMEOUT)
   }
 
   asProvider(): ProviderInterface {
-    return this.#provider as ProviderInterface
+    return this.#provider
   }
 
   async send<T = unknown>(

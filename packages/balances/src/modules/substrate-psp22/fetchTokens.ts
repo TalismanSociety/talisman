@@ -1,5 +1,3 @@
-import { Abi } from "@polkadot/api-contract"
-import { TypeRegistry } from "@polkadot/types"
 import {
   type SubPsp22Token,
   SubPsp22TokenSchema,
@@ -9,12 +7,40 @@ import { values } from "lodash-es"
 
 import log from "../../log"
 import type { IBalanceModule } from "../../types/IBalanceModule"
-import psp22Abi from "../abis/psp22.json"
+import { encodePsp22Message } from "./codec"
 import type { MODULE_TYPE, TokenConfig } from "./config"
 import { makeContractCaller } from "./util"
 
-const hexToNumber = (hex: string): number => Number(hex)
 const u8aToString = (value: Uint8Array): string => new TextDecoder().decode(value)
+
+/**
+ * Decode an Option<Vec<u8>> from raw contract result data.
+ * The format is: 0x01 (Some) + Compact<length> + bytes, or 0x00 (None).
+ */
+const decodeOptionVecU8 = (data: Uint8Array): Uint8Array | null => {
+  if (data.length === 0 || data[0] === 0) return null
+  let offset = 1
+  const first = data[offset]
+  let length: number
+  if ((first & 0b11) === 0) {
+    length = first >> 2
+    offset += 1
+  } else if ((first & 0b11) === 1) {
+    length = (data[offset] | (data[offset + 1] << 8)) >> 2
+    offset += 2
+  } else if ((first & 0b11) === 2) {
+    length =
+      (data[offset] |
+        (data[offset + 1] << 8) |
+        (data[offset + 2] << 16) |
+        (data[offset + 3] << 24)) >>>
+      2
+    offset += 4
+  } else {
+    return null
+  }
+  return data.slice(offset, offset + length)
+}
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -23,14 +49,9 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 }) => {
   if (!tokens.length) return []
 
-  const registry = new TypeRegistry()
-  const Psp22Abi = new Abi(psp22Abi)
-
-  // TODO: Use `decodeOutput` from `./util/decodeOutput`
   const contractCall = makeContractCaller({
     chainConnector: connector,
     chainId: networkId,
-    registry,
   })
 
   const tokenList: Record<string, SubPsp22Token> = {}
@@ -48,34 +69,24 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           contractCall(
             contractAddress,
             contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
+            encodePsp22Message("PSP22Metadata::token_symbol")
           ),
           contractCall(
             contractAddress,
             contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
+            encodePsp22Message("PSP22Metadata::token_decimals")
           ),
         ])
 
-        // biome-ignore lint/suspicious/noExplicitAny: legacy
-        const symbolData = (symbolResult.toJSON()?.result as any)?.ok?.data
-        symbol =
-          typeof symbolData === "string" && symbolData.startsWith("0x")
-            ? u8aToString(
-                registry.createType(
-                  "Option<Vec<u8>>",
-                  // biome-ignore lint/suspicious/noExplicitAny: legacy
-                  (symbolResult.toJSON()?.result as any)?.ok?.data
-                )?.value
-              )?.replace(/\p{C}/gu, "")
-            : symbol
+        if (symbolResult.result.success) {
+          const decoded = decodeOptionVecU8(symbolResult.result.data)
+          if (decoded) symbol = u8aToString(decoded).replace(/\p{C}/gu, "")
+        }
 
-        // biome-ignore lint/suspicious/noExplicitAny: legacy
-        const decimalsData = (decimalsResult.toJSON()?.result as any)?.ok?.data
-        decimals =
-          typeof decimalsData === "string" && decimalsData.startsWith("0x")
-            ? hexToNumber(decimalsData)
-            : decimals
+        if (decimalsResult.result.success && decimalsResult.result.data.length > 0) {
+          // Decimals is returned as a u8 value
+          decimals = decimalsResult.result.data[0]
+        }
       })()
 
       const id = subPsp22TokenId(networkId, contractAddress)

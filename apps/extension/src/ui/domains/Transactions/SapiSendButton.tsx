@@ -5,12 +5,15 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { LoaderIcon } from "@talismn/icons"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
+import { useQuery } from "@tanstack/react-query"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
+import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
@@ -81,11 +84,24 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
   const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
-  const registry = useMemo(() => {
-    if (!sapi) return undefined
-    if (!lockedInputs.payload) return undefined
-    return sapi.getTypeRegistry(lockedInputs.payload)
-  }, [lockedInputs.payload, sapi])
+  const network = useNetworkByGenesisHash(lockedInputs.payload?.genesisHash)
+  const { data: registry } = useQuery({
+    queryKey: [
+      "SapiSendButton-registry",
+      lockedInputs.payload?.genesisHash,
+      lockedInputs.payload?.specVersion,
+    ],
+    queryFn: async () => {
+      if (!lockedInputs.payload) return null
+      const { registry } = await getFrontendTypeRegistry(
+        network ?? undefined,
+        lockedInputs.payload.specVersion,
+        lockedInputs.payload.signedExtensions
+      )
+      return registry
+    },
+    enabled: !!lockedInputs.payload,
+  })
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
@@ -115,7 +131,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
       onSigned={handleSigned}
       onSentToDevice={setIsLocked}
       color={color}
-      registry={registry}
+      registry={registry ?? undefined}
       {...lockedInputs}
     />
   )

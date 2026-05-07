@@ -50,16 +50,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@polkadot/api-contract": "16.1.2",
-    "@polkadot/types": "16.1.2",
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
     "typescript": "^5.6.3"
-  },
-  "peerDependencies": {
-    "@polkadot/api-contract": "*",
-    "@polkadot/types": "*",
-    "@substrate/txwrapper-core": "*"
   },
   "types": "./dist/index.d.ts",
   "exports": {

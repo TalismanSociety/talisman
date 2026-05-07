@@ -1,6 +1,5 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
-
 import type { DecodedCall } from "../types"
+import type { SignerPayloadJSON } from "./signedPayloadTypes"
 import type { Chain } from "./types"
 
 export const getDecodedCall = (palletName: string, methodName: string, args: unknown) => ({

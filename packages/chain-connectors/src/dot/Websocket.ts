@@ -1,28 +1,93 @@
-import { RpcCoder } from "@polkadot/rpc-provider/coder"
-import type {
-  JsonRpcResponse,
-  ProviderInterfaceEmitted as PjsProviderInterfaceEmitted,
-  ProviderInterface,
-  ProviderInterfaceCallback,
-  ProviderInterfaceEmitCb,
-} from "@polkadot/rpc-provider/types"
-import { getWSErrorString } from "@polkadot/rpc-provider/ws/errors"
-import { xglobal } from "@polkadot/x-global"
-import { WebSocket } from "@polkadot/x-ws"
 import EventEmitter from "eventemitter3"
 
 import log from "../log"
 import { ExponentialBackoff } from "./helpers"
+import type { ProviderInterface, ProviderInterfaceCallback, ProviderInterfaceEmitCb } from "./types"
 
-// biome-ignore lint/complexity/noBannedTypes: checking class hierarchy
-const isChildClass = (Parent: Function, Child: Function | undefined | null): boolean =>
-  Child != null && (Child === Parent || Child.prototype instanceof Parent)
+type ProviderInterfaceEmitted = "connected" | "disconnected" | "error" | "stale-rpcs"
 
-type ProviderInterfaceEmitted = PjsProviderInterfaceEmitted | "stale-rpcs"
+interface JsonRpcResponse {
+  id: number
+  jsonrpc: "2.0"
+  result?: unknown
+  error?: { code: number; data?: number | string; message: string }
+  method?: string
+  params: {
+    error?: { code: number; data?: number | string; message: string }
+    result: unknown
+    subscription: number | string
+  }
+}
 
-// to account for new requirement for generic arg in this type https://github.com/polkadot-js/api/commit/f4c2b150d3d69d43c56699613666b96dd0a763f4#diff-f87c17bc7fae027ec6d43bac5fc089614d9fa097f466aa2be333b44cee81f0fd
-// TODO incrementally replace 'unknown' with proper types where possible
-type UnknownJsonRpcResponse<T = unknown> = JsonRpcResponse<T>
+class RpcError extends Error {
+  code: number
+  data?: number | string
+  constructor(message: string, code: number, data?: number | string) {
+    super(message)
+    this.name = "RpcError"
+    this.code = code
+    this.data = data
+  }
+}
+
+class RpcCoder {
+  #id = 0
+
+  encodeJson(method: string, params: unknown[]): [number, string] {
+    const id = ++this.#id
+    return [id, JSON.stringify({ id, jsonrpc: "2.0", method, params })]
+  }
+
+  decodeResponse(response: JsonRpcResponse): unknown {
+    if (!response || response.jsonrpc !== "2.0")
+      throw new Error("Invalid jsonrpc field in decoded object")
+
+    const isSubscription = response.params !== undefined && response.method !== undefined
+
+    if (response.error) {
+      const { code, data, message } = response.error
+      const formatted =
+        data !== undefined ? `: ${typeof data === "string" ? data : JSON.stringify(data)}` : ""
+      throw new RpcError(
+        `${code}: ${message}${formatted.length <= 256 ? formatted : `${formatted.substring(0, 255)}…`}`,
+        code,
+        data
+      )
+    }
+
+    if (isSubscription) {
+      if (response.params.error) {
+        const { code, data, message } = response.params.error
+        throw new RpcError(`${code}: ${message}`, code, data)
+      }
+      return response.params.result
+    }
+
+    if (response.result === undefined) throw new Error("No result found in jsonrpc response")
+
+    return response.result
+  }
+}
+
+const WS_ERROR_CODES: Record<number, string> = {
+  1000: "Normal Closure",
+  1001: "Going Away",
+  1002: "Protocol Error",
+  1003: "Unsupported Data",
+  1005: "No Status Received",
+  1006: "Abnormal Closure",
+  1007: "Invalid frame payload data",
+  1008: "Policy Violation",
+  1009: "Message too big",
+  1010: "Missing Extension",
+  1011: "Internal Error",
+  1012: "Service Restart",
+  1013: "Try Again Later",
+  1014: "Bad Gateway",
+  1015: "TLS Handshake",
+}
+
+const getWSErrorString = (code: number): string => WS_ERROR_CODES[code] ?? "(Unknown)"
 
 interface SubscriptionHandler {
   callback: ProviderInterfaceCallback
@@ -86,7 +151,7 @@ export class Websocket implements ProviderInterface {
   readonly #eventemitter: EventEmitter
   readonly #handlers: Record<string, WsStateAwaiting> = {}
   readonly #isReadyPromise: Promise<Websocket>
-  readonly #waitingForId: Record<string, UnknownJsonRpcResponse> = {}
+  readonly #waitingForId: Record<string, JsonRpcResponse> = {}
 
   #autoConnectBackoff: ExponentialBackoff
   #endpointIndex: number
@@ -201,13 +266,11 @@ export class Websocket implements ProviderInterface {
     try {
       this.#endpointIndex = this.selectEndpointIndex(this.#endpoints)
 
-      // the as typeof WebSocket here is Deno-specific - not available on the globalThis
       this.#websocket =
-        typeof xglobal.WebSocket !== "undefined" &&
-        isChildClass(xglobal.WebSocket as typeof WebSocket, WebSocket)
-          ? new WebSocket(this.endpoint)
+        Object.getPrototypeOf(globalThis.WebSocket) === WebSocket.prototype
+          ? new globalThis.WebSocket(this.endpoint)
           : // @ts-expect-error - WS may be an instance of ws, which supports options
-            new WebSocket(this.endpoint, undefined, {
+            new globalThis.WebSocket(this.endpoint, undefined, {
               headers: this.#headers,
             })
 
@@ -462,7 +525,7 @@ export class Websocket implements ProviderInterface {
   #onSocketMessage = (message: MessageEvent<string>): void => {
     // log.debug(() => ["received", message.data])
     try {
-      const response = JSON.parse(message.data) as UnknownJsonRpcResponse
+      const response = JSON.parse(message.data) as JsonRpcResponse
 
       // biome-ignore lint/correctness/noVoidTypeReturn: legacy
       return response.method === undefined
@@ -473,7 +536,7 @@ export class Websocket implements ProviderInterface {
     }
   }
 
-  #onSocketMessageResult = (response: UnknownJsonRpcResponse): void => {
+  #onSocketMessageResult = (response: JsonRpcResponse): void => {
     const handler = this.#handlers[response.id]
 
     if (!handler) {
@@ -507,7 +570,7 @@ export class Websocket implements ProviderInterface {
     delete this.#handlers[response.id]
   }
 
-  #onSocketMessageSubscribe = (response: UnknownJsonRpcResponse): void => {
+  #onSocketMessageSubscribe = (response: JsonRpcResponse): void => {
     const method = ALIASES[response.method as string] || response.method || "invalid"
     const subId = `${method}::${response.params.subscription}`
     const handler = this.#subscriptions[subId]

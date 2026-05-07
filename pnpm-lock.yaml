@@ -718,9 +718,6 @@ importers:
       '@solana/web3.js':
         specifier: ^1.98.2
         version: 1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@substrate/txwrapper-core':
-        specifier: 7.5.3
-        version: 7.5.3(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@talismn/chain-connectors':
         specifier: workspace:*
         version: link:../chain-connectors
@@ -770,12 +767,6 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@polkadot/api-contract':
-        specifier: 16.1.2
-        version: 16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@polkadot/types':
-        specifier: 16.1.2
-        version: 16.1.2
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
@@ -813,15 +804,6 @@ importers:
         specifier: ^2.27.3
         version: 2.37.6(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.3.5)
     devDependencies:
-      '@polkadot/rpc-provider':
-        specifier: 16.1.2
-        version: 16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@polkadot/x-global':
-        specifier: 13.5.3
-        version: 13.5.3
-      '@polkadot/x-ws':
-        specifier: 13.5.3
-        version: 13.5.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
@@ -1021,12 +1003,6 @@ importers:
       '@polkadot-api/utils':
         specifier: 0.2.0
         version: 0.2.0
-      '@polkadot/types':
-        specifier: 16.1.2
-        version: 16.1.2
-      '@polkadot/types-codec':
-        specifier: 16.1.2
-        version: 16.1.2
       '@talismn/scale':
         specifier: workspace:*
         version: link:../scale

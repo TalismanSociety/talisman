@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "./helpers/signedPayloadTypes"
 
 // biome-ignore lint/suspicious/noExplicitAny: legacy
 export type DecodedCall<Args = any> = { pallet: string; method: string; args: Args }

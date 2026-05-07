@@ -1,5 +1,5 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import type { ScaleApiSubmitMode } from "../types"
+import type { SignerPayloadJSON } from "./signedPayloadTypes"
 import type { Chain } from "./types"
 
 export const submit = async (

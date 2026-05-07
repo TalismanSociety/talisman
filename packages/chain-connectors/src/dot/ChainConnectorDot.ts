@@ -1,10 +1,9 @@
-import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 import type { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
-
 import log from "../log"
 import type { IChainConnectorDot } from "./IChainConnectorDot"
+import type { ProviderInterface, ProviderInterfaceCallback } from "./types"
 import { Websocket } from "./Websocket"
 
 // errors that require an rpc fallback
