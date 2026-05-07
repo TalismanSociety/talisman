@@ -1,4 +1,7 @@
-import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { decodeSs58Address, isAddressEqual, isAddressValid, isSs58Address } from "@talismn/crypto"
@@ -101,7 +104,7 @@ const DelegateList: FC<{
   const newAddress = useMemo<{ address: string } | null>(() => {
     if (!search || !network || matchingAccounts.length) return null
 
-    if (isAddressValid(search)) {
+    if (isAddressValid(search) && isAddressCompatibleWithNetwork(network, search)) {
       if (isSs58Address(search)) {
         const [, ss58Format] = decodeSs58Address(search)
         if (![42, network.prefix, network.oldPrefix].includes(ss58Format)) return null

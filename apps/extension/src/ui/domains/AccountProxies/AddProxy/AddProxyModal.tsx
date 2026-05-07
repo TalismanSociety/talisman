@@ -1,4 +1,7 @@
-import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import {
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
@@ -125,12 +128,21 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const delayNum = useMemo(() => parseProxyDelay(delay), [delay])
   const isDelayValid = delayNum !== null
 
-  const canProceed =
-    !!network &&
-    isDelegateValid &&
-    !!proxyType &&
-    proxyTypes.some((pt) => pt.name === proxyType) &&
-    isDelayValid
+  const isDelegateCompatible = useMemo(
+    () => !!(network && delegate && isAddressCompatibleWithNetwork(network, delegate)),
+    [network, delegate]
+  )
+
+  const canProceed = useMemo(
+    () =>
+      !!network &&
+      isDelegateValid &&
+      isDelegateCompatible &&
+      !!proxyType &&
+      proxyTypes.some((pt) => pt.name === proxyType) &&
+      isDelayValid,
+    [network, isDelegateValid, isDelegateCompatible, proxyType, proxyTypes, isDelayValid]
+  )
 
   const handleSubmitted = useCallback(
     (hash: Hex) => {
