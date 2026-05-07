@@ -25,7 +25,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
  * Disallowed license patterns (case-insensitive substring/regex match).
  * Anything matching here causes a failure. Compound expressions (e.g.
  * "MIT OR GPL-3.0-or-later") are split on " OR " / " AND " and each side
- * is evaluated separately — at least one OR-branch must be allowed.
+ * is evaluated separately — an OR expression requires at least one allowed
+ * branch and no disallowed branches; an AND expression requires every branch
+ * to be allowed.
  */
 const DISALLOWED_PATTERNS = [
   /\bDBAD\b/i,
@@ -110,16 +112,6 @@ const MANUALLY_VERIFIED = new Map([
   ["valid-url", "MIT"],
 ])
 
-/** Normalise a license expression to its constituent identifiers. */
-function tokeniseLicense(expr) {
-  if (!expr) return []
-  return expr
-    .replace(/[()]/g, " ")
-    .split(/\s+(?:OR|AND)\s+/i)
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
 /**
  * Strip "WITH <exception>" suffixes (e.g. "GPL-3.0-or-later WITH
  * Classpath-exception-2.0"). Exceptions relax the license — never restrict
@@ -129,29 +121,94 @@ function stripExceptions(expr) {
   return expr.replace(/\s+WITH\s+\S+/gi, "").trim()
 }
 
+function hasWrappingParentheses(expr) {
+  if (!expr.startsWith("(") || !expr.endsWith(")")) return false
+
+  let depth = 0
+  for (let i = 0; i < expr.length; i++) {
+    const char = expr[i]
+    if (char === "(") depth++
+    if (char === ")") depth--
+    if (depth === 0 && i < expr.length - 1) return false
+  }
+
+  return depth === 0
+}
+
+function stripWrappingParentheses(expr) {
+  let result = expr.trim()
+  while (hasWrappingParentheses(result)) {
+    result = result.slice(1, -1).trim()
+  }
+  return result
+}
+
+function splitTopLevel(expr, operator) {
+  const parts = []
+  let depth = 0
+  let start = 0
+  const separator = new RegExp(`^\\s+${operator}\\s+`, "i")
+
+  for (let i = 0; i < expr.length; i++) {
+    const char = expr[i]
+    if (char === "(") {
+      depth++
+      continue
+    }
+    if (char === ")") {
+      depth--
+      continue
+    }
+    if (depth !== 0) continue
+
+    const match = expr.slice(i).match(separator)
+    if (!match) continue
+
+    parts.push(expr.slice(start, i).trim())
+    i += match[0].length - 1
+    start = i + 1
+  }
+
+  if (parts.length === 0) return [expr.trim()]
+  parts.push(expr.slice(start).trim())
+  return parts.filter(Boolean)
+}
+
 /**
  * Classify a license expression: returns "ok", "disallowed", or "review".
  * For OR-disjunctions, "ok" if ANY branch is ok and none are disallowed.
  */
+function classifyToken(token) {
+  for (const re of DISALLOWED_PATTERNS) {
+    if (re.test(token)) return "disallowed"
+  }
+  return KNOWN_COMPATIBLE.has(token.toLowerCase()) ? "ok" : "review"
+}
+
+function classifyExpression(expr) {
+  const normalised = stripWrappingParentheses(expr)
+  if (!normalised) return "review"
+
+  const orBranches = splitTopLevel(normalised, "OR")
+  if (orBranches.length > 1) {
+    const verdicts = orBranches.map(classifyExpression)
+    if (verdicts.includes("disallowed")) return "disallowed"
+    return verdicts.includes("ok") ? "ok" : "review"
+  }
+
+  const andBranches = splitTopLevel(normalised, "AND")
+  if (andBranches.length > 1) {
+    const verdicts = andBranches.map(classifyExpression)
+    if (verdicts.includes("disallowed")) return "disallowed"
+    return verdicts.every((verdict) => verdict === "ok") ? "ok" : "review"
+  }
+
+  return classifyToken(normalised)
+}
+
 function classify(licenseExpr) {
   if (!licenseExpr) return "review"
-
-  const normalised = stripExceptions(licenseExpr)
-
-  for (const re of DISALLOWED_PATTERNS) {
-    if (re.test(normalised)) return "disallowed"
-  }
-
-  const isOrExpression = /\sOR\s/i.test(normalised)
-  const tokens = tokeniseLicense(normalised)
-
-  if (isOrExpression) {
-    if (tokens.some((t) => KNOWN_COMPATIBLE.has(t.toLowerCase()))) return "ok"
-    return "review"
-  }
-
-  if (tokens.every((t) => KNOWN_COMPATIBLE.has(t.toLowerCase()))) return "ok"
-  return "review"
+  return classifyExpression(stripExceptions(licenseExpr))
 }
 
 // ---------------------------------------------------------------------------

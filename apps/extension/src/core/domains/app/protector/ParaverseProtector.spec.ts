@@ -55,6 +55,18 @@ function setDefaultFetchResponses() {
   })
 }
 
+function setHangingFetchResponses() {
+  mockFetch.mockImplementation((_input, init) => {
+    return new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener(
+        "abort",
+        () => reject(new DOMException("Aborted", "AbortError")),
+        { once: true }
+      )
+    })
+  })
+}
+
 setDefaultFetchResponses()
 
 import { addException, dispose, isPhishingSite, refreshPhishingLists } from "./ParaverseProtector"
@@ -102,6 +114,43 @@ it("Refreshes immediately before the first check when no valid MetaMask cache ex
   expect(
     mockFetch.mock.calls.some(([input]) => fetchInputToString(input).includes("metamask"))
   ).toBe(true)
+})
+
+it("Times out the first refresh and falls back to the bundled list", async () => {
+  dispose()
+  mockBlobStores.clear()
+  setHangingFetchResponses()
+  vi.useFakeTimers()
+
+  try {
+    const check = isPhishingSite("https://metamask-login.typedream.app")
+    await vi.advanceTimersByTimeAsync(15_000)
+
+    await expect(check).resolves.toBeTruthy()
+  } finally {
+    dispose()
+    vi.useRealTimers()
+  }
+})
+
+it("Does not re-arm refresh timers after dispose", async () => {
+  dispose()
+  mockBlobStores.clear()
+  setHangingFetchResponses()
+  vi.useFakeTimers()
+
+  try {
+    const check = isPhishingSite("https://something.else")
+    await vi.advanceTimersByTimeAsync(0)
+
+    dispose()
+
+    await expect(check).resolves.toBeFalsy()
+    expect(vi.getTimerCount()).toBe(0)
+  } finally {
+    dispose()
+    vi.useRealTimers()
+  }
 })
 
 it("Can add an exception to phishing sites", async () => {

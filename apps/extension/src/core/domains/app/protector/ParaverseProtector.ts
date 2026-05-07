@@ -14,6 +14,8 @@ const METAMASK_CONFIG_URL = "https://phishing-detection.api.cx.metamask.io/v1/st
 const POLKADOT_CONFIG_URL = "https://polkadot.js.org/phishing/all.json"
 
 const REFRESH_INTERVAL_MIN = 5
+const REFRESH_TIMEOUT_MS = 15_000
+const INITIAL_REFRESH_DELAY_MS = 30_000
 
 const DEFAULT_ALLOW: ReadonlyArray<string> = [
   TALISMAN_WEB_APP_DOMAIN, // app.talisman.xyz
@@ -209,7 +211,7 @@ function persistBlob<T>(store: ReturnType<typeof getBlobStore<T>>, data: T, labe
 async function refreshMetamaskList(signal?: AbortSignal) {
   try {
     const result = await fetchWithEtag(METAMASK_CONFIG_URL, etags.metamask, signal)
-    if (!result) return
+    if (signal?.aborted || !result) return
 
     const list = extractMetamaskList(result.data)
     if (!list) {
@@ -228,7 +230,7 @@ async function refreshMetamaskList(signal?: AbortSignal) {
 async function refreshPolkadotList(signal?: AbortSignal) {
   try {
     const result = await fetchWithEtag(POLKADOT_CONFIG_URL, etags.polkadot, signal)
-    if (!result) return
+    if (signal?.aborted || !result) return
 
     if (!isValidPolkadotList(result.data)) {
       throw new Error("Invalid Polkadot phishing list structure")
@@ -251,14 +253,19 @@ async function refreshPolkadotList(signal?: AbortSignal) {
 
 /** Lazy-init: DB restore + periodic refresh are started on first use, not at import time. */
 let initialised: Promise<void> | null = null
+let lifecycleGeneration = 0
 
 function ensureInitialised(): Promise<void> {
   if (!initialised) {
-    initialised = restoreFromBlobStore().then(async ({ hasMetamaskCache }) => {
+    const generation = lifecycleGeneration
+    const promise = restoreFromBlobStore().then(async ({ hasMetamaskCache }) => {
+      if (generation !== lifecycleGeneration || initialised !== promise) return
       if (!hasMetamaskCache) await refreshPhishingLists()
+      if (generation !== lifecycleGeneration || initialised !== promise) return
       // start periodic refresh 30 s after first use
-      refreshTimer = setTimeout(scheduleRefresh, 30_000)
+      refreshTimer = setTimeout(() => scheduleRefresh(generation), INITIAL_REFRESH_DELAY_MS)
     })
+    initialised = promise
   }
   return initialised
 }
@@ -289,9 +296,10 @@ async function restoreFromBlobStore(): Promise<{ hasMetamaskCache: boolean }> {
 // Periodic refresh: recursive setTimeout naturally prevents overlapping fetches.
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 
-async function scheduleRefresh() {
+async function scheduleRefresh(generation = lifecycleGeneration) {
   await refreshPhishingLists()
-  refreshTimer = setTimeout(scheduleRefresh, REFRESH_INTERVAL_MIN * 60 * 1000)
+  if (generation !== lifecycleGeneration || !initialised) return
+  refreshTimer = setTimeout(() => scheduleRefresh(generation), REFRESH_INTERVAL_MIN * 60 * 1000)
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -302,11 +310,22 @@ export async function refreshPhishingLists(): Promise<void> {
   fetchController?.abort()
   const controller = new AbortController()
   fetchController = controller
+  let didTimeout = false
+  const timeout = setTimeout(() => {
+    didTimeout = true
+    controller.abort()
+  }, REFRESH_TIMEOUT_MS)
 
-  await Promise.all([
-    refreshMetamaskList(controller.signal),
-    refreshPolkadotList(controller.signal),
-  ])
+  try {
+    await Promise.all([
+      refreshMetamaskList(controller.signal),
+      refreshPolkadotList(controller.signal),
+    ])
+    if (didTimeout) log.warn("Timed out refreshing phishing lists")
+  } finally {
+    clearTimeout(timeout)
+    if (fetchController === controller) fetchController = null
+  }
 }
 
 /** Check whether a URL is on a known phishing list. Lazily initialises on first call. */
@@ -360,6 +379,7 @@ export function addException(url: string): boolean {
 
 /** Tear down timers and abort in-flight fetches. Useful for clean shutdown and testing. */
 export function dispose(): void {
+  lifecycleGeneration++
   fetchController?.abort()
   fetchController = null
   if (refreshTimer) {
