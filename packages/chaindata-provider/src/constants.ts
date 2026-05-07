@@ -23,5 +23,4 @@ const githubChaindataDistDir = CHAINDATA_PUB_FOLDER
 export const githubChaindataBaseUrl = `${githubCdn}/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
 export const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`
 
-const _githubChaindataChainsAssetsDir = "assets/chains"
 export const githubChaindataTokensAssetsDir = "assets/tokens"
