@@ -36,6 +36,8 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
 
       case "sol-spl":
         return "SPL"
+      case "sol-token2022":
+        return "T22"
     }
   }, [t, type])
 

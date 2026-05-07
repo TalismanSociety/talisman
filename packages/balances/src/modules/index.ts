@@ -3,6 +3,7 @@ import { EvmNativeBalanceModule } from "./evm-native"
 import { EvmUniswapV2BalanceModule } from "./evm-uniswapv2"
 import { SolNativeBalanceModule } from "./sol-native"
 import { SolSplBalanceModule } from "./sol-spl"
+import { SolToken2022BalanceModule } from "./sol-token2022"
 import { SubAssetsBalanceModule } from "./substrate-assets"
 import { SubDTaoBalanceModule } from "./substrate-dtao"
 import { SubForeignAssetsBalanceModule } from "./substrate-foreignassets"
@@ -24,6 +25,7 @@ export const BALANCE_MODULES = [
   EvmNativeBalanceModule,
   SolNativeBalanceModule,
   SolSplBalanceModule,
+  SolToken2022BalanceModule,
 ]
 
 export type AnyBalanceModule = (typeof BALANCE_MODULES)[number] // TODO yeet ? should use IBalance
@@ -35,6 +37,7 @@ export * from "./evm-native"
 export * from "./evm-uniswapv2"
 export * from "./sol-native"
 export * from "./sol-spl"
+export * from "./sol-token2022"
 export * from "./substrate-assets"
 export * from "./substrate-dtao"
 export * from "./substrate-foreignassets"

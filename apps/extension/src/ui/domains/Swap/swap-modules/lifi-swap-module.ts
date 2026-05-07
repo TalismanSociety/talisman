@@ -117,10 +117,11 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
 
   for (const talismanTokenId of (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []) {
     const [chainId, type, contractAddress] = talismanTokenId.split(":")
-    if (type !== "evm-erc20" && type !== "sol-spl") continue
+    if (type !== "evm-erc20" && type !== "sol-spl" && type !== "sol-token2022") continue
 
     try {
-      const lifiChainId = type === "sol-spl" ? solanaChainId : parseInt(chainId, 10)
+      const lifiChainId =
+        type === "sol-spl" || type === "sol-token2022" ? solanaChainId : parseInt(chainId, 10)
       const token = await lifiSdk.getToken(lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
