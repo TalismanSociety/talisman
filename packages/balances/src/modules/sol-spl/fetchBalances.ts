@@ -157,9 +157,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     if (registeredDynamicIds.has(balance.tokenId)) success.push(balance)
   }
 
-  // biome-ignore lint/suspicious/noConsole: TODO REMOVE BEFORE MERGE
-  console.log("Fetched Solana SPL balances", { dynamicTokens })
-
   return { success, errors: [], dynamicTokens } // TODO output errors if any
 }
 
