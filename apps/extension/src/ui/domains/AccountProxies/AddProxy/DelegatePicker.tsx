@@ -11,7 +11,7 @@ import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SendFundsAccountsList } from "../../SendFunds/SendFundsAccountsList"
-import { SearchablePickerLayout } from "./SearchablePickerLayout"
+import { SearchablePickerDialog } from "./SearchablePickerDialog"
 
 type DelegatePickerProps = {
   isOpen: boolean
@@ -43,7 +43,7 @@ export const DelegatePicker: FC<DelegatePickerProps> = ({
   )
 
   return (
-    <SearchablePickerLayout
+    <SearchablePickerDialog
       isOpen={isOpen}
       containerId={containerId}
       title={t("Select Delegate")}
@@ -59,7 +59,7 @@ export const DelegatePicker: FC<DelegatePickerProps> = ({
           onSelect={handleSelect}
         />
       )}
-    </SearchablePickerLayout>
+    </SearchablePickerDialog>
   )
 }
 

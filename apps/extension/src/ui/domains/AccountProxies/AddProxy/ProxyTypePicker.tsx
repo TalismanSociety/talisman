@@ -3,7 +3,7 @@ import { CheckmarkIcon } from "@talismn/icons"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { SearchablePickerLayout } from "./SearchablePickerLayout"
+import { SearchablePickerDialog } from "./SearchablePickerDialog"
 
 type ProxyTypePickerProps = {
   isOpen: boolean
@@ -25,7 +25,7 @@ export const ProxyTypePicker: FC<ProxyTypePickerProps> = ({
   const { t } = useTranslation()
 
   return (
-    <SearchablePickerLayout
+    <SearchablePickerDialog
       isOpen={isOpen}
       containerId={containerId}
       title={t("Select Proxy Type")}
@@ -43,7 +43,7 @@ export const ProxyTypePicker: FC<ProxyTypePickerProps> = ({
           }}
         />
       )}
-    </SearchablePickerLayout>
+    </SearchablePickerDialog>
   )
 }
 

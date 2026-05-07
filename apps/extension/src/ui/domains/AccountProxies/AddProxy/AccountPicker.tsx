@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import type { SendFundsAccount } from "../../SendFunds/SendFundsAccountsList"
 import { SendFundsAccountsList } from "../../SendFunds/SendFundsAccountsList"
-import { SearchablePickerLayout } from "./SearchablePickerLayout"
+import { SearchablePickerDialog } from "./SearchablePickerDialog"
 
 type AccountPickerProps = {
   isOpen: boolean
@@ -33,7 +33,7 @@ export const AccountPicker: FC<AccountPickerProps> = ({
   )
 
   return (
-    <SearchablePickerLayout
+    <SearchablePickerDialog
       isOpen={isOpen}
       containerId={containerId}
       title={t("Select Account")}
@@ -48,7 +48,7 @@ export const AccountPicker: FC<AccountPickerProps> = ({
           onSelect={handleSelect}
         />
       )}
-    </SearchablePickerLayout>
+    </SearchablePickerDialog>
   )
 }
 

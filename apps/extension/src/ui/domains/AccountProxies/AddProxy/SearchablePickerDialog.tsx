@@ -6,7 +6,7 @@ import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { type FC, type ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-type SearchablePickerLayoutProps = {
+type SearchablePickerDialogProps = {
   isOpen: boolean
   containerId: string
   title: string
@@ -19,7 +19,7 @@ type SearchablePickerLayoutProps = {
  * Shared layout for picker modals (network, account, delegate, proxy type).
  * Handles modal wrapper, search state, autofocus, and scroll container.
  */
-export const SearchablePickerLayout: FC<SearchablePickerLayoutProps> = ({
+export const SearchablePickerDialog: FC<SearchablePickerDialogProps> = ({
   isOpen,
   containerId,
   title,

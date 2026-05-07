@@ -4,7 +4,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { SearchablePickerLayout } from "./SearchablePickerLayout"
+import { SearchablePickerDialog } from "./SearchablePickerDialog"
 
 type NetworkPickerProps = {
   isOpen: boolean
@@ -26,7 +26,7 @@ export const NetworkPicker: FC<NetworkPickerProps> = ({
   const { t } = useTranslation()
 
   return (
-    <SearchablePickerLayout
+    <SearchablePickerDialog
       isOpen={isOpen}
       containerId={containerId}
       title={t("Select Network")}
@@ -41,7 +41,7 @@ export const NetworkPicker: FC<NetworkPickerProps> = ({
           onSelect={onSelect}
         />
       )}
-    </SearchablePickerLayout>
+    </SearchablePickerDialog>
   )
 }
 
