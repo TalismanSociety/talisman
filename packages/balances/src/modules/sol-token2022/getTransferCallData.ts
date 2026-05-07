@@ -1,4 +1,5 @@
 import {
+  calculateEpochFee,
   createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
   createTransferCheckedWithFeeAndTransferHookInstruction,
@@ -11,6 +12,7 @@ import {
   getTransferFeeConfig,
   getTransferHook,
   TOKEN_2022_PROGRAM_ID,
+  type TransferFeeConfig,
 } from "@solana/spl-token"
 import { type Connection, PublicKey, type TransactionInstruction } from "@solana/web3.js"
 import { isTokenOfType } from "@talismn/chaindata-provider"
@@ -69,6 +71,9 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     }
 
     const amount = BigInt(value)
+    const transferFee = transferFeeConfig
+      ? await calculateCurrentEpochTransferFee(connection, transferFeeConfig, amount)
+      : 0n
 
     if (transferFeeConfig && transferHook) {
       // Both transfer fee AND transfer hook — use the combined instruction
@@ -81,7 +86,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
           fromWallet,
           amount,
           token.decimals,
-          calculateTransferFee(transferFeeConfig, amount),
+          transferFee,
           [],
           undefined,
           TOKEN_2022_PROGRAM_ID
@@ -97,7 +102,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
           fromWallet,
           amount,
           token.decimals,
-          calculateTransferFee(transferFeeConfig, amount),
+          transferFee,
           [],
           TOKEN_2022_PROGRAM_ID
         )
@@ -148,16 +153,20 @@ const tokenAccountExists = async (connection: Connection, address: PublicKey) =>
 
 /**
  * Calculates the transfer fee for a given amount using the current epoch's fee configuration.
- * The fee is capped at the maximum fee defined in the config.
  */
-// biome-ignore lint/suspicious/noExplicitAny: TransferFeeConfig type from @solana/spl-token has complex internal structure
-const calculateTransferFee = (transferFeeConfig: any, amount: bigint): bigint => {
-  const epoch = transferFeeConfig.newerTransferFee ?? transferFeeConfig.olderTransferFee
-  if (!epoch) return 0n
+export const calculateToken2022TransferFee = (
+  transferFeeConfig: TransferFeeConfig,
+  epoch: bigint,
+  amount: bigint
+): bigint => {
+  return calculateEpochFee(transferFeeConfig, epoch, amount)
+}
 
-  const basisPoints = BigInt(epoch.transferFeeBasisPoints)
-  const maxFee = BigInt(epoch.maximumFee)
-
-  const fee = (amount * basisPoints) / 10000n
-  return fee > maxFee ? maxFee : fee
+const calculateCurrentEpochTransferFee = async (
+  connection: Connection,
+  transferFeeConfig: TransferFeeConfig,
+  amount: bigint
+): Promise<bigint> => {
+  const { epoch } = await connection.getEpochInfo()
+  return calculateToken2022TransferFee(transferFeeConfig, BigInt(epoch), amount)
 }

@@ -1,4 +1,10 @@
-import { getMint, getTransferFeeConfig, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token"
+import {
+  calculateEpochFee,
+  getEpochFee,
+  getMint,
+  getTransferFeeConfig,
+  TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token"
 import type { Connection } from "@solana/web3.js"
 import { PublicKey } from "@solana/web3.js"
 import { isTokenOfType, type Token } from "@talismn/chaindata-provider"
@@ -46,14 +52,12 @@ const getToken2022TransferFee = async (
   const transferFeeConfig = getTransferFeeConfig(mintAccount)
   if (!transferFeeConfig) return null
 
-  const epoch = transferFeeConfig.newerTransferFee ?? transferFeeConfig.olderTransferFee
-  if (!epoch) return null
+  const { epoch } = await connection.getEpochInfo()
+  const currentTransferFee = getEpochFee(transferFeeConfig, BigInt(epoch))
 
-  const feeBasisPoints = epoch.transferFeeBasisPoints
-  const maxFee = BigInt(epoch.maximumFee.toString())
-
-  let feeAmount = (amount * BigInt(feeBasisPoints)) / 10000n
-  if (feeAmount > maxFee) feeAmount = maxFee
+  const feeBasisPoints = currentTransferFee.transferFeeBasisPoints
+  const maxFee = currentTransferFee.maximumFee
+  const feeAmount = calculateEpochFee(transferFeeConfig, BigInt(epoch), amount)
 
   return {
     feeBasisPoints,
