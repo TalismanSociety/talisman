@@ -3,7 +3,11 @@ import type {
   AccountProxiesSubscriptionStatus,
   AccountProxySet,
 } from "@core/domains/accountProxies/types"
-import { isAccountOwned, isAccountPlatformPolkadot } from "@core/domains/keyring/exports"
+import {
+  isAccountOwned,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+} from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { useMemo } from "react"
@@ -76,5 +80,11 @@ export const useAccountProxySetsForAddress = (
  */
 export const useAccountCanWriteProxies = (address: string | null | undefined): boolean => {
   const account = useAccountByAddress(address ?? null)
-  return useMemo(() => isAccountPlatformPolkadot(account) && isAccountOwned(account), [account])
+  return useMemo(() => {
+    if (!account || !isAccountOwned(account)) return false
+    // Ledger-ethereum accounts cannot sign substrate payloads
+    if (account.type === "ledger-ethereum") return false
+    // Polkadot accounts and ethereum accounts (for secp256k1 chains like Moonbeam/Mythos)
+    return isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account)
+  }, [account])
 }

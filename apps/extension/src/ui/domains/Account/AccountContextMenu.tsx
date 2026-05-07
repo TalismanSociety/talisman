@@ -1,3 +1,4 @@
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { isEthereumAddress } from "@talismn/crypto"
@@ -24,7 +25,7 @@ import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetwork
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountCanWriteProxies, useAccountProxiesCount } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { useNetworkByGenesisHash, useNetworks } from "@ui/state/chaindata"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
@@ -145,20 +146,23 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
 
   const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
 
-  // proxy management entry — only surfaced for substrate-compatible accounts.
-  // We use the "any non-ethereum" heuristic here; the modals themselves perform
-  // the more precise compatibility/network checks.
-  const isSubstrate = !!account && !isEthereumAddress(account.address)
+  // proxy management entry — surfaced for accounts compatible with at least one
+  // active polkadot network (includes ethereum accounts on secp256k1 chains like Moonbeam/Mythos).
+  const dotNetworks = useNetworks({ activeOnly: true, includeTestnets: true, platform: "polkadot" })
+  const canHaveProxies = useMemo(
+    () => !!account && dotNetworks.some((n) => isAccountCompatibleWithNetwork(n, account)),
+    [account, dotNetworks]
+  )
   const proxyCount = useAccountProxiesCount(account?.address)
   const canWriteProxies = useAccountCanWriteProxies(account?.address)
   const { open: openManageProxy } = useManageProxyModal()
   const { open: openAddProxy } = useAddProxyModal()
   const proxyMenuKind: "manage" | "add" | null = useMemo(() => {
-    if (!account || !isSubstrate) return null
+    if (!account || !canHaveProxies) return null
     if (proxyCount > 0) return "manage"
     if (canWriteProxies) return "add"
     return null
-  }, [account, canWriteProxies, isSubstrate, proxyCount])
+  }, [account, canWriteProxies, canHaveProxies, proxyCount])
 
   const onProxyMenuClick = useCallback(() => {
     if (!account || !proxyMenuKind) return
