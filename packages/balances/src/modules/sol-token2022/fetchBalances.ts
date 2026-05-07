@@ -109,6 +109,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           platform: PLATFORM,
           networkId,
           mintAddress,
+          isDefault: true,
           symbol: cached.symbol,
           decimals: cached.decimals,
           ...(cached.name !== undefined ? { name: cached.name } : {}),
