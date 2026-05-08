@@ -8,7 +8,7 @@ import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { notify } from "@ui/components/Notifications"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
-import { type FC, useCallback, useEffect, useRef } from "react"
+import { type FC, type MutableRefObject, useCallback, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as yup from "yup"
@@ -31,10 +31,11 @@ type PasswordCheckDrawerProps = {
 }
 
 const PasswordCheckDrawerContent: FC<
-  Pick<PasswordCheckDrawerProps, "onVerified" | "onDismiss">
-> = ({ onVerified, onDismiss }) => {
+  Pick<PasswordCheckDrawerProps, "onVerified" | "onDismiss"> & {
+    isActiveRef: MutableRefObject<boolean>
+  }
+> = ({ onVerified, onDismiss, isActiveRef }) => {
   const { t } = useTranslation()
-  const isOpenRef = useRef(true)
 
   const {
     register,
@@ -52,14 +53,6 @@ const PasswordCheckDrawerContent: FC<
     if (status === "open") setFocus("password")
   }, [setFocus, status])
 
-  // Track open state so in-flight checks can be cancelled on dismiss
-  useEffect(() => {
-    isOpenRef.current = true
-    return () => {
-      isOpenRef.current = false
-    }
-  }, [])
-
   // Clear password on unmount
   useEffect(() => {
     return () => {
@@ -71,7 +64,7 @@ const PasswordCheckDrawerContent: FC<
     async ({ password }: FormData) => {
       try {
         const valid = await api.checkPassword(password)
-        if (!isOpenRef.current) return
+        if (!isActiveRef.current) return
 
         if (valid) {
           reset({ password: "" })
@@ -83,7 +76,7 @@ const PasswordCheckDrawerContent: FC<
           })
         }
       } catch (err) {
-        if (!isOpenRef.current) return
+        if (!isActiveRef.current) return
         notify({
           type: "error",
           title: t("Password check failed"),
@@ -91,7 +84,7 @@ const PasswordCheckDrawerContent: FC<
         })
       }
     },
-    [onVerified, reset, t]
+    [isActiveRef, onVerified, reset, t]
   )
 
   return (
@@ -128,9 +121,30 @@ export const PasswordCheckDrawer: FC<PasswordCheckDrawerProps> = ({
   onVerified,
   onDismiss,
 }) => {
+  const isActiveRef = useRef(isOpen)
+
+  useEffect(() => {
+    isActiveRef.current = isOpen
+  }, [isOpen])
+
+  useEffect(() => {
+    return () => {
+      isActiveRef.current = false
+    }
+  }, [])
+
+  const handleDismiss = useCallback(() => {
+    isActiveRef.current = false
+    onDismiss()
+  }, [onDismiss])
+
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={onDismiss}>
-      <PasswordCheckDrawerContent onVerified={onVerified} onDismiss={onDismiss} />
+    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={handleDismiss}>
+      <PasswordCheckDrawerContent
+        onVerified={onVerified}
+        onDismiss={handleDismiss}
+        isActiveRef={isActiveRef}
+      />
     </Drawer>
   )
 }

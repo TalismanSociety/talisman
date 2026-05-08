@@ -224,6 +224,26 @@ describe("SapiSendButton", () => {
       expect(screen.queryByTestId("password-drawer")).toBeNull()
       expect(mockSubmit).not.toHaveBeenCalled()
     })
+
+    it("ignores a stale password verification callback after dismiss", () => {
+      render(
+        <SapiSendButton
+          payload={mockPayload}
+          onSubmitted={mockOnSubmitted}
+          checkPassword
+          containerId="test-container"
+        />
+      )
+
+      fireEvent.click(screen.getByTestId("send-button"))
+      const staleVerify = mockPasswordDrawerOnVerified.getMockImplementation()
+      expect(staleVerify).toBeDefined()
+
+      fireEvent.click(screen.getByTestId("password-dismiss"))
+      staleVerify?.()
+
+      expect(mockSubmit).not.toHaveBeenCalled()
+    })
   })
 
   describe("with ledger account", () => {

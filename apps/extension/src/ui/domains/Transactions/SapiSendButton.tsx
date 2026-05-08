@@ -11,7 +11,7 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
-import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
@@ -204,6 +204,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPasswordDrawerOpen, setIsPasswordDrawerOpen] = useState(false)
+  const isPasswordDismissedRef = useRef(false)
 
   // Lock inputs when password drawer opens to prevent stale payload submission
   const { lockedInputs, setIsLocked } = useLockedInputs({
@@ -238,6 +239,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
 
   const handleClick = useCallback(() => {
     if (checkPassword) {
+      isPasswordDismissedRef.current = false
       setIsLocked(true)
       setIsPasswordDrawerOpen(true)
     } else {
@@ -246,12 +248,14 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   }, [checkPassword, handleSubmit, setIsLocked])
 
   const handlePasswordVerified = useCallback(() => {
+    if (isPasswordDismissedRef.current) return
     setIsPasswordDrawerOpen(false)
     setIsLocked(false)
     handleSubmit()
   }, [handleSubmit, setIsLocked])
 
   const handlePasswordDismiss = useCallback(() => {
+    isPasswordDismissedRef.current = true
     setIsPasswordDrawerOpen(false)
     setIsLocked(false)
   }, [setIsLocked])

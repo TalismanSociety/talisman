@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
-import { encodeAddressSs58 } from "@talismn/crypto"
-import { parseMetadataRpc } from "@talismn/scale"
+import { checksumEthereumAddress, encodeAddressSs58 } from "@talismn/crypto"
+import { parseMetadataRpc, toHex } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
 
 import { chainConnector } from "../../rpcs/chain-connector"
@@ -62,18 +62,21 @@ const stringifyProxyType = (raw: unknown): string => {
 }
 
 /**
- * Convert a delegate field (as produced by the Proxy storage codec) to an SS58
+ * Convert a delegate field (as produced by the Proxy storage codec) to a wallet
  * address. polkadot-api decodes `AccountId32` as a `FixedSizeBinary` (raw
  * bytes), not as an SS58 string — calling `.asText()` on that would produce
  * UTF-8 garbage. Some metadata may resolve directly to a string; handle both.
  */
 const decodeDelegate = (raw: unknown, ss58Format: number): string => {
   if (typeof raw === "string") return raw
-  if (raw instanceof Uint8Array) return encodeAddressSs58(raw, ss58Format)
+  if (raw instanceof Uint8Array) return encodeDelegateBytes(raw, ss58Format)
   if (raw && typeof raw === "object" && "asBytes" in raw && typeof raw.asBytes === "function")
-    return encodeAddressSs58((raw as { asBytes: () => Uint8Array }).asBytes(), ss58Format)
+    return encodeDelegateBytes((raw as { asBytes: () => Uint8Array }).asBytes(), ss58Format)
   throw new Error(`Unrecognised delegate shape: ${typeof raw}`)
 }
+
+const encodeDelegateBytes = (bytes: Uint8Array, ss58Format: number) =>
+  bytes.length === 20 ? checksumEthereumAddress(toHex(bytes)) : encodeAddressSs58(bytes, ss58Format)
 
 /**
  * Decode a single `state_queryStorageAt` result row. Raw `null` (absent storage)
@@ -241,6 +244,7 @@ export const loadNetworkProxyDetails = async (
     const valuesByKey = new Map(result.changes)
 
     const sets: AccountProxySet[] = []
+    let decodeFailures = 0
     const ss58Format = network.prefix ?? 42
     for (const [key, address] of keysByAddress.entries()) {
       const raw = valuesByKey.get(key) ?? null
@@ -262,6 +266,14 @@ export const loadNetworkProxyDetails = async (
           address,
           err,
         })
+        decodeFailures++
+      }
+    }
+    if (sets.length === 0 && decodeFailures > 0) {
+      return {
+        ok: false,
+        networkId: network.id,
+        error: new Error("Failed to decode proxy details for all requested delegators"),
       }
     }
     return { ok: true, networkId: network.id, sets }

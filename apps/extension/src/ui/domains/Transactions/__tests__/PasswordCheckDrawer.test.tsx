@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { forwardRef, type ReactNode } from "react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { forwardRef, type ReactNode, useState } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockCheckPassword = vi.fn()
@@ -15,25 +15,35 @@ vi.mock("@ui/components/Notifications", () => ({
   notify: (...args: unknown[]) => mockNotify(...args),
 }))
 
-vi.mock("@ui/components/Drawer", () => ({
-  Drawer: ({
-    children,
-    isOpen,
-    onDismiss,
-  }: {
-    children: ReactNode
-    isOpen: boolean
-    onDismiss?: () => void
-    anchor?: string
-    containerId?: string
-  }) =>
-    isOpen ? (
-      <div data-testid="drawer">
-        <button type="button" data-testid="drawer-overlay" onClick={onDismiss} />
-        {children}
-      </div>
-    ) : null,
-}))
+vi.mock("@ui/components/Drawer", async () => {
+  const React = await import("react")
+  return {
+    Drawer: ({
+      children,
+      isOpen,
+      onDismiss,
+    }: {
+      children: ReactNode
+      isOpen: boolean
+      onDismiss?: () => void
+      anchor?: string
+      containerId?: string
+    }) => {
+      const [hasOpened, setHasOpened] = React.useState(isOpen)
+
+      React.useEffect(() => {
+        if (isOpen) setHasOpened(true)
+      }, [isOpen])
+
+      return isOpen || hasOpened ? (
+        <div data-testid="drawer" data-open={isOpen}>
+          <button type="button" data-testid="drawer-overlay" onClick={onDismiss} />
+          {children}
+        </div>
+      ) : null
+    },
+  }
+})
 
 vi.mock("@ui/hooks/useOpenCloseStatus", () => ({
   useOpenCloseStatus: () => "open",
@@ -197,5 +207,49 @@ describe("PasswordCheckDrawer", () => {
     fireEvent.click(cancelButton)
 
     expect(onDismiss).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not verify after the drawer is dismissed while password check is pending", async () => {
+    let resolvePasswordCheck: (value: boolean) => void = () => {}
+    mockCheckPassword.mockReturnValueOnce(
+      new Promise<boolean>((resolve) => {
+        resolvePasswordCheck = resolve
+      })
+    )
+
+    const Harness = () => {
+      const [isOpen, setIsOpen] = useState(true)
+      return (
+        <PasswordCheckDrawer
+          isOpen={isOpen}
+          onVerified={onVerified}
+          onDismiss={() => {
+            onDismiss()
+            setIsOpen(false)
+          }}
+        />
+      )
+    }
+
+    const { container } = render(<Harness />)
+    const input = screen.getByTestId("password-input")
+    fireEvent.change(input, { target: { value: "correct-password" } })
+
+    const form = container.querySelector("form")!
+    await waitFor(() => {
+      const btn = screen.getByText("Confirm") as HTMLButtonElement
+      expect(btn.disabled).toBe(false)
+    })
+
+    fireEvent.submit(form)
+    await waitFor(() => expect(mockCheckPassword).toHaveBeenCalledWith("correct-password"))
+    fireEvent.click(screen.getByTestId("drawer-overlay"))
+
+    await act(async () => {
+      resolvePasswordCheck(true)
+    })
+
+    expect(onDismiss).toHaveBeenCalledTimes(1)
+    expect(onVerified).not.toHaveBeenCalled()
   })
 })
