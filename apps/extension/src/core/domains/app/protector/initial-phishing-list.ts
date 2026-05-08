@@ -78,6 +78,7 @@ export const initialPhishingList: MetaMaskPhishingList = {
     "web3inbox.org",
     "web3modal.com",
     "web3modal.org",
+    "talisman.xyz",
   ],
   blocklist: [
     "*.chrom-coinbse-extenson.pages.dev",
