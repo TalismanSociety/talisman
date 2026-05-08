@@ -1,0 +1,68 @@
+name: API Health Tests
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # daily at 9:00 AM (UTC+2)
+  workflow_dispatch: # allow manual trigger
+
+concurrency:
+  group: api-health
+  cancel-in-progress: true
+
+jobs:
+  api-health:
+    name: "API health checks"
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Update & enable corepack
+        run: npm install -g corepack@latest && corepack enable
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run API health tests
+        run: pnpm exec playwright test --project=api
+        env:
+          TDA_API_KEY: ${{ secrets.TDA_API_KEY }}
+          SN45_API_KEY: ${{ secrets.SN45_API_KEY }}
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: api-health-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Notify Discord on success
+        if: success()
+        run: |
+          curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"content":"Playwright API Health check passed ✅."}'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}
+
+      - name: Notify Discord on failure
+        if: failure()
+        run: |
+          zip -r api-health-report.zip playwright-report/
+          curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+            -F "content= Playwright API Health check failed ⚠️." \
+            -F "files[0]=@api-health-report.zip"
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}

@@ -1,7 +1,20 @@
 import type { TypeRegistry } from "@polkadot/types"
 import type { ContractExecResult } from "@polkadot/types/interfaces"
-import { u8aConcatStrict, u8aToHex } from "@polkadot/util"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
+
+const u8aToHex = (value: Uint8Array): `0x${string}` =>
+  `0x${Array.from(value, (b) => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`
+
+const u8aConcatStrict = (arrays: readonly Uint8Array[]): Uint8Array => {
+  const length = arrays.reduce((total, arr) => total + arr.length, 0)
+  const result = new Uint8Array(length)
+  let offset = 0
+  for (const arr of arrays) {
+    result.set(arr, offset)
+    offset += arr.length
+  }
+  return result
+}
 
 export const makeContractCaller =
   ({

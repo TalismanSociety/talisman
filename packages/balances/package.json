@@ -52,7 +52,6 @@
   "devDependencies": {
     "@polkadot/api-contract": "16.1.2",
     "@polkadot/types": "16.1.2",
-    "@polkadot/util": "13.5.3",
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
     "typescript": "^5.6.3"
@@ -60,8 +59,6 @@
   "peerDependencies": {
     "@polkadot/api-contract": "*",
     "@polkadot/types": "*",
-    "@polkadot/util": "*",
-    "@polkadot/util-crypto": "*",
     "@substrate/txwrapper-core": "*"
   },
   "types": "./dist/index.d.ts",

@@ -193,12 +193,18 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
             </button>
           )}
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="rounded p-2 text-body-secondary hover:bg-grey-800 hover:text-body active:hover:bg-grey-800">
+            <ContextMenuTrigger
+              className="rounded p-2 text-body-secondary hover:bg-grey-800 hover:text-body active:hover:bg-grey-800"
+              data-testid="mnemonic-context-menu-trigger"
+            >
               <MoreHorizontalIcon className="text-lg" />
             </ContextMenuTrigger>
             <ContextMenuContent>
               <ContextMenuItem onClick={handleRenameClick}>{t("Rename")}</ContextMenuItem>
-              <ContextMenuItem onClick={handleBackupClick}>
+              <ContextMenuItem
+                onClick={handleBackupClick}
+                data-testid="mnemonics-context-menu-item-backup"
+              >
                 <div className="flex items-center gap-4">
                   <span>{t("Backup")}</span>
                   {!mnemonic.confirmed && (

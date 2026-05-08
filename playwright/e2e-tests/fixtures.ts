@@ -18,6 +18,8 @@ const randomName = (prefix: string) => {
 export const DEFAULT_PASSWORD = "talismanwallet"
 const DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
+const ethDevChain = "http://localhost:8545"
+
 export const test = base.extend<{
   context: BrowserContext
   extensionId: string
@@ -35,6 +37,7 @@ export const test = base.extend<{
     name?: string
   }) => Promise<Page>
   walletPopup: (opts: { locator: Locator }) => Promise<Page>
+  useDevChains: () => Promise<void>
 }>({
   // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require destructuring pattern
   context: async ({}, utilize) => {
@@ -218,7 +221,11 @@ export const test = base.extend<{
         .getByTestId("container-account-method")
         .getByText("Add a Watched Account")
         .click()
-      await onboardedPage.getByRole("button", { name: `Watch ${type} Account` }).click()
+      const watchedAccountButton = onboardedPage.getByRole("button", {
+        name: `Watch ${type} Account`,
+      })
+      await expect(watchedAccountButton).toBeVisible()
+      await watchedAccountButton.click()
       await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
       await onboardedPage.getByPlaceholder("Enter wallet address").fill(address)
 
@@ -273,6 +280,35 @@ export const test = base.extend<{
       return popup
     }
     await utilize(walletPopup)
+  },
+  useDevChains: async ({ onboardedPage, extensionId }, utilize) => {
+    const useDevChains = async () => {
+      // disables all other networks
+      await onboardedPage.goto(
+        `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks/`
+      )
+      await onboardedPage.getByRole("button", { name: "Deactivate all" }).click()
+      await expect(
+        onboardedPage.getByTestId("network-list-deactivate-confirm-button")
+      ).toBeVisible()
+      await onboardedPage.getByTestId("network-list-deactivate-confirm-button").click()
+      // access ethereum mainnet page
+      await onboardedPage.goto(
+        `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/network/1`
+      )
+      // deletes all other rpcs
+      const deleteButtons = onboardedPage.getByTestId("network-rpcs-delete-button")
+
+      const count = await deleteButtons.count()
+      for (let i = count - 1; i >= 1; i--) {
+        await deleteButtons.nth(i).click()
+      }
+      // fills input with ethereum devchain RPC
+      await onboardedPage.getByTestId("form-field-input-rpc").fill(ethDevChain)
+      await expect(onboardedPage.getByRole("button", { name: "Save" })).toBeEnabled()
+      await onboardedPage.getByRole("button", { name: "Save" }).click()
+    }
+    await utilize(useDevChains)
   },
 })
 export const expect = test.expect
