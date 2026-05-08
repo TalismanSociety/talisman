@@ -1,9 +1,7 @@
 import type { GenericExtrinsic } from "@polkadot/types"
 import type { RuntimeDispatchInfo } from "@polkadot/types/interfaces"
 import type { Codec } from "@polkadot/types-codec/types"
-import { assert, u8aConcatStrict } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
-
+import { mergeUint8 } from "@polkadot-api/utils"
 import type { JsonRpcRequestSend } from "../types"
 import type { Chain } from "./types"
 
@@ -16,7 +14,8 @@ export const getExtrinsicDispatchInfo = async (
   chain: Chain,
   signedExtrinsic: GenericExtrinsic
 ): Promise<ExtrinsicDispatchInfo> => {
-  assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
+  if (!signedExtrinsic.isSigned)
+    throw new Error("Extrinsic must be signed (or fakeSigned) in order to query fee")
 
   const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
 
@@ -39,13 +38,13 @@ const stateCall = async <K extends string = string>(
   method: string,
   resultType: K,
   args: Codec[],
-  blockHash?: HexString,
+  blockHash?: `0x${string}`,
   isCacheable?: boolean
 ) => {
   // on a state call there are always arguments
   const registry = args[0].registry
 
-  const bytes = registry.createType("Raw", u8aConcatStrict(args.map((arg) => arg.toU8a())))
+  const bytes = registry.createType("Raw", mergeUint8(...args.map((arg) => arg.toU8a())))
 
   const result = await request("state_call", [method, bytes.toHex(), blockHash], isCacheable)
 

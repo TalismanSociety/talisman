@@ -1,6 +1,5 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToNumber, u8aToString } from "@polkadot/util"
 import {
   type SubPsp22Token,
   SubPsp22TokenSchema,
@@ -13,6 +12,9 @@ import type { IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
 import type { MODULE_TYPE, TokenConfig } from "./config"
 import { makeContractCaller } from "./util"
+
+const hexToNumber = (hex: string): number => Number(hex)
+const u8aToString = (value: Uint8Array): string => new TextDecoder().decode(value)
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,

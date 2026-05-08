@@ -7,13 +7,16 @@ import type {
   ProviderInterfaceEmitCb,
 } from "@polkadot/rpc-provider/types"
 import { getWSErrorString } from "@polkadot/rpc-provider/ws/errors"
-import { isChildClass, isNull, isUndefined, objectSpread } from "@polkadot/util"
 import { xglobal } from "@polkadot/x-global"
 import { WebSocket } from "@polkadot/x-ws"
 import EventEmitter from "eventemitter3"
 
 import log from "../log"
 import { ExponentialBackoff } from "./helpers"
+
+// biome-ignore lint/complexity/noBannedTypes: checking class hierarchy
+const isChildClass = (Parent: Function, Child: Function | undefined | null): boolean =>
+  Child != null && (Child === Parent || Child.prototype instanceof Parent)
 
 type ProviderInterfaceEmitted = PjsProviderInterfaceEmitted | "stale-rpcs"
 
@@ -389,7 +392,7 @@ export class Websocket implements ProviderInterface {
     // the assigned id now does not match what the API user originally received. It has
     // a slight complication in solving - since we cannot rely on the send id, but rather
     // need to find the actual subscription id to map it
-    if (isUndefined(this.#subscriptions[subscription])) {
+    if (this.#subscriptions[subscription] === undefined) {
       // log.debug(() => `Unable to find active subscription=${subscription}`)
 
       return false
@@ -398,7 +401,7 @@ export class Websocket implements ProviderInterface {
     delete this.#subscriptions[subscription]
 
     try {
-      return this.isConnected && !isNull(this.#websocket) ? this.send<boolean>(method, [id]) : true
+      return this.isConnected && this.#websocket !== null ? this.send<boolean>(method, [id]) : true
     } catch {
       return false
     }
@@ -462,7 +465,7 @@ export class Websocket implements ProviderInterface {
       const response = JSON.parse(message.data) as UnknownJsonRpcResponse
 
       // biome-ignore lint/correctness/noVoidTypeReturn: legacy
-      return isUndefined(response.method)
+      return response.method === undefined
         ? this.#onSocketMessageResult(response)
         : this.#onSocketMessageSubscribe(response)
     } catch (e) {
@@ -490,10 +493,7 @@ export class Websocket implements ProviderInterface {
       if (subscription) {
         const subId = `${subscription.type}::${result}`
 
-        this.#subscriptions[subId] = objectSpread({}, subscription, {
-          method,
-          params,
-        })
+        this.#subscriptions[subId] = { ...subscription, method, params }
 
         // if we have a result waiting for this subscription already
         if (this.#waitingForId[subId]) {

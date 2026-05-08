@@ -712,9 +712,6 @@ importers:
       '@polkadot-api/utils':
         specifier: 0.2.0
         version: 0.2.0
-      '@polkadot/util-crypto':
-        specifier: 13.5.3
-        version: 13.5.3(@polkadot/util@13.5.3)
       '@solana/spl-token':
         specifier: ^0.4.13
         version: 0.4.13(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -779,9 +776,6 @@ importers:
       '@polkadot/types':
         specifier: 16.1.2
         version: 16.1.2
-      '@polkadot/util':
-        specifier: 13.5.3
-        version: 13.5.3
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
@@ -822,9 +816,6 @@ importers:
       '@polkadot/rpc-provider':
         specifier: 16.1.2
         version: 16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@polkadot/util':
-        specifier: 13.5.3
-        version: 13.5.3
       '@polkadot/x-global':
         specifier: 13.5.3
         version: 13.5.3
@@ -1036,9 +1027,6 @@ importers:
       '@polkadot/types-codec':
         specifier: 16.1.2
         version: 16.1.2
-      '@polkadot/util':
-        specifier: 13.5.3
-        version: 13.5.3
       '@talismn/scale':
         specifier: workspace:*
         version: link:../scale
@@ -6546,7 +6534,7 @@ packages:
   isows@1.0.7:
     resolution: {integrity: sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg==}
     peerDependencies:
-      ws: '>=8.17.1'
+      ws: '>=7.5.10'
 
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
