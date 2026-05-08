@@ -1,4 +1,5 @@
 import { fromHex, mergeUint8 } from "@polkadot-api/utils"
+import { AccountId } from "polkadot-api"
 import { compact, u32 } from "scale-ts"
 
 import type { SignerPayloadJSON } from "./signedPayloadTypes"
@@ -21,11 +22,11 @@ const SIGNED_EXTENSION_ENCODERS: Record<
 > = {
   CheckSpecVersion: {
     extra: () => new Uint8Array(0),
-    additionalSigned: (p) => u32.enc(Number.parseInt(p.specVersion, 16)),
+    additionalSigned: (p) => u32.enc(Number.parseInt(p.specVersion.replace("0x", ""), 16)),
   },
   CheckTxVersion: {
     extra: () => new Uint8Array(0),
-    additionalSigned: (p) => u32.enc(Number.parseInt(p.transactionVersion, 16)),
+    additionalSigned: (p) => u32.enc(Number.parseInt(p.transactionVersion.replace("0x", ""), 16)),
   },
   CheckGenesis: {
     extra: () => new Uint8Array(0),
@@ -41,7 +42,7 @@ const SIGNED_EXTENSION_ENCODERS: Record<
     additionalSigned: (p) => fromHex(p.blockHash),
   },
   CheckNonce: {
-    extra: (p) => compact.enc(Number.parseInt(p.nonce, 16)),
+    extra: (p) => compact.enc(Number.parseInt(p.nonce.replace("0x", ""), 16)),
     additionalSigned: () => new Uint8Array(0),
   },
   ChargeTransactionPayment: {
@@ -74,7 +75,10 @@ const SIGNED_EXTENSION_ENCODERS: Record<
     extra: (p) => {
       const tip = compact.enc(BigInt(p.tip))
       const assetId = p.assetId
-        ? mergeUint8([new Uint8Array([1]), u32.enc(Number.parseInt(p.assetId, 16))])
+        ? mergeUint8([
+            new Uint8Array([1]),
+            u32.enc(Number.parseInt(p.assetId.replace("0x", ""), 16)),
+          ])
         : new Uint8Array([0]) // None
       return mergeUint8([tip, assetId])
     },
@@ -136,14 +140,9 @@ export const encodeFakeSignedExtrinsic = (payload: SignerPayloadJSON): Uint8Arra
   const version = new Uint8Array([payload.version | 0x80])
 
   // Address: MultiAddress::Id (0x00 prefix + 32-byte account ID)
-  const addressBytes = fromHex(
-    payload.address.startsWith("0x") ? payload.address : `0x${payload.address}`
-  )
-  // If already raw bytes (32), wrap in MultiAddress::Id; if SS58 we need to decode
-  const signerAddress =
-    addressBytes.length === 32
-      ? mergeUint8([new Uint8Array([0x00]), addressBytes])
-      : mergeUint8([new Uint8Array([0x00]), addressBytes])
+  // payload.address is SS58-encoded — decode to raw 32-byte public key
+  const accountId = AccountId().enc(payload.address)
+  const signerAddress = mergeUint8([new Uint8Array([0x00]), accountId])
 
   // Fake signature: type prefix (0x01 = sr25519) + 64 zero bytes
   const fakeSignature = new Uint8Array(65)
@@ -151,8 +150,5 @@ export const encodeFakeSignedExtrinsic = (payload: SignerPayloadJSON): Uint8Arra
 
   const body = mergeUint8([version, signerAddress, fakeSignature, extra, call])
 
-  // Length prefix (Compact<u32>)
-  const lengthPrefix = compact.enc(body.length)
-
-  return mergeUint8([lengthPrefix, body])
+  return body
 }

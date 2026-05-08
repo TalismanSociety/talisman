@@ -266,13 +266,17 @@ export class Websocket implements ProviderInterface {
     try {
       this.#endpointIndex = this.selectEndpointIndex(this.#endpoints)
 
-      this.#websocket =
-        Object.getPrototypeOf(globalThis.WebSocket) === WebSocket.prototype
-          ? new globalThis.WebSocket(this.endpoint)
-          : // @ts-expect-error - WS may be an instance of ws, which supports options
-            new globalThis.WebSocket(this.endpoint, undefined, {
-              headers: this.#headers,
-            })
+      // In browsers, WebSocket constructor only accepts (url, protocols?).
+      // Node.js `ws` library accepts (url, protocols, options) for custom headers.
+      // Detect by checking for `process.versions.node` (present in Node, absent in browsers).
+      const hasNodeHeaders =
+        Object.keys(this.#headers).length > 0 &&
+        typeof process !== "undefined" &&
+        !!process?.versions?.node
+      this.#websocket = hasNodeHeaders
+        ? // @ts-expect-error - Node.js ws library supports a third options argument
+          new globalThis.WebSocket(this.endpoint, [], { headers: this.#headers })
+        : new globalThis.WebSocket(this.endpoint)
 
       if (this.#websocket) {
         this.#websocket.onclose = this.#onSocketClose
