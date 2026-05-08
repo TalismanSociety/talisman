@@ -481,6 +481,7 @@ const AddProxyConfirm: FC<{
           isCheckingDuplicates
         }
         className="shrink-0"
+        checkPassword
       />
     </WizardModalDialog>
   )

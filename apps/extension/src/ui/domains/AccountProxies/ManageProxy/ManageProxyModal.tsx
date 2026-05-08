@@ -246,6 +246,7 @@ const RemoveProxyConfirm: FC<{
           txMetadata={payload?.txMetadata}
           onSubmitted={onSubmitted}
           disabled={isAffordabilityCheckUnavailable || insufficientBalance}
+          checkPassword
         />
       </div>
     </WizardModalDialog>
