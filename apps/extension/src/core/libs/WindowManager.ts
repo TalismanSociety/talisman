@@ -2,7 +2,7 @@ import { IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
 import { sleep } from "@talismn/util"
 
-import { appStore } from "../domains/app/store.app"
+import { appStore, DEFAULT_APP_STATE } from "../domains/app/store.app"
 import type { RequestRoute } from "../domains/app/types"
 
 const WINDOW_OPTS: chrome.windows.CreateData & { width: number; height: number } = {
@@ -130,23 +130,29 @@ class WindowManager {
     }
 
     let popup: chrome.windows.Window
+    let usedFallback = false
     try {
       popup = await chrome.windows.create(popupCreateArgs)
     } catch (err) {
       log.error("Failed to open popup", err)
 
-      // retry with default size, as an invalid size could be the source of the error
+      // retry with default size and without position constraints,
+      // as invalid size or out-of-bounds position could be the source of the error
       popup = await chrome.windows.create({
-        ...popupCreateArgs,
-        width: WINDOW_OPTS.width,
-        height: WINDOW_OPTS.height,
+        ...WINDOW_OPTS,
+        url: popupCreateArgs.url,
       })
+      usedFallback = true
+
+      // reset stored delta so next popup doesn't repeat the same failure
+      await appStore.set({ popupSizeDelta: DEFAULT_APP_STATE.popupSizeDelta })
     }
 
     if (typeof popup?.id !== "undefined") {
       this.#windows.push(popup.id || 0)
       // firefox compatibility (cannot be set at creation)
-      if (IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
+      // skip repositioning if fallback was used, as original position was invalid
+      if (!usedFallback && IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
         await chrome.windows.update(popup.id, { left, top })
       }
     }

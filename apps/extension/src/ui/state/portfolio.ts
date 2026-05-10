@@ -27,7 +27,7 @@ type PortfolioGlobalData = {
 }
 
 // ⚠️ suspenses
-export const [useAllNetworkOptions, allNetworkOptions$] = bind(
+const [useAllNetworkOptions, _allNetworkOptions$] = bind(
   combineLatest([
     getNetworks$({ activeOnly: true, includeTestnets: true }),
     networkDisplayNamesMapById$,
@@ -61,28 +61,19 @@ export const [useAllNetworkOptions, allNetworkOptions$] = bind(
   )
 )
 
-// id of the currently selected network option
-// feels like this should be in the location state, not in an observable
-const subjectPortfolioNetworkOptionId$ = new BehaviorSubject<NetworkOption["id"] | undefined>(
-  undefined
-)
+export { useAllNetworkOptions }
 
-const [_usePortfolioNetworkOptionId, portfolioNetworkOptionId$] = bind(
-  subjectPortfolioNetworkOptionId$
-)
+// Currently selected network filter option
+// feels like this should be in the location state, not in an observable
+const subjectPortfolioNetworkOption$ = new BehaviorSubject<NetworkOption | undefined>(undefined)
+
+const [_usePortfolioNetworkOption, portfolioNetworkOption$] = bind(subjectPortfolioNetworkOption$)
 
 // ⚠️ suspenses
-export const [usePortfolioNetworkFilter, portfolioNetworkFilter$] = bind(
-  combineLatest([allNetworkOptions$, portfolioNetworkOptionId$]).pipe(
-    map(([allNetworkOptions, portfolioNetworkOptionId]) => {
-      if (!portfolioNetworkOptionId) return undefined
-      return allNetworkOptions.find((n) => n.id === portfolioNetworkOptionId)
-    })
-  )
-)
+export const [usePortfolioNetworkFilter, portfolioNetworkFilter$] = bind(portfolioNetworkOption$)
 
 export const setPortfolioNetworkFilter = (network: NetworkOption | undefined) =>
-  subjectPortfolioNetworkOptionId$.next(network?.id)
+  subjectPortfolioNetworkOption$.next(network)
 
 const getFilteredBalances = ({
   networkFilter,

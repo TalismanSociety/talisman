@@ -9,6 +9,7 @@ import { remoteConfigStore } from "./domains/app/store.remoteConfig"
 import { sessionStore } from "./domains/app/store.session"
 import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
 import { initialiseSolanaAssetDiscovery } from "./domains/assetDiscovery/solana"
+import { initialiseSubstrateAssetDiscovery } from "./domains/assetDiscovery/substrate"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { setWalletReady } from "./libs/isWalletReady"
@@ -92,6 +93,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
     // start the asset discovery scanner after migrations are complete
     assetDiscoveryScanner.startPendingScan()
     initialiseSolanaAssetDiscovery()
+    initialiseSubstrateAssetDiscovery()
   }
 })
 

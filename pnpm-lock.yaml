@@ -425,8 +425,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       '@yieldxyz/sdk':
-        specifier: ^0.0.4
-        version: 0.0.4
+        specifier: ^0.0.6
+        version: 0.0.6
       '@zondax/ledger-substrate':
         specifier: 1.1.2
         version: 1.1.2
@@ -712,9 +712,6 @@ importers:
       '@polkadot-api/utils':
         specifier: 0.2.0
         version: 0.2.0
-      '@polkadot/util-crypto':
-        specifier: 13.5.3
-        version: 13.5.3(@polkadot/util@13.5.3)
       '@solana/spl-token':
         specifier: ^0.4.13
         version: 0.4.13(@solana/web3.js@1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -779,9 +776,6 @@ importers:
       '@polkadot/types':
         specifier: 16.1.2
         version: 16.1.2
-      '@polkadot/util':
-        specifier: 13.5.3
-        version: 13.5.3
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
@@ -822,9 +816,6 @@ importers:
       '@polkadot/rpc-provider':
         specifier: 16.1.2
         version: 16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@polkadot/util':
-        specifier: 13.5.3
-        version: 13.5.3
       '@polkadot/x-global':
         specifier: 13.5.3
         version: 13.5.3
@@ -1036,9 +1027,6 @@ importers:
       '@polkadot/types-codec':
         specifier: 16.1.2
         version: 16.1.2
-      '@polkadot/util':
-        specifier: 13.5.3
-        version: 13.5.3
       '@talismn/scale':
         specifier: workspace:*
         version: link:../scale
@@ -2396,9 +2384,11 @@ packages:
 
   '@metamask/sdk-analytics@0.0.5':
     resolution: {integrity: sha512-fDah+keS1RjSUlC8GmYXvx6Y26s3Ax1U9hGpWb6GSY5SAdmTSIqp2CvYy6yW0WgLhnYhW+6xERuD0eVqV63QIQ==}
+    deprecated: No longer maintained, superseded by @metamask/connect-analytics
 
   '@metamask/sdk-communication-layer@0.33.1':
     resolution: {integrity: sha512-0bI9hkysxcfbZ/lk0T2+aKVo1j0ynQVTuB3sJ5ssPWlz+Z3VwveCkP1O7EVu1tsVVCb0YV5WxK9zmURu2FIiaA==}
+    deprecated: No longer maintained, superseded by https://docs.metamask.io/metamask-connect
     peerDependencies:
       cross-fetch: ^4.0.0
       eciesjs: '*'
@@ -2408,9 +2398,11 @@ packages:
 
   '@metamask/sdk-install-modal-web@0.32.1':
     resolution: {integrity: sha512-MGmAo6qSjf1tuYXhCu2EZLftq+DSt5Z7fsIKr2P+lDgdTPWgLfZB1tJKzNcwKKOdf6q9Qmmxn7lJuI/gq5LrKw==}
+    deprecated: No longer maintained, superseded by https://docs.metamask.io/metamask-connect
 
   '@metamask/sdk@0.34.0':
     resolution: {integrity: sha512-8dkJUShZ5zFqYjNmhJaqKgDzZVne+F2rNjMQJ3pxs89n3oOUNuJ8dsTo08Grf9vlQ6Ldpdt2RTwqbrxKWyyqlw==}
+    deprecated: No longer maintained, superseded by https://docs.metamask.io/metamask-connect
 
   '@metamask/superstruct@3.2.1':
     resolution: {integrity: sha512-fLgJnDOXFmuVlB38rUN5SmU7hAFQcCjrg3Vrxz67KTY7YHFnSNEKvX4avmEBdOI0yTCxZjwMCFEqsC8k2+Wd3g==}
@@ -4429,8 +4421,8 @@ packages:
   '@xobotyi/scrollbar-width@1.9.5':
     resolution: {integrity: sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==}
 
-  '@yieldxyz/sdk@0.0.4':
-    resolution: {integrity: sha512-0Aq7g1ol7v5+o40WOCYxSgR288x5n/IdAlR6nUaCF0gTR/2+cVxR/P7CnkYZQ2CWGMOYSjqeVN4Y0UyIH3UhJg==}
+  '@yieldxyz/sdk@0.0.6':
+    resolution: {integrity: sha512-P/SgkgNfKNrC28ffosdOS/K1HxTZHg10llmjnf8ovQEfYnqUDGehPD4k606hT7QIriIfsrro6I4vU1H3f+SmsQ==}
     peerDependencies:
       '@faker-js/faker': ^9
       msw: ^2
@@ -13964,7 +13956,7 @@ snapshots:
 
   '@xobotyi/scrollbar-width@1.9.5': {}
 
-  '@yieldxyz/sdk@0.0.4': {}
+  '@yieldxyz/sdk@0.0.6': {}
 
   '@zondax/ledger-js@1.2.0':
     dependencies:

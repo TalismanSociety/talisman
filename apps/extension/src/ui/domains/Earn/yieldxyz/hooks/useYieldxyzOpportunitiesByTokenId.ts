@@ -11,7 +11,7 @@ import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 
-const MIN_REWARD_RATE = 0.01
+const MIN_REWARD_RATE = 0.001
 const ALLOW_NO_STATISTICS = true
 
 export type TokenOpportunity = {

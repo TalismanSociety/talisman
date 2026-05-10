@@ -388,7 +388,12 @@ const DeactivateNetworksModalContent: FC<{
 
       <div className="mt-4 flex justify-end gap-8">
         <Button onClick={onClose}>{t("Cancel")}</Button>
-        <Button primary disabled={disableSubmit} onClick={handleClick}>
+        <Button
+          primary
+          disabled={disableSubmit}
+          onClick={handleClick}
+          data-testid="network-list-deactivate-confirm-button"
+        >
           {t("Deactivate")}
         </Button>
       </div>

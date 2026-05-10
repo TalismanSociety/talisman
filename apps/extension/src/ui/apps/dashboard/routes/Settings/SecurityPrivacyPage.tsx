@@ -46,6 +46,7 @@ const Content = () => {
           iconLeft={LockIcon}
           iconRight={ChevronRightIcon}
           title={t("Change password")}
+          data-testid="change-password-button"
           subtitle={
             allBackedUp
               ? t("Change your Talisman password")

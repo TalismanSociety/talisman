@@ -1,3 +1,4 @@
+import { DEBUG } from "@common/constants"
 import type { DefiPosition } from "@core/domains/defi/exports"
 import type { TokenDto, YieldxyzProvider } from "@core/domains/earn/exports"
 import type { Network, NetworkId, TokenId } from "@talismn/chaindata-provider"
@@ -9,7 +10,7 @@ import { useTokenRatesMap } from "@ui/state/tokenRates"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { useYieldxyzPositionsEnhanced, useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { keyBy } from "lodash-es"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 import { calcDefiItemValueUsd, resolveDefiTokenId } from "../defi/useDefiItemValueUsd"
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
@@ -167,9 +168,11 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
 
   const providerByKey = useMemo(() => keyBy(providers ?? [], (p) => p.id), [providers])
 
-  const positions = useMemo(() => {
+  const { positions, excludedDefi } = useMemo(() => {
     const result: EarnPosition[] = []
 
+    // Build yieldxyz positions first (these are actionable, preferred source)
+    const yieldMapped: EarnPosition[] = []
     for (const yp of yieldPositions ?? []) {
       const mapped = mapYieldPosition(
         yp,
@@ -177,15 +180,42 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
         tokensMap,
         providerByKey[yp.product.providerId]
       )
-      if (mapped) result.push(mapped)
+      if (mapped) yieldMapped.push(mapped)
     }
 
+    // Build defi positions
+    const defiMapped: EarnPosition[] = []
     for (const dp of defiPositions ?? []) {
       const mapped = mapDefiPosition(dp, networksMap, tokensMap, tokenRatesMap)
-      if (mapped) result.push(mapped)
+      if (mapped) defiMapped.push(mapped)
     }
 
-    return result
+    // Exclude defi positions that duplicate a yieldxyz position.
+    // A defi position is considered a duplicate when it shares the same wallet address,
+    // network, and at least one overlapping input token with a yieldxyz position.
+    // yieldxyz positions are preferred because they are actionable (not read-only).
+    const yieldTokensByAddressNetwork = new Map<string, Set<string>>()
+    for (const yp of yieldMapped) {
+      const key = `${yp.address.toLowerCase()}|${yp.networkId}`
+      const existing = yieldTokensByAddressNetwork.get(key)
+      if (existing) {
+        for (const tid of yp.tokenIds) existing.add(tid)
+      } else {
+        yieldTokensByAddressNetwork.set(key, new Set(yp.tokenIds))
+      }
+    }
+
+    const excluded: EarnPosition[] = []
+    result.push(...yieldMapped)
+    for (const dp of defiMapped) {
+      const key = `${dp.address.toLowerCase()}|${dp.networkId}`
+      const yieldTokenIds = yieldTokensByAddressNetwork.get(key)
+      const isDuplicate = yieldTokenIds != null && dp.tokenIds.some((tid) => yieldTokenIds.has(tid))
+      if (isDuplicate) excluded.push(dp)
+      else result.push(dp)
+    }
+
+    return { positions: result, excludedDefi: excluded }
   }, [
     yieldPositions,
     defiPositions,
@@ -195,6 +225,25 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     networksMap,
     tokenRatesMap,
   ])
+
+  // Log excluded duplicates once per mount in dev builds
+  const hasLoggedRef = useRef(false)
+  useEffect(() => {
+    if (!DEBUG || hasLoggedRef.current || !excludedDefi.length) return
+    hasLoggedRef.current = true
+    // biome-ignore lint/suspicious/noConsole: development-only logging
+    console.info(
+      "[EarnPositions] Excluded %d defi positions that duplicate yieldxyz positions:",
+      excludedDefi.length,
+      excludedDefi.map((p) => ({
+        id: p.id,
+        title: p.title,
+        address: p.address,
+        networkId: p.networkId,
+        tokenIds: p.tokenIds,
+      }))
+    )
+  }, [excludedDefi])
 
   // Show cached data immediately — only report "loading" when no positions are available
   const isAnyLoading = yieldStatus === "loading" || defiStatus === "loading"

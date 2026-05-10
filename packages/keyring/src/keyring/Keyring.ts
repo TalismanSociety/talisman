@@ -83,6 +83,39 @@ export class Keyring {
     }
   }
 
+  /** Returns true if a password has been set on this keyring. */
+  public hasPassword(): boolean {
+    return this.#data.passwordCheck !== null
+  }
+
+  /**
+   * Verify a password against the keyring's passwordCheck blob.
+   * Returns true on success, false on wrong password.
+   * Throws if no password has been set (caller should check hasPassword() first).
+   */
+  public async verifyPassword(password: string): Promise<boolean> {
+    if (!this.#data.passwordCheck) {
+      throw new Error("No password set — call hasPassword() before verifyPassword()")
+    }
+    try {
+      await this.checkPassword(password)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Initialize the password on a fresh keyring that has no password set.
+   * Throws if a password is already set (use changePassword flow instead).
+   */
+  public async initializePassword(password: string): Promise<void> {
+    if (this.#data.passwordCheck !== null) {
+      throw new Error("Password already set — cannot re-initialize")
+    }
+    await this.checkPassword(password, true)
+  }
+
   public toJson() {
     return structuredClone(this.#data)
   }

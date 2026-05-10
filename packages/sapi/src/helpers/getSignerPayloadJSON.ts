@@ -1,5 +1,4 @@
 import type { SignerPayloadJSON } from "@polkadot/types/types"
-import { u8aToHex } from "@polkadot/util"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { Binary } from "polkadot-api"
 
@@ -81,7 +80,7 @@ export const getSignerPayloadJSON = async (
   }
 
   const { payload, txMetadata } = getPayloadWithMetadataHash(chain, chainInfo, basePayload)
-  const shortMetadata = txMetadata ? u8aToHex(txMetadata) : undefined
+  const shortMetadata = txMetadata ? (toHex(txMetadata) as `0x${string}`) : undefined
 
   // Avail support
   if (payload.signedExtensions.includes("CheckAppId"))

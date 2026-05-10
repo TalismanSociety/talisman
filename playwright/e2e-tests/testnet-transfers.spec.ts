@@ -1,11 +1,23 @@
-import { DOT_ACC_NAME, ETH_ACC_NAME } from "./constants"
 import { expect, test } from "./fixtures"
 import { testAssets } from "./transfers"
 
-test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, extensionId }) => {
-  test.setTimeout(120_000)
-  await importAccount({ type: "substrate", name: DOT_ACC_NAME })
-  await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
+const dotAccName = "DOT Transfer"
+const ethAccName = "ETH Transfer"
+
+test("Transfer Assets", async ({
+  extensionId,
+  onboardedPage,
+  importAccount,
+  walletPopup,
+  useDevChains,
+}) => {
+  await importAccount({
+    type: "ethereum",
+    mnemonic: "test test test test test test test test test test test junk",
+    name: ethAccName,
+  })
+  await useDevChains()
+  await onboardedPage.waitForTimeout(500)
   await onboardedPage.goto(
     `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks`
   )
@@ -33,9 +45,9 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
   for (const data of testAssets) {
     await test.step(`Transferring ${data.assetName} on ${data.chain}`, async () => {
       if (data.chainType === "substrate") {
-        await onboardedPage.getByTestId("sidebar-account-list").getByText(DOT_ACC_NAME).click()
+        await onboardedPage.getByTestId("sidebar-account-list").getByText(dotAccName).click()
       } else {
-        await onboardedPage.getByTestId("sidebar-account-list").getByText(ETH_ACC_NAME).click()
+        await onboardedPage.getByTestId("sidebar-account-list").getByText(ethAccName).click()
       }
       const popup = await walletPopup({ locator: sendButton })
       // searches for the specific token by asset name, type and chain.
@@ -57,9 +69,19 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
       await popup.getByPlaceholder("0").fill(data.amount)
       await expect(popup.getByTestId("component-review-button")).toBeEnabled({ timeout: 10000 })
       await popup.getByTestId("component-review-button").click()
-      await expect(popup.getByTestId("send-funds-confirm-button").getByRole("button")).toBeEnabled()
-      await popup.getByTestId("send-funds-confirm-button").click()
-      await expect(popup.getByRole("button", { name: "Close" })).toBeVisible()
+
+      //risk analysis assesment drawer
+      await expect(popup.getByTestId("risk-analysis-button-no")).toBeVisible()
+      await popup.getByTestId("risk-analysis-button-no").click()
+
+      // acknowledge external address warning if present
+      const warning = popup.getByTestId("send-funds-confirm-button").getByRole("checkbox").first()
+      if (await warning.isVisible({ timeout: 2000 }).catch(() => false)) await warning.check()
+
+      const confirmBtn = popup.getByTestId("send-funds-confirm-button").getByRole("button")
+      await expect(confirmBtn).toBeEnabled({ timeout: 15000 })
+      await confirmBtn.click()
+      await expect(popup.getByRole("button", { name: "Close" })).toBeVisible({ timeout: 30000 })
       await popup.close()
     })
   }
