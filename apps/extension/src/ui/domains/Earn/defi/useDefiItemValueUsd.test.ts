@@ -1,9 +1,17 @@
 import type { DefiPositionItem } from "@core/domains/defi/exports"
-import type { Network, NetworkId } from "@talismn/chaindata-provider"
+import {
+  type Network,
+  type NetworkId,
+  solNativeTokenId,
+  solSplTokenId,
+  solToken2022TokenId,
+} from "@talismn/chaindata-provider"
 import type { TokenRatesList } from "@talismn/token-rates"
 import { describe, expect, it } from "vitest"
 
 import { calcDefiItemValueUsd, resolveDefiTokenId } from "./useDefiItemValueUsd"
+
+const PYUSD_MINT = "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo"
 
 const makeItem = (overrides: Partial<DefiPositionItem> = {}): DefiPositionItem => ({
   type: "deposit",
@@ -60,6 +68,59 @@ describe("resolveDefiTokenId", () => {
 
   it("returns null when token not in tokensMap", () => {
     const result = resolveDefiTokenId("1", "0xunknown", makeNetworksMap(), makeTokensMap())
+    expect(result).toBeNull()
+  })
+
+  it("resolves Solana Token-2022 token ID", () => {
+    const token2022Id = solToken2022TokenId("solana-mainnet", PYUSD_MINT)
+    const result = resolveDefiTokenId("solana-mainnet", PYUSD_MINT, makeNetworksMap(), {
+      ...makeTokensMap(),
+      [token2022Id]: { id: token2022Id },
+    })
+
+    expect(result).toBe(token2022Id)
+  })
+
+  it("resolves Solana SPL token ID", () => {
+    const splId = solSplTokenId("solana-mainnet", PYUSD_MINT)
+    const result = resolveDefiTokenId("solana-mainnet", PYUSD_MINT, makeNetworksMap(), {
+      ...makeTokensMap(),
+      [splId]: { id: splId },
+    })
+
+    expect(result).toBe(splId)
+  })
+
+  it("prefers Solana Token-2022 token ID when both Solana token types are present", () => {
+    const token2022Id = solToken2022TokenId("solana-mainnet", PYUSD_MINT)
+    const splId = solSplTokenId("solana-mainnet", PYUSD_MINT)
+    const result = resolveDefiTokenId("solana-mainnet", PYUSD_MINT, makeNetworksMap(), {
+      ...makeTokensMap(),
+      [splId]: { id: splId },
+      [token2022Id]: { id: token2022Id },
+    })
+
+    expect(result).toBe(token2022Id)
+  })
+
+  it("resolves Solana native token ID when no contract address", () => {
+    const nativeId = solNativeTokenId("solana-mainnet")
+    const result = resolveDefiTokenId("solana-mainnet", null, makeNetworksMap(), {
+      ...makeTokensMap(),
+      [nativeId]: { id: nativeId },
+    })
+
+    expect(result).toBe(nativeId)
+  })
+
+  it("returns null for unknown Solana mints", () => {
+    const result = resolveDefiTokenId(
+      "solana-mainnet",
+      PYUSD_MINT,
+      makeNetworksMap(),
+      makeTokensMap()
+    )
+
     expect(result).toBeNull()
   })
 })

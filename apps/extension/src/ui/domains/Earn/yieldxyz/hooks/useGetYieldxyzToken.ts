@@ -14,8 +14,8 @@ export const useGetYieldxyzToken = () => {
 
   const getYieldxyzTokenId = useCallback(
     (token: TokenDto): TokenId | null =>
-      getYieldxyzTokenIdInner(token, mapToTalismanNetworkId, networksMap),
-    [mapToTalismanNetworkId, networksMap]
+      getYieldxyzTokenIdInner(token, mapToTalismanNetworkId, networksMap, tokensMap),
+    [mapToTalismanNetworkId, networksMap, tokensMap]
   )
 
   const getYieldxyzToken = useCallback(
