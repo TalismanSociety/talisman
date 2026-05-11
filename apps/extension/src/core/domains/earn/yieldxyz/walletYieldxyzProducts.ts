@@ -38,7 +38,7 @@ const fetchYieldxyzProducts = async (networks: string[], signal?: AbortSignal) =
     const url = new URL(`/talisman/products`, YIELD_API_BASE_URL)
     url.searchParams.append("networks", networks.join(","))
 
-    const req = await fetch(url.toString(), { signal })
+    const req = await fetch(url.toString(), { signal, cache: "no-cache" })
     if (!req.ok)
       throw new Error(`Failed to fetch yieldxyz products: ${req.status} ${req.statusText}`)
 

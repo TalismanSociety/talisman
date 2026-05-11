@@ -21,7 +21,10 @@ const REFRESH_INTERVAL = 60_000
 
 const fetchYieldxyzProviders = async (signal?: AbortSignal) => {
   try {
-    const req = await fetch(`${YIELD_API_BASE_URL}/talisman/providers`, { signal })
+    const req = await fetch(`${YIELD_API_BASE_URL}/talisman/providers`, {
+      signal,
+      cache: "no-cache",
+    })
     if (!req.ok)
       throw new Error(`Failed to fetch yieldxyz providers: ${req.status} ${req.statusText}`)
 
