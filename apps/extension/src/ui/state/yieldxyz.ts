@@ -17,15 +17,15 @@ import {
   type Network,
   type NetworkId,
   solNativeTokenId,
-  solSplTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { api } from "@ui/api"
+import { resolveSolanaMintTokenId } from "@ui/util/solana/resolveSolanaMintTokenId"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, ReplaySubject, share } from "rxjs"
 
-import { getNetworksMapById$ } from "./chaindata"
+import { getNetworksMapById$, getTokensMap$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
 
 export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
@@ -175,17 +175,21 @@ export type YieldxyzPositionEnhanced = YieldxyzPosition & {
   product: YieldDto
 }
 
-const [useYieldxyzTalismanInputTokenIds, _yieldxyzTalismanInputTokenIds$] = bind(
+const [useYieldxyzEnterableTokenIds, _yieldxyzEnterableTokenIds$] = bind(
   combineLatest([
     yieldxyzProducts$,
     yieldNetworkIdToTalismanNetworkIdMap$,
     getNetworksMapById$(),
+    getTokensMap$(),
   ]).pipe(
-    map(([loadable, yieldNetworkIdToTalismanNetworkIdMap, networksMap]) => {
+    map(([loadable, yieldNetworkIdToTalismanNetworkIdMap, networksMap, tokensMap]) => {
       if (loadable.status === "loading") return []
 
       const tokenIds = new Set<string>()
       for (const product of loadable.data ?? []) {
+        // skip products that cannot be entered
+        if (!product.status.enter) continue
+
         // if multiple tokens, consider only the native token (no address)
         const inputToken =
           product.inputTokens.length > 1
@@ -196,7 +200,8 @@ const [useYieldxyzTalismanInputTokenIds, _yieldxyzTalismanInputTokenIds$] = bind
         const tokenId = getYieldxyzTokenId(
           inputToken,
           yieldNetworkIdToTalismanNetworkIdMap,
-          networksMap
+          networksMap,
+          tokensMap
         )
         if (tokenId) tokenIds.add(tokenId)
       }
@@ -210,7 +215,8 @@ const [useYieldxyzTalismanInputTokenIds, _yieldxyzTalismanInputTokenIds$] = bind
 export const getYieldxyzTokenId = (
   token: TokenDto,
   yieldxyzToTalismanNetworkId: Record<string, string>,
-  networksMap: Record<NetworkId, Network>
+  networksMap: Record<NetworkId, Network>,
+  tokensMap: Record<string, unknown>
 ) => {
   const networkId = yieldxyzToTalismanNetworkId[token.network]
   if (!networkId) return null
@@ -229,7 +235,7 @@ export const getYieldxyzTokenId = (
       return null
     }
     case "solana": {
-      if (token.address) return solSplTokenId(networkId, token.address)
+      if (token.address) return resolveSolanaMintTokenId(networkId, token.address, tokensMap)
       if (token.symbol === network.nativeCurrency.symbol) return solNativeTokenId(networkId)
       log.warn("Unsupported solana token for yieldxyz:", token)
       return null
@@ -276,5 +282,5 @@ export {
   useYieldxyzProvider,
   useYieldxyzProduct,
   useYieldxyzPositionsEnhanced,
-  useYieldxyzTalismanInputTokenIds,
+  useYieldxyzEnterableTokenIds,
 }

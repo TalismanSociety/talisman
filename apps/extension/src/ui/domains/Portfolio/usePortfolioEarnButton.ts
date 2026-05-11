@@ -1,5 +1,5 @@
 import type { Balances } from "@talismn/balances"
-import { useYieldxyzTalismanInputTokenIds } from "@ui/state/yieldxyz"
+import { useYieldxyzEnterableTokenIds } from "@ui/state/yieldxyz"
 import { uniq } from "lodash-es"
 import { useCallback, useMemo } from "react"
 
@@ -7,7 +7,7 @@ import { useYieldxyzEnterModal } from "../Earn/yieldxyz/enter/useYieldxyzEnterMo
 
 export const usePortfolioEarnButton = (balances: Balances) => {
   const { open: openYieldxyzModal } = useYieldxyzEnterModal()
-  const yieldxyzInputTokenIds = useYieldxyzTalismanInputTokenIds()
+  const yieldxyzInputTokenIds = useYieldxyzEnterableTokenIds()
 
   // all tokenIds that match a yieldxyz product
   const yieldxyzTokenIds = useMemo(() => {

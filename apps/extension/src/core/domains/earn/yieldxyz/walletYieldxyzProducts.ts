@@ -20,7 +20,7 @@ import { isSupportedYieldxyzProduct } from "./isSupportedYieldxyzProduct"
 import { updateYieldxyzProductsStore, yieldxyzProductsStore$ } from "./store.products"
 import type { YieldDto } from "./types"
 
-const REFRESH_INTERVAL = 30_000
+const REFRESH_INTERVAL = 5 * 60_000
 const KEEP_ALIVE = 3_000
 
 const yieldxyzNetworkIds$ = remoteConfigStore.observable.pipe(
@@ -38,7 +38,7 @@ const fetchYieldxyzProducts = async (networks: string[], signal?: AbortSignal) =
     const url = new URL(`/talisman/products`, YIELD_API_BASE_URL)
     url.searchParams.append("networks", networks.join(","))
 
-    const req = await fetch(url.toString(), { signal })
+    const req = await fetch(url.toString(), { signal, cache: "no-cache" })
     if (!req.ok)
       throw new Error(`Failed to fetch yieldxyz products: ${req.status} ${req.statusText}`)
 
