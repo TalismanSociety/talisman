@@ -1,11 +1,16 @@
 import z from "zod/v4"
 
-import { SolNativeBalancesConfigSchema, SolSplBalancesConfigSchema } from "../tokens"
+import {
+  SolNativeBalancesConfigSchema,
+  SolSplBalancesConfigSchema,
+  SolToken2022BalancesConfigSchema,
+} from "../tokens"
 import { NetworkBaseSchema } from "./NetworkBase"
 
 export const SolNetworkBalancesConfigSchema = z.strictObject({
   "sol-native": SolNativeBalancesConfigSchema.optional(),
   "sol-spl": SolSplBalancesConfigSchema.optional(),
+  "sol-token2022": SolToken2022BalancesConfigSchema.optional(),
 })
 
 export type SolNetworkBalancesConfig = z.infer<typeof SolNetworkBalancesConfigSchema>

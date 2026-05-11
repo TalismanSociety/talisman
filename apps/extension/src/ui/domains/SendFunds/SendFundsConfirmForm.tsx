@@ -1,4 +1,4 @@
-import { isTokenEth } from "@talismn/chaindata-provider"
+import { isTokenEth, isTokenOfType } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Checkbox } from "@ui/components/Checkbox"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -26,6 +26,7 @@ import {
   useExternalAddressWarning,
 } from "./useExternalAddressWarning"
 import { useSendFunds } from "./useSendFunds"
+import { useToken2022TransferFee } from "./useToken2022TransferFee"
 
 const AmountDisplay = () => {
   const { sendMax, maxAmount, transfer, token } = useSendFunds()
@@ -368,6 +369,27 @@ const FeeSummary = () => {
   return <DefaultFeeSummary />
 }
 
+const Token2022TransferFeeRow: FC = () => {
+  const { t } = useTranslation()
+  const { token, sendMax, maxAmount, transfer } = useSendFunds()
+  const amount = sendMax ? maxAmount : transfer
+
+  const { data: feeInfo } = useToken2022TransferFee(token, amount?.planck?.toString())
+
+  if (!feeInfo || !token || !isTokenOfType(token, "sol-token2022")) return null
+
+  return (
+    <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
+      <div className="text-body-secondary">
+        {t("Transfer Fee ({{bps}}bps)", { bps: feeInfo.feeBasisPoints })}
+      </div>
+      <div className="text-body">
+        <TokensAndFiat planck={feeInfo.feeAmount} tokenId={token.id} />
+      </div>
+    </div>
+  )
+}
+
 export const SendFundsConfirmForm = () => {
   const { t } = useTranslation()
   const { from, to, network, transaction } = useSendFunds()
@@ -414,6 +436,7 @@ export const SendFundsConfirmForm = () => {
                   <NetworkDisplay />
                 </div>
                 <FeeSummary />
+                <Token2022TransferFeeRow />
                 <TotalAmountRow />
               </div>
             </div>

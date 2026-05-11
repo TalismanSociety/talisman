@@ -1,5 +1,9 @@
 import { PublicKey } from "@solana/web3.js"
-import { type SolSplToken, SolSplTokenSchema, solSplTokenId } from "@talismn/chaindata-provider"
+import {
+  type SolToken2022Token,
+  SolToken2022TokenSchema,
+  solToken2022TokenId,
+} from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
@@ -11,7 +15,7 @@ import { setDetectedTokenIds } from "../shared/detectedTokens"
 import { MODULE_TYPE, PLATFORM } from "./config"
 import { type CachedToken, fetchOnChainTokenData } from "./onChainTokenMetadata"
 
-const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 
 // In-memory metadata cache for unknown mints discovered during balance polling.
 // Keyed by tokenId. Stores both successful metadata and known-invalid mints
@@ -37,7 +41,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const balancesPerAddress = await Promise.all(
     accountAddresses.map(async (address) => {
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
-        programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
+        programId: new PublicKey(TOKEN_2022_PROGRAM_ID),
       })
 
       const balances = tokenAccounts.value
@@ -45,7 +49,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           try {
             const mintAddress = d.account.data.parsed.info.mint
             const value = d.account.data.parsed.info.tokenAmount.amount ?? "0"
-            const tokenId = solSplTokenId(networkId, mintAddress)
+            const tokenId = solToken2022TokenId(networkId, mintAddress)
 
             // Only register mints with non-zero balance to avoid storing every
             // airdropped/spam token an account has ever received with 0 balance.
@@ -69,7 +73,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         })
         .filter(isNotNil)
 
-      // allows the wallet to detect new tokens, and enable them automatically
       setDetectedTokenIds(
         address,
         MODULE_TYPE,
@@ -82,11 +85,11 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   // Fetch metadata for newly-discovered mints (skipping any already cached).
   // Cached entries (both valid and invalid) are reused to avoid re-querying every poll.
-  const dynamicTokens: SolSplToken[] = []
+  const dynamicTokens: SolToken2022Token[] = []
   if (unknownMints.size) {
     await Promise.all(
       Array.from(unknownMints).map(async (mintAddress) => {
-        const tokenId = solSplTokenId(networkId, mintAddress)
+        const tokenId = solToken2022TokenId(networkId, mintAddress)
 
         let cached = dynamicTokenMetadataCache.get(tokenId)
         if (!cached) {
@@ -100,7 +103,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         // Skip mints whose metadata fetch failed or returned invalid data.
         if (!cached || !cached.isValid) return
 
-        const token: SolSplToken = {
+        const token: SolToken2022Token = {
           id: tokenId,
           type: MODULE_TYPE,
           platform: PLATFORM,
@@ -113,9 +116,9 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           ...(cached.logo !== undefined ? { logo: cached.logo } : {}),
         }
 
-        const parsed = SolSplTokenSchema.safeParse(token)
+        const parsed = SolToken2022TokenSchema.safeParse(token)
         if (!parsed.success) {
-          log.warn("Ignoring dynamic sol-spl token with invalid schema", { token })
+          log.warn("Ignoring dynamic sol-token2022 token with invalid schema", { token })
           return
         }
 
@@ -136,7 +139,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-  // return a balance entry for all token/address pairs that were requested
   const success: IBalance[] = balanceDefs.map((bd): IBalance => {
     const found = allBalancesByKey[getBalanceKey(bd.token.id, bd.address)]
     return (
@@ -157,7 +159,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     if (registeredDynamicIds.has(balance.tokenId)) success.push(balance)
   }
 
-  return { success, errors: [], dynamicTokens } // TODO output errors if any
+  return { success, errors: [], dynamicTokens }
 }
 
 const getBalanceKey = (tokenId: string, address: string) => `${tokenId}:${address}`

@@ -26,5 +26,7 @@ export const isTransferableToken = (t: Token) => {
 
   if (t.type === "substrate-dtao") return t.isTransferable
 
+  if (t.type === "sol-token2022") return t.isTransferable !== false
+
   return true
 }

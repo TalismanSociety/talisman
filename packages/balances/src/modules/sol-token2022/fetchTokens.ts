@@ -1,4 +1,8 @@
-import { type SolSplToken, SolSplTokenSchema, solSplTokenId } from "@talismn/chaindata-provider"
+import {
+  type SolToken2022Token,
+  SolToken2022TokenSchema,
+  solToken2022TokenId,
+} from "@talismn/chaindata-provider"
 import { assign, omit } from "lodash-es"
 
 import log from "../../log"
@@ -12,10 +16,10 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   connector,
   cache,
 }) => {
-  const result: SolSplToken[] = []
+  const result: SolToken2022Token[] = []
 
   for (const tokenConfig of tokens) {
-    const tokenId = solSplTokenId(networkId, tokenConfig.mintAddress)
+    const tokenId = solToken2022TokenId(networkId, tokenConfig.mintAddress)
     let cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
       | CachedToken
       | undefined
@@ -31,7 +35,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
     if (cached?.isValid === false) continue
 
-    const base: Pick<SolSplToken, "id" | "type" | "networkId" | "platform"> = {
+    const base: Pick<SolToken2022Token, "id" | "type" | "networkId" | "platform"> = {
       id: tokenId,
       type: MODULE_TYPE,
       platform: PLATFORM,
@@ -42,11 +46,11 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       base,
       cached?.isValid ? omit(cached, ["isValid"]) : {},
       tokenConfig
-    ) as SolSplToken
+    ) as SolToken2022Token
 
-    const parsed = SolSplTokenSchema.safeParse(token)
+    const parsed = SolToken2022TokenSchema.safeParse(token)
     if (!parsed.success) {
-      log.warn("Ignoring token with invalid SolSplTokenSchema", {
+      log.warn("Ignoring token with invalid SolToken2022TokenSchema", {
         token,
       })
       continue

@@ -210,6 +210,82 @@ describe("ChaindataProvider", () => {
     })
   })
 
+  describe("syncDynamicTokens", () => {
+    const SOL_SPL_DYNAMIC_ID = "solana-sol-spl-So11111111111111111111111111111111111111112"
+
+    const makeSolSplDynamicToken = (overrides: Partial<Token> = {}): Token =>
+      ({
+        id: SOL_SPL_DYNAMIC_ID,
+        networkId: "solana",
+        type: "sol-spl",
+        platform: "solana",
+        decimals: 9,
+        symbol: "DYN",
+        mintAddress: "So11111111111111111111111111111111111111112",
+        ...overrides,
+      }) as Token
+
+    it("removes a sol-spl dynamic token once it is curated into default chaindata", async () => {
+      const dynamicToken = makeSolSplDynamicToken({ symbol: "DYN", name: "Dynamic" })
+      // default chaindata gets a curated entry with the same id (different symbol/name)
+      const curatedToken = makeSolSplDynamicToken({ symbol: "WSOL", name: "Wrapped SOL" })
+      const data = makeChaindata({
+        tokens: [...makeChaindata().tokens, curatedToken],
+      })
+      const provider = new ChaindataProvider({ persistedStorage: data })
+      await provider.registerDynamicTokens([dynamicToken])
+
+      await provider.syncDynamicTokens()
+
+      // combined chaindata should now show the curated metadata, not the dynamic one
+      const token = await firstValueFrom(provider.getTokenById$(SOL_SPL_DYNAMIC_ID))
+      expect(token).not.toBeNull()
+      expect(token!.symbol).toBe("WSOL")
+      expect((token as { name?: string }).name).toBe("Wrapped SOL")
+    })
+
+    it("keeps a sol-spl dynamic token when no curated entry exists", async () => {
+      const dynamicToken = makeSolSplDynamicToken({ symbol: "DYN" })
+      const provider = new ChaindataProvider({ persistedStorage: makeChaindata() })
+      await provider.registerDynamicTokens([dynamicToken])
+
+      await provider.syncDynamicTokens()
+
+      const token = await firstValueFrom(provider.getTokenById$(SOL_SPL_DYNAMIC_ID))
+      expect(token).not.toBeNull()
+      expect(token!.symbol).toBe("DYN")
+    })
+
+    it("removes a sol-token2022 dynamic token once it is curated into default chaindata", async () => {
+      const id = "solana-sol-token2022-So11111111111111111111111111111111111111112"
+      const baseToken = {
+        id,
+        networkId: "solana",
+        type: "sol-token2022",
+        platform: "solana",
+        decimals: 9,
+        mintAddress: "So11111111111111111111111111111111111111112",
+      }
+      const dynamicToken = { ...baseToken, symbol: "DYN" } as Token
+      const curatedToken = { ...baseToken, symbol: "T22" } as Token
+      const data = makeChaindata({
+        tokens: [...makeChaindata().tokens, curatedToken],
+      })
+      const provider = new ChaindataProvider({ persistedStorage: data })
+      await provider.registerDynamicTokens([dynamicToken])
+
+      await provider.syncDynamicTokens()
+
+      const token = await firstValueFrom(provider.getTokenById$(id))
+      expect(token!.symbol).toBe("T22")
+    })
+
+    it("does nothing when there are no dynamic tokens", async () => {
+      const provider = new ChaindataProvider({ persistedStorage: makeChaindata() })
+      await expect(provider.syncDynamicTokens()).resolves.toBeUndefined()
+    })
+  })
+
   // ── Observable API ──────────────────────────────────────────────
 
   describe("observable API", () => {

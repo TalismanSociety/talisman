@@ -1,6 +1,11 @@
 import { log } from "@common/log"
 import { type Connection, PublicKey } from "@solana/web3.js"
-import { networkIdFromTokenId, solSplTokenId, type TokenId } from "@talismn/chaindata-provider"
+import {
+  networkIdFromTokenId,
+  solSplTokenId,
+  solToken2022TokenId,
+  type TokenId,
+} from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
 import { isEqual, uniq } from "lodash-es"
@@ -16,6 +21,7 @@ import { keyringStore } from "../keyring/store"
 
 const MAINNET_NETWORK_ID = "solana-mainnet"
 const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 
 const discoverSolanaAssets = async (addresses?: string[]) => {
   const activeNetworks = await activeNetworksStore.get()
@@ -32,20 +38,24 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
 
   const connection = await chainConnectorSol.getConnection(MAINNET_NETWORK_ID)
   const knownSplTokenIds = await chaindataProvider.getTokenIds("sol-spl")
+  const knownToken2022Ids = await chaindataProvider.getTokenIds("sol-token2022")
 
   const results = await Promise.all(
-    addresses.map((address) => {
-      return getSplTokenIdsForOwner(connection, address)
-    })
+    addresses.flatMap((address) => [
+      getSplTokenIdsForOwner(connection, address),
+      getToken2022IdsForOwner(connection, address),
+    ])
   )
 
-  const splTokenIds = uniq(results.flat().filter((id) => knownSplTokenIds.includes(id)))
+  const discoveredTokenIds = uniq(results.flat())
+  const knownTokenIds = [...knownSplTokenIds, ...knownToken2022Ids]
+  const splTokenIds = discoveredTokenIds.filter((id) => knownTokenIds.includes(id))
 
   const activeTokens = await activeTokensStore.get()
   const newTokenIds = splTokenIds.filter((id) => activeTokens[id] === undefined)
 
   if (newTokenIds.length) {
-    log.debug("[discoverSolanaAssets] discovered new SPL tokens", { newTokenIds })
+    log.debug("[discoverSolanaAssets] discovered new SPL/Token2022 tokens", { newTokenIds })
 
     await activeTokensStore.mutate((activeTokens) => ({
       ...activeTokens,
@@ -67,6 +77,23 @@ const getSplTokenIdsForOwner = async (connection: Connection, address: string) =
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solSplTokenId(MAINNET_NETWORK_ID, mintAddress))
+  } catch {
+    return []
+  }
+}
+
+const getToken2022IdsForOwner = async (connection: Connection, address: string) => {
+  try {
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+      new PublicKey(address),
+      {
+        programId: new PublicKey(TOKEN_2022_PROGRAM_ID),
+      },
+      "confirmed"
+    )
+
+    const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
+    return mintAddresses.map((mintAddress) => solToken2022TokenId(MAINNET_NETWORK_ID, mintAddress))
   } catch {
     return []
   }
