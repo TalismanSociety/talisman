@@ -51,6 +51,7 @@ interface Props {
   account: AccountPolkadotVault
   className?: string
   buttonClassName?: string
+  disabled?: boolean
   genesisHash?: HexString | null
   onQrDisplayed?: (displayed: boolean) => void // parent should not allow payload to change while qr is being displayed
   onSignature?: (result: { signature: `0x${string}` }) => void
@@ -67,6 +68,7 @@ export const QrSubstrate = ({
   account,
   className = "",
   buttonClassName = "",
+  disabled,
   genesisHash,
   onSignature,
   onReject,
@@ -86,7 +88,7 @@ export const QrSubstrate = ({
 }: Props): ReactElement<Props> => {
   const { t } = useTranslation()
   const [scanState, setScanState] = useState<ScanState>(
-    skipInit ? { page: "SEND" } : { page: "INIT" }
+    skipInit && !disabled ? { page: "SEND" } : { page: "INIT" }
   )
   const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
@@ -113,6 +115,7 @@ export const QrSubstrate = ({
             color={color}
             className={cn("w-full", buttonClassName)}
             primary
+            disabled={disabled}
             onClick={() => setScanState({ page: "SEND" })}
           >
             {t("Sign with QR")}

@@ -13,6 +13,7 @@ import { useSignLedgerBase } from "./useSignLedgerBase"
 
 export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   className = "",
+  disabled,
   onSigned,
   onSentToDevice,
   onCancel,
@@ -75,6 +76,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       isProcessing={isSigning}
       error={error}
       className={className}
+      disabled={disabled}
       color={color}
       onSignClick={signWithLedger}
       onDismissErrorClick={() => setError(null)}

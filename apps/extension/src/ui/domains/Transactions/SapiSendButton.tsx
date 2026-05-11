@@ -11,11 +11,12 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
-import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
+import { PasswordCheckDrawer } from "./PasswordCheckDrawer"
 
 type LockedInputs = {
   payload: SignerPayloadJSON | undefined
@@ -57,6 +58,7 @@ type SapiSendButtonProps = {
   color?: ButtonProps["color"]
   onSubmitted: (hash: Hex, innerHash?: Hex) => void
   mode?: ScaleApiSubmitMode
+  checkPassword?: boolean
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
@@ -64,6 +66,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   txMetadata,
   txInfo,
+  disabled,
   className,
   onSubmitted,
   mode,
@@ -112,6 +115,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
     <SignHardwareSubstrate
       className={className}
       containerId={containerId}
+      disabled={disabled}
       onSigned={handleSigned}
       onSentToDevice={setIsLocked}
       color={color}
@@ -126,6 +130,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   txInfo,
   txMetadata,
+  disabled,
   className,
   onSubmitted,
   mode,
@@ -170,6 +175,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   return (
     <QrSubstrate
       containerId={containerId ?? "main"}
+      disabled={disabled}
       buttonClassName={className}
       genesisHash={lockedInputs.payload?.genesisHash}
       account={account as AccountPolkadotVault}
@@ -187,26 +193,41 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   disabled,
   txInfo,
   className,
+  containerId,
   onSubmitted,
   mode,
   color,
+  checkPassword,
 }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPasswordDrawerOpen, setIsPasswordDrawerOpen] = useState(false)
+  const isPasswordDismissedRef = useRef(false)
 
-  const handleSubmitClick = useCallback(async () => {
+  // Lock inputs when password drawer opens to prevent stale payload submission
+  const { lockedInputs, setIsLocked } = useLockedInputs({
+    payload,
+    txInfo,
+    txMode: mode,
+  })
+
+  const handleSubmit = useCallback(async () => {
+    const submitPayload = checkPassword ? lockedInputs.payload : payload
+    const submitTxInfo = checkPassword ? lockedInputs.txInfo : txInfo
+    const submitMode = checkPassword ? lockedInputs.txMode : mode
+
     if (!sapi) return
-    if (!payload) return
+    if (!submitPayload) return
     setIsSubmitting(true)
     try {
-      const { hash } = await sapi.submit(payload, undefined, txInfo, mode)
+      const { hash } = await sapi.submit(submitPayload, undefined, submitTxInfo, submitMode)
       setIsSubmitting(false)
       onSubmitted(hash)
     } catch (err) {
       setIsSubmitting(false)
-      log.error("Failed to submit", { payload, err })
+      log.error("Failed to submit", { submitPayload, err })
       notify({
         type: "error",
         title: t("Failed to submit"),
@@ -214,19 +235,52 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
       })
     }
-  }, [mode, onSubmitted, payload, sapi, t, txInfo])
+  }, [checkPassword, lockedInputs, payload, txInfo, mode, sapi, onSubmitted, t])
+
+  const handleClick = useCallback(() => {
+    if (checkPassword) {
+      isPasswordDismissedRef.current = false
+      setIsLocked(true)
+      setIsPasswordDrawerOpen(true)
+    } else {
+      handleSubmit()
+    }
+  }, [checkPassword, handleSubmit, setIsLocked])
+
+  const handlePasswordVerified = useCallback(() => {
+    if (isPasswordDismissedRef.current) return
+    setIsPasswordDrawerOpen(false)
+    setIsLocked(false)
+    handleSubmit()
+  }, [handleSubmit, setIsLocked])
+
+  const handlePasswordDismiss = useCallback(() => {
+    isPasswordDismissedRef.current = true
+    setIsPasswordDrawerOpen(false)
+    setIsLocked(false)
+  }, [setIsLocked])
 
   return (
-    <Button
-      className={cn("w-full", className)}
-      primary
-      disabled={disabled}
-      onClick={handleSubmitClick}
-      processing={isSubmitting}
-      color={color}
-    >
-      {label ?? t("Confirm")}
-    </Button>
+    <>
+      <Button
+        className={cn("w-full", className)}
+        primary
+        disabled={disabled}
+        onClick={handleClick}
+        processing={isSubmitting}
+        color={color}
+      >
+        {label ?? t("Confirm")}
+      </Button>
+      {checkPassword && (
+        <PasswordCheckDrawer
+          isOpen={isPasswordDrawerOpen}
+          containerId={containerId}
+          onVerified={handlePasswordVerified}
+          onDismiss={handlePasswordDismiss}
+        />
+      )}
+    </>
   )
 }
 
