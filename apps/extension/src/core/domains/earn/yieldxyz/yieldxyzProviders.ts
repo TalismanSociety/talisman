@@ -17,7 +17,7 @@ import { updateYieldxyzProvidersStore, yieldxyzProvidersStore$ } from "./store.p
 import type { YieldxyzProvider } from "./types"
 
 const KEEP_ALIVE = 3_000
-const REFRESH_INTERVAL = 60_000
+const REFRESH_INTERVAL = 5 * 60_000
 
 const fetchYieldxyzProviders = async (signal?: AbortSignal) => {
   try {

@@ -20,7 +20,7 @@ import { isSupportedYieldxyzProduct } from "./isSupportedYieldxyzProduct"
 import { updateYieldxyzProductsStore, yieldxyzProductsStore$ } from "./store.products"
 import type { YieldDto } from "./types"
 
-const REFRESH_INTERVAL = 30_000
+const REFRESH_INTERVAL = 5 * 60_000
 const KEEP_ALIVE = 3_000
 
 const yieldxyzNetworkIds$ = remoteConfigStore.observable.pipe(
