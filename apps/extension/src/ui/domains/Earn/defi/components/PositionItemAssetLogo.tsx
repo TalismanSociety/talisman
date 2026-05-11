@@ -3,12 +3,12 @@ import {
   evmErc20TokenId,
   evmNativeTokenId,
   solNativeTokenId,
-  solSplTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isHexString } from "@talismn/util"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useTokensMap } from "@ui/state/chaindata"
+import { resolveSolanaMintTokenId } from "@ui/util/solana/resolveSolanaMintTokenId"
 import { type FC, useMemo } from "react"
 
 export const PositionItemAssetLogo: FC<{
@@ -23,7 +23,8 @@ export const PositionItemAssetLogo: FC<{
     if (isHexString(item.contract_address)) {
       return tokensById[evmErc20TokenId(networkId, item.contract_address)]
     } else if (item.contract_address) {
-      return tokensById[solSplTokenId(networkId, item.contract_address)]
+      const tokenId = resolveSolanaMintTokenId(networkId, item.contract_address, tokensById)
+      return tokenId ? tokensById[tokenId] : undefined
     } else {
       return (
         tokensById[evmNativeTokenId(networkId)] ??

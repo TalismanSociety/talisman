@@ -5,13 +5,13 @@ import {
   type Network,
   type NetworkId,
   solNativeTokenId,
-  solSplTokenId,
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
 import type { TokenRatesList } from "@talismn/token-rates"
 import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
+import { resolveSolanaMintTokenId } from "@ui/util/solana/resolveSolanaMintTokenId"
 import { useMemo } from "react"
 import { formatUnits } from "viem"
 
@@ -33,7 +33,7 @@ export const resolveDefiTokenId = (
       break
     case "solana":
       tokenId = contractAddress
-        ? solSplTokenId(networkId, contractAddress)
+        ? resolveSolanaMintTokenId(networkId, contractAddress, tokensMap)
         : solNativeTokenId(networkId)
       break
     case "polkadot":
