@@ -32,6 +32,7 @@ import { useProxyTxPreview } from "../useProxyTxPreview"
 import { useRefreshAccountProxiesOnTxSuccess } from "../useRefreshAccountProxiesOnTxSuccess"
 import { AccountPicker } from "./AccountPicker"
 import { DelegatePicker } from "./DelegatePicker"
+import { getDefaultAddProxyNetwork } from "./getDefaultAddProxyNetwork"
 import { NetworkPicker } from "./NetworkPicker"
 import { ProxyDelayDrawer } from "./ProxyDelayDrawer"
 import { ProxyTypePicker } from "./ProxyTypePicker"
@@ -93,9 +94,13 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   const network = compatibleNetworks.find((n) => n.id === networkId)
   const { proxyTypes, isFetched: isProxyTypesFetched } = useProxyTypesForNetwork(networkId || null)
 
-  // Auto-select first network
+  // Auto-select default network
   useEffect(() => {
-    if (!networkId && compatibleNetworks[0]) setNetworkId(compatibleNetworks[0].id)
+    const isSelectedNetworkCompatible = compatibleNetworks.some((n) => n.id === networkId)
+    if (isSelectedNetworkCompatible) return
+
+    const defaultNetwork = getDefaultAddProxyNetwork(compatibleNetworks)
+    if (defaultNetwork) setNetworkId(defaultNetwork.id)
   }, [compatibleNetworks, networkId])
 
   // Reset proxy type when available types change
