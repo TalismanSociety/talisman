@@ -2,6 +2,7 @@ import { Balances } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -16,7 +17,14 @@ export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
 
   const tao = useToken(subNativeTokenId(BITTENSOR_NETWORK_ID))
-  const ownedBalances = useBalances("owned")
+  const allBalances = useBalances("all-except-contacts")
+  const { selectedAccounts } = usePortfolioNavigation()
+
+  const selectedBalances = useMemo(() => {
+    const selectedAccountIds = new Set(selectedAccounts.map((a) => a.address))
+    return allBalances.find((b) => selectedAccountIds.has(b.address))
+  }, [allBalances, selectedAccounts])
+
   const {
     data: taoPrice,
     isLoading: isTaoPriceLoading,
@@ -30,17 +38,17 @@ export const TaoDashboardHeader = () => {
 
   const taoBalances = useMemo(() => {
     if (!tao) return new Balances([])
-    return ownedBalances.find({ tokenId: tao.id })
-  }, [ownedBalances, tao])
+    return selectedBalances.find({ tokenId: tao.id })
+  }, [selectedBalances, tao])
 
   // Pre-filter to only dTAO balances on Bittensor so that totalStakedPlanck
   // does not recalculate when unrelated balances change.
   const dtaoBalances = useMemo(
     () =>
-      ownedBalances.find(
+      selectedBalances.find(
         (b) => b.token?.type === "substrate-dtao" && b.token.networkId === BITTENSOR_NETWORK_ID
       ),
-    [ownedBalances]
+    [selectedBalances]
   )
 
   const isInitializing = useIsBalanceInitializing()
@@ -154,7 +162,7 @@ const BalanceStat: FC<{
               isRefetching && "animate-pulse"
             )}
           >
-            <TokensAndFiat tokenId={tokenId} planck={planck} noFiat noCountUp noSymbol isBalance />
+            <TokensAndFiat tokenId={tokenId} planck={planck} noFiat noSymbol isBalance />
             {" τ"}
           </span>
         )}
