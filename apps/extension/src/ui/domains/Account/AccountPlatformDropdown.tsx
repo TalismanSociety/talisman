@@ -1,7 +1,7 @@
 import type { AccountPlatform } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
 import { Dropdown } from "@ui/components/Dropdown"
-import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@ui/theme/logos"
+import { EthereumCircleLogo, PolkadotCircleLogo, SolanaCircleBorderedLogo } from "@ui/theme/logos"
 import { keyBy } from "lodash-es"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -25,7 +25,7 @@ const ACCOUNT_PLATFORMS: AccountPlatformOption[] = [
   },
   {
     value: "solana",
-    icon: <SolanaLogo className="text-lg" />,
+    icon: <SolanaCircleBorderedLogo className="text-lg" />,
     title: "Solana",
   },
 ]

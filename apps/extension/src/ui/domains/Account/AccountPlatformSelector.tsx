@@ -1,5 +1,10 @@
 import type { AccountPlatform } from "@talismn/crypto"
-import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@ui/theme/logos"
+import {
+  BittensorCircleBorderedLogo,
+  EthereumCircleLogo,
+  PolkadotCircleLogo,
+  SolanaCircleBorderedLogo,
+} from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -74,7 +79,12 @@ export const AccountPlatformSelector = ({
           platform === "polkadot" ? "border-body" : "border-body-secondary/20",
           "border"
         )}
-        icon={<PolkadotCircleLogo />}
+        icon={
+          <div className="flex items-center">
+            <PolkadotCircleLogo />
+            <BittensorCircleBorderedLogo className="-ml-8" />
+          </div>
+        }
         title={t("Substrate")}
         subtitle={
           <div className="line-clamp-2" data-testid="account-platform-selector-substrate">
@@ -85,7 +95,7 @@ export const AccountPlatformSelector = ({
       />
       <AccountTypeButton
         className={cn(platform === "solana" ? "border-body" : "border-body-secondary/20", "border")}
-        icon={<SolanaLogo />}
+        icon={<SolanaCircleBorderedLogo />}
         title={t("Solana")}
         subtitle={
           <div className="line-clamp-2" data-testid="account-platform-selector-solana">
