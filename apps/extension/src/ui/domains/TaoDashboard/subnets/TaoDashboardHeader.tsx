@@ -92,7 +92,7 @@ export const TaoDashboardHeader = () => {
   )
 
   return (
-    <div className="flex h-64 items-center rounded-[12px] border border-grey-800 px-3 py-4">
+    <div className="flex h-64 items-center rounded-[12px] border border-grey-800 px-8 py-4">
       <div className="flex shrink-0 items-center gap-2 px-1.5">
         <BalanceStat
           label={t("Total Tao Balance")}
@@ -112,8 +112,8 @@ export const TaoDashboardHeader = () => {
         />
       </div>
 
-      <div className="flex flex-1 items-center justify-end border-grey-800 border-l px-8 py-3">
-        <div className="flex items-start gap-28">
+      <div className="flex flex-1 items-center justify-end">
+        <div className="flex items-start gap-28 border-grey-800 border-l py-3 pl-28">
           <MarketStat
             label={t("Total Market Cap")}
             value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
