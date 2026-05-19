@@ -77,13 +77,19 @@ export const TaoDashboardHeader = () => {
     return BigInt(Math.round(stakedTao * 1e9))
   }, [dtaoBalances])
 
+  // Total TAO portfolio: native TAO (free + reserved) + alpha tokens converted to TAO
+  const totalPortfolioPlanck = useMemo(
+    () => taoBalances.sum.planck.total + totalStakedPlanck,
+    [taoBalances, totalStakedPlanck]
+  )
+
   return (
     <div className="flex h-64 items-center rounded-[12px] border border-grey-800 px-3 py-4">
       <div className="flex shrink-0 items-center gap-2 px-1.5">
         <BalanceStat
           label={t("Total Tao Balance")}
           tokenId={tao?.id}
-          planck={taoBalances.sum.planck.transferable}
+          planck={totalPortfolioPlanck}
           isLoading={isInitializing}
           isRefetching={isBalanceRefetching}
           className="pr-8"
@@ -140,11 +146,11 @@ const BalanceStat: FC<{
       <span className="text-body-secondary text-xs">{label}</span>
       <div className="px-1">
         {isLoading ? (
-          <Skeleton className="h-[38px] w-48" />
+          <Skeleton className="h-9.5 w-48" />
         ) : (
           <span
             className={cn(
-              "whitespace-nowrap font-semibold text-[32px] text-body leading-base",
+              "whitespace-nowrap font-semibold text-body text-xl leading-base",
               isRefetching && "animate-pulse"
             )}
           >
@@ -173,11 +179,11 @@ const MarketStat: FC<{
     <div className="flex flex-col gap-2">
       <span className="text-body-secondary text-xs">{label}</span>
       {showSkeleton ? (
-        <Skeleton className="h-[29px] w-32" />
+        <Skeleton className="h-7.25 w-32" />
       ) : (
         <span
           className={cn(
-            "font-semibold text-[24px] text-body leading-base",
+            "font-semibold text-body text-lg leading-base",
             isRefetching && "animate-pulse"
           )}
         >
