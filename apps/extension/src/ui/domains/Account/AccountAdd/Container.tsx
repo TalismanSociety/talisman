@@ -8,6 +8,7 @@ import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state/chaindata"
 import {
+  BittensorCircleBorderedLogo,
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
   SolanaCircleLogo,
@@ -174,7 +175,7 @@ function ImportAccountMethodButtons() {
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
         subtitle={t("Ethereum, Substrate, and Solana accounts")}
-        networks={["ethereum", "polkadot", "solana"]}
+        networks={["ethereum", "polkadot", "solana", "bittensor"]}
         to={`/accounts/add/mnemonic`}
       />
       <AccountCreateMethodButton
@@ -354,6 +355,7 @@ const networkChoices = {
   polkadot: <PolkadotCircleBorderedLogo />,
   ethereum: <EthereumCircleBorderedLogo />,
   solana: <SolanaCircleLogo />,
+  bittensor: <BittensorCircleBorderedLogo />,
 }
 function AccountCreateMethodButton({
   title,
@@ -364,7 +366,7 @@ function AccountCreateMethodButton({
 }: {
   title: ReactNode
   subtitle: ReactNode
-  networks?: Array<"ethereum" | "polkadot" | "solana">
+  networks?: Array<"ethereum" | "polkadot" | "solana" | "bittensor">
   disabled?: boolean
   to?: string
 }) {
@@ -383,7 +385,7 @@ function AccountCreateMethodButton({
       )}
     >
       <span className="w-full border-grey-800 border-b pb-3 text-start">{title}</span>
-      <span className="flex items-center gap-2 pr-8 text-body-secondary text-sm">
+      <span className="flex items-center gap-2 pr-8 text-body-secondary text-lg">
         {networks?.map((network, i) => (
           <span key={network} className={cn(i + 1 < networks.length && "-mr-4")}>
             {networkChoices[network]}
