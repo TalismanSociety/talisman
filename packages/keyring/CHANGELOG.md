@@ -1,5 +1,11 @@
 # @talismn/keyring
 
+## 1.0.11
+
+### Patch Changes
+
+- a72f647: feat: added Keyring methods for mobile app compatibility
+
 ## 1.0.10
 
 ### Patch Changes
