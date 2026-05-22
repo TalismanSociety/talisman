@@ -1,5 +1,18 @@
 # @talismn/chaindata-provider
 
+## 1.4.0
+
+### Minor Changes
+
+- f7ff987: token 2022
+
+### Patch Changes
+
+- 9bb4b12: generate init data
+- 81a539b: init data
+- 0738101: generate init data
+- a02eefe: init data
+
 ## 1.3.9
 
 ### Patch Changes

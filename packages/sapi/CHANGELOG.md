@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.1.6
+
+### Patch Changes
+
+- 77a7bf8: chore: remove @polkadot/util and @polkadot/util-crypto
+
 ## 0.1.5
 
 ### Patch Changes

@@ -1,5 +1,25 @@
 # @talismn/balances
 
+## 1.4.0
+
+### Minor Changes
+
+- f7ff987: token 2022
+
+### Patch Changes
+
+- 77a7bf8: chore: remove @polkadot/util and @polkadot/util-crypto
+- Updated dependencies [9bb4b12]
+- Updated dependencies [81a539b]
+- Updated dependencies [0738101]
+- Updated dependencies [77a7bf8]
+- Updated dependencies [f7ff987]
+- Updated dependencies [a02eefe]
+  - @talismn/chaindata-provider@1.4.0
+  - @talismn/chain-connectors@0.0.19
+  - @talismn/sapi@0.1.6
+  - @talismn/token-rates@3.0.21
+
 ## 1.3.6
 
 ### Patch Changes
