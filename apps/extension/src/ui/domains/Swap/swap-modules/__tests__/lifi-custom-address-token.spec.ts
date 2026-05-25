@@ -82,13 +82,13 @@ vi.mock("@ui/state/chaindata", () => ({
   getNetworksMapById$: vi.fn(({ platform }: { platform: string }) =>
     of(platform === "ethereum" ? { "1": ethereumNetwork } : {})
   ),
-  getToken$: vi.fn(() => of(nativeToken)),
+  getToken$: vi.fn((id: string) => of(id === CUSTOM_ID ? customToken : nativeToken)),
   getTokensMap$: vi.fn(({ platform }: { platform: string }) =>
     of(platform === "ethereum" ? { [NATIVE_ID]: nativeToken, [CUSTOM_ID]: customToken } : {})
   ),
 }))
 
-const { addKnownLifiToken, lifiSwapModule } = await import("../lifi-swap-module")
+const { lifiSwapModule } = await import("../lifi-swap-module")
 
 const makeRoute = (): Route =>
   ({
@@ -142,11 +142,11 @@ const makeRoute = (): Route =>
   }) as unknown as Route
 
 describe("lifi custom address tokens", () => {
-  it("adds a known ERC-20 as a LI.FI candidate and routes by address", async () => {
+  it("resolves an unlisted ERC-20 on-the-fly and routes by address", async () => {
     const signal = new AbortController().signal
 
-    addKnownLifiToken(customToken)
-
+    // The custom token is an ERC-20 on an EVM chain known to LI.FI,
+    // so getLifiAssetIds includes it even though it's not in LI.FI's default list.
     await expect(lifiSwapModule.getFromAssets(signal)).resolves.toContain(CUSTOM_ID)
 
     mockLifiGetRoutes.mockResolvedValue({

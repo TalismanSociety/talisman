@@ -162,19 +162,23 @@ const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset
   },
 })
 
-export const addKnownLifiToken = (token: EvmErc20Token) => {
-  const asset = lifiAssetFromErc20(token)
-  assetsByTokenId.set(asset.tokenId, asset)
+const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset | null> => {
+  const cached = resolveAsset(tokenId)
+  if (cached) return cached
 
-  cachedAssetsPromise = (cachedAssetsPromise ?? fetchLifiAssets())
-    .then((assets) => {
-      assetsByTokenId.set(asset.tokenId, asset)
-      return [...assets.filter((item) => item.tokenId !== asset.tokenId), asset]
-    })
-    .catch((err) => {
-      cachedAssetsPromise = null
-      throw err
-    })
+  const token = await firstValueFrom(getToken$(tokenId))
+  if (token?.type === "evm-erc20") {
+    const asset = lifiAssetFromErc20(token as EvmErc20Token)
+    assetsByTokenId.set(tokenId, asset)
+    return asset
+  }
+  if (token?.type === "sol-spl" || token?.type === "sol-token2022") {
+    const asset = await lifiAssetFromSolToken(token as SolToken)
+    assetsByTokenId.set(tokenId, asset)
+    return asset
+  }
+
+  return null
 }
 
 const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]> => {
@@ -323,32 +327,12 @@ const getRoutes = async (
     if (!fromTokenId || !toTokenId || !fromAmount) return null
     if (signal.aborted) return null
 
-    let fromAsset = resolveAsset(fromTokenId)
-    let toAsset = resolveAsset(toTokenId)
-
     // For tokens not in LI.FI's default list, construct the asset
     // from chaindata so the contract address is passed directly to the SDK.
-    if (!fromAsset) {
-      const token = await firstValueFrom(getToken$(fromTokenId))
-      if (token?.type === "evm-erc20") {
-        fromAsset = lifiAssetFromErc20(token as EvmErc20Token)
-        assetsByTokenId.set(fromTokenId, fromAsset)
-      } else if (token?.type === "sol-spl" || token?.type === "sol-token2022") {
-        fromAsset = await lifiAssetFromSolToken(token as SolToken)
-        assetsByTokenId.set(fromTokenId, fromAsset)
-      }
-    }
-    if (!toAsset) {
-      const token = await firstValueFrom(getToken$(toTokenId))
-      if (token?.type === "evm-erc20") {
-        toAsset = lifiAssetFromErc20(token as EvmErc20Token)
-        assetsByTokenId.set(toTokenId, toAsset)
-      } else if (token?.type === "sol-spl" || token?.type === "sol-token2022") {
-        toAsset = await lifiAssetFromSolToken(token as SolToken)
-        assetsByTokenId.set(toTokenId, toAsset)
-      }
-    }
-
+    const [fromAsset, toAsset] = await Promise.all([
+      resolveOrBuildAsset(fromTokenId),
+      resolveOrBuildAsset(toTokenId),
+    ])
     if (!fromAsset || !toAsset) return null
 
     const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
