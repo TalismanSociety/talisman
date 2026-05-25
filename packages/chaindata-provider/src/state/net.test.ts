@@ -1,11 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { makeChaindata, makeOrphanedNetwork } from "../__fixtures__/chaindata"
+import { CHAINDATA_PUB_FOLDER } from "../constants"
 
-const PRIMARY_URL =
-  "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/pub/v9/chaindata.min.json"
-const FALLBACK_URL =
-  "https://cdn.statically.io/gh/TalismanSociety/chaindata/main/pub/v9/chaindata.min.json"
+const PRIMARY_URL = `https://raw.githubusercontent.com/TalismanSociety/chaindata/main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
+const FALLBACK_URL = `https://cdn.statically.io/gh/TalismanSociety/chaindata/main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
 
 const mockFetch = vi.fn<typeof globalThis.fetch>()
 vi.stubGlobal("fetch", mockFetch)

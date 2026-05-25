@@ -3,6 +3,7 @@ import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
+import { ProxyCountBadge } from "@ui/domains/AccountProxies/ProxyCountBadge"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
 import { cn } from "@ui/util/cn"
@@ -52,7 +53,8 @@ export const TreeItemAccount: FC<{
             <Address address={formattedAddress} noTooltip={noTooltip} />
           </div>
         </div>
-        <div className="@2xl:flex hidden flex-col gap-2">
+        <div className="@2xl:flex hidden items-center gap-4">
+          <ProxyCountBadge address={address} />
           <Fiat amount={balanceTotal} isBalance noCountUp />
         </div>
 

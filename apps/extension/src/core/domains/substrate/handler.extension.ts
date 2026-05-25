@@ -148,16 +148,36 @@ export class SubHandler extends ExtensionHandler {
       }
       const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
 
+      // Fetch fresh block reference for the outer tx to avoid stale birth block.
+      // The UI payload's blockNumber can be minutes old; with a mortal era of only 8 blocks,
+      // a stale reference causes "AncientBirthBlock" when birth(current) == current.
+      const freshBlockHash = await chainConnector.send<`0x${string}`>(
+        chain.id,
+        "chain_getFinalizedHead",
+        [],
+        false
+      )
+      const freshHeader = await chainConnector.send<{ number: `0x${string}` }>(
+        chain.id,
+        "chain_getHeader",
+        [freshBlockHash],
+        false
+      )
+      if (!freshHeader?.number) throw new Error("Unable to fetch fresh block header")
+      const freshBlockNumber = Number.parseInt(freshHeader.number, 16)
+      if (!Number.isFinite(freshBlockNumber)) throw new Error("Invalid fresh block number")
+
       // outer payload uses short mortal era (≤8 blocks) as required by CheckMortality
-      const outerBlockNumber = Number.parseInt(payload.blockNumber, 16)
       const outerEra = mortalEra({
         period: MEV_SHIELD_ERA_PERIOD,
-        phase: outerBlockNumber % MEV_SHIELD_ERA_PERIOD,
+        phase: freshBlockNumber % MEV_SHIELD_ERA_PERIOD,
       })
       const outerPayload: SignerPayloadJSON = {
         ...payload,
         method: method.asHex(),
         era: outerEra,
+        blockNumber: toPjsHex(freshBlockNumber, 4),
+        blockHash: freshBlockHash,
         mode: 0,
         metadataHash: undefined,
       }

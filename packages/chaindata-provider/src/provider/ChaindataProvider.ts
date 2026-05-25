@@ -229,31 +229,58 @@ export class ChaindataProvider implements IChaindataProvider {
 
   /**
    * dynamic tokens are created when they are first detected by the balance modules.
-   * this method syncs their metadata (name, symbol, logo) with custom logic specific to each token type
+   * this method syncs their metadata (name, symbol, logo) with custom logic specific to each token type,
+   * and removes dynamic entries that have since been curated into the default chaindata.
    */
   async syncDynamicTokens() {
     const dynamicTokens = await firstValueFrom(this.#dynamicTokens$)
-    const updates: Token[] = []
+    if (!dynamicTokens.length) return
+
+    // ids present in the default (curated) chaindata — used to drop dynamic
+    // duplicates so curated metadata wins (combined chaindata applies last-wins
+    // by id, so leaving a dynamic entry in place would shadow the curated one).
+    const defaultStorage = await firstValueFrom(this.#storage$)
+    const defaultTokenIds = new Set(defaultStorage.tokens.map((t) => t.id))
+
+    const next: Token[] = []
+    let changed = false
 
     for (const token of dynamicTokens) {
+      // drop dynamic tokens whose ids are now curated by default chaindata
+      if (
+        (token.type === "sol-spl" || token.type === "sol-token2022") &&
+        defaultTokenIds.has(token.id)
+      ) {
+        changed = true
+        continue
+      }
+
       if (token.type === "substrate-dtao") {
         const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
         const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
-        if (!templateToken) continue
-        const updatedToken: SubDTaoToken = {
-          ...token,
-          symbol: templateToken.symbol,
-          name: templateToken.name,
-          logo: templateToken.logo,
-          subnetName: templateToken.subnetName,
+        if (templateToken) {
+          const updatedToken: SubDTaoToken = {
+            ...token,
+            symbol: templateToken.symbol,
+            name: templateToken.name,
+            logo: templateToken.logo,
+            subnetName: templateToken.subnetName,
+          }
+          if (!isEqual(token, updatedToken)) {
+            changed = true
+            next.push(updatedToken)
+            continue
+          }
         }
-        if (!isEqual(token, updatedToken)) updates.push(updatedToken)
       }
+
+      next.push(token)
     }
 
-    if (updates.length) {
-      log.debug("[ChaindataProvider] syncDynamicTokens: updating tokens", updates)
-      this.registerDynamicTokens(updates)
+    if (changed) {
+      log.debug("[ChaindataProvider] syncDynamicTokens: updating dynamic tokens", next)
+      const sorted = next.slice().sort((a, b) => a.id.localeCompare(b.id))
+      this.#dynamicTokens$.next(sorted)
     }
   }
 

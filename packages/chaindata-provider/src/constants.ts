@@ -2,7 +2,7 @@
 const CHAINDATA_BRANCH = "main"
 
 // pub subfolder needs to be incremented each time the schema of chaindata changes, or when the content of the minimetadata changes
-const CHAINDATA_PUB_FOLDER = "pub/v9"
+export const CHAINDATA_PUB_FOLDER = "pub/v10"
 
 export const MINIMETADATA_VERSION = CHAINDATA_PUB_FOLDER.split("/").pop()!
 if (!MINIMETADATA_VERSION) {
@@ -23,5 +23,4 @@ const githubChaindataDistDir = CHAINDATA_PUB_FOLDER
 export const githubChaindataBaseUrl = `${githubCdn}/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
 export const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`
 
-const _githubChaindataChainsAssetsDir = "assets/chains"
 export const githubChaindataTokensAssetsDir = "assets/tokens"

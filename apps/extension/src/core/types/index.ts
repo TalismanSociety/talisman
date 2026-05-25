@@ -1,4 +1,5 @@
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
+import type { AccountProxiesMessages } from "../domains/accountProxies/types"
 import type { AccountsMessages } from "../domains/accounts/types"
 import type { AppMessages } from "../domains/app/types"
 import type { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
@@ -78,6 +79,7 @@ type RemovedMessages =
 // lists all the messages (public and private) supported by the extension
 type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AccountsMessages &
+  AccountProxiesMessages &
   AppMessages &
   AuthorisedSiteMessages &
   BalancesMessages &

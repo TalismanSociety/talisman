@@ -1,5 +1,18 @@
 # @talismn/chain-connectors
 
+## 0.0.19
+
+### Patch Changes
+
+- 77a7bf8: chore: remove @polkadot/util and @polkadot/util-crypto
+- Updated dependencies [9bb4b12]
+- Updated dependencies [81a539b]
+- Updated dependencies [0738101]
+- Updated dependencies [f7ff987]
+- Updated dependencies [a02eefe]
+  - @talismn/chaindata-provider@1.4.0
+  - @talismn/connection-meta@0.2.39
+
 ## 0.0.18
 
 ### Patch Changes

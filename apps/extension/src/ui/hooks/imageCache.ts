@@ -97,7 +97,6 @@ const evictIfNeeded = async () => {
   emitChange()
 }
 
-/** @knipignore — used internally by useImageSwr; exported for tests */
 export const ensureCached = async (url: string) => {
   await hydratePromise
   const entry = cache.get(url)

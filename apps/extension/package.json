@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "3.5.2",
+  "version": "3.6.1",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -22,6 +22,7 @@
     "@lifi/sdk": "^3.16.0",
     "@metamask/browser-passworder": "5.0.1",
     "@metamask/eth-sig-util": "8.0.0",
+    "@metamask/phishing-controller": "^17.1.1",
     "@noble/curves": "1.9.2",
     "@polkadot-api/descriptors": "workspace:*",
     "@polkadot-api/merkleize-metadata": "1.1.29",
@@ -91,7 +92,6 @@
     "dexie": "^4.0.9",
     "dexie-react-hooks": "^1.1.7",
     "dompurify": "^3.3.3",
-    "eth-phishing-detect": "1.2.0",
     "framer-motion": "11.11.9",
     "highlight.js": "11.10.0",
     "html-react-parser": "5.1.18",
@@ -122,6 +122,7 @@
     "rxjs": "^7.8.1",
     "scale-ts": "^1.6.1",
     "semver": "7.6.3",
+    "tailwind-merge": "^3.5.0",
     "ts-results": "3.3.0",
     "typescript": "^5.6.3",
     "url-join": "^5.0.0",
@@ -129,8 +130,7 @@
     "viem": "^2.27.3",
     "webfontloader": "^1.6.28",
     "yup": "1.4.0",
-    "zod": "^3.25.76",
-    "tailwind-merge": "^3.5.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "6.0.3",

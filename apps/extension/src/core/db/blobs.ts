@@ -16,6 +16,8 @@ export type DbBlobId =
   | "bittensor-validators:v2"
   | "phishing-metamask"
   | "phishing-polkadot"
+  | "account-proxies"
+  | "proxy-pallet-cache"
 
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 

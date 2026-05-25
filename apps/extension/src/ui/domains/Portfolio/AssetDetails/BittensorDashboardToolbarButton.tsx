@@ -1,13 +1,16 @@
 import type { Balances } from "@talismn/balances"
+import { isTokenOfType, type SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { GaugeIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
+import { uniq } from "lodash"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -28,13 +31,31 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
     )
   }, [accounts, balances, bittensorNetworkIds])
 
+  // guess the netuid based on the page's balances.
+  // if any doubt, return null
+  const netuid = useMemo(() => {
+    const netuids = uniq(
+      balances.each
+        .map((b) => b.token)
+        .filter(
+          (t): t is SubDTaoToken =>
+            t?.networkId === BITTENSOR_NETWORK_ID &&
+            isTokenOfType(t, "substrate-dtao") &&
+            !!t.netuid // ignore root (0)
+        )
+        .map((t) => t.netuid)
+    )
+    return netuids.length === 1 ? netuids[0] : null
+  }, [balances])
+
   const handleClick = useCallback(() => {
+    const url = netuid ? `/bittensor/subnets/${netuid}` : "/bittensor"
     if (IS_POPUP) {
-      api.dashboardOpen("/bittensor")
+      api.dashboardOpen(url)
     } else {
-      navigate("/bittensor")
+      navigate(url)
     }
-  }, [navigate])
+  }, [navigate, netuid])
 
   if (!hasBittensorBalances) return null
 

@@ -5,6 +5,7 @@ import { type EvmNativeTokenIdSpecs, EvmNativeTokenSchema } from "./EvmNativeTok
 import { type EvmUniswapV2TokenIdSpecs, EvmUniswapV2TokenSchema } from "./EvmUniswapV2Token"
 import { type SolNativeToken, SolNativeTokenSchema } from "./SolNativeToken"
 import { type SolSplToken, SolSplTokenSchema } from "./SolSplToken"
+import { type SolToken2022Token, SolToken2022TokenSchema } from "./SolToken2022Token"
 import { SubAssetsTokenSchema, type SubAssetTokenIdSpecs } from "./SubstrateAssetsToken"
 import { type SubDTaoTokenIdSpecs, SubDTaoTokenSchema } from "./SubstrateDTaoToken"
 import {
@@ -32,6 +33,7 @@ export const TokenSchemaBase = z.discriminatedUnion("type", [
   SubHydrationTokenSchema,
   SolNativeTokenSchema,
   SolSplTokenSchema,
+  SolToken2022TokenSchema,
 ])
 
 export const TokenTypeSchema = z.enum(TokenSchemaBase.options.map((t) => t.shape.type.value))
@@ -68,7 +70,9 @@ export type TokenIdSpecs<T extends TokenType> = T extends "evm-erc20"
                       ? SolNativeToken
                       : T extends "sol-spl"
                         ? SolSplToken
-                        : never
+                        : T extends "sol-token2022"
+                          ? SolToken2022Token
+                          : never
 
 // transform to control in which order properties are output as JSON when parsed from schema
 export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {

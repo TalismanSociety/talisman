@@ -429,6 +429,12 @@ export class BalancesProvider {
           })
           .pipe(
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
+            tap((results) => {
+              if (results.dynamicTokens?.length) {
+                // register missing tokens in the chaindata provider
+                this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
+              }
+            }),
             map(
               (results): BalancesResult => ({
                 status: "live",

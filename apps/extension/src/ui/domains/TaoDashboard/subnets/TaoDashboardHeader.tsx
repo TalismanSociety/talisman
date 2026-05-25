@@ -2,6 +2,7 @@ import { Balances } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -16,7 +17,14 @@ export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
 
   const tao = useToken(subNativeTokenId(BITTENSOR_NETWORK_ID))
-  const ownedBalances = useBalances("owned")
+  const allBalances = useBalances("all-except-contacts")
+  const { selectedAccounts } = usePortfolioNavigation()
+
+  const selectedBalances = useMemo(() => {
+    const selectedAccountIds = new Set(selectedAccounts.map((a) => a.address))
+    return allBalances.find((b) => selectedAccountIds.has(b.address))
+  }, [allBalances, selectedAccounts])
+
   const {
     data: taoPrice,
     isLoading: isTaoPriceLoading,
@@ -30,17 +38,17 @@ export const TaoDashboardHeader = () => {
 
   const taoBalances = useMemo(() => {
     if (!tao) return new Balances([])
-    return ownedBalances.find({ tokenId: tao.id })
-  }, [ownedBalances, tao])
+    return selectedBalances.find({ tokenId: tao.id })
+  }, [selectedBalances, tao])
 
   // Pre-filter to only dTAO balances on Bittensor so that totalStakedPlanck
   // does not recalculate when unrelated balances change.
   const dtaoBalances = useMemo(
     () =>
-      ownedBalances.find(
+      selectedBalances.find(
         (b) => b.token?.type === "substrate-dtao" && b.token.networkId === BITTENSOR_NETWORK_ID
       ),
-    [ownedBalances]
+    [selectedBalances]
   )
 
   const isInitializing = useIsBalanceInitializing()
@@ -77,13 +85,19 @@ export const TaoDashboardHeader = () => {
     return BigInt(Math.round(stakedTao * 1e9))
   }, [dtaoBalances])
 
+  // Total TAO portfolio: native TAO (free + reserved) + alpha tokens converted to TAO
+  const totalPortfolioPlanck = useMemo(
+    () => taoBalances.sum.planck.total + totalStakedPlanck,
+    [taoBalances, totalStakedPlanck]
+  )
+
   return (
-    <div className="flex h-64 items-center rounded-[12px] border border-grey-800 px-3 py-4">
+    <div className="flex h-64 items-center rounded-[12px] border border-grey-800 px-8 py-4">
       <div className="flex shrink-0 items-center gap-2 px-1.5">
         <BalanceStat
           label={t("Total Tao Balance")}
           tokenId={tao?.id}
-          planck={taoBalances.sum.planck.transferable}
+          planck={totalPortfolioPlanck}
           isLoading={isInitializing}
           isRefetching={isBalanceRefetching}
           className="pr-8"
@@ -98,8 +112,8 @@ export const TaoDashboardHeader = () => {
         />
       </div>
 
-      <div className="flex flex-1 items-center justify-end border-grey-800 border-l px-8 py-3">
-        <div className="flex items-start gap-28">
+      <div className="flex flex-1 items-center justify-end">
+        <div className="flex items-start gap-28 border-grey-800 border-l py-3 pl-28">
           <MarketStat
             label={t("Total Market Cap")}
             value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
@@ -140,15 +154,15 @@ const BalanceStat: FC<{
       <span className="text-body-secondary text-xs">{label}</span>
       <div className="px-1">
         {isLoading ? (
-          <Skeleton className="h-[38px] w-48" />
+          <Skeleton className="h-9.5 w-48" />
         ) : (
           <span
             className={cn(
-              "whitespace-nowrap font-semibold text-[32px] text-body leading-base",
+              "whitespace-nowrap font-semibold text-body text-xl leading-base",
               isRefetching && "animate-pulse"
             )}
           >
-            <TokensAndFiat tokenId={tokenId} planck={planck} noFiat noCountUp noSymbol isBalance />
+            <TokensAndFiat tokenId={tokenId} planck={planck} noFiat noSymbol isBalance />
             {" τ"}
           </span>
         )}
@@ -173,11 +187,11 @@ const MarketStat: FC<{
     <div className="flex flex-col gap-2">
       <span className="text-body-secondary text-xs">{label}</span>
       {showSkeleton ? (
-        <Skeleton className="h-[29px] w-32" />
+        <Skeleton className="h-7.25 w-32" />
       ) : (
         <span
           className={cn(
-            "font-semibold text-[24px] text-body leading-base",
+            "font-semibold text-body text-lg leading-base",
             isRefetching && "animate-pulse"
           )}
         >

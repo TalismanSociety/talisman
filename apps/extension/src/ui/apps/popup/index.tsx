@@ -10,6 +10,8 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { AddProxyModal } from "@ui/domains/AccountProxies/AddProxy/AddProxyModal"
+import { ManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/ManageProxyModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
@@ -112,6 +114,8 @@ const Popup = () => {
         <YieldxyzEnterPositionModal />
         <YieldxyzExitPositionModal />
         <YieldxyzManagePositionModal />
+        <AddProxyModal />
+        <ManageProxyModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

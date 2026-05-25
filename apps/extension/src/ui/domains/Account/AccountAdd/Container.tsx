@@ -8,6 +8,7 @@ import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state/chaindata"
 import {
+  BittensorCircleBorderedLogo,
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
   SolanaCircleLogo,
@@ -174,7 +175,7 @@ function ImportAccountMethodButtons() {
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
         subtitle={t("Ethereum, Substrate, and Solana accounts")}
-        networks={["ethereum", "polkadot", "solana"]}
+        networks={["ethereum", "polkadot", "solana", "bittensor"]}
         to={`/accounts/add/mnemonic`}
       />
       <AccountCreateMethodButton
@@ -186,7 +187,7 @@ function ImportAccountMethodButtons() {
       <AccountCreateMethodButton
         title={t("Import via JSON")}
         subtitle={t("Import your Polkadot.{js} file")}
-        networks={["polkadot"]}
+        networks={["polkadot", "bittensor"]}
         to={`/accounts/add/json`}
       />
     </>
@@ -206,20 +207,20 @@ function ConnectAccountMethodButtons() {
             ? t("Ethereum, Substrate or Solana accounts")
             : t("Not supported on this browser")
         }
-        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana"] : []}
+        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana", "bittensor"] : []}
         disabled={!isLedgerCapable}
         to={`/accounts/add/ledger`}
       />
       <AccountCreateMethodButton
         title={t("Connect Polkadot Vault")}
         subtitle={t("Or Parity Signer (Legacy)")}
-        networks={["polkadot"]}
+        networks={["polkadot", "bittensor"]}
         to={`/accounts/add/qr`}
       />
       <AccountCreateMethodButton
         title={t("Connect Signet")}
         subtitle={!IS_FIREFOX ? t("Connect your Signet Vault") : t("Not supported on this browser")}
-        networks={!IS_FIREFOX ? ["polkadot"] : []}
+        networks={!IS_FIREFOX ? ["polkadot", "bittensor"] : []}
         disabled={IS_FIREFOX}
         to={`/accounts/add/signet`}
       />
@@ -354,6 +355,7 @@ const networkChoices = {
   polkadot: <PolkadotCircleBorderedLogo />,
   ethereum: <EthereumCircleBorderedLogo />,
   solana: <SolanaCircleLogo />,
+  bittensor: <BittensorCircleBorderedLogo />,
 }
 function AccountCreateMethodButton({
   title,
@@ -364,7 +366,7 @@ function AccountCreateMethodButton({
 }: {
   title: ReactNode
   subtitle: ReactNode
-  networks?: Array<"ethereum" | "polkadot" | "solana">
+  networks?: Array<"ethereum" | "polkadot" | "solana" | "bittensor">
   disabled?: boolean
   to?: string
 }) {
@@ -383,9 +385,9 @@ function AccountCreateMethodButton({
       )}
     >
       <span className="w-full border-grey-800 border-b pb-3 text-start">{title}</span>
-      <span className="flex items-center gap-2 pr-8 text-body-secondary text-sm">
+      <span className="flex items-center gap-2 pr-8 text-body-secondary text-lg">
         {networks?.map((network, i) => (
-          <span key={network} className={cn(i + 1 < networks.length && "-mr-4")}>
+          <span key={network} className={cn(i + 1 < networks.length && "-mr-6")}>
             {networkChoices[network]}
           </span>
         ))}
