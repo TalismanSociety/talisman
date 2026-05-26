@@ -1,4 +1,4 @@
-import type { Token, TokenId } from "@talismn/chaindata-provider"
+import { isTokenInTypes, type Token, type TokenId } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -105,6 +105,16 @@ const TokenPickerModalContent: FC<{
     [filterByTab, allowedTokenIds]
   )
 
+  const assetIdSet = useMemo(() => new Set(filteredTokenIds), [filteredTokenIds])
+
+  // Also show any EVM ERC-20 or Solana SPL/Token2022 token so users can attempt
+  // LI.FI routes for tokens not in the default list (e.g. RWAs).
+  const tokenFilter = useCallback(
+    (token: Token) =>
+      assetIdSet.has(token.id) || isTokenInTypes(token, ["evm-erc20", "sol-spl", "sol-token2022"]),
+    [assetIdSet]
+  )
+
   const handleSelectTokenId = useCallback(
     (tokenId: string, acceptWarning?: boolean) => {
       if (!acceptWarning && !acknowledgedTokenIds.has(tokenId)) {
@@ -125,9 +135,6 @@ const TokenPickerModalContent: FC<{
     },
     [safeTokens, tokensMap, onSelect, acknowledgedTokenIds, acknowledgeToken]
   )
-
-  const assetIdSet = useMemo(() => new Set(filteredTokenIds), [filteredTokenIds])
-  const tokenFilter = useCallback((token: Token) => assetIdSet.has(token.id), [assetIdSet])
 
   return (
     <WizardModalDialog
@@ -190,11 +197,11 @@ const OpenSelectorButton = ({
 
   return (
     <BaseButton onClick={onClick}>
-      <div className="relative h-[32px] w-[32px] shrink-0">
+      <div className="relative size-16 shrink-0">
         <TokenLogo tokenId={token.id} className="size-16" />
         <NetworkLogo
           networkId={token.networkId} // TODO remove cast once we have a correctly typed networkId
-          className="absolute -right-[2px] -bottom-[2px] h-[14px] w-[14px] rounded-full border-[1.5px] border-grey-900"
+          className="absolute -right-1 -bottom-1 size-7 rounded-full border-[1.5px] border-grey-900"
         />
       </div>
       <div className="flex flex-col items-start gap-1 overflow-hidden">
