@@ -39,6 +39,8 @@ if ! command -v docker &> /dev/null; then
   exit 2
 fi
 
+log_info "Docker context: $(docker context show 2>/dev/null || echo "default")"
+
 # Find zip files
 if [[ $# -ge 2 ]]; then
   FIREFOX_ZIP="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
