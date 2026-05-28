@@ -1,10 +1,17 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import { VersionedTransaction } from "@solana/web3.js"
-import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type {
+  EthNetworkId,
+  EvmErc20Token,
+  SolNetworkId,
+  SolSplToken,
+  SolToken2022Token,
+} from "@talismn/chaindata-provider"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
+  isTokenCustom,
   solNativeTokenId,
   solSplTokenId,
   solToken2022TokenId,
@@ -117,6 +124,63 @@ const assetsByTokenId = new Map<string, LifiInternalAsset>()
 const resolveAsset = (tokenId: string): LifiInternalAsset | undefined =>
   assetsByTokenId.get(tokenId)
 
+const lifiTokenFromErc20 = (token: EvmErc20Token): lifiSdk.Token => ({
+  address: token.contractAddress,
+  chainId: Number(token.networkId),
+  decimals: token.decimals,
+  symbol: token.symbol,
+  name: token.name ?? token.symbol,
+  logoURI: token.logo,
+  priceUSD: "0",
+})
+
+const lifiAssetFromErc20 = (token: EvmErc20Token): LifiInternalAsset => ({
+  tokenId: token.id,
+  chainId: token.networkId,
+  contractAddress: token.contractAddress,
+  decimals: token.decimals,
+  symbol: token.symbol,
+  lifiToken: lifiTokenFromErc20(token),
+})
+
+type SolToken = SolSplToken | SolToken2022Token
+
+const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset> => ({
+  tokenId: token.id,
+  chainId: SOLANA_NETWORK_ID,
+  contractAddress: token.mintAddress,
+  decimals: token.decimals,
+  symbol: token.symbol,
+  lifiToken: {
+    address: token.mintAddress,
+    chainId: await getLifiSolanaChainId(),
+    decimals: token.decimals,
+    symbol: token.symbol,
+    name: token.name ?? token.symbol,
+    logoURI: token.logo,
+    priceUSD: "0",
+  },
+})
+
+const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset | null> => {
+  const cached = resolveAsset(tokenId)
+  if (cached) return cached
+
+  const token = await firstValueFrom(getToken$(tokenId))
+  if (token?.type === "evm-erc20") {
+    const asset = lifiAssetFromErc20(token as EvmErc20Token)
+    assetsByTokenId.set(tokenId, asset)
+    return asset
+  }
+  if (token?.type === "sol-spl" || token?.type === "sol-token2022") {
+    const asset = await lifiAssetFromSolToken(token as SolToken)
+    assetsByTokenId.set(tokenId, asset)
+    return asset
+  }
+
+  return null
+}
+
 const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]> => {
   if (!cachedAssetsPromise) {
     cachedAssetsPromise = fetchLifiAssets().catch((err) => {
@@ -203,22 +267,56 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
       })
     })
 
+  const lifiEvmChainIds = new Set(Object.keys(allSdkTokens).map((chainId) => Number(chainId)))
+  const resultByTokenId = new Map(result.map((asset) => [asset.tokenId, asset]))
+
+  for (const token of Object.values(knownEvmTokens)) {
+    if (token.type !== "evm-erc20") continue
+    if (!isTokenCustom(token)) continue
+    if (!knownEvmNetworks[token.networkId]) continue
+    if (!lifiEvmChainIds.has(Number(token.networkId))) continue
+    if (resultByTokenId.has(token.id)) continue
+
+    resultByTokenId.set(token.id, lifiAssetFromErc20(token))
+  }
+
+  const assets = [...resultByTokenId.values()]
+
   // Populate the lookup cache
   assetsByTokenId.clear()
-  for (const asset of result) assetsByTokenId.set(asset.tokenId, asset)
+  for (const asset of assets) assetsByTokenId.set(asset.tokenId, asset)
 
-  return result
+  return assets
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
+// Include all EVM ERC-20 and Solana SPL/Token2022 tokens on LI.FI-supported chains
+// in addition to the standard list. LI.FI can route tokens not in its default list
+// when there is on-chain liquidity, allowing users to swap RWA and other niche tokens.
+const getLifiAssetIds = async (signal: AbortSignal): Promise<string[]> => {
   const assets = await getLifiAssets(signal)
-  return [...new Set(assets.map((a) => a.tokenId))]
+  const ids = new Set(assets.map((a) => a.tokenId))
+
+  const lifiChainIds = new Set(assets.map((a) => a.chainId))
+
+  const allEvmTokens = await firstValueFrom(getTokensMap$({ platform: "ethereum" }))
+  for (const token of Object.values(allEvmTokens)) {
+    if (token.type === "evm-erc20" && lifiChainIds.has(token.networkId)) ids.add(token.id)
+  }
+
+  if (lifiChainIds.has(SOLANA_NETWORK_ID)) {
+    const allSolTokens = await firstValueFrom(getTokensMap$({ platform: "solana" }))
+    for (const token of Object.values(allSolTokens)) {
+      if (token.type === "sol-spl" || token.type === "sol-token2022") ids.add(token.id)
+    }
+  }
+
+  return [...ids]
 }
 
-const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
-  const assets = await getLifiAssets(signal)
-  return [...new Set(assets.map((a) => a.tokenId))]
-}
+const getFromAssets = async (signal: AbortSignal): Promise<string[]> => getLifiAssetIds(signal)
+
+const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Promise<string[]> =>
+  getLifiAssetIds(signal)
 
 const getRoutes = async (
   params: QuoteParams,
@@ -229,8 +327,12 @@ const getRoutes = async (
     if (!fromTokenId || !toTokenId || !fromAmount) return null
     if (signal.aborted) return null
 
-    const fromAsset = resolveAsset(fromTokenId)
-    const toAsset = resolveAsset(toTokenId)
+    // For tokens not in LI.FI's default list, construct the asset
+    // from chaindata so the contract address is passed directly to the SDK.
+    const [fromAsset, toAsset] = await Promise.all([
+      resolveOrBuildAsset(fromTokenId),
+      resolveOrBuildAsset(toTokenId),
+    ])
     if (!fromAsset || !toAsset) return null
 
     const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"

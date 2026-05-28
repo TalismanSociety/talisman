@@ -410,7 +410,13 @@ const TokensList: FC<TokensListProps> = ({
 
     return networkFilteredTokens
       .filter((t) =>
-        matchesSearchTerms(searchTerms, [t.token.symbol, t.token.name, t.chainNameSearch])
+        matchesSearchTerms(searchTerms, [
+          t.token.symbol,
+          t.token.name,
+          t.chainNameSearch,
+          "contractAddress" in t.token ? t.token.contractAddress : undefined,
+          "mintAddress" in t.token ? t.token.mintAddress : undefined,
+        ])
       )
       .sort((t1, t2) => {
         const s1 = t1.token.symbol.toLowerCase()

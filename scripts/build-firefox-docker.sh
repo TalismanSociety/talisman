@@ -40,6 +40,8 @@ if ! command -v docker &> /dev/null; then
   exit 1
 fi
 
+log_info "Docker context: $(docker context show 2>/dev/null || echo "default")"
+
 IMAGE_NAME="talisman-firefox-builder"
 TEMP_DIR="$PROJECT_ROOT/.firefox-build-temp"
 
