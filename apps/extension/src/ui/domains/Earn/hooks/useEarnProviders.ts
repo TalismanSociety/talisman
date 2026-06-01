@@ -1,7 +1,7 @@
 import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { useMemo } from "react"
 
-import { useSeekStakingOpportunity } from "../seek/useSeekStaking"
+import { SEEK_PROVIDER_LOGO_URI, useSeekStakingOpportunity } from "../seek/useSeekStaking"
 import type { EarnProvider } from "../types"
 
 export const useEarnProviders = () => {
@@ -24,7 +24,7 @@ export const useEarnProviders = () => {
         id: "seek",
         name: "SEEK",
         type: "custom",
-        logoURI: null,
+        logoURI: SEEK_PROVIDER_LOGO_URI,
       })
 
     return providers.sort((a, b) => a.name.localeCompare(b.name))

@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import type { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { planckToTokens } from "@talismn/util"
@@ -9,6 +10,7 @@ import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -19,6 +21,7 @@ import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, erc20Abi } from "viem"
+import { removeSeekStakingPositionCache } from "./seekStakingCache"
 import {
   SEEK_STAKING_QUERY_KEY,
   useSeekErc20Allowance,
@@ -70,6 +73,14 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
   const accountOptions = useMemo(
     () => accounts.filter((account) => isAccountPlatformEthereum(account)),
     [accounts]
+  )
+  const { selectedAccounts } = usePortfolioNavigation()
+  const selectedEthereumAccountAddresses = useMemo(
+    () =>
+      selectedAccounts
+        .filter((account) => isAccountOwned(account) && isAccountPlatformEthereum(account))
+        .map((account) => account.address),
+    [selectedAccounts]
   )
 
   useEffect(() => {
@@ -195,7 +206,18 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
 
   const handleSubmit = useCallback(
     (hash: string) => {
-      queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
+      if (!isApproval && address) {
+        void removeSeekStakingPositionCache({
+          networkId: config.networkId as EthNetworkId,
+          stakingContractAddress: config.stakingContractAddress,
+          address,
+          accountAddresses: selectedEthereumAccountAddresses,
+        })
+          .catch((err) => log.error("Error removing persisted SEEK staking cache", err))
+          .finally(() => queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] }))
+      } else {
+        queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
+      }
       notify({
         title: isApproval ? t("Approval submitted") : t("Transaction submitted"),
         subtitle: hash,
@@ -203,7 +225,16 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
       })
       if (!isApproval) close()
     },
-    [close, isApproval, queryClient, t]
+    [
+      address,
+      close,
+      config.networkId,
+      config.stakingContractAddress,
+      isApproval,
+      queryClient,
+      selectedEthereumAccountAddresses,
+      t,
+    ]
   )
 
   if (!token) return null

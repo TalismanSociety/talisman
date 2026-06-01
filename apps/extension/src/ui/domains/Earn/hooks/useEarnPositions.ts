@@ -16,6 +16,7 @@ import { calcDefiItemValueUsd, resolveDefiTokenId } from "../defi/useDefiItemVal
 import {
   getSeekPositionValueUsd,
   SEEK_PROVIDER_ID,
+  SEEK_PROVIDER_LOGO_URI,
   useSeekStakingConfig,
   useSeekStakingPositions,
 } from "../seek/useSeekStaking"
@@ -197,7 +198,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
         id: `${SEEK_PROVIDER_ID}-${position.address}`,
         address: position.address,
         networkId: seekConfig.networkId,
-        logoUrl: null,
+        logoUrl: SEEK_PROVIDER_LOGO_URI,
         providerName: "SEEK",
         title: "SEEK Staking",
         type: "staking",

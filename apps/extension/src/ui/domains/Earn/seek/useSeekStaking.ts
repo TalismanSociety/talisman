@@ -11,9 +11,16 @@ import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 import { erc20Abi, formatUnits } from "viem"
 
+import {
+  createSeekStakingMetadataPersister,
+  createSeekStakingPositionPersister,
+  createSeekStakingPositionsPersister,
+} from "./seekStakingCache"
+
 const SECONDS_IN_YEAR = 31_557_600n
 
 export const SEEK_PROVIDER_ID = "seek" as const
+export const SEEK_PROVIDER_LOGO_URI = "/favicon.svg"
 export const SEEK_STAKING_QUERY_KEY = "seek-staking"
 
 export type SeekStakingConfig = {
@@ -22,15 +29,18 @@ export type SeekStakingConfig = {
   stakingContractAddress: `0x${string}`
 }
 
-export type SeekStakingMetadata = {
-  stakeTokenId: TokenId
-  rewardTokenId: TokenId
+export type SeekStakingRawMetadata = {
   stakeTokenAddress: `0x${string}`
   rewardTokenAddress: `0x${string}`
   rewardRate: bigint
   totalStaked: bigint
   minStakeAmount: bigint
   withdrawDelay: bigint
+}
+
+export type SeekStakingMetadata = SeekStakingRawMetadata & {
+  stakeTokenId: TokenId
+  rewardTokenId: TokenId
   apr: number | null
 }
 
@@ -108,15 +118,19 @@ export const useSeekStakingMetadata = () => {
   const publicClient = usePublicClient(config.networkId)
   const tokensMap = useTokensMap()
   const tokenRatesMap = useTokenRatesMap()
+  const metadataPersister = useMemo(
+    () => createSeekStakingMetadataPersister(config.networkId, config.stakingContractAddress),
+    [config.networkId, config.stakingContractAddress]
+  )
 
-  return useQuery({
+  const rawMetadataQuery = useQuery({
     queryKey: [
       SEEK_STAKING_QUERY_KEY,
       "metadata",
       publicClient?.uid,
       config.stakingContractAddress,
     ],
-    queryFn: async (): Promise<SeekStakingMetadata | null> => {
+    queryFn: async (): Promise<SeekStakingRawMetadata | null> => {
       if (!publicClient) return null
 
       const [
@@ -159,33 +173,45 @@ export const useSeekStakingMetadata = () => {
         }),
       ])
 
-      const stakeTokenId = getSeekErc20TokenId(config.networkId, stakeTokenAddress)
-      const rewardTokenId = getSeekErc20TokenId(config.networkId, rewardTokenAddress)
-      const stakeToken = (tokensMap[stakeTokenId] as Token | undefined) ?? null
-      const rewardToken = (tokensMap[rewardTokenId] as Token | undefined) ?? null
-
       return {
-        stakeTokenId,
-        rewardTokenId,
         stakeTokenAddress,
         rewardTokenAddress,
         rewardRate,
         totalStaked,
         minStakeAmount,
         withdrawDelay: BigInt(withdrawDelay),
-        apr: calcSeekApr({
-          rewardRate,
-          totalStaked,
-          stakeToken,
-          rewardToken,
-          stakeTokenUsd: tokenRatesMap[stakeTokenId]?.usd?.price,
-          rewardTokenUsd: tokenRatesMap[rewardTokenId]?.usd?.price,
-        }),
       }
     },
     enabled: !!publicClient,
+    persister: metadataPersister,
     refetchInterval: 5 * 60 * 1000,
   })
+
+  const metadata = useMemo((): SeekStakingMetadata | null => {
+    const data = rawMetadataQuery.data
+    if (!data) return null
+
+    const stakeTokenId = getSeekErc20TokenId(config.networkId, data.stakeTokenAddress)
+    const rewardTokenId = getSeekErc20TokenId(config.networkId, data.rewardTokenAddress)
+    const stakeToken = (tokensMap[stakeTokenId] as Token | undefined) ?? null
+    const rewardToken = (tokensMap[rewardTokenId] as Token | undefined) ?? null
+
+    return {
+      ...data,
+      stakeTokenId,
+      rewardTokenId,
+      apr: calcSeekApr({
+        rewardRate: data.rewardRate,
+        totalStaked: data.totalStaked,
+        stakeToken,
+        rewardToken,
+        stakeTokenUsd: tokenRatesMap[stakeTokenId]?.usd?.price,
+        rewardTokenUsd: tokenRatesMap[rewardTokenId]?.usd?.price,
+      }),
+    }
+  }, [config.networkId, rawMetadataQuery.data, tokenRatesMap, tokensMap])
+
+  return { ...rawMetadataQuery, data: metadata }
 }
 
 export const useSeekStakingOpportunity = () => {
@@ -203,7 +229,7 @@ export const useSeekStakingOpportunity = () => {
               id: "seek-staking",
               providerId: SEEK_PROVIDER_ID,
               providerName: "SEEK",
-              providerLogoURI: null,
+              providerLogoURI: SEEK_PROVIDER_LOGO_URI,
               tokenId: config.tokenId,
               networkId: config.networkId,
               title: "SEEK Staking",
@@ -267,8 +293,20 @@ export const useSeekStakingPositions = () => {
   const selectedEthereumAccounts = useSelectedEthereumAccounts()
 
   const accountAddresses = useMemo(
-    () => selectedEthereumAccounts.map((account) => account.address as `0x${string}`),
+    () =>
+      selectedEthereumAccounts
+        .map((account) => account.address.toLowerCase() as `0x${string}`)
+        .sort((a, b) => a.localeCompare(b)),
     [selectedEthereumAccounts]
+  )
+  const positionsPersister = useMemo(
+    () =>
+      createSeekStakingPositionsPersister(
+        config.networkId,
+        config.stakingContractAddress,
+        accountAddresses
+      ),
+    [accountAddresses, config.networkId, config.stakingContractAddress]
   )
 
   return useQuery({
@@ -292,6 +330,7 @@ export const useSeekStakingPositions = () => {
       )
     },
     enabled: !!publicClient,
+    persister: positionsPersister,
     refetchInterval: 30_000,
   })
 }
@@ -299,6 +338,17 @@ export const useSeekStakingPositions = () => {
 export const useSeekStakingPosition = (address: string | undefined) => {
   const config = useSeekStakingConfig()
   const publicClient = usePublicClient(config.networkId)
+  const positionPersister = useMemo(
+    () =>
+      address
+        ? createSeekStakingPositionPersister(
+            config.networkId,
+            config.stakingContractAddress,
+            address
+          )
+        : undefined,
+    [address, config.networkId, config.stakingContractAddress]
+  )
 
   return useQuery({
     queryKey: [
@@ -317,6 +367,7 @@ export const useSeekStakingPosition = (address: string | undefined) => {
       )
     },
     enabled: !!publicClient && !!address,
+    persister: positionPersister,
     refetchInterval: 30_000,
   })
 }
