@@ -2,6 +2,7 @@ import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Balance, Balances } from "@talismn/balances"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
+import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -22,6 +23,7 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
   const remoteConfig = useRemoteConfig()
   const { open: openBittensorModal } = useBittensorBondModal()
   const { open: openUnbondModal } = useUnbondModal()
+  const { open: openSeekStakingModal } = useSeekStakingModal()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const allBalances = useBalances("owned")
   const seekStaked = useGetSeekStaked()
@@ -100,7 +102,10 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
           break
         }
         case "seek": {
-          window.open(remoteConfig.seek.unstakingUrl, "_blank", "noopener")
+          openSeekStakingModal({
+            action: "requestWithdrawal",
+            address: bestUnbondableBalance.address,
+          })
           break
         }
         case "nominationPool": {
@@ -114,8 +119,8 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       bestUnbondableBalance,
       genericEvent,
       openBittensorModal,
-      remoteConfig.seek.unstakingUrl,
       openUnbondModal,
+      openSeekStakingModal,
       unbondableBalances.length,
     ]
   )

@@ -13,6 +13,12 @@ import { keyBy } from "lodash-es"
 import { useEffect, useMemo, useRef } from "react"
 
 import { calcDefiItemValueUsd, resolveDefiTokenId } from "../defi/useDefiItemValueUsd"
+import {
+  getSeekPositionValueUsd,
+  SEEK_PROVIDER_ID,
+  useSeekStakingConfig,
+  useSeekStakingPositions,
+} from "../seek/useSeekStaking"
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
 
 export type EarnPositionDisplayToken = {
@@ -160,7 +166,9 @@ const mapDefiPosition = (
 export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   const { status: yieldStatus, data: yieldPositions } = useYieldxyzPositionsEnhanced()
   const { status: defiStatus, data: defiPositions } = useDefiPositions()
+  const { status: seekStatus, data: seekPositions } = useSeekStakingPositions()
   const { data: providers } = useYieldxyzProviders()
+  const seekConfig = useSeekStakingConfig()
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
@@ -183,6 +191,35 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
       if (mapped) yieldMapped.push(mapped)
     }
 
+    const seekMapped: EarnPosition[] = (seekPositions ?? []).map((position) => {
+      const token = tokensMap[seekConfig.tokenId]
+      return {
+        id: `${SEEK_PROVIDER_ID}-${position.address}`,
+        address: position.address,
+        networkId: seekConfig.networkId,
+        logoUrl: null,
+        providerName: "SEEK",
+        title: "SEEK Staking",
+        type: "staking",
+        isReadOnly: false,
+        displayTokens: [
+          {
+            tokenId: seekConfig.tokenId,
+            symbol: token?.symbol ?? "SEEK",
+            logoUrl: token?.logo ?? null,
+          },
+        ],
+        totalAmountUsd: getSeekPositionValueUsd(
+          position,
+          token ?? null,
+          tokenRatesMap[seekConfig.tokenId]?.usd?.price
+        ),
+        detailUrl: `/earn/positions/seek/${encodeURIComponent(position.address)}`,
+        tokenIds: [seekConfig.tokenId],
+        searchTerms: ["SEEK", "SEEK Staking", "staking"],
+      }
+    })
+
     // Build defi positions
     const defiMapped: EarnPosition[] = []
     for (const dp of defiPositions ?? []) {
@@ -190,27 +227,28 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
       if (mapped) defiMapped.push(mapped)
     }
 
-    // Exclude defi positions that duplicate a yieldxyz position.
+    // Exclude defi positions that duplicate an actionable provider position.
     // A defi position is considered a duplicate when it shares the same wallet address,
     // network, and at least one overlapping input token with a yieldxyz position.
     // yieldxyz positions are preferred because they are actionable (not read-only).
-    const yieldTokensByAddressNetwork = new Map<string, Set<string>>()
-    for (const yp of yieldMapped) {
+    const actionableTokensByAddressNetwork = new Map<string, Set<string>>()
+    for (const yp of [...yieldMapped, ...seekMapped]) {
       const key = `${yp.address.toLowerCase()}|${yp.networkId}`
-      const existing = yieldTokensByAddressNetwork.get(key)
+      const existing = actionableTokensByAddressNetwork.get(key)
       if (existing) {
         for (const tid of yp.tokenIds) existing.add(tid)
       } else {
-        yieldTokensByAddressNetwork.set(key, new Set(yp.tokenIds))
+        actionableTokensByAddressNetwork.set(key, new Set(yp.tokenIds))
       }
     }
 
     const excluded: EarnPosition[] = []
-    result.push(...yieldMapped)
+    result.push(...yieldMapped, ...seekMapped)
     for (const dp of defiMapped) {
       const key = `${dp.address.toLowerCase()}|${dp.networkId}`
-      const yieldTokenIds = yieldTokensByAddressNetwork.get(key)
-      const isDuplicate = yieldTokenIds != null && dp.tokenIds.some((tid) => yieldTokenIds.has(tid))
+      const actionableTokenIds = actionableTokensByAddressNetwork.get(key)
+      const isDuplicate =
+        actionableTokenIds != null && dp.tokenIds.some((tid) => actionableTokenIds.has(tid))
       if (isDuplicate) excluded.push(dp)
       else result.push(dp)
     }
@@ -218,8 +256,10 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     return { positions: result, excludedDefi: excluded }
   }, [
     yieldPositions,
+    seekPositions,
     defiPositions,
     providerByKey,
+    seekConfig,
     getYieldxyzTokenId,
     tokensMap,
     networksMap,
@@ -233,7 +273,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     hasLoggedRef.current = true
     // biome-ignore lint/suspicious/noConsole: development-only logging
     console.info(
-      "[EarnPositions] Excluded %d defi positions that duplicate yieldxyz positions:",
+      "[EarnPositions] Excluded %d defi positions that duplicate actionable earn positions:",
       excludedDefi.length,
       excludedDefi.map((p) => ({
         id: p.id,
@@ -246,8 +286,9 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   }, [excludedDefi])
 
   // Show cached data immediately — only report "loading" when no positions are available
-  const isAnyLoading = yieldStatus === "loading" || defiStatus === "loading"
-  const isAnyError = yieldStatus === "error" || defiStatus === "error"
+  const isAnyLoading =
+    yieldStatus === "loading" || defiStatus === "loading" || seekStatus === "pending"
+  const isAnyError = yieldStatus === "error" || defiStatus === "error" || seekStatus === "error"
 
   const status =
     positions.length > 0 ? "success" : isAnyLoading ? "loading" : isAnyError ? "error" : "success"
