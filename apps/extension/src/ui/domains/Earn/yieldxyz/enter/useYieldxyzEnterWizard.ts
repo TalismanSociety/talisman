@@ -72,7 +72,12 @@ const useYieldxyzEnterWizardProvider = ({
   const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzEnterModal()
   const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
-  const [initialStep] = useState(() => initializeState(stateInit).step)
+  // back-navigation floor: when a picker token is provided the wizard was entered via the product
+  // picker, so "product" stays reachable (even when a productId is preset, e.g. from the unified
+  // deposit picker) — preserving the ability to go back and change product.
+  const [initialStep] = useState<YieldxyzEnterWizardState["step"]>(() =>
+    stateInit?.pickerTokenId ? "product" : initializeState(stateInit).step
+  )
   const { status, data: product } = useYieldxyzProduct(state.productId)
   const { getYieldxyzToken } = useGetYieldxyzToken()
 

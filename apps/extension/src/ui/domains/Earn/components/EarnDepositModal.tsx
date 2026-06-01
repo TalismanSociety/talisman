@@ -1,15 +1,16 @@
-import { ChevronRightIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
 import { useYieldxyzEnterModal } from "@ui/domains/Earn/yieldxyz/enter/useYieldxyzEnterModal"
 import { useToken } from "@ui/state/chaindata"
-import { type FC, useCallback, useEffect } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useEarnDepositModal } from "../hooks/useEarnDepositModal"
+import type { YieldxyzEarnOpportunity } from "../hooks/useEarnOpportunitiesByTokenId"
 import type { EarnOpportunity } from "../types"
+import { EarnOpportunityPicker } from "./EarnOpportunityPicker"
 
 export const EarnDepositModal: FC = () => {
   const { t } = useTranslation()
@@ -21,59 +22,40 @@ export const EarnDepositModal: FC = () => {
   const openOpportunity = useCallback(
     (opportunity: EarnOpportunity) => {
       close()
-      const productId = (opportunity as { product?: { id: string } }).product?.id
-      if (opportunity.providerId === "yieldxyz" && productId)
+      if (opportunity.system === "yieldxyz")
         yieldxyzModal.open({
           pickerTokenId: args?.tokenId,
           discoverOnly: args?.discoverOnly,
-          productId,
+          productId: (opportunity as YieldxyzEarnOpportunity).product.id,
         })
-      else if (opportunity.providerId === "seek") seekModal.open({ action: "stake" })
+      else if (opportunity.system === "seek") seekModal.open({ action: "stake" })
     },
     [args?.discoverOnly, args?.tokenId, close, seekModal, yieldxyzModal]
   )
 
-  useEffect(() => {
-    if (!isOpen || !args || args.opportunities.length !== 1) return
-    openOpportunity(args.opportunities[0])
-  }, [args, isOpen, openOpportunity])
+  const disabledReason = useMemo(
+    () =>
+      args?.discoverOnly
+        ? t("You do not have any {{symbol}}", { symbol: token?.symbol ?? "" })
+        : null,
+    [args?.discoverOnly, token?.symbol, t]
+  )
 
   return (
-    <Modal
-      containerId="main"
-      isOpen={isOpen && (args?.opportunities.length ?? 0) > 1}
-      onDismiss={close}
-    >
+    <Modal containerId="main" isOpen={isOpen && !!args?.opportunities.length} onDismiss={close}>
       <PopupSizeModalContainer id="earn-provider-modal">
-        <div className="flex h-full flex-col overflow-hidden">
-          <div className="flex h-28 shrink-0 items-center gap-4 px-8 font-bold text-lg">
-            <TokenLogo tokenId={args?.tokenId ?? ""} className="size-12" />
-            <div>{t("Choose an {{symbol}} opportunity", { symbol: token?.symbol ?? "" })}</div>
-          </div>
-          <div className="flex flex-col gap-4 overflow-y-auto p-8 pt-0">
-            {args?.opportunities.map((opportunity) => (
-              <button
-                key={opportunity.id}
-                type="button"
-                className="flex h-24 items-center gap-4 rounded bg-grey-850 px-6 text-left hover:bg-grey-750"
-                onClick={() => openOpportunity(opportunity)}
-              >
-                <div className="flex grow flex-col gap-1 overflow-hidden">
-                  <div className="truncate font-bold text-body">{opportunity.title}</div>
-                  <div className="truncate text-body-secondary text-sm">
-                    {opportunity.providerName} · {opportunity.type}
-                  </div>
-                </div>
-                <div className="shrink-0 font-bold text-primary text-sm">
-                  {opportunity.apr == null
-                    ? t("Variable")
-                    : t("{{apr}}%", { apr: opportunity.apr.toFixed(2) })}
-                </div>
-                <ChevronRightIcon className="size-8 shrink-0 text-body-secondary" />
-              </button>
-            ))}
-          </div>
-        </div>
+        <WizardModalDialog
+          className="size-full border-none"
+          title={t("Select Yield Opportunity")}
+          contentClassName="p-0"
+          onCloseClick={close}
+        >
+          <EarnOpportunityPicker
+            opportunities={args?.opportunities ?? []}
+            onSelect={openOpportunity}
+            disabledReason={disabledReason}
+          />
+        </WizardModalDialog>
       </PopupSizeModalContainer>
     </Modal>
   )

@@ -72,6 +72,7 @@ export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & 
           if (!acc[inputTokenId]) acc[inputTokenId] = []
           acc[inputTokenId].push({
             id: `yieldxyz-${product.id}`,
+            system: "yieldxyz",
             providerId: product.providerId,
             providerName: product.providerId,
             providerLogoURI: null,

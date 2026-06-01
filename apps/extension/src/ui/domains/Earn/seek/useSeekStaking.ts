@@ -227,6 +227,7 @@ export const useSeekStakingOpportunity = () => {
         token && selectedEthereumAccounts.length
           ? {
               id: "seek-staking",
+              system: "seek",
               providerId: SEEK_PROVIDER_ID,
               providerName: "SEEK",
               providerLogoURI: SEEK_PROVIDER_LOGO_URI,

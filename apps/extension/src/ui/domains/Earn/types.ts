@@ -1,10 +1,13 @@
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 
-export type EarnProviderId = "yieldxyz" | "seek"
+// the system that handles an opportunity (yield.xyz aggregator vs the seek staking integration).
+// note: "provider" is reserved for the protocol *within* yield.xyz (morpho, aave, …), so the
+// yield.xyz-vs-seek distinction is a "system".
+export type EarnSystemId = "yieldxyz" | "seek"
 
 export type EarnProvider = {
-  id: EarnProviderId | string
+  id: string
   name: string
   type: "protocol" | "custom"
   logoURI: string | null
@@ -12,7 +15,8 @@ export type EarnProvider = {
 
 export type EarnOpportunity = {
   id: string
-  providerId: EarnProviderId | string
+  system: EarnSystemId
+  providerId: string
   providerName: string
   providerLogoURI: string | null
   tokenId: TokenId
