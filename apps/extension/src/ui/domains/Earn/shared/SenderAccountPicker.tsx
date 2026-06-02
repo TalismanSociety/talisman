@@ -3,6 +3,7 @@ import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { Balance, Balances } from "@talismn/balances"
 import { getNetworkGenesisHash, type Network, type Token } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -44,7 +45,10 @@ export const SenderAccountPicker: FC<{
     return allAccounts
       .filter((account) => isAccountCompatibleWithNetwork(network, account))
       .map((account): AccountOption => {
-        const balances = allBalances.find({ address: account.address, tokenId })
+        const balances = allBalances.find(
+          (balance) =>
+            balance.tokenId === tokenId && isAddressEqual(balance.address, account.address)
+        )
         const disabled = allowZeroBalance ? false : !balances.sum.planck.transferable
         return {
           ...account,
@@ -111,7 +115,7 @@ const AccountsList: FC<{
         <AccountRow
           key={account.address}
           account={account}
-          selected={account.address === selected}
+          selected={!!selected && isAddressEqual(account.address, selected)}
           network={network}
           token={token}
           onClick={() => onSelect(account.address)}

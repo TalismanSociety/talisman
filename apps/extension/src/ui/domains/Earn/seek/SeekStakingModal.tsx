@@ -1,6 +1,8 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
+import type { Balances } from "@talismn/balances"
 import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useQueryClient } from "@tanstack/react-query"
@@ -12,11 +14,7 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
-import {
-  FormFieldSet,
-  FormFieldSetRow,
-  FormFieldSetSeparator,
-} from "@ui/domains/Earn/shared/FormFieldSet"
+import { FormFieldSet, FormFieldSetRow } from "@ui/domains/Earn/shared/FormFieldSet"
 import { SenderAccountPicker } from "@ui/domains/Earn/shared/SenderAccountPicker"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
@@ -65,6 +63,11 @@ const SEEK_STAKING_MODAL_CONTAINER_ID = "seek-staking-modal"
 const isAmountAction = (action: SeekStakingAction) =>
   action === "stake" || action === "requestWithdrawal"
 
+const getTransferableTokenBalance = (balances: Balances, address: string, tokenId: TokenId) =>
+  balances.find(
+    (balance) => balance.tokenId === tokenId && isAddressEqual(balance.address, address)
+  ).sum.planck.transferable
+
 export const SeekStakingModal: FC = () => {
   const { isOpen, close, args } = useSeekStakingModal()
 
@@ -109,10 +112,8 @@ const SeekStakingForm: FC<{
           if (!token)
             return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
 
-          const balanceA = balances.find({ address: a.address, tokenId: token.id }).sum.planck
-            .transferable
-          const balanceB = balances.find({ address: b.address, tokenId: token.id }).sum.planck
-            .transferable
+          const balanceA = getTransferableTokenBalance(balances, a.address, token.id)
+          const balanceB = getTransferableTokenBalance(balances, b.address, token.id)
 
           if (balanceA > balanceB) return -1
           if (balanceA < balanceB) return 1
@@ -145,10 +146,7 @@ const SeekStakingForm: FC<{
   const allowance = useSeekErc20Allowance(address, action === "stake" ? amount : null)
 
   const transferable = useMemo(
-    () =>
-      address && token
-        ? (balances.find({ address, tokenId: token.id }).each[0]?.transferable.planck ?? 0n)
-        : 0n,
+    () => (address && token ? getTransferableTokenBalance(balances, address, token.id) : 0n),
     [address, balances, token]
   )
 
@@ -330,12 +328,14 @@ const SeekStakingForm: FC<{
           </div>
         ) : (
           <div className="flex grow items-center">
-            <SeekPositionSummary
-              token={token}
-              staked={position.data?.staked ?? 0n}
-              earned={position.data?.earned ?? 0n}
-              pending={position.data?.pendingWithdrawal.amount ?? 0n}
-            />
+            {action === "cancelWithdrawal" ? (
+              <SeekPendingUnstakeSummary
+                token={token}
+                pending={position.data?.pendingWithdrawal.amount ?? 0n}
+              />
+            ) : (
+              <SeekRewardsSummary token={token} earned={position.data?.earned ?? 0n} />
+            )}
           </div>
         )}
 
@@ -346,7 +346,6 @@ const SeekStakingForm: FC<{
             networkId={config.networkId}
             available={maxAmount}
             staked={position.data?.staked ?? 0n}
-            earned={position.data?.earned ?? 0n}
             pending={position.data?.pendingWithdrawal.amount ?? 0n}
           />
           <SeekNetworkFeeDetails
@@ -465,12 +464,17 @@ const SeekPositionDetails: FC<{
   networkId: EthNetworkId
   available: bigint
   staked: bigint
-  earned: bigint
   pending: bigint
-}> = ({ action, token, networkId, available, staked, earned, pending }) => {
+}> = ({ action, token, networkId, available, staked, pending }) => {
   const { t } = useTranslation()
-  const primaryBalanceLabel = action === "stake" ? t("Available Balance") : t("Position Balance")
-  const primaryBalance = action === "stake" ? available : staked
+  const isCancelWithdrawal = action === "cancelWithdrawal"
+  const primaryBalanceLabel =
+    action === "stake"
+      ? t("Available Balance")
+      : isCancelWithdrawal
+        ? t("Pending Unstake")
+        : t("Position Balance")
+  const primaryBalance = action === "stake" ? available : isCancelWithdrawal ? pending : staked
 
   return (
     <FormFieldSet>
@@ -483,35 +487,15 @@ const SeekPositionDetails: FC<{
           tokensClassName="text-body"
         />
       </FormFieldSetRow>
-      <FormFieldSetRow label={t("Claimable Rewards")} variant="xs">
-        <TokensAndFiat
-          tokenId={token.id}
-          planck={earned.toString()}
-          noCountUp
-          isBalance
-          tokensClassName="text-body"
-        />
-      </FormFieldSetRow>
-      {pending > 0n && (
-        <FormFieldSetRow label={t("Pending Unstake")} variant="xs">
-          <TokensAndFiat
-            tokenId={token.id}
-            planck={pending.toString()}
-            noCountUp
-            isBalance
-            tokensClassName="text-body"
-          />
-        </FormFieldSetRow>
-      )}
+
       <FormFieldSetRow label={t("Network")} variant="xs">
         <NetworkDisplay networkId={networkId} />
       </FormFieldSetRow>
-      <FormFieldSetSeparator />
       <FormFieldSetRow label={t("DeFi Product")} variant="xs">
         {t("SEEK Staking")}
       </FormFieldSetRow>
       <FormFieldSetRow label={t("Provider")} variant="xs">
-        {t("SEEK")}
+        {t("Talisman")}
       </FormFieldSetRow>
     </FormFieldSet>
   )
@@ -540,6 +524,7 @@ const SeekNetworkFeeDetails: FC<{
             tx={transaction}
             setCustomSettings={ethTx.setCustomSettings}
             onChange={ethTx.setPriority}
+            className="h-8 rounded-xs text-body"
           />
         ) : (
           <FeePlaceholder isLoading={ethTx.isLoading} />
@@ -598,19 +583,25 @@ const TransactionError: FC<{ error?: string; errorDetails?: string }> = ({
   )
 }
 
-const SeekPositionSummary: FC<{
-  token: Token
-  staked: bigint
-  earned: bigint
-  pending: bigint
-}> = ({ token, staked, earned, pending }) => {
+const SeekPendingUnstakeSummary: FC<{ token: Token; pending: bigint }> = ({ token, pending }) => {
   const { t } = useTranslation()
 
   return (
-    <div className="grid w-full grid-cols-3 gap-4 rounded bg-grey-850 p-8 text-sm">
-      <SummaryValue label={t("Staked")} tokenId={token.id} planck={staked} />
-      <SummaryValue label={t("Rewards")} tokenId={token.id} planck={earned} />
-      <SummaryValue label={t("Pending")} tokenId={token.id} planck={pending} />
+    <div className="w-full rounded p-8 text-center text-sm">
+      <SummaryValue label={t("Pending Unstake")} tokenId={token.id} planck={pending} />
+    </div>
+  )
+}
+
+const SeekRewardsSummary: FC<{
+  token: Token
+  earned: bigint
+}> = ({ token, earned }) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="w-full rounded p-8 text-center text-sm">
+      <SummaryValue label={t("Claimable")} tokenId={token.id} planck={earned} />
     </div>
   )
 }

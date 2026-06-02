@@ -45,6 +45,7 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
   const position = useSeekStakingPosition(address)
   const account = useAccountByAddress(address)
   const isOwned = isAccountOwned(account)
+  const actionAddress = account?.address ?? address
   const tokenUsd = tokenRatesMap[config.tokenId]?.usd?.price
   const totalUsd = useMemo(
     () => (position.data ? getSeekPositionValueUsd(position.data, token, tokenUsd) : 0),
@@ -57,7 +58,7 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
     <div className="flex w-full flex-col gap-6 overflow-hidden">
       <SeekNavHeader address={address} totalUsd={totalUsd} />
       <SeekPositionHeader
-        address={address}
+        address={actionAddress}
         token={token}
         position={position.data ?? null}
         isOwned={isOwned}
@@ -90,7 +91,11 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
           isLoading={position.isFetching}
         />
       </SeekBalanceGroup>
-      <SeekPositionActions address={address} position={position.data ?? null} isOwned={isOwned} />
+      <SeekPositionActions
+        address={actionAddress}
+        position={position.data ?? null}
+        isOwned={isOwned}
+      />
     </div>
   )
 }

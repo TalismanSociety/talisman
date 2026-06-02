@@ -296,8 +296,8 @@ export const useSeekStakingPositions = () => {
   const accountAddresses = useMemo(
     () =>
       selectedEthereumAccounts
-        .map((account) => account.address.toLowerCase() as `0x${string}`)
-        .sort((a, b) => a.localeCompare(b)),
+        .map((account) => account.address as `0x${string}`)
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
     [selectedEthereumAccounts]
   )
   const positionsPersister = useMemo(
