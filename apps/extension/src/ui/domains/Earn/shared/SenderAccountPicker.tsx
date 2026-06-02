@@ -28,8 +28,9 @@ type AccountOption = Account & {
 export const SenderAccountPicker: FC<{
   tokenId: string
   address: string | null
+  allowZeroBalance?: boolean
   onSelect: (address: string) => void
-}> = ({ address, tokenId, onSelect }) => {
+}> = ({ address, tokenId, allowZeroBalance, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const allAccounts = useAccounts("owned")
@@ -44,7 +45,7 @@ export const SenderAccountPicker: FC<{
       .filter((account) => isAccountCompatibleWithNetwork(network, account))
       .map((account): AccountOption => {
         const balances = allBalances.find({ address: account.address, tokenId })
-        const disabled = !balances.sum.planck.transferable
+        const disabled = allowZeroBalance ? false : !balances.sum.planck.transferable
         return {
           ...account,
           balances,
@@ -64,7 +65,7 @@ export const SenderAccountPicker: FC<{
 
         return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
       })
-  }, [token, network, allAccounts, allBalances, tokenId])
+  }, [token, network, allAccounts, allBalances, tokenId, allowZeroBalance])
 
   const filteredAccounts = useMemo(() => {
     const ls = search.trim().toLowerCase()

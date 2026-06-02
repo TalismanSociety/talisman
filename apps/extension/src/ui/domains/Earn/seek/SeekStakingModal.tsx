@@ -1,22 +1,35 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
-import type { EthNetworkId, Token } from "@talismn/chaindata-provider"
+import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import { AlertCircleIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useQueryClient } from "@tanstack/react-query"
-import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { notify } from "@ui/components/Notifications"
+import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
+import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
+import {
+  FormFieldSet,
+  FormFieldSetRow,
+  FormFieldSetSeparator,
+} from "@ui/domains/Earn/shared/FormFieldSet"
+import { SenderAccountPicker } from "@ui/domains/Earn/shared/SenderAccountPicker"
+import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
+import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
-import { useToken } from "@ui/state/chaindata"
-import { useTokenRatesMap } from "@ui/state/tokenRates"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -39,6 +52,16 @@ const ACTION_LABELS: Record<SeekStakingAction, string> = {
   cancelWithdrawal: "Cancel Unstake",
 }
 
+const MODAL_TITLES: Record<SeekStakingAction, string> = {
+  stake: "Enter Position",
+  requestWithdrawal: "Exit Position",
+  completeWithdrawal: "Complete Unstake",
+  getReward: "Claim Rewards",
+  cancelWithdrawal: "Cancel Unstake",
+}
+
+const SEEK_STAKING_MODAL_CONTAINER_ID = "seek-staking-modal"
+
 const isAmountAction = (action: SeekStakingAction) =>
   action === "stake" || action === "requestWithdrawal"
 
@@ -47,32 +70,56 @@ export const SeekStakingModal: FC = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <PopupSizeModalContainer id="seek-staking-modal">
-        {args && <SeekStakingForm action={args.action} initialAddress={args.address} />}
+      <PopupSizeModalContainer id={SEEK_STAKING_MODAL_CONTAINER_ID}>
+        {args && (
+          <SeekStakingForm action={args.action} initialAddress={args.address} isOpen={isOpen} />
+        )}
       </PopupSizeModalContainer>
     </Modal>
   )
 }
 
-const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }> = ({
-  action,
-  initialAddress,
-}) => {
+const SeekStakingForm: FC<{
+  action: SeekStakingAction
+  initialAddress?: string
+  isOpen: boolean
+}> = ({ action, initialAddress, isOpen }) => {
   const { t } = useTranslation()
   const { close } = useSeekStakingModal()
   const config = useSeekStakingConfig()
   const token = useToken(config.tokenId)
-  const tokenRatesMap = useTokenRatesMap()
-  const priceUsd = tokenRatesMap[config.tokenId]?.usd?.price ?? null
+  const network = useNetworkById(config.networkId, "ethereum")
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
   const [address, setAddress] = useState<string | null>(initialAddress ?? null)
   const [amount, setAmount] = useState<bigint | null>(null)
+  const [submittedHash, setSubmittedHash] = useState<string | null>(null)
+  const {
+    isOpen: isAccountPickerOpen,
+    open: openAccountPicker,
+    close: closeAccountPicker,
+  } = useOpenClose()
   const queryClient = useQueryClient()
 
   const accountOptions = useMemo(
-    () => accounts.filter((account) => isAccountPlatformEthereum(account)),
-    [accounts]
+    () =>
+      accounts
+        .filter((account) => isAccountPlatformEthereum(account))
+        .sort((a, b) => {
+          if (!token)
+            return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
+
+          const balanceA = balances.find({ address: a.address, tokenId: token.id }).sum.planck
+            .transferable
+          const balanceB = balances.find({ address: b.address, tokenId: token.id }).sum.planck
+            .transferable
+
+          if (balanceA > balanceB) return -1
+          if (balanceA < balanceB) return 1
+
+          return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
+        }),
+    [accounts, balances, token]
   )
   const { selectedAccounts } = usePortfolioNavigation()
   const selectedEthereumAccountAddresses = useMemo(
@@ -87,6 +134,10 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
     if (address || !accountOptions.length) return
     setAddress(accountOptions[0].address)
   }, [accountOptions, address])
+
+  useEffect(() => {
+    if (isOpen) setSubmittedHash(null)
+  }, [isOpen])
 
   const account = useAccountByAddress(address ?? undefined)
   const position = useSeekStakingPosition(address ?? undefined)
@@ -108,6 +159,16 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
   )
 
   const handleMaxClick = useCallback(() => setAmount(maxAmount), [maxAmount])
+  const handleReplacementComplete = useCallback((args: ReplacementCallbackArgs) => {
+    setSubmittedHash(args.txId)
+  }, [])
+  const handleSelectAccount = useCallback(
+    (nextAddress: string) => {
+      setAddress(nextAddress)
+      closeAccountPicker()
+    },
+    [closeAccountPicker]
+  )
 
   const error = useMemo(() => {
     if (!token || !account || !isAccountOwned(account) || !isAccountPlatformEthereum(account))
@@ -218,63 +279,85 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
       } else {
         queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
       }
-      notify({
-        title: isApproval ? t("Approval submitted") : t("Transaction submitted"),
-        subtitle: hash,
-        type: "success",
-      })
-      if (!isApproval) close()
+      setSubmittedHash(hash)
     },
     [
       address,
-      close,
       config.networkId,
       config.stakingContractAddress,
       isApproval,
       queryClient,
       selectedEthereumAccountAddresses,
-      t,
     ]
   )
 
   if (!token) return null
 
+  if (submittedHash)
+    return (
+      <div className="size-full p-12 pt-24">
+        <TxProgress
+          hash={submittedHash}
+          networkIdOrHash={config.networkId}
+          onClose={close}
+          onReplacementComplete={handleReplacementComplete}
+        />
+      </div>
+    )
+
   const submitLabel = isApproval ? t("Approve SEEK") : t(ACTION_LABELS[action])
+  const modalTitle = t(MODAL_TITLES[action])
+  const displayError = ethTx.error ?? (!isAmountAction(action) ? (error ?? undefined) : undefined)
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex h-24 shrink-0 items-center px-8 font-bold text-lg">
-        {t(ACTION_LABELS[action])}
-      </div>
-      <div className="flex grow flex-col gap-6 overflow-y-auto p-8 pt-0">
-        <AccountSelect
-          address={address}
-          disabled={!!initialAddress}
-          accounts={accountOptions}
-          onChange={setAddress}
-        />
-        <SeekPositionSummary
-          token={token}
-          staked={position.data?.staked ?? 0n}
-          earned={position.data?.earned ?? 0n}
-          pending={position.data?.pendingWithdrawal.amount ?? 0n}
-        />
-        {isAmountAction(action) && (
-          <div className="h-60 rounded bg-black-secondary p-4">
-            <GenericAmountEdit
+    <WizardModalDialog className="size-full border-none" title={modalTitle} onCloseClick={close}>
+      <div className="flex size-full flex-col gap-8 overflow-hidden">
+        <FormFieldSet>
+          <FormFieldSetRow label={t("Account")} className="h-[2em]">
+            <SeekAccountPillButton address={address} onClick={openAccountPicker} />
+          </FormFieldSetRow>
+        </FormFieldSet>
+
+        {isAmountAction(action) ? (
+          <div className="grow">
+            <AmountEdit
+              tokenId={token.id}
               value={amount}
-              decimals={token.decimals}
-              symbol={token.symbol}
-              logo={token.logo}
-              priceUsd={priceUsd}
               error={error}
               onValueChanged={setAmount}
               onMaxClick={handleMaxClick}
             />
           </div>
+        ) : (
+          <div className="flex grow items-center">
+            <SeekPositionSummary
+              token={token}
+              staked={position.data?.staked ?? 0n}
+              earned={position.data?.earned ?? 0n}
+              pending={position.data?.pendingWithdrawal.amount ?? 0n}
+            />
+          </div>
         )}
+
+        <div className="flex w-full flex-col gap-4">
+          <SeekPositionDetails
+            action={action}
+            token={token}
+            networkId={config.networkId}
+            available={maxAmount}
+            staked={position.data?.staked ?? 0n}
+            earned={position.data?.earned ?? 0n}
+            pending={position.data?.pendingWithdrawal.amount ?? 0n}
+          />
+          <SeekNetworkFeeDetails
+            ethTx={ethTx}
+            feeTokenId={network?.nativeTokenId}
+            containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
+          />
+        </div>
+
         {action === "completeWithdrawal" && isCompleteLocked && (
-          <div className="rounded bg-black-secondary p-6 text-body-secondary text-sm">
+          <div className="rounded bg-grey-850 p-6 text-body-secondary text-sm">
             {t("Your unstake is still locked until {{date}}", {
               date: new Date(
                 Number(position.data?.pendingWithdrawal.unlockTimestamp ?? 0n) * 1000
@@ -282,17 +365,11 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
             })}
           </div>
         )}
-        {ethTx.error && (
-          <div className="rounded bg-brand-orange/10 p-4 text-brand-orange text-sm">
-            {ethTx.error}
-          </div>
-        )}
-      </div>
-      <div className="flex shrink-0 gap-4 border-grey-800 border-t p-8">
-        <Button onClick={close} className="w-1/3">
-          {t("Cancel")}
-        </Button>
+
+        <TransactionError error={displayError} errorDetails={ethTx.errorDetails} />
+
         <TxSubmitButton
+          containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
           tx={
             ethTx.transaction
               ? {
@@ -303,40 +380,221 @@ const SeekStakingForm: FC<{ action: SeekStakingAction; initialAddress?: string }
               : null
           }
           label={submitLabel}
-          disabled={!!error || isCompleteLocked || !!ethTx.error}
+          className="w-full"
+          disabled={!!error || isCompleteLocked || !!ethTx.error || !ethTx.transaction}
           isProcessing={ethTx.isLoading || allowance.isLoading}
           onSubmit={handleSubmit}
         />
       </div>
+
+      <SeekAccountPickerModal
+        isOpen={isAccountPickerOpen}
+        address={address}
+        tokenId={token.id}
+        allowZeroBalance={action !== "stake"}
+        onBackClick={closeAccountPicker}
+        onCloseClick={close}
+        onSelect={handleSelectAccount}
+      />
+    </WizardModalDialog>
+  )
+}
+
+const SeekAccountPillButton: FC<{
+  address: string | null
+  disabled?: boolean
+  onClick: () => void
+}> = ({ address, disabled, onClick }) => {
+  const { t } = useTranslation()
+
+  if (address)
+    return (
+      <AccountPillButton
+        className={cn("w-full!", disabled && "pointer-events-none opacity-70")}
+        address={address}
+        onClick={disabled ? undefined : onClick}
+      />
+    )
+
+  return (
+    <PillButton disabled={disabled} className="h-16 w-full! px-4!" onClick={onClick} size="base">
+      {t("Select Account")}
+    </PillButton>
+  )
+}
+
+const SeekAccountPickerModal: FC<{
+  isOpen: boolean
+  address: string | null
+  tokenId: string
+  allowZeroBalance: boolean
+  onBackClick: () => void
+  onCloseClick: () => void
+  onSelect: (address: string) => void
+}> = ({ isOpen, address, tokenId, allowZeroBalance, onBackClick, onCloseClick, onSelect }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Modal
+      containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
+      isOpen={isOpen}
+      onDismiss={onBackClick}
+      className="relative z-50 size-full"
+    >
+      <WizardModalDialog
+        className="size-full border-none"
+        contentClassName="p-0"
+        title={t("Select Account")}
+        onBackClick={onBackClick}
+        onCloseClick={onCloseClick}
+      >
+        <SenderAccountPicker
+          address={address}
+          tokenId={tokenId}
+          allowZeroBalance={allowZeroBalance}
+          onSelect={onSelect}
+        />
+      </WizardModalDialog>
+    </Modal>
+  )
+}
+
+const SeekPositionDetails: FC<{
+  action: SeekStakingAction
+  token: Token
+  networkId: EthNetworkId
+  available: bigint
+  staked: bigint
+  earned: bigint
+  pending: bigint
+}> = ({ action, token, networkId, available, staked, earned, pending }) => {
+  const { t } = useTranslation()
+  const primaryBalanceLabel = action === "stake" ? t("Available Balance") : t("Position Balance")
+  const primaryBalance = action === "stake" ? available : staked
+
+  return (
+    <FormFieldSet>
+      <FormFieldSetRow label={primaryBalanceLabel} variant="xs">
+        <TokensAndFiat
+          tokenId={token.id}
+          planck={primaryBalance.toString()}
+          noCountUp
+          isBalance
+          tokensClassName="text-body"
+        />
+      </FormFieldSetRow>
+      <FormFieldSetRow label={t("Claimable Rewards")} variant="xs">
+        <TokensAndFiat
+          tokenId={token.id}
+          planck={earned.toString()}
+          noCountUp
+          isBalance
+          tokensClassName="text-body"
+        />
+      </FormFieldSetRow>
+      {pending > 0n && (
+        <FormFieldSetRow label={t("Pending Unstake")} variant="xs">
+          <TokensAndFiat
+            tokenId={token.id}
+            planck={pending.toString()}
+            noCountUp
+            isBalance
+            tokensClassName="text-body"
+          />
+        </FormFieldSetRow>
+      )}
+      <FormFieldSetRow label={t("Network")} variant="xs">
+        <NetworkDisplay networkId={networkId} />
+      </FormFieldSetRow>
+      <FormFieldSetSeparator />
+      <FormFieldSetRow label={t("DeFi Product")} variant="xs">
+        {t("SEEK Staking")}
+      </FormFieldSetRow>
+      <FormFieldSetRow label={t("Provider")} variant="xs">
+        {t("SEEK")}
+      </FormFieldSetRow>
+    </FormFieldSet>
+  )
+}
+
+const SeekNetworkFeeDetails: FC<{
+  ethTx: ReturnType<typeof useEthTransaction>
+  feeTokenId?: TokenId
+  containerId: string
+}> = ({ ethTx, feeTokenId, containerId }) => {
+  const { t } = useTranslation()
+  const { transaction, txDetails } = ethTx
+
+  return (
+    <FormFieldSet>
+      <FormFieldSetRow label={t("Transaction Priority")} variant="xs">
+        {!!transaction && !!txDetails && !!feeTokenId ? (
+          <EthFeeSelect
+            key={transaction.nonce?.toString() ?? "pending"}
+            tokenId={feeTokenId}
+            drawerContainerId={containerId}
+            gasSettingsByPriority={ethTx.gasSettingsByPriority}
+            priority={ethTx.priority}
+            txDetails={txDetails}
+            networkUsage={ethTx.networkUsage}
+            tx={transaction}
+            setCustomSettings={ethTx.setCustomSettings}
+            onChange={ethTx.setPriority}
+          />
+        ) : (
+          <FeePlaceholder isLoading={ethTx.isLoading} />
+        )}
+      </FormFieldSetRow>
+      <FormFieldSetRow label={t("Network Fee")} variant="xs" valueClassName="text-body-secondary">
+        {!!txDetails && !!feeTokenId ? (
+          <TokensAndFiat
+            planck={txDetails.estimatedFee.toString()}
+            tokenId={feeTokenId}
+            tokensClassName="text-body"
+          />
+        ) : (
+          <FeePlaceholder isLoading={ethTx.isLoading} />
+        )}
+      </FormFieldSetRow>
+    </FormFieldSet>
+  )
+}
+
+const FeePlaceholder: FC<{ isLoading?: boolean }> = ({ isLoading }) => {
+  const { t } = useTranslation()
+
+  return (
+    <div
+      className={cn(
+        "rounded-xs text-body-secondary",
+        isLoading && "animate-pulse bg-body-disabled text-body-disabled"
+      )}
+    >
+      {isLoading ? t("Estimating") : "-"}
     </div>
   )
 }
 
-const AccountSelect: FC<{
-  address: string | null
-  disabled?: boolean
-  accounts: ReturnType<typeof useAccounts>
-  onChange: (address: string) => void
-}> = ({ address, disabled, accounts, onChange }) => {
-  const { t } = useTranslation()
+const NetworkDisplay: FC<{ networkId: string }> = ({ networkId }) => (
+  <div className="flex w-full items-center gap-2 overflow-hidden text-body">
+    <NetworkLogo className="size-8" networkId={networkId} />
+    <NetworkName className="truncate" networkId={networkId} />
+  </div>
+)
 
+const TransactionError: FC<{ error?: string; errorDetails?: string }> = ({
+  error,
+  errorDetails,
+}) => {
   return (
-    <label className="flex flex-col gap-2 text-sm">
-      <span className="text-body-secondary">{t("Account")}</span>
-      <select
-        disabled={disabled}
-        value={address ?? ""}
-        className={cn("h-20 rounded bg-black-secondary px-4 text-body", disabled && "opacity-70")}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        {!address && <option value="">{t("Select account")}</option>}
-        {accounts.map((account) => (
-          <option key={account.address} value={account.address}>
-            {account.name ?? account.address}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={cn("text-center text-brand-orange text-xs", !error && "invisible")}>
+          <AlertCircleIcon className="inline-block align-text-top text-sm" /> {error}
+        </div>
+      </TooltipTrigger>
+      {!!errorDetails && <TooltipContent>{errorDetails}</TooltipContent>}
+    </Tooltip>
   )
 }
 
@@ -349,7 +607,7 @@ const SeekPositionSummary: FC<{
   const { t } = useTranslation()
 
   return (
-    <div className="grid grid-cols-3 gap-4 rounded bg-black-secondary p-6 text-sm">
+    <div className="grid w-full grid-cols-3 gap-4 rounded bg-grey-850 p-8 text-sm">
       <SummaryValue label={t("Staked")} tokenId={token.id} planck={staked} />
       <SummaryValue label={t("Rewards")} tokenId={token.id} planck={earned} />
       <SummaryValue label={t("Pending")} tokenId={token.id} planck={pending} />
