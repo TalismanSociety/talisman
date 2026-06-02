@@ -51,7 +51,10 @@ export const DerivationModeDropdown: FC<{
       optionClassName="h-28 bg-field px-12"
       value={current}
       renderItem={(o) => (
-        <div className="flex h-full items-center gap-6 overflow-hidden">
+        <div
+          className="flex h-full items-center gap-6 overflow-hidden"
+          data-testid="derivation-dropdown"
+        >
           <div>{o.label}</div>
           <div className="text-body-disabled">{o.extra}</div>
         </div>

@@ -72,7 +72,7 @@ export const AccountAddMnemonicAccountsForm = () => {
         text={t("Please select which account(s) you'd like to import.")}
       />
       <div className="flex flex-col gap-8">
-        <div className="h-105">
+        <div className="h-105" data-testid="multiple-accounts-selection-section">
           <DerivedFromMnemonicAccountPicker
             name={name}
             mnemonic={data.mnemonic}
@@ -82,6 +82,7 @@ export const AccountAddMnemonicAccountsForm = () => {
         </div>
         <div className="flex w-full justify-end">
           <Button
+            data-testid="account-add-mnemonic-import-button-multiple"
             className="w-[15rem]"
             primary
             disabled={!accountsToImport.length}
