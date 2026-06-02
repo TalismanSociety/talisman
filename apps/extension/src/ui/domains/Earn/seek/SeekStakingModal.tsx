@@ -180,7 +180,6 @@ const SeekStakingForm: FC<{
   const metadata = useSeekStakingMetadata()
   const rewardToken = useToken(metadata.data?.rewardTokenId)
   const allowance = useSeekErc20Allowance(address, action === "stake" ? amount : null)
-  const displayRewardToken = rewardToken ?? token
 
   const transferable = useMemo(
     () => (address && token ? getTransferableTokenBalance(balances, address, token.id) : 0n),
@@ -363,6 +362,9 @@ const SeekStakingForm: FC<{
       </div>
     )
 
+  // computed after the `if (!token) return null` guard above so `token` is non-null here, making
+  // the fallback (and thus the prop passed to SeekRewardsSummary) a non-nullable Token
+  const displayRewardToken = rewardToken ?? token
   const submitLabel = isApproval ? t("Approve SEEK") : getActionLabel(t, action)
   const modalTitle = getModalTitle(t, action)
   const displayError = ethTx.error ?? (!isAmountAction(action) ? (error ?? undefined) : undefined)
@@ -408,6 +410,7 @@ const SeekStakingForm: FC<{
             staked={position.data?.staked ?? 0n}
             pending={position.data?.pendingWithdrawal.amount ?? 0n}
             withdrawDelay={metadata.data?.withdrawDelay ?? null}
+            expectedApr={metadata.data?.apr}
           />
           <SeekNetworkFeeDetails
             ethTx={ethTx}
@@ -527,8 +530,10 @@ const SeekPositionDetails: FC<{
   staked: bigint
   pending: bigint
   withdrawDelay: bigint | null
-}> = ({ action, token, networkId, available, staked, pending, withdrawDelay }) => {
+  expectedApr?: number | null
+}> = ({ action, token, networkId, available, staked, pending, withdrawDelay, expectedApr }) => {
   const { t } = useTranslation()
+  const isStake = action === "stake"
   const isCancelWithdrawal = action === "cancelWithdrawal"
   const isRequestWithdrawal = action === "requestWithdrawal"
   const primaryBalanceLabel =
@@ -571,8 +576,39 @@ const SeekPositionDetails: FC<{
       <FormFieldSetRow label={t("Provider")} variant="xs">
         {t("Talisman")}
       </FormFieldSetRow>
+      {isStake && (
+        <FormFieldSetRow label={t("Expected Rewards")} variant="xs">
+          <SeekExpectedRewards apr={expectedApr} />
+        </FormFieldSetRow>
+      )}
+      {isStake && (
+        <FormFieldSetRow
+          label={t("Unlock Period")}
+          description={t(
+            "After requesting an unstake, this is how long the amount remains locked before you can complete the unstake."
+          )}
+          variant="xs"
+        >
+          <SeekUnstakingPeriod withdrawDelay={withdrawDelay} />
+        </FormFieldSetRow>
+      )}
     </FormFieldSet>
   )
+}
+
+const SeekExpectedRewards: FC<{ apr: number | null | undefined }> = ({ apr }) => {
+  const { t } = useTranslation()
+
+  return useMemo(() => {
+    if (apr == null) return t("N/A")
+
+    const percent = Intl.NumberFormat(undefined, {
+      style: "percent",
+      maximumFractionDigits: 1,
+    }).format(apr / 100)
+
+    return <div className="text-primary">{t("{{percent}} APR", { percent })}</div>
+  }, [apr, t])
 }
 
 const SeekUnstakingPeriod: FC<{ withdrawDelay: bigint | null }> = ({ withdrawDelay }) => {
