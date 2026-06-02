@@ -33,6 +33,7 @@ import { useTranslation } from "react-i18next"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
+import { YieldxyzProductYieldDisplay } from "../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderLogo } from "../components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../enter/useYieldxyzEnterModal"
 import { useYieldxyzExitModal } from "../exit/useYieldxyzExitModal"
@@ -107,6 +108,9 @@ const NavHeader: FC<{
               {!!product.mechanics?.type && (
                 <EarnTypeBadge className="shrink-0">{product.mechanics.type}</EarnTypeBadge>
               )}
+              <div className="shrink-0">
+                <YieldxyzProductYieldDisplay product={product} />
+              </div>
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>

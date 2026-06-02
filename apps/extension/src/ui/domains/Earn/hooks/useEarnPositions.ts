@@ -40,6 +40,8 @@ export type EarnPosition = {
   isReadOnly: boolean
   displayTokens: EarnPositionDisplayToken[]
   totalAmountUsd: number
+  apr: number | null // percentage value, e.g. 4.5 == 4.5%; null when unknown
+  rateType: string | null // "APR" | "APY"; null when apr is null
   detailUrl: string
   tokenIds: TokenId[]
   searchTerms: string[]
@@ -102,6 +104,8 @@ const mapYieldPosition = (
     isReadOnly: false,
     displayTokens,
     totalAmountUsd: yp.totalAmountUsd,
+    apr: yp.product.rewardRate.total * 100,
+    rateType: yp.product.rewardRate.rateType,
     detailUrl: `/earn/positions/yieldxyz/${encodeURIComponent(yp.yieldId)}/${encodeURIComponent(yp.address)}`,
     tokenIds,
     searchTerms: [
@@ -165,6 +169,8 @@ const mapDefiPosition = (
     isReadOnly: true,
     displayTokens,
     totalAmountUsd,
+    apr: null,
+    rateType: null,
     detailUrl: `/earn/positions/defi/${encodeURIComponent(dp.id)}`,
     tokenIds,
     searchTerms: [
@@ -190,6 +196,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   const tokenRatesMap = useTokenRatesMap()
 
   const seekRewardTokenId = seekMetadata?.rewardTokenId ?? null
+  const seekApr = seekMetadata?.apr ?? null
 
   const providerByKey = useMemo(() => keyBy(providers ?? [], (p) => p.id), [providers])
 
@@ -238,6 +245,8 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
             ? tokenRatesMap[seekRewardTokenId]?.usd?.price
             : tokenRatesMap[seekConfig.tokenId]?.usd?.price,
         }),
+        apr: seekApr,
+        rateType: seekApr === null ? null : "APR",
         detailUrl: `/earn/positions/seek/${encodeURIComponent(position.address)}`,
         tokenIds: [seekConfig.tokenId],
         searchTerms: ["SEEK", "SEEK Staking", "staking"],
@@ -292,6 +301,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     yieldPositions,
     seekPositions,
     seekRewardTokenId,
+    seekApr,
     defiPositions,
     providerByKey,
     seekConfig,

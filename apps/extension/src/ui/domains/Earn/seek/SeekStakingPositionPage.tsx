@@ -71,7 +71,7 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
 
   return (
     <div className="flex w-full flex-col gap-6 overflow-hidden">
-      <SeekNavHeader address={address} totalUsd={totalUsd} />
+      <SeekNavHeader address={address} totalUsd={totalUsd} apr={metadata?.apr ?? null} />
       <SeekPositionHeader
         address={actionAddress}
         token={token}
@@ -115,7 +115,11 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
   )
 }
 
-const SeekNavHeader: FC<{ address: string; totalUsd: number }> = ({ address, totalUsd }) => {
+const SeekNavHeader: FC<{ address: string; totalUsd: number; apr: number | null }> = ({
+  address,
+  totalUsd,
+  apr,
+}) => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
 
@@ -133,6 +137,16 @@ const SeekNavHeader: FC<{ address: string; totalUsd: number }> = ({ address, tot
               <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
                 {t("staking")}
               </EarnTypeBadge>
+              {apr !== null && (
+                <div className="shrink-0 text-primary">
+                  {t("{{percent}} APR", {
+                    percent: Intl.NumberFormat(undefined, {
+                      style: "percent",
+                      maximumFractionDigits: 1,
+                    }).format(apr / 100),
+                  })}
+                </div>
+              )}
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>
