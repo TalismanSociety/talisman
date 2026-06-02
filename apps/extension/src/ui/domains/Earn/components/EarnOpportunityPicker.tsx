@@ -80,7 +80,7 @@ const OpportunityRow: FC<{
             "flex h-14.5 w-full items-center gap-4 px-12 text-left text-sm",
             !disabled && "hover:bg-grey-750 focus:bg-grey-700",
             selected && "bg-grey-800 text-body-secondary",
-            "disabled:cursor-not-allowed disabled:opacity-50 disabled:[&_*]:pointer-events-none"
+            "disabled:cursor-not-allowed disabled:opacity-50 disabled:**:pointer-events-none"
           )}
         >
           {product ? (

@@ -29,7 +29,6 @@ export const YieldxyzEnterStepProduct: FC = () => {
             id: `yieldxyz-${product.id}`,
             system: "yieldxyz",
             providerId: product.providerId,
-            providerName: product.providerId,
             providerLogoURI: null,
             tokenId: pickerTokenId,
             networkId: pickerTokenId.split(":")[0],

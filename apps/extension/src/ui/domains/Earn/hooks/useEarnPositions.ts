@@ -1,7 +1,7 @@
 import { DEBUG } from "@common/constants"
 import type { DefiPosition } from "@core/domains/defi/exports"
 import type { TokenDto, YieldxyzProvider } from "@core/domains/earn/exports"
-import type { Network, NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import type { TokenRatesList } from "@talismn/token-rates"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
@@ -18,6 +18,7 @@ import {
   SEEK_PROVIDER_ID,
   SEEK_PROVIDER_LOGO_URI,
   useSeekStakingConfig,
+  useSeekStakingMetadata,
   useSeekStakingPositions,
 } from "../seek/useSeekStaking"
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
@@ -167,13 +168,16 @@ const mapDefiPosition = (
 export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   const { status: yieldStatus, data: yieldPositions } = useYieldxyzPositionsEnhanced()
   const { status: defiStatus, data: defiPositions } = useDefiPositions()
-  const { status: seekStatus, data: seekPositions } = useSeekStakingPositions()
+  const { data: seekPositions, isFetching: seekIsFetching } = useSeekStakingPositions()
   const { data: providers } = useYieldxyzProviders()
   const seekConfig = useSeekStakingConfig()
+  const { data: seekMetadata } = useSeekStakingMetadata()
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
   const tokenRatesMap = useTokenRatesMap()
+
+  const seekRewardTokenId = seekMetadata?.rewardTokenId ?? null
 
   const providerByKey = useMemo(() => keyBy(providers ?? [], (p) => p.id), [providers])
 
@@ -192,8 +196,12 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
       if (mapped) yieldMapped.push(mapped)
     }
 
+    const seekStakeToken = (tokensMap[seekConfig.tokenId] as Token | undefined) ?? null
+    const seekRewardToken = seekRewardTokenId
+      ? ((tokensMap[seekRewardTokenId] as Token | undefined) ?? null)
+      : seekStakeToken
     const seekMapped: EarnPosition[] = (seekPositions ?? []).map((position) => {
-      const token = tokensMap[seekConfig.tokenId]
+      const token = seekStakeToken
       return {
         id: `${SEEK_PROVIDER_ID}-${position.address}`,
         address: position.address,
@@ -210,11 +218,14 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
             logoUrl: token?.logo ?? null,
           },
         ],
-        totalAmountUsd: getSeekPositionValueUsd(
-          position,
-          token ?? null,
-          tokenRatesMap[seekConfig.tokenId]?.usd?.price
-        ),
+        totalAmountUsd: getSeekPositionValueUsd(position, {
+          stakeToken: seekStakeToken,
+          rewardToken: seekRewardToken,
+          stakeTokenUsd: tokenRatesMap[seekConfig.tokenId]?.usd?.price,
+          rewardTokenUsd: seekRewardTokenId
+            ? tokenRatesMap[seekRewardTokenId]?.usd?.price
+            : tokenRatesMap[seekConfig.tokenId]?.usd?.price,
+        }),
         detailUrl: `/earn/positions/seek/${encodeURIComponent(position.address)}`,
         tokenIds: [seekConfig.tokenId],
         searchTerms: ["SEEK", "SEEK Staking", "staking"],
@@ -258,6 +269,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   }, [
     yieldPositions,
     seekPositions,
+    seekRewardTokenId,
     defiPositions,
     providerByKey,
     seekConfig,
@@ -286,10 +298,15 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     )
   }, [excludedDefi])
 
-  // Show cached data immediately — only report "loading" when no positions are available
+  // Show cached data immediately — only report "loading" when no positions are available.
+  // SEEK is best-effort: count it as loading only while a fetch is genuinely in flight (a
+  // disabled SEEK query sits at react-query status "pending"/fetchStatus "idle" forever), and
+  // never let a SEEK read failure flip the whole positions list to "error".
   const isAnyLoading =
-    yieldStatus === "loading" || defiStatus === "loading" || seekStatus === "pending"
-  const isAnyError = yieldStatus === "error" || defiStatus === "error" || seekStatus === "error"
+    yieldStatus === "loading" ||
+    defiStatus === "loading" ||
+    (seekIsFetching && !seekPositions?.length)
+  const isAnyError = yieldStatus === "error" || defiStatus === "error"
 
   const status =
     positions.length > 0 ? "success" : isAnyLoading ? "loading" : isAnyError ? "error" : "success"

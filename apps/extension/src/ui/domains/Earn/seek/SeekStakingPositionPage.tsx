@@ -33,6 +33,7 @@ import {
   getSeekPositionValueUsd,
   SEEK_PROVIDER_LOGO_URI,
   useSeekStakingConfig,
+  useSeekStakingMetadata,
   useSeekStakingPosition,
 } from "./useSeekStaking"
 import { useSeekStakingModal } from "./useSeekStakingModal"
@@ -43,13 +44,27 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
   const token = useToken(config.tokenId)
   const tokenRatesMap = useTokenRatesMap()
   const position = useSeekStakingPosition(address)
+  const { data: metadata } = useSeekStakingMetadata()
   const account = useAccountByAddress(address)
   const isOwned = isAccountOwned(account)
   const actionAddress = account?.address ?? address
   const tokenUsd = tokenRatesMap[config.tokenId]?.usd?.price
+  // rewards are paid in the reward token, which can differ from the stake token
+  const rewardToken = useToken(metadata?.rewardTokenId)
+  const rewardTokenUsd = metadata?.rewardTokenId
+    ? tokenRatesMap[metadata.rewardTokenId]?.usd?.price
+    : tokenUsd
   const totalUsd = useMemo(
-    () => (position.data ? getSeekPositionValueUsd(position.data, token, tokenUsd) : 0),
-    [position.data, token, tokenUsd]
+    () =>
+      position.data
+        ? getSeekPositionValueUsd(position.data, {
+            stakeToken: token,
+            rewardToken: rewardToken ?? token,
+            stakeTokenUsd: tokenUsd,
+            rewardTokenUsd: rewardTokenUsd ?? tokenUsd,
+          })
+        : 0,
+    [position.data, token, rewardToken, tokenUsd, rewardTokenUsd]
   )
 
   if (!token) return null
@@ -85,8 +100,8 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
       <SeekBalanceGroup label={t("Rewards")}>
         <SeekBalanceRow
           label={t("Claimable")}
-          token={token}
-          tokenUsd={tokenUsd}
+          token={rewardToken ?? token}
+          tokenUsd={rewardTokenUsd}
           planck={position.data?.earned ?? 0n}
           isLoading={position.isFetching}
         />

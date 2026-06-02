@@ -29,6 +29,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useTransaction } from "@ui/state/transactions"
 import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -44,20 +45,37 @@ import {
 } from "./useSeekStaking"
 import { type SeekStakingAction, useSeekStakingModal } from "./useSeekStakingModal"
 
-const ACTION_LABELS: Record<SeekStakingAction, string> = {
-  stake: "Stake SEEK",
-  requestWithdrawal: "Request Unstake",
-  completeWithdrawal: "Complete Unstake",
-  getReward: "Claim Rewards",
-  cancelWithdrawal: "Cancel Unstake",
+type TFunc = ReturnType<typeof useTranslation>["t"]
+
+// Use literal t("...") calls (not t(map[action])) so i18next-parser can statically extract them.
+const getActionLabel = (t: TFunc, action: SeekStakingAction): string => {
+  switch (action) {
+    case "stake":
+      return t("Stake SEEK")
+    case "requestWithdrawal":
+      return t("Request Unstake")
+    case "completeWithdrawal":
+      return t("Complete Unstake")
+    case "getReward":
+      return t("Claim Rewards")
+    case "cancelWithdrawal":
+      return t("Cancel Unstake")
+  }
 }
 
-const MODAL_TITLES: Record<SeekStakingAction, string> = {
-  stake: "Enter Position",
-  requestWithdrawal: "Exit Position",
-  completeWithdrawal: "Complete Unstake",
-  getReward: "Claim Rewards",
-  cancelWithdrawal: "Cancel Unstake",
+const getModalTitle = (t: TFunc, action: SeekStakingAction): string => {
+  switch (action) {
+    case "stake":
+      return t("Enter Position")
+    case "requestWithdrawal":
+      return t("Exit Position")
+    case "completeWithdrawal":
+      return t("Complete Unstake")
+    case "getReward":
+      return t("Claim Rewards")
+    case "cancelWithdrawal":
+      return t("Cancel Unstake")
+  }
 }
 
 const SEEK_STAKING_MODAL_CONTAINER_ID = "seek-staking-modal"
@@ -99,6 +117,9 @@ const SeekStakingForm: FC<{
   const [address, setAddress] = useState<string | null>(initialAddress ?? null)
   const [amount, setAmount] = useState<bigint | null>(null)
   const [submittedHash, setSubmittedHash] = useState<string | null>(null)
+  // when an ERC-20 approval is in flight, we wait for it to confirm and then return to the form
+  // (rather than showing a terminal progress screen) so the user can stake without reopening
+  const [awaitingApproval, setAwaitingApproval] = useState(false)
   const {
     isOpen: isAccountPickerOpen,
     open: openAccountPicker,
@@ -133,13 +154,25 @@ const SeekStakingForm: FC<{
     [selectedAccounts]
   )
 
-  useEffect(() => {
-    if (address || !accountOptions.length) return
-    setAddress(accountOptions[0].address)
-  }, [accountOptions, address])
+  // default to the highest-balance *selected* ethereum account (the user reached this form from a
+  // selected-accounts context), falling back to the highest-balance owned account otherwise
+  const defaultAddress = useMemo(() => {
+    if (!accountOptions.length) return null
+    const selectedSet = new Set(selectedEthereumAccountAddresses.map((a) => a.toLowerCase()))
+    const preferred = accountOptions.find((acc) => selectedSet.has(acc.address.toLowerCase()))
+    return (preferred ?? accountOptions[0]).address
+  }, [accountOptions, selectedEthereumAccountAddresses])
 
   useEffect(() => {
-    if (isOpen) setSubmittedHash(null)
+    if (address || !defaultAddress) return
+    setAddress(defaultAddress)
+  }, [address, defaultAddress])
+
+  useEffect(() => {
+    if (isOpen) {
+      setSubmittedHash(null)
+      setAwaitingApproval(false)
+    }
   }, [isOpen])
 
   const account = useAccountByAddress(address ?? undefined)
@@ -279,6 +312,7 @@ const SeekStakingForm: FC<{
       } else {
         queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
       }
+      setAwaitingApproval(isApproval)
       setSubmittedHash(hash)
     },
     [
@@ -290,6 +324,16 @@ const SeekStakingForm: FC<{
       selectedEthereumAccountAddresses,
     ]
   )
+
+  // once the approval transaction confirms, refresh the allowance and return to the form so the
+  // submit button flips from "Approve SEEK" to "Stake SEEK" within the same modal session
+  const submittedTx = useTransaction(submittedHash ?? "")
+  useEffect(() => {
+    if (!awaitingApproval || submittedTx?.status !== "success") return
+    queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
+    setAwaitingApproval(false)
+    setSubmittedHash(null)
+  }, [awaitingApproval, queryClient, submittedTx?.status])
 
   if (!token) return null
 
@@ -305,8 +349,8 @@ const SeekStakingForm: FC<{
       </div>
     )
 
-  const submitLabel = isApproval ? t("Approve SEEK") : t(ACTION_LABELS[action])
-  const modalTitle = t(MODAL_TITLES[action])
+  const submitLabel = isApproval ? t("Approve SEEK") : getActionLabel(t, action)
+  const modalTitle = getModalTitle(t, action)
   const displayError = ethTx.error ?? (!isAmountAction(action) ? (error ?? undefined) : undefined)
 
   return (
@@ -384,7 +428,7 @@ const SeekStakingForm: FC<{
           label={submitLabel}
           className="w-full"
           disabled={!!error || isCompleteLocked || !!ethTx.error || !ethTx.transaction}
-          isProcessing={ethTx.isLoading || allowance.isLoading}
+          isProcessing={ethTx.isLoading || allowance.isFetching}
           onSubmit={handleSubmit}
         />
       </div>

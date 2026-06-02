@@ -74,7 +74,6 @@ export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & 
             id: `yieldxyz-${product.id}`,
             system: "yieldxyz",
             providerId: product.providerId,
-            providerName: product.providerId,
             providerLogoURI: null,
             tokenId: inputTokenId,
             networkId: inputTokenId.split(":")[0],
@@ -140,10 +139,13 @@ export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & 
     [allProducts, currency]
   )
 
+  // SEEK is an optional, best-effort system layered on top of yield.xyz: only treat it as
+  // loading while a fetch is genuinely in flight (a disabled SEEK query stays "pending"
+  // forever), and never let a SEEK read failure flip the whole Earn view to "error".
   const status =
-    products.status === "loading" || seekOpportunity.status === "pending"
+    products.status === "loading" || (seekOpportunity.isFetching && !seekOpportunity.data)
       ? "loading"
-      : products.status === "error" || seekOpportunity.status === "error"
+      : products.status === "error"
         ? "error"
         : "success"
 

@@ -30,10 +30,12 @@ export const useEarnProviders = () => {
     return providers.sort((a, b) => a.name.localeCompare(b.name))
   }, [seekOpportunity.data, yieldProviders.data])
 
+  // SEEK is best-effort: only block on a genuine in-flight fetch (a disabled SEEK query stays
+  // "pending" forever) and never let a SEEK read failure flip the provider list to "error".
   const status =
-    yieldProviders.status === "loading" || seekOpportunity.status === "pending"
+    yieldProviders.status === "loading" || (seekOpportunity.isFetching && !seekOpportunity.data)
       ? "loading"
-      : yieldProviders.status === "error" || seekOpportunity.status === "error"
+      : yieldProviders.status === "error"
         ? "error"
         : "success"
 

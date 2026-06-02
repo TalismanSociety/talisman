@@ -217,19 +217,21 @@ export const useSeekStakingMetadata = () => {
 export const useSeekStakingOpportunity = () => {
   const config = useSeekStakingConfig()
   const token = useToken(config.tokenId)
-  const { data: metadata, status } = useSeekStakingMetadata()
+  const { data: metadata, status, isFetching } = useSeekStakingMetadata()
   const selectedEthereumAccounts = useSelectedEthereumAccounts()
 
   return useMemo(
     () => ({
       status,
+      // exposed so consumers can treat SEEK as best-effort: only block on a genuine
+      // in-flight fetch, never on the disabled/idle "pending" react-query state.
+      isFetching,
       data:
         token && selectedEthereumAccounts.length
           ? {
               id: "seek-staking",
               system: "seek",
               providerId: SEEK_PROVIDER_ID,
-              providerName: "SEEK",
               providerLogoURI: SEEK_PROVIDER_LOGO_URI,
               tokenId: config.tokenId,
               networkId: config.networkId,
@@ -243,6 +245,7 @@ export const useSeekStakingOpportunity = () => {
     [
       config.networkId,
       config.tokenId,
+      isFetching,
       metadata?.apr,
       selectedEthereumAccounts.length,
       status,
@@ -401,10 +404,27 @@ export const useSeekErc20Allowance = (address: string | null, amount: bigint | n
 
 export const getSeekPositionValueUsd = (
   position: SeekAccountPosition,
-  token: Token | null,
-  usdPrice: number | undefined
+  {
+    stakeToken,
+    rewardToken,
+    stakeTokenUsd,
+    rewardTokenUsd,
+  }: {
+    stakeToken: Token | null
+    rewardToken: Token | null
+    stakeTokenUsd: number | undefined
+    rewardTokenUsd: number | undefined
+  }
 ) => {
-  if (!token || !usdPrice) return 0
-  const planck = position.staked + position.pendingWithdrawal.amount + position.earned
-  return Number(formatUnits(planck, token.decimals)) * usdPrice
+  // staked + pending unstake are denominated in the stake token, earned rewards in the
+  // reward token. They can differ (the contract exposes STAKE_TOKEN/REWARD_TOKEN separately),
+  // so value each leg with its own decimals + price.
+  let total = 0
+  if (stakeToken && stakeTokenUsd) {
+    const stakedPlanck = position.staked + position.pendingWithdrawal.amount
+    total += Number(formatUnits(stakedPlanck, stakeToken.decimals)) * stakeTokenUsd
+  }
+  if (rewardToken && rewardTokenUsd && position.earned > 0n)
+    total += Number(formatUnits(position.earned, rewardToken.decimals)) * rewardTokenUsd
+  return total
 }

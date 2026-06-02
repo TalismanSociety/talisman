@@ -17,7 +17,6 @@ export type EarnOpportunity = {
   id: string
   system: EarnSystemId
   providerId: string
-  providerName: string
   providerLogoURI: string | null
   tokenId: TokenId
   networkId: string
