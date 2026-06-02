@@ -145,10 +145,12 @@ const SeekStakingForm: FC<{
         }),
     [accounts, balances, token]
   )
+  // the modal is mounted globally, outside the PortfolioNavigationProvider, so this is undefined
+  // when opened from contexts like the popup claim flow
   const { selectedAccounts } = usePortfolioNavigation()
   const selectedEthereumAccountAddresses = useMemo(
     () =>
-      selectedAccounts
+      (selectedAccounts ?? [])
         .filter((account) => isAccountOwned(account) && isAccountPlatformEthereum(account))
         .map((account) => account.address),
     [selectedAccounts]
