@@ -694,6 +694,8 @@ const TransactionError: FC<{ error?: string; errorDetails?: string }> = ({
   error,
   errorDetails,
 }) => {
+  if (!error) return null
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
