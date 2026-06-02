@@ -24,11 +24,13 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
+import { formatDuration, intervalToDuration } from "date-fns"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, erc20Abi } from "viem"
@@ -347,6 +349,7 @@ const SeekStakingForm: FC<{
             available={maxAmount}
             staked={position.data?.staked ?? 0n}
             pending={position.data?.pendingWithdrawal.amount ?? 0n}
+            withdrawDelay={metadata.data?.withdrawDelay ?? null}
           />
           <SeekNetworkFeeDetails
             ethTx={ethTx}
@@ -465,9 +468,11 @@ const SeekPositionDetails: FC<{
   available: bigint
   staked: bigint
   pending: bigint
-}> = ({ action, token, networkId, available, staked, pending }) => {
+  withdrawDelay: bigint | null
+}> = ({ action, token, networkId, available, staked, pending, withdrawDelay }) => {
   const { t } = useTranslation()
   const isCancelWithdrawal = action === "cancelWithdrawal"
+  const isRequestWithdrawal = action === "requestWithdrawal"
   const primaryBalanceLabel =
     action === "stake"
       ? t("Available Balance")
@@ -488,6 +493,17 @@ const SeekPositionDetails: FC<{
         />
       </FormFieldSetRow>
 
+      {isRequestWithdrawal && (
+        <FormFieldSetRow
+          label={t("Unstaking Period")}
+          description={t(
+            "After requesting an unstake, this is how long the amount remains locked before you can complete the unstake."
+          )}
+          variant="xs"
+        >
+          <SeekUnstakingPeriod withdrawDelay={withdrawDelay} />
+        </FormFieldSetRow>
+      )}
       <FormFieldSetRow label={t("Network")} variant="xs">
         <NetworkDisplay networkId={networkId} />
       </FormFieldSetRow>
@@ -499,6 +515,19 @@ const SeekPositionDetails: FC<{
       </FormFieldSetRow>
     </FormFieldSet>
   )
+}
+
+const SeekUnstakingPeriod: FC<{ withdrawDelay: bigint | null }> = ({ withdrawDelay }) => {
+  const { t } = useTranslation()
+  const locale = useDateFnsLocale()
+
+  return useMemo(() => {
+    if (withdrawDelay === null) return t("N/A")
+    if (withdrawDelay <= 0n) return t("None")
+
+    const duration = intervalToDuration({ start: 0, end: Number(withdrawDelay) * 1000 })
+    return formatDuration(duration, { locale })
+  }, [locale, t, withdrawDelay])
 }
 
 const SeekNetworkFeeDetails: FC<{
@@ -611,8 +640,14 @@ const SummaryValue: FC<{ label: string; tokenId: string; planck: bigint }> = ({
   tokenId,
   planck,
 }) => (
-  <div className="flex min-w-0 flex-col gap-1 overflow-hidden">
+  <div className="flex min-w-0 flex-col gap-4 overflow-hidden text-md">
     <div className="text-body-secondary">{label}</div>
-    <TokensAndFiat tokenId={tokenId} planck={planck.toString()} noFiat tokensClassName="truncate" />
+    <TokensAndFiat
+      tokenId={tokenId}
+      planck={planck.toString()}
+      withLogo
+      noFiat
+      tokensClassName="truncate"
+    />
   </div>
 )
