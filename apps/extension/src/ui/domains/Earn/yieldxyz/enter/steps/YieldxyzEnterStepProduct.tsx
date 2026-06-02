@@ -4,7 +4,10 @@ import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EarnOpportunityPicker } from "../../../components/EarnOpportunityPicker"
-import type { YieldxyzEarnOpportunity } from "../../../hooks/useEarnOpportunitiesByTokenId"
+import {
+  toYieldxyzEarnOpportunity,
+  type YieldxyzEarnOpportunity,
+} from "../../../hooks/useEarnOpportunitiesByTokenId"
 import type { EarnOpportunity } from "../../../types"
 import { useYieldxyzOpportunitiesForTokenId } from "../../hooks/useYieldxyzOpportunitiesForTokenId"
 import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
@@ -22,23 +25,7 @@ export const YieldxyzEnterStepProduct: FC = () => {
   const products = useYieldxyzOpportunitiesForTokenId(pickerTokenId)
 
   const opportunities = useMemo<EarnOpportunity[]>(
-    () =>
-      products.map(
-        (product) =>
-          ({
-            id: `yieldxyz-${product.id}`,
-            system: "yieldxyz",
-            providerId: product.providerId,
-            providerLogoURI: null,
-            tokenId: pickerTokenId,
-            networkId: pickerTokenId.split(":")[0],
-            title: product.metadata.name,
-            type: product.mechanics.type,
-            apr: product.rewardRate.total * 100,
-            searchTerms: [product.id, ...(product.tags ?? [])],
-            product,
-          }) satisfies YieldxyzEarnOpportunity
-      ),
+    () => products.map((product) => toYieldxyzEarnOpportunity(product, pickerTokenId)),
     [products, pickerTokenId]
   )
 

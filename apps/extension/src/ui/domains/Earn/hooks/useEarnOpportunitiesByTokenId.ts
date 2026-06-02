@@ -33,6 +33,28 @@ const isEnterableYieldProduct = (product: YieldDto) =>
     (field) => field.required && field.name !== "amount"
   )
 
+export const toYieldxyzEarnOpportunity = (
+  product: YieldDto,
+  tokenId: TokenId
+): YieldxyzEarnOpportunity => ({
+  id: `yieldxyz-${product.id}`,
+  system: "yieldxyz",
+  providerId: product.providerId,
+  providerLogoURI: null,
+  tokenId,
+  networkId: tokenId.split(":")[0],
+  title: product.metadata.name,
+  type: product.mechanics.type,
+  apr: product.rewardRate.total * 100,
+  searchTerms: [
+    product.metadata.name,
+    product.providerId,
+    product.mechanics.type,
+    ...(product.tags ?? []),
+  ],
+  product,
+})
+
 export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & {
   heldProducts: TokenOpportunity[]
   discoverProducts: TokenOpportunity[]
@@ -70,24 +92,7 @@ export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & 
           if (!inputTokenId) return acc
 
           if (!acc[inputTokenId]) acc[inputTokenId] = []
-          acc[inputTokenId].push({
-            id: `yieldxyz-${product.id}`,
-            system: "yieldxyz",
-            providerId: product.providerId,
-            providerLogoURI: null,
-            tokenId: inputTokenId,
-            networkId: inputTokenId.split(":")[0],
-            title: product.metadata.name,
-            type: product.mechanics.type,
-            apr: product.rewardRate.total * 100,
-            searchTerms: [
-              product.metadata.name,
-              product.providerId,
-              product.mechanics.type,
-              ...(product.tags ?? []),
-            ],
-            product,
-          })
+          acc[inputTokenId].push(toYieldxyzEarnOpportunity(product, inputTokenId))
 
           return acc
         }, {}) || {}
