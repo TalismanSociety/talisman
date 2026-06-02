@@ -47,6 +47,18 @@ export type EarnPosition = {
 
 const PRIMARY_DEFI_ITEM_TYPES = new Set(["deposit", "loan", "locked", "staked", "margin"])
 
+const getPositionAddressNetworkKey = (position: Pick<EarnPosition, "address" | "networkId">) =>
+  `${position.address.toLowerCase()}|${position.networkId}`
+
+const isSeekDefiPosition = (position: DefiPosition, stakingContractAddress: string) => {
+  if (position.poolAddress?.toLowerCase() === stakingContractAddress.toLowerCase()) return true
+
+  return [position.id, position.name, position.defiId, position.defiName, position.symbol ?? ""]
+    .join(" ")
+    .toLowerCase()
+    .includes("seek")
+}
+
 const mapYieldPosition = (
   yp: YieldxyzPositionEnhanced,
   getYieldxyzTokenId: (token: TokenDto) => string | null,
@@ -171,7 +183,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   const { data: seekPositions, isFetching: seekIsFetching } = useSeekStakingPositions()
   const { data: providers } = useYieldxyzProviders()
   const seekConfig = useSeekStakingConfig()
-  const { data: seekMetadata } = useSeekStakingMetadata()
+  const { data: seekMetadata } = useSeekStakingMetadata({ enabled: !!seekPositions?.length })
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
@@ -233,34 +245,44 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     })
 
     // Build defi positions
-    const defiMapped: EarnPosition[] = []
+    const defiMapped: { position: EarnPosition; source: DefiPosition }[] = []
     for (const dp of defiPositions ?? []) {
       const mapped = mapDefiPosition(dp, networksMap, tokensMap, tokenRatesMap)
-      if (mapped) defiMapped.push(mapped)
+      if (mapped) defiMapped.push({ position: mapped, source: dp })
     }
 
-    // Exclude defi positions that duplicate an actionable provider position.
-    // A defi position is considered a duplicate when it shares the same wallet address,
-    // network, and at least one overlapping input token with a yieldxyz position.
-    // yieldxyz positions are preferred because they are actionable (not read-only).
-    const actionableTokensByAddressNetwork = new Map<string, Set<string>>()
-    for (const yp of [...yieldMapped, ...seekMapped]) {
-      const key = `${yp.address.toLowerCase()}|${yp.networkId}`
-      const existing = actionableTokensByAddressNetwork.get(key)
+    // Exclude defi positions that duplicate an actionable provider position. YieldXYZ can be
+    // matched by address/network/token overlap; SEEK needs a narrower check so unrelated SEEK DeFi
+    // exposure does not disappear just because it shares the same token.
+    const yieldTokensByAddressNetwork = new Map<string, Set<string>>()
+    for (const yp of yieldMapped) {
+      const key = getPositionAddressNetworkKey(yp)
+      const existing = yieldTokensByAddressNetwork.get(key)
       if (existing) {
         for (const tid of yp.tokenIds) existing.add(tid)
       } else {
-        actionableTokensByAddressNetwork.set(key, new Set(yp.tokenIds))
+        yieldTokensByAddressNetwork.set(key, new Set(yp.tokenIds))
       }
+    }
+
+    const seekTokensByAddressNetwork = new Map<string, Set<string>>()
+    for (const sp of seekMapped) {
+      seekTokensByAddressNetwork.set(getPositionAddressNetworkKey(sp), new Set(sp.tokenIds))
     }
 
     const excluded: EarnPosition[] = []
     result.push(...yieldMapped, ...seekMapped)
-    for (const dp of defiMapped) {
-      const key = `${dp.address.toLowerCase()}|${dp.networkId}`
-      const actionableTokenIds = actionableTokensByAddressNetwork.get(key)
-      const isDuplicate =
-        actionableTokenIds != null && dp.tokenIds.some((tid) => actionableTokenIds.has(tid))
+    for (const { position: dp, source } of defiMapped) {
+      const key = getPositionAddressNetworkKey(dp)
+      const yieldTokenIds = yieldTokensByAddressNetwork.get(key)
+      const seekTokenIds = seekTokensByAddressNetwork.get(key)
+      const isYieldDuplicate =
+        yieldTokenIds != null && dp.tokenIds.some((tid) => yieldTokenIds.has(tid))
+      const isSeekDuplicate =
+        isSeekDefiPosition(source, seekConfig.stakingContractAddress) &&
+        seekTokenIds != null &&
+        dp.tokenIds.some((tid) => seekTokenIds.has(tid))
+      const isDuplicate = isYieldDuplicate || isSeekDuplicate
       if (isDuplicate) excluded.push(dp)
       else result.push(dp)
     }

@@ -46,7 +46,7 @@ export const EarnDepositModal: FC = () => {
       <PopupSizeModalContainer id="earn-provider-modal">
         <WizardModalDialog
           className="size-full border-none"
-          title={t("Select Yield Opportunity")}
+          title={t("Select Earn Opportunity")}
           contentClassName="p-0"
           onCloseClick={close}
         >

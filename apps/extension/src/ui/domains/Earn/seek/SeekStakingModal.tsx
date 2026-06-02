@@ -178,7 +178,9 @@ const SeekStakingForm: FC<{
   const account = useAccountByAddress(address ?? undefined)
   const position = useSeekStakingPosition(address ?? undefined)
   const metadata = useSeekStakingMetadata()
+  const rewardToken = useToken(metadata.data?.rewardTokenId)
   const allowance = useSeekErc20Allowance(address, action === "stake" ? amount : null)
+  const displayRewardToken = rewardToken ?? token
 
   const transferable = useMemo(
     () => (address && token ? getTransferableTokenBalance(balances, address, token.id) : 0n),
@@ -298,31 +300,38 @@ const SeekStakingForm: FC<{
     action === "completeWithdrawal" &&
     Number(position.data?.pendingWithdrawal.unlockTimestamp ?? 0n) * 1000 > Date.now()
 
-  const handleSubmit = useCallback(
-    (hash: string) => {
-      if (!isApproval && address) {
-        void removeSeekStakingPositionCache({
-          networkId: config.networkId as EthNetworkId,
-          stakingContractAddress: config.stakingContractAddress,
-          address,
-          accountAddresses: selectedEthereumAccountAddresses,
-        })
-          .catch((err) => log.error("Error removing persisted SEEK staking cache", err))
-          .finally(() => queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] }))
-      } else {
-        queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
+  const refreshSeekStakingQueries = useCallback(
+    async (removePersistedPosition: boolean) => {
+      try {
+        if (removePersistedPosition && address) {
+          await removeSeekStakingPositionCache({
+            networkId: config.networkId as EthNetworkId,
+            stakingContractAddress: config.stakingContractAddress,
+            address,
+            accountAddresses: selectedEthereumAccountAddresses,
+          })
+        }
+      } catch (err) {
+        log.error("Error removing persisted SEEK staking cache", err)
+      } finally {
+        await queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
       }
-      setAwaitingApproval(isApproval)
-      setSubmittedHash(hash)
     },
     [
       address,
       config.networkId,
       config.stakingContractAddress,
-      isApproval,
       queryClient,
       selectedEthereumAccountAddresses,
     ]
+  )
+
+  const handleSubmit = useCallback(
+    (hash: string) => {
+      setAwaitingApproval(isApproval)
+      setSubmittedHash(hash)
+    },
+    [isApproval]
   )
 
   // once the approval transaction confirms, refresh the allowance and return to the form so the
@@ -330,10 +339,15 @@ const SeekStakingForm: FC<{
   const submittedTx = useTransaction(submittedHash ?? "")
   useEffect(() => {
     if (!awaitingApproval || submittedTx?.status !== "success") return
-    queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
+    void refreshSeekStakingQueries(false)
     setAwaitingApproval(false)
     setSubmittedHash(null)
-  }, [awaitingApproval, queryClient, submittedTx?.status])
+  }, [awaitingApproval, refreshSeekStakingQueries, submittedTx?.status])
+
+  useEffect(() => {
+    if (awaitingApproval || !submittedHash || submittedTx?.status !== "success") return
+    void refreshSeekStakingQueries(true)
+  }, [awaitingApproval, refreshSeekStakingQueries, submittedHash, submittedTx?.status])
 
   if (!token) return null
 
@@ -374,13 +388,13 @@ const SeekStakingForm: FC<{
           </div>
         ) : (
           <div className="flex grow items-center">
-            {action === "cancelWithdrawal" ? (
+            {action === "cancelWithdrawal" || action === "completeWithdrawal" ? (
               <SeekPendingUnstakeSummary
                 token={token}
                 pending={position.data?.pendingWithdrawal.amount ?? 0n}
               />
             ) : (
-              <SeekRewardsSummary token={token} earned={position.data?.earned ?? 0n} />
+              <SeekRewardsSummary token={displayRewardToken} earned={position.data?.earned ?? 0n} />
             )}
           </div>
         )}

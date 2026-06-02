@@ -73,14 +73,14 @@ const OpportunityRow: FC<{
       <TooltipTrigger asChild>
         <button
           type="button"
-          onClick={onClick}
-          disabled={disabled}
+          onClick={disabled ? undefined : onClick}
+          aria-disabled={disabled || undefined}
           tabIndex={0}
           className={cn(
             "flex h-14.5 w-full items-center gap-4 px-12 text-left text-sm",
             !disabled && "hover:bg-grey-750 focus:bg-grey-700",
             selected && "bg-grey-800 text-body-secondary",
-            "disabled:cursor-not-allowed disabled:opacity-50 disabled:**:pointer-events-none"
+            disabled && "cursor-not-allowed opacity-50 **:pointer-events-none"
           )}
         >
           {product ? (

@@ -113,7 +113,7 @@ export const calcSeekApr = ({
   return ((rewardsPerYear * rewardTokenUsd) / (totalStakedTokens * stakeTokenUsd)) * 100
 }
 
-export const useSeekStakingMetadata = () => {
+export const useSeekStakingMetadata = ({ enabled = true }: { enabled?: boolean } = {}) => {
   const config = useSeekStakingConfig()
   const publicClient = usePublicClient(config.networkId)
   const tokensMap = useTokensMap()
@@ -182,7 +182,7 @@ export const useSeekStakingMetadata = () => {
         withdrawDelay: BigInt(withdrawDelay),
       }
     },
-    enabled: !!publicClient,
+    enabled: enabled && !!publicClient,
     persister: metadataPersister,
     refetchInterval: 5 * 60 * 1000,
   })
@@ -217,8 +217,14 @@ export const useSeekStakingMetadata = () => {
 export const useSeekStakingOpportunity = () => {
   const config = useSeekStakingConfig()
   const token = useToken(config.tokenId)
-  const { data: metadata, status, isFetching } = useSeekStakingMetadata()
   const selectedEthereumAccounts = useSelectedEthereumAccounts()
+  const {
+    data: metadata,
+    status,
+    isFetching,
+  } = useSeekStakingMetadata({
+    enabled: !!token && selectedEthereumAccounts.length > 0,
+  })
 
   return useMemo(
     () => ({
@@ -333,7 +339,7 @@ export const useSeekStakingPositions = () => {
           position.staked > 0n || position.earned > 0n || position.pendingWithdrawal.amount > 0n
       )
     },
-    enabled: !!publicClient,
+    enabled: !!publicClient && accountAddresses.length > 0,
     persister: positionsPersister,
     refetchInterval: 30_000,
   })

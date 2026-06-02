@@ -4,7 +4,7 @@ import { hashKey, notifyManager } from "@tanstack/react-query"
 import { api } from "../api/api"
 
 /** Configuration for persisting a query to the background-owned query cache. */
-export type QueryStorageConfig = {
+export type QueryStorageConfig<TData = unknown, TPersisted = TData> = {
   /**
    * Storage key for this query. When omitted, automatically derived from
    * `queryKey` via TanStack's deterministic `hashKey`.
@@ -16,6 +16,10 @@ export type QueryStorageConfig = {
    * @default 86_400_000 (24 hours)
    */
   maxAge?: number
+  /** Converts query data into JSON-safe persisted data. */
+  serialize?: (data: TData) => TPersisted
+  /** Restores persisted data back into the query data shape. */
+  deserialize?: (data: TPersisted) => TData
 }
 
 const DEFAULT_MAX_AGE = 86_400_000 // 24 hours
@@ -59,8 +63,15 @@ export const PERSIST_AGE_ONE_YEAR = 1000 * 60 * 60 * 24 * 365
  * })
  * ```
  */
-export function createQueryStoragePersister(config?: QueryStorageConfig) {
-  const { key: explicitKey, maxAge = DEFAULT_MAX_AGE } = config ?? {}
+export function createQueryStoragePersister<TData = unknown, TPersisted = TData>(
+  config?: QueryStorageConfig<TData, TPersisted>
+) {
+  const {
+    key: explicitKey,
+    maxAge = DEFAULT_MAX_AGE,
+    serialize = (data) => data as unknown as TPersisted,
+    deserialize = (data) => data as unknown as TData,
+  } = config ?? {}
 
   return async <T, TQueryKey extends QueryKey>(
     queryFn: (context: QueryFunctionContext<TQueryKey>) => T | Promise<T>,
@@ -74,15 +85,17 @@ export function createQueryStoragePersister(config?: QueryStorageConfig) {
       try {
         const cached = await api.queryCacheGet(key)
         if (cached) {
+          const data = deserialize(cached.data as TPersisted)
           // Schedule a macro task to fix dataUpdatedAt and optionally refetch
           notifyManager.schedule(() => {
             query.setState({ dataUpdatedAt: cached.dataUpdatedAt })
             if (query.isStale()) query.fetch()
           })
           // Return immediately to avoid loading state
-          return cached.data as T
+          return data as T
         }
       } catch {
+        Promise.resolve(api.queryCacheRemove(key)).catch(() => {})
         // Cache miss or error — fall through to queryFn
       }
     }
@@ -96,7 +109,7 @@ export function createQueryStoragePersister(config?: QueryStorageConfig) {
     notifyManager.schedule(() => {
       const purgeAt = Date.now() + maxAge
       const dataUpdatedAt = Math.max(query.state.dataUpdatedAt, Date.now())
-      api.queryCacheSet(key, data, purgeAt, dataUpdatedAt).catch(() => {})
+      api.queryCacheSet(key, serialize(data as TData), purgeAt, dataUpdatedAt).catch(() => {})
     })
 
     return data
