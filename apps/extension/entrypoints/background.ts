@@ -1,6 +1,10 @@
 // WXT Background Script Entry Point
 // Imports the main background logic from extension-core
 
+// register the anylogger adapter so that logs from @talismn/* packages are
+// visible in the console (console calls are dropped from prod builds)
+import "@common/enableAnyloggerLogsInDevelopment"
+
 import { defineBackground } from "wxt/utils/define-background"
 
 // Import the background module - this is a side-effect module that initializes the extension

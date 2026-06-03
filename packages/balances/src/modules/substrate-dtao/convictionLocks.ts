@@ -73,6 +73,37 @@ export type DTaoConvictionLockInfo = {
   label: string
 }
 
+export type ConvictionLockAttribution = { hotkey: string; amount: bigint }
+
+/**
+ * Splits a conviction lock amount across the hotkeys the coldkey has stake on (largest stake first).
+ *
+ * On-chain a lock constrains the coldkey's TOTAL alpha on the subnet across all of its hotkeys
+ * (available_to_unstake = Σ stakes - locked_mass) and is NOT moved by move_stake: splitting it this
+ * way keeps the per-token transferable amounts summing up to the on-chain available_to_unstake,
+ * even after the stake was moved to another hotkey.
+ */
+export const distributeConvictionLockAmount = (
+  lockAmount: bigint,
+  stakes: Array<{ hotkey: string; stake: bigint }>
+): { attributions: ConvictionLockAttribution[]; remainder: bigint } => {
+  const sorted = stakes
+    .filter(({ stake }) => stake > 0n)
+    .sort((a, b) => (b.stake > a.stake ? 1 : b.stake < a.stake ? -1 : 0))
+
+  const attributions: ConvictionLockAttribution[] = []
+  let remainder = lockAmount
+
+  for (const { hotkey, stake } of sorted) {
+    if (remainder <= 0n) break
+    const amount = stake < remainder ? stake : remainder
+    attributions.push({ hotkey, amount })
+    remainder -= amount
+  }
+
+  return { attributions, remainder }
+}
+
 // structural subset of the formatted locks exposed by Balance#locks,
 // kept loose to avoid a circular dependency on the Balance class
 type BalanceLockLike = {
@@ -132,9 +163,8 @@ export const u64f64RawToPlanck = (value: unknown): bigint => {
  *
  * On-chain, a lock constrains the coldkey's TOTAL alpha on the subnet across all of its hotkeys
  * (available_to_unstake = Σ stakes - locked_mass), with at most one locked hotkey per (coldkey, netuid).
- * We attribute the whole lock to that locked hotkey's token: this is exact in the common case
- * (stake and lock on the same hotkey), but when the coldkey also has stake on other hotkeys of the
- * same subnet, those tokens may report a higher transferable amount than the chain would allow.
+ * The lock is reported with the hotkey it is keyed on, and is then distributed across the hotkeys
+ * the coldkey has stake on (see distributeConvictionLockAmount).
  */
 export const fetchConvictionLocks = async (
   connector: IChainConnectorDot,

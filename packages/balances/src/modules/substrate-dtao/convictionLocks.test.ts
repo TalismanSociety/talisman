@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  distributeConvictionLockAmount,
   findDTaoConvictionLock,
   getConvictionLockCandidates,
   getConvictionLockLabel,
@@ -161,6 +162,49 @@ describe("getConvictionLockLabel", () => {
 
   it("labels decaying locks", () => {
     expect(getConvictionLockLabel("decaying")).toBe("Decaying Conviction Lock")
+  })
+})
+
+describe("distributeConvictionLockAmount", () => {
+  it("attributes the whole lock to the only staked hotkey", () => {
+    expect(distributeConvictionLockAmount(50n, [{ hotkey: HOTKEY, stake: 100n }])).toEqual({
+      attributions: [{ hotkey: HOTKEY, amount: 50n }],
+      remainder: 0n,
+    })
+  })
+
+  it("spills over to the next hotkey, largest stake first", () => {
+    expect(
+      distributeConvictionLockAmount(120n, [
+        { hotkey: HOTKEY_2, stake: 50n },
+        { hotkey: HOTKEY, stake: 100n },
+      ])
+    ).toEqual({
+      attributions: [
+        { hotkey: HOTKEY, amount: 100n },
+        { hotkey: HOTKEY_2, amount: 20n },
+      ],
+      remainder: 0n,
+    })
+  })
+
+  it("ignores zero stakes and returns the remainder when stakes are insufficient", () => {
+    expect(
+      distributeConvictionLockAmount(120n, [
+        { hotkey: HOTKEY, stake: 100n },
+        { hotkey: HOTKEY_2, stake: 0n },
+      ])
+    ).toEqual({
+      attributions: [{ hotkey: HOTKEY, amount: 100n }],
+      remainder: 20n,
+    })
+  })
+
+  it("returns the full amount as remainder when there is no stake", () => {
+    expect(distributeConvictionLockAmount(42n, [])).toEqual({
+      attributions: [],
+      remainder: 42n,
+    })
   })
 })
 

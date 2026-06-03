@@ -18,7 +18,11 @@ import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
-import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
+import {
+  distributeConvictionLockAmount,
+  fetchConvictionLocks,
+  getConvictionLockLabel,
+} from "./convictionLocks"
 import type {
   GetDynamicInfosResult,
   GetStakeInfosResult,
@@ -215,18 +219,38 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
         : 0n
 
-      const balance: SubDTaoBalance = {
-        address,
-        tokenId: subDTaoTokenId(networkId, netuid, lock.hotkey),
-        baseTokenId: subDTaoTokenId(networkId, netuid),
-        stake: 0n,
-        hotkey: lock.hotkey,
-        netuid,
-        scaledAlphaPrice,
-        convictionLock: lock,
+      // On-chain the lock constrains the coldkey's TOTAL alpha on the subnet (across all hotkeys)
+      // and is not moved by move_stake: distribute it over the hotkeys the coldkey actually has
+      // stake on, so the lock follows the stake and per-token transferable amounts sum up to the
+      // on-chain available_to_unstake.
+      const stakes = Object.values(balancesRaw)
+        .filter((b) => b.address === address && b.netuid === netuid)
+        .map(({ hotkey, stake }) => ({ hotkey, stake }))
+
+      const { attributions, remainder } = distributeConvictionLockAmount(lock.amount, stakes)
+
+      // belt & braces: on-chain the total stake can't drop below the locked amount, but if it ever
+      // does (eg transient state between blocks), attach the remainder to the locked hotkey
+      if (remainder > 0n) {
+        const existing = attributions.find((a) => a.hotkey === lock.hotkey)
+        if (existing) existing.amount += remainder
+        else attributions.push({ hotkey: lock.hotkey, amount: remainder })
       }
 
-      upsertBalance(balancesRaw, address, balance.tokenId, balance)
+      for (const { hotkey, amount } of attributions) {
+        const balance: SubDTaoBalance = {
+          address,
+          tokenId: subDTaoTokenId(networkId, netuid, hotkey),
+          baseTokenId: subDTaoTokenId(networkId, netuid),
+          stake: 0n,
+          hotkey,
+          netuid,
+          scaledAlphaPrice,
+          convictionLock: { ...lock, amount },
+        }
+
+        upsertBalance(balancesRaw, address, balance.tokenId, balance)
+      }
     }
 
     const balances = Object.values(balancesRaw)

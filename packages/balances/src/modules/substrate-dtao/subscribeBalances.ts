@@ -35,9 +35,9 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         if (abortController.signal.aborted) return
 
         subscriber.next(balances)
-
-        setTimeout(poll, SUBSCRIPTION_INTERVAL)
       } catch (error) {
+        // don't kill the subscription (balances would be stuck as stale until next resubscribe),
+        // log and retry on next poll
         log.error("Error", {
           module: MODULE_TYPE,
           networkId,
@@ -45,8 +45,9 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
           addressesByToken: tokensWithAddresses,
           error,
         })
-        subscriber.error(error)
       }
+
+      if (!abortController.signal.aborted) setTimeout(poll, SUBSCRIPTION_INTERVAL)
     }
 
     poll()
