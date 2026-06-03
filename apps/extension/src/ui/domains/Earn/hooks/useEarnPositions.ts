@@ -49,6 +49,9 @@ export type EarnPosition = {
 
 const PRIMARY_DEFI_ITEM_TYPES = new Set(["deposit", "loan", "locked", "staked", "margin"])
 
+// stable empty reference returned while loading, so withholding partial data doesn't churn consumers
+const EMPTY_POSITIONS: EarnPosition[] = []
+
 const getPositionAddressNetworkKey = (position: Pick<EarnPosition, "address" | "networkId">) =>
   `${position.address.toLowerCase()}|${position.networkId}`
 
@@ -330,21 +333,33 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     )
   }, [excludedDefi])
 
-  // Show cached data immediately — only report "loading" when no positions are available.
-  // SEEK is best-effort: count it as loading only while a fetch is genuinely in flight (a
-  // disabled SEEK query sits at react-query status "pending"/fetchStatus "idle" forever), and
-  // never let a SEEK read failure flip the whole positions list to "error".
+  // Gate on every source settling so positions paint all at once. Otherwise a faster source
+  // (yieldxyz) renders first and a slower one (SEEK) pops in a tick later, causing flicker.
+  // SEEK stays best-effort: it counts as loading only while a fetch is genuinely in flight with
+  // nothing to show yet (a disabled SEEK query sits at react-query status "pending"/fetchStatus
+  // "idle" forever, so we key off isFetching, not status), and a SEEK read failure never flips the
+  // list to "error".
   const isAnyLoading =
     yieldStatus === "loading" ||
     defiStatus === "loading" ||
     (seekIsFetching && !seekPositions?.length)
   const isAnyError = yieldStatus === "error" || defiStatus === "error"
 
-  const status =
-    positions.length > 0 ? "success" : isAnyLoading ? "loading" : isAnyError ? "error" : "success"
+  const status = isAnyLoading
+    ? "loading"
+    : positions.length > 0
+      ? "success"
+      : isAnyError
+        ? "error"
+        : "success"
 
+  // While still loading, withhold partial results so consumers render the loading state rather than
+  // a subset of positions that would otherwise grow (and flicker) as each source resolves.
   return useMemo(
-    () => ({ status, data: positions }) as Loadable<EarnPosition[]>,
+    () =>
+      ({ status, data: status === "loading" ? EMPTY_POSITIONS : positions }) as Loadable<
+        EarnPosition[]
+      >,
     [status, positions]
   )
 }
