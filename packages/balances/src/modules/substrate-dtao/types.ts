@@ -14,6 +14,18 @@ export type SubDTaoTokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
 
 export type SubDTaoBalanceMeta = {
   scaledAlphaPrice: string
+  convictionLock?: SubDTaoConvictionLockMeta
+}
+
+export type SubDTaoConvictionLockType = "decaying" | "perpetual"
+
+export type SubDTaoConvictionLockMeta = {
+  type: "conviction-lock"
+  lockType: SubDTaoConvictionLockType
+  conviction: string
+  convictionRaw: string
+  convictionFormat: "U64F64"
+  lastUpdate: string
 }
 
 export type SubDTaoBalance = {
@@ -22,9 +34,19 @@ export type SubDTaoBalance = {
   baseTokenId: string
   stake: bigint
   pendingRootClaim?: bigint
+  convictionLock?: SubDTaoConvictionLock
   hotkey: string
   netuid: number
   scaledAlphaPrice: bigint
+}
+
+export type SubDTaoConvictionLock = {
+  amount: bigint
+  hotkey: string
+  lockType: SubDTaoConvictionLockType
+  conviction: string
+  convictionRaw: string
+  lastUpdate: string
 }
 
 export type GetDynamicInfosResult =
@@ -32,3 +54,9 @@ export type GetDynamicInfosResult =
 
 export type GetStakeInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]
+
+export type GetColdkeyLockResult = {
+  locked_mass?: bigint | number | string
+  conviction?: unknown
+  last_update?: bigint | number | string
+} | null
