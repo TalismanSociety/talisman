@@ -18,7 +18,7 @@ import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
-import { fetchConvictionLocks } from "./convictionLocks"
+import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
 import type {
   GetDynamicInfosResult,
   GetStakeInfosResult,
@@ -297,7 +297,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
       const convictionLockValue: AmountWithLabel<string> = {
         type: "locked",
-        label: "Conviction lock",
+        label: getConvictionLockLabel(stake?.convictionLock?.lockType ?? "decaying"),
         amount: convictionLockAmount.toString(),
         meta: convictionLockMeta,
       }

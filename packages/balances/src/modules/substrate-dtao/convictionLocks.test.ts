@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   getConvictionLockCandidates,
+  getConvictionLockLabel,
   getConvictionLockPairs,
   toBigIntValue,
   u64f64RawToPlanck,
@@ -149,5 +150,15 @@ describe("getConvictionLockPairs", () => {
 
   it("returns an empty array for no candidates", () => {
     expect(getConvictionLockPairs([])).toEqual([])
+  })
+})
+
+describe("getConvictionLockLabel", () => {
+  it("labels perpetual locks", () => {
+    expect(getConvictionLockLabel("perpetual")).toBe("Perpetual Conviction Lock")
+  })
+
+  it("labels decaying locks", () => {
+    expect(getConvictionLockLabel("decaying")).toBe("Decaying Conviction Lock")
   })
 })

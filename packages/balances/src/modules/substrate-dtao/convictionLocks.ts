@@ -63,6 +63,9 @@ export const getConvictionLockPairs = (
   return [...pairsByKey.values()]
 }
 
+export const getConvictionLockLabel = (lockType: SubDTaoConvictionLockType): string =>
+  lockType === "perpetual" ? "Perpetual Conviction Lock" : "Decaying Conviction Lock"
+
 export const toBigIntValue = (value: unknown): bigint => {
   if (typeof value === "bigint") return value
   if (typeof value === "number") return Number.isFinite(value) ? BigInt(Math.trunc(value)) : 0n
