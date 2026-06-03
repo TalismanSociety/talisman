@@ -71,12 +71,13 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
 
   return (
     <div className="flex w-full flex-col gap-6 overflow-hidden">
-      <SeekNavHeader address={address} totalUsd={totalUsd} apr={metadata?.apr ?? null} />
+      <SeekNavHeader address={address} totalUsd={totalUsd} />
       <SeekPositionHeader
         address={actionAddress}
         token={token}
         position={position.data ?? null}
         isOwned={isOwned}
+        apr={metadata?.apr ?? null}
       />
       <SeekBalanceGroup label={t("Supplied")}>
         <SeekBalanceRow
@@ -115,11 +116,7 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
   )
 }
 
-const SeekNavHeader: FC<{ address: string; totalUsd: number; apr: number | null }> = ({
-  address,
-  totalUsd,
-  apr,
-}) => {
+const SeekNavHeader: FC<{ address: string; totalUsd: number }> = ({ address, totalUsd }) => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
 
@@ -137,16 +134,6 @@ const SeekNavHeader: FC<{ address: string; totalUsd: number; apr: number | null 
               <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
                 {t("staking")}
               </EarnTypeBadge>
-              {apr !== null && (
-                <div className="shrink-0 text-primary">
-                  {t("{{percent}} APR", {
-                    percent: Intl.NumberFormat(undefined, {
-                      style: "percent",
-                      maximumFractionDigits: 1,
-                    }).format(apr / 100),
-                  })}
-                </div>
-              )}
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>
@@ -169,15 +156,32 @@ const SeekPositionHeader: FC<{
   token: Token
   position: NonNullable<ReturnType<typeof useSeekStakingPosition>["data"]> | null
   isOwned: boolean
-}> = ({ address, token, position, isOwned }) => {
+  apr: number | null
+}> = ({ address, token, position, isOwned, apr }) => {
+  const { t } = useTranslation()
   const config = useSeekStakingConfig()
 
   return (
     <div className="flex h-32 w-full items-center gap-8 rounded bg-grey-800 px-10">
       <TokenLogo tokenId={token.id} className="size-16 shrink-0" />
       <div className="flex grow flex-col gap-2 overflow-hidden">
-        <div className="truncate font-bold text-base text-body">
-          {token.name || <TokenDisplaySymbol tokenId={token.id} />}
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="truncate font-bold text-base text-body">
+            {token.name || <TokenDisplaySymbol tokenId={token.id} />}
+          </div>
+          {apr !== null && (
+            <div className="shrink-0 text-primary text-sm">
+              <span className="mx-2 mr-4 inline-block size-2 shrink-0 rounded-full bg-body-disabled align-middle"></span>
+              <span>
+                {t("{{percent}} APR", {
+                  percent: Intl.NumberFormat(undefined, {
+                    style: "percent",
+                    maximumFractionDigits: 1,
+                  }).format(apr / 100),
+                })}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex max-w-full items-center gap-[0.3em] overflow-hidden text-body-secondary">
           <NetworkLogo networkId={config.networkId} className="size-8 shrink-0" />
