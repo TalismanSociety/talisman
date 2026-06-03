@@ -15,7 +15,10 @@ import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
 import { FormFieldSet, FormFieldSetRow } from "@ui/domains/Earn/shared/FormFieldSet"
-import { SenderAccountPicker } from "@ui/domains/Earn/shared/SenderAccountPicker"
+import {
+  SenderAccountPicker,
+  type SenderAccountPickerIsAccountDisabled,
+} from "@ui/domains/Earn/shared/SenderAccountPicker"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -204,6 +207,11 @@ const SeekStakingForm: FC<{
       closeAccountPicker()
     },
     [closeAccountPicker]
+  )
+  const isAccountDisabled = useCallback<SenderAccountPickerIsAccountDisabled>(
+    (_account, accountBalances) =>
+      action === "stake" ? !accountBalances.sum.planck.transferable : false,
+    [action]
   )
 
   const error = useMemo(() => {
@@ -456,7 +464,7 @@ const SeekStakingForm: FC<{
         isOpen={isAccountPickerOpen}
         address={address}
         tokenId={token.id}
-        allowZeroBalance={action !== "stake"}
+        isAccountDisabled={isAccountDisabled}
         onBackClick={closeAccountPicker}
         onCloseClick={close}
         onSelect={handleSelectAccount}
@@ -492,11 +500,11 @@ const SeekAccountPickerModal: FC<{
   isOpen: boolean
   address: string | null
   tokenId: string
-  allowZeroBalance: boolean
+  isAccountDisabled: SenderAccountPickerIsAccountDisabled
   onBackClick: () => void
   onCloseClick: () => void
   onSelect: (address: string) => void
-}> = ({ isOpen, address, tokenId, allowZeroBalance, onBackClick, onCloseClick, onSelect }) => {
+}> = ({ isOpen, address, tokenId, isAccountDisabled, onBackClick, onCloseClick, onSelect }) => {
   const { t } = useTranslation()
 
   return (
@@ -516,7 +524,7 @@ const SeekAccountPickerModal: FC<{
         <SenderAccountPicker
           address={address}
           tokenId={tokenId}
-          allowZeroBalance={allowZeroBalance}
+          isAccountDisabled={isAccountDisabled}
           onSelect={onSelect}
         />
       </WizardModalDialog>

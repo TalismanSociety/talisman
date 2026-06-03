@@ -1,6 +1,11 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
-import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import {
+  type EthNetworkId,
+  evmErc20TokenId,
+  type Token,
+  type TokenId,
+} from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -55,10 +60,6 @@ export type SeekAccountPosition = {
   earned: bigint
   pendingWithdrawal: SeekPendingWithdrawal
 }
-
-export const getSeekErc20TokenId = (networkId: string, address: string): TokenId =>
-  `${networkId}:evm-erc20:${address.toLowerCase()}` as TokenId
-
 export const useSeekStakingConfig = (): SeekStakingConfig => {
   const remoteConfig = useRemoteConfig()
 
@@ -191,8 +192,8 @@ export const useSeekStakingMetadata = ({ enabled = true }: { enabled?: boolean }
     const data = rawMetadataQuery.data
     if (!data) return null
 
-    const stakeTokenId = getSeekErc20TokenId(config.networkId, data.stakeTokenAddress)
-    const rewardTokenId = getSeekErc20TokenId(config.networkId, data.rewardTokenAddress)
+    const stakeTokenId = config.tokenId
+    const rewardTokenId = evmErc20TokenId(config.networkId, data.rewardTokenAddress)
     const stakeToken = (tokensMap[stakeTokenId] as Token | undefined) ?? null
     const rewardToken = (tokensMap[rewardTokenId] as Token | undefined) ?? null
 
@@ -209,7 +210,7 @@ export const useSeekStakingMetadata = ({ enabled = true }: { enabled?: boolean }
         rewardTokenUsd: tokenRatesMap[rewardTokenId]?.usd?.price,
       }),
     }
-  }, [config.networkId, rawMetadataQuery.data, tokenRatesMap, tokensMap])
+  }, [config.networkId, config.tokenId, rawMetadataQuery.data, tokenRatesMap, tokensMap])
 
   return { ...rawMetadataQuery, data: metadata }
 }

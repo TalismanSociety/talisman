@@ -1,7 +1,7 @@
 import type { Token } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 import type { SeekAccountPosition } from "./useSeekStaking"
-import { calcSeekApr, getSeekErc20TokenId, getSeekPositionValueUsd } from "./useSeekStaking"
+import { calcSeekApr, getSeekPositionValueUsd } from "./useSeekStaking"
 
 const seekToken = {
   id: "1:evm-erc20:0x07c3e739c65f81ea79d19a88d27de4c9f15f8df0",
@@ -12,14 +12,6 @@ const rewardToken = {
   id: "1:evm-erc20:0xreward",
   decimals: 6,
 } as Token
-
-describe("getSeekErc20TokenId", () => {
-  it("normalizes EVM ERC20 token ids", () => {
-    expect(getSeekErc20TokenId("1", "0x07C3E739C65f81Ea79d19A88d27de4C9f15f8Df0")).toBe(
-      "1:evm-erc20:0x07c3e739c65f81ea79d19a88d27de4c9f15f8df0"
-    )
-  })
-})
 
 describe("calcSeekApr", () => {
   it("calculates APR when stake and reward token match", () => {

@@ -26,12 +26,17 @@ type AccountOption = Account & {
   balances: Balances
 }
 
+export type SenderAccountPickerIsAccountDisabled = (account: Account, balances: Balances) => boolean
+
+const defaultIsAccountDisabled: SenderAccountPickerIsAccountDisabled = (_account, balances) =>
+  !balances.sum.planck.transferable
+
 export const SenderAccountPicker: FC<{
   tokenId: string
   address: string | null
-  allowZeroBalance?: boolean
+  isAccountDisabled?: SenderAccountPickerIsAccountDisabled
   onSelect: (address: string) => void
-}> = ({ address, tokenId, allowZeroBalance, onSelect }) => {
+}> = ({ address, tokenId, isAccountDisabled = defaultIsAccountDisabled, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const allAccounts = useAccounts("owned")
@@ -49,7 +54,7 @@ export const SenderAccountPicker: FC<{
           (balance) =>
             balance.tokenId === tokenId && isAddressEqual(balance.address, account.address)
         )
-        const disabled = allowZeroBalance ? false : !balances.sum.planck.transferable
+        const disabled = isAccountDisabled(account, balances)
         return {
           ...account,
           balances,
@@ -69,7 +74,7 @@ export const SenderAccountPicker: FC<{
 
         return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
       })
-  }, [token, network, allAccounts, allBalances, tokenId, allowZeroBalance])
+  }, [token, network, allAccounts, allBalances, tokenId, isAccountDisabled])
 
   const filteredAccounts = useMemo(() => {
     const ls = search.trim().toLowerCase()
