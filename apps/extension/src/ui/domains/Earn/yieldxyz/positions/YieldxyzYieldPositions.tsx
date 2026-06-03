@@ -108,9 +108,6 @@ const NavHeader: FC<{
               {!!product.mechanics?.type && (
                 <EarnTypeBadge className="shrink-0">{product.mechanics.type}</EarnTypeBadge>
               )}
-              <div className="shrink-0">
-                <YieldxyzProductYieldDisplay product={product} />
-              </div>
             </div>
             <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>
@@ -235,7 +232,13 @@ const PositionHeader: FC<{
   return (
     <div className="flex h-32 w-full items-center gap-8 rounded bg-grey-800 px-10">
       <div className="flex grow flex-col gap-2 overflow-hidden">
-        <div className="truncate font-bold text-base text-body">{productTokens}</div>
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="truncate font-bold text-base text-body">{productTokens}</div>
+          <div className="flex shrink-0 items-center text-sm">
+            <span className="mx-2 mr-4 inline-block size-2 shrink-0 rounded-full bg-body-disabled align-middle"></span>
+            <YieldxyzProductYieldDisplay product={position.product} />
+          </div>
+        </div>
         <div className="flex max-w-full items-center gap-[0.3em] overflow-hidden text-body-secondary">
           <NetworkLogo networkId={networkId} className="size-8 shrink-0" />
           <NetworkName networkId={networkId} className="truncate text-sm" />
