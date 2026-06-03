@@ -5,12 +5,15 @@ import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 
-export const useYieldxyzOpportunitiesForTokenId = (tokenId: TokenId) => {
+export const useYieldxyzOpportunitiesForTokenId = (tokenId: TokenId | null | undefined) => {
   const { data: allProducts } = useYieldxyzProducts()
 
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
 
   return useMemo(() => {
+    // guard falsy ids: a product whose input token id resolves to undefined would otherwise
+    // match an undefined tokenId (undefined === undefined)
+    if (!tokenId) return []
     return (
       allProducts
         ?.filter((product) => {

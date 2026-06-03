@@ -19,13 +19,14 @@ export const YieldxyzEnterStepProduct: FC = () => {
   const { pickerTokenId, onProductChanged, productId, canGoBack, goBack, discoverOnly } =
     useYieldxyzEnterWizard()
 
-  if (!pickerTokenId) throw new Error("PickerTokenId is not defined")
-
   const token = useToken(pickerTokenId)
   const products = useYieldxyzOpportunitiesForTokenId(pickerTokenId)
 
   const opportunities = useMemo<EarnOpportunity[]>(
-    () => products.map((product) => toYieldxyzEarnOpportunity(product, pickerTokenId)),
+    () =>
+      pickerTokenId
+        ? products.map((product) => toYieldxyzEarnOpportunity(product, pickerTokenId))
+        : [],
     [products, pickerTokenId]
   )
 
@@ -34,6 +35,10 @@ export const YieldxyzEnterStepProduct: FC = () => {
       discoverOnly ? t("You do not have any {{symbol}}", { symbol: token?.symbol ?? "" }) : null,
     [discoverOnly, token?.symbol, t]
   )
+
+  // guarded after all hooks so the hook order stays stable across renders (rules-of-hooks);
+  // in practice the wizard only mounts the product step once a token is selected
+  if (!pickerTokenId) throw new Error("PickerTokenId is not defined")
 
   return (
     <WizardModalDialog
