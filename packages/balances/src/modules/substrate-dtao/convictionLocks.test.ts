@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  findDTaoConvictionLock,
   getConvictionLockCandidates,
   getConvictionLockLabel,
   getConvictionLockPairs,
@@ -160,5 +161,53 @@ describe("getConvictionLockLabel", () => {
 
   it("labels decaying locks", () => {
     expect(getConvictionLockLabel("decaying")).toBe("Decaying Conviction Lock")
+  })
+})
+
+describe("findDTaoConvictionLock", () => {
+  const convictionLockMeta = {
+    scaledAlphaPrice: "0",
+    convictionLock: {
+      type: "conviction-lock",
+      lockType: "decaying",
+      conviction: "0",
+      convictionRaw: "0",
+      convictionFormat: "U64F64",
+      lastUpdate: "0",
+    },
+  }
+
+  it("returns null when there is no lock", () => {
+    expect(findDTaoConvictionLock(undefined)).toBeNull()
+    expect(findDTaoConvictionLock(null)).toBeNull()
+    expect(findDTaoConvictionLock([])).toBeNull()
+    expect(
+      findDTaoConvictionLock([
+        { amount: { planck: 10n }, meta: { scaledAlphaPrice: "0" } }, // eg pending root claim
+      ])
+    ).toBeNull()
+  })
+
+  it("finds the conviction lock among other locks", () => {
+    expect(
+      findDTaoConvictionLock([
+        { amount: { planck: 10n }, meta: { scaledAlphaPrice: "0" } },
+        { amount: { planck: 42n }, meta: convictionLockMeta },
+      ])
+    ).toEqual({ amount: 42n, lockType: "decaying", label: "Decaying Conviction Lock" })
+  })
+
+  it("returns the lock type and label for perpetual locks", () => {
+    expect(
+      findDTaoConvictionLock([
+        {
+          amount: { planck: 7n },
+          meta: {
+            ...convictionLockMeta,
+            convictionLock: { ...convictionLockMeta.convictionLock, lockType: "perpetual" },
+          },
+        },
+      ])
+    ).toEqual({ amount: 7n, lockType: "perpetual", label: "Perpetual Conviction Lock" })
   })
 })

@@ -1,4 +1,5 @@
 export * from "./alphaPrice"
+export * from "./convictionLocks"
 export * from "./getDtaoTokenRates"
 export * from "./module"
 export * from "./types"

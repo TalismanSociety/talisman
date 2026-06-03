@@ -10,6 +10,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { BittensorConvictionLockIndicator } from "@ui/domains/Staking/Bittensor/components/BittensorConvictionLockIndicator"
 import type { BittensorStakingPosition } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -148,7 +149,8 @@ const Position: FC<{
               signetUrl={getAccountSignetUrl(account)}
             />
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            <BittensorConvictionLockIndicator position={position} />
             <Tokens
               amount={position.balance.free.tokens}
               decimals={position.token.decimals}

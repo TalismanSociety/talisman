@@ -1,6 +1,12 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
-import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
+import {
+  type Balance,
+  BalanceFormatter,
+  type Balances,
+  findDTaoConvictionLock,
+  getBalanceId,
+} from "@talismn/balances"
 import {
   type DotNetworkId,
   subDTaoTokenId,
@@ -359,9 +365,18 @@ const useBittensorBondWizardProvider = () => {
     [dtaoBalance?.free.planck]
   )
 
+  // Bittensor conviction lock: the locked stake cannot be unstaked (chain would throw StakeUnavailable)
+  const convictionLock = useMemo(() => findDTaoConvictionLock(dtaoBalance?.locks), [dtaoBalance])
+
+  // stake minus the conviction locked amount
+  const availableToUnstakePlancks = useMemo(
+    () => dtaoBalance?.transferable.planck ?? 0n,
+    [dtaoBalance?.transferable.planck]
+  )
+
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {
-      return totalStakedPlancks
+      return availableToUnstakePlancks
     }
     if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
     // Add a 5% safety margin on the fee estimate to absorb variance between
@@ -369,7 +384,7 @@ const useBittensorBondWizardProvider = () => {
     const feeWithMargin = feeEstimate + feeEstimate / 20n
     if (existentialDeposit.planck + feeWithMargin > nativeBalance.transferable.planck) return null
     return nativeBalance.transferable.planck - existentialDeposit.planck - feeWithMargin
-  }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, totalStakedPlancks])
+  }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, availableToUnstakePlancks])
 
   const newStakeTotal = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -456,6 +471,15 @@ const useBittensorBondWizardProvider = () => {
     if ((amountIn || 0n) > totalStakedPlancks) {
       return t("Insufficient balance")
     }
+    if ((amountIn || 0n) > availableToUnstakePlancks) {
+      // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
+      return convictionLock
+        ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
+            amount: new BalanceFormatter(convictionLock.amount, dtaoToken?.decimals).tokens,
+            symbol: dtaoToken?.symbol,
+          })
+        : t("Insufficient balance")
+    }
     if (
       newStakeTotal < (minAlphaBond || 0n) &&
       newStakeTotal !== 0n &&
@@ -480,6 +504,8 @@ const useBittensorBondWizardProvider = () => {
     feeEstimate,
     nativeBalance,
     totalStakedPlancks,
+    availableToUnstakePlancks,
+    convictionLock,
     newStakeTotal,
     minAlphaBond,
     isSubnetUnbond,
@@ -536,6 +562,8 @@ const useBittensorBondWizardProvider = () => {
     inputErrorMessage,
     stakeDirection,
     dtaoBalance,
+    availableToUnstakePlancks,
+    convictionLock,
     newStakeTotal,
     isSubnetUnbond,
     position,

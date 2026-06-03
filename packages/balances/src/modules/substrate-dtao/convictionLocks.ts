@@ -7,6 +7,7 @@ import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../sha
 import type {
   GetColdkeyLockResult,
   GetStakeInfosResult,
+  SubDTaoBalanceMeta,
   SubDTaoConvictionLock,
   SubDTaoConvictionLockType,
 } from "./types"
@@ -65,6 +66,37 @@ export const getConvictionLockPairs = (
 
 export const getConvictionLockLabel = (lockType: SubDTaoConvictionLockType): string =>
   lockType === "perpetual" ? "Perpetual Conviction Lock" : "Decaying Conviction Lock"
+
+export type DTaoConvictionLockInfo = {
+  amount: bigint
+  lockType: SubDTaoConvictionLockType
+  label: string
+}
+
+// structural subset of the formatted locks exposed by Balance#locks,
+// kept loose to avoid a circular dependency on the Balance class
+type BalanceLockLike = {
+  amount: { planck: bigint }
+  meta?: unknown
+}
+
+/**
+ * Extracts the dtao conviction lock from a Balance locks array (Balance#locks), if any.
+ * The locked amount cannot be unstaked or transferred until the lock decays (or ever, if perpetual).
+ */
+export const findDTaoConvictionLock = (
+  locks: BalanceLockLike[] | null | undefined
+): DTaoConvictionLockInfo | null => {
+  for (const lock of locks ?? []) {
+    const meta = lock.meta as SubDTaoBalanceMeta | undefined
+    if (meta?.convictionLock?.type !== "conviction-lock") continue
+
+    const lockType = meta.convictionLock.lockType
+    return { amount: lock.amount.planck, lockType, label: getConvictionLockLabel(lockType) }
+  }
+
+  return null
+}
 
 export const toBigIntValue = (value: unknown): bigint => {
   if (typeof value === "bigint") return value

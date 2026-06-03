@@ -1,5 +1,5 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { BalanceFormatter, getBalanceId } from "@talismn/balances"
+import { BalanceFormatter, findDTaoConvictionLock, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
@@ -189,7 +189,16 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     const transferablePlanck =
       balanceTokenIn.transferable.planck ?? balanceTokenIn.free.planck ?? 0n
 
-    if (state.valueIn > transferablePlanck) return t("Insufficient balance")
+    if (state.valueIn > transferablePlanck) {
+      // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
+      const convictionLock = findDTaoConvictionLock(balanceTokenIn.locks)
+      return convictionLock && state.valueIn <= balanceTokenIn.free.planck
+        ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
+            amount: new BalanceFormatter(convictionLock.amount, tokenIn.decimals).tokens,
+            symbol: tokenIn.symbol,
+          })
+        : t("Insufficient balance")
+    }
 
     if (
       !supportsAlphaFees &&

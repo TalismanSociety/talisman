@@ -35,7 +35,10 @@ import { BittensorModalLayout } from "../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { ROOT_NETUID } from "../utils/constants"
-import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
+import {
+  BittensorAvailableToUnstake,
+  BittensorConvictionLockedRow,
+} from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
 
 const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
@@ -414,6 +417,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             <BittensorAvailableToUnstake />
           )}
         </div>
+        {stakeDirection === "unbond" && <BittensorConvictionLockedRow />}
       </div>
 
       <div className="flex flex-col gap-2 rounded bg-grey-900 p-4 text-xs leading-paragraph">
