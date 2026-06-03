@@ -32,3 +32,29 @@ export type TokenOpportunity = {
   bestApr: number
   balances: Balances
 }
+
+export type EarnPositionDisplayToken = {
+  tokenId: TokenId | null
+  symbol: string
+  logoUrl: string | null
+}
+
+// a held position, flattened to a system-agnostic shape so the positions list and navigation
+// (`detailUrl`) never branch on which system produced it
+export type EarnPosition = {
+  id: string
+  address: string
+  networkId: string | null
+  logoUrl: string | null
+  providerName: string
+  title: string
+  type: string | null
+  isReadOnly: boolean
+  displayTokens: EarnPositionDisplayToken[]
+  totalAmountUsd: number
+  apr: number | null // percentage value, e.g. 4.5 == 4.5%; null when unknown
+  rateType: string | null // "APR" | "APY"; null when apr is null
+  detailUrl: string
+  tokenIds: TokenId[]
+  searchTerms: string[]
+}

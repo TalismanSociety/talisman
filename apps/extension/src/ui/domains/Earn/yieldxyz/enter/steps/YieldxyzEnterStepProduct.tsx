@@ -7,7 +7,7 @@ import { EarnOpportunityPicker } from "../../../components/EarnOpportunityPicker
 import {
   toYieldxyzEarnOpportunity,
   type YieldxyzEarnOpportunity,
-} from "../../../hooks/useEarnOpportunitiesByTokenId"
+} from "../../../systems/yieldxyzSystem"
 import type { EarnOpportunity } from "../../../types"
 import { useYieldxyzOpportunitiesForTokenId } from "../../hooks/useYieldxyzOpportunitiesForTokenId"
 import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"

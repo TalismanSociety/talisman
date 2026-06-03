@@ -1,14 +1,12 @@
 import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
-import { useYieldxyzEnterModal } from "@ui/domains/Earn/yieldxyz/enter/useYieldxyzEnterModal"
 import { useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useEarnDepositModal } from "../hooks/useEarnDepositModal"
-import type { YieldxyzEarnOpportunity } from "../hooks/useEarnOpportunitiesByTokenId"
+import { useEarnSystemActionOpeners } from "../systems/registry"
 import type { EarnOpportunity } from "../types"
 import { EarnOpportunityPicker } from "./EarnOpportunityPicker"
 
@@ -16,21 +14,17 @@ export const EarnDepositModal: FC = () => {
   const { t } = useTranslation()
   const { isOpen, close, args } = useEarnDepositModal()
   const token = useToken(args?.tokenId)
-  const yieldxyzModal = useYieldxyzEnterModal()
-  const seekModal = useSeekStakingModal()
+  const openers = useEarnSystemActionOpeners()
 
   const openOpportunity = useCallback(
     (opportunity: EarnOpportunity) => {
       close()
-      if (opportunity.system === "yieldxyz")
-        yieldxyzModal.open({
-          pickerTokenId: args?.tokenId,
-          discoverOnly: args?.discoverOnly,
-          productId: (opportunity as YieldxyzEarnOpportunity).product.id,
-        })
-      else if (opportunity.system === "seek") seekModal.open({ action: "stake" })
+      openers[opportunity.system](opportunity, {
+        tokenId: args?.tokenId,
+        discoverOnly: args?.discoverOnly,
+      })
     },
-    [args?.discoverOnly, args?.tokenId, close, seekModal, yieldxyzModal]
+    [args?.discoverOnly, args?.tokenId, close, openers]
   )
 
   const disabledReason = useMemo(

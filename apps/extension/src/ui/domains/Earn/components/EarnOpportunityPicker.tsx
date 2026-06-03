@@ -1,16 +1,14 @@
-import { CheckCircleIcon, LockIcon } from "@talismn/icons"
+import { CheckCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { cn } from "@ui/util/cn"
-import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { YieldxyzEarnOpportunity } from "../hooks/useEarnOpportunitiesByTokenId"
+import { getEarnSystem } from "../systems/registry"
 import type { EarnOpportunity } from "../types"
-import { YieldxyzProductYieldDisplay } from "../yieldxyz/components/YieldxyzProductYieldDisplay"
-import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 
 export const EarnOpportunityPicker: FC<{
   opportunities: EarnOpportunity[]
@@ -57,16 +55,34 @@ export const EarnOpportunityPicker: FC<{
   )
 }
 
+const GenericApr: FC<{ apr: number | null }> = ({ apr }) =>
+  apr == null ? null : (
+    <div className="text-primary">
+      {Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 }).format(
+        apr / 100
+      )}
+    </div>
+  )
+
 const OpportunityRow: FC<{
   opportunity: EarnOpportunity
   selected: boolean
   onClick: () => void
   disabledReason?: string | null
 }> = ({ opportunity, selected, onClick, disabledReason }) => {
-  const { t } = useTranslation()
   const disabled = !!disabledReason
-  const product =
-    opportunity.system === "yieldxyz" ? (opportunity as YieldxyzEarnOpportunity).product : undefined
+  const system = getEarnSystem(opportunity.system)
+
+  // each system can supply custom row slots; omitted slots fall back to a generic logo + APR
+  const logo = system.renderOpportunityLogo?.(opportunity) ?? (
+    <div className="inline-block size-16 shrink-0 text-xl!">
+      <AssetLogo url={opportunity.providerLogoURI} className="size-full" />
+    </div>
+  )
+  const metric = system.renderOpportunityMetric?.(opportunity) ?? null
+  const yieldDisplay = system.renderOpportunityYield?.(opportunity) ?? (
+    <GenericApr apr={opportunity.apr} />
+  )
 
   return (
     <Tooltip placement="center">
@@ -83,68 +99,18 @@ const OpportunityRow: FC<{
             disabled && "cursor-not-allowed opacity-50 **:pointer-events-none"
           )}
         >
-          {product ? (
-            <YieldxyzProviderLogo
-              providerId={opportunity.providerId}
-              className="shrink-0 text-xl!"
-            />
-          ) : (
-            <div className="inline-block size-16 shrink-0 text-xl!">
-              <AssetLogo url={opportunity.providerLogoURI} className="size-full" />
-            </div>
-          )}
+          {logo}
           <div className="flex grow items-center overflow-hidden">
             <div className="flex w-full flex-col gap-2 overflow-hidden">
               <div className="truncate">{opportunity.title}</div>
-              {product && (
-                <Metric
-                  icon={<LockIcon />}
-                  tooltip={t("Total value locked")}
-                  className="text-body-secondary text-xs"
-                >
-                  {product.statistics &&
-                    Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      notation: "compact",
-                    }).format(Number(product.statistics?.tvlUsd ?? 0))}
-                </Metric>
-              )}
+              {metric}
             </div>
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
-          <div className="shrink-0 text-right">
-            {product ? (
-              <YieldxyzProductYieldDisplay product={product} />
-            ) : opportunity.apr == null ? null : (
-              <div className="text-primary">
-                {Intl.NumberFormat(undefined, {
-                  style: "percent",
-                  maximumFractionDigits: 1,
-                }).format(opportunity.apr / 100)}
-              </div>
-            )}
-          </div>
+          <div className="shrink-0 text-right">{yieldDisplay}</div>
         </button>
       </TooltipTrigger>
       {disabledReason && <TooltipContent>{disabledReason}</TooltipContent>}
-    </Tooltip>
-  )
-}
-
-const Metric: FC<
-  PropsWithChildren<{ icon: ReactNode; tooltip: ReactNode; className?: string }>
-> = ({ children, icon, tooltip, className }) => {
-  const { t } = useTranslation()
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className={cn("inline-flex shrink-0 items-center gap-2 self-start", className)}>
-          <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
-          <div>{children ?? t("N/A")}</div>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>
   )
 }

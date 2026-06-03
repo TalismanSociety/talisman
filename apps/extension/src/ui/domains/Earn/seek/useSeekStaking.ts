@@ -15,7 +15,7 @@ import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useCallback, useMemo } from "react"
 import { erc20Abi, formatUnits } from "viem"
-
+import type { EarnOpportunity } from "../types"
 import {
   createSeekStakingMetadataPersister,
   createSeekStakingPositionPersister,
@@ -235,7 +235,7 @@ export const useSeekStakingOpportunity = () => {
       isFetching,
       data:
         token && selectedEthereumAccounts.length
-          ? {
+          ? ({
               id: "seek-staking",
               system: "seek",
               providerId: SEEK_PROVIDER_ID,
@@ -246,7 +246,7 @@ export const useSeekStakingOpportunity = () => {
               type: "staking",
               apr: metadata?.apr ?? null,
               searchTerms: ["SEEK", "SEEK Staking", "staking"],
-            }
+            } satisfies EarnOpportunity)
           : null,
     }),
     [
