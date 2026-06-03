@@ -1,20 +1,19 @@
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { describe, expect, it, vi } from "vitest"
+
 import {
   deserializeSeekStakingMetadata,
-  deserializeSeekStakingPositions,
+  deserializeSeekStakingPosition,
   getSeekStakingPositionCacheKey,
-  getSeekStakingPositionsCacheKey,
+  isSeekAccountPositionActive,
   removeSeekStakingPositionCache,
   serializeSeekStakingMetadata,
-  serializeSeekStakingPositions,
+  serializeSeekStakingPosition,
 } from "./seekStakingCache"
 import type { SeekAccountPosition, SeekStakingRawMetadata } from "./useSeekStaking"
 
 vi.mock("@ui/api/api", () => ({
   api: {
-    queryCacheGet: vi.fn(),
-    queryCacheSet: vi.fn(),
     queryCacheRemove: vi.fn(),
   },
 }))
@@ -24,27 +23,13 @@ const mockedApi = vi.mocked(api)
 
 const networkId = "1" as EthNetworkId
 const stakingContractAddress = "0x52b8969F9C1d1EFFd4f0ABeA2104dF02B65c165C"
+const address = "0xAbCd"
+const positionCacheKey = "earn:seek:position:1:0x52b8969f9c1d1effd4f0abea2104df02b65c165c:0xabcd"
 
 describe("SEEK staking cache keys", () => {
-  it("normalizes single-position keys", () => {
-    expect(getSeekStakingPositionCacheKey(networkId, stakingContractAddress, "0xABCDEF")).toBe(
-      "earn:seek:position:1:0x52b8969f9c1d1effd4f0abea2104df02b65c165c:0xabcdef"
-    )
-  })
-
-  it("uses order-independent selected account scopes", () => {
-    const first = getSeekStakingPositionsCacheKey(networkId, stakingContractAddress, [
-      "0xBBBB",
-      "0xAAAA",
-    ])
-    const second = getSeekStakingPositionsCacheKey(networkId, stakingContractAddress, [
-      "0xaaaa",
-      "0xbbbb",
-    ])
-
-    expect(first).toBe(second)
-    expect(first).toBe(
-      "earn:seek:positions:1:0x52b8969f9c1d1effd4f0abea2104df02b65c165c:0xaaaa%2C0xbbbb"
+  it("uses a per-address position key, lowercased", () => {
+    expect(getSeekStakingPositionCacheKey(networkId, stakingContractAddress, address)).toBe(
+      positionCacheKey
     )
   })
 })
@@ -67,41 +52,58 @@ describe("SEEK staking cache DTOs", () => {
   })
 
   it("round-trips position bigint fields through JSON-safe DTOs", () => {
-    const positions: SeekAccountPosition[] = [
-      {
-        address: "0xABCDEF",
-        staked: 123n,
-        earned: 456n,
-        pendingWithdrawal: {
-          amount: 789n,
-          unlockTimestamp: 10n,
-        },
+    const position: SeekAccountPosition = {
+      address: "0xABCDEF",
+      staked: 123n,
+      earned: 456n,
+      pendingWithdrawal: {
+        amount: 789n,
+        unlockTimestamp: 10n,
       },
-    ]
+    }
 
-    const dto = serializeSeekStakingPositions(positions)
+    const dto = serializeSeekStakingPosition(position)
 
     expect(JSON.parse(JSON.stringify(dto))).toEqual(dto)
-    expect(deserializeSeekStakingPositions(dto)).toEqual(positions)
+    expect(deserializeSeekStakingPosition(dto)).toEqual(position)
+  })
+
+  it("serializes null positions to null", () => {
+    expect(serializeSeekStakingPosition(null)).toBeNull()
+    expect(deserializeSeekStakingPosition(null)).toBeNull()
+  })
+})
+
+describe("isSeekAccountPositionActive", () => {
+  const base: SeekAccountPosition = {
+    address: "0xABCDEF",
+    staked: 0n,
+    earned: 0n,
+    pendingWithdrawal: { amount: 0n, unlockTimestamp: 0n },
+  }
+
+  it("is inactive when staked, earned and pending are all zero", () => {
+    expect(isSeekAccountPositionActive(base)).toBe(false)
+  })
+
+  it("is active when any of staked, earned or pending is non-zero", () => {
+    expect(isSeekAccountPositionActive({ ...base, staked: 1n })).toBe(true)
+    expect(isSeekAccountPositionActive({ ...base, earned: 1n })).toBe(true)
+    expect(
+      isSeekAccountPositionActive({
+        ...base,
+        pendingWithdrawal: { amount: 1n, unlockTimestamp: 0n },
+      })
+    ).toBe(true)
   })
 })
 
 describe("removeSeekStakingPositionCache", () => {
-  it("removes both single-account and selected-account position entries", async () => {
+  it("removes the per-address position entry", async () => {
     mockedApi.queryCacheRemove.mockResolvedValue(true)
 
-    await removeSeekStakingPositionCache({
-      networkId,
-      stakingContractAddress,
-      address: "0xBBBB",
-      accountAddresses: ["0xBBBB", "0xAAAA"],
-    })
+    await removeSeekStakingPositionCache({ networkId, stakingContractAddress, address })
 
-    expect(mockedApi.queryCacheRemove).toHaveBeenCalledWith(
-      "earn:seek:position:1:0x52b8969f9c1d1effd4f0abea2104df02b65c165c:0xbbbb"
-    )
-    expect(mockedApi.queryCacheRemove).toHaveBeenCalledWith(
-      "earn:seek:positions:1:0x52b8969f9c1d1effd4f0abea2104df02b65c165c:0xaaaa%2C0xbbbb"
-    )
+    expect(mockedApi.queryCacheRemove).toHaveBeenCalledWith(positionCacheKey)
   })
 })

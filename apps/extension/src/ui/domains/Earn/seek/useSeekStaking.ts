@@ -6,20 +6,20 @@ import {
   type Token,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { useQuery } from "@tanstack/react-query"
+import { type UseQueryResult, useQueries, useQuery } from "@tanstack/react-query"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { erc20Abi, formatUnits } from "viem"
 
 import {
   createSeekStakingMetadataPersister,
   createSeekStakingPositionPersister,
-  createSeekStakingPositionsPersister,
+  isSeekAccountPositionActive,
 } from "./seekStakingCache"
 
 const SECONDS_IN_YEAR = 31_557_600n
@@ -298,6 +298,44 @@ const readSeekAccountPosition = async (
   }
 }
 
+// Shared by the single-position hook and the list hook (via useQueries) so both read and write the
+// same per-address persisted entry. The list is just N independent single-address queries; there is
+// no pool-wide blob to merge into, so each address caches and displays on its own.
+const getSeekPositionQueryOptions = ({
+  publicClient,
+  networkId,
+  stakingContractAddress,
+  address,
+}: {
+  publicClient: ReturnType<typeof usePublicClient>
+  networkId: EthNetworkId
+  stakingContractAddress: `0x${string}`
+  address: string | undefined
+}) => ({
+  queryKey: [
+    SEEK_STAKING_QUERY_KEY,
+    "position",
+    publicClient?.uid,
+    stakingContractAddress,
+    address,
+  ] as const,
+  queryFn: async (): Promise<SeekAccountPosition | null> => {
+    if (!publicClient || !address) return null
+    return readSeekAccountPosition(publicClient, stakingContractAddress, address as `0x${string}`)
+  },
+  enabled: !!publicClient && !!address,
+  // the persist key is scoped to the address (not the volatile publicClient.uid), so a cached
+  // position displays instantly even after the rpc client is recreated or the selection changes
+  persister: address
+    ? createSeekStakingPositionPersister(
+        networkId,
+        stakingContractAddress,
+        address as `0x${string}`
+      )
+    : undefined,
+  refetchInterval: 30_000,
+})
+
 export const useSeekStakingPositions = () => {
   const config = useSeekStakingConfig()
   const publicClient = usePublicClient(config.networkId)
@@ -310,77 +348,59 @@ export const useSeekStakingPositions = () => {
         .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
     [selectedEthereumAccounts]
   )
-  const positionsPersister = useMemo(
+
+  const queries = useMemo(
     () =>
-      createSeekStakingPositionsPersister(
-        config.networkId,
-        config.stakingContractAddress,
-        accountAddresses
+      accountAddresses.map((address) =>
+        getSeekPositionQueryOptions({
+          publicClient,
+          networkId: config.networkId,
+          stakingContractAddress: config.stakingContractAddress,
+          address,
+        })
       ),
-    [accountAddresses, config.networkId, config.stakingContractAddress]
+    [accountAddresses, config.networkId, config.stakingContractAddress, publicClient]
   )
 
-  return useQuery({
-    queryKey: [
-      SEEK_STAKING_QUERY_KEY,
-      "positions",
-      publicClient?.uid,
-      config.stakingContractAddress,
-      accountAddresses,
-    ],
-    queryFn: async () => {
-      if (!publicClient) return []
-      const positions = await Promise.all(
-        accountAddresses.map((address) =>
-          readSeekAccountPosition(publicClient, config.stakingContractAddress, address)
-        )
-      )
-      return positions.filter(
-        (position) =>
-          position.staked > 0n || position.earned > 0n || position.pendingWithdrawal.amount > 0n
-      )
-    },
-    enabled: !!publicClient && accountAddresses.length > 0,
-    persister: positionsPersister,
-    refetchInterval: 30_000,
-  })
+  // stable combine ref lets react-query apply structural sharing, keeping `data` referentially
+  // stable when the underlying positions are unchanged
+  const combine = useCallback(
+    (results: UseQueryResult<SeekAccountPosition | null>[]) => ({
+      data: results
+        .map((result) => result.data)
+        .filter(
+          (position): position is SeekAccountPosition =>
+            !!position && isSeekAccountPositionActive(position)
+        ),
+      isFetching: results.some((result) => result.isFetching),
+      status: results.some((result) => result.status === "error")
+        ? ("error" as const)
+        : results.every((result) => result.status === "success")
+          ? ("success" as const)
+          : ("pending" as const),
+    }),
+    []
+  )
+
+  return useQueries({ queries, combine })
 }
 
 export const useSeekStakingPosition = (address: string | undefined) => {
   const config = useSeekStakingConfig()
   const publicClient = usePublicClient(config.networkId)
-  const positionPersister = useMemo(
-    () =>
-      address
-        ? createSeekStakingPositionPersister(
-            config.networkId,
-            config.stakingContractAddress,
-            address
-          )
-        : undefined,
-    [address, config.networkId, config.stakingContractAddress]
-  )
 
-  return useQuery({
-    queryKey: [
-      SEEK_STAKING_QUERY_KEY,
-      "position",
-      publicClient?.uid,
-      config.stakingContractAddress,
-      address,
-    ],
-    queryFn: async () => {
-      if (!publicClient || !address) return null
-      return readSeekAccountPosition(
-        publicClient,
-        config.stakingContractAddress,
-        address as `0x${string}`
-      )
-    },
-    enabled: !!publicClient && !!address,
-    persister: positionPersister,
-    refetchInterval: 30_000,
-  })
+  return useQuery(
+    useMemo(
+      () =>
+        getSeekPositionQueryOptions({
+          publicClient,
+          networkId: config.networkId,
+          stakingContractAddress: config.stakingContractAddress,
+          address,
+        }),
+      [address, config.networkId, config.stakingContractAddress, publicClient]
+    )
+  )
 }
 
 export const useSeekErc20Allowance = (address: string | null, amount: bigint | null) => {

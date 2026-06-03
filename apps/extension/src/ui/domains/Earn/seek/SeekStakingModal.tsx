@@ -317,7 +317,6 @@ const SeekStakingForm: FC<{
             networkId: config.networkId as EthNetworkId,
             stakingContractAddress: config.stakingContractAddress,
             address,
-            accountAddresses: selectedEthereumAccountAddresses,
           })
         }
       } catch (err) {
@@ -326,13 +325,7 @@ const SeekStakingForm: FC<{
         await queryClient.invalidateQueries({ queryKey: [SEEK_STAKING_QUERY_KEY] })
       }
     },
-    [
-      address,
-      config.networkId,
-      config.stakingContractAddress,
-      queryClient,
-      selectedEthereumAccountAddresses,
-    ]
+    [address, config.networkId, config.stakingContractAddress, queryClient]
   )
 
   const handleSubmit = useCallback(

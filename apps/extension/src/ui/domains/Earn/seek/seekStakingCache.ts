@@ -7,10 +7,7 @@ import {
 } from "../hooks/earnQueryCache"
 import type { SeekAccountPosition, SeekStakingRawMetadata } from "./useSeekStaking"
 
-const normalizeAddress = (address: string) => address.toLowerCase()
 const SEEK_CACHE_PROVIDER_ID = "seek"
-
-const isNotNull = <T>(value: T | null): value is T => value !== null
 
 const getSeekStakingMetadataCacheKey = (
   networkId: EthNetworkId,
@@ -30,18 +27,8 @@ export const getSeekStakingPositionCacheKey = (
   getEarnQueryCacheKey({
     providerId: SEEK_CACHE_PROVIDER_ID,
     resource: "position",
-    scope: [networkId, stakingContractAddress, normalizeAddress(address)],
-  })
-
-export const getSeekStakingPositionsCacheKey = (
-  networkId: EthNetworkId,
-  stakingContractAddress: `0x${string}`,
-  addresses: readonly string[]
-) =>
-  getEarnQueryCacheKey({
-    providerId: SEEK_CACHE_PROVIDER_ID,
-    resource: "positions",
-    scope: [networkId, stakingContractAddress, addresses.map(normalizeAddress).sort().join(",")],
+    // scope parts are lowercased by getEarnQueryCacheKey, so the key is address-case insensitive
+    scope: [networkId, stakingContractAddress, address],
   })
 
 type SeekStakingRawMetadataDto = Omit<
@@ -94,7 +81,7 @@ export const deserializeSeekStakingMetadata = (
       }
     : null
 
-const serializeSeekStakingPosition = (
+export const serializeSeekStakingPosition = (
   position: SeekAccountPosition | null
 ): SeekAccountPositionDto | null =>
   position
@@ -109,7 +96,7 @@ const serializeSeekStakingPosition = (
       }
     : null
 
-const deserializeSeekStakingPosition = (
+export const deserializeSeekStakingPosition = (
   position: SeekAccountPositionDto | null
 ): SeekAccountPosition | null =>
   position
@@ -124,13 +111,8 @@ const deserializeSeekStakingPosition = (
       }
     : null
 
-export const serializeSeekStakingPositions = (
-  positions: SeekAccountPosition[]
-): SeekAccountPositionDto[] => positions.map(serializeSeekStakingPosition).filter(isNotNull)
-
-export const deserializeSeekStakingPositions = (
-  positions: SeekAccountPositionDto[]
-): SeekAccountPosition[] => positions.map(deserializeSeekStakingPosition).filter(isNotNull)
+export const isSeekAccountPositionActive = (position: SeekAccountPosition) =>
+  position.staked > 0n || position.earned > 0n || position.pendingWithdrawal.amount > 0n
 
 export const createSeekStakingMetadataPersister = (
   networkId: EthNetworkId,
@@ -145,7 +127,7 @@ export const createSeekStakingMetadataPersister = (
 export const createSeekStakingPositionPersister = (
   networkId: EthNetworkId,
   stakingContractAddress: `0x${string}`,
-  address: string
+  address: `0x${string}`
 ) =>
   createEarnQueryCachePersister<SeekAccountPosition | null, SeekAccountPositionDto | null>({
     key: getSeekStakingPositionCacheKey(networkId, stakingContractAddress, address),
@@ -153,34 +135,15 @@ export const createSeekStakingPositionPersister = (
     deserialize: deserializeSeekStakingPosition,
   })
 
-export const createSeekStakingPositionsPersister = (
-  networkId: EthNetworkId,
-  stakingContractAddress: `0x${string}`,
-  addresses: readonly string[]
-) =>
-  createEarnQueryCachePersister<SeekAccountPosition[], SeekAccountPositionDto[]>({
-    key: getSeekStakingPositionsCacheKey(networkId, stakingContractAddress, addresses),
-    serialize: serializeSeekStakingPositions,
-    deserialize: deserializeSeekStakingPositions,
-  })
-
-export const removeSeekStakingPositionCache = async ({
+export const removeSeekStakingPositionCache = ({
   networkId,
   stakingContractAddress,
   address,
-  accountAddresses,
 }: {
   networkId: EthNetworkId
   stakingContractAddress: `0x${string}`
   address: string
-  accountAddresses: readonly string[]
-}) => {
-  await Promise.all([
-    removeEarnQueryCacheEntry(
-      getSeekStakingPositionCacheKey(networkId, stakingContractAddress, address)
-    ),
-    removeEarnQueryCacheEntry(
-      getSeekStakingPositionsCacheKey(networkId, stakingContractAddress, accountAddresses)
-    ),
-  ])
-}
+}) =>
+  removeEarnQueryCacheEntry(
+    getSeekStakingPositionCacheKey(networkId, stakingContractAddress, address)
+  )
