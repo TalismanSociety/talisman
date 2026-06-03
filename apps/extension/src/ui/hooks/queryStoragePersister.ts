@@ -69,8 +69,8 @@ export function createQueryStoragePersister<TData = unknown, TPersisted = TData>
   const {
     key: explicitKey,
     maxAge = DEFAULT_MAX_AGE,
-    serialize = (data) => data as unknown as TPersisted,
-    deserialize = (data) => data as unknown as TData,
+    serialize = (data: TData) => data as unknown as TPersisted,
+    deserialize = (data: TPersisted) => data as unknown as TData,
   } = config ?? {}
 
   return async <T, TQueryKey extends QueryKey>(
@@ -91,8 +91,10 @@ export function createQueryStoragePersister<TData = unknown, TPersisted = TData>
             query.setState({ dataUpdatedAt: cached.dataUpdatedAt })
             if (query.isStale()) query.fetch()
           })
-          // Return immediately to avoid loading state
-          return data as T
+          // Return immediately to avoid loading state.
+          // TData and T are the same type at every call site, but are distinct generics
+          // here (factory vs persister signature), so bridge them through unknown.
+          return data as unknown as T
         }
       } catch {
         Promise.resolve(api.queryCacheRemove(key)).catch(() => {})
