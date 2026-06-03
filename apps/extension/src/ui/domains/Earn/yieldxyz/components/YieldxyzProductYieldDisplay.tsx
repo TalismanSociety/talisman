@@ -1,4 +1,4 @@
-import type { YieldDto } from "@core/domains/earn/exports"
+import type { TokenDto, YieldDto } from "@core/domains/earn/exports"
 import { InfoIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -7,6 +7,15 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { type FC, useMemo } from "react"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
+
+const getRewardTokenKey = (token: TokenDto) =>
+  [
+    token.network,
+    token.address?.toLowerCase() ?? `${token.symbol}:${token.name}`,
+    token.isPoints ? "points" : "token",
+  ]
+    .filter(Boolean)
+    .join(":")
 
 export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product }) => {
   const text = useMemo(() => {
@@ -31,7 +40,7 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
     )
   }, [product, getYieldxyzToken])
 
-  const showTooltip = rewards.length > 1
+  const showTooltip = new Set(rewards.map((reward) => getRewardTokenKey(reward.token))).size > 1
 
   if (!text) return null
 
@@ -43,8 +52,8 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
     <Tooltip>
       <TooltipTrigger asChild>
         <div className="flex items-center gap-1.5 text-primary">
-          <InfoIcon className="inline-block size-6 align-sub" />
           <span>{text}</span>
+          <InfoIcon className="inline-block size-6" />
         </div>
       </TooltipTrigger>
       <TooltipContent>
