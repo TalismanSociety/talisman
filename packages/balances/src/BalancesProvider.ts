@@ -288,8 +288,14 @@ export class BalancesProvider {
           map(
             (results): BalancesResult => ({
               status: "live",
-              // exclude zero balances
-              balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+              // exclude zero balances, but keep balances that only hold a lock
+              // (eg dtao conviction locks, reported on the subnet's base token)
+              balances: results.success.filter((b) => {
+                const balance = new Balance(b)
+                return (
+                  balance.total.planck > 0n || balance.locks.some((lock) => lock.amount.planck > 0n)
+                )
+              }),
               failedBalanceIds: results.errors.map(({ tokenId, address }) =>
                 getBalanceId({ tokenId, address })
               ),

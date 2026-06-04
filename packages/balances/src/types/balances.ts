@@ -646,6 +646,17 @@ export class Balance {
     return newTransferableCalculation()
   }
   /**
+   * The portion of this balance's locks that exceeds its own free amount.
+   *
+   * Such a lock constrains sibling balances rather than this one (eg a dtao conviction lock,
+   * reported on the subnet's base token, constrains the per-validator staking positions):
+   * sum formatters subtract it from the summed transferable amount.
+   */
+  get lockOverflow() {
+    const lockedPlanck = excludeFromTransferableAmount(this.locks)
+    return this.#format(BigMath.max(lockedPlanck - this.free.planck, 0n))
+  }
+  /**
    * The unavailable balance of this token.
    * Prior to the Fungible trait, this was the locked amount + the reserved amount, i.e. `locked + reserved`.
    * Now, it is the bigger of the locked amount and the reserved amounts, i.e. `max(locked, reserved)`.
@@ -784,7 +795,13 @@ export class PlanckSumBalancesFormatter {
   }
   /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
-    return this.#sum("transferable")
+    // locks that exceed their own balance's free amount constrain the other balances of the sum
+    // (eg dtao conviction locks, reported on the subnet's base token, constrain the staking positions)
+    const overflow = this.#balances
+      .filterMirrorTokens()
+      .each.reduce((total, balance) => total + balance.lockOverflow.planck, 0n)
+
+    return BigMath.max(this.#sum("transferable") - overflow, 0n)
   }
   /** The unavailable balance of these tokens. */
   get unavailable() {
@@ -846,7 +863,13 @@ export class FiatSumBalancesFormatter {
   }
   /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
-    return this.#sum("transferable")
+    // locks that exceed their own balance's free amount constrain the other balances of the sum
+    // (eg dtao conviction locks, reported on the subnet's base token, constrain the staking positions)
+    const overflow = this.#balances
+      .filterMirrorTokens()
+      .each.reduce((total, balance) => total + (balance.lockOverflow.fiat(this.#currency) ?? 0), 0)
+
+    return Math.max(this.#sum("transferable") - overflow, 0)
   }
   /** The unavailable balance of these tokens. */
   get unavailable() {

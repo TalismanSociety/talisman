@@ -53,7 +53,9 @@ const shouldDisplayBalance = (
     // ex don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
     if (!isAccountCompatibleWithNetwork(network, account)) return false
 
-    const hasNonZeroBalance = balance.total.planck > 0
+    // locked-only balances have a zero total but must be displayed
+    // (eg dtao conviction locks, reported on the subnet's base token)
+    const hasNonZeroBalance = balance.total.planck > 0 || balance.locked.planck > 0n
     if (hasNonZeroBalance) return true
 
     // only show DEFAULT_TOKENS if account has no balance

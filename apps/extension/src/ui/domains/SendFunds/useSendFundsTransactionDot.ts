@@ -14,6 +14,7 @@ import { useSubstrateDryRun } from "./hooks/useSubstrateDryRun"
 import { useTip } from "./hooks/useTip"
 
 import type { SendFundsTransactionProps } from "./types"
+import { useDTaoSubnetAvailable } from "./useDTaoSubnetAvailable"
 import { useFeeToken } from "./useFeeToken"
 
 export const useSendFundsTransactionDot = ({
@@ -60,6 +61,9 @@ export const useSendFundsTransactionDot = ({
     if (qDryRun.error) log.error("Dry run error", qDryRun.error)
   }, [qDryRun.data, qDryRun.error])
 
+  // dtao (staked TAO/alpha): conviction locked stake cannot be transferred
+  const dtaoAvailable = useDTaoSubnetAvailable(from as string, tokenId as string)
+
   const maxAmount = useMemo(() => {
     if (!balance || !isTokenDot(token) || qTip.isLoading) return null
 
@@ -71,10 +75,14 @@ export const useSendFundsTransactionDot = ({
         const val = balance.transferable.planck - BigInt(qEstimateFee.data.partialFee) - tipPlanck
         return String(val > 0n ? val : 0n)
       }
-      default:
-        return balance.transferable.planck?.toString() ?? "0"
+      default: {
+        const transferable = balance.transferable.planck ?? 0n
+        const max =
+          dtaoAvailable !== null && dtaoAvailable < transferable ? dtaoAvailable : transferable
+        return max.toString()
+      }
     }
-  }, [balance, qEstimateFee.data, qTip, tipToken?.id, token])
+  }, [balance, dtaoAvailable, qEstimateFee.data, qTip, tipToken?.id, token])
 
   const estimatedFee = useMemo(
     () => (qEstimateFee.data ? qEstimateFee.data.partialFee.toString() : null),

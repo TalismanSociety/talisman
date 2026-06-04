@@ -1,12 +1,6 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
-import {
-  type Balance,
-  BalanceFormatter,
-  type Balances,
-  findDTaoConvictionLock,
-  getBalanceId,
-} from "@talismn/balances"
+import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
 import {
   type DotNetworkId,
   subDTaoTokenId,
@@ -29,6 +23,7 @@ import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
+import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
 import {
   type BittensorStakingPosition,
@@ -365,14 +360,23 @@ const useBittensorBondWizardProvider = () => {
     [dtaoBalance?.free.planck]
   )
 
-  // Bittensor conviction lock: the locked stake cannot be unstaked (chain would throw StakeUnavailable)
-  const convictionLock = useMemo(() => findDTaoConvictionLock(dtaoBalance?.locks), [dtaoBalance])
-
-  // stake minus the conviction locked amount
-  const availableToUnstakePlancks = useMemo(
-    () => dtaoBalance?.transferable.planck ?? 0n,
-    [dtaoBalance?.transferable.planck]
+  // Bittensor conviction lock: constrains the coldkey's TOTAL alpha on the subnet,
+  // the locked amount cannot be unstaked (chain would throw StakeUnavailable)
+  const subnetUnstakeInfo = useMemo(
+    () =>
+      address && networkId && typeof netuid === "number"
+        ? getDTaoSubnetUnstakeInfo(allBalances, address, networkId, netuid)
+        : null,
+    [allBalances, address, networkId, netuid]
   )
+
+  const convictionLock = subnetUnstakeInfo?.convictionLock ?? null
+
+  // for this position: min(position stake, subnet-wide available to unstake)
+  const availableToUnstakePlancks = useMemo(() => {
+    const subnetAvailable = subnetUnstakeInfo?.available ?? totalStakedPlancks
+    return totalStakedPlancks < subnetAvailable ? totalStakedPlancks : subnetAvailable
+  }, [subnetUnstakeInfo?.available, totalStakedPlancks])
 
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -480,13 +484,21 @@ const useBittensorBondWizardProvider = () => {
           })
         : t("Insufficient balance")
     }
+    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
+    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
+    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
+    // but a partial unstake landing in that range would unexpectedly close the position: block it.
     if (
-      newStakeTotal < (minAlphaBond || 0n) &&
-      newStakeTotal !== 0n &&
-      !isSubnetUnbond &&
+      typeof minAlphaBond === "bigint" &&
+      (amountIn || 0n) < availableToUnstakePlancks &&
+      newStakeTotal > 0n &&
+      newStakeTotal < minAlphaBond &&
       (amountIn || 0n) > 0n
     ) {
-      return t("You must keep 0.1 TAO to continue staking")
+      return t("Unstake everything or keep at least {{amount}} {{symbol}}", {
+        amount: new BalanceFormatter(minAlphaBond, dtaoToken?.decimals).tokens,
+        symbol: dtaoToken?.symbol,
+      })
     }
 
     // no staking operation can be less than minTaoStake
@@ -508,7 +520,6 @@ const useBittensorBondWizardProvider = () => {
     convictionLock,
     newStakeTotal,
     minAlphaBond,
-    isSubnetUnbond,
     amountAlpha?.planck,
     minAlphaUnstake,
     t,

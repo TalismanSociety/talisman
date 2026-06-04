@@ -1,11 +1,13 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { BalanceFormatter, findDTaoConvictionLock, getBalanceId } from "@talismn/balances"
+import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
+import { getDTaoSubnetUnstakeInfo } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useBalances } from "@ui/state/balances"
 import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -88,10 +90,21 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return balances.get(getBalanceId({ address, tokenId: tokenIdOut })) ?? null
   }, [balances, address, tokenIdOut])
 
+  // conviction locks constrain the coldkey's TOTAL alpha on the subnet:
+  // this position's sellable amount is min(position stake, subnet-wide available)
+  const allBalances = useBalances("owned")
+  const subnetUnstakeInfo = useMemo(
+    () =>
+      address ? getDTaoSubnetUnstakeInfo(allBalances, address, BITTENSOR_NETWORK_ID, netuid) : null,
+    [allBalances, address, netuid]
+  )
+
   const maxValueIn = useMemo(() => {
     if (!balanceTokenIn) return 0n
-    return balanceTokenIn.transferable.planck ?? balanceTokenIn.free.planck
-  }, [balanceTokenIn])
+    const stake = balanceTokenIn.free.planck
+    const subnetAvailable = subnetUnstakeInfo?.available ?? stake
+    return stake < subnetAvailable ? stake : subnetAvailable
+  }, [balanceTokenIn, subnetUnstakeInfo?.available])
 
   const onValueChange = useCallback((value: bigint | null) => {
     setState((prev) => ({ ...prev, valueIn: value }))
@@ -125,6 +138,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
     slippage,
+    minAlphaBond,
     minAlphaUnstake,
     swapPrice,
     talismanFee,
@@ -186,12 +200,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const inputErrorMessage = useMemo(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
-    const transferablePlanck =
-      balanceTokenIn.transferable.planck ?? balanceTokenIn.free.planck ?? 0n
-
-    if (state.valueIn > transferablePlanck) {
+    if (state.valueIn > maxValueIn) {
       // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
-      const convictionLock = findDTaoConvictionLock(balanceTokenIn.locks)
+      const convictionLock = subnetUnstakeInfo?.convictionLock
       return convictionLock && state.valueIn <= balanceTokenIn.free.planck
         ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
             amount: new BalanceFormatter(convictionLock.amount, tokenIn.decimals).tokens,
@@ -214,12 +225,31 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
         symbol: tokenIn.symbol,
       })
 
+    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
+    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
+    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
+    // but a partial sell landing in that range would unexpectedly close the position: block it.
+    const remaining = balanceTokenIn.free.planck - state.valueIn
+    if (
+      typeof minAlphaBond === "bigint" &&
+      state.valueIn < maxValueIn &&
+      remaining > 0n &&
+      remaining < minAlphaBond
+    )
+      return t("Unstake everything or keep at least {{amount}} {{symbol}}", {
+        amount: new BalanceFormatter(minAlphaBond, tokenIn.decimals).tokens,
+        symbol: tokenIn.symbol,
+      })
+
     return null
   }, [
     supportsAlphaFees,
     balanceTokenIn,
     balanceTokenOut,
     combinedFeeEstimate,
+    maxValueIn,
+    subnetUnstakeInfo?.convictionLock,
+    minAlphaBond,
     minAlphaUnstake,
     state.valueIn,
     t,

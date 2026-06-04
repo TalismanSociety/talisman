@@ -588,3 +588,120 @@ describe("Mirror token exclusion in sums", () => {
     expect(balances.sum.planck.total).toBe(300n)
   })
 })
+
+// ---------------------------------------------------------------------------
+// lockOverflow + sum transferable (locks bigger than their own balance's free
+// amount, eg dtao conviction locks reported on the subnet's base token)
+// ---------------------------------------------------------------------------
+
+function makeHydratedValuesBalance(
+  address: string,
+  tokenId: string,
+  values: Array<Record<string, unknown>>,
+  decimals = 9,
+  rates?: TokenRates
+): Balance {
+  const json = {
+    source: "test-source",
+    status: "live",
+    networkId: "test-network",
+    address,
+    tokenId,
+    values,
+  } as unknown as BalanceJson
+  const b = new Balance(json)
+  b.hydrate({
+    tokens: {
+      [tokenId]: {
+        id: tokenId,
+        type: "substrate-native",
+        symbol: "T",
+        decimals,
+        networkId: "test-network",
+      },
+    } as HydrateDb["tokens"],
+    tokenRates: rates ? { [tokenId]: rates } : undefined,
+  })
+  return b
+}
+
+describe("Balance.lockOverflow", () => {
+  it("is zero when locks fit in the free amount", () => {
+    const b = makeHydratedValuesBalance("0x01", "token-a", [
+      { type: "free", label: "free", amount: "100" },
+      { type: "locked", label: "some lock", amount: "40" },
+    ])
+    expect(b.lockOverflow.planck).toBe(0n)
+  })
+
+  it("returns the lock excess over the free amount", () => {
+    const b = makeHydratedValuesBalance("0x01", "token-a", [
+      { type: "free", label: "free", amount: "0" },
+      { type: "locked", label: "conviction lock", amount: "12" },
+    ])
+    expect(b.lockOverflow.planck).toBe(12n)
+  })
+
+  it("ignores locks marked includeInTransferable", () => {
+    const b = makeHydratedValuesBalance("0x01", "token-a", [
+      { type: "free", label: "free", amount: "0" },
+      { type: "locked", label: "pending claim", amount: "12", includeInTransferable: true },
+    ])
+    expect(b.lockOverflow.planck).toBe(0n)
+  })
+})
+
+describe("sum transferable with overflowing locks", () => {
+  const rates = makeTokenRates(1)
+
+  const positionA = () =>
+    makeHydratedValuesBalance(
+      "0x01",
+      "token-a",
+      [{ type: "free", label: "Subnet Staking", amount: "10" }],
+      0,
+      rates
+    )
+  const positionB = () =>
+    makeHydratedValuesBalance(
+      "0x01",
+      "token-b",
+      [{ type: "free", label: "Subnet Staking", amount: "5" }],
+      0,
+      rates
+    )
+  const lockOnBaseToken = (amount: string) =>
+    makeHydratedValuesBalance(
+      "0x01",
+      "token-base",
+      [
+        { type: "free", label: "Subnet Staking", amount: "0" },
+        { type: "locked", label: "Decaying Conviction Lock", amount },
+      ],
+      0,
+      rates
+    )
+
+  it("subtracts the overflowing lock from the planck sum", () => {
+    const balances = new Balances([positionA(), positionB(), lockOnBaseToken("12")])
+    expect(balances.sum.planck.transferable).toBe(3n)
+    // total is not affected: the locked stake already lives in the positions' free amounts
+    expect(balances.sum.planck.total).toBe(15n)
+  })
+
+  it("clamps the planck sum at zero", () => {
+    const balances = new Balances([positionB(), lockOnBaseToken("12")])
+    expect(balances.sum.planck.transferable).toBe(0n)
+  })
+
+  it("does not change sums without overflowing locks", () => {
+    const balances = new Balances([positionA(), positionB()])
+    expect(balances.sum.planck.transferable).toBe(15n)
+  })
+
+  it("subtracts the overflowing lock from the fiat sum", () => {
+    const balances = new Balances([positionA(), positionB(), lockOnBaseToken("12")])
+    expect(balances.sum.fiat("usd").transferable).toBe(3)
+    expect(balances.sum.fiat("usd").total).toBe(15)
+  })
+})

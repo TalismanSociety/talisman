@@ -26,6 +26,7 @@ import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { SendFundsTransactionProps } from "./types"
+import { useDTaoSubnetAvailable } from "./useDTaoSubnetAvailable"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsTransactionDot } from "./useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "./useSendFundsTransactionEth"
@@ -127,6 +128,8 @@ const useSendFundsProvider = () => {
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
   const feeTokenRates = useTokenRates(feeToken?.id)
+  // dtao (staked TAO/alpha) tokens: subnet-wide amount not pinned by a conviction lock
+  const dtaoAvailable = useDTaoSubnetAvailable(from, tokenId)
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
@@ -272,6 +275,11 @@ const useSendFundsProvider = () => {
       if (token && transfer && (balance?.transferable.planck ?? 0n) < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
 
+      // dtao (staked TAO/alpha): the conviction locked stake must not be transferred
+      // (the chain would silently transfer the lock to the recipient)
+      if (token && transfer && dtaoAvailable !== null && transfer.planck > dtaoAvailable)
+        return { isValid: false, error: t("Exceeds unlocked stake") }
+
       if (
         feeToken &&
         transfer &&
@@ -359,6 +367,7 @@ const useSendFundsProvider = () => {
     transaction,
     transfer,
     balance?.transferable.planck,
+    dtaoAvailable,
     feeToken,
     feeTokenBalance,
     from,
