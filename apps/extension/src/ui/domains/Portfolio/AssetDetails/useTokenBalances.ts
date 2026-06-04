@@ -4,6 +4,7 @@ import {
   type BalanceLockType,
   type Balances,
   filterBaseLocks,
+  findDTaoConvictionLock,
   getBalanceId,
   getLockTitle,
 } from "@talismn/balances"
@@ -30,6 +31,8 @@ export type BalanceDetailRow = {
   address?: Address
   // biome-ignore lint/suspicious/noExplicitAny: legacy
   meta?: any
+  /** validator (hotkey) a dtao conviction lock is keyed to, if this row is such a lock */
+  lockHotkey?: string
   isLoading?: boolean
   balance: Balance | null
 }
@@ -84,6 +87,8 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
+        // dtao conviction locks are keyed to a validator (hotkey) — surface it on the row
+        lockHotkey: findDTaoConvictionLock([lock])?.hotkey,
         balance: b,
       }))
     )

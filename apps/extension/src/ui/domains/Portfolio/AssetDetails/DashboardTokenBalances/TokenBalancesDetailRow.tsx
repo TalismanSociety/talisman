@@ -3,6 +3,7 @@ import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellVal
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { cn } from "@ui/util/cn"
 
+import { ConvictionLockValidatorTag } from "../ConvictionLockValidatorTag"
 import type { BalanceDetailRow } from "../useTokenBalances"
 import { AssetState } from "./AssetState"
 import { LockedExtra } from "./LockedExtra"
@@ -28,6 +29,9 @@ export const TokenBalancesDetailRow = ({
       <div>
         <AssetState
           title={row.title}
+          titleSuffix={
+            row.lockHotkey ? <ConvictionLockValidatorTag hotkey={row.lockHotkey} /> : undefined
+          }
           description={row.description}
           render
           address={row.address}
