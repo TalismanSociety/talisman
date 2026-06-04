@@ -4,7 +4,7 @@ import { makeChaindata, makeOrphanedNetwork } from "../__fixtures__/chaindata"
 import { CHAINDATA_PUB_FOLDER } from "../constants"
 
 const PRIMARY_URL = `https://raw.githubusercontent.com/TalismanSociety/chaindata/main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
-const FALLBACK_URL = `https://cdn.statically.io/gh/TalismanSociety/chaindata/main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
+const FALLBACK_URL = `https://cdn.jsdelivr.net/gh/TalismanSociety/chaindata@main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
 
 const mockFetch = vi.fn<typeof globalThis.fetch>()
 vi.stubGlobal("fetch", mockFetch)
@@ -49,7 +49,7 @@ describe("net / fetchChaindata", () => {
     await expect(fetchChaindata()).rejects.toThrow(`Schema validation failed for ${PRIMARY_URL}`)
   })
 
-  it("falls back to statically CDN when primary URL returns HTTP error", async () => {
+  it("falls back to jsdelivr CDN when primary URL returns HTTP error", async () => {
     const validData = makeChaindata()
     mockFetch
       .mockResolvedValueOnce(errorResponse(500, "Internal Server Error"))
@@ -66,7 +66,7 @@ describe("net / fetchChaindata", () => {
 
   it("throws when a non-GitHub URL returns an error (no fallback available)", async () => {
     // fetchJsonFromGithubUrl is private, so we test this indirectly:
-    // the fallback URL (cdn.statically.io) doesn't have its own fallback,
+    // the fallback URL (cdn.jsdelivr.net) doesn't have its own fallback,
     // so if both primary and fallback fail, the second call throws.
     mockFetch
       .mockResolvedValueOnce(errorResponse(500))

@@ -7,11 +7,14 @@ import { ChaindataFileSchema } from "./schema"
 const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
 const getFallbackUrl = (url: string) => {
-  // if githack fails, try statically
+  // if gitraw fails, try jsdelivr (note: jsdelivr paths use {user}/{repo}@{ref}/{path})
   if (url.startsWith("https://raw.githubusercontent.com/"))
-    return url.replace("https://raw.githubusercontent.com/", "https://cdn.statically.io/gh/")
+    return url.replace(
+      /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\//i,
+      "https://cdn.jsdelivr.net/gh/$1/$2@$3/"
+    )
 
-  // can add more fallbacks here such as jsdelivr, unpkg, etc.
+  // can add more fallbacks here such as unpkg, etc.
 
   return null
 }
