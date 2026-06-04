@@ -16,6 +16,7 @@ import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/Migra
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/BittensorChangeValidatorModal"
 import { BittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal"
+import { BittensorConvictionLockModal } from "@ui/domains/Staking/Bittensor/BittensorConvictionLockModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
@@ -53,6 +54,7 @@ export const DashboardNotificationsAndModals = () => {
       <AccountRenameModal />
       <BondModal />
       <BittensorBondModal />
+      <BittensorConvictionLockModal />
       <BittensorChangeValidatorModal />
       <BittensorClaimSettingsModal />
       <CopyAddressModal />

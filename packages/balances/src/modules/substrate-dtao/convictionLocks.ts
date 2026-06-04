@@ -69,6 +69,8 @@ export const getConvictionLockLabel = (lockType: SubDTaoConvictionLockType): str
 
 export type DTaoConvictionLockInfo = {
   amount: bigint
+  /** the hotkey the lock is keyed on: required to top-up (the chain rejects a different hotkey) */
+  hotkey: string
   lockType: SubDTaoConvictionLockType
   label: string
 }
@@ -92,7 +94,12 @@ export const findDTaoConvictionLock = (
     if (meta?.convictionLock?.type !== "conviction-lock") continue
 
     const lockType = meta.convictionLock.lockType
-    return { amount: lock.amount.planck, lockType, label: getConvictionLockLabel(lockType) }
+    return {
+      amount: lock.amount.planck,
+      hotkey: meta.convictionLock.hotkey,
+      lockType,
+      label: getConvictionLockLabel(lockType),
+    }
   }
 
   return null

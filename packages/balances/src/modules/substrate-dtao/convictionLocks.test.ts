@@ -165,10 +165,12 @@ describe("getConvictionLockLabel", () => {
 })
 
 describe("findDTaoConvictionLock", () => {
+  const lockHotkey = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
   const convictionLockMeta = {
     scaledAlphaPrice: "0",
     convictionLock: {
       type: "conviction-lock",
+      hotkey: lockHotkey,
       lockType: "decaying",
       conviction: "0",
       convictionRaw: "0",
@@ -194,7 +196,12 @@ describe("findDTaoConvictionLock", () => {
         { amount: { planck: 10n }, meta: { scaledAlphaPrice: "0" } },
         { amount: { planck: 42n }, meta: convictionLockMeta },
       ])
-    ).toEqual({ amount: 42n, lockType: "decaying", label: "Decaying Conviction Lock" })
+    ).toEqual({
+      amount: 42n,
+      hotkey: lockHotkey,
+      lockType: "decaying",
+      label: "Decaying Conviction Lock",
+    })
   })
 
   it("returns the lock type and label for perpetual locks", () => {
@@ -208,6 +215,11 @@ describe("findDTaoConvictionLock", () => {
           },
         },
       ])
-    ).toEqual({ amount: 7n, lockType: "perpetual", label: "Perpetual Conviction Lock" })
+    ).toEqual({
+      amount: 7n,
+      hotkey: lockHotkey,
+      lockType: "perpetual",
+      label: "Perpetual Conviction Lock",
+    })
   })
 })

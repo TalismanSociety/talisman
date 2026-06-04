@@ -21,6 +21,7 @@ export type SubDTaoConvictionLockType = "decaying" | "perpetual"
 
 export type SubDTaoConvictionLockMeta = {
   type: "conviction-lock"
+  hotkey: string
   lockType: SubDTaoConvictionLockType
   conviction: string
   convictionRaw: string

@@ -297,6 +297,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         ...(stake?.convictionLock && {
           convictionLock: {
             type: "conviction-lock",
+            hotkey: stake.convictionLock.hotkey,
             lockType: stake.convictionLock.lockType,
             conviction: stake.convictionLock.conviction,
             convictionRaw: stake.convictionLock.convictionRaw,
