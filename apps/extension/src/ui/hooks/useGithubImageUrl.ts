@@ -3,7 +3,10 @@ import { useCallback, useEffect, useState } from "react"
 
 import { invalidateCachedImage, useImageSwr } from "./imageCache"
 
-type GithubAsset = { user: string; repo: string; ref: string; path: string }
+// `refAndPath` is the raw `{ref}/{path}` portion of the url, kept unsplit on purpose: git refs may
+// contain slashes (e.g. feat/foo), making the ref/path boundary ambiguous from the url alone.
+// All sources below accept it verbatim - jsdelivr resolves slashed refs greedily, same as github.
+type GithubAsset = { user: string; repo: string; refAndPath: string }
 
 type GithubSource = {
   match: RegExp
@@ -14,21 +17,21 @@ type GithubSource = {
 // gitraw is straight from github so it reflects latest changes immediately, good for development
 // NOTE: statically.io has been sunset (it now hangs or slow-redirects to gitraw) and githack returns 403s - don't use them
 const GITRAW: GithubSource = {
-  match: /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/i,
-  build: ({ user, repo, ref, path }) =>
-    `https://raw.githubusercontent.com/${user}/${repo}/${ref}/${path}`,
+  match: /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/(.+)$/i,
+  build: ({ user, repo, refAndPath }) =>
+    `https://raw.githubusercontent.com/${user}/${repo}/${refAndPath}`,
 }
 
 const JSDELIVR: GithubSource = {
-  match: /^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/@]+)\/([^/@]+)@([^/]+)\/(.+)$/i,
-  build: ({ user, repo, ref, path }) =>
-    `https://cdn.jsdelivr.net/gh/${user}/${repo}@${ref}/${path}`,
+  match: /^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/@]+)\/([^/@]+)@(.+)$/i,
+  build: ({ user, repo, refAndPath }) =>
+    `https://cdn.jsdelivr.net/gh/${user}/${repo}@${refAndPath}`,
 }
 
 // dead sources that may still appear in persisted data, parsed only so they can be normalized to the flow below
 const LEGACY_PATTERNS = [
-  /^https:\/\/cdn\.statically\.io\/gh\/([^/@]+)\/([^/@]+)[@/]([^/]+)\/(.+)$/i,
-  /^https:\/\/rawcdn\.githack\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/i,
+  /^https:\/\/cdn\.statically\.io\/gh\/([^/@]+)\/([^/@]+)[@/](.+)$/i,
+  /^https:\/\/rawcdn\.githack\.com\/([^/]+)\/([^/]+)\/(.+)$/i,
 ]
 
 const GITHUB_SOURCE_FLOW = DEBUG ? [GITRAW, JSDELIVR] : [JSDELIVR, GITRAW]
@@ -37,17 +40,17 @@ const parseGithubUrl = (url: string): { asset: GithubAsset; sourceIndex: number 
   for (let i = 0; i < GITHUB_SOURCE_FLOW.length; i++) {
     const match = GITHUB_SOURCE_FLOW[i].match.exec(url)
     if (match) {
-      const [, user, repo, ref, path] = match
-      return { asset: { user, repo, ref, path }, sourceIndex: i }
+      const [, user, repo, refAndPath] = match
+      return { asset: { user, repo, refAndPath }, sourceIndex: i }
     }
   }
 
   for (const pattern of LEGACY_PATTERNS) {
     const match = pattern.exec(url)
     if (match) {
-      const [, user, repo, ref, path] = match
+      const [, user, repo, refAndPath] = match
       // legacy urls restart the flow from the preferred source
-      return { asset: { user, repo, ref, path }, sourceIndex: -1 }
+      return { asset: { user, repo, refAndPath }, sourceIndex: -1 }
     }
   }
 
@@ -56,7 +59,12 @@ const parseGithubUrl = (url: string): { asset: GithubAsset; sourceIndex: number 
 
 const isGithubUrl = (url: string): boolean => parseGithubUrl(url) !== null
 
-const getFileUrl = (url: string | null | undefined, fallbackUrl: string, rotate?: boolean) => {
+// exported for tests
+export const getFileUrl = (
+  url: string | null | undefined,
+  fallbackUrl: string,
+  rotate?: boolean
+) => {
   if (!url || url === fallbackUrl) return fallbackUrl
 
   const parsed = parseGithubUrl(url)
