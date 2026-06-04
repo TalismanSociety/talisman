@@ -1,4 +1,4 @@
-import { DEBUG } from "@common/constants"
+import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
 import {
   BrowserClient,
@@ -26,6 +26,11 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 
 // setup of the Sentry scope following this guide:
 // https://docs.sentry.io/platforms/javascript/best-practices/browser-extensions/
+// this module is shared by the background and UI contexts: each bundle gets its own
+// isolated client + scope, and the global Sentry carrier is never touched
+
+// for DEBUG logging purposes only - MV3 background service worker has no window
+const CONTEXT = typeof window === "undefined" ? "Background" : "UI"
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -35,7 +40,7 @@ const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
 })
 
 const client = new BrowserClient({
-  enabled: true,
+  enabled: !IS_FIREFOX,
   environment: process.env.BUILD,
   dsn: process.env.SENTRY_DSN,
   transport: makeFetchTransport,
@@ -59,7 +64,7 @@ const client = new BrowserClient({
 
     // Print to console instead of Sentry in DEBUG/development builds
     if (DEBUG) {
-      log.error("[DEBUG - Background] Sentry event occurred", event)
+      log.error(`[DEBUG - ${CONTEXT}] Sentry event occurred`, event)
       return null
     }
 

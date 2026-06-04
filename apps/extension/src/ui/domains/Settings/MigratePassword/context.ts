@@ -1,5 +1,5 @@
+import { sentry } from "@core/config/sentry"
 import { passwordStore } from "@core/domains/app/store.password"
-import * as Sentry from "@sentry/react"
 import { api } from "@ui/api"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
@@ -33,7 +33,7 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   }, [password])
 
   useEffect(() => {
-    if (error && useErrorTracking) Sentry.captureException(error)
+    if (error && useErrorTracking) sentry.captureException(error)
   }, [error, useErrorTracking])
 
   const hasPassword = !!password

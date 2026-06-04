@@ -1,88 +1,21 @@
-import { DEBUG, IS_FIREFOX } from "@common/constants"
-import { log } from "@common/log"
-import {
-  trackIndexedDbErrorExtras,
-  triggerIndexedDbUnavailablePopup,
-} from "@core/domains/app/store.errors"
-import { settingsStore } from "@core/domains/app/store.settings"
-import * as SentryReact from "@sentry/react"
-import type { Event } from "@sentry/types"
-import { firstValueFrom, ReplaySubject } from "rxjs"
+import { sentry } from "@core/config/sentry"
+import { triggerIndexedDbUnavailablePopup } from "@core/domains/app/store.errors"
 
-const normalizeUrl = (url: string) => {
-  return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")
-}
-
-// cache latest value of useErrorTracking so that we don't need to check localStorage for every error sent to sentry
-const useErrorTracking = new ReplaySubject<boolean>(1)
-settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.useErrorTracking))
-
+// Sentry must not be initialised in the global state (`Sentry.init`) in browser extensions,
+// or events may leak between the extension and other Sentry instances (see #2418, #547).
+// `sentry` is a manual client + scope, following this guide:
+// https://docs.sentry.io/platforms/javascript/best-practices/shared-environments/
 export const initSentryFrontend = () => {
-  SentryReact.init({
-    enabled: !IS_FIREFOX,
-    environment: process.env.BUILD,
-    dsn: process.env.SENTRY_DSN,
-    integrations: [SentryReact.browserTracingIntegration()],
-    release: process.env.RELEASE,
-    sampleRate: 1,
-    maxBreadcrumbs: 20,
-    ignoreErrors: [
-      /(No window with id: )(\d+).?/,
-      /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
-      /^disconnected from .+: [0-9]+:: .+$/,
-      /^unsubscribed from .+: [0-9]+:: .+$/,
-      /(Could not establish connection. Receiving end does not exist.)/,
-      /(track.getCapabilities is not a function)/,
-    ],
-    // prevents sending the event if user has disabled error tracking
-    beforeSend: async (event, hint) => {
-      // Track extra information about IndexedDB errors
-      await trackIndexedDbErrorExtras(event, hint)
+  sentry.init()
 
-      // Print to console instead of Sentry in DEBUG/development builds
-      if (DEBUG) {
-        log.error("[DEBUG - UI] Sentry event occurred", event)
-        return null
-      }
-
-      const errorTracking = await firstValueFrom(useErrorTracking)
-      return errorTracking ? event : null
-    },
-    beforeBreadcrumb: (breadCrumb) => {
-      if (breadCrumb.data?.url) {
-        breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)
-      }
-      return breadCrumb
-    },
-
-    // Set tracesSampleRate to capture 5%
-    // of transactions for performance monitoring.
-    // We recommend adjusting this value in production
-    tracesSampleRate: 0.05,
-
-    // disable replays
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
-  })
-  const scope = SentryReact.getCurrentScope()
-  scope.addEventProcessor(async (event: Event) => {
-    if (event.request?.url) {
-      event.request.url = normalizeUrl(event.request.url)
-    }
-
-    if (event.exception?.values && event.exception.values.length > 0) {
-      const firstValue = event.exception.values[0]
-      if (!firstValue.stacktrace?.frames) return event
-      firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame) => {
-        if (frame.filename) frame.filename = normalizeUrl(frame.filename)
-        return frame
-      })
-    }
-
-    return event
-  })
-
+  // the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
+  // so capture uncaught errors and unhandled rejections with our own listeners.
+  // these pages are wholly owned by the extension, so listening here doesn't leak anywhere
   window.addEventListener("error", (event) => {
+    sentry.captureException(event.error ?? event.message)
     triggerIndexedDbUnavailablePopup(event.error)
+  })
+  window.addEventListener("unhandledrejection", (event) => {
+    sentry.captureException(event.reason)
   })
 }

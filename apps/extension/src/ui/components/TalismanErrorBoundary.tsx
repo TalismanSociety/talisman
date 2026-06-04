@@ -1,13 +1,52 @@
 import { DEBUG, DISCORD_TALISMAN_URL } from "@common/constants"
-import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
+import { sentry } from "@core/config/sentry"
 import { TalismanDeadHandIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import type { DexieError } from "dexie"
-import { type ReactNode, useCallback } from "react"
+import { Component, type ErrorInfo, type ReactNode, useCallback } from "react"
 
-export const TalismanErrorBoundary = ({ children }: { children?: ReactNode }) => (
-  <SentryErrorBoundary fallback={ErrorMessage}>{children}</SentryErrorBoundary>
-)
+type TalismanErrorBoundaryProps = {
+  children?: ReactNode
+}
+
+type TalismanErrorBoundaryState = {
+  error: unknown
+  eventId?: string
+}
+
+/**
+ * Error boundary that reports errors to our manual Sentry client.
+ * Don't use @sentry/react's ErrorBoundary: it captures via the global Sentry instance,
+ * which must not be initialised in browser extensions (see #2418).
+ */
+export class TalismanErrorBoundary extends Component<
+  TalismanErrorBoundaryProps,
+  TalismanErrorBoundaryState
+> {
+  constructor(props: TalismanErrorBoundaryProps) {
+    super(props)
+    this.state = { error: null }
+  }
+
+  static getDerivedStateFromError(error: unknown): Partial<TalismanErrorBoundaryState> {
+    return { error }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo): void {
+    const eventId = sentry.captureException(error, {
+      captureContext: { contexts: { react: { componentStack: info.componentStack } } },
+    })
+    this.setState({ eventId })
+  }
+
+  render() {
+    if (this.state.error) {
+      return <ErrorMessage error={this.state.error} eventId={this.state.eventId} />
+    }
+
+    return this.props.children
+  }
+}
 
 function ErrorMessage({ error, eventId }: { error: unknown; eventId?: string }) {
   const isDbVersionError = (error as DexieError)?.inner?.name === "VersionError"
