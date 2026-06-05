@@ -189,12 +189,14 @@ export const fetchConvictionLocks = async (
 
     return lockStates.flatMap(({ address, netuid, lockState }) => {
       const amount = toBigIntValue(lockState?.locked_mass)
-      if (amount <= 0n) return []
+      const convictionRaw = toBigIntValue(lockState?.conviction)
+      // keep zero-mass locks that still carry conviction ("ghost" locks): the chain keeps the
+      // Lock entry alive and pins future lock_stake calls to its hotkey (LockHotkeyMismatch)
+      if (amount <= 0n && convictionRaw <= 0n) return []
 
       const hotkey = lockHotkeyByPair.get(convictionLockKey(address, netuid))
       if (!hotkey) return []
 
-      const convictionRaw = toBigIntValue(lockState?.conviction)
       const conviction = u64f64RawToPlanck(lockState?.conviction)
 
       return [

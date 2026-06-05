@@ -128,7 +128,8 @@ const useSendFundsProvider = () => {
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
   const feeTokenRates = useTokenRates(feeToken?.id)
-  // dtao (staked TAO/alpha) tokens: subnet-wide amount not pinned by a conviction lock
+  // dtao (staked TAO/alpha) tokens: subnet-wide amount not pinned by a conviction lock,
+  // used to warn (not block) when a transfer dips into the locked portion
   const dtaoAvailable = useDTaoSubnetAvailable(from, tokenId)
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
@@ -152,6 +153,13 @@ const useSendFundsProvider = () => {
         ? new BalanceFormatter(transaction?.maxAmount, token.decimals, tokenRates)
         : null,
     [transaction?.maxAmount, token, tokenRates]
+  )
+
+  // dtao (staked TAO/alpha): the chain ALLOWS transferring conviction-locked stake — the lock
+  // and a pro-rata share of its conviction silently follow to the recipient. Warn, don't block.
+  const dtaoLockedTransferWarning = useMemo(
+    () => !!(transfer && dtaoAvailable !== null && transfer.planck > dtaoAvailable),
+    [transfer, dtaoAvailable]
   )
 
   const tip = useMemo(
@@ -275,11 +283,6 @@ const useSendFundsProvider = () => {
       if (token && transfer && (balance?.transferable.planck ?? 0n) < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
 
-      // dtao (staked TAO/alpha): the conviction locked stake must not be transferred
-      // (the chain would silently transfer the lock to the recipient)
-      if (token && transfer && dtaoAvailable !== null && transfer.planck > dtaoAvailable)
-        return { isValid: false, error: t("Exceeds unlocked stake") }
-
       if (
         feeToken &&
         transfer &&
@@ -367,7 +370,6 @@ const useSendFundsProvider = () => {
     transaction,
     transfer,
     balance?.transferable.planck,
-    dtaoAvailable,
     feeToken,
     feeTokenBalance,
     from,
@@ -432,6 +434,7 @@ const useSendFundsProvider = () => {
     feeTokenRates,
     recipientWarning,
     setRecipientWarning,
+    dtaoLockedTransferWarning,
     tip,
     tipToken,
     tipTokenBalance,

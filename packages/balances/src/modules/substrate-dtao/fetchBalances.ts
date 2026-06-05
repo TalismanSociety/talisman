@@ -270,6 +270,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const stakeAmount = BigInt(stake?.stake?.toString() ?? "0")
       const pendingRootClaimAmount = BigInt(stake?.pendingRootClaim?.toString() ?? "0")
       const convictionLockAmount = BigInt(stake?.convictionLock?.amount?.toString() ?? "0")
+      const convictionLockConviction = BigInt(stake?.convictionLock?.convictionRaw ?? "0")
       const hasZeroStake = stakeAmount === 0n
       const hasPendingRootClaim = pendingRootClaimAmount > 0n
 
@@ -315,7 +316,10 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
 
       const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
-      if (convictionLockAmount > 0n) values.push(convictionLockValue)
+      // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
+      // future lock_stake calls to their hotkey, so the lock wizard must know they exist
+      if (convictionLockAmount > 0n || convictionLockConviction > 0n)
+        values.push(convictionLockValue)
 
       // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
       // with includeInTotal: true so it counts toward the total balance.

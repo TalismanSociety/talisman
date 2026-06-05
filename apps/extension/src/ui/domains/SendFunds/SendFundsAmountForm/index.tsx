@@ -7,6 +7,7 @@ import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { type FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { ConvictionLockWarningDrawer } from "../Drawers/ConvictionLockWarningDrawer"
 import { ForfeitWarningDrawer } from "../Drawers/ForfeitWarningDrawer"
 import { RecipientWarningDrawer } from "../Drawers/RecipientWarningDrawer"
 import { RootStakedTaoWarningDrawer } from "../Drawers/RootStakedTaoWarningDrawer"
@@ -22,10 +23,12 @@ import { FeesSummary } from "./FeesSummary"
 const ReviewButton = () => {
   const { t } = useTranslation()
   const { gotoReview } = useSendFundsWizard()
-  const { isValid, tokensToBeReaped, recipientWarning, token } = useSendFunds()
+  const { isValid, tokensToBeReaped, recipientWarning, token, dtaoLockedTransferWarning } =
+    useSendFunds()
   const forfeitDrawer = useGlobalOpenClose("sendFundsForfeitDrawer")
   const recipientWarningDrawer = useGlobalOpenClose("sendFundsRecipientWarningDrawer")
   const rootStakedTaoDrawer = useGlobalOpenClose("sendFundsRootStakedTaoWarningDrawer")
+  const convictionLockDrawer = useGlobalOpenClose("sendFundsConvictionLockWarningDrawer")
   const [warnings, setWarnings] = useState<string[]>([])
   const [acceptedWarnings, setAcceptedWarnings] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState(false)
@@ -37,13 +40,18 @@ const ReviewButton = () => {
       setWarnings((prev) => Array.from(new Set([...prev, "rootStakedTaoWarning"])))
     if (!isRootStakedTao) setWarnings((prev) => prev.filter((w) => w !== "rootStakedTaoWarning"))
 
+    if (dtaoLockedTransferWarning)
+      setWarnings((prev) => Array.from(new Set([...prev, "convictionLockWarning"])))
+    if (!dtaoLockedTransferWarning)
+      setWarnings((prev) => prev.filter((w) => w !== "convictionLockWarning"))
+
     if (recipientWarning) setWarnings((prev) => Array.from(new Set([...prev, "recipientWarning"])))
     if (!recipientWarning) setWarnings((prev) => prev.filter((w) => w !== "recipientWarning"))
 
     if (tokensToBeReaped?.length)
       setWarnings((prev) => Array.from(new Set([...prev, "forfeitWarning"])))
     if (!tokensToBeReaped?.length) setWarnings((prev) => prev.filter((w) => w !== "forfeitWarning"))
-  }, [isRootStakedTao, recipientWarning, tokensToBeReaped])
+  }, [isRootStakedTao, dtaoLockedTransferWarning, recipientWarning, tokensToBeReaped])
 
   useEffect(() => {
     // once the confirmed state has been set, component will cycle through all warnings until all are accepted
@@ -54,6 +62,11 @@ const ReviewButton = () => {
       !acceptedWarnings.includes("rootStakedTaoWarning")
     )
       rootStakedTaoDrawer.open()
+    else if (
+      warnings.includes("convictionLockWarning") &&
+      !acceptedWarnings.includes("convictionLockWarning")
+    )
+      convictionLockDrawer.open()
     else if (warnings.includes("forfeitWarning") && !acceptedWarnings.includes("forfeitWarning"))
       forfeitDrawer.open()
     else if (
@@ -67,6 +80,7 @@ const ReviewButton = () => {
     warnings,
     acceptedWarnings,
     rootStakedTaoDrawer,
+    convictionLockDrawer,
     forfeitDrawer,
     recipientWarningDrawer,
     gotoReview,
@@ -97,6 +111,17 @@ const ReviewButton = () => {
         handleAccept={() => {
           rootStakedTaoDrawer.close()
           handleAcceptWarning("rootStakedTaoWarning")
+        }}
+      />
+      <ConvictionLockWarningDrawer
+        isOpen={convictionLockDrawer.isOpen}
+        close={() => {
+          setConfirmed(false)
+          convictionLockDrawer.close()
+        }}
+        handleAccept={() => {
+          convictionLockDrawer.close()
+          handleAcceptWarning("convictionLockWarning")
         }}
       />
       <ForfeitWarningDrawer
