@@ -94,8 +94,11 @@
   },
   "overrides": [
     {
-      // the manual Sentry client wrapper is the only allowed importer of the Sentry SDK
-      "includes": ["apps/extension/src/core/config/sentry.ts"],
+      // the manual Sentry client wrapper (and its spec) are the only allowed importers of the Sentry SDK
+      "includes": [
+        "apps/extension/src/core/config/sentry.ts",
+        "apps/extension/src/core/config/sentry.spec.ts"
+      ],
       "linter": {
         "rules": {
           "style": {

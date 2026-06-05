@@ -120,9 +120,9 @@ export const sentry: TalismanSentryClient = {
   captureEvent: (event, hint) => scope.captureEvent(event, hint),
   captureMessage: (message, captureContext) => {
     const level = typeof captureContext === "string" ? captureContext : undefined
-    const context = typeof captureContext !== "string" ? { captureContext } : undefined
+    const ctx = typeof captureContext !== "string" ? { captureContext } : undefined
 
-    return scope.captureMessage(message, level, context)
+    return scope.captureMessage(message, level, ctx)
   },
 }
 
