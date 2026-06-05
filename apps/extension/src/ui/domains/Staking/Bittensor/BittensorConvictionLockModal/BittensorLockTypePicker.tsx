@@ -31,7 +31,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
       value: "decaying",
       title: t("Decaying Lock"),
       description: t(
-        "Recommended. Your {{symbol}} stays locked but unwinds on its own, releasing back to you little by little over time until it is fully unlocked — at which point it can be unstaked or transferred again. While locked it earns governance conviction (voting weight) that builds the longer it stays and fades as the lock decays. Choose this if you want a say in the subnet now but expect to free up your stake later.",
+        "Recommended. Your {{symbol}} stays locked but the lock unwinds on its own — roughly 50% releases every 90 days, tapering off as it approaches zero. As it unwinds your {{symbol}} becomes progressively available to unstake or transfer, and the conviction it carries declines. Choose this if you want to signal commitment now but expect to free up your stake over time.",
         { symbol }
       ),
     },
@@ -39,7 +39,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
       value: "perpetual",
       title: t("Perpetual Lock"),
       description: t(
-        "Your {{symbol}} stays locked indefinitely — it never unwinds and can never be unstaked or transferred again. In return it holds the maximum governance conviction (voting weight) for as long as it remains locked, giving you the strongest, most durable say in the subnet. Only choose this if you are committing this stake to the subnet for good.",
+        "Your {{symbol}} stays locked at the full amount — the lock does not decay while perpetual, building and holding the maximum conviction on the subnet. It cannot be unstaked or transferred for as long as this is enabled. You can switch back to a decaying lock later, which resumes the gradual unlock.",
         { symbol }
       ),
     },
@@ -54,7 +54,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
       >
         <p className="shrink-0 text-body-secondary text-sm leading-paragraph">
           {t(
-            "Locking your stake grants it governance voting weight (conviction) on the subnet. Choose how long you want to commit it — this can't be reduced later, only topped up."
+            "Locking your stake builds conviction — a public, on-chain commitment signal — on the subnet. A lock can be topped up but not reduced; you can switch its type at any time."
           )}
         </p>
         <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">

@@ -6,22 +6,19 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
-import { BITTENSOR_LOCK_MODAL_CONTAINER_ID } from "./BittensorConvictionLockContent"
+import { BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID } from "./BittensorChangeLockTypeContent"
 
-type BittensorConvictionLockConfirmProps = {
+type BittensorChangeLockTypeConfirmProps = {
   address: string
   hotkey: string
-  amount: bigint
-  makePerpetual: boolean
-  isAlreadyPerpetual: boolean
-  isTopUp: boolean
-  existingLockAmount: bigint
+  lockedAmount: bigint
+  currentIsPerpetual: boolean
+  targetIsPerpetual: boolean
   symbol: string
   tokenId: string
   taoTokenId: string | null | undefined
@@ -42,14 +39,12 @@ const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 )
 
-export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmProps> = ({
+export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmProps> = ({
   address,
   hotkey,
-  amount,
-  makePerpetual,
-  isAlreadyPerpetual,
-  isTopUp,
-  existingLockAmount,
+  lockedAmount,
+  currentIsPerpetual,
+  targetIsPerpetual,
   symbol,
   tokenId,
   taoTokenId,
@@ -65,27 +60,26 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
 
-  const willBePerpetual = isAlreadyPerpetual || makePerpetual
-
   const accountLabel = account?.name ?? shortenAddress(address, 6, 6)
 
+  // neither direction is destructive (the flip is reversible anytime): warn tint for both
   const warning = useMemo(
     () =>
-      willBePerpetual
+      targetIsPerpetual
         ? t(
-            "This is a perpetual lock: the locked {{symbol}} does not decay and can't be unstaked or transferred while perpetual. You can switch it to a decaying lock later to resume the unlock.",
+            "Switching to a perpetual lock stops the decay: your locked {{symbol}} stays at the full locked amount and won't become unstakable while perpetual. You can switch back to decaying later to resume the unlock.",
             { symbol }
           )
         : t(
-            "Locked {{symbol}} can't be unstaked or transferred until the lock gradually decays away.",
+            "Switching to a decaying lock resumes the unlock: the locked amount decays gradually (about 50% every 90 days) and the conviction it carries will decline as it unwinds.",
             { symbol }
           ),
-    [symbol, t, willBePerpetual]
+    [symbol, t, targetIsPerpetual]
   )
 
   return (
     <WizardModalDialog
-      title={t("Create conviction lock")}
+      title={t("Change lock type")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
       onCloseClick={onClose}
@@ -96,26 +90,18 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
           <SummaryRow label={t("Account")}>{accountLabel}</SummaryRow>
           <SummaryRow label={t("Validator")}>{shortenAddress(hotkey, 6, 6)}</SummaryRow>
-          <SummaryRow label={isTopUp ? t("Amount to add") : t("Amount to lock")}>
+          <SummaryRow label={t("Locked amount")}>
             <TokensAndFiat
-              planck={amount}
+              planck={lockedAmount}
               tokenId={tokenId}
               noCountUp
               tokensClassName="text-body"
             />
           </SummaryRow>
-          {isTopUp && (
-            <SummaryRow label={t("New total locked")}>
-              <TokensAndFiat
-                planck={existingLockAmount + amount}
-                tokenId={tokenId}
-                noCountUp
-                tokensClassName="text-body"
-              />
-            </SummaryRow>
-          )}
           <SummaryRow label={t("Lock type")}>
-            {willBePerpetual ? t("Perpetual") : t("Decaying")}
+            {`${currentIsPerpetual ? t("Perpetual") : t("Decaying")} → ${
+              targetIsPerpetual ? t("Perpetual") : t("Decaying")
+            }`}
           </SummaryRow>
           <SummaryRow label={t("Network fee")}>
             <StakingFeeEstimate
@@ -128,21 +114,14 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
           </SummaryRow>
         </div>
 
-        <div
-          className={cn(
-            "flex items-start gap-4 rounded px-8 py-6 text-xs",
-            willBePerpetual
-              ? "bg-alert-error/10 text-alert-error"
-              : "bg-alert-warn/10 text-alert-warn"
-          )}
-        >
+        <div className="flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
           <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
           <span>{warning}</span>
         </div>
       </ScrollContainer>
 
       <SapiSendButton
-        containerId={BITTENSOR_LOCK_MODAL_CONTAINER_ID}
+        containerId={BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID}
         label={t("Confirm")}
         payload={payload}
         txMetadata={txMetadata}
