@@ -84,7 +84,8 @@ type BalanceLockLike = {
 
 /**
  * Extracts the dtao conviction lock from a Balance locks array (Balance#locks), if any.
- * The locked amount cannot be unstaked or transferred until the lock decays (or ever, if perpetual).
+ * The locked amount cannot be unstaked until the lock decays (or ever, if perpetual);
+ * transferring it is allowed but moves the lock and its conviction to the recipient.
  */
 export const findDTaoConvictionLock = (
   locks: BalanceLockLike[] | null | undefined

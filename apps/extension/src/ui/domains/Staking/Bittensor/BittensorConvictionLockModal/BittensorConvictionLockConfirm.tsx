@@ -73,11 +73,11 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
     () =>
       willBePerpetual
         ? t(
-            "This is a perpetual lock: the locked {{symbol}} does not decay and can't be unstaked or transferred while perpetual. You can switch it to a decaying lock later to resume the unlock.",
+            "This is a perpetual lock: the locked {{symbol}} does not decay and can't be unstaked while perpetual — transferring it hands the lock and its conviction to the recipient. You can switch it to a decaying lock later to resume the unlock.",
             { symbol }
           )
         : t(
-            "Locked {{symbol}} can't be unstaked or transferred until the lock gradually decays away.",
+            "Locked {{symbol}} can't be unstaked until the lock gradually decays away — transferring it hands the lock and its conviction to the recipient.",
             { symbol }
           ),
     [symbol, t, willBePerpetual]
