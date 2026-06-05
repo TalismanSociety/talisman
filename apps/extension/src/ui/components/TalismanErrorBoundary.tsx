@@ -33,8 +33,19 @@ export class TalismanErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
+    // mirror @sentry/react's captureReactException: link an error carrying the React
+    // component stack via `cause`, surfaced as a navigable stacktrace by the
+    // LinkedErrors integration
+    if (error instanceof Error && info.componentStack && !error.cause) {
+      const boundaryError = new Error(error.message)
+      boundaryError.name = `React ErrorBoundary ${error.name}`
+      boundaryError.stack = info.componentStack
+      error.cause = boundaryError
+    }
+
     const eventId = sentry.captureException(error, {
       captureContext: { contexts: { react: { componentStack: info.componentStack } } },
+      mechanism: { handled: true },
     })
     this.setState({ eventId })
   }

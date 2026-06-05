@@ -18,6 +18,20 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
 sentry.init()
 
+// the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
+// so capture uncaught errors and unhandled rejections with our own listeners.
+// mechanism hints mirror GlobalHandlers so these are reported as unhandled crashes
+self.addEventListener("error", (event) => {
+  sentry.captureException(event.error ?? event.message, {
+    mechanism: { handled: false, type: "onerror" },
+  })
+})
+self.addEventListener("unhandledrejection", (event) => {
+  sentry.captureException(event.reason, {
+    mechanism: { handled: false, type: "onunhandledrejection" },
+  })
+})
+
 // Initialize @polkadot/util-crypto WASM module at startup.
 // Vite loads WASM asynchronously, so we must ensure readiness before handling
 // any requests that might touch WASM-only interfaces.

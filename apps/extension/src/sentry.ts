@@ -10,12 +10,17 @@ export const initSentryFrontend = () => {
 
   // the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
   // so capture uncaught errors and unhandled rejections with our own listeners.
-  // these pages are wholly owned by the extension, so listening here doesn't leak anywhere
+  // these pages are wholly owned by the extension, so listening here doesn't leak anywhere.
+  // mechanism hints mirror GlobalHandlers so these are reported as unhandled crashes
   window.addEventListener("error", (event) => {
-    sentry.captureException(event.error ?? event.message)
+    sentry.captureException(event.error ?? event.message, {
+      mechanism: { handled: false, type: "onerror" },
+    })
     triggerIndexedDbUnavailablePopup(event.error)
   })
   window.addEventListener("unhandledrejection", (event) => {
-    sentry.captureException(event.reason)
+    sentry.captureException(event.reason, {
+      mechanism: { handled: false, type: "onunhandledrejection" },
+    })
   })
 }
