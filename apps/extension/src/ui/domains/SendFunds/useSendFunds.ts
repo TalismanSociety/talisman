@@ -2,11 +2,14 @@ import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
   type Address,
+  alphaToTao,
   Balance,
   BalanceFormatter,
   type BalanceTransferType,
+  taoToAlpha,
 } from "@talismn/balances"
 import {
+  type DotNetworkId,
   isTokenDot,
   isTokenNeedExistentialDeposit,
   type Token,
@@ -16,6 +19,9 @@ import { formatDecimals, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
+import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinJoinBond"
+import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinStake"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
@@ -131,6 +137,18 @@ const useSendFundsProvider = () => {
   // dtao (staked TAO/alpha) tokens: subnet-wide amount not pinned by a conviction lock,
   // used to warn (not block) when a transfer dips into the locked portion
   const dtaoAvailable = useDTaoSubnetAvailable(from, tokenId)
+
+  // dtao transfers are transfer_stake staking operations: the chain enforces a minimum
+  // TAO-equivalent amount, and sweeps sender positions left below the nominator minimum
+  const isDTao = token?.type === "substrate-dtao"
+  const dtaoNetworkId = isDTao ? (token.networkId as DotNetworkId) : null
+  const dtaoNetuid = isDTao ? token.netuid : null
+  const { data: dtaoAlphaPrice } = useBittensorAlphaPrice({
+    networkId: dtaoNetworkId,
+    netuid: dtaoNetuid,
+  })
+  const dtaoMinTaoTransfer = useGetBittensorDefaultMinStake({ networkId: dtaoNetworkId })
+  const { data: dtaoMinTaoKeep } = useGetBittensorMinJoinBond({ networkId: dtaoNetworkId })
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
@@ -283,6 +301,42 @@ const useSendFundsProvider = () => {
       if (token && transfer && (balance?.transferable.planck ?? 0n) < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
 
+      // dtao (staked TAO/alpha) transfers are transfer_stake staking operations:
+      if (
+        token?.type === "substrate-dtao" &&
+        transfer &&
+        typeof dtaoAlphaPrice === "bigint" &&
+        dtaoAlphaPrice > 0n
+      ) {
+        // the chain requires the transfer's TAO equivalent to be at least DefaultMinStake
+        // (rejected with AmountTooLow otherwise)
+        if (alphaToTao(transfer.planck, dtaoAlphaPrice) < dtaoMinTaoTransfer) {
+          const minAlphaTransfer = taoToAlpha(dtaoMinTaoTransfer, dtaoAlphaPrice) + 1n
+          return {
+            isValid: false,
+            error: t("Minimum transfer is {{amount}} {{symbol}}", {
+              amount: formatDecimals(new BalanceFormatter(minAlphaTransfer, token.decimals).tokens),
+              symbol: token.symbol,
+            }),
+          }
+        }
+
+        // leaving 0 < remainder < nominator minimum would get the position force-swept by the
+        // chain (clear_small_nominations): require a full send or a sufficient remainder
+        const remaining = (balance?.free.planck ?? 0n) - transfer.planck
+        if (typeof dtaoMinTaoKeep === "bigint" && remaining > 0n) {
+          const minAlphaKeep = taoToAlpha(dtaoMinTaoKeep, dtaoAlphaPrice)
+          if (remaining < minAlphaKeep)
+            return {
+              isValid: false,
+              error: t("Send everything or keep at least {{amount}} {{symbol}}", {
+                amount: formatDecimals(new BalanceFormatter(minAlphaKeep, token.decimals).tokens),
+                symbol: token.symbol,
+              }),
+            }
+        }
+      }
+
       if (
         feeToken &&
         transfer &&
@@ -370,6 +424,10 @@ const useSendFundsProvider = () => {
     transaction,
     transfer,
     balance?.transferable.planck,
+    balance?.free.planck,
+    dtaoAlphaPrice,
+    dtaoMinTaoTransfer,
+    dtaoMinTaoKeep,
     feeToken,
     feeTokenBalance,
     from,
