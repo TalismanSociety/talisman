@@ -6,7 +6,7 @@ import { triggerIndexedDbUnavailablePopup } from "@core/domains/app/store.errors
 // `sentry` is a manual client + scope, following this guide:
 // https://docs.sentry.io/platforms/javascript/best-practices/shared-environments/
 export const initSentryFrontend = () => {
-  sentry.init()
+  sentry.init("ui")
 
   // the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
   // so capture uncaught errors and unhandled rejections with our own listeners.

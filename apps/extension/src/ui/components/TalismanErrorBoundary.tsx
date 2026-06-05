@@ -10,7 +10,8 @@ type TalismanErrorBoundaryProps = {
 }
 
 type TalismanErrorBoundaryState = {
-  error: unknown
+  hasError: boolean
+  error?: unknown
   eventId?: string
 }
 
@@ -25,11 +26,14 @@ export class TalismanErrorBoundary extends Component<
 > {
   constructor(props: TalismanErrorBoundaryProps) {
     super(props)
-    this.state = { error: null }
+    this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(error: unknown): Partial<TalismanErrorBoundaryState> {
-    return { error }
+  // an explicit flag rather than gating on the error itself: thrown values may be falsy
+  static getDerivedStateFromError(
+    error: unknown
+  ): Pick<TalismanErrorBoundaryState, "hasError" | "error"> {
+    return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
@@ -51,7 +55,7 @@ export class TalismanErrorBoundary extends Component<
   }
 
   render() {
-    if (this.state.error) {
+    if (this.state.hasError) {
       return <ErrorMessage error={this.state.error} eventId={this.state.eventId} />
     }
 

@@ -16,7 +16,7 @@ import { setWalletReady } from "./libs/isWalletReady"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
-sentry.init()
+sentry.init("background")
 
 // the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
 // so capture uncaught errors and unhandled rejections with our own listeners.
