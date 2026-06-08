@@ -7,7 +7,7 @@ import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { cn } from "@ui/util/cn"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
-import { ConvictionLockValidatorTag } from "../ConvictionLockValidatorTag"
+import { ConvictionLockHotkeyTag } from "../ConvictionLockHotkeyTag"
 import { PortfolioAccount } from "../PortfolioAccount"
 import type { BalanceDetailRow } from "../useTokenBalances"
 import { LockedExtra } from "./LockedExtra"
@@ -37,7 +37,7 @@ export const TokenBalancesDetailRow = ({
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
         <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
           <div className="shrink-0 truncate capitalize">{row.title}</div>
-          {row.lockHotkey && <ConvictionLockValidatorTag hotkey={row.lockHotkey} />}
+          {row.lockHotkey && <ConvictionLockHotkeyTag hotkey={row.lockHotkey} />}
           {!!row.locked && tokenId && row.meta && (
             <LockedExtra
               tokenId={tokenId}

@@ -8,7 +8,7 @@ export type BittensorConvictionLockModalArgs = {
   netuid: number
   /** optional account to pre-select (a coldkey with stake on the subnet) */
   address?: string
-  /** optional validator (hotkey) to pre-select for the lock's conviction credit */
+  /** optional hotkey to pre-select as the lock's conviction target */
   hotkey?: string
 }
 

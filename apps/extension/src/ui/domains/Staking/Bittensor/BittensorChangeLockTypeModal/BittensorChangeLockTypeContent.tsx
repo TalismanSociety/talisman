@@ -98,7 +98,7 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
   const { taoTokenId } = useSubnetTokens(netuid)
 
   const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
-  const validatorName = useMemo(() => {
+  const hotkeyName = useMemo(() => {
     if (!existingLock?.hotkey) return null
     return (
       combinedValidatorsData.find((v) => v.hotkey === existingLock.hotkey)?.name ||
@@ -182,11 +182,11 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
             />
           </div>
           <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Validator")}</div>
+            <div className="whitespace-nowrap">{t("Hotkey")}</div>
             {existingLock && (
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden px-4 text-base text-body">
                 <AccountIcon className="text-lg!" address={existingLock.hotkey} />
-                <div className="grow truncate leading-base">{validatorName}</div>
+                <div className="grow truncate leading-base">{hotkeyName}</div>
               </div>
             )}
           </div>

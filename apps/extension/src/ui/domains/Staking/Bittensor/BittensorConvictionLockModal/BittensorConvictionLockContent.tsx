@@ -14,7 +14,6 @@ import { AddressPillButton } from "@ui/domains/SendFunds/SendFundsAmountForm/Add
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
-import { BittensorValidatorPicker } from "@ui/domains/TaoDashboard/subnet/swap/BittensorValidatorPicker"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -29,6 +28,7 @@ import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { BittensorConvictionLockAmountField } from "./BittensorConvictionLockAmountField"
 import { BittensorConvictionLockConfirm } from "./BittensorConvictionLockConfirm"
 import { BittensorLockTypePicker } from "./BittensorLockTypePicker"
+import { ConvictionLockHotkeyPicker } from "./ConvictionLockHotkeyPicker"
 
 export const BITTENSOR_LOCK_MODAL_CONTAINER_ID = "bittensor-conviction-lock-modal"
 
@@ -57,9 +57,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
   const { t } = useTranslation()
 
   const [step, setStep] = useState<Step>("form")
-  const [activePicker, setActivePicker] = useState<"account" | "validator" | "lockType" | null>(
-    null
-  )
+  const [activePicker, setActivePicker] = useState<"account" | "hotkey" | "lockType" | null>(null)
   const [address, setAddress] = useState(seedAddress ?? "")
   const [selectedHotkey, setSelectedHotkey] = useState<string | null>(seedHotkey ?? null)
   const [plancks, setPlancks] = useState<bigint | null>(null)
@@ -126,7 +124,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
   const { taoTokenId } = useSubnetTokens(netuid)
 
   const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
-  const validatorName = useMemo(() => {
+  const hotkeyName = useMemo(() => {
     if (!effectiveHotkey) return null
     return (
       combinedValidatorsData.find((v) => v.hotkey === effectiveHotkey)?.name ||
@@ -174,7 +172,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
     setActivePicker(null)
   }, [])
 
-  const handleSelectValidator = useCallback((hotkey: string) => {
+  const handleSelectHotkey = useCallback((hotkey: string) => {
     setSelectedHotkey(hotkey)
     setActivePicker(null)
   }, [])
@@ -222,19 +220,20 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
       />
     )
 
-  if (activePicker === "validator")
+  if (activePicker === "hotkey")
     return (
       <WizardModalDialog
-        title={t("Select Validator")}
+        title={t("Select hotkey")}
         onBackClick={() => setActivePicker(null)}
         onCloseClick={onClose}
         contentClassName="p-0! overflow-hidden flex flex-col"
       >
-        <BittensorValidatorPicker
+        <ConvictionLockHotkeyPicker
           networkId={networkId}
           netuid={netuid}
+          address={address || null}
           hotkey={effectiveHotkey}
-          onSelect={handleSelectValidator}
+          onSelect={handleSelectHotkey}
         />
       </WizardModalDialog>
     )
@@ -307,7 +306,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
             </PillButton>
           </div>
           <div className="flex h-12 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Validator")}</div>
+            <div className="whitespace-nowrap">{t("Hotkey")}</div>
             {effectiveHotkey ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -315,27 +314,27 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
                     <PillButton
                       className="h-12 max-w-full px-4! disabled:pointer-events-none"
                       disabled={isTopUp}
-                      onClick={() => setActivePicker("validator")}
+                      onClick={() => setActivePicker("hotkey")}
                     >
                       <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
-                        <div className="grow truncate leading-base">{validatorName}</div>
+                        <div className="grow truncate leading-base">{hotkeyName}</div>
                       </div>
                     </PillButton>
                   </span>
                 </TooltipTrigger>
                 {isTopUp && (
                   <TooltipContent>
-                    {t("Adding to your existing lock, keyed to the same validator.")}
+                    {t("Adding to your existing lock, keyed to the same hotkey.")}
                   </TooltipContent>
                 )}
               </Tooltip>
             ) : (
               <PillButton
                 className="h-12 max-w-full px-4!"
-                onClick={() => setActivePicker("validator")}
+                onClick={() => setActivePicker("hotkey")}
               >
                 <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
-                  {t("Select validator")}
+                  {t("Select hotkey")}
                 </div>
               </PillButton>
             )}

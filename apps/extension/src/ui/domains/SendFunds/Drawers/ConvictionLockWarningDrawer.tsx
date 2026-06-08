@@ -23,7 +23,7 @@ export const ConvictionLockWarningDrawer = ({
         <div className="mt-6 font-bold text-md">{t("Conviction Lock Will Transfer")}</div>
         <div className="mt-5 text-body-secondary text-sm leading-paragraph">
           {t(
-            "Part of this amount is conviction-locked. The lock moves with the stake: the recipient won't be able to unstake it until the lock decays, and you permanently give up the conviction it carries. The transfer fails if the recipient already has a lock to a different validator on this subnet."
+            "Part of this amount is conviction-locked. The lock moves with the stake: the recipient won't be able to unstake it until the lock decays, and you permanently give up the conviction it carries. The transfer fails if the recipient already has a lock to a different hotkey on this subnet."
           )}
         </div>
         <div className="mt-10 grid w-full grid-cols-2 gap-8">

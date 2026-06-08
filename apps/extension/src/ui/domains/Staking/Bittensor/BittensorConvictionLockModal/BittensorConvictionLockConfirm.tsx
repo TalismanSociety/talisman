@@ -97,7 +97,7 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
           <SummaryRow label={t("Account")}>
             <StakingAccountDisplay address={address} chainId={networkId} className="text-sm" />
           </SummaryRow>
-          <SummaryRow label={t("Validator")}>
+          <SummaryRow label={t("Hotkey")}>
             <span className="inline-flex max-w-full items-center gap-4 overflow-hidden align-middle">
               <AccountIcon className="shrink-0 text-lg!" address={hotkey} />
               <BittensorValidatorName hotkey={hotkey} className="truncate" />

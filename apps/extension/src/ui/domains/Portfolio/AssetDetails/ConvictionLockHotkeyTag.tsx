@@ -6,14 +6,14 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import type { FC } from "react"
 
 /**
- * Compact validator tag shown next to a dtao conviction lock's title in the portfolio:
- * the validator's account icon + its name (or shortened hotkey when it has no name).
+ * Compact hotkey tag shown next to a dtao conviction lock's title in the portfolio:
+ * the hotkey's account icon + its name (or shortened hotkey when it has no name).
  */
-export const ConvictionLockValidatorTag: FC<{
+export const ConvictionLockHotkeyTag: FC<{
   hotkey: string | null | undefined
   className?: string
 }> = ({ hotkey, className }) => {
-  const { status, data: validator } = useBittensorValidator(hotkey)
+  const { status, data: identity } = useBittensorValidator(hotkey)
 
   if (!hotkey) return null
 
@@ -28,7 +28,7 @@ export const ConvictionLockValidatorTag: FC<{
         >
           <AccountIcon address={hotkey} className="shrink-0 text-[1.2em]" />
           <span className={cn("truncate", status === "loading" && "animate-pulse")}>
-            {validator?.name ?? shortenAddress(hotkey, 6, 6)}
+            {identity?.name ?? shortenAddress(hotkey, 6, 6)}
           </span>
         </span>
       </TooltipTrigger>

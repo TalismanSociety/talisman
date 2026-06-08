@@ -89,7 +89,7 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
 
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
           <SummaryRow label={t("Account")}>{accountLabel}</SummaryRow>
-          <SummaryRow label={t("Validator")}>{shortenAddress(hotkey, 6, 6)}</SummaryRow>
+          <SummaryRow label={t("Hotkey")}>{shortenAddress(hotkey, 6, 6)}</SummaryRow>
           <SummaryRow label={t("Locked amount")}>
             <TokensAndFiat
               planck={lockedAmount}
