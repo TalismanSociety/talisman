@@ -1,6 +1,5 @@
-import { expect, test } from "./fixtures"
+import { ethDevChain, expect, test } from "./fixtures"
 import { testAssets } from "./transfers"
-import { ethDevChain } from "./fixtures"
 
 const dotAccName = "DOT Transfer"
 const ethAccName = "ETH Transfer"
