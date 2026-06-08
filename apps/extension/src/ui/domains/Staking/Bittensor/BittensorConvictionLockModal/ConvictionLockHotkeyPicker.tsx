@@ -2,8 +2,10 @@ import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, isSs58Address } from "@talismn/crypto"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
+import { useBittensorValidatorsMap } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { type FC, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -30,6 +32,7 @@ export const ConvictionLockHotkeyPicker: FC<{
 }> = ({ networkId, netuid, address, hotkey, onSelect }) => {
   const { t } = useTranslation()
   const { neurons, isLoading, isError } = useBittensorSubnetNeurons(networkId, netuid, address)
+  const { data: validatorsMap } = useBittensorValidatorsMap()
 
   const [rawSearch, setSearch] = useState("")
   const search = useDeferredValue(rawSearch)
@@ -55,7 +58,7 @@ export const ConvictionLockHotkeyPicker: FC<{
   // hotkey can still be selected; on-subnet hotkeys already surface through the substring filter
   const trimmedSearch = search.trim()
   const looksLikeAddress = isSs58Address(trimmedSearch)
-  const { status: addressStatus } = useBittensorHotkeyExists(
+  const { status: addressStatus, name: addressName } = useBittensorHotkeyExists(
     networkId,
     looksLikeAddress ? trimmedSearch : null
   )
@@ -67,6 +70,10 @@ export const ConvictionLockHotkeyPicker: FC<{
         : null,
     [addressStatus, neurons, trimmedSearch]
   )
+  // on-chain identity (IdentitiesV2) → global validator registry → null (falls back to short address)
+  const offSubnetName = offSubnetMatch
+    ? (addressName ?? validatorsMap[offSubnetMatch]?.name ?? null)
+    : null
 
   // Reset scroll to top when the query changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll reset keys on the search value
@@ -117,7 +124,16 @@ export const ConvictionLockHotkeyPicker: FC<{
             >
               <AccountIcon address={offSubnetMatch} className="size-16 shrink-0 text-xl" />
               <div className="flex grow items-center justify-between gap-4 overflow-hidden text-body text-sm">
-                <Address startCharCount={8} endCharCount={8} address={offSubnetMatch} />
+                {offSubnetName ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="truncate">{offSubnetName}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{offSubnetMatch}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Address startCharCount={8} endCharCount={8} address={offSubnetMatch} />
+                )}
                 <span className="shrink-0 text-body-disabled text-xs">
                   {t("Not on this subnet")}
                 </span>

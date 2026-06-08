@@ -1,6 +1,6 @@
 import { TAO_DECIMALS } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { LockIcon, StarIcon, ToolIcon, UserIcon, ZapIcon } from "@talismn/icons"
+import { HomeIcon, LockIcon, ToolIcon, UserIcon, ZapIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
@@ -17,9 +17,9 @@ import { useTranslation } from "react-i18next"
 import type { NeuronRole, SubnetNeuron } from "../hooks/useBittensorSubnetNeurons"
 
 const ROLE_BADGE: Record<NeuronRole, { Icon: FC<SVGProps<SVGSVGElement>>; className: string }> = {
-  owner: { Icon: ZapIcon, className: "bg-primary/10 text-primary" },
-  validator: { Icon: StarIcon, className: "bg-grey-800 text-body-secondary" },
-  miner: { Icon: ToolIcon, className: "bg-grey-800 text-body-disabled" },
+  owner: { Icon: HomeIcon, className: "bg-primary/10 text-primary" },
+  validator: { Icon: ZapIcon, className: "bg-grey-800 text-body-secondary" },
+  miner: { Icon: ToolIcon, className: "bg-grey-800 text-body-secondary" },
 }
 
 export const HotkeyRows: FC<{
