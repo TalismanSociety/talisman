@@ -1,8 +1,33 @@
 import { expect, test } from "./fixtures"
 import { testAssets } from "./transfers"
+import { ethDevChain } from "./fixtures"
 
 const dotAccName = "DOT Transfer"
 const ethAccName = "ETH Transfer"
+
+// Reads an EVM account's native balance straight from the local Anvil node via
+// raw JSON-RPC (no extra deps).
+const getEvmBalance = async (address: string): Promise<bigint> => {
+  const res = await fetch(ethDevChain, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "eth_getBalance",
+      params: [address, "latest"],
+    }),
+  })
+  const { result } = await res.json()
+  return BigInt(result)
+}
+
+// Minimal wei parser for decimal token amounts (e.g. "0.001" -> 10n ** 15n).
+const parseEther = (value: string): bigint => {
+  const [whole, frac = ""] = value.split(".")
+  const fracPadded = `${frac}${"0".repeat(18)}`.slice(0, 18)
+  return BigInt(whole || "0") * 10n ** 18n + BigInt(fracPadded || "0")
+}
 
 test("Transfer Assets", async ({
   extensionId,
@@ -41,6 +66,18 @@ test("Transfer Assets", async ({
   const sendButton = onboardedPage
     .getByTestId("top-actions-buttons")
     .getByRole("button", { name: "Send" })
+
+  // record recipient balances on-chain before any transfer
+  const evmAssets = testAssets.filter((data) => data.chainType === "ethereum")
+  const expectedDelta = new Map<string, bigint>()
+  const balanceBefore = new Map<string, bigint>()
+  for (const data of evmAssets) {
+    expectedDelta.set(data.sendTo, (expectedDelta.get(data.sendTo) ?? 0n) + parseEther(data.amount))
+    if (!balanceBefore.has(data.sendTo)) {
+      balanceBefore.set(data.sendTo, await getEvmBalance(data.sendTo))
+    }
+  }
+
   // starts transfering assets
   for (const data of testAssets) {
     await test.step(`Transferring ${data.assetName} on ${data.chain}`, async () => {
@@ -93,5 +130,16 @@ test("Transfer Assets", async ({
       "Confirmed",
       { timeout: 30000 }
     )
+  }
+
+  // on-chain verification
+  for (const [address, delta] of expectedDelta) {
+    await test.step(`Verifying ${address} received funds on-chain`, async () => {
+      await expect
+        .poll(async () => (await getEvmBalance(address)) - (balanceBefore.get(address) ?? 0n), {
+          timeout: 15000,
+        })
+        .toBe(delta)
+    })
   }
 })
