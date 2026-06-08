@@ -1,5 +1,6 @@
 import { log } from "@common/log"
-import { captureException } from "@sentry/browser"
+
+import { sentry } from "../../config/sentry"
 
 /**
  * MigrationContext
@@ -26,7 +27,7 @@ export class MigrationFunction {
 
   async onError(error: Error) {
     await this._onError(error)
-    captureException(error)
+    sentry.captureException(error)
     this.error = error
     this.status = "error"
   }

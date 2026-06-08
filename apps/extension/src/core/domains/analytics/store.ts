@@ -1,8 +1,8 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
-import * as Sentry from "@sentry/browser"
 import { v4 } from "uuid"
 
+import { sentry } from "../../config/sentry"
 import { StorageProvider } from "../../libs/Store"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
@@ -57,7 +57,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
       const error = new Error("Failed to identify posthog client", { cause })
       // biome-ignore lint/suspicious/noConsole: legacy
       console.error(error)
-      Sentry.captureException(error)
+      sentry.captureException(error)
     }
     return
   }

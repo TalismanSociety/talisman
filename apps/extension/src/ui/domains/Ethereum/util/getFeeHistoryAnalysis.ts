@@ -1,6 +1,6 @@
 import { log } from "@common/log"
+import { sentry } from "@core/config/sentry"
 import type { EthBaseFeeTrend } from "@core/domains/signing/types"
-import * as Sentry from "@sentry/browser"
 import { formatGwei, type PublicClient, parseGwei } from "viem"
 
 const BLOCKS_HISTORY_LENGTH = 10
@@ -112,7 +112,7 @@ export const getFeeHistoryAnalysis = async (
     }
     return result
   } catch (err) {
-    Sentry.captureException(err)
+    sentry.captureException(err)
     throw new Error("Failed to load fee history", { cause: err as Error })
   }
 }
