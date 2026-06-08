@@ -2,7 +2,6 @@ import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { TAO_DECIMALS } from "@talismn/balances"
 import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { PlusIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -276,7 +275,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
           errorMessage={errorMessage}
         />
 
-        <div className="flex flex-col rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
+        <div className="flex flex-col gap-1 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Existing conviction lock")}</div>
             <TokensAndFiat
@@ -307,7 +306,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
               </div>
             </PillButton>
           </div>
-          <div className="flex h-16 items-center justify-between gap-8">
+          <div className="flex h-12 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Validator")}</div>
             {effectiveHotkey ? (
               <Tooltip>
@@ -332,13 +331,10 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
               </Tooltip>
             ) : (
               <PillButton
-                className="h-16 max-w-full px-4!"
+                className="h-12 max-w-full px-4!"
                 onClick={() => setActivePicker("validator")}
               >
                 <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
-                  <div className="flex size-8 items-center justify-center rounded-full bg-grey-750 text-primary">
-                    <PlusIcon className="text-primary" />
-                  </div>
                   {t("Select validator")}
                 </div>
               </PillButton>
