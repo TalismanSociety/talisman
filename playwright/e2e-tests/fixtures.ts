@@ -20,6 +20,9 @@ const DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test
 
 const ethDevChain = "http://localhost:8545"
 
+const isExternalDappError = (url: string | undefined) =>
+  !!url && !url.startsWith("chrome-extension://")
+
 export const test = base.extend<{
   context: BrowserContext
   extensionId: string
@@ -58,6 +61,7 @@ export const test = base.extend<{
     })
 
     context.on("weberror", (err) => {
+      if (isExternalDappError(err.page()?.url())) return
       throw new Error(`Failing test due to error in browser context: ${err.error()}`)
     })
 
@@ -76,6 +80,7 @@ export const test = base.extend<{
     const page = await context.newPage()
 
     page.on("pageerror", (err) => {
+      if (isExternalDappError(page.url())) return
       throw new Error(`Failing test due to error in browser page: ${err}`)
     })
 
