@@ -2,7 +2,11 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
-import { getDTaoSubnetUnstakeInfo } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
+import {
+  effectiveLockedAmount,
+  getDTaoSubnetUnstakeInfo,
+} from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
+import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorColdkeyLock"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -99,12 +103,28 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     [allBalances, address, netuid]
   )
 
+  // The cached lock (balances poll every ~6s) can lag a lock that GROWS on-chain (owner auto-lock
+  // every block, or a concurrent top-up). Read it fresh so the sellable guard tightens before
+  // signing, avoiding a StakeUnavailable revert.
+  const { data: freshLockedMass } = useGetBittensorColdkeyLock({
+    networkId: BITTENSOR_NETWORK_ID,
+    address,
+    netuid,
+  })
+
+  // guard with the larger of cached vs fresh lock (a lock can only ever constrain unstaking more)
+  const effectiveLocked = useMemo(
+    () => effectiveLockedAmount(subnetUnstakeInfo?.convictionLock?.amount ?? 0n, freshLockedMass),
+    [subnetUnstakeInfo?.convictionLock?.amount, freshLockedMass]
+  )
+
   const maxValueIn = useMemo(() => {
     if (!balanceTokenIn) return 0n
     const stake = balanceTokenIn.free.planck
-    const subnetAvailable = subnetUnstakeInfo?.available ?? stake
+    const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? stake
+    const subnetAvailable = stakedTotal > effectiveLocked ? stakedTotal - effectiveLocked : 0n
     return stake < subnetAvailable ? stake : subnetAvailable
-  }, [balanceTokenIn, subnetUnstakeInfo?.available])
+  }, [balanceTokenIn, subnetUnstakeInfo?.stakedTotal, effectiveLocked])
 
   const onValueChange = useCallback((value: bigint | null) => {
     setState((prev) => ({ ...prev, valueIn: value }))
@@ -202,10 +222,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
     if (state.valueIn > maxValueIn) {
       // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
-      const convictionLock = subnetUnstakeInfo?.convictionLock
-      return convictionLock && state.valueIn <= balanceTokenIn.free.planck
+      return effectiveLocked > 0n && state.valueIn <= balanceTokenIn.free.planck
         ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
-            amount: new BalanceFormatter(convictionLock.amount, tokenIn.decimals).tokens,
+            amount: new BalanceFormatter(effectiveLocked, tokenIn.decimals).tokens,
             symbol: tokenIn.symbol,
           })
         : t("Insufficient balance")
@@ -248,7 +267,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     balanceTokenOut,
     combinedFeeEstimate,
     maxValueIn,
-    subnetUnstakeInfo?.convictionLock,
+    effectiveLocked,
     minAlphaBond,
     minAlphaUnstake,
     state.valueIn,

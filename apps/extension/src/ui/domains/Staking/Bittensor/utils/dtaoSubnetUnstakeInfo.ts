@@ -45,3 +45,14 @@ export const getDTaoSubnetUnstakeInfo = (
 
   return { stakedTotal, convictionLock, available }
 }
+
+/**
+ * Conservative locked amount when a freshly read on-chain lock is available alongside the cached one.
+ *
+ * A lock can only constrain unstaking MORE than the cached balance suggests (it grows via owner
+ * auto-lock or a concurrent top-up between balance polls), so guard with the larger of the two.
+ * A fresh value lower than cached is ignored: trusting it could briefly over-allow an unstake that
+ * then reverts, and it would make the input flicker as the two sources converge.
+ */
+export const effectiveLockedAmount = (cached: bigint, fresh: bigint | null | undefined): bigint =>
+  typeof fresh === "bigint" && fresh > cached ? fresh : cached

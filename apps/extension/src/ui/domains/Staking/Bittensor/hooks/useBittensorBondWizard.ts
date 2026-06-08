@@ -7,6 +7,7 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorColdkeyLock"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -23,7 +24,7 @@ import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
-import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
+import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
 import {
   type BittensorStakingPosition,
@@ -372,11 +373,27 @@ const useBittensorBondWizardProvider = () => {
 
   const convictionLock = subnetUnstakeInfo?.convictionLock ?? null
 
+  // The cached lock (from balances, polled every ~6s) can lag a lock that GROWS on-chain
+  // (owner auto-lock every block, or a concurrent top-up). Read it fresh while unbonding so the
+  // available-to-unstake guard tightens before signing, avoiding a StakeUnavailable revert.
+  const { data: freshLockedMass } = useGetBittensorColdkeyLock({
+    networkId,
+    address,
+    netuid: stakeDirection === "unbond" ? netuid : null,
+  })
+
+  // guard with the larger of cached vs fresh lock (a lock can only ever constrain unstaking more)
+  const effectiveLocked = useMemo(
+    () => effectiveLockedAmount(convictionLock?.amount ?? 0n, freshLockedMass),
+    [convictionLock?.amount, freshLockedMass]
+  )
+
   // for this position: min(position stake, subnet-wide available to unstake)
   const availableToUnstakePlancks = useMemo(() => {
-    const subnetAvailable = subnetUnstakeInfo?.available ?? totalStakedPlancks
+    const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? totalStakedPlancks
+    const subnetAvailable = stakedTotal > effectiveLocked ? stakedTotal - effectiveLocked : 0n
     return totalStakedPlancks < subnetAvailable ? totalStakedPlancks : subnetAvailable
-  }, [subnetUnstakeInfo?.available, totalStakedPlancks])
+  }, [subnetUnstakeInfo?.stakedTotal, effectiveLocked, totalStakedPlancks])
 
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -477,9 +494,9 @@ const useBittensorBondWizardProvider = () => {
     }
     if ((amountIn || 0n) > availableToUnstakePlancks) {
       // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
-      return convictionLock
+      return effectiveLocked > 0n
         ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
-            amount: new BalanceFormatter(convictionLock.amount, dtaoToken?.decimals).tokens,
+            amount: new BalanceFormatter(effectiveLocked, dtaoToken?.decimals).tokens,
             symbol: dtaoToken?.symbol,
           })
         : t("Insufficient balance")
@@ -517,7 +534,7 @@ const useBittensorBondWizardProvider = () => {
     nativeBalance,
     totalStakedPlancks,
     availableToUnstakePlancks,
-    convictionLock,
+    effectiveLocked,
     newStakeTotal,
     minAlphaBond,
     amountAlpha?.planck,
