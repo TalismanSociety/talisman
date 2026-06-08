@@ -1,13 +1,14 @@
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useAccountByAddress } from "@ui/state/accounts"
-import { cn } from "@ui/util/cn"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
@@ -15,6 +16,7 @@ import type { Hex } from "viem"
 import { BITTENSOR_LOCK_MODAL_CONTAINER_ID } from "./BittensorConvictionLockContent"
 
 type BittensorConvictionLockConfirmProps = {
+  networkId: DotNetworkId
   address: string
   hotkey: string
   amount: bigint
@@ -36,13 +38,14 @@ type BittensorConvictionLockConfirmProps = {
 }
 
 const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="flex items-center justify-between gap-8">
+  <div className="flex h-10 items-center justify-between gap-8">
     <span className="whitespace-nowrap text-body-secondary">{label}</span>
     <span className="truncate text-body">{children}</span>
   </div>
 )
 
 export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmProps> = ({
+  networkId,
   address,
   hotkey,
   amount,
@@ -63,11 +66,8 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
   onSubmitted,
 }) => {
   const { t } = useTranslation()
-  const account = useAccountByAddress(address)
 
   const willBePerpetual = isAlreadyPerpetual || makePerpetual
-
-  const accountLabel = account?.name ?? shortenAddress(address, 6, 6)
 
   const warning = useMemo(
     () =>
@@ -85,7 +85,7 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
 
   return (
     <WizardModalDialog
-      title={t("Create conviction lock")}
+      title={t("Conviction lock")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
       onCloseClick={onClose}
@@ -94,8 +94,15 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
         <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
 
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
-          <SummaryRow label={t("Account")}>{accountLabel}</SummaryRow>
-          <SummaryRow label={t("Validator")}>{shortenAddress(hotkey, 6, 6)}</SummaryRow>
+          <SummaryRow label={t("Account")}>
+            <StakingAccountDisplay address={address} chainId={networkId} className="text-sm" />
+          </SummaryRow>
+          <SummaryRow label={t("Validator")}>
+            <span className="inline-flex max-w-full items-center gap-4 overflow-hidden align-middle">
+              <AccountIcon className="shrink-0 text-lg!" address={hotkey} />
+              <BittensorValidatorName hotkey={hotkey} className="truncate" />
+            </span>
+          </SummaryRow>
           <SummaryRow label={isTopUp ? t("Amount to add") : t("Amount to lock")}>
             <TokensAndFiat
               planck={amount}
@@ -128,14 +135,7 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
           </SummaryRow>
         </div>
 
-        <div
-          className={cn(
-            "flex items-start gap-4 rounded px-8 py-6 text-xs",
-            willBePerpetual
-              ? "bg-alert-error/10 text-alert-error"
-              : "bg-alert-warn/10 text-alert-warn"
-          )}
-        >
+        <div className="flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs">
           <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
           <span>{warning}</span>
         </div>

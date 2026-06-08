@@ -6,9 +6,10 @@ import { PlusIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPicker } from "@ui/domains/AccountProxies/AddProxy/AccountPicker"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AddressPillButton } from "@ui/domains/SendFunds/SendFundsAmountForm/AddressPillButton"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
@@ -20,7 +21,7 @@ import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
@@ -93,18 +94,35 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
   )
 
   const existingLock = subnetUnstakeInfo?.convictionLock ?? null
+  const existingLockAmount = existingLock?.amount ?? 0n
   const isTopUp = !!existingLock
   const isAlreadyPerpetual = existingLock?.lockType === "perpetual"
-  // available_to_unstake = Σ stakes − current lock: exactly the amount that can still be locked
-  const maxLockable = subnetUnstakeInfo?.available ?? 0n
+  // "available balance" is the account's full stake on the subnet; the amount field holds the TARGET
+  // total to lock, which can be raised up to this ceiling
+  const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? 0n
+
+  // the extrinsic needs the increase (lock_stake does locked_mass += amount), not the target total
+  const lockDelta = typeof plancks === "bigint" ? plancks - existingLockAmount : null
 
   // a lock is keyed to one hotkey: the chain forces top-ups to reuse it, otherwise the user picks
   const effectiveHotkey = existingLock?.hotkey ?? selectedHotkey
 
+  // pre-fill the amount with the current lock so the user can only increase it (top-up). The subnet
+  // is fixed, so the lock changes only with the account: re-seed on account change, gated by address
+  // identity so balance polls (which re-derive a decayed lock amount) never clobber an in-progress edit
+  const refSeededAddress = useRef<string | null>(null)
+  useEffect(() => {
+    if (!address) return
+    if (refSeededAddress.current === address) return
+    refSeededAddress.current = address
+    setPlancks(existingLock ? existingLock.amount : null)
+  }, [address, existingLock])
+
   const baseTokenId = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
-  const baseToken = useToken(baseTokenId)
+  const baseToken = useToken(baseTokenId, "substrate-dtao")
   const decimals = Number(baseToken?.decimals ?? TAO_DECIMALS)
   const symbol = `SN${netuid}`
+  const subnetLabel = baseToken?.subnetName ? `${netuid} · ${baseToken.subnetName}` : symbol
 
   const { taoTokenId } = useSubnetTokens(netuid)
 
@@ -126,31 +144,34 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
       address: address || null,
       hotkey: effectiveHotkey,
       netuid,
-      amount: plancks,
+      amount: lockDelta,
       makePerpetual,
       isAlreadyPerpetual,
-      feeAmount: maxLockable,
+      feeAmount: stakedTotal,
     })
 
   const errorMessage = useMemo(() => {
-    if (maxLockable <= 0n) return t("All your stake on this subnet is already locked")
-    if (typeof plancks !== "bigint" || plancks <= 0n) return null
-    if (plancks > maxLockable) return t("Amount exceeds your stake available to lock")
+    if (stakedTotal <= 0n) return t("This account has no stake on this subnet")
+    if (typeof plancks !== "bigint") return null
+    if (isTopUp && plancks < existingLockAmount)
+      return t("A lock can only be increased, not reduced")
+    if (plancks > stakedTotal) return t("Amount exceeds your stake on this subnet")
     return null
-  }, [maxLockable, plancks, t])
+  }, [stakedTotal, plancks, isTopUp, existingLockAmount, t])
 
   const canContinue =
     !!effectiveHotkey &&
+    typeof lockDelta === "bigint" &&
+    lockDelta > 0n &&
     typeof plancks === "bigint" &&
-    plancks > 0n &&
-    plancks <= maxLockable &&
+    plancks <= stakedTotal &&
     !!payload
 
   const handleSelectAccount = useCallback((addr: string) => {
     setAddress(addr)
-    // a different account may carry its own lock/hotkey constraints
+    // a different account may carry its own lock/hotkey constraints; the pre-fill effect re-seeds
+    // the amount from the new account's existing lock (if any)
     setSelectedHotkey(null)
-    setPlancks(null)
     setActivePicker(null)
   }, [])
 
@@ -171,16 +192,23 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
       </div>
     )
 
-  if (step === "confirm" && address && effectiveHotkey && typeof plancks === "bigint")
+  if (
+    step === "confirm" &&
+    address &&
+    effectiveHotkey &&
+    typeof lockDelta === "bigint" &&
+    lockDelta > 0n
+  )
     return (
       <BittensorConvictionLockConfirm
+        networkId={networkId}
         address={address}
         hotkey={effectiveHotkey}
-        amount={plancks}
+        amount={lockDelta}
         makePerpetual={makePerpetual}
         isAlreadyPerpetual={isAlreadyPerpetual}
         isTopUp={isTopUp}
-        existingLockAmount={existingLock?.amount ?? 0n}
+        existingLockAmount={existingLockAmount}
         symbol={symbol}
         tokenId={baseTokenId}
         taoTokenId={taoTokenId}
@@ -214,12 +242,19 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
 
   return (
     <WizardModalDialog
-      title={t("Create conviction lock")}
+      title={t("Conviction lock")}
       onCloseClick={onClose}
       contentClassName="overflow-hidden flex flex-col gap-8"
     >
       <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
+          <div className="flex h-16 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Subnet")}</div>
+            <div className="flex min-w-0 items-center gap-4 text-body">
+              <TokenLogo className="shrink-0 text-lg" tokenId={baseTokenId} />
+              <div className="truncate">{subnetLabel}</div>
+            </div>
+          </div>
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Account")}</div>
             <AddressPillButton
@@ -229,52 +264,6 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
               onClick={() => setActivePicker("account")}
             />
           </div>
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Validator")}</div>
-            {effectiveHotkey ? (
-              <PillButton
-                className="h-16 max-w-full px-4!"
-                disabled={isTopUp}
-                onClick={() => setActivePicker("validator")}
-              >
-                <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                  <AccountIcon className="text-lg!" address={effectiveHotkey} />
-                  <div className="grow truncate leading-base">{validatorName}</div>
-                </div>
-              </PillButton>
-            ) : (
-              <PillButton
-                className="h-16 max-w-full px-4!"
-                onClick={() => setActivePicker("validator")}
-              >
-                <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                  <div className="flex size-12 items-center justify-center rounded-full bg-grey-750 text-primary">
-                    <PlusIcon className="text-primary" />
-                  </div>
-                  {t("Select validator")}
-                </div>
-              </PillButton>
-            )}
-          </div>
-          {isTopUp && (
-            <div className="text-body-disabled text-tiny">
-              {t(
-                "You already have a lock on this subnet — adding to it, keyed to the same validator."
-              )}
-            </div>
-          )}
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Lock type")}</div>
-            <PillButton
-              className="h-16 max-w-full px-4!"
-              disabled={isAlreadyPerpetual}
-              onClick={() => setActivePicker("lockType")}
-            >
-              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                <div className="grow truncate leading-base">{lockTypeLabel}</div>
-              </div>
-            </PillButton>
-          </div>
         </div>
 
         <BittensorConvictionLockAmountField
@@ -282,34 +271,72 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
           decimals={decimals}
           symbol={symbol}
           plancks={plancks}
-          maxPlancks={maxLockable}
+          maxPlancks={stakedTotal}
           onChange={setPlancks}
           errorMessage={errorMessage}
         />
 
-        <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
-          <div className="flex items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Available to lock")}</div>
+        <div className="flex flex-col gap-2 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Available balance")}</div>
             <TokensAndFiat
-              planck={maxLockable}
+              planck={stakedTotal}
               tokenId={baseTokenId}
               noCountUp
               tokensClassName="text-body"
             />
           </div>
-          {isTopUp && existingLock && (
-            <div className="flex items-center justify-between gap-8">
-              <div className="whitespace-nowrap">{t("Currently locked")}</div>
-              <TokensAndFiat
-                planck={existingLock.amount}
-                tokenId={baseTokenId}
-                noCountUp
-                tokensClassName="text-body"
-              />
-            </div>
-          )}
-          <div className="flex items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Lock type")}</div>
+            <PillButton
+              className="h-12 max-w-full px-4!"
+              disabled={isAlreadyPerpetual}
+              onClick={() => setActivePicker("lockType")}
+            >
+              <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
+                <div className="grow truncate leading-base">{lockTypeLabel}</div>
+              </div>
+            </PillButton>
+          </div>
+          <div className="flex h-16 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Validator")}</div>
+            {effectiveHotkey ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex max-w-full overflow-hidden">
+                    <PillButton
+                      className="h-12 max-w-full px-4! disabled:pointer-events-none"
+                      disabled={isTopUp}
+                      onClick={() => setActivePicker("validator")}
+                    >
+                      <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
+                        <div className="grow truncate leading-base">{validatorName}</div>
+                      </div>
+                    </PillButton>
+                  </span>
+                </TooltipTrigger>
+                {isTopUp && (
+                  <TooltipContent>
+                    {t("Adding to your existing lock, keyed to the same validator.")}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            ) : (
+              <PillButton
+                className="h-16 max-w-full px-4!"
+                onClick={() => setActivePicker("validator")}
+              >
+                <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
+                  <div className="flex size-8 items-center justify-center rounded-full bg-grey-750 text-primary">
+                    <PlusIcon className="text-primary" />
+                  </div>
+                  {t("Select validator")}
+                </div>
+              </PillButton>
+            )}
+          </div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Estimated fee")}</div>
             <div className="overflow-hidden">
               <StakingFeeEstimate
                 plancks={feeEstimate}
