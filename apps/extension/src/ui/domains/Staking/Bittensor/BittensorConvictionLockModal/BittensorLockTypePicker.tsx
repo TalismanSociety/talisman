@@ -73,6 +73,37 @@ const LockTypeCurve: FC<{ variant: ConvictionLockType; className?: string }> = (
   )
 }
 
+const LockTypeOption: FC<{
+  value: ConvictionLockType
+  title: string
+  description: string
+  selected: boolean
+  onClick: () => void
+}> = ({ value, title, description, selected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "flex w-full flex-col gap-6 rounded-sm border p-8 text-left transition-colors",
+      selected ? "border-primary bg-primary/10" : "border-grey-700 bg-grey-900 hover:bg-grey-800"
+    )}
+  >
+    <div className="flex items-start justify-between gap-4">
+      <span className="font-bold text-base text-body">{title}</span>
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-full border-2",
+          selected ? "border-primary" : "border-grey-600"
+        )}
+      >
+        {selected && <span className="size-4 rounded-full bg-primary" />}
+      </span>
+    </div>
+    <LockTypeCurve variant={value} className={selected ? "text-primary" : "text-body-secondary"} />
+    <span className="text-body-secondary text-sm leading-paragraph">{description}</span>
+  </button>
+)
+
 type BittensorLockTypePickerProps = {
   isOpen: boolean
   containerId: string
@@ -101,7 +132,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
       value: "decaying",
       title: t("Decaying Lock"),
       description: t(
-        "Recommended. Your locked {{symbol}} releases on its own — roughly 50% every 90 days, tapering toward zero over about a year. Your stake, and the conviction it carries, free up gradually.",
+        "Half of the remaining locked {{symbol}} unlocks every 90 days. More stake becomes available to unstake, move, or transfer as it decays.",
         { symbol }
       ),
     },
@@ -109,7 +140,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
       value: "perpetual",
       title: t("Perpetual Lock"),
       description: t(
-        "Your {{symbol}} stays locked at the full amount, holding maximum conviction. It can't be unstaked while perpetual, and transferring it hands the lock to the recipient. Switch back to a decaying lock at any time to resume the unlock.",
+        "Your {{symbol}} stays fully locked and keeps maximum conviction. It cannot be unstaked, moved, or transferred until you switch back to Decaying.",
         { symbol }
       ),
     },
@@ -123,44 +154,19 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
         contentClassName="overflow-hidden flex flex-col gap-6"
       >
         <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">
-          {options.map((option) => {
-            const selected = option.value === value
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => {
-                  onSelect(option.value)
-                  onDismiss()
-                }}
-                className={cn(
-                  "flex w-full flex-col gap-6 rounded-sm border p-8 text-left transition-colors",
-                  selected
-                    ? "border-primary bg-primary/10"
-                    : "border-grey-700 bg-grey-900 hover:bg-grey-800"
-                )}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <span className="font-bold text-base text-body">{option.title}</span>
-                  <span
-                    className={cn(
-                      "flex size-8 shrink-0 items-center justify-center rounded-full border-2",
-                      selected ? "border-primary" : "border-grey-600"
-                    )}
-                  >
-                    {selected && <span className="size-4 rounded-full bg-primary" />}
-                  </span>
-                </div>
-                <LockTypeCurve
-                  variant={option.value}
-                  className={selected ? "text-primary" : "text-body-secondary"}
-                />
-                <span className="text-body-secondary text-sm leading-paragraph">
-                  {option.description}
-                </span>
-              </button>
-            )
-          })}
+          {options.map((option) => (
+            <LockTypeOption
+              key={option.value}
+              value={option.value}
+              title={option.title}
+              description={option.description}
+              selected={option.value === value}
+              onClick={() => {
+                onSelect(option.value)
+                onDismiss()
+              }}
+            />
+          ))}
         </ScrollContainer>
       </WizardModalDialog>
     </Modal>

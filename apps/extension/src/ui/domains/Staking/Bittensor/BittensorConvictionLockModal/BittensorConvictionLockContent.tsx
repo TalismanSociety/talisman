@@ -276,7 +276,16 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
           errorMessage={errorMessage}
         />
 
-        <div className="flex flex-col gap-2 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
+        <div className="flex flex-col rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Existing conviction lock")}</div>
+            <TokensAndFiat
+              planck={existingLockAmount}
+              tokenId={baseTokenId}
+              noCountUp
+              tokensClassName="text-body"
+            />
+          </div>
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Available balance")}</div>
             <TokensAndFiat
