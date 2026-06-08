@@ -149,6 +149,8 @@ export const ConvictionLockHotkeyPicker: FC<{
               })
           ) : (
             <HotkeyRows
+              networkId={networkId}
+              netuid={netuid}
               tokenId={tokenId}
               symbol={symbol}
               neurons={displayedNeurons}

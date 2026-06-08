@@ -1,6 +1,6 @@
 import { TAO_DECIMALS } from "@talismn/balances"
-import type { TokenId } from "@talismn/chaindata-provider"
-import { HomeIcon, LockIcon, ToolIcon, UserIcon, ZapIcon } from "@talismn/icons"
+import type { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { HomeIcon, LockIcon, TargetIcon, ToolIcon, UserIcon, ZapIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
@@ -14,6 +14,7 @@ import { cn } from "@ui/util/cn"
 import type { FC, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useBittensorHotkeyConviction } from "../hooks/useBittensorHotkeyConviction"
 import type { NeuronRole, SubnetNeuron } from "../hooks/useBittensorSubnetNeurons"
 
 const ROLE_BADGE: Record<NeuronRole, { Icon: FC<SVGProps<SVGSVGElement>>; className: string }> = {
@@ -23,12 +24,14 @@ const ROLE_BADGE: Record<NeuronRole, { Icon: FC<SVGProps<SVGSVGElement>>; classN
 }
 
 export const HotkeyRows: FC<{
+  networkId: DotNetworkId
+  netuid: number
   tokenId: TokenId
   symbol: string
   neurons: SubnetNeuron[]
   selectedHotkey?: string | null
   onSelect: (hotkey: string) => void
-}> = ({ tokenId, symbol, neurons, selectedHotkey, onSelect }) => {
+}> = ({ networkId, netuid, tokenId, symbol, neurons, selectedHotkey, onSelect }) => {
   const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
@@ -56,6 +59,8 @@ export const HotkeyRows: FC<{
             >
               <HotkeyRow
                 neuron={neuron}
+                networkId={networkId}
+                netuid={netuid}
                 tokenId={tokenId}
                 symbol={symbol}
                 isSelected={neuron.hotkey === selectedHotkey}
@@ -88,14 +93,17 @@ export const HotkeyRowSkeleton = () => {
 
 export const HotkeyRow: FC<{
   neuron: SubnetNeuron
+  networkId: DotNetworkId
+  netuid: number
   tokenId: TokenId
   symbol: string
   isSelected?: boolean
   onClick: () => void
-}> = ({ neuron, tokenId, symbol, isSelected, onClick }) => {
+}> = ({ neuron, networkId, netuid, tokenId, symbol, isSelected, onClick }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId, "substrate-dtao")
   const decimals = Number(token?.decimals ?? TAO_DECIMALS)
+  const { conviction } = useBittensorHotkeyConviction(networkId, netuid, neuron.hotkey)
 
   const { Icon: RoleIcon, className: roleClassName } = ROLE_BADGE[neuron.role]
   const roleLabel =
@@ -139,7 +147,9 @@ export const HotkeyRow: FC<{
           </div>
           {neuron.role === "owner" ? (
             <Tooltip>
-              <TooltipTrigger asChild>{badge}</TooltipTrigger>
+              <TooltipTrigger asChild>
+                <span className="inline-flex shrink-0">{badge}</span>
+              </TooltipTrigger>
               <TooltipContent>
                 {t("Locking to the subnet owner grants instant full conviction.")}
               </TooltipContent>
@@ -165,6 +175,27 @@ export const HotkeyRow: FC<{
             </TooltipTrigger>
             <TooltipContent>{t("Stake on this subnet")}</TooltipContent>
           </Tooltip>
+          {conviction != null && conviction > 0n && (
+            <>
+              <div className="inline-block size-2 shrink-0 rounded-full bg-body-disabled" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2">
+                    <TargetIcon />
+                    <Tokens
+                      amount={planckToTokens(conviction.toString(), decimals)}
+                      symbol={symbol}
+                      noCountUp
+                      noTooltip
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t("Total conviction locked to this hotkey across all wallets")}
+                </TooltipContent>
+              </Tooltip>
+            </>
+          )}
           {neuron.isYouStakeHere && (
             <>
               <div className="inline-block size-2 shrink-0 rounded-full bg-body-disabled" />

@@ -1,7 +1,6 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBittensorValidatorsMap } from "@ui/state/bittensor"
 import { useMemo } from "react"
@@ -53,7 +52,8 @@ export const useBittensorSubnetNeurons = (
     gcTime: 10 * 60 * 1000, // 10 mins
     refetchOnReconnect: true,
     placeholderData: keepPreviousData,
-    persister: createQueryStoragePersister({ maxAge: 60 * 60 * 1000 }), // 1 hour
+    // intentionally NOT persisted: rows carry bigint (stakeOnSubnet), and the query-storage port
+    // message serializes as JSON, which throws "Could not serialize message" on bigint
   })
 
   // hotkeys the selected account stakes to on this subnet (lowercased for membership tests)
