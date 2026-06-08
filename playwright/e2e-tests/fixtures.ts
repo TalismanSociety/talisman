@@ -18,7 +18,7 @@ const randomName = (prefix: string) => {
 export const DEFAULT_PASSWORD = "talismanwallet"
 const DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
-const ethDevChain = "http://localhost:8545"
+export const ethDevChain = "http://localhost:8545"
 
 const isExternalDappError = (url: string | undefined) =>
   !!url && !url.startsWith("chrome-extension://")
