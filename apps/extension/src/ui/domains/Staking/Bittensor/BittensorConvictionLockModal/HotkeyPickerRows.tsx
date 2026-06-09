@@ -156,7 +156,7 @@ export const HotkeyRowSkeleton = () => {
   )
 }
 
-export const HotkeyRow: FC<{
+const HotkeyRow: FC<{
   neuron: SubnetNeuron
   networkId: DotNetworkId
   netuid: number
