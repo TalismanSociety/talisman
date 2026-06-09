@@ -7,6 +7,7 @@ import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPicker } from "@ui/domains/AccountProxies/AddProxy/AccountPicker"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AddressPillButton } from "@ui/domains/SendFunds/SendFundsAmountForm/AddressPillButton"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
@@ -15,7 +16,7 @@ import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
-import { useDotNetwork } from "@ui/state/chaindata"
+import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -93,7 +94,9 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
   const isNoop = targetIsPerpetual === currentIsPerpetual
 
   const baseTokenId = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
+  const baseToken = useToken(baseTokenId, "substrate-dtao")
   const symbol = `SN${netuid}`
+  const subnetLabel = baseToken?.subnetName ? `${netuid} · ${baseToken.subnetName}` : symbol
 
   const { taoTokenId } = useSubnetTokens(netuid)
 
@@ -171,7 +174,15 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
       contentClassName="overflow-hidden flex flex-col gap-8"
     >
       <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">
+        {/* Fieldset 1: subnet & account — mirrors the conviction lock modal */}
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
+          <div className="flex h-16 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Subnet")}</div>
+            <div className="flex min-w-0 items-center gap-4 text-body">
+              <TokenLogo className="shrink-0 text-lg" tokenId={baseTokenId} />
+              <div className="truncate">{subnetLabel}</div>
+            </div>
+          </div>
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Account")}</div>
             <AddressPillButton
@@ -181,17 +192,31 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
               onClick={() => setActivePicker("account")}
             />
           </div>
+        </div>
+
+        {/* Fieldset 2: the editable field — the lock type */}
+        <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
           <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Hotkey")}</div>
-            {existingLock && (
-              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden px-4 text-base text-body">
-                <AccountIcon className="text-lg!" address={existingLock.hotkey} />
-                <div className="grow truncate leading-base">{hotkeyName}</div>
+            <div className="whitespace-nowrap">{t("Lock type")}</div>
+            <PillButton
+              className="h-16 max-w-full px-4!"
+              onClick={() => setActivePicker("lockType")}
+            >
+              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
+                <div className="grow truncate leading-base">
+                  {targetIsPerpetual ? t("Perpetual") : t("Decaying")}
+                </div>
               </div>
-            )}
+            </PillButton>
           </div>
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Locked amount")}</div>
+        </div>
+
+        <div className="grow"></div>
+
+        {/* Fieldset 3: read-only details — compact rows, mirrors the conviction lock modal */}
+        <div className="flex flex-col gap-1 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Existing conviction lock")}</div>
             {existingLock && (
               <TokensAndFiat
                 planck={existingLock.amount}
@@ -201,32 +226,17 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
               />
             )}
           </div>
-          <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("New lock type")}</div>
-            <PillButton
-              className="h-16 max-w-full px-4!"
-              onClick={() => setActivePicker("lockType")}
-            >
-              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                <div className="grow truncate leading-base">
-                  {targetIsPerpetual ? t("Perpetual Lock") : t("Decaying Lock")}
-                </div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Hotkey")}</div>
+            {existingLock && (
+              <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
+                <AccountIcon className="text-lg!" address={existingLock.hotkey} />
+                <div className="grow truncate leading-base">{hotkeyName}</div>
               </div>
-            </PillButton>
+            )}
           </div>
-          {!isNoop && (
-            <div className="text-body-disabled text-tiny">
-              {t("Currently {{current}} — switching to {{target}}.", {
-                current: currentIsPerpetual ? t("perpetual") : t("decaying"),
-                target: targetIsPerpetual ? t("perpetual") : t("decaying"),
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
-          <div className="flex items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Estimated fee")}</div>
             <div className="overflow-hidden">
               <StakingFeeEstimate
                 plancks={feeEstimate}
@@ -236,13 +246,6 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
               />
             </div>
           </div>
-          {isNoop && (
-            <div className="text-body-disabled">
-              {t("Pick a different lock type to continue — the lock is already {{current}}.", {
-                current: currentIsPerpetual ? t("perpetual") : t("decaying"),
-              })}
-            </div>
-          )}
         </div>
       </ScrollContainer>
 
