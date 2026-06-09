@@ -148,6 +148,7 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
   if (step === "confirm" && address && existingLock)
     return (
       <BittensorChangeLockTypeConfirm
+        networkId={networkId}
         address={address}
         hotkey={existingLock.hotkey}
         lockedAmount={existingLock.amount}

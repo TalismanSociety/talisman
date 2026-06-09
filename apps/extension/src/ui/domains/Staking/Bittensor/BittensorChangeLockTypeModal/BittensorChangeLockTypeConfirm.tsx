@@ -1,12 +1,14 @@
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useAccountByAddress } from "@ui/state/accounts"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
@@ -14,6 +16,7 @@ import type { Hex } from "viem"
 import { BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID } from "./BittensorChangeLockTypeContent"
 
 type BittensorChangeLockTypeConfirmProps = {
+  networkId: DotNetworkId
   address: string
   hotkey: string
   lockedAmount: bigint
@@ -33,13 +36,14 @@ type BittensorChangeLockTypeConfirmProps = {
 }
 
 const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="flex items-center justify-between gap-8">
+  <div className="flex h-10 items-center justify-between gap-8">
     <span className="whitespace-nowrap text-body-secondary">{label}</span>
     <span className="truncate text-body">{children}</span>
   </div>
 )
 
 export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmProps> = ({
+  networkId,
   address,
   hotkey,
   lockedAmount,
@@ -58,9 +62,6 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
   onSubmitted,
 }) => {
   const { t } = useTranslation()
-  const account = useAccountByAddress(address)
-
-  const accountLabel = account?.name ?? shortenAddress(address, 6, 6)
 
   // neither direction is destructive (the flip is reversible anytime): warn tint for both
   const warning = useMemo(
@@ -88,14 +89,22 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
         <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
 
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
-          <SummaryRow label={t("Account")}>{accountLabel}</SummaryRow>
-          <SummaryRow label={t("Hotkey")}>{shortenAddress(hotkey, 6, 6)}</SummaryRow>
+          <SummaryRow label={t("Account")}>
+            <StakingAccountDisplay address={address} chainId={networkId} className="text-sm" />
+          </SummaryRow>
+          <SummaryRow label={t("Hotkey")}>
+            <span className="inline-flex max-w-full items-center gap-4 overflow-hidden align-middle">
+              <AccountIcon className="shrink-0 text-lg!" address={hotkey} />
+              <BittensorValidatorName hotkey={hotkey} className="truncate" />
+            </span>
+          </SummaryRow>
           <SummaryRow label={t("Locked amount")}>
             <TokensAndFiat
               planck={lockedAmount}
               tokenId={tokenId}
               noCountUp
               tokensClassName="text-body"
+              className="text-body-secondary"
             />
           </SummaryRow>
           <SummaryRow label={t("Lock type")}>
