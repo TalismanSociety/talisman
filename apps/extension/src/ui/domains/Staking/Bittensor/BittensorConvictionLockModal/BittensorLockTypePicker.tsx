@@ -84,18 +84,13 @@ const LockTypeOption: FC<{
     type="button"
     onClick={onClick}
     className={cn(
-      "flex w-full flex-col gap-6 rounded-sm border p-8 text-left transition-colors",
-      selected ? "border-primary bg-primary/10" : "border-grey-700 bg-grey-900 hover:bg-grey-800"
+      "flex w-full flex-col gap-10 rounded-sm border bg-grey-900 p-8 text-left hover:bg-grey-850",
+      selected ? "border-grey-700" : "border-transparent"
     )}
   >
     <div className="flex items-start justify-between gap-4">
       <span className="font-bold text-base text-body">{title}</span>
-      <span
-        className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-full border-2",
-          selected ? "border-primary" : "border-grey-600"
-        )}
-      >
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-grey-750">
         {selected && <span className="size-4 rounded-full bg-primary" />}
       </span>
     </div>
