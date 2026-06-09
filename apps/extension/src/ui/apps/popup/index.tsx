@@ -20,6 +20,7 @@ import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefi
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
+import { BittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor/BittensorChangeLockHotkeyModal"
 import { BittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/BittensorChangeLockTypeModal"
 import { BittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/BittensorChangeValidatorModal"
 import { BittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal"
@@ -105,6 +106,7 @@ const Popup = () => {
         <BittensorBondModal />
         <BittensorConvictionLockModal />
         <BittensorChangeLockTypeModal />
+        <BittensorChangeLockHotkeyModal />
         <BittensorChangeValidatorModal />
         <BittensorClaimSettingsModal />
         <CopyAddressModal />
