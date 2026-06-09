@@ -16,6 +16,7 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useAccounts } from "@ui/state/accounts"
+import { useAppState } from "@ui/state/app"
 import { useBalances } from "@ui/state/balances"
 import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -27,6 +28,7 @@ import { useBittensorConvictionLockPayload } from "../hooks/useBittensorConvicti
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { BittensorConvictionLockAmountField } from "./BittensorConvictionLockAmountField"
 import { BittensorConvictionLockConfirm } from "./BittensorConvictionLockConfirm"
+import { BittensorConvictionLockWhyDrawer } from "./BittensorConvictionLockWhyDrawer"
 import { BittensorLockTypePicker } from "./BittensorLockTypePicker"
 import { ConvictionLockHotkeyPicker } from "./ConvictionLockHotkeyPicker"
 
@@ -63,6 +65,11 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
   const [plancks, setPlancks] = useState<bigint | null>(null)
   const [makePerpetual, setMakePerpetual] = useState(false)
   const [submittedHash, setSubmittedHash] = useState<Hex | null>(null)
+  // intro drawer explaining conviction locks; shown over the form when the wizard first opens,
+  // unless the user has dismissed it for good. The content remounts on each open (keyed in the
+  // parent), so this lazy initializer re-reads the persisted flag every time.
+  const [hideConvictionLockInfo] = useAppState("hideBittensorConvictionLockInfo")
+  const [showWhy, setShowWhy] = useState(() => !hideConvictionLockInfo)
 
   const accounts = useAccounts("owned")
   const bittensor = useDotNetwork(networkId)
@@ -377,6 +384,13 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
         symbol={symbol}
         onSelect={(value) => setMakePerpetual(value === "perpetual")}
         onDismiss={() => setActivePicker(null)}
+      />
+      <BittensorConvictionLockWhyDrawer
+        isOpen={showWhy}
+        containerId={BITTENSOR_LOCK_MODAL_CONTAINER_ID}
+        symbol={symbol}
+        onCancel={onClose}
+        onContinue={() => setShowWhy(false)}
       />
     </WizardModalDialog>
   )
