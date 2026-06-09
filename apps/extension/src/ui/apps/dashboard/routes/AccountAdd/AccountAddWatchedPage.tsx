@@ -5,7 +5,7 @@ import { Spacer } from "@ui/components/Spacer"
 import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { capitalize } from "lodash-es"
-import { useCallback } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 
@@ -16,15 +16,15 @@ const Content = () => {
   const urlParamPlatform = (params.get("platform") ?? undefined) as AccountPlatform | undefined
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
-  const accountTypeString = useCallback(() => {
-    if (urlParamPlatform === "polkadot") return ` ${t("Substrate")}`
-    return urlParamPlatform ? ` ${capitalize(urlParamPlatform)}` : ""
-  }, [urlParamPlatform, t])
+  const accountTypeString = useMemo(() => {
+    if (urlParamPlatform === "polkadot") return "Substrate"
+    return urlParamPlatform ? capitalize(urlParamPlatform) : ""
+  }, [urlParamPlatform])
 
   return (
     <>
       <HeaderBlock
-        title={t(`Add a watched${accountTypeString()} account`)}
+        title={t(`Add a watched {{type}} account`, { type: accountTypeString })}
         text={!urlParamPlatform && t("What type of account would you like to create?")}
       />
       <Spacer small />
