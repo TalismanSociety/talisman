@@ -104,10 +104,6 @@ export const ConvictionLockHotkeyPicker: FC<{
       </div>
 
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-        <div className="flex justify-between pr-12 pl-15 text-body-disabled text-sm">
-          <div>{t("Hotkey")}</div>
-          <div>{t("Stake")}</div>
-        </div>
         <ScrollContainer
           ref={scrollContainerRef}
           className="w-full grow"
