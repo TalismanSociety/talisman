@@ -12,7 +12,12 @@ import { useTranslation } from "react-i18next"
 
 import { useBittensorHotkeyExists } from "../hooks/useBittensorHotkeyExists"
 import { type SubnetNeuron, useBittensorSubnetNeurons } from "../hooks/useBittensorSubnetNeurons"
-import { HotkeyRowSkeleton, HotkeyRows } from "./HotkeyPickerRows"
+import {
+  ConvictionKeeperBadge,
+  getConvictionKeeperKind,
+  HotkeyRowSkeleton,
+  HotkeyRows,
+} from "./HotkeyPickerRows"
 
 const byStakeDesc = (a: SubnetNeuron, b: SubnetNeuron) =>
   b.stakeOnSubnet > a.stakeOnSubnet ? 1 : b.stakeOnSubnet < a.stakeOnSubnet ? -1 : 0
@@ -29,7 +34,9 @@ export const ConvictionLockHotkeyPicker: FC<{
   address: string | null
   hotkey: string | null
   onSelect: (hotkey: string) => void
-}> = ({ networkId, netuid, address, hotkey, onSelect }) => {
+  /** owning coldkey of the lock being moved; when set, rows that keep conviction get a badge */
+  lockOriginColdkey?: string | null
+}> = ({ networkId, netuid, address, hotkey, onSelect, lockOriginColdkey }) => {
   const { t } = useTranslation()
   const { neurons, isLoading, isError } = useBittensorSubnetNeurons(networkId, netuid, address)
   const { data: validatorsMap } = useBittensorValidatorsMap()
@@ -58,10 +65,11 @@ export const ConvictionLockHotkeyPicker: FC<{
   // hotkey can still be selected; on-subnet hotkeys already surface through the substring filter
   const trimmedSearch = search.trim()
   const looksLikeAddress = isSs58Address(trimmedSearch)
-  const { status: addressStatus, name: addressName } = useBittensorHotkeyExists(
-    networkId,
-    looksLikeAddress ? trimmedSearch : null
-  )
+  const {
+    status: addressStatus,
+    name: addressName,
+    coldkey: offSubnetColdkey,
+  } = useBittensorHotkeyExists(networkId, looksLikeAddress ? trimmedSearch : null)
   const offSubnetMatch = useMemo(
     () =>
       addressStatus === "exists" &&
@@ -74,6 +82,11 @@ export const ConvictionLockHotkeyPicker: FC<{
   const offSubnetName = offSubnetMatch
     ? (addressName ?? validatorsMap[offSubnetMatch]?.name ?? null)
     : null
+  // an off-subnet hotkey is never the subnet owner, so only the same-owner ("keeps") case applies
+  const offSubnetKeeper = getConvictionKeeperKind(
+    { role: "validator", coldkey: offSubnetColdkey ?? "" },
+    lockOriginColdkey
+  )
 
   // Reset scroll to top when the query changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll reset keys on the search value
@@ -115,7 +128,9 @@ export const ConvictionLockHotkeyPicker: FC<{
               onClick={() => onSelect(offSubnetMatch)}
               className={cn(
                 "flex h-14.5 w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750",
-                offSubnetMatch === hotkey && "bg-grey-800 text-body-secondary"
+                !!hotkey &&
+                  isAddressEqual(offSubnetMatch, hotkey) &&
+                  "bg-grey-800 text-body-secondary"
               )}
             >
               <AccountIcon address={offSubnetMatch} className="size-16 shrink-0 text-xl" />
@@ -130,9 +145,10 @@ export const ConvictionLockHotkeyPicker: FC<{
                 ) : (
                   <Address startCharCount={8} endCharCount={8} address={offSubnetMatch} />
                 )}
-                <span className="shrink-0 text-body-disabled text-xs">
-                  {t("Not on this subnet")}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  {offSubnetKeeper && <ConvictionKeeperBadge kind={offSubnetKeeper} />}
+                  <span className="text-body-disabled text-xs">{t("Not on this subnet")}</span>
+                </div>
               </div>
             </button>
           )}
@@ -151,6 +167,7 @@ export const ConvictionLockHotkeyPicker: FC<{
               symbol={symbol}
               neurons={displayedNeurons}
               selectedHotkey={hotkey}
+              lockOriginColdkey={lockOriginColdkey}
               onSelect={onSelect}
             />
           )}

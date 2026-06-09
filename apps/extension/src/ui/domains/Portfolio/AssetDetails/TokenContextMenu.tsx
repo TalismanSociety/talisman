@@ -167,12 +167,12 @@ const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
       netuid: token.netuid,
       address: lockBalance.address,
     })
-    genericEvent("open change lock type modal", { tokenId: token.id })
+    genericEvent("open change conviction lock type modal", { tokenId: token.id })
   }, [genericEvent, lockBalance, open, token])
 
   if (!isBittensorDTao || !lockBalance) return null
 
-  return <ContextMenuItem onClick={handleClick}>{t("Change Lock Type")}</ContextMenuItem>
+  return <ContextMenuItem onClick={handleClick}>{t("Change Conviction Lock Type")}</ContextMenuItem>
 }
 
 const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
@@ -207,12 +207,14 @@ const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
       netuid: token.netuid,
       address: lockBalance.address,
     })
-    genericEvent("open change lock hotkey modal", { tokenId: token.id })
+    genericEvent("open change conviction lock hotkey modal", { tokenId: token.id })
   }, [genericEvent, lockBalance, open, token])
 
   if (!isBittensorDTao || !lockBalance) return null
 
-  return <ContextMenuItem onClick={handleClick}>{t("Change Hotkey")}</ContextMenuItem>
+  return (
+    <ContextMenuItem onClick={handleClick}>{t("Change Conviction Lock Hotkey")}</ContextMenuItem>
+  )
 }
 
 type Props = {

@@ -104,7 +104,7 @@ export const BittensorChangeLockHotkeyConfirm: FC<BittensorChangeLockHotkeyConfi
 
   return (
     <WizardModalDialog
-      title={t("Change hotkey")}
+      title={t("Conviction Lock Hotkey")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
       onCloseClick={onClose}

@@ -1,6 +1,15 @@
 import { TAO_DECIMALS } from "@talismn/balances"
 import type { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
-import { HomeIcon, LockIcon, TargetIcon, ToolIcon, UserIcon, ZapIcon } from "@talismn/icons"
+import { isAddressEqual } from "@talismn/crypto"
+import {
+  CheckCircleIcon,
+  HomeIcon,
+  LockIcon,
+  ShieldIcon,
+  TargetIcon,
+  ToolIcon,
+  ZapIcon,
+} from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
@@ -23,6 +32,50 @@ const ROLE_BADGE: Record<NeuronRole, { Icon: FC<SVGProps<SVGSVGElement>>; classN
   miner: { Icon: ToolIcon, className: "bg-grey-800 text-body-secondary" },
 }
 
+/**
+ * Whether moving an existing conviction lock to this hotkey keeps its conviction:
+ * - `full`: the subnet-owner hotkey (chain grants instant full conviction)
+ * - `keeps`: same owning coldkey as the current lock (conviction carries over)
+ * Different-owner hotkeys (which would reset conviction) get no badge — the reset is warned on the
+ * form and confirm steps, and most candidates are different-owner, so a badge there would be noise.
+ */
+export type ConvictionKeeperKind = "keeps" | "full"
+
+/** Green chip flagging a hotkey that preserves (or maxes out) the lock's conviction on a move. */
+export const ConvictionKeeperBadge: FC<{ kind: ConvictionKeeperKind }> = ({ kind }) => {
+  const { t } = useTranslation()
+  const isFull = kind === "full"
+  const Icon = isFull ? ShieldIcon : CheckCircleIcon
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex shrink-0">
+          <EarnTypeBadge className="inline-flex h-[18px] shrink-0 items-center gap-[4px] rounded-[12px] border-none bg-primary/10 px-[8px] font-light text-[10px] text-primary normal-case">
+            <Icon className="size-[12px]" />
+            {isFull ? t("Full conviction") : t("Keeps conviction")}
+          </EarnTypeBadge>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        {isFull
+          ? t("Subnet owner — moving the lock here grants instant full conviction.")
+          : t("Same owner as your current lock — your accumulated conviction carries over.")}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+/** Resolves the conviction-keeper badge kind for a neuron, given the current lock's owning coldkey. */
+export const getConvictionKeeperKind = (
+  neuron: Pick<SubnetNeuron, "role" | "coldkey">,
+  lockOriginColdkey: string | null | undefined
+): ConvictionKeeperKind | null => {
+  if (!lockOriginColdkey) return null
+  if (neuron.role === "owner") return "full"
+  if (neuron.coldkey && isAddressEqual(neuron.coldkey, lockOriginColdkey)) return "keeps"
+  return null
+}
+
 export const HotkeyRows: FC<{
   networkId: DotNetworkId
   netuid: number
@@ -31,7 +84,18 @@ export const HotkeyRows: FC<{
   neurons: SubnetNeuron[]
   selectedHotkey?: string | null
   onSelect: (hotkey: string) => void
-}> = ({ networkId, netuid, tokenId, symbol, neurons, selectedHotkey, onSelect }) => {
+  /** when set (change-hotkey flow), rows that keep the lock's conviction get a badge */
+  lockOriginColdkey?: string | null
+}> = ({
+  networkId,
+  netuid,
+  tokenId,
+  symbol,
+  neurons,
+  selectedHotkey,
+  onSelect,
+  lockOriginColdkey,
+}) => {
   const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
@@ -63,7 +127,8 @@ export const HotkeyRows: FC<{
                 netuid={netuid}
                 tokenId={tokenId}
                 symbol={symbol}
-                isSelected={neuron.hotkey === selectedHotkey}
+                isSelected={!!selectedHotkey && isAddressEqual(neuron.hotkey, selectedHotkey)}
+                keeperKind={getConvictionKeeperKind(neuron, lockOriginColdkey)}
                 onClick={() => onSelect(neuron.hotkey)}
               />
             </div>
@@ -98,8 +163,9 @@ export const HotkeyRow: FC<{
   tokenId: TokenId
   symbol: string
   isSelected?: boolean
+  keeperKind?: ConvictionKeeperKind | null
   onClick: () => void
-}> = ({ neuron, networkId, netuid, tokenId, symbol, isSelected, onClick }) => {
+}> = ({ neuron, networkId, netuid, tokenId, symbol, isSelected, keeperKind, onClick }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId, "substrate-dtao")
   const decimals = Number(token?.decimals ?? TAO_DECIMALS)
@@ -159,57 +225,44 @@ export const HotkeyRow: FC<{
           )}
         </div>
         <div className="flex w-full items-center gap-4 text-body-secondary text-xs">
-          <div className="shrink-0">{t("UID {{uid}}", { uid: neuron.uid })}</div>
-          <div className="inline-block size-2 shrink-0 rounded-full bg-body-disabled" />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2">
-                <LockIcon />
-                <Tokens
-                  amount={planckToTokens(neuron.stakeOnSubnet.toString(), decimals)}
-                  symbol={symbol}
-                  noCountUp
-                  noTooltip
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{t("Stake on this subnet")}</TooltipContent>
-          </Tooltip>
-          {conviction != null && conviction > 0n && (
-            <>
-              <div className="inline-block size-2 shrink-0 rounded-full bg-body-disabled" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-2">
-                    <TargetIcon />
-                    <Tokens
-                      amount={planckToTokens(conviction.toString(), decimals)}
-                      symbol={symbol}
-                      noCountUp
-                      noTooltip
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {t("Total conviction locked to this hotkey across all wallets")}
-                </TooltipContent>
-              </Tooltip>
-            </>
-          )}
-          {neuron.isYouStakeHere && (
-            <>
-              <div className="inline-block size-2 shrink-0 rounded-full bg-body-disabled" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-2 text-primary">
-                    <UserIcon />
-                    {t("You stake here")}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{t("You have stake on this hotkey.")}</TooltipContent>
-              </Tooltip>
-            </>
-          )}
+          <div className="flex min-w-0 grow items-center gap-4 overflow-hidden">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex shrink-0 items-center gap-2">
+                  <LockIcon />
+                  <Tokens
+                    amount={planckToTokens(neuron.stakeOnSubnet.toString(), decimals)}
+                    symbol={symbol}
+                    noCountUp
+                    noTooltip
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t("Stake on this subnet")}</TooltipContent>
+            </Tooltip>
+            {conviction != null && conviction > 0n && (
+              <>
+                <div className="inline-block size-2 shrink-0 rounded-full bg-body-disabled" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <TargetIcon />
+                      <Tokens
+                        amount={planckToTokens(conviction.toString(), decimals)}
+                        symbol={symbol}
+                        noCountUp
+                        noTooltip
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("Total conviction locked to this hotkey across all wallets")}
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </div>
+          {keeperKind && <ConvictionKeeperBadge kind={keeperKind} />}
         </div>
       </div>
     </button>

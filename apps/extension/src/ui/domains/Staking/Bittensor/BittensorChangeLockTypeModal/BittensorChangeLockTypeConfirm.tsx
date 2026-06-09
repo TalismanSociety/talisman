@@ -80,7 +80,7 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
 
   return (
     <WizardModalDialog
-      title={t("Change lock type")}
+      title={t("Conviction Lock Type")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
       onCloseClick={onClose}

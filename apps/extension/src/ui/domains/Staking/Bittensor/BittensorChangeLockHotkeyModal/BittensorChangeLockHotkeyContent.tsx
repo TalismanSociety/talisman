@@ -1,7 +1,6 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { AlertCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -19,7 +18,7 @@ import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
@@ -102,6 +101,16 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
   const isSameHotkey =
     !!selectedHotkey && !!currentHotkey && isAddressEqual(selectedHotkey, currentHotkey)
 
+  // preselect the lock's current hotkey so the picker/button shows it; re-seed once per account
+  // (gated by address) so balance polls don't clobber an in-progress pick
+  const refSeededAddress = useRef<string | null>(null)
+  useEffect(() => {
+    if (!address || !currentHotkey) return
+    if (refSeededAddress.current === address) return
+    refSeededAddress.current = address
+    setSelectedHotkey(currentHotkey)
+  }, [address, currentHotkey])
+
   const baseTokenId = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
   const baseToken = useToken(baseTokenId, "substrate-dtao")
   const symbol = `SN${netuid}`
@@ -110,13 +119,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
   const { taoTokenId } = useSubnetTokens(netuid)
 
   const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
-  const currentHotkeyName = useMemo(() => {
-    if (!currentHotkey) return null
-    return (
-      combinedValidatorsData.find((v) => v.hotkey === currentHotkey)?.name ||
-      shortenAddress(currentHotkey, 6, 6)
-    )
-  }, [combinedValidatorsData, currentHotkey])
+
   const destinationHotkeyName = useMemo(() => {
     if (!selectedHotkey) return null
     return (
@@ -172,7 +175,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
 
   const handleSelectAccount = useCallback((addr: string) => {
     setAddress(addr)
-    // a different account has its own lock/hotkey: clear the in-progress destination
+    // clear the pick; the seeding effect re-selects the new account's current hotkey
     setSelectedHotkey(null)
     setActivePicker(null)
   }, [])
@@ -237,6 +240,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
           netuid={netuid}
           address={address || null}
           hotkey={selectedHotkey}
+          lockOriginColdkey={currentOwnerColdkey}
           onSelect={handleSelectHotkey}
         />
       </WizardModalDialog>
@@ -244,7 +248,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
 
   return (
     <WizardModalDialog
-      title={t("Change hotkey")}
+      title={t("Conviction Lock Hotkey")}
       onCloseClick={onClose}
       contentClassName="overflow-hidden flex flex-col gap-8"
     >
@@ -272,7 +276,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
         {/* Fieldset 2: the editable field — the destination hotkey */}
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
           <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("New hotkey")}</div>
+            <div className="whitespace-nowrap">{t("Hotkey")}</div>
             <PillButton className="h-16 max-w-full px-4!" onClick={() => setActivePicker("hotkey")}>
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
                 {selectedHotkey ? (
@@ -289,38 +293,26 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
             </PillButton>
           </div>
           {isSameHotkey ? (
-            <div className="text-body-disabled text-tiny">
+            <div className="text-body-disabled text-xs">
               {t("Pick a different hotkey to continue — the lock is already keyed to this one.")}
             </div>
-          ) : !selectedHotkey ? (
-            <div className="text-body-disabled text-tiny">
+          ) : convictionOutcome === "reset" ? (
+            <div className="items-start text-alert-warn text-xs">
               {t(
-                "Choose the hotkey to move this conviction lock to. The locked amount stays the same."
+                "This hotkey has a different owner. Moving the lock here resets your accumulated conviction to zero."
               )}
             </div>
-          ) : convictionOutcome === "reset" ? (
-            <div className="flex items-start gap-2 text-alert-warn text-tiny">
-              <AlertCircleIcon className="mt-0.5 shrink-0 text-xs" />
-              <span>
-                {t(
-                  "This hotkey has a different owner — moving the lock here resets your accumulated conviction to zero."
-                )}
-              </span>
-            </div>
           ) : convictionOutcome === "instant-full" ? (
-            <div className="text-body-disabled text-tiny">
-              {t("This is the subnet owner hotkey — the lock keeps full conviction here.")}
+            <div className="text-body-disabled text-xs">
+              {t("This is the subnet owner hotkey. The lock keeps full conviction here.")}
             </div>
           ) : convictionOutcome === "preserved" ? (
-            <div className="text-body-disabled text-tiny">
-              {t("This hotkey shares the same owner — your conviction carries over unchanged.")}
+            <div className="text-body-disabled text-xs">
+              {t("This hotkey shares the same owner. Your conviction carries over unchanged.")}
             </div>
-          ) : (
-            <div className="text-body-disabled text-tiny">
-              {t("Checking how this move affects your conviction…")}
-            </div>
-          )}
+          ) : null}
         </div>
+        <div className="grow"></div>
 
         {/* Fieldset 3: read-only details — compact rows, mirrors the conviction lock modal */}
         <div className="flex flex-col gap-1 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
@@ -336,14 +328,14 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
             )}
           </div>
           <div className="flex h-12 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Current hotkey")}</div>
-            {currentHotkey && (
-              <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
-                <AccountIcon className="text-lg!" address={currentHotkey} />
-                <div className="grow truncate leading-base">{currentHotkeyName}</div>
+            <div className="whitespace-nowrap">{t("Lock type")}</div>
+            {existingLock && (
+              <div className="truncate text-body">
+                {existingLock.lockType === "perpetual" ? t("Perpetual") : t("Decaying")}
               </div>
             )}
           </div>
+
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Estimated fee")}</div>
             <div className="overflow-hidden">
