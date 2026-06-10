@@ -1,3 +1,4 @@
+import { HelpCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
@@ -37,7 +38,10 @@ export const BittensorConvictionLockInfoDrawer: FC<BittensorConvictionLockWhyDra
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
-      <div className="flex w-full flex-col gap-8 rounded-t-xl bg-grey-850 p-12">
+      <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
+        <div className="flex size-24 items-center justify-center rounded-full bg-primary/10">
+          <HelpCircleIcon className="inline-block size-12 text-primary" />
+        </div>
         <div className="flex items-center justify-center gap-4 font-bold text-body">
           {t("Understand conviction locks")}
         </div>
@@ -53,13 +57,15 @@ export const BittensorConvictionLockInfoDrawer: FC<BittensorConvictionLockWhyDra
             )}
           </p>
         </div>
-        <Checkbox
-          className="text-body-secondary text-sm"
-          checked={dontShowAgain}
-          onChange={(e) => setDontShowAgain(e.target.checked)}
-        >
-          {t("Don't show this again")}
-        </Checkbox>
+        <div className="w-full text-left">
+          <Checkbox
+            className="text-body-secondary text-sm"
+            checked={dontShowAgain}
+            onChange={(e) => setDontShowAgain(e.target.checked)}
+          >
+            {t("Don't show this again")}
+          </Checkbox>
+        </div>
         <div className="grid w-full grid-cols-2 gap-8">
           <Button onClick={onCancel}>{t("Cancel")}</Button>
           <Button primary onClick={handleContinue}>
