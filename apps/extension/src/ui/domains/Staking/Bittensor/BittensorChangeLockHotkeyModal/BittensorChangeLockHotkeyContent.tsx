@@ -230,7 +230,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
   if (activePicker === "hotkey")
     return (
       <WizardModalDialog
-        title={t("Select hotkey")}
+        title={t("Select Hotkey")}
         onBackClick={() => setActivePicker(null)}
         onCloseClick={onClose}
         contentClassName="p-0! overflow-hidden flex flex-col"

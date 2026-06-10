@@ -108,9 +108,10 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
             />
           </SummaryRow>
           <SummaryRow label={t("Lock type")}>
-            {`${currentIsPerpetual ? t("Perpetual") : t("Decaying")} → ${
-              targetIsPerpetual ? t("Perpetual") : t("Decaying")
-            }`}
+            {t("{{from}} → {{to}}", {
+              from: currentIsPerpetual ? t("Perpetual") : t("Decaying"),
+              to: targetIsPerpetual ? t("Perpetual") : t("Decaying"),
+            })}
           </SummaryRow>
           <SummaryRow label={t("Network fee")}>
             <StakingFeeEstimate

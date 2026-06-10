@@ -84,6 +84,7 @@ export const useBittensorConvictionLockPayload = ({
 
   const {
     data: payloadData,
+    isPlaceholderData: isPlaceholderPayload,
     isLoading: isLoadingPayload,
     isError: isErrorPayload,
     error: errorPayload,
@@ -123,8 +124,10 @@ export const useBittensorConvictionLockPayload = ({
   } = useGetFeeEstimate({ sapi, payload: feePayloadData?.payload })
 
   return {
-    payload: payloadData?.payload,
-    txMetadata: payloadData?.txMetadata,
+    // never expose a payload built for previous inputs (keepPreviousData): a fast user could
+    // reach the confirm step and sign it while the current one is still building
+    payload: isPlaceholderPayload ? undefined : payloadData?.payload,
+    txMetadata: isPlaceholderPayload ? undefined : payloadData?.txMetadata,
     feeEstimate,
     isLoadingFeeEstimate: isLoadingSapi || isLoadingFee,
     errorFeeEstimate,

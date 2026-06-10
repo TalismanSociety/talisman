@@ -230,7 +230,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
   if (activePicker === "hotkey")
     return (
       <WizardModalDialog
-        title={t("Select hotkey")}
+        title={t("Select Hotkey")}
         onBackClick={() => setActivePicker(null)}
         onCloseClick={onClose}
         contentClassName="p-0! overflow-hidden flex flex-col"
@@ -247,7 +247,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
 
   return (
     <WizardModalDialog
-      title={t("Conviction lock")}
+      title={t("Conviction Lock")}
       onCloseClick={onClose}
       contentClassName="overflow-hidden flex flex-col gap-8"
     >

@@ -10,7 +10,8 @@ import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 
 /**
  * Displays a lock icon with a tooltip when part of the coldkey's stake on this
- * position's subnet is conviction locked (cannot be unstaked or transferred).
+ * position's subnet is conviction locked (cannot be unstaked until the lock decays;
+ * transferring it is allowed but hands the lock and its conviction to the recipient).
  *
  * The lock is subnet-wide: it constrains the coldkey's total alpha on the subnet,
  * not this specific position.

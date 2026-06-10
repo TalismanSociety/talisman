@@ -85,7 +85,7 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
 
   return (
     <WizardModalDialog
-      title={t("Conviction lock")}
+      title={t("Conviction Lock")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
       onCloseClick={onClose}
