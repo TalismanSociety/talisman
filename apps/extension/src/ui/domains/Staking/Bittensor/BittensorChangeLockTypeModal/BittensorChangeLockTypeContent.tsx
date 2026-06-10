@@ -200,7 +200,7 @@ export const BittensorChangeLockTypeContent: FC<BittensorChangeLockTypeContentPr
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Lock type")}</div>
             <PillButton
-              className="h-16 max-w-full px-4!"
+              className="h-16 max-w-full px-6!"
               onClick={() => setActivePicker("lockType")}
             >
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">

@@ -277,7 +277,7 @@ export const BittensorChangeLockHotkeyContent: FC<BittensorChangeLockHotkeyConte
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Hotkey")}</div>
-            <PillButton className="h-16 max-w-full px-4!" onClick={() => setActivePicker("hotkey")}>
+            <PillButton className="h-16 max-w-full px-6!" onClick={() => setActivePicker("hotkey")}>
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
                 {selectedHotkey ? (
                   <>

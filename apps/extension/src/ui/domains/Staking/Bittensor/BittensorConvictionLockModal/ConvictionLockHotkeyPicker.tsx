@@ -11,7 +11,11 @@ import { type FC, useDeferredValue, useEffect, useMemo, useRef, useState } from 
 import { useTranslation } from "react-i18next"
 
 import { useBittensorHotkeyExists } from "../hooks/useBittensorHotkeyExists"
-import { type SubnetNeuron, useBittensorSubnetNeurons } from "../hooks/useBittensorSubnetNeurons"
+import {
+  type NeuronRole,
+  type SubnetNeuron,
+  useBittensorSubnetNeurons,
+} from "../hooks/useBittensorSubnetNeurons"
 import {
   ConvictionKeeperBadge,
   getConvictionKeeperKind,
@@ -19,14 +23,18 @@ import {
   HotkeyRows,
 } from "./HotkeyPickerRows"
 
-const byStakeDesc = (a: SubnetNeuron, b: SubnetNeuron) =>
-  b.stakeOnSubnet > a.stakeOnSubnet ? 1 : b.stakeOnSubnet < a.stakeOnSubnet ? -1 : 0
+const ROLE_RANK: Record<NeuronRole, number> = { owner: 0, validator: 1, miner: 2 }
+
+const byRoleThenStakeDesc = (a: SubnetNeuron, b: SubnetNeuron) =>
+  ROLE_RANK[a.role] - ROLE_RANK[b.role] ||
+  (b.stakeOnSubnet > a.stakeOnSubnet ? 1 : b.stakeOnSubnet < a.stakeOnSubnet ? -1 : 0)
 
 /**
- * Picks a conviction-lock target hotkey from every neuron on the subnet (validators, miners and the
- * owner hotkey), ordered by descending stake. A single field searches by name, hotkey or UID; when
- * the query is a full ss58 address it's resolved on-chain so a registered hotkey that isn't on this
- * subnet can still be picked.
+ * Picks a conviction-lock target hotkey from every neuron on the subnet: the owner hotkey first
+ * (locking to it grants instant full conviction), then validators, then miners, each ordered by
+ * descending stake. A single field searches by name, hotkey or UID; when the query is a full ss58
+ * address it's resolved on-chain so a registered hotkey that isn't on this subnet can still be
+ * picked.
  */
 export const ConvictionLockHotkeyPicker: FC<{
   networkId: DotNetworkId
@@ -48,7 +56,7 @@ export const ConvictionLockHotkeyPicker: FC<{
   const tokenId = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
   const symbol = `SN${netuid}`
 
-  const sortedNeurons = useMemo(() => [...neurons].sort(byStakeDesc), [neurons])
+  const sortedNeurons = useMemo(() => [...neurons].sort(byRoleThenStakeDesc), [neurons])
 
   const displayedNeurons = useMemo(() => {
     const query = search.trim().toLowerCase()

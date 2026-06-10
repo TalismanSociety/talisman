@@ -303,7 +303,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Lock type")}</div>
             <PillButton
-              className="h-12 max-w-full px-4!"
+              className="h-12 max-w-full px-6!"
               disabled={isAlreadyPerpetual}
               onClick={() => setActivePicker("lockType")}
             >
@@ -319,7 +319,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
                 <TooltipTrigger asChild>
                   <span className="inline-flex max-w-full overflow-hidden">
                     <PillButton
-                      className="h-12 max-w-full px-4! disabled:pointer-events-none"
+                      className="h-12 max-w-full px-6! disabled:pointer-events-none"
                       disabled={isTopUp}
                       onClick={() => setActivePicker("hotkey")}
                     >
@@ -337,7 +337,7 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
               </Tooltip>
             ) : (
               <PillButton
-                className="h-12 max-w-full px-4!"
+                className="h-12 max-w-full px-6!"
                 onClick={() => setActivePicker("hotkey")}
               >
                 <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
