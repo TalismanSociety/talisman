@@ -1,8 +1,10 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
 import {
   type ChangeEventHandler,
@@ -41,9 +43,18 @@ export const BittensorConvictionLockAmountField: FC<BittensorConvictionLockAmoun
 }) => {
   const { t } = useTranslation()
 
+  const tokenRates = useTokenRates(tokenId)
+
   const formattedValue = useMemo(
     () => (typeof plancks === "bigint" ? new BalanceFormatter(plancks, decimals).tokens : ""),
     [plancks, decimals]
+  )
+
+  // fiat value of the current amount, shown next to the Max button (display only, no fiat input)
+  const fiatAmount = useMemo(
+    () =>
+      typeof plancks === "bigint" ? new BalanceFormatter(plancks, decimals, tokenRates) : null,
+    [plancks, decimals, tokenRates]
   )
 
   const [value, setValue] = useState(formattedValue)
@@ -113,6 +124,11 @@ export const BittensorConvictionLockAmountField: FC<BittensorConvictionLockAmoun
         </div>
       </div>
       <div className="flex max-w-full items-center justify-center gap-4">
+        {tokenRates && fiatAmount && (
+          <div className="max-w-[264px] truncate text-body-secondary text-sm">
+            <Fiat amount={fiatAmount} noCountUp />
+          </div>
+        )}
         <PillButton
           onClick={onSetMaxClick}
           disabled={maxPlancks <= 0n}
