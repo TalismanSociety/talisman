@@ -3,7 +3,7 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { useTranslation } from "react-i18next"
 
-export const ConvictionLockWarningDrawer = ({
+export const ConvictionLockSendWarningDrawer = ({
   isOpen,
   close,
   handleAccept,
@@ -20,11 +20,18 @@ export const ConvictionLockWarningDrawer = ({
         <div className="flex size-24 items-center justify-center rounded-full bg-alert-warn/10">
           <AlertTriangleIcon className="inline-block size-12 text-alert-warn" />
         </div>
-        <div className="mt-6 font-bold text-md">{t("Conviction Lock Will Transfer")}</div>
+        <div className="mt-6 font-bold text-md">{t("Conviction lock will transfer")}</div>
         <div className="mt-5 text-body-secondary text-sm leading-paragraph">
-          {t(
-            "Part of this amount is conviction-locked. The lock moves with the stake: the recipient won't be able to unstake it until the lock decays, and you permanently give up the conviction it carries. The transfer fails if the recipient already has a lock to a different hotkey on this subnet."
-          )}
+          <p>
+            {t(
+              "This includes conviction-locked stake. The lock moves with the stake, and the recipient cannot unstake it until the lock decays."
+            )}
+          </p>
+          <p>
+            {t(
+              "The transfer will fail if the recipient already has a lock on a different hotkey for this subnet."
+            )}
+          </p>
         </div>
         <div className="mt-10 grid w-full grid-cols-2 gap-8">
           <Button onClick={close}>{t("Cancel")}</Button>

@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next"
 type BittensorConvictionLockWhyDrawerProps = {
   isOpen: boolean
   containerId: string
-  symbol: string
   /** Closes the whole wizard. */
   onCancel: () => void
   /** Closes only the drawer, revealing the form. */
@@ -19,10 +18,9 @@ type BittensorConvictionLockWhyDrawerProps = {
  * Intro drawer shown when the conviction lock wizard opens: explains what locking does before the
  * user commits stake. Cancel backs out of the wizard entirely, Continue reveals the form.
  */
-export const BittensorConvictionLockWhyDrawer: FC<BittensorConvictionLockWhyDrawerProps> = ({
+export const BittensorConvictionLockInfoDrawer: FC<BittensorConvictionLockWhyDrawerProps> = ({
   isOpen,
   containerId,
-  symbol,
   onCancel,
   onContinue,
 }) => {
@@ -41,29 +39,17 @@ export const BittensorConvictionLockWhyDrawer: FC<BittensorConvictionLockWhyDraw
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
       <div className="flex w-full flex-col gap-8 rounded-t-xl bg-grey-850 p-12">
         <div className="flex items-center justify-center gap-4 font-bold text-body">
-          {t("Why lock conviction?")}
+          {t("Understand conviction locks")}
         </div>
         <div className="flex flex-col gap-4 text-body-secondary text-sm leading-paragraph">
           <p>
             {t(
-              "Locking is how you publicly back a hotkey for the long term. You commit part of your staked {{symbol}} to it, building an on-chain conviction score that grows the longer your stake stays locked.",
-              { symbol }
+              "Conviction locking lets you publicly back a hotkey by committing staked subnet tokens. Your on-chain conviction score grows the longer it stays locked."
             )}
           </p>
           <p>
             {t(
-              "The score means something because the {{symbol}} is genuinely committed. You can't unstake it until it slowly unwinds, around half every 90 days. To hold your conviction at full strength, a perpetual lock keeps it in place for as long as you want.",
-              { symbol }
-            )}
-          </p>
-          <p>
-            {t("Your locked {{symbol}} keeps earning normal staking rewards the whole time.", {
-              symbol,
-            })}
-          </p>
-          <p>
-            {t(
-              "Conviction is purely a public signal of commitment. It doesn't add extra rewards or voting power."
+              "Locked stake cannot be unstaked immediately. A decaying lock unlocks gradually, with roughly half unlocking every 90 days. A perpetual lock stays at full strength until you switch it to decaying."
             )}
           </p>
         </div>

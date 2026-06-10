@@ -7,7 +7,7 @@ import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { type FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ConvictionLockWarningDrawer } from "../Drawers/ConvictionLockWarningDrawer"
+import { ConvictionLockSendWarningDrawer } from "../Drawers/ConvictionLockSendWarningDrawer"
 import { ForfeitWarningDrawer } from "../Drawers/ForfeitWarningDrawer"
 import { RecipientWarningDrawer } from "../Drawers/RecipientWarningDrawer"
 import { RootStakedTaoWarningDrawer } from "../Drawers/RootStakedTaoWarningDrawer"
@@ -113,7 +113,7 @@ const ReviewButton = () => {
           handleAcceptWarning("rootStakedTaoWarning")
         }}
       />
-      <ConvictionLockWarningDrawer
+      <ConvictionLockSendWarningDrawer
         isOpen={convictionLockDrawer.isOpen}
         close={() => {
           setConfirmed(false)

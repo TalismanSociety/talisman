@@ -28,7 +28,7 @@ import { useBittensorConvictionLockPayload } from "../hooks/useBittensorConvicti
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { BittensorConvictionLockAmountField } from "./BittensorConvictionLockAmountField"
 import { BittensorConvictionLockConfirm } from "./BittensorConvictionLockConfirm"
-import { BittensorConvictionLockWhyDrawer } from "./BittensorConvictionLockWhyDrawer"
+import { BittensorConvictionLockInfoDrawer } from "./BittensorConvictionLockInfoDrawer"
 import { BittensorLockTypePicker } from "./BittensorLockTypePicker"
 import { ConvictionLockHotkeyPicker } from "./ConvictionLockHotkeyPicker"
 
@@ -385,10 +385,9 @@ export const BittensorConvictionLockContent: FC<BittensorConvictionLockContentPr
         onSelect={(value) => setMakePerpetual(value === "perpetual")}
         onDismiss={() => setActivePicker(null)}
       />
-      <BittensorConvictionLockWhyDrawer
+      <BittensorConvictionLockInfoDrawer
         isOpen={showWhy}
         containerId={BITTENSOR_LOCK_MODAL_CONTAINER_ID}
-        symbol={symbol}
         onCancel={onClose}
         onContinue={() => setShowWhy(false)}
       />
