@@ -59,7 +59,7 @@ export const BittensorChangeLockTypeConfirm = () => {
     [symbol, t, targetIsPerpetual]
   )
 
-  if (!address || !existingLock) return null
+  if (!address || !existingLock || currentIsPerpetual === null) return null
 
   return (
     <WizardModalDialog

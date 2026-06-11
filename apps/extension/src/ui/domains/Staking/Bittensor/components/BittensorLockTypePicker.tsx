@@ -147,7 +147,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
       value: "perpetual",
       title: t("Perpetual Lock"),
       description: t(
-        "Your {{symbol}} stays fully locked and keeps maximum conviction. It cannot be unstaked, moved, or transferred until you switch back to Decaying.",
+        "Your {{symbol}} stays fully locked and keeps maximum conviction. It cannot be unstaked while locked. If transferred, the lock and conviction move to the recipient.",
         { symbol }
       ),
     },

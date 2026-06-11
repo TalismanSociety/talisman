@@ -24,12 +24,14 @@ export const BittensorChangeLockTypeForm = () => {
     network,
     eligibleAccounts,
     existingLock,
-    targetIsPerpetual,
+    targetLockType,
+    isLockTypeLoading,
     baseTokenId,
     symbol,
     subnetLabel,
     taoTokenId,
     hotkeyName,
+    lockTypeLabel,
     feeErrorMessage,
     payloadErrorMessage,
     canContinue,
@@ -76,12 +78,11 @@ export const BittensorChangeLockTypeForm = () => {
             <div className="whitespace-nowrap">{t("Lock type")}</div>
             <PillButton
               className="h-16 max-w-full px-6!"
+              disabled={isLockTypeLoading}
               onClick={() => setActivePicker("lockType")}
             >
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                <div className="grow truncate leading-base">
-                  {targetIsPerpetual ? t("Perpetual") : t("Decaying")}
-                </div>
+                <div className="grow truncate leading-base">{lockTypeLabel}</div>
               </div>
             </PillButton>
           </div>
@@ -149,7 +150,7 @@ export const BittensorChangeLockTypeForm = () => {
       <BittensorLockTypePicker
         isOpen={activePicker === "lockType"}
         containerId={BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID}
-        value={targetIsPerpetual ? "perpetual" : "decaying"}
+        value={targetLockType ?? "decaying"}
         symbol={symbol}
         onSelect={selectLockType}
         onDismiss={() => setActivePicker(null)}

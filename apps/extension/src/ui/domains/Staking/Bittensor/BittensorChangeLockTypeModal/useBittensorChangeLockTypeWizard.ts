@@ -15,6 +15,7 @@ import type { Hex } from "viem"
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
 import { useBittensorChangeLockTypeModal } from "../hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeLockTypePayload } from "../hooks/useBittensorChangeLockTypePayload"
+import { useBittensorCurrentLockType } from "../hooks/useBittensorCurrentLockType"
 import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { getBittensorErrorMessage } from "../utils/getBittensorErrorMessage"
@@ -96,10 +97,20 @@ const useBittensorChangeLockTypeWizardProvider = () => {
   )
 
   const existingLock = subnetUnstakeInfo?.convictionLock ?? null
-  const currentIsPerpetual = existingLock?.lockType === "perpetual"
+  const { data: chainLockType, isLoading: isLoadingChainLockType } = useBittensorCurrentLockType({
+    networkId,
+    address: address || null,
+    netuid,
+  })
+  const currentLockType =
+    chainLockType ?? (isLoadingChainLockType ? null : (existingLock?.lockType ?? null))
+  const currentIsPerpetual = currentLockType === null ? null : currentLockType === "perpetual"
   // target type: user choice once set, else mirror current
-  const targetIsPerpetual = makePerpetual ?? currentIsPerpetual
-  const isNoop = targetIsPerpetual === currentIsPerpetual
+  const targetLockType: ConvictionLockType | null =
+    makePerpetual === null ? currentLockType : makePerpetual ? "perpetual" : "decaying"
+  const targetIsPerpetual = targetLockType === "perpetual"
+  const isLockTypeLoading = targetLockType === null
+  const isNoop = currentIsPerpetual !== null && targetIsPerpetual === currentIsPerpetual
 
   const baseTokenId = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
   const baseToken = useToken(baseTokenId, "substrate-dtao")
@@ -117,6 +128,13 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     )
   }, [combinedValidatorsData, existingLock?.hotkey])
 
+  const lockTypeLabel =
+    targetLockType === null
+      ? t("Loading…")
+      : targetLockType === "perpetual"
+        ? t("Perpetual")
+        : t("Decaying")
+
   const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, errorPayload } =
     useBittensorChangeLockTypePayload({
       networkId,
@@ -124,7 +142,7 @@ const useBittensorChangeLockTypeWizardProvider = () => {
       netuid,
       makePerpetual: targetIsPerpetual,
       // no payload for a no-op flip: it would submit a real, fee-burning transaction
-      enabled: !!existingLock && !isNoop,
+      enabled: !!existingLock && currentIsPerpetual !== null && !isNoop,
     })
 
   const payloadErrorMessage = useMemo(() => {
@@ -141,7 +159,7 @@ const useBittensorChangeLockTypeWizardProvider = () => {
   const submitErrorMessage = feeErrorMessage ?? payloadErrorMessage
   const payloadToSubmit = submitErrorMessage ? undefined : payload
 
-  const canContinue = !!existingLock && !isNoop && !!payloadToSubmit
+  const canContinue = !!existingLock && currentIsPerpetual !== null && !isNoop && !!payloadToSubmit
 
   const setStep = useCallback((step: ChangeLockTypeWizardStep) => {
     setWizardState((prev) => ({ ...prev, step }))
@@ -178,12 +196,15 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     eligibleAccounts,
     existingLock,
     currentIsPerpetual,
+    targetLockType,
     targetIsPerpetual,
+    isLockTypeLoading,
     baseTokenId,
     symbol,
     subnetLabel,
     taoTokenId,
     hotkeyName,
+    lockTypeLabel,
     feeErrorMessage,
     payloadErrorMessage,
     submitErrorMessage,
