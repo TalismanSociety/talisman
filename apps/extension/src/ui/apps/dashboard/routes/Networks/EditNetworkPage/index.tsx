@@ -1,5 +1,5 @@
 // biome-ignore-all lint/correctness/noChildrenProp: legacy
-import * as Sentry from "@sentry/browser"
+import { sentry } from "@core/config/sentry"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
@@ -436,7 +436,7 @@ const ConfirmRemove: FC<{
       await api.networkRemove(network.id)
       isNetworkKnown(saved) ? onClose() : navigate(-1)
     } catch (err) {
-      Sentry.captureException(err)
+      sentry.captureException(err)
       notify({
         type: "error",
         title: t("Error"),

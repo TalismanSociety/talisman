@@ -1,9 +1,9 @@
 import { log } from "@common/log"
+import { sentry } from "@core/config/sentry"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import { hexToString } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import { ParsedMessage } from "@spruceid/siwe-parser"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -59,7 +59,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
 
         return convertToYaml(typedMessage)
       } catch (err) {
-        Sentry.captureException(err)
+        sentry.captureException(err)
       }
     }
     try {
