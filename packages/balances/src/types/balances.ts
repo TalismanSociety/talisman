@@ -50,6 +50,14 @@ export function excludeFromTransferableAmount(
     .reduce((max, lock) => BigMath.max(max, lock), 0n)
 }
 
+export function lockOverflowAmount(
+  locks: Array<FormattedAmount<LockedAmount<string>, string>>
+): bigint {
+  return excludeFromTransferableAmount(
+    locks.filter((lock) => lock.overflowToSumTransferable === true)
+  )
+}
+
 export function excludeFromFeePayableLocks(
   locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
 ): Array<LockedAmount<string>> {
@@ -646,14 +654,16 @@ export class Balance {
     return newTransferableCalculation()
   }
   /**
-   * The portion of this balance's locks that exceeds its own free amount.
+   * The portion of this balance's locks marked `overflowToSumTransferable` that exceeds its own
+   * free amount.
    *
    * Such a lock constrains sibling balances rather than this one (eg a dtao conviction lock,
    * reported on the subnet's base token, constrains the per-validator staking positions):
-   * sum formatters subtract it from the summed transferable amount.
+   * sum formatters subtract it from the summed transferable amount. Locks without the flag never
+   * overflow - their excess over `free` is already covered by this balance's own reserved amount.
    */
   get lockOverflow() {
-    const lockedPlanck = excludeFromTransferableAmount(this.locks)
+    const lockedPlanck = lockOverflowAmount(this.locks)
     return this.#format(BigMath.max(lockedPlanck - this.free.planck, 0n))
   }
   /**

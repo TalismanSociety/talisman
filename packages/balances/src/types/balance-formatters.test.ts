@@ -629,7 +629,7 @@ describe("Balance.lockOverflow", () => {
   it("is zero when locks fit in the free amount", () => {
     const b = makeHydratedValuesBalance("0x01", "token-a", [
       { type: "free", label: "free", amount: "100" },
-      { type: "locked", label: "some lock", amount: "40" },
+      { type: "locked", label: "some lock", amount: "40", overflowToSumTransferable: true },
     ])
     expect(b.lockOverflow.planck).toBe(0n)
   })
@@ -637,15 +637,32 @@ describe("Balance.lockOverflow", () => {
   it("returns the lock excess over the free amount", () => {
     const b = makeHydratedValuesBalance("0x01", "token-a", [
       { type: "free", label: "free", amount: "0" },
-      { type: "locked", label: "conviction lock", amount: "12" },
+      { type: "locked", label: "conviction lock", amount: "12", overflowToSumTransferable: true },
     ])
     expect(b.lockOverflow.planck).toBe(12n)
+  })
+
+  it("ignores locks not marked overflowToSumTransferable", () => {
+    // a regular lock exceeding free is covered by this balance's own reserved amount
+    // (eg vesting lock 100, identity deposit 50, free 50): it must not leak into the sum
+    const b = makeHydratedValuesBalance("0x01", "token-a", [
+      { type: "free", label: "free", amount: "50" },
+      { type: "reserved", label: "identity deposit", amount: "50" },
+      { type: "locked", label: "vesting", amount: "100" },
+    ])
+    expect(b.lockOverflow.planck).toBe(0n)
   })
 
   it("ignores locks marked includeInTransferable", () => {
     const b = makeHydratedValuesBalance("0x01", "token-a", [
       { type: "free", label: "free", amount: "0" },
-      { type: "locked", label: "pending claim", amount: "12", includeInTransferable: true },
+      {
+        type: "locked",
+        label: "pending claim",
+        amount: "12",
+        includeInTransferable: true,
+        overflowToSumTransferable: true,
+      },
     ])
     expect(b.lockOverflow.planck).toBe(0n)
   })
@@ -676,7 +693,12 @@ describe("sum transferable with overflowing locks", () => {
       "token-base",
       [
         { type: "free", label: "Subnet Staking", amount: "0" },
-        { type: "locked", label: "Decaying Conviction Lock", amount },
+        {
+          type: "locked",
+          label: "Decaying Conviction Lock",
+          amount,
+          overflowToSumTransferable: true,
+        },
       ],
       0,
       rates
@@ -697,6 +719,24 @@ describe("sum transferable with overflowing locks", () => {
   it("does not change sums without overflowing locks", () => {
     const balances = new Balances([positionA(), positionB()])
     expect(balances.sum.planck.transferable).toBe(15n)
+  })
+
+  it("does not subtract unflagged locks exceeding free but covered by reserved", () => {
+    // vesting lock 100 acts on total (free 50 + reserved 50): own transferable is 0,
+    // but nothing spills over to the sibling balances of the sum
+    const reservedCoveredLock = makeHydratedValuesBalance(
+      "0x02",
+      "token-c",
+      [
+        { type: "free", label: "free", amount: "50" },
+        { type: "reserved", label: "identity deposit", amount: "50" },
+        { type: "locked", label: "vesting", amount: "100" },
+      ],
+      0,
+      rates
+    )
+    const balances = new Balances([positionA(), reservedCoveredLock])
+    expect(balances.sum.planck.transferable).toBe(10n)
   })
 
   it("subtracts the overflowing lock from the fiat sum", () => {

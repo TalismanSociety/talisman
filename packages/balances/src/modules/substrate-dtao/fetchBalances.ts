@@ -312,6 +312,9 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         type: "locked",
         label: getConvictionLockLabel(stake?.convictionLock?.lockType ?? "decaying"),
         amount: convictionLockAmount.toString(),
+        // the lock constrains the coldkey's total alpha across the whole subnet, not just this
+        // base-token balance: its excess over `free` must reduce the summed transferable amount
+        overflowToSumTransferable: true,
         meta: convictionLockMeta,
       }
 

@@ -95,6 +95,15 @@ export type LockedAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & 
    * As such, this locked amount will not be included in the calculated available funds.
    */
   excludeFromFeePayable?: boolean
+
+  /**
+   * By default, a lock only constrains the transferable amount of the balance it is reported on.
+   * If this property is set to true, the portion of this lock which exceeds its own balance's free
+   * amount is also subtracted from the summed transferable amount of a Balances collection,
+   * because it constrains the sibling balances of the sum (eg a dtao conviction lock, reported on
+   * the subnet's base token, constrains the coldkey's staking positions across the whole subnet).
+   */
+  overflowToSumTransferable?: boolean
 }
 
 export type AmountWithLabel<TLabel extends string> =
