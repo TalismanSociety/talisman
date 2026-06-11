@@ -1,5 +1,3 @@
-import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
@@ -11,29 +9,11 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import type { Hex } from "viem"
 
-import { BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID } from "./BittensorChangeLockTypeContent"
-
-type BittensorChangeLockTypeConfirmProps = {
-  networkId: DotNetworkId
-  address: string
-  hotkey: string
-  lockedAmount: bigint
-  currentIsPerpetual: boolean
-  targetIsPerpetual: boolean
-  symbol: string
-  tokenId: string
-  taoTokenId: string | null | undefined
-  payload: SignerPayloadJSON | undefined
-  txMetadata: Uint8Array | `0x${string}` | undefined
-  feeEstimate?: bigint | null
-  isLoadingFeeEstimate?: boolean
-  errorFeeEstimate?: unknown
-  onBack: () => void
-  onClose: () => void
-  onSubmitted: (hash: Hex) => void
-}
+import {
+  BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID,
+  useBittensorChangeLockTypeWizard,
+} from "./useBittensorChangeLockTypeWizard"
 
 const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="flex h-10 items-center justify-between gap-8">
@@ -42,26 +22,26 @@ const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 )
 
-export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmProps> = ({
-  networkId,
-  address,
-  hotkey,
-  lockedAmount,
-  currentIsPerpetual,
-  targetIsPerpetual,
-  symbol,
-  tokenId,
-  taoTokenId,
-  payload,
-  txMetadata,
-  feeEstimate,
-  isLoadingFeeEstimate,
-  errorFeeEstimate,
-  onBack,
-  onClose,
-  onSubmitted,
-}) => {
+export const BittensorChangeLockTypeConfirm = () => {
   const { t } = useTranslation()
+  const {
+    networkId,
+    address,
+    existingLock,
+    currentIsPerpetual,
+    targetIsPerpetual,
+    symbol,
+    baseTokenId,
+    taoTokenId,
+    payload,
+    txMetadata,
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    close,
+    setStep,
+    onSubmitted,
+  } = useBittensorChangeLockTypeWizard()
 
   // neither direction is destructive (the flip is reversible anytime): warn tint for both
   const warning = useMemo(
@@ -78,12 +58,14 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
     [symbol, t, targetIsPerpetual]
   )
 
+  if (!address || !existingLock) return null
+
   return (
     <WizardModalDialog
       title={t("Conviction Lock Type")}
       contentClassName="size-full flex flex-col overflow-hidden"
-      onBackClick={onBack}
-      onCloseClick={onClose}
+      onBackClick={() => setStep("form")}
+      onCloseClick={close}
     >
       <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">
         <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
@@ -94,14 +76,14 @@ export const BittensorChangeLockTypeConfirm: FC<BittensorChangeLockTypeConfirmPr
           </SummaryRow>
           <SummaryRow label={t("Hotkey")}>
             <span className="inline-flex max-w-full items-center gap-4 overflow-hidden align-middle">
-              <AccountIcon className="shrink-0 text-lg!" address={hotkey} />
-              <BittensorValidatorName hotkey={hotkey} className="truncate" />
+              <AccountIcon className="shrink-0 text-lg!" address={existingLock.hotkey} />
+              <BittensorValidatorName hotkey={existingLock.hotkey} className="truncate" />
             </span>
           </SummaryRow>
           <SummaryRow label={t("Locked amount")}>
             <TokensAndFiat
-              planck={lockedAmount}
-              tokenId={tokenId}
+              planck={existingLock.amount}
+              tokenId={baseTokenId}
               noCountUp
               tokensClassName="text-body"
               className="text-body-secondary"

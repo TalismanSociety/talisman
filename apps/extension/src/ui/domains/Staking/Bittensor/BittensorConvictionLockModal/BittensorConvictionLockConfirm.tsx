@@ -1,5 +1,3 @@
-import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
@@ -11,31 +9,11 @@ import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimat
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import type { Hex } from "viem"
 
-import { BITTENSOR_LOCK_MODAL_CONTAINER_ID } from "./BittensorConvictionLockContent"
-
-type BittensorConvictionLockConfirmProps = {
-  networkId: DotNetworkId
-  address: string
-  hotkey: string
-  amount: bigint
-  makePerpetual: boolean
-  isAlreadyPerpetual: boolean
-  isTopUp: boolean
-  existingLockAmount: bigint
-  symbol: string
-  tokenId: string
-  taoTokenId: string | null | undefined
-  payload: SignerPayloadJSON | undefined
-  txMetadata: Uint8Array | `0x${string}` | undefined
-  feeEstimate?: bigint | null
-  isLoadingFeeEstimate?: boolean
-  errorFeeEstimate?: unknown
-  onBack: () => void
-  onClose: () => void
-  onSubmitted: (hash: Hex) => void
-}
+import {
+  BITTENSOR_LOCK_MODAL_CONTAINER_ID,
+  useBittensorConvictionLockWizard,
+} from "./useBittensorConvictionLockWizard"
 
 const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="flex h-10 items-center justify-between gap-8">
@@ -44,28 +22,29 @@ const SummaryRow: FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 )
 
-export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmProps> = ({
-  networkId,
-  address,
-  hotkey,
-  amount,
-  makePerpetual,
-  isAlreadyPerpetual,
-  isTopUp,
-  existingLockAmount,
-  symbol,
-  tokenId,
-  taoTokenId,
-  payload,
-  txMetadata,
-  feeEstimate,
-  isLoadingFeeEstimate,
-  errorFeeEstimate,
-  onBack,
-  onClose,
-  onSubmitted,
-}) => {
+export const BittensorConvictionLockConfirm = () => {
   const { t } = useTranslation()
+  const {
+    networkId,
+    address,
+    effectiveHotkey,
+    lockDelta,
+    makePerpetual,
+    isAlreadyPerpetual,
+    isTopUp,
+    existingLockAmount,
+    symbol,
+    baseTokenId,
+    taoTokenId,
+    payload,
+    txMetadata,
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    close,
+    setStep,
+    onSubmitted,
+  } = useBittensorConvictionLockWizard()
 
   const willBePerpetual = isAlreadyPerpetual || makePerpetual
 
@@ -83,12 +62,14 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
     [symbol, t, willBePerpetual]
   )
 
+  if (!address || !effectiveHotkey || typeof lockDelta !== "bigint" || lockDelta <= 0n) return null
+
   return (
     <WizardModalDialog
       title={t("Conviction Lock")}
       contentClassName="size-full flex flex-col overflow-hidden"
-      onBackClick={onBack}
-      onCloseClick={onClose}
+      onBackClick={() => setStep("form")}
+      onCloseClick={close}
     >
       <ScrollContainer className="grow" innerClassName="flex w-full flex-col gap-8">
         <h2 className="mb-4 text-center font-bold text-md">{t("Review transaction")}</h2>
@@ -99,14 +80,14 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
           </SummaryRow>
           <SummaryRow label={t("Hotkey")}>
             <span className="inline-flex max-w-full items-center gap-4 overflow-hidden align-middle">
-              <AccountIcon className="shrink-0 text-lg!" address={hotkey} />
-              <BittensorValidatorName hotkey={hotkey} className="truncate" />
+              <AccountIcon className="shrink-0 text-lg!" address={effectiveHotkey} />
+              <BittensorValidatorName hotkey={effectiveHotkey} className="truncate" />
             </span>
           </SummaryRow>
           <SummaryRow label={isTopUp ? t("Amount to add") : t("Amount to lock")}>
             <TokensAndFiat
-              planck={amount}
-              tokenId={tokenId}
+              planck={lockDelta}
+              tokenId={baseTokenId}
               noCountUp
               tokensClassName="text-body"
             />
@@ -114,8 +95,8 @@ export const BittensorConvictionLockConfirm: FC<BittensorConvictionLockConfirmPr
           {isTopUp && (
             <SummaryRow label={t("New total locked")}>
               <TokensAndFiat
-                planck={existingLockAmount + amount}
-                tokenId={tokenId}
+                planck={existingLockAmount + lockDelta}
+                tokenId={baseTokenId}
                 noCountUp
                 tokensClassName="text-body"
               />
