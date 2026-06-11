@@ -293,9 +293,12 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         meta,
       }
 
-      const convictionLockMeta: SubDTaoBalanceMeta = {
-        ...meta,
-        ...(stake?.convictionLock && {
+      const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
+      // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
+      // future lock_stake calls to their hotkey, so the lock wizard must know they exist
+      if (stake?.convictionLock && (convictionLockAmount > 0n || convictionLockConviction > 0n)) {
+        const convictionLockMeta: SubDTaoBalanceMeta = {
+          ...meta,
           convictionLock: {
             type: "conviction-lock",
             hotkey: stake.convictionLock.hotkey,
@@ -305,24 +308,18 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             convictionFormat: "U64F64",
             lastUpdate: stake.convictionLock.lastUpdate,
           },
-        }),
-      }
+        }
 
-      const convictionLockValue: AmountWithLabel<string> = {
-        type: "locked",
-        label: getConvictionLockLabel(stake?.convictionLock?.lockType ?? "decaying"),
-        amount: convictionLockAmount.toString(),
-        // the lock constrains the coldkey's total alpha across the whole subnet, not just this
-        // base-token balance: its excess over `free` must reduce the summed transferable amount
-        overflowToSumTransferable: true,
-        meta: convictionLockMeta,
+        values.push({
+          type: "locked",
+          label: getConvictionLockLabel(stake.convictionLock.lockType),
+          amount: convictionLockAmount.toString(),
+          // the lock constrains the coldkey's total alpha across the whole subnet, not just this
+          // base-token balance: its excess over `free` must reduce the summed transferable amount
+          overflowToSumTransferable: true,
+          meta: convictionLockMeta,
+        })
       }
-
-      const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
-      // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
-      // future lock_stake calls to their hotkey, so the lock wizard must know they exist
-      if (convictionLockAmount > 0n || convictionLockConviction > 0n)
-        values.push(convictionLockValue)
 
       // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
       // with includeInTotal: true so it counts toward the total balance.

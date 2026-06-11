@@ -64,7 +64,8 @@ export const ConvictionLockHotkeyPicker: FC<{
       (neuron) =>
         (neuron.name?.toLowerCase().includes(query) ?? false) ||
         neuron.hotkey.toLowerCase().includes(query) ||
-        `${neuron.uid}`.includes(query)
+        // exact match only: substring-matching uids would have "1" hit 10, 21, 100…
+        String(neuron.uid) === query
     )
   }, [sortedNeurons, search])
 

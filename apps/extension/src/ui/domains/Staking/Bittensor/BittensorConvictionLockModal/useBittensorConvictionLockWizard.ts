@@ -171,7 +171,7 @@ const useBittensorConvictionLockWizardProvider = () => {
   const hotkeyName = useMemo(() => {
     if (!effectiveHotkey) return null
     return (
-      combinedValidatorsData.find((v) => v.hotkey === effectiveHotkey)?.name ||
+      combinedValidatorsData.find((v) => isAddressEqual(v.hotkey, effectiveHotkey))?.name ||
       shortenAddress(effectiveHotkey, 6, 6)
     )
   }, [combinedValidatorsData, effectiveHotkey])

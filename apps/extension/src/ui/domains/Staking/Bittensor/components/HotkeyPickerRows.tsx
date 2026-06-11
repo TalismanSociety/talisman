@@ -119,7 +119,7 @@ export const HotkeyRows: FC<{
               key={item.key}
               className="absolute top-0 left-0 w-full"
               style={{ height: `${item.size}px`, transform: `translateY(${item.start}px)` }}
-              data-testid="token-picker-row"
+              data-testid="hotkey-picker-row"
             >
               <HotkeyRow
                 neuron={neuron}

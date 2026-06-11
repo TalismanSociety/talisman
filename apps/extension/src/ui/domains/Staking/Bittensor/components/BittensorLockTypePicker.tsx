@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next"
 
 export type ConvictionLockType = "decaying" | "perpetual"
 
-// A decaying conviction lock sheds its mass exponentially. On chain the unlock rate (UnlockRate) is
-// ~934,866 blocks — a ~90-day half-life at 12s/block — so we model the locked share as
-// mass(t) = 0.5 ^ (t / 90 days). This keeps the curve faithful to real decay durations (the rate is
-// governance-tunable, but 90 days is the current value, and the copy below quotes the same figure).
+// A decaying conviction lock sheds its mass exponentially. On chain the decay constant
+// (UnlockRate, governance-tunable) is ~934,866 blocks — that is the e-folding time τ (~130 days at
+// 12s/block), NOT the half-life; the half-life is τ·ln2 ≈ 648k blocks ≈ 90 days. We model the
+// locked share as mass(t) = 0.5 ^ (t / 90 days), the same 90-day figure the copy below quotes.
 const HALF_LIFE_DAYS = 90
 const HORIZON_DAYS = 365
 
@@ -75,19 +75,30 @@ const LockTypeCurve: FC<{ variant: ConvictionLockType; className?: string }> = (
 
 const LockTypeOption: FC<{
   value: ConvictionLockType
+  name: string
   title: string
   description: string
   selected: boolean
   onClick: () => void
-}> = ({ value, title, description, selected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
+}> = ({ value, name, title, description, selected, onClick }) => (
+  <label
     className={cn(
-      "flex w-full flex-col gap-10 rounded-sm border bg-grey-900 p-8 text-left hover:bg-grey-850",
+      "flex w-full cursor-pointer flex-col gap-10 rounded-sm border bg-grey-900 p-8 text-left focus-within:border-grey-700 hover:bg-grey-850",
       selected ? "border-grey-700" : "border-transparent"
     )}
   >
+    {/* native radio (visually hidden): group/arrow-key semantics for free; readOnly only mutes
+        the controlled-input warning — selection is handled by onClick so re-picking the already
+        selected option still dismisses the modal */}
+    <input
+      type="radio"
+      name={name}
+      value={value}
+      checked={selected}
+      onClick={onClick}
+      readOnly
+      className="sr-only"
+    />
     <div className="flex items-start justify-between gap-4">
       <span className="font-bold text-base text-body">{title}</span>
       <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-grey-750">
@@ -96,7 +107,7 @@ const LockTypeOption: FC<{
     </div>
     <LockTypeCurve variant={value} className={selected ? "text-primary" : "text-body-secondary"} />
     <span className="text-body-secondary text-sm leading-paragraph">{description}</span>
-  </button>
+  </label>
 )
 
 type BittensorLockTypePickerProps = {
@@ -117,6 +128,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
   onDismiss,
 }) => {
   const { t } = useTranslation()
+  const radioName = useId()
 
   const options: {
     value: ConvictionLockType
@@ -153,6 +165,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
             <LockTypeOption
               key={option.value}
               value={option.value}
+              name={radioName}
               title={option.title}
               description={option.description}
               selected={option.value === value}
