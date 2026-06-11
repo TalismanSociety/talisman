@@ -26,16 +26,9 @@ const createMockSapi = () => {
   return { sapi, getDecodedCall, getExtrinsicPayload }
 }
 
-const getBatchedCalls = (getExtrinsicPayload: ReturnType<typeof vi.fn>) =>
-  getExtrinsicPayload.mock.calls[0][2].calls as Array<{
-    pallet: string
-    method: string
-    args: Record<string, unknown>
-  }>
-
 describe("getBittensorChangeLockHotkeyPayload", () => {
-  it("wraps the move in Utility.batch_all signed by the coldkey", () => {
-    const { sapi, getExtrinsicPayload } = createMockSapi()
+  it("moves the lock with a direct move_lock(destination_hotkey, netuid) call", () => {
+    const { sapi, getDecodedCall, getExtrinsicPayload } = createMockSapi()
 
     getBittensorChangeLockHotkeyPayload({
       sapi,
@@ -44,27 +37,12 @@ describe("getBittensorChangeLockHotkeyPayload", () => {
       destinationHotkey: DESTINATION_HOTKEY,
     })
 
-    const [pallet, method, , options] = getExtrinsicPayload.mock.calls[0]
-    expect(pallet).toBe("Utility")
-    expect(method).toBe("batch_all")
-    expect(options).toEqual({ address: ADDRESS })
-  })
-
-  it("moves the lock with move_lock(destination_hotkey, netuid) + remark", () => {
-    const { sapi, getExtrinsicPayload } = createMockSapi()
-
-    getBittensorChangeLockHotkeyPayload({
-      sapi,
-      address: ADDRESS,
-      netuid: 45,
-      destinationHotkey: DESTINATION_HOTKEY,
-    })
-
-    const calls = getBatchedCalls(getExtrinsicPayload)
-    expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
-      "SubtensorModule.move_lock",
-      "System.remark_with_event",
-    ])
-    expect(calls[0].args).toEqual({ destination_hotkey: DESTINATION_HOTKEY, netuid: 45 })
+    expect(getDecodedCall).not.toHaveBeenCalled()
+    expect(getExtrinsicPayload).toHaveBeenCalledWith(
+      "SubtensorModule",
+      "move_lock",
+      { destination_hotkey: DESTINATION_HOTKEY, netuid: 45 },
+      { address: ADDRESS }
+    )
   })
 })

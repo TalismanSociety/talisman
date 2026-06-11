@@ -34,8 +34,8 @@ const getBatchedCalls = (getExtrinsicPayload: ReturnType<typeof vi.fn>) =>
   }>
 
 describe("getBittensorConvictionLockPayload", () => {
-  it("wraps the lock in Utility.batch_all signed by the coldkey", () => {
-    const { sapi, getExtrinsicPayload } = createMockSapi()
+  it("creates a decaying lock with a direct lock_stake call", () => {
+    const { sapi, getDecodedCall, getExtrinsicPayload } = createMockSapi()
 
     getBittensorConvictionLockPayload({
       sapi,
@@ -47,34 +47,16 @@ describe("getBittensorConvictionLockPayload", () => {
       currentIsPerpetual: false,
     })
 
-    const [pallet, method, , options] = getExtrinsicPayload.mock.calls[0]
-    expect(pallet).toBe("Utility")
-    expect(method).toBe("batch_all")
-    expect(options).toEqual({ address: ADDRESS })
+    expect(getDecodedCall).not.toHaveBeenCalled()
+    expect(getExtrinsicPayload).toHaveBeenCalledWith(
+      "SubtensorModule",
+      "lock_stake",
+      { hotkey: HOTKEY, netuid: 45, amount: 1_000_000_000n },
+      { address: ADDRESS }
+    )
   })
 
-  it("creates a decaying lock with just lock_stake + remark", () => {
-    const { sapi, getExtrinsicPayload } = createMockSapi()
-
-    getBittensorConvictionLockPayload({
-      sapi,
-      address: ADDRESS,
-      hotkey: HOTKEY,
-      netuid: 45,
-      amount: 1_000_000_000n,
-      makePerpetual: false,
-      currentIsPerpetual: false,
-    })
-
-    const calls = getBatchedCalls(getExtrinsicPayload)
-    expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
-      "SubtensorModule.lock_stake",
-      "System.remark_with_event",
-    ])
-    expect(calls[0].args).toEqual({ hotkey: HOTKEY, netuid: 45, amount: 1_000_000_000n })
-  })
-
-  it("batches set_perpetual_lock after lock_stake when going perpetual", () => {
+  it("batches only lock_stake + set_perpetual_lock when going perpetual", () => {
     const { sapi, getExtrinsicPayload } = createMockSapi()
 
     getBittensorConvictionLockPayload({
@@ -88,16 +70,16 @@ describe("getBittensorConvictionLockPayload", () => {
     })
 
     const calls = getBatchedCalls(getExtrinsicPayload)
-    // lock_stake must come first (the lock must exist before the flag flip), remark last
     expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
       "SubtensorModule.lock_stake",
       "SubtensorModule.set_perpetual_lock",
-      "System.remark_with_event",
     ])
+    expect(getExtrinsicPayload.mock.calls[0][0]).toBe("Utility")
+    expect(getExtrinsicPayload.mock.calls[0][1]).toBe("batch_all")
     expect(calls[1].args).toEqual({ netuid: 45, enabled: true })
   })
 
-  it("switches back to decaying when chain mode is currently perpetual", () => {
+  it("batches only lock_stake + set_perpetual_lock when switching back to decaying", () => {
     const { sapi, getExtrinsicPayload } = createMockSapi()
 
     getBittensorConvictionLockPayload({
@@ -114,12 +96,11 @@ describe("getBittensorConvictionLockPayload", () => {
     expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
       "SubtensorModule.lock_stake",
       "SubtensorModule.set_perpetual_lock",
-      "System.remark_with_event",
     ])
     expect(calls[1].args).toEqual({ netuid: 45, enabled: false })
   })
 
-  it("skips set_perpetual_lock when target already matches chain mode", () => {
+  it("skips batch_all when target already matches chain mode", () => {
     const { sapi, getExtrinsicPayload } = createMockSapi()
 
     getBittensorConvictionLockPayload({
@@ -132,10 +113,11 @@ describe("getBittensorConvictionLockPayload", () => {
       currentIsPerpetual: true,
     })
 
-    const calls = getBatchedCalls(getExtrinsicPayload)
-    expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
-      "SubtensorModule.lock_stake",
-      "System.remark_with_event",
-    ])
+    expect(getExtrinsicPayload).toHaveBeenCalledWith(
+      "SubtensorModule",
+      "lock_stake",
+      { hotkey: HOTKEY, netuid: 45, amount: 500n },
+      { address: ADDRESS }
+    )
   })
 })

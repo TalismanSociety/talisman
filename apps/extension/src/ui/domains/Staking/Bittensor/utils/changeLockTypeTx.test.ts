@@ -25,16 +25,9 @@ const createMockSapi = () => {
   return { sapi, getDecodedCall, getExtrinsicPayload }
 }
 
-const getBatchedCalls = (getExtrinsicPayload: ReturnType<typeof vi.fn>) =>
-  getExtrinsicPayload.mock.calls[0][2].calls as Array<{
-    pallet: string
-    method: string
-    args: Record<string, unknown>
-  }>
-
 describe("getBittensorChangeLockTypePayload", () => {
-  it("wraps the flag flip in Utility.batch_all signed by the coldkey", () => {
-    const { sapi, getExtrinsicPayload } = createMockSapi()
+  it("switches to perpetual with a direct set_perpetual_lock(enabled: true) call", () => {
+    const { sapi, getDecodedCall, getExtrinsicPayload } = createMockSapi()
 
     getBittensorChangeLockTypePayload({
       sapi,
@@ -43,31 +36,16 @@ describe("getBittensorChangeLockTypePayload", () => {
       makePerpetual: true,
     })
 
-    const [pallet, method, , options] = getExtrinsicPayload.mock.calls[0]
-    expect(pallet).toBe("Utility")
-    expect(method).toBe("batch_all")
-    expect(options).toEqual({ address: ADDRESS })
+    expect(getDecodedCall).not.toHaveBeenCalled()
+    expect(getExtrinsicPayload).toHaveBeenCalledWith(
+      "SubtensorModule",
+      "set_perpetual_lock",
+      { netuid: 45, enabled: true },
+      { address: ADDRESS }
+    )
   })
 
-  it("switches to perpetual with set_perpetual_lock(enabled: true) + remark", () => {
-    const { sapi, getExtrinsicPayload } = createMockSapi()
-
-    getBittensorChangeLockTypePayload({
-      sapi,
-      address: ADDRESS,
-      netuid: 45,
-      makePerpetual: true,
-    })
-
-    const calls = getBatchedCalls(getExtrinsicPayload)
-    expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
-      "SubtensorModule.set_perpetual_lock",
-      "System.remark_with_event",
-    ])
-    expect(calls[0].args).toEqual({ netuid: 45, enabled: true })
-  })
-
-  it("switches back to decaying with set_perpetual_lock(enabled: false) + remark", () => {
+  it("switches back to decaying with a direct set_perpetual_lock(enabled: false) call", () => {
     const { sapi, getExtrinsicPayload } = createMockSapi()
 
     getBittensorChangeLockTypePayload({
@@ -77,11 +55,11 @@ describe("getBittensorChangeLockTypePayload", () => {
       makePerpetual: false,
     })
 
-    const calls = getBatchedCalls(getExtrinsicPayload)
-    expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
-      "SubtensorModule.set_perpetual_lock",
-      "System.remark_with_event",
-    ])
-    expect(calls[0].args).toEqual({ netuid: 45, enabled: false })
+    expect(getExtrinsicPayload).toHaveBeenCalledWith(
+      "SubtensorModule",
+      "set_perpetual_lock",
+      { netuid: 45, enabled: false },
+      { address: ADDRESS }
+    )
   })
 })

@@ -1,5 +1,4 @@
 import type { ScaleApi } from "@talismn/sapi"
-import { Binary } from "polkadot-api"
 
 type GetBittensorChangeLockHotkeyPayloadProps = {
   sapi: ScaleApi
@@ -18,9 +17,6 @@ type GetBittensorChangeLockHotkeyPayloadProps = {
  * stake or its rewards. The accumulated conviction is preserved only when the origin and destination
  * hotkeys share the same owning coldkey; moving to a hotkey owned by a different coldkey resets the
  * conviction to zero.
- *
- * Wrapped in `Utility.batch_all` with a trailing `System.remark_with_event` to preserve the
- * `talisman-bittensor` tx-tagging convention used by all our Bittensor transactions.
  */
 export const getBittensorChangeLockHotkeyPayload = ({
   sapi,
@@ -28,15 +24,13 @@ export const getBittensorChangeLockHotkeyPayload = ({
   netuid,
   destinationHotkey,
 }: GetBittensorChangeLockHotkeyPayloadProps) => {
-  const calls = [
-    sapi.getDecodedCall("SubtensorModule", "move_lock", {
+  return sapi.getExtrinsicPayload(
+    "SubtensorModule",
+    "move_lock",
+    {
       destination_hotkey: destinationHotkey,
       netuid,
-    }),
-    sapi.getDecodedCall("System", "remark_with_event", {
-      remark: Binary.fromText("talisman-bittensor"),
-    }),
-  ]
-
-  return sapi.getExtrinsicPayload("Utility", "batch_all", { calls }, { address })
+    },
+    { address }
+  )
 }

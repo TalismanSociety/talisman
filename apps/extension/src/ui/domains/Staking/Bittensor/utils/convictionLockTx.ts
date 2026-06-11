@@ -1,5 +1,4 @@
 import type { ScaleApi } from "@talismn/sapi"
-import { Binary } from "polkadot-api"
 
 type GetBittensorConvictionLockPayloadProps = {
   sapi: ScaleApi
@@ -20,9 +19,10 @@ type GetBittensorConvictionLockPayloadProps = {
  * It creates a lock if none exists for the (coldkey, netuid), otherwise tops up the existing one
  * (the chain rejects a different hotkey with `LockHotkeyMismatch`).
  *
- * The persisted decay flag can survive after lock mass reaches zero, so we batch
+ * The persisted decay flag can survive after lock mass reaches zero, so we include
  * `set_perpetual_lock` after `lock_stake` whenever the target type differs from the current
- * on-chain type.
+ * on-chain type. When no flag flip is needed, submit `lock_stake` directly instead of wrapping a
+ * single call in `Utility.batch_all`.
  */
 export const getBittensorConvictionLockPayload = ({
   sapi,
@@ -33,28 +33,22 @@ export const getBittensorConvictionLockPayload = ({
   makePerpetual,
   currentIsPerpetual,
 }: GetBittensorConvictionLockPayloadProps) => {
-  const calls = [
-    sapi.getDecodedCall("SubtensorModule", "lock_stake", {
-      hotkey,
-      netuid,
-      amount,
-    }),
-  ]
-
-  if (makePerpetual !== currentIsPerpetual) {
-    calls.push(
-      sapi.getDecodedCall("SubtensorModule", "set_perpetual_lock", {
-        netuid,
-        enabled: makePerpetual,
-      })
-    )
+  const lockStakeArgs = {
+    hotkey,
+    netuid,
+    amount,
   }
 
-  calls.push(
-    sapi.getDecodedCall("System", "remark_with_event", {
-      remark: Binary.fromText("talisman-bittensor"),
-    })
-  )
+  if (makePerpetual === currentIsPerpetual)
+    return sapi.getExtrinsicPayload("SubtensorModule", "lock_stake", lockStakeArgs, { address })
+
+  const calls = [
+    sapi.getDecodedCall("SubtensorModule", "lock_stake", lockStakeArgs),
+    sapi.getDecodedCall("SubtensorModule", "set_perpetual_lock", {
+      netuid,
+      enabled: makePerpetual,
+    }),
+  ]
 
   return sapi.getExtrinsicPayload("Utility", "batch_all", { calls }, { address })
 }
