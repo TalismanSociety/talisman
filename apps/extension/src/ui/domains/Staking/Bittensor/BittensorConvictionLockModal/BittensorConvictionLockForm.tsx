@@ -27,13 +27,14 @@ export const BittensorConvictionLockForm = () => {
     netuid,
     address,
     plancks,
-    makePerpetual,
     showInfoDrawer,
     network,
     eligibleAccounts,
     existingLockAmount,
     isTopUp,
-    isAlreadyPerpetual,
+    targetIsPerpetual,
+    hasPerpetualLock,
+    isLockTypeLoading,
     stakedTotal,
     effectiveHotkey,
     baseTokenId,
@@ -135,7 +136,7 @@ export const BittensorConvictionLockForm = () => {
             <div className="whitespace-nowrap">{t("Lock type")}</div>
             <PillButton
               className="h-12 max-w-full px-6!"
-              disabled={isAlreadyPerpetual}
+              disabled={hasPerpetualLock || isLockTypeLoading}
               onClick={() => setActivePicker("lockType")}
             >
               <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
@@ -211,7 +212,7 @@ export const BittensorConvictionLockForm = () => {
       <BittensorLockTypePicker
         isOpen={activePicker === "lockType"}
         containerId={BITTENSOR_LOCK_MODAL_CONTAINER_ID}
-        value={isAlreadyPerpetual || makePerpetual ? "perpetual" : "decaying"}
+        value={targetIsPerpetual ? "perpetual" : "decaying"}
         symbol={symbol}
         onSelect={selectLockType}
         onDismiss={() => setActivePicker(null)}

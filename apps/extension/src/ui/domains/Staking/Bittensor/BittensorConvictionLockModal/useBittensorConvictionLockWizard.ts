@@ -17,6 +17,7 @@ import type { Hex } from "viem"
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
 import { useBittensorConvictionLockModal } from "../hooks/useBittensorConvictionLockModal"
 import { useBittensorConvictionLockPayload } from "../hooks/useBittensorConvictionLockPayload"
+import { useBittensorCurrentLockType } from "../hooks/useBittensorCurrentLockType"
 import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 
@@ -34,7 +35,8 @@ type WizardState = {
   selectedHotkey: string | null
   /** TARGET total to lock, denominated in the subnet's alpha token */
   plancks: bigint | null
-  makePerpetual: boolean
+  /** target lock type; null = mirror the current on-chain lock type until the user picks a target */
+  makePerpetual: boolean | null
   hash: Hex | null
 }
 
@@ -46,7 +48,7 @@ const DEFAULT_STATE: WizardState = {
   address: "",
   selectedHotkey: null,
   plancks: null,
-  makePerpetual: false,
+  makePerpetual: null,
   hash: null,
 }
 
@@ -122,7 +124,19 @@ const useBittensorConvictionLockWizardProvider = () => {
   const existingLock = subnetUnstakeInfo?.convictionLock ?? null
   const existingLockAmount = existingLock?.amount ?? 0n
   const isTopUp = !!existingLock
-  const isAlreadyPerpetual = existingLock?.lockType === "perpetual"
+  const { data: chainLockType, isLoading: isLoadingChainLockType } = useBittensorCurrentLockType({
+    networkId,
+    address: address || null,
+    netuid,
+  })
+  const currentLockType =
+    chainLockType ?? (isLoadingChainLockType ? null : (existingLock?.lockType ?? "decaying"))
+  const currentIsPerpetual = currentLockType === null ? null : currentLockType === "perpetual"
+  const targetLockType: ConvictionLockType | null =
+    makePerpetual === null ? currentLockType : makePerpetual ? "perpetual" : "decaying"
+  const targetIsPerpetual = targetLockType === "perpetual"
+  const hasPerpetualLock = isTopUp && currentIsPerpetual === true
+  const isLockTypeLoading = targetLockType === null
   // "available balance" is the account's full stake on the subnet; the amount field holds the TARGET
   // total to lock, which can be raised up to this ceiling
   const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? 0n
@@ -162,7 +176,11 @@ const useBittensorConvictionLockWizardProvider = () => {
   }, [combinedValidatorsData, effectiveHotkey])
 
   const lockTypeLabel =
-    isAlreadyPerpetual || makePerpetual ? t("Perpetual Lock") : t("Decaying Lock")
+    targetLockType === null
+      ? t("Loading…")
+      : targetLockType === "perpetual"
+        ? t("Perpetual Lock")
+        : t("Decaying Lock")
 
   const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate } =
     useBittensorConvictionLockPayload({
@@ -170,9 +188,9 @@ const useBittensorConvictionLockWizardProvider = () => {
       address: address || null,
       hotkey: effectiveHotkey,
       netuid,
-      amount: lockDelta,
-      makePerpetual,
-      isAlreadyPerpetual,
+      amount: targetLockType ? lockDelta : null,
+      makePerpetual: targetIsPerpetual,
+      currentIsPerpetual,
       feeAmount: stakedTotal,
     })
 
@@ -214,9 +232,15 @@ const useBittensorConvictionLockWizardProvider = () => {
   }, [])
 
   const selectAccount = useCallback((address: string) => {
-    // a different account may carry its own lock/hotkey constraints; the pre-fill effect re-seeds
-    // the amount from the new account's existing lock (if any)
-    setWizardState((prev) => ({ ...prev, address, selectedHotkey: null, activePicker: null }))
+    // a different account may carry its own lock/hotkey/type constraints; the pre-fill effect
+    // re-seeds the amount from the new account's existing lock (if any)
+    setWizardState((prev) => ({
+      ...prev,
+      address,
+      selectedHotkey: null,
+      makePerpetual: null,
+      activePicker: null,
+    }))
   }, [])
 
   const selectHotkey = useCallback((hotkey: string) => {
@@ -248,7 +272,10 @@ const useBittensorConvictionLockWizardProvider = () => {
     existingLock,
     existingLockAmount,
     isTopUp,
-    isAlreadyPerpetual,
+    currentIsPerpetual,
+    targetIsPerpetual,
+    hasPerpetualLock,
+    isLockTypeLoading,
     stakedTotal,
     lockDelta,
     effectiveHotkey,

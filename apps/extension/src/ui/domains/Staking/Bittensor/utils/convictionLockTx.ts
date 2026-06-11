@@ -7,10 +7,10 @@ type GetBittensorConvictionLockPayloadProps = {
   hotkey: string
   netuid: number
   amount: bigint
-  /** whether the user wants the lock to be perpetual (never decays) */
+  /** target state: true => perpetual (freeze decay), false => decaying (resume decay) */
   makePerpetual: boolean
-  /** whether the existing lock is already perpetual (skip the redundant flag flip) */
-  isAlreadyPerpetual: boolean
+  /** current persisted decay mode on chain, even if no active lock exists */
+  currentIsPerpetual: boolean
 }
 
 /**
@@ -18,10 +18,11 @@ type GetBittensorConvictionLockPayloadProps = {
  *
  * `SubtensorModule.lock_stake` locks already-staked alpha to a hotkey for governance conviction.
  * It creates a lock if none exists for the (coldkey, netuid), otherwise tops up the existing one
- * (the chain rejects a different hotkey with `LockHotkeyMismatch`). New locks start *decaying*.
+ * (the chain rejects a different hotkey with `LockHotkeyMismatch`).
  *
- * To make a lock perpetual we batch `set_perpetual_lock(netuid, true)` after `lock_stake` — it flips
- * the (now-existing) lock's decay flag. We skip it when the lock is already perpetual.
+ * The persisted decay flag can survive after lock mass reaches zero, so we batch
+ * `set_perpetual_lock` after `lock_stake` whenever the target type differs from the current
+ * on-chain type.
  */
 export const getBittensorConvictionLockPayload = ({
   sapi,
@@ -30,7 +31,7 @@ export const getBittensorConvictionLockPayload = ({
   netuid,
   amount,
   makePerpetual,
-  isAlreadyPerpetual,
+  currentIsPerpetual,
 }: GetBittensorConvictionLockPayloadProps) => {
   const calls = [
     sapi.getDecodedCall("SubtensorModule", "lock_stake", {
@@ -40,11 +41,11 @@ export const getBittensorConvictionLockPayload = ({
     }),
   ]
 
-  if (makePerpetual && !isAlreadyPerpetual) {
+  if (makePerpetual !== currentIsPerpetual) {
     calls.push(
       sapi.getDecodedCall("SubtensorModule", "set_perpetual_lock", {
         netuid,
-        enabled: true,
+        enabled: makePerpetual,
       })
     )
   }

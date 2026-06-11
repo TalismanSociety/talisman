@@ -12,7 +12,7 @@ type UseConvictionLockPayloadQueryProps = {
   netuid: number | null | undefined
   amount: bigint | null | undefined
   makePerpetual: boolean
-  isAlreadyPerpetual: boolean
+  currentIsPerpetual: boolean | null | undefined
 }
 
 const useConvictionLockPayloadQuery = ({
@@ -22,7 +22,7 @@ const useConvictionLockPayloadQuery = ({
   netuid,
   amount,
   makePerpetual,
-  isAlreadyPerpetual,
+  currentIsPerpetual,
 }: UseConvictionLockPayloadQueryProps) =>
   useQuery({
     queryKey: [
@@ -33,7 +33,7 @@ const useConvictionLockPayloadQuery = ({
       netuid,
       amount?.toString(),
       makePerpetual,
-      isAlreadyPerpetual,
+      currentIsPerpetual,
     ],
     queryFn: () => {
       if (
@@ -42,7 +42,8 @@ const useConvictionLockPayloadQuery = ({
         !hotkey ||
         typeof netuid !== "number" ||
         typeof amount !== "bigint" ||
-        amount <= 0n
+        amount <= 0n ||
+        typeof currentIsPerpetual !== "boolean"
       )
         return null
       return getBittensorConvictionLockPayload({
@@ -52,7 +53,7 @@ const useConvictionLockPayloadQuery = ({
         netuid,
         amount,
         makePerpetual,
-        isAlreadyPerpetual,
+        currentIsPerpetual,
       })
     },
     placeholderData: keepPreviousData,
@@ -65,7 +66,7 @@ type UseBittensorConvictionLockPayloadProps = {
   netuid: number | null | undefined
   amount: bigint | null | undefined
   makePerpetual: boolean
-  isAlreadyPerpetual: boolean
+  currentIsPerpetual: boolean | null | undefined
   /** stable nominal amount used to estimate the fee before/at amount entry (eg max lockable) */
   feeAmount: bigint | null | undefined
 }
@@ -77,7 +78,7 @@ export const useBittensorConvictionLockPayload = ({
   netuid,
   amount,
   makePerpetual,
-  isAlreadyPerpetual,
+  currentIsPerpetual,
   feeAmount,
 }: UseBittensorConvictionLockPayloadProps) => {
   const { data: sapi, isLoading: isLoadingSapi, isError: isErrorSapi } = useScaleApi(networkId)
@@ -95,7 +96,7 @@ export const useBittensorConvictionLockPayload = ({
     netuid,
     amount,
     makePerpetual,
-    isAlreadyPerpetual,
+    currentIsPerpetual,
   })
 
   // the lock_stake fee is amount-independent: estimate with a stable nominal amount so the fee
@@ -114,7 +115,7 @@ export const useBittensorConvictionLockPayload = ({
     netuid,
     amount: nominalAmount,
     makePerpetual,
-    isAlreadyPerpetual,
+    currentIsPerpetual,
   })
 
   const {

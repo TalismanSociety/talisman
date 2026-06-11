@@ -44,7 +44,7 @@ describe("getBittensorConvictionLockPayload", () => {
       netuid: 45,
       amount: 1_000_000_000n,
       makePerpetual: false,
-      isAlreadyPerpetual: false,
+      currentIsPerpetual: false,
     })
 
     const [pallet, method, , options] = getExtrinsicPayload.mock.calls[0]
@@ -63,7 +63,7 @@ describe("getBittensorConvictionLockPayload", () => {
       netuid: 45,
       amount: 1_000_000_000n,
       makePerpetual: false,
-      isAlreadyPerpetual: false,
+      currentIsPerpetual: false,
     })
 
     const calls = getBatchedCalls(getExtrinsicPayload)
@@ -84,7 +84,7 @@ describe("getBittensorConvictionLockPayload", () => {
       netuid: 45,
       amount: 1_000_000_000n,
       makePerpetual: true,
-      isAlreadyPerpetual: false,
+      currentIsPerpetual: false,
     })
 
     const calls = getBatchedCalls(getExtrinsicPayload)
@@ -97,7 +97,29 @@ describe("getBittensorConvictionLockPayload", () => {
     expect(calls[1].args).toEqual({ netuid: 45, enabled: true })
   })
 
-  it("skips set_perpetual_lock when the lock is already perpetual", () => {
+  it("switches back to decaying when chain mode is currently perpetual", () => {
+    const { sapi, getExtrinsicPayload } = createMockSapi()
+
+    getBittensorConvictionLockPayload({
+      sapi,
+      address: ADDRESS,
+      hotkey: HOTKEY,
+      netuid: 45,
+      amount: 500n,
+      makePerpetual: false,
+      currentIsPerpetual: true,
+    })
+
+    const calls = getBatchedCalls(getExtrinsicPayload)
+    expect(calls.map((c) => `${c.pallet}.${c.method}`)).toEqual([
+      "SubtensorModule.lock_stake",
+      "SubtensorModule.set_perpetual_lock",
+      "System.remark_with_event",
+    ])
+    expect(calls[1].args).toEqual({ netuid: 45, enabled: false })
+  })
+
+  it("skips set_perpetual_lock when target already matches chain mode", () => {
     const { sapi, getExtrinsicPayload } = createMockSapi()
 
     getBittensorConvictionLockPayload({
@@ -107,7 +129,7 @@ describe("getBittensorConvictionLockPayload", () => {
       netuid: 45,
       amount: 500n,
       makePerpetual: true,
-      isAlreadyPerpetual: true,
+      currentIsPerpetual: true,
     })
 
     const calls = getBatchedCalls(getExtrinsicPayload)

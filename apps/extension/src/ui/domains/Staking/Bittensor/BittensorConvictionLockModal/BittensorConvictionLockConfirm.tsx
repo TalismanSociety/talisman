@@ -29,8 +29,7 @@ export const BittensorConvictionLockConfirm = () => {
     address,
     effectiveHotkey,
     lockDelta,
-    makePerpetual,
-    isAlreadyPerpetual,
+    targetIsPerpetual,
     isTopUp,
     existingLockAmount,
     symbol,
@@ -46,11 +45,9 @@ export const BittensorConvictionLockConfirm = () => {
     onSubmitted,
   } = useBittensorConvictionLockWizard()
 
-  const willBePerpetual = isAlreadyPerpetual || makePerpetual
-
   const warning = useMemo(
     () =>
-      willBePerpetual
+      targetIsPerpetual
         ? t(
             "This is a perpetual lock: the locked {{symbol}} does not decay and can't be unstaked while perpetual — transferring it hands the lock and its conviction to the recipient. You can switch it to a decaying lock later to resume the unlock.",
             { symbol }
@@ -59,7 +56,7 @@ export const BittensorConvictionLockConfirm = () => {
             "Locked {{symbol}} can't be unstaked until the lock gradually decays away — transferring it hands the lock and its conviction to the recipient.",
             { symbol }
           ),
-    [symbol, t, willBePerpetual]
+    [symbol, t, targetIsPerpetual]
   )
 
   if (!address || !effectiveHotkey || typeof lockDelta !== "bigint" || lockDelta <= 0n) return null
@@ -103,7 +100,7 @@ export const BittensorConvictionLockConfirm = () => {
             </SummaryRow>
           )}
           <SummaryRow label={t("Lock type")}>
-            {willBePerpetual ? t("Perpetual") : t("Decaying")}
+            {targetIsPerpetual ? t("Perpetual") : t("Decaying")}
           </SummaryRow>
           <SummaryRow label={t("Network fee")}>
             <StakingFeeEstimate
