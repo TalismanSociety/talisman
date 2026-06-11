@@ -70,20 +70,23 @@ export const BittensorConvictionLockAmountField: FC<BittensorConvictionLockAmoun
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      refSkipSync.current = true
       const nextValue = e.target.value
       setValue(nextValue)
 
-      if (!nextValue.trim()) return onChange(null)
-
+      let nextPlancks: bigint | null = null
       try {
-        onChange(BigInt(tokensToPlanck(nextValue, decimals)))
+        if (nextValue.trim()) nextPlancks = BigInt(tokensToPlanck(nextValue, decimals))
       } catch {
-        // invalid input, ignore
-        onChange(null)
+        // invalid input, treated as no amount
       }
+
+      // only latch when this edit changes the parsed amount: the sync effect then fires exactly
+      // once and consumes the latch. Latching on a no-op keystroke ("1" → "1.") would leave it
+      // armed and swallow the next external update (Max button, account re-seed).
+      if (nextPlancks !== plancks) refSkipSync.current = true
+      onChange(nextPlancks)
     },
-    [decimals, onChange]
+    [decimals, onChange, plancks]
   )
 
   const refInput = useRef<HTMLInputElement>(null)

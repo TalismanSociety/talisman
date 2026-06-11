@@ -121,6 +121,11 @@ export const ConvictionLockHotkeyPicker: FC<{
         {looksLikeAddress && addressStatus === "not-found" && (
           <div className="px-2 text-alert-warn text-xs">{t("This hotkey isn't registered")}</div>
         )}
+        {looksLikeAddress && addressStatus === "error" && (
+          <div className="px-2 text-alert-warn text-xs">
+            {t("Unable to verify this hotkey, try again later")}
+          </div>
+        )}
       </div>
 
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">

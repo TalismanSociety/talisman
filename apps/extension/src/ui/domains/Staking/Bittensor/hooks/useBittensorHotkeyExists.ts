@@ -8,7 +8,13 @@ import type { Binary } from "polkadot-api"
 
 import { cleanName } from "../utils/subnetNeurons"
 
-export type HotkeyExistsStatus = "empty" | "invalid-format" | "checking" | "not-found" | "exists"
+export type HotkeyExistsStatus =
+  | "empty"
+  | "invalid-format"
+  | "checking"
+  | "error"
+  | "not-found"
+  | "exists"
 
 /**
  * Resolves a pasted hotkey for use as a conviction-lock target: first the ss58 format, then on-chain
@@ -64,15 +70,21 @@ export const useBittensorHotkeyExists = (
     refetchOnWindowFocus: false,
   })
 
+  // isPending (not isLoading): isLoading is false while the query is *disabled* (sapi still
+  // loading), which would report a possibly-registered hotkey as "not-found". isPending stays true
+  // until the first successful fetch. Fetch errors get their own status — "not-found" is an
+  // on-chain fact, not a fallback.
   const status: HotkeyExistsStatus = !hotkey
     ? "empty"
     : !isFormatValid
       ? "invalid-format"
-      : query.isLoading
-        ? "checking"
-        : query.data?.exists
-          ? "exists"
-          : "not-found"
+      : query.isError
+        ? "error"
+        : query.isPending
+          ? "checking"
+          : query.data?.exists
+            ? "exists"
+            : "not-found"
 
   return {
     status,
