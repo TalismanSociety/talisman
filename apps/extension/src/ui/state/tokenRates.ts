@@ -124,17 +124,21 @@ const alphaPriceChanges$: Observable<Map<number, number>> = timer(
  * the TAO rates; every other token resolves from the coingecko-keyed store.
  */
 export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | undefined) =>
-  combineLatest([tokenRatesMap$, getToken$(tokenId)]).pipe(
-    switchMap(([tokenRatesMap, token]) => {
-      const rawRates = (tokenId ? tokenRatesMap[tokenId] : null) ?? null
-
+  getToken$(tokenId).pipe(
+    switchMap((token) => {
+      // tokenRatesMap$ must stay inside the switchMap: the background pushes rates every couple of
+      // minutes, and each push tearing down the inner pipeline would zero the refCount of the
+      // shared alpha observables — resetting their replay buffer and refresh timer, ie a redundant
+      // refetch and a transient rate dropout on every push for a lone subscriber
       if (token?.type === "substrate-dtao" && token.networkId === BITTENSOR_NETWORK_ID)
         return combineLatest([
+          tokenRatesMap$,
           getScaledAlphaPrices$(token.networkId),
           // same reasoning as the startWith inside getScaledAlphaPrices$: never block the rates
           alphaPriceChanges$.pipe(startWith(null)),
         ]).pipe(
-          map(([scaledAlphaPrices, alphaPriceChanges]) => {
+          map(([tokenRatesMap, scaledAlphaPrices, alphaPriceChanges]) => {
+            const rawRates = tokenRatesMap[token.id] ?? null
             const scaledAlphaPrice = scaledAlphaPrices?.get(token.netuid)
             return scaledAlphaPrice
               ? (getDTaoTokenRates(
@@ -147,7 +151,9 @@ export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | u
           })
         )
 
-      return of(rawRates)
+      return tokenRatesMap$.pipe(
+        map((tokenRatesMap) => (tokenId ? (tokenRatesMap[tokenId] ?? null) : null))
+      )
     })
   )
 )
