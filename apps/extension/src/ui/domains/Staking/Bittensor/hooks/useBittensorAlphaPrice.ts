@@ -20,6 +20,6 @@ export const useBittensorAlphaPrice = ({ networkId, netuid }: UseBittensorAlphaP
 
       return sapi.getRuntimeCallValue<bigint>("SwapRuntimeApi", "current_alpha_price", [netuid])
     },
-    refetchInterval: 2_000, // refresh often to account for changes in mempool
+    refetchInterval: 12_000, // price may change every block
   })
 }
