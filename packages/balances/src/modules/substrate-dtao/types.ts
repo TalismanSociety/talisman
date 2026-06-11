@@ -56,8 +56,11 @@ export type GetDynamicInfosResult =
 export type GetStakeInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]
 
-export type GetColdkeyLockResult = {
-  locked_mass?: bigint | number | string
-  conviction?: unknown
-  last_update?: bigint | number | string
-} | null
+/**
+ * `undefined` when the coldkey has no lock on the subnet; `null` is our own fetch-failure marker.
+ * `conviction` is the raw U64F64 fixed-point value (shift right by 64 bits for the integer part),
+ * despite decoding as a plain bigint.
+ */
+export type GetColdkeyLockResult =
+  | (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_coldkey_lock"][1]
+  | null

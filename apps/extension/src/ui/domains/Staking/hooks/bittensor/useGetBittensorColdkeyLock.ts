@@ -1,4 +1,4 @@
-import { type GetColdkeyLockResult, toBigIntValue } from "@talismn/balances"
+import type { GetColdkeyLockResult } from "@talismn/balances"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
@@ -38,7 +38,7 @@ export const useGetBittensorColdkeyLock = ({
         [address, netuid]
       )
       // locked_mass is a plain balance (unlike the U64F64 conviction field): no fractional shift
-      return toBigIntValue(result?.locked_mass)
+      return result?.locked_mass ?? 0n
     },
     enabled: !!sapi && !!address && typeof netuid === "number",
     refetchInterval: 6_000,

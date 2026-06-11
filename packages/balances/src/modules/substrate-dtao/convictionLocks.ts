@@ -75,28 +75,17 @@ export const findDTaoConvictionLock = (
   return null
 }
 
+/**
+ * Coerces a dynamically-decoded numeric field to bigint. Fixed-point newtypes (eg the U64F64
+ * conviction) decode as a plain bigint when the builder unwraps the wrapper struct, or as
+ * `{ bits }` when it doesn't — accept both; anything else is 0n.
+ */
 export const toBigIntValue = (value: unknown): bigint => {
   if (typeof value === "bigint") return value
-  if (typeof value === "number") return Number.isFinite(value) ? BigInt(Math.trunc(value)) : 0n
-  if (typeof value === "string") {
-    if (!value) return 0n
-    try {
-      return BigInt(value)
-    } catch {
-      const parsed = Number(value)
-      return Number.isFinite(parsed) ? BigInt(Math.trunc(parsed)) : 0n
-    }
+  if (value && typeof value === "object" && "bits" in value) {
+    const bits = (value as { bits: unknown }).bits
+    if (typeof bits === "bigint") return bits
   }
-
-  if (Array.isArray(value)) return value.length ? toBigIntValue(value[0]) : 0n
-
-  if (value && typeof value === "object") {
-    const record = value as Record<string, unknown>
-    for (const key of ["bits", "value", "inner", "0"]) {
-      if (record[key] !== undefined) return toBigIntValue(record[key])
-    }
-  }
-
   return 0n
 }
 
@@ -157,7 +146,7 @@ export const fetchConvictionLocks = async (
     ])
 
     return lockStates.flatMap(({ address, netuid, lockState }) => {
-      const amount = toBigIntValue(lockState?.locked_mass)
+      const amount = lockState?.locked_mass ?? 0n
       const convictionRaw = toBigIntValue(lockState?.conviction)
       // keep zero-mass locks that still carry conviction ("ghost" locks): the chain keeps the
       // Lock entry alive and pins future lock_stake calls to its hotkey (LockHotkeyMismatch)
@@ -178,7 +167,7 @@ export const fetchConvictionLocks = async (
             lockType: lockModesByPair.get(convictionLockKey(address, netuid)) ?? "decaying",
             conviction: conviction.toString(),
             convictionRaw: convictionRaw.toString(),
-            lastUpdate: toBigIntValue(lockState?.last_update).toString(),
+            lastUpdate: (lockState?.last_update ?? 0n).toString(),
           },
         },
       ]

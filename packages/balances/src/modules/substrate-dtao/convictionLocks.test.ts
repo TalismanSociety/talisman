@@ -12,44 +12,16 @@ describe("toBigIntValue", () => {
     expect(toBigIntValue(0n)).toBe(0n)
   })
 
-  it("truncates numbers", () => {
-    expect(toBigIntValue(42)).toBe(42n)
-    expect(toBigIntValue(42.9)).toBe(42n)
-    expect(toBigIntValue(-7.5)).toBe(-7n)
-  })
-
-  it("returns 0n for non-finite numbers", () => {
-    expect(toBigIntValue(Number.NaN)).toBe(0n)
-    expect(toBigIntValue(Number.POSITIVE_INFINITY)).toBe(0n)
-  })
-
-  it("parses numeric strings", () => {
-    expect(toBigIntValue("123")).toBe(123n)
-    expect(toBigIntValue("12.5")).toBe(12n) // falls back to Number parsing + truncation
-  })
-
-  it("returns 0n for empty or non-numeric strings", () => {
-    expect(toBigIntValue("")).toBe(0n)
-    expect(toBigIntValue("abc")).toBe(0n)
-  })
-
-  it("uses the first element of arrays", () => {
-    expect(toBigIntValue([7n, 8n])).toBe(7n)
-    expect(toBigIntValue([])).toBe(0n)
-  })
-
-  it("unwraps known object keys, bits first", () => {
+  it("unwraps a non-unwrapped fixed-point newtype ({ bits })", () => {
     expect(toBigIntValue({ bits: 5n })).toBe(5n)
-    expect(toBigIntValue({ value: "9" })).toBe(9n)
-    expect(toBigIntValue({ inner: 3 })).toBe(3n)
-    expect(toBigIntValue({ "0": 11n })).toBe(11n)
-    expect(toBigIntValue({ bits: 1n, value: 2n })).toBe(1n)
-    expect(toBigIntValue({ bits: { value: 2n } })).toBe(2n)
   })
 
-  it("returns 0n for null, undefined and unknown shapes", () => {
+  it("returns 0n for anything else", () => {
     expect(toBigIntValue(null)).toBe(0n)
     expect(toBigIntValue(undefined)).toBe(0n)
+    expect(toBigIntValue("123")).toBe(0n)
+    expect(toBigIntValue(42)).toBe(0n)
+    expect(toBigIntValue({ bits: "5" })).toBe(0n)
     expect(toBigIntValue({ foo: 1n })).toBe(0n)
   })
 })

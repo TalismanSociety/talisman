@@ -43,7 +43,7 @@ describe("substrate-dtao subscribeBalances", () => {
         tokensWithAddresses,
         connector: {},
         miniMetadata: null,
-      } as Parameters<typeof subscribeBalances>[0])
+      } as unknown as Parameters<typeof subscribeBalances>[0])
     )
 
     expect(result).toEqual({
