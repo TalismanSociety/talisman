@@ -131,7 +131,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         ? fetchRootClaimedAmounts(connector, networkId, miniMetadata.data, addressHotkeyNetuidPairs)
         : Promise.resolve(new Map<string, Map<string, Map<number, bigint>>>()),
       miniMetadata.data
-        ? fetchConvictionLocks(connector, networkId, miniMetadata.data, stakeInfos)
+        ? fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses)
         : Promise.resolve([]),
     ])
 

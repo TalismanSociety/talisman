@@ -1,22 +1,10 @@
 import { describe, expect, it } from "vitest"
 import {
   findDTaoConvictionLock,
-  getConvictionLockCandidates,
   getConvictionLockLabel,
-  getConvictionLockPairs,
   toBigIntValue,
   u64f64RawToPlanck,
 } from "./convictionLocks"
-import type { GetStakeInfosResult } from "./types"
-
-const ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-const ADDRESS_2 = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
-const HOTKEY = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-const HOTKEY_2 = "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"
-
-const makeStakeInfos = (
-  entries: Array<[address: string, stakes: Array<{ netuid: number; hotkey: string }>]>
-) => entries as unknown as GetStakeInfosResult
 
 describe("toBigIntValue", () => {
   it("returns bigints as-is", () => {
@@ -78,79 +66,6 @@ describe("u64f64RawToPlanck", () => {
 
   it("unwraps a { bits } encoded fixed-point value", () => {
     expect(u64f64RawToPlanck({ bits: 42n << 64n })).toBe(42n)
-  })
-})
-
-describe("getConvictionLockCandidates", () => {
-  it("returns an empty array for empty stakeInfos", () => {
-    expect(getConvictionLockCandidates(makeStakeInfos([]))).toEqual([])
-    expect(getConvictionLockCandidates(makeStakeInfos([[ADDRESS, []]]))).toEqual([])
-  })
-
-  it("collects one candidate per (address, netuid, hotkey)", () => {
-    const stakeInfos = makeStakeInfos([
-      [
-        ADDRESS,
-        [
-          { netuid: 1, hotkey: HOTKEY },
-          { netuid: 2, hotkey: HOTKEY },
-          { netuid: 1, hotkey: HOTKEY_2 },
-        ],
-      ],
-      [ADDRESS_2, [{ netuid: 1, hotkey: HOTKEY }]],
-    ])
-
-    expect(getConvictionLockCandidates(stakeInfos)).toEqual([
-      { address: ADDRESS, netuid: 1, hotkey: HOTKEY },
-      { address: ADDRESS, netuid: 2, hotkey: HOTKEY },
-      { address: ADDRESS, netuid: 1, hotkey: HOTKEY_2 },
-      { address: ADDRESS_2, netuid: 1, hotkey: HOTKEY },
-    ])
-  })
-
-  it("dedups identical (address, netuid, hotkey) triples", () => {
-    const stakeInfos = makeStakeInfos([
-      [
-        ADDRESS,
-        [
-          { netuid: 1, hotkey: HOTKEY },
-          { netuid: 1, hotkey: HOTKEY },
-        ],
-      ],
-    ])
-
-    expect(getConvictionLockCandidates(stakeInfos)).toEqual([
-      { address: ADDRESS, netuid: 1, hotkey: HOTKEY },
-    ])
-  })
-})
-
-describe("getConvictionLockPairs", () => {
-  it("dedups candidates of the same (address, netuid) across hotkeys", () => {
-    const pairs = getConvictionLockPairs([
-      { address: ADDRESS, netuid: 1, hotkey: HOTKEY },
-      { address: ADDRESS, netuid: 1, hotkey: HOTKEY_2 },
-    ])
-
-    expect(pairs).toEqual([{ address: ADDRESS, netuid: 1 }])
-  })
-
-  it("keeps distinct addresses and netuids separate", () => {
-    const pairs = getConvictionLockPairs([
-      { address: ADDRESS, netuid: 1, hotkey: HOTKEY },
-      { address: ADDRESS, netuid: 2, hotkey: HOTKEY },
-      { address: ADDRESS_2, netuid: 1, hotkey: HOTKEY },
-    ])
-
-    expect(pairs).toEqual([
-      { address: ADDRESS, netuid: 1 },
-      { address: ADDRESS, netuid: 2 },
-      { address: ADDRESS_2, netuid: 1 },
-    ])
-  })
-
-  it("returns an empty array for no candidates", () => {
-    expect(getConvictionLockPairs([])).toEqual([])
   })
 })
 

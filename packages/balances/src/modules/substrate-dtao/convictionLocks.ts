@@ -1,22 +1,25 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
-import { decodeScale, parseMetadataRpc } from "@talismn/scale"
+import {
+  decodeScale,
+  type MetadataBuilder,
+  parseMetadataRpc,
+  type ScaleStorageCoder,
+} from "@talismn/scale"
 
 import log from "../../log"
 import { fetchRuntimeCallResult, hasRuntimeApi, hasStorageItems } from "../shared"
 import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
 import type {
   GetColdkeyLockResult,
-  GetStakeInfosResult,
   SubDTaoBalanceMeta,
   SubDTaoConvictionLock,
   SubDTaoConvictionLockType,
 } from "./types"
 
 const U64F64_FRACTIONAL_BITS = 64n
-// Bittensor Lock uses Blake2_128Concat<AccountId32> for the final hotkey segment.
-const BLAKE2_128_CONCAT_ACCOUNT_ID_HEX_LENGTH = (16 + 32) * 2
 
-export type ConvictionLockCandidate = {
+/** A decoded SubtensorModule.Lock storage key: (coldkey, netuid, hotkey) */
+type ConvictionLockStorageKey = {
   address: string
   netuid: number
   hotkey: string
@@ -29,40 +32,6 @@ export type FetchedConvictionLock = {
 }
 
 const convictionLockKey = (address: string, netuid: number) => `${address}:${netuid}`
-
-export const getConvictionLockCandidates = (
-  stakeInfos: GetStakeInfosResult
-): ConvictionLockCandidate[] => {
-  const candidatesByKey = new Map<string, ConvictionLockCandidate>()
-
-  for (const [address, stakes] of stakeInfos) {
-    for (const stake of stakes) {
-      const key = `${address}:${stake.netuid}:${stake.hotkey}`
-      if (!candidatesByKey.has(key)) {
-        candidatesByKey.set(key, {
-          address,
-          netuid: stake.netuid,
-          hotkey: stake.hotkey,
-        })
-      }
-    }
-  }
-
-  return [...candidatesByKey.values()]
-}
-
-export const getConvictionLockPairs = (
-  candidates: ConvictionLockCandidate[]
-): Array<Pick<ConvictionLockCandidate, "address" | "netuid">> => {
-  const pairsByKey = new Map<string, Pick<ConvictionLockCandidate, "address" | "netuid">>()
-
-  for (const { address, netuid } of candidates) {
-    const key = convictionLockKey(address, netuid)
-    if (!pairsByKey.has(key)) pairsByKey.set(key, { address, netuid })
-  }
-
-  return [...pairsByKey.values()]
-}
 
 export const getConvictionLockLabel = (lockType: SubDTaoConvictionLockType): string =>
   lockType === "perpetual" ? "Perpetual Conviction Lock" : "Decaying Conviction Lock"
@@ -136,23 +105,26 @@ export const u64f64RawToPlanck = (value: unknown): bigint => {
 }
 
 /**
- * Fetches Bittensor conviction locks (SubtensorModule.Lock) for the (coldkey, netuid) pairs found in stakeInfos.
+ * Fetches Bittensor conviction locks (SubtensorModule.Lock) for the given coldkey addresses.
  *
  * On-chain, a lock constrains the coldkey's TOTAL alpha on the subnet across all of its hotkeys
  * (available_to_unstake = Σ stakes - locked_mass), with at most one locked hotkey per (coldkey, netuid).
  * The lock is reported with the hotkey it is keyed on (used for conviction credit and lock top-ups),
  * and is attached to the subnet's base token balance rather than to a staking position.
+ *
+ * Locks are discovered with one storage prefix scan per coldkey, independently of staking positions:
+ * the chain keeps a zero-mass Lock entry alive while it still carries conviction ("ghost" lock),
+ * even after the coldkey fully unstaked from the subnet.
  */
 export const fetchConvictionLocks = async (
   connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
-  stakeInfos: GetStakeInfosResult
+  addresses: string[]
 ): Promise<FetchedConvictionLock[]> => {
-  const candidates = getConvictionLockCandidates(stakeInfos)
-  if (!candidates.length) return []
+  if (!addresses.length) return []
 
-  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
+  const { unifiedMetadata, builder } = parseMetadataRpc(metadataRpc)
   if (
     !hasRuntimeApi(unifiedMetadata, "StakeInfoRuntimeApi", "get_coldkey_lock") ||
     !hasStorageItems(unifiedMetadata, "SubtensorModule", ["Lock", "DecayingLock"])
@@ -161,31 +133,27 @@ export const fetchConvictionLocks = async (
   }
 
   try {
-    const lockStorageCoder = buildStorageCoder(metadataRpc, "SubtensorModule", "Lock")
-    const decayingLockStorageCoder = buildStorageCoder(
-      metadataRpc,
-      "SubtensorModule",
-      "DecayingLock"
-    )
+    const lockStorageCoder = builder.buildStorage("SubtensorModule", "Lock")
+    const decayingLockStorageCoder = builder.buildStorage("SubtensorModule", "DecayingLock")
 
-    const pairs = getConvictionLockPairs(candidates)
-
-    const lockHotkeyByPair = await fetchConvictionLockHotkeys(
+    const lockStorageKeys = await fetchConvictionLockStorageKeys(
       connector,
       networkId,
-      pairs,
-      candidates,
+      addresses,
       lockStorageCoder
     )
-    if (!lockHotkeyByPair.size) return []
+    if (!lockStorageKeys.length) return []
 
-    const pairsWithLocks = pairs.filter(({ address, netuid }) =>
-      lockHotkeyByPair.has(convictionLockKey(address, netuid))
+    const hotkeyByPair = new Map(
+      lockStorageKeys.map(({ address, netuid, hotkey }) => [
+        convictionLockKey(address, netuid),
+        hotkey,
+      ])
     )
 
     const [lockModesByPair, lockStates] = await Promise.all([
-      fetchConvictionLockModes(connector, networkId, pairsWithLocks, decayingLockStorageCoder),
-      fetchColdkeyLockStates(connector, networkId, metadataRpc, pairsWithLocks),
+      fetchConvictionLockModes(connector, networkId, lockStorageKeys, decayingLockStorageCoder),
+      fetchColdkeyLockStates(connector, networkId, builder, lockStorageKeys),
     ])
 
     return lockStates.flatMap(({ address, netuid, lockState }) => {
@@ -195,7 +163,7 @@ export const fetchConvictionLocks = async (
       // Lock entry alive and pins future lock_stake calls to its hotkey (LockHotkeyMismatch)
       if (amount <= 0n && convictionRaw <= 0n) return []
 
-      const hotkey = lockHotkeyByPair.get(convictionLockKey(address, netuid))
+      const hotkey = hotkeyByPair.get(convictionLockKey(address, netuid))
       if (!hotkey) return []
 
       const conviction = u64f64RawToPlanck(lockState?.conviction)
@@ -221,72 +189,63 @@ export const fetchConvictionLocks = async (
   }
 }
 
-const fetchConvictionLockHotkeys = async (
+/**
+ * Discovers all Lock entries of the given coldkeys, with one storage prefix scan per coldkey.
+ * Encoding only the first map key (the coldkey) yields the storage key prefix covering all of the
+ * coldkey's (netuid, hotkey) entries, using the hashers declared in metadata.
+ */
+const fetchConvictionLockStorageKeys = async (
   connector: IChainConnectorDot,
   networkId: string,
-  pairs: Array<Pick<ConvictionLockCandidate, "address" | "netuid">>,
-  candidates: ConvictionLockCandidate[],
-  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
-): Promise<Map<string, string>> => {
-  const candidateByPair = new Map<string, ConvictionLockCandidate>()
-  for (const candidate of candidates) {
-    const key = convictionLockKey(candidate.address, candidate.netuid)
-    if (!candidateByPair.has(key)) candidateByPair.set(key, candidate)
-  }
-
-  const hotkeys = await Promise.all(
-    pairs.map(async ({ address, netuid }): Promise<[string, string | null]> => {
-      const pairKey = convictionLockKey(address, netuid)
-      const candidate = candidateByPair.get(pairKey)
-      if (!candidate) return [pairKey, null]
-
-      let keyPrefix: `0x${string}`
+  addresses: string[],
+  storageCoder: ScaleStorageCoder
+): Promise<ConvictionLockStorageKey[]> => {
+  const keysPerAddress = await Promise.all(
+    addresses.map(async (address): Promise<ConvictionLockStorageKey[]> => {
+      let keyPrefix: string
       try {
-        const fullKey = storageCoder.keys.enc(
-          candidate.address,
-          candidate.netuid,
-          candidate.hotkey
-        ) as `0x${string}`
-        keyPrefix = fullKey.slice(
-          0,
-          fullKey.length - BLAKE2_128_CONCAT_ACCOUNT_ID_HEX_LENGTH
-        ) as `0x${string}`
+        keyPrefix = storageCoder.keys.enc(address)
       } catch (cause) {
         log.warn(
-          `Failed to encode conviction Lock key prefix (netuid=${candidate.netuid}, address=${candidate.address}) on ${networkId}`,
+          `Failed to encode conviction Lock key prefix (address=${address}) on ${networkId}`,
           { cause }
         )
-        return [pairKey, null]
+        return []
       }
 
       try {
         const stateKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [
           keyPrefix,
         ])
-        if (!stateKeys.length) return [pairKey, null]
 
-        const decoded = storageCoder.keys.dec(stateKeys[0]) as [string, number, string]
-        return [pairKey, decoded[2] ?? null]
+        return stateKeys.flatMap((stateKey) => {
+          try {
+            const [, netuid, hotkey] = storageCoder.keys.dec(stateKey) as [string, number, string]
+            // report the lock under the requested address (the prefix guarantees it is the
+            // coldkey) to keep the address format consistent with the rest of the pipeline
+            return [{ address, netuid, hotkey }]
+          } catch (cause) {
+            log.warn(`Failed to decode conviction Lock key ${stateKey} on ${networkId}`, { cause })
+            return []
+          }
+        })
       } catch (cause) {
-        log.warn(
-          `Failed to fetch conviction Lock keys (netuid=${netuid}, address=${address}) on ${networkId}`,
-          { cause }
-        )
-        return [pairKey, null]
+        log.warn(`Failed to fetch conviction Lock keys (address=${address}) on ${networkId}`, {
+          cause,
+        })
+        return []
       }
     })
   )
 
-  return new Map(
-    hotkeys.filter((result): result is [string, string] => typeof result[1] === "string")
-  )
+  return keysPerAddress.flat()
 }
 
 const fetchConvictionLockModes = async (
   connector: IChainConnectorDot,
   networkId: string,
-  pairs: Array<Pick<ConvictionLockCandidate, "address" | "netuid">>,
-  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
+  pairs: Array<Pick<ConvictionLockStorageKey, "address" | "netuid">>,
+  storageCoder: ScaleStorageCoder
 ): Promise<Map<string, SubDTaoConvictionLockType>> => {
   const queries = pairs.map(
     ({ address, netuid }): RpcQueryPack<[string, SubDTaoConvictionLockType]> => {
@@ -326,8 +285,8 @@ const fetchConvictionLockModes = async (
 const fetchColdkeyLockStates = async (
   connector: IChainConnectorDot,
   networkId: string,
-  metadataRpc: `0x${string}`,
-  pairs: Array<Pick<ConvictionLockCandidate, "address" | "netuid">>
+  builder: MetadataBuilder,
+  pairs: Array<Pick<ConvictionLockStorageKey, "address" | "netuid">>
 ): Promise<Array<{ address: string; netuid: number; lockState: GetColdkeyLockResult }>> => {
   return Promise.all(
     pairs.map(async ({ address, netuid }) => {
@@ -335,7 +294,7 @@ const fetchColdkeyLockStates = async (
         const lockState = await fetchRuntimeCallResult<GetColdkeyLockResult>(
           connector,
           networkId,
-          metadataRpc,
+          builder,
           "StakeInfoRuntimeApi",
           "get_coldkey_lock",
           [address, netuid]
@@ -350,9 +309,4 @@ const fetchColdkeyLockStates = async (
       }
     })
   )
-}
-
-const buildStorageCoder = (metadataRpc: `0x${string}`, pallet: string, entry: string) => {
-  const { builder } = parseMetadataRpc(metadataRpc)
-  return builder.buildStorage(pallet, entry)
 }
