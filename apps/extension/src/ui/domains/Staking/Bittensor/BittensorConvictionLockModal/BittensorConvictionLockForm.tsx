@@ -69,7 +69,6 @@ export const BittensorConvictionLockForm = () => {
         <ConvictionLockHotkeyPicker
           networkId={networkId}
           netuid={netuid}
-          address={address || null}
           hotkey={effectiveHotkey}
           onSelect={selectHotkey}
         />

@@ -39,14 +39,13 @@ const byRoleThenStakeDesc = (a: SubnetNeuron, b: SubnetNeuron) =>
 export const ConvictionLockHotkeyPicker: FC<{
   networkId: DotNetworkId
   netuid: number
-  address: string | null
   hotkey: string | null
   onSelect: (hotkey: string) => void
   /** owning coldkey of the lock being moved; when set, rows that keep conviction get a badge */
   lockOriginColdkey?: string | null
-}> = ({ networkId, netuid, address, hotkey, onSelect, lockOriginColdkey }) => {
+}> = ({ networkId, netuid, hotkey, onSelect, lockOriginColdkey }) => {
   const { t } = useTranslation()
-  const { neurons, isLoading, isError } = useBittensorSubnetNeurons(networkId, netuid, address)
+  const { neurons, isLoading, isError } = useBittensorSubnetNeurons(networkId, netuid)
   const { data: validatorsMap } = useBittensorValidatorsMap()
 
   const [rawSearch, setSearch] = useState("")

@@ -1,12 +1,10 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBittensorValidatorsMap } from "@ui/state/bittensor"
 import { useMemo } from "react"
 
 import { type Metagraph, normalizeMetagraph, type SubnetNeuron } from "../utils/subnetNeurons"
-import { useBittensorStakingPositions } from "./useBittensorStakingPositions"
 
 export type { NeuronRole, SubnetNeuron } from "../utils/subnetNeurons"
 
@@ -15,13 +13,12 @@ export type { NeuronRole, SubnetNeuron } from "../utils/subnetNeurons"
  * conviction-lock hotkey picker. A conviction lock can target ANY registered hotkey, not just a
  * validator, so this reads the on-chain metagraph rather than the validators-only TaoData API.
  *
- * The raw chain fetch is account-independent (keyed on network/netuid only); the display name and
- * "you stake here" flag are enriched in memos so switching the selected account never refetches.
+ * The raw chain fetch is account-independent (keyed on network/netuid only); the display name is
+ * enriched in a memo so a validators-registry refresh never refetches the chain.
  */
 export const useBittensorSubnetNeurons = (
   networkId: DotNetworkId | null | undefined,
-  netuid: number | null | undefined,
-  address?: string | null
+  netuid: number | null | undefined
 ) => {
   const {
     data: sapi,
@@ -31,7 +28,6 @@ export const useBittensorSubnetNeurons = (
   } = useScaleApi(networkId)
 
   const { data: validatorsMap } = useBittensorValidatorsMap()
-  const positions = useBittensorStakingPositions(networkId)
 
   const query = useQuery({
     queryKey: ["bittensorSubnetNeurons", networkId, netuid, sapi?.id],
@@ -56,26 +52,14 @@ export const useBittensorSubnetNeurons = (
     // message serializes as JSON, which throws "Could not serialize message" on bigint
   })
 
-  // hotkeys the selected account stakes to on this subnet (lowercased for membership tests)
-  const youStakeHotkeys = useMemo(() => {
-    const set = new Set<string>()
-    if (!address || typeof netuid !== "number") return set
-    for (const p of positions) {
-      if (p.token.netuid === netuid && p.token.hotkey && isAddressEqual(p.account.address, address))
-        set.add(p.token.hotkey.toLowerCase())
-    }
-    return set
-  }, [positions, address, netuid])
-
   const neurons = useMemo<SubnetNeuron[]>(() => {
     const raw = query.data
     if (!raw) return []
     return raw.map(({ onChainName, ...n }) => ({
       ...n,
       name: onChainName ?? validatorsMap[n.hotkey]?.name ?? null,
-      isYouStakeHere: youStakeHotkeys.has(n.hotkey.toLowerCase()),
     }))
-  }, [query.data, validatorsMap, youStakeHotkeys])
+  }, [query.data, validatorsMap])
 
   return {
     neurons,

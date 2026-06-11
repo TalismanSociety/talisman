@@ -16,7 +16,7 @@ export const ConvictionLockSendWarningDrawer = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="gap flex flex-col items-center rounded-t-xl bg-black-tertiary p-12 text-center">
+      <div className="flex flex-col items-center rounded-t-xl bg-black-tertiary p-12 text-center">
         <div className="flex size-24 items-center justify-center rounded-full bg-alert-warn/10">
           <AlertTriangleIcon className="inline-block size-12 text-alert-warn" />
         </div>

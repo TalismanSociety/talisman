@@ -1,5 +1,5 @@
 import { findDTaoConvictionLock } from "@talismn/balances"
-import type { DotNetworkId, EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
+import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -163,7 +163,7 @@ const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
   const handleClick = useCallback(() => {
     if (!lockBalance || token.type !== "substrate-dtao") return
     open({
-      networkId: token.networkId as DotNetworkId,
+      networkId: token.networkId,
       netuid: token.netuid,
       address: lockBalance.address,
     })
@@ -203,7 +203,7 @@ const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
   const handleClick = useCallback(() => {
     if (!lockBalance || token.type !== "substrate-dtao") return
     open({
-      networkId: token.networkId as DotNetworkId,
+      networkId: token.networkId,
       netuid: token.netuid,
       address: lockBalance.address,
     })

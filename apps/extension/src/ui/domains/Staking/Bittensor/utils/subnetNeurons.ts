@@ -12,10 +12,6 @@ export type SubnetNeuron = {
   role: NeuronRole
   /** resolved display name (on-chain identity → validator registry → null); UI shows short address on null */
   name: string | null
-  hasValidatorPermit: boolean
-  isActive: boolean
-  /** true when the selected account already stakes to this hotkey on this subnet */
-  isYouStakeHere: boolean
 }
 
 /**
@@ -29,14 +25,13 @@ export type Metagraph =
       hotkeys: string[]
       coldkeys: string[]
       validator_permit: boolean[]
-      active: boolean[]
       alpha_stake: bigint[]
       identities: Array<{ name: Binary } | undefined>
     }
   | undefined
 
-/** Account-independent rows; the display name + isYouStakeHere are enriched by the hook. */
-export type RawNeuron = Omit<SubnetNeuron, "name" | "isYouStakeHere"> & {
+/** Account-independent rows; the display name is enriched by the hook. */
+export type RawNeuron = Omit<SubnetNeuron, "name"> & {
   onChainName: string | null
 }
 
@@ -78,8 +73,6 @@ export const normalizeMetagraph = (mg: Metagraph): RawNeuron[] => {
       uid,
       stakeOnSubnet: mg.alpha_stake[uid] ?? 0n,
       role,
-      hasValidatorPermit: mg.validator_permit[uid] ?? false,
-      isActive: mg.active[uid] ?? false,
       onChainName,
     })
   }

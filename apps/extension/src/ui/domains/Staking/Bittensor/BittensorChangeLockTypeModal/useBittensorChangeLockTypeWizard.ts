@@ -154,7 +154,6 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     step,
     activePicker,
     networkId,
-    netuid,
     address,
     hash,
     network,

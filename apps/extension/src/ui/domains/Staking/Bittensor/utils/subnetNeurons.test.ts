@@ -16,7 +16,6 @@ const buildMetagraph = (overrides: Partial<NonNullable<Metagraph>> = {}): Metagr
     hotkeys: [OWNER, VALIDATOR, MINER],
     coldkeys: ["cold-owner", "cold-val", "cold-miner"],
     validator_permit: [true, true, false],
-    active: [true, true, false],
     alpha_stake: [100n, 50n, 5n],
     identities: [identity("  Owner Co  "), undefined, identity("")],
     ...overrides,
@@ -40,8 +39,6 @@ describe("normalizeMetagraph", () => {
       coldkey: "cold-val",
       uid: 1,
       stakeOnSubnet: 50n,
-      hasValidatorPermit: true,
-      isActive: true,
     })
   })
 
@@ -59,7 +56,6 @@ describe("normalizeMetagraph", () => {
         hotkeys: [OWNER, "", MINER],
         coldkeys: ["c0", "c1", "c2"],
         validator_permit: [true, false, false],
-        active: [true, false, false],
         alpha_stake: [1n, 2n, 3n],
         identities: [undefined, undefined, undefined],
       })
@@ -72,7 +68,6 @@ describe("normalizeMetagraph", () => {
     const rows = normalizeMetagraph(
       buildMetagraph({
         validator_permit: [],
-        active: [],
         alpha_stake: [],
         coldkeys: [],
       })
@@ -81,8 +76,6 @@ describe("normalizeMetagraph", () => {
       role: "owner", // still owner via owner_hotkey match
       coldkey: "",
       stakeOnSubnet: 0n,
-      hasValidatorPermit: false,
-      isActive: false,
     })
     expect(rows[1].role).toBe("miner") // no permit column → miner
   })

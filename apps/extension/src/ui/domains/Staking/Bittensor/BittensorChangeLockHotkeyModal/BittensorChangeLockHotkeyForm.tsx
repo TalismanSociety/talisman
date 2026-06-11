@@ -56,7 +56,6 @@ export const BittensorChangeLockHotkeyForm = () => {
         <ConvictionLockHotkeyPicker
           networkId={networkId}
           netuid={netuid}
-          address={address || null}
           hotkey={selectedHotkey}
           lockOriginColdkey={currentOwnerColdkey}
           onSelect={selectHotkey}

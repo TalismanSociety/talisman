@@ -140,7 +140,7 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
   const { coldkey: currentOwnerColdkey } = useBittensorHotkeyExists(networkId, currentHotkey)
   const { coldkey: destinationOwnerColdkey } = useBittensorHotkeyExists(networkId, selectedHotkey)
 
-  const { neurons } = useBittensorSubnetNeurons(networkId, netuid, address || null)
+  const { neurons } = useBittensorSubnetNeurons(networkId, netuid)
   const subnetOwnerHotkey = useMemo(
     () => neurons.find((n) => n.role === "owner")?.hotkey ?? null,
     [neurons]
@@ -211,7 +211,6 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
     network,
     eligibleAccounts,
     existingLock,
-    currentHotkey,
     currentOwnerColdkey,
     isSameHotkey,
     convictionOutcome,
