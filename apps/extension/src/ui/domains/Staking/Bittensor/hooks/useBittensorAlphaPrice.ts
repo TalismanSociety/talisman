@@ -1,3 +1,4 @@
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
@@ -14,7 +15,8 @@ export const useBittensorAlphaPrice = ({ networkId, netuid }: UseBittensorAlphaP
   return useQuery({
     queryKey: ["useBittensorAlphaPrice", sapi?.id, netuid],
     queryFn: async () => {
-      if (!sapi || !netuid) return null
+      if (netuid === 0) return ALPHA_PRICE_SCALE
+      if (!sapi || typeof netuid !== "number") return null
 
       return sapi.getRuntimeCallValue<bigint>("SwapRuntimeApi", "current_alpha_price", [netuid])
     },
