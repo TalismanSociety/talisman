@@ -3,8 +3,7 @@ import { getDTaoTokenRates } from "@talismn/balances"
 import type { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
 import type { TokenRatesStorage } from "@talismn/token-rates"
 import { api } from "@ui/api"
-import { taoDataApi } from "@ui/domains/Staking/hooks/bittensor/dTao/taoDataApi"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
+import { taoDataApi } from "@ui/util/taoDataApi"
 import {
   catchError,
   combineLatest,
@@ -20,6 +19,7 @@ import {
 } from "rxjs"
 import { Struct, u16, u64, Vector } from "scale-ts"
 
+import { BITTENSOR_NETWORK_ID } from "./bittensor"
 import { getToken$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
