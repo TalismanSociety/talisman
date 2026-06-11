@@ -34,6 +34,7 @@ export const BittensorChangeLockHotkeyForm = () => {
     subnetLabel,
     taoTokenId,
     destinationHotkeyName,
+    feeErrorMessage,
     canContinue,
     feeEstimate,
     isLoadingFeeEstimate,
@@ -129,6 +130,9 @@ export const BittensorChangeLockHotkeyForm = () => {
             </div>
           ) : null}
         </div>
+        {feeErrorMessage && (
+          <div className="text-center text-alert-error text-sm">{feeErrorMessage}</div>
+        )}
         <div className="grow"></div>
 
         {/* Fieldset 3: read-only details — compact rows, mirrors the conviction lock modal */}

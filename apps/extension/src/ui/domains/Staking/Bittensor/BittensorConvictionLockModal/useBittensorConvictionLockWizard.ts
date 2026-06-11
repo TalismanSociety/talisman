@@ -17,6 +17,7 @@ import type { Hex } from "viem"
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
 import { useBittensorConvictionLockModal } from "../hooks/useBittensorConvictionLockModal"
 import { useBittensorConvictionLockPayload } from "../hooks/useBittensorConvictionLockPayload"
+import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 
 export const BITTENSOR_LOCK_MODAL_CONTAINER_ID = "bittensor-conviction-lock-modal"
@@ -175,6 +176,14 @@ const useBittensorConvictionLockWizardProvider = () => {
       feeAmount: stakedTotal,
     })
 
+  const feeErrorMessage = useBittensorFeeError({
+    allBalances,
+    address: address || null,
+    feeEstimate,
+    feeTokenId: taoTokenId,
+  })
+  const payloadToSubmit = feeErrorMessage ? undefined : payload
+
   const errorMessage = useMemo(() => {
     if (stakedTotal <= 0n) return t("This account has no stake on this subnet")
     if (typeof plancks !== "bigint") return null
@@ -190,7 +199,7 @@ const useBittensorConvictionLockWizardProvider = () => {
     lockDelta > 0n &&
     typeof plancks === "bigint" &&
     plancks <= stakedTotal &&
-    !!payload
+    !!payloadToSubmit
 
   const setStep = useCallback((step: ConvictionLockWizardStep) => {
     setWizardState((prev) => ({ ...prev, step }))
@@ -251,8 +260,9 @@ const useBittensorConvictionLockWizardProvider = () => {
     hotkeyName,
     lockTypeLabel,
     errorMessage,
+    feeErrorMessage,
     canContinue,
-    payload,
+    payload: payloadToSubmit,
     txMetadata,
     feeEstimate,
     isLoadingFeeEstimate,

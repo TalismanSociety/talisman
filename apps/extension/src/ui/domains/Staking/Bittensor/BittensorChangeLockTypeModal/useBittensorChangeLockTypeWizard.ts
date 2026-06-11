@@ -14,6 +14,7 @@ import type { Hex } from "viem"
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
 import { useBittensorChangeLockTypeModal } from "../hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeLockTypePayload } from "../hooks/useBittensorChangeLockTypePayload"
+import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 
 export const BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID = "bittensor-change-lock-type-modal"
@@ -123,7 +124,15 @@ const useBittensorChangeLockTypeWizardProvider = () => {
       enabled: !!existingLock && !isNoop,
     })
 
-  const canContinue = !!existingLock && !isNoop && !!payload
+  const feeErrorMessage = useBittensorFeeError({
+    allBalances,
+    address: address || null,
+    feeEstimate,
+    feeTokenId: taoTokenId,
+  })
+  const payloadToSubmit = feeErrorMessage ? undefined : payload
+
+  const canContinue = !!existingLock && !isNoop && !!payloadToSubmit
 
   const setStep = useCallback((step: ChangeLockTypeWizardStep) => {
     setWizardState((prev) => ({ ...prev, step }))
@@ -166,8 +175,9 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     subnetLabel,
     taoTokenId,
     hotkeyName,
+    feeErrorMessage,
     canContinue,
-    payload,
+    payload: payloadToSubmit,
     txMetadata,
     feeEstimate,
     isLoadingFeeEstimate,

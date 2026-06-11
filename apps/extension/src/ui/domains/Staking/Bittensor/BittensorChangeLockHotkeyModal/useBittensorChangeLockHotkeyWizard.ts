@@ -13,6 +13,7 @@ import type { Hex } from "viem"
 
 import { useBittensorChangeLockHotkeyModal } from "../hooks/useBittensorChangeLockHotkeyModal"
 import { useBittensorChangeLockHotkeyPayload } from "../hooks/useBittensorChangeLockHotkeyPayload"
+import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { useBittensorHotkeyExists } from "../hooks/useBittensorHotkeyExists"
 import { useBittensorSubnetNeurons } from "../hooks/useBittensorSubnetNeurons"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
@@ -171,12 +172,20 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
       enabled: !!existingLock && !!selectedHotkey && !isSameHotkey,
     })
 
+  const feeErrorMessage = useBittensorFeeError({
+    allBalances,
+    address: address || null,
+    feeEstimate,
+    feeTokenId: taoTokenId,
+  })
+  const payloadToSubmit = feeErrorMessage ? undefined : payload
+
   // gate Review until the conviction consequence is known, so the user always sees it before signing
   const canContinue =
     !!existingLock &&
     !!selectedHotkey &&
     !isSameHotkey &&
-    !!payload &&
+    !!payloadToSubmit &&
     convictionOutcome !== "checking"
 
   const setStep = useCallback((step: ChangeLockHotkeyWizardStep) => {
@@ -219,8 +228,9 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
     subnetLabel,
     taoTokenId,
     destinationHotkeyName,
+    feeErrorMessage,
     canContinue,
-    payload,
+    payload: payloadToSubmit,
     txMetadata,
     feeEstimate,
     isLoadingFeeEstimate,
