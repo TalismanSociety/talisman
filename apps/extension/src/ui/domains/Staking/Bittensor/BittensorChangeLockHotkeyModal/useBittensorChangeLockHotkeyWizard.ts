@@ -9,6 +9,7 @@ import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import { useBittensorChangeLockHotkeyModal } from "../hooks/useBittensorChangeLockHotkeyModal"
@@ -17,6 +18,7 @@ import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { useBittensorHotkeyExists } from "../hooks/useBittensorHotkeyExists"
 import { useBittensorSubnetNeurons } from "../hooks/useBittensorSubnetNeurons"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
+import { getBittensorErrorMessage } from "../utils/getBittensorErrorMessage"
 
 export const BITTENSOR_CHANGE_LOCK_HOTKEY_MODAL_CONTAINER_ID = "bittensor-change-lock-hotkey-modal"
 
@@ -59,6 +61,7 @@ const DEFAULT_STATE: WizardState = {
  * resets the accumulated conviction to zero, so the destination is the one editable field.
  */
 const useBittensorChangeLockHotkeyWizardProvider = () => {
+  const { t } = useTranslation()
   const { close, args } = useBittensorChangeLockHotkeyModal()
 
   const [{ step, activePicker, networkId, netuid, address, selectedHotkey, hash }, setWizardState] =
@@ -162,7 +165,7 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
     destinationOwnerColdkey,
   ])
 
-  const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate } =
+  const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, errorPayload } =
     useBittensorChangeLockHotkeyPayload({
       networkId,
       address: address || null,
@@ -172,13 +175,19 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
       enabled: !!existingLock && !!selectedHotkey && !isSameHotkey,
     })
 
+  const payloadErrorMessage = useMemo(() => {
+    const message = getBittensorErrorMessage(errorPayload)
+    return message ? `${t("Failed to build transaction")}: ${message}` : null
+  }, [errorPayload, t])
+
   const feeErrorMessage = useBittensorFeeError({
     allBalances,
     address: address || null,
     feeEstimate,
     feeTokenId: taoTokenId,
   })
-  const payloadToSubmit = feeErrorMessage ? undefined : payload
+  const submitErrorMessage = feeErrorMessage ?? payloadErrorMessage
+  const payloadToSubmit = submitErrorMessage ? undefined : payload
 
   // gate Review until the conviction consequence is known, so the user always sees it before signing
   const canContinue =
@@ -229,6 +238,8 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
     taoTokenId,
     destinationHotkeyName,
     feeErrorMessage,
+    payloadErrorMessage,
+    submitErrorMessage,
     canContinue,
     payload: payloadToSubmit,
     txMetadata,

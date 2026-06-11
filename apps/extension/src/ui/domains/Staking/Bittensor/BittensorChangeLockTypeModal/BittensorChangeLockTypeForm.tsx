@@ -31,6 +31,7 @@ export const BittensorChangeLockTypeForm = () => {
     taoTokenId,
     hotkeyName,
     feeErrorMessage,
+    payloadErrorMessage,
     canContinue,
     feeEstimate,
     isLoadingFeeEstimate,
@@ -85,8 +86,10 @@ export const BittensorChangeLockTypeForm = () => {
             </PillButton>
           </div>
         </div>
-        {feeErrorMessage && (
-          <div className="text-center text-alert-error text-sm">{feeErrorMessage}</div>
+        {(feeErrorMessage || payloadErrorMessage) && (
+          <div className="text-center text-alert-error text-sm">
+            {feeErrorMessage ?? payloadErrorMessage}
+          </div>
         )}
         <div className="grow"></div>
 

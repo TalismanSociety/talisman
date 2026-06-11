@@ -9,6 +9,7 @@ import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
@@ -16,6 +17,7 @@ import { useBittensorChangeLockTypeModal } from "../hooks/useBittensorChangeLock
 import { useBittensorChangeLockTypePayload } from "../hooks/useBittensorChangeLockTypePayload"
 import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
+import { getBittensorErrorMessage } from "../utils/getBittensorErrorMessage"
 
 export const BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID = "bittensor-change-lock-type-modal"
 
@@ -49,6 +51,7 @@ const DEFAULT_STATE: WizardState = {
  * hotkey and amount are fixed — only the decay flag changes, and the flip is reversible.
  */
 const useBittensorChangeLockTypeWizardProvider = () => {
+  const { t } = useTranslation()
   const { close, args } = useBittensorChangeLockTypeModal()
 
   const [{ step, activePicker, networkId, netuid, address, makePerpetual, hash }, setWizardState] =
@@ -114,7 +117,7 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     )
   }, [combinedValidatorsData, existingLock?.hotkey])
 
-  const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate } =
+  const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, errorPayload } =
     useBittensorChangeLockTypePayload({
       networkId,
       address: address || null,
@@ -124,13 +127,19 @@ const useBittensorChangeLockTypeWizardProvider = () => {
       enabled: !!existingLock && !isNoop,
     })
 
+  const payloadErrorMessage = useMemo(() => {
+    const message = getBittensorErrorMessage(errorPayload)
+    return message ? `${t("Failed to build transaction")}: ${message}` : null
+  }, [errorPayload, t])
+
   const feeErrorMessage = useBittensorFeeError({
     allBalances,
     address: address || null,
     feeEstimate,
     feeTokenId: taoTokenId,
   })
-  const payloadToSubmit = feeErrorMessage ? undefined : payload
+  const submitErrorMessage = feeErrorMessage ?? payloadErrorMessage
+  const payloadToSubmit = submitErrorMessage ? undefined : payload
 
   const canContinue = !!existingLock && !isNoop && !!payloadToSubmit
 
@@ -176,6 +185,8 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     taoTokenId,
     hotkeyName,
     feeErrorMessage,
+    payloadErrorMessage,
+    submitErrorMessage,
     canContinue,
     payload: payloadToSubmit,
     txMetadata,

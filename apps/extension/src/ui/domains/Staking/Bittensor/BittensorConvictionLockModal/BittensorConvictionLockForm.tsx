@@ -46,6 +46,7 @@ export const BittensorConvictionLockForm = () => {
     lockTypeLabel,
     errorMessage,
     feeErrorMessage,
+    payloadErrorMessage,
     canContinue,
     feeEstimate,
     isLoadingFeeEstimate,
@@ -110,7 +111,7 @@ export const BittensorConvictionLockForm = () => {
           plancks={plancks}
           maxPlancks={stakedTotal}
           onChange={setPlancks}
-          errorMessage={errorMessage ?? feeErrorMessage}
+          errorMessage={errorMessage ?? feeErrorMessage ?? payloadErrorMessage}
         />
 
         <div className="flex flex-col gap-1 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">

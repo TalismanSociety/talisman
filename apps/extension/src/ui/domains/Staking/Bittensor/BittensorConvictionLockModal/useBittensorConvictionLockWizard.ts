@@ -20,6 +20,7 @@ import { useBittensorConvictionLockPayload } from "../hooks/useBittensorConvicti
 import { useBittensorCurrentLockType } from "../hooks/useBittensorCurrentLockType"
 import { useBittensorFeeError } from "../hooks/useBittensorFeeError"
 import { getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
+import { getBittensorErrorMessage } from "../utils/getBittensorErrorMessage"
 
 export const BITTENSOR_LOCK_MODAL_CONTAINER_ID = "bittensor-conviction-lock-modal"
 
@@ -182,7 +183,7 @@ const useBittensorConvictionLockWizardProvider = () => {
         ? t("Perpetual Lock")
         : t("Decaying Lock")
 
-  const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate } =
+  const { payload, txMetadata, feeEstimate, isLoadingFeeEstimate, errorFeeEstimate, errorPayload } =
     useBittensorConvictionLockPayload({
       networkId,
       address: address || null,
@@ -194,13 +195,19 @@ const useBittensorConvictionLockWizardProvider = () => {
       feeAmount: stakedTotal,
     })
 
+  const payloadErrorMessage = useMemo(() => {
+    const message = getBittensorErrorMessage(errorPayload)
+    return message ? `${t("Failed to build transaction")}: ${message}` : null
+  }, [errorPayload, t])
+
   const feeErrorMessage = useBittensorFeeError({
     allBalances,
     address: address || null,
     feeEstimate,
     feeTokenId: taoTokenId,
   })
-  const payloadToSubmit = feeErrorMessage ? undefined : payload
+  const submitErrorMessage = feeErrorMessage ?? payloadErrorMessage
+  const payloadToSubmit = submitErrorMessage ? undefined : payload
 
   const errorMessage = useMemo(() => {
     if (stakedTotal <= 0n) return t("This account has no stake on this subnet")
@@ -288,6 +295,8 @@ const useBittensorConvictionLockWizardProvider = () => {
     lockTypeLabel,
     errorMessage,
     feeErrorMessage,
+    payloadErrorMessage,
+    submitErrorMessage,
     canContinue,
     payload: payloadToSubmit,
     txMetadata,

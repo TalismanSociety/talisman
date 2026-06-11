@@ -38,6 +38,7 @@ export const BittensorChangeLockTypeConfirm = () => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
+    submitErrorMessage,
     close,
     setStep,
     onSubmitted,
@@ -110,6 +111,9 @@ export const BittensorChangeLockTypeConfirm = () => {
           <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
           <span>{warning}</span>
         </div>
+        {submitErrorMessage && (
+          <div className="text-center text-alert-error text-sm">{submitErrorMessage}</div>
+        )}
       </ScrollContainer>
 
       <SapiSendButton
