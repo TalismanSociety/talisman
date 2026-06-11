@@ -33,7 +33,9 @@ export const BittensorConvictionLockIndicator: FC<{ position: BittensorStakingPo
     [balances, position.balance.address, position.token.networkId, position.token.netuid]
   )
 
-  if (!lock) return null
+  // ghost locks (zero mass, residual conviction) are kept by the data layer to pin the top-up
+  // hotkey, but there is nothing to show the user: no stake is actually locked
+  if (!lock || lock.amount <= 0n) return null
 
   return (
     <Tooltip>

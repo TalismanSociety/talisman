@@ -6,7 +6,7 @@ import {
   Balance,
   BalanceFormatter,
   type BalanceTransferType,
-  taoToAlpha,
+  taoToAlphaCeil,
 } from "@talismn/balances"
 import {
   type DotNetworkId,
@@ -311,7 +311,7 @@ const useSendFundsProvider = () => {
         // the chain requires the transfer's TAO equivalent to be at least DefaultMinStake
         // (rejected with AmountTooLow otherwise)
         if (alphaToTao(transfer.planck, dtaoAlphaPrice) < dtaoMinTaoTransfer) {
-          const minAlphaTransfer = taoToAlpha(dtaoMinTaoTransfer, dtaoAlphaPrice) + 1n
+          const minAlphaTransfer = taoToAlphaCeil(dtaoMinTaoTransfer, dtaoAlphaPrice)
           return {
             isValid: false,
             error: t("Minimum transfer is {{amount}} {{symbol}}", {
@@ -325,7 +325,7 @@ const useSendFundsProvider = () => {
         // chain (clear_small_nominations): require a full send or a sufficient remainder
         const remaining = (balance?.free.planck ?? 0n) - transfer.planck
         if (typeof dtaoMinTaoKeep === "bigint" && remaining > 0n) {
-          const minAlphaKeep = taoToAlpha(dtaoMinTaoKeep, dtaoAlphaPrice)
+          const minAlphaKeep = taoToAlphaCeil(dtaoMinTaoKeep, dtaoAlphaPrice)
           if (remaining < minAlphaKeep)
             return {
               isValid: false,

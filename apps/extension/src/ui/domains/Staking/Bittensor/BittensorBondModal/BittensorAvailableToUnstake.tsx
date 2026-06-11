@@ -21,7 +21,8 @@ export const BittensorAvailableToUnstake = () => {
 export const BittensorConvictionLockedRow = () => {
   const { dtaoToken, convictionLock } = useBittensorBondWizard()
 
-  if (!convictionLock) return null
+  // ghost locks (zero mass, residual conviction) lock nothing — don't render a "0 locked" row
+  if (!convictionLock || convictionLock.amount <= 0n) return null
 
   return (
     <div className="flex items-center justify-between">
