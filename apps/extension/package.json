@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -44,7 +44,6 @@
     "@react-rxjs/core": "^0.10.7",
     "@scure/bip39": "^1.6.0",
     "@sentry/browser": "8.35.0",
-    "@sentry/react": "8.35.0",
     "@sentry/types": "8.35.0",
     "@solana/qr-code-styling": "1.6.0",
     "@solana/spl-token": "^0.4.13",

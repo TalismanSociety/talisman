@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
 import { log } from "@common/log"
-import * as Sentry from "@sentry/browser"
+import { sentry } from "@core/config/sentry"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
@@ -527,7 +527,7 @@ const ConfirmRemove: FC<{
       await api.tokenRemove(token.id)
       isTokenKnown(saved) ? onClose() : navigate(-1)
     } catch (err) {
-      Sentry.captureException(err)
+      sentry.captureException(err)
       notify({
         type: "error",
         title: t("Error"),

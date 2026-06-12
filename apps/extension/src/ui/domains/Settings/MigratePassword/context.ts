@@ -1,11 +1,10 @@
+import { sentry } from "@core/config/sentry"
 import { passwordStore } from "@core/domains/app/store.password"
-import * as Sentry from "@sentry/react"
 import { api } from "@ui/api"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import useStatus, { statusOptions } from "@ui/hooks/useStatus"
 import { useMnemonics } from "@ui/state/mnemonics"
-import { useSetting } from "@ui/state/settings"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -17,7 +16,6 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const [passwordTrimmed, setPasswordTrimmed] = useState<boolean>()
   const [error, setError] = useState<Error>()
-  const [useErrorTracking] = useSetting("useErrorTracking")
   const { setStatus, status, message } = useStatus()
   const allBackedUp = useMnemonicsAllBackedUp()
   const mnemonics = useMnemonics()
@@ -33,8 +31,9 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   }, [password])
 
   useEffect(() => {
-    if (error && useErrorTracking) Sentry.captureException(error)
-  }, [error, useErrorTracking])
+    // the user's error tracking preference is enforced centrally, in the client's beforeSend
+    if (error) sentry.captureException(error)
+  }, [error])
 
   const hasPassword = !!password
   const hasNewPassword = !!newPassword

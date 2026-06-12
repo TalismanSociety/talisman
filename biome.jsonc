@@ -62,7 +62,16 @@
       },
       "style": {
         "noNonNullAssertion": "off",
-        "useImportType": "warn"
+        "useImportType": "warn",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@sentry/browser": "Import { sentry } from \"@core/config/sentry\" instead: the global Sentry API must not be used in a browser extension (#2418) and is a silent no-op without Sentry.init().",
+              "@sentry/react": "Import { sentry } from \"@core/config/sentry\" instead: the global Sentry API must not be used in a browser extension (#2418) and is a silent no-op without Sentry.init()."
+            }
+          }
+        }
       },
       "nursery": {
         "useSortedClasses": {
@@ -84,6 +93,20 @@
     }
   },
   "overrides": [
+    {
+      // the manual Sentry client wrapper (and its spec) are the only allowed importers of the Sentry SDK
+      "includes": [
+        "apps/extension/src/core/config/sentry.ts",
+        "apps/extension/src/core/config/sentry.spec.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
     {
       "includes": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx", "tests/**"],
       "linter": {

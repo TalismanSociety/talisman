@@ -6,12 +6,21 @@ import { ChaindataFileSchema } from "./schema"
 
 const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
-const getFallbackUrl = (url: string) => {
-  // if githack fails, try statically
-  if (url.startsWith("https://raw.githubusercontent.com/"))
-    return url.replace("https://raw.githubusercontent.com/", "https://cdn.statically.io/gh/")
+// exported for tests
+export const getFallbackUrl = (url: string) => {
+  // if gitraw fails, try jsdelivr (note: jsdelivr paths use {user}/{repo}@{ref}/{path}).
+  // only the {user}/{repo} part is parsed - the ref is kept verbatim because it may contain
+  // slashes (e.g. feat/foo), which jsdelivr resolves greedily, same as github
+  if (url.startsWith("https://raw.githubusercontent.com/")) {
+    const fallbackUrl = url.replace(
+      /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\//i,
+      "https://cdn.jsdelivr.net/gh/$1/$2@"
+    )
+    // guard against malformed urls that the regex can't transform, to prevent infinite recursion
+    return fallbackUrl !== url ? fallbackUrl : null
+  }
 
-  // can add more fallbacks here such as jsdelivr, unpkg, etc.
+  // can add more fallbacks here such as unpkg, etc.
 
   return null
 }

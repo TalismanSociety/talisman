@@ -1,8 +1,8 @@
 import { log } from "@common/log"
 import { assert } from "@polkadot/util"
-import { captureException } from "@sentry/browser"
 import { BehaviorSubject } from "rxjs"
 
+import { sentry } from "../../config/sentry"
 import { StorageProvider } from "../Store"
 import type { MigrationContext, Migrations } from "./types"
 
@@ -145,7 +145,7 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
     } catch (e) {
       this.status.next("error")
       log.error(e)
-      if ((e as Error).cause) captureException(e)
+      if ((e as Error).cause) sentry.captureException(e)
       const stillPending = pending.filter((i) => !applied.includes(i))
       log.error(`${stillPending.length} migrations were not applied`)
       return false

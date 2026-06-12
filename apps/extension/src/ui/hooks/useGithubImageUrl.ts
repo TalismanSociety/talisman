@@ -3,37 +3,81 @@ import { useCallback, useEffect, useState } from "react"
 
 import { invalidateCachedImage, useImageSwr } from "./imageCache"
 
-const GITRAW_URL = "https://raw.githubusercontent.com/"
-const GITHACK_URL = "https://rawcdn.githack.com/"
-const STATICALLY_URL = "https://cdn.statically.io/gh/"
+// `refAndPath` is the raw `{ref}/{path}` portion of the url, kept unsplit on purpose: git refs may
+// contain slashes (e.g. feat/foo), making the ref/path boundary ambiguous from the url alone.
+// All sources below accept it verbatim - jsdelivr resolves slashed refs greedily, same as github.
+type GithubAsset = { user: string; repo: string; refAndPath: string }
 
-// statically seems to be the fastest and is geo distributed
-// githack is slower, but is geo distributed,
+type GithubSource = {
+  match: RegExp
+  build: (asset: GithubAsset) => string
+}
+
+// jsdelivr is geo distributed and serves long-lived cache headers (7d browser / 12h edge), best for production
 // gitraw is straight from github so it reflects latest changes immediately, good for development
-const GITHUB_SOURCE_FLOW = DEBUG
-  ? [GITRAW_URL, STATICALLY_URL, GITHACK_URL]
-  : [STATICALLY_URL, GITHACK_URL, GITRAW_URL]
+// NOTE: statically.io has been sunset (it now hangs or slow-redirects to gitraw) and githack returns 403s - don't use them
+const GITRAW: GithubSource = {
+  match: /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/(.+)$/i,
+  build: ({ user, repo, refAndPath }) =>
+    `https://raw.githubusercontent.com/${user}/${repo}/${refAndPath}`,
+}
 
-const isGithubUrl = (url: string): boolean =>
-  url.startsWith(GITRAW_URL) || url.startsWith(GITHACK_URL) || url.startsWith(STATICALLY_URL)
+const JSDELIVR: GithubSource = {
+  match: /^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/@]+)\/([^/@]+)@(.+)$/i,
+  build: ({ user, repo, refAndPath }) =>
+    `https://cdn.jsdelivr.net/gh/${user}/${repo}@${refAndPath}`,
+}
 
-const getFileUrl = (url: string | null | undefined, fallbackUrl: string, rotate?: boolean) => {
-  // our chaindata urls are generated for gitraw, but for production we want to default to statically
-  if (!rotate) url = url?.replace(/^https:\/\/raw.githubusercontent.com\//i, GITHUB_SOURCE_FLOW[0])
+// dead sources that may still appear in persisted data, parsed only so they can be normalized to the flow below
+const LEGACY_PATTERNS = [
+  /^https:\/\/cdn\.statically\.io\/gh\/([^/@]+)\/([^/@]+)[@/](.+)$/i,
+  /^https:\/\/rawcdn\.githack\.com\/([^/]+)\/([^/]+)\/(.+)$/i,
+]
 
-  if (!url || url === fallbackUrl) return fallbackUrl
+const GITHUB_SOURCE_FLOW = DEBUG ? [GITRAW, JSDELIVR] : [JSDELIVR, GITRAW]
 
-  if (!rotate) return url
-
+const parseGithubUrl = (url: string): { asset: GithubAsset; sourceIndex: number } | null => {
   for (let i = 0; i < GITHUB_SOURCE_FLOW.length; i++) {
-    const source = GITHUB_SOURCE_FLOW[i]
-    if (url.startsWith(source) && i < GITHUB_SOURCE_FLOW.length - 1) {
-      // if we are in debug mode, rotate to the next source
-      return GITHUB_SOURCE_FLOW[(i + 1) % GITHUB_SOURCE_FLOW.length] + url.slice(source.length)
+    const match = GITHUB_SOURCE_FLOW[i].match.exec(url)
+    if (match) {
+      const [, user, repo, refAndPath] = match
+      return { asset: { user, repo, refAndPath }, sourceIndex: i }
     }
   }
 
-  return fallbackUrl
+  for (const pattern of LEGACY_PATTERNS) {
+    const match = pattern.exec(url)
+    if (match) {
+      const [, user, repo, refAndPath] = match
+      // legacy urls restart the flow from the preferred source
+      return { asset: { user, repo, refAndPath }, sourceIndex: -1 }
+    }
+  }
+
+  return null
+}
+
+const isGithubUrl = (url: string): boolean => parseGithubUrl(url) !== null
+
+// exported for tests
+export const getFileUrl = (
+  url: string | null | undefined,
+  fallbackUrl: string,
+  rotate?: boolean
+) => {
+  if (!url || url === fallbackUrl) return fallbackUrl
+
+  const parsed = parseGithubUrl(url)
+
+  // non-github urls are used as-is, with the placeholder as only fallback
+  if (!parsed) return rotate ? fallbackUrl : url
+
+  // our chaindata urls are generated for gitraw : normalize to the preferred source on first render
+  // on error, rotate to the next source, and to the placeholder once all sources failed
+  const sourceIndex = rotate ? parsed.sourceIndex + 1 : 0
+  if (sourceIndex >= GITHUB_SOURCE_FLOW.length) return fallbackUrl
+
+  return GITHUB_SOURCE_FLOW[sourceIndex].build(parsed.asset)
 }
 
 export const useGithubImageUrl = (url: string | null | undefined, fallbackUrl: string) => {
