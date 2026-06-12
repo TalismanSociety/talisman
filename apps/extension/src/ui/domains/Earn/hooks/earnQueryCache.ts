@@ -25,14 +25,18 @@ const normalizeScopePart = (part: EarnQueryCacheScopePart) =>
 export const getEarnQueryCacheKey = ({ providerId, resource, scope }: EarnQueryCacheKeyOptions) => {
   const scopeParts = (Array.isArray(scope) ? scope : [scope]).map(normalizeScopePart)
 
-  return [
-    EARN_QUERY_CACHE_PREFIX,
-    normalizeScopePart(providerId),
-    normalizeScopePart(resource),
-    ...scopeParts,
-  ]
-    .filter((part): part is string => !!part)
-    .join(":")
+  return (
+    [
+      EARN_QUERY_CACHE_PREFIX,
+      normalizeScopePart(providerId),
+      normalizeScopePart(resource),
+      ...scopeParts,
+    ]
+      // skip only nullish parts: an empty string stays as an empty segment, so keys built with and
+      // without it cannot collide
+      .filter((part): part is string => part !== null)
+      .join(":")
+  )
 }
 
 export const removeEarnQueryCacheEntry = (key: string) => api.queryCacheRemove(key)

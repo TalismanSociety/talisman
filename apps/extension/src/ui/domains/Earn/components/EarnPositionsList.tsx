@@ -25,14 +25,9 @@ import { useTranslation } from "react-i18next"
 import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPositions"
 import { useEarnPositions } from "../hooks/useEarnPositions"
 import { AccountDisplay } from "../shared/AccountDisplay"
+import { formatAprPercent } from "../shared/formatAprPercent"
+import { EARN_GRID_COLS } from "./EarnAvailableProducts"
 import { EarnTypeBadge } from "./EarnTypeBadge"
-
-// Same grid as the Discover table (EarnAvailableProducts), so the APR/APY column lines up like the
-// "Eligible Assets" column: a dashboard-only middle column, hidden in the popup.
-const EARN_POSITIONS_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30%]"
-
-const formatYieldPercent = (apr: number) =>
-  Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 }).format(apr / 100)
 
 const EarnPositionYield: FC<{
   apr: number | null
@@ -42,7 +37,7 @@ const EarnPositionYield: FC<{
 
   return (
     <>
-      <span className="flex h-9 items-center text-primary">{formatYieldPercent(apr)}</span>
+      <span className="flex h-9 items-center text-primary">{formatAprPercent(apr)}</span>
       {rateType && <span className="text-body-secondary text-xs">{rateType}</span>}
     </>
   )
@@ -60,7 +55,7 @@ const EarnPositionRow: FC<{
       type="button"
       className={cn(
         "grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
-        EARN_POSITIONS_GRID_COLS,
+        EARN_GRID_COLS,
         IS_POPUP ? "px-6 text-xs" : "px-8"
       )}
       onClick={() => navigate(position.detailUrl)}

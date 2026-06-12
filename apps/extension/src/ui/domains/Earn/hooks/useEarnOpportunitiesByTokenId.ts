@@ -7,7 +7,7 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { useMemo } from "react"
 
 import { useEarnSystemOpportunities } from "../systems/registry"
-import { combineEarnStatuses } from "../systems/status"
+import { combineEarnStatuses, toEarnLoadable } from "../systems/status"
 import type { EarnOpportunity, TokenOpportunity } from "../types"
 
 export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & {
@@ -65,12 +65,8 @@ export const useEarnOpportunitiesByTokenId = (): Loadable<TokenOpportunity[]> & 
   const status = combineEarnStatuses(systemResults.map((result) => result.status))
 
   return {
-    status,
-    data: allProducts,
+    ...toEarnLoadable(status, allProducts),
     heldProducts,
     discoverProducts,
-  } as Loadable<TokenOpportunity[]> & {
-    heldProducts: TokenOpportunity[]
-    discoverProducts: TokenOpportunity[]
   }
 }

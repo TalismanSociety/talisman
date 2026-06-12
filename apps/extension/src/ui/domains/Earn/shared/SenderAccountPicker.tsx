@@ -26,6 +26,25 @@ type AccountOption = Account & {
   balances: Balances
 }
 
+// sort accounts by token holdings: highest value first (fiat, then raw amount as tie-breaker),
+// then by name/address so the order is stable for accounts with equal balances
+export const compareAccountsByTokenBalances = (
+  a: Pick<Account, "name" | "address"> & { balances: Balances },
+  b: Pick<Account, "name" | "address"> & { balances: Balances }
+): number => {
+  const fiat1 = a.balances.sum.fiat("usd").transferable ?? 0
+  const fiat2 = b.balances.sum.fiat("usd").transferable ?? 0
+  if (fiat1 > fiat2) return -1
+  if (fiat1 < fiat2) return 1
+
+  const planck1 = a.balances.sum.planck.transferable || 0n
+  const planck2 = b.balances.sum.planck.transferable || 0n
+  if (planck1 > planck2) return -1
+  if (planck1 < planck2) return 1
+
+  return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
+}
+
 export type SenderAccountPickerIsAccountDisabled = (account: Account, balances: Balances) => boolean
 
 const defaultIsAccountDisabled: SenderAccountPickerIsAccountDisabled = (_account, balances) =>
@@ -61,19 +80,7 @@ export const SenderAccountPicker: FC<{
           disabled,
         }
       })
-      .sort((a, b) => {
-        const fiat1 = a.balances.sum.fiat("usd").transferable || 0n
-        const fiat2 = b.balances.sum.fiat("usd").transferable || 0n
-        if (fiat1 > fiat2) return -1
-        if (fiat1 < fiat2) return 1
-
-        const planck1 = a.balances.sum.planck.transferable || 0n
-        const planck2 = b.balances.sum.planck.transferable || 0n
-        if (planck1 > planck2) return -1
-        if (planck1 < planck2) return 1
-
-        return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
-      })
+      .sort(compareAccountsByTokenBalances)
   }, [token, network, allAccounts, allBalances, tokenId, isAccountDisabled])
 
   const filteredAccounts = useMemo(() => {

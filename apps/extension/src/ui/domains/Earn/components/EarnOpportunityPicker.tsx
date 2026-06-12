@@ -7,6 +7,7 @@ import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { formatAprPercent } from "../shared/formatAprPercent"
 import { getEarnSystem } from "../systems/registry"
 import type { EarnOpportunity } from "../types"
 
@@ -56,13 +57,7 @@ export const EarnOpportunityPicker: FC<{
 }
 
 const GenericApr: FC<{ apr: number | null }> = ({ apr }) =>
-  apr == null ? null : (
-    <div className="text-primary">
-      {Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 }).format(
-        apr / 100
-      )}
-    </div>
-  )
+  apr == null ? null : <div className="text-primary">{formatAprPercent(apr)}</div>
 
 const OpportunityRow: FC<{
   opportunity: EarnOpportunity

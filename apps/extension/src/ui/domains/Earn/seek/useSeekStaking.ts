@@ -30,6 +30,8 @@ export const SEEK_STAKING_QUERY_KEY = "seek-staking"
 
 export type SeekStakingConfig = {
   tokenId: TokenId
+  // the SEEK ERC-20 contract address, extracted from tokenId ("<networkId>:evm-erc20:<address>")
+  tokenAddress: `0x${string}`
   networkId: EthNetworkId
   stakingContractAddress: `0x${string}`
 }
@@ -66,6 +68,7 @@ export const useSeekStakingConfig = (): SeekStakingConfig => {
   return useMemo(
     () => ({
       tokenId: remoteConfig.seek.tokenId as TokenId,
+      tokenAddress: remoteConfig.seek.tokenId.split(":").at(-1) as `0x${string}`,
       networkId: remoteConfig.seek.stakingContractNetworkId as EthNetworkId,
       stakingContractAddress: remoteConfig.seek.stakingContractAddress as `0x${string}`,
     }),
@@ -78,11 +81,13 @@ export const useSeekStakingConfig = (): SeekStakingConfig => {
 }
 
 const useSelectedEthereumAccounts = (): Account[] => {
+  // selectedAccounts is undefined when this runs outside the PortfolioNavigationProvider (e.g.
+  // from a globally mounted modal), so don't assume the context is available
   const { selectedAccounts } = usePortfolioNavigation()
 
   return useMemo(
     () =>
-      selectedAccounts.filter(
+      (selectedAccounts ?? []).filter(
         (account) => isAccountOwned(account) && isAccountPlatformEthereum(account)
       ),
     [selectedAccounts]
@@ -420,7 +425,7 @@ export const useSeekErc20Allowance = (address: string | null, amount: bigint | n
       if (!publicClient || !address) return null
       return publicClient.readContract({
         abi: erc20Abi,
-        address: config.tokenId.split(":").at(-1) as `0x${string}`,
+        address: config.tokenAddress,
         functionName: "allowance",
         args: [address as `0x${string}`, config.stakingContractAddress],
       })

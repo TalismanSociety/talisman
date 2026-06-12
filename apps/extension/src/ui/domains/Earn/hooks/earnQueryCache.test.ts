@@ -23,6 +23,15 @@ describe("getEarnQueryCacheKey", () => {
       })
     ).toBe("earn:seek:positions:1:0xabc:0xdef%2C0x123")
   })
+
+  it("skips nullish scope parts but keeps empty strings as distinct segments", () => {
+    expect(
+      getEarnQueryCacheKey({ providerId: "seek", resource: "r", scope: [null, undefined, "x"] })
+    ).toBe("earn:seek:r:x")
+    expect(getEarnQueryCacheKey({ providerId: "seek", resource: "r", scope: ["", "x"] })).toBe(
+      "earn:seek:r::x"
+    )
+  })
 })
 
 describe("createEarnQueryCachePersister", () => {

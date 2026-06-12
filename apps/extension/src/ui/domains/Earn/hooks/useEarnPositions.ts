@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef } from "react"
 
 import { calcDefiItemValueUsd, resolveDefiTokenId } from "../defi/useDefiItemValueUsd"
 import { useEarnSystemPositions } from "../systems/registry"
+import { toEarnLoadable } from "../systems/status"
 import type { EarnPosition, EarnPositionDisplayToken } from "../types"
 
 export type { EarnPosition, EarnPositionDisplayToken } from "../types"
@@ -159,10 +160,15 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
 
   // Gate on every source settling so positions paint all at once. Otherwise a faster source
   // (yieldxyz) renders first and a slower one (SEEK) pops in a tick later, causing flicker. Systems
-  // bake their own best-effort semantics into status (SEEK never reports "error"), so a SEEK read
-  // failure neither blocks the list nor flips it to "error".
+  // bake their own best-effort semantics into status (SEEK never reports "error", yieldxyz reports
+  // "success" while serving cached positions), so a SEEK read failure neither blocks the list nor
+  // flips it to "error". The defi source passes its status through raw and emits "loading" while
+  // serving cached storage data, so only gate on it when it has nothing to show — otherwise a cold
+  // open would hide every cached position behind a skeleton until the defi fetch settles.
   const systemStatuses = systemResults.map((systemResult) => systemResult.status)
-  const isAnyLoading = defiStatus === "loading" || systemStatuses.some((s) => s === "loading")
+  const isAnyLoading =
+    (defiStatus === "loading" && !defiPositions?.length) ||
+    systemStatuses.some((s) => s === "loading")
   const isAnyError = defiStatus === "error" || systemStatuses.some((s) => s === "error")
 
   const status = isAnyLoading
@@ -176,10 +182,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   // While still loading, withhold partial results so consumers render the loading state rather than
   // a subset of positions that would otherwise grow (and flicker) as each source resolves.
   return useMemo(
-    () =>
-      ({ status, data: status === "loading" ? EMPTY_POSITIONS : positions }) as Loadable<
-        EarnPosition[]
-      >,
+    () => toEarnLoadable(status, status === "loading" ? EMPTY_POSITIONS : positions),
     [status, positions]
   )
 }

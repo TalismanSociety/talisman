@@ -20,7 +20,8 @@ import { useEarnOpportunitiesByTokenId } from "../hooks/useEarnOpportunitiesByTo
 import { useEarnProviders } from "../hooks/useEarnProviders"
 import type { EarnOpportunity, TokenOpportunity } from "../types"
 
-const EARN_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30%]"
+// shared with EarnPositionsList so both tables' columns line up (popup hides the middle column)
+export const EARN_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30%]"
 
 export const EarnAvailableProducts: FC<{
   search: string

@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
 import { EarnTypeBadge } from "../components/EarnTypeBadge"
+import { formatAprPercent } from "../shared/formatAprPercent"
 import {
   getSeekPositionValueUsd,
   SEEK_PROVIDER_LOGO_URI,
@@ -172,14 +173,7 @@ const SeekPositionHeader: FC<{
           {apr !== null && (
             <div className="shrink-0 text-primary text-sm">
               <span className="mx-2 mr-4 inline-block size-2 shrink-0 rounded-full bg-body-disabled align-middle"></span>
-              <span>
-                {t("{{percent}} APR", {
-                  percent: Intl.NumberFormat(undefined, {
-                    style: "percent",
-                    maximumFractionDigits: 1,
-                  }).format(apr / 100),
-                })}
-              </span>
+              <span>{t("{{percent}} APR", { percent: formatAprPercent(apr) })}</span>
             </div>
           )}
         </div>
