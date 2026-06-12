@@ -6,24 +6,38 @@ import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useQueryClient } from "@tanstack/react-query"
+import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { notify } from "@ui/components/Notifications"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
-import { FormFieldSet, FormFieldSetRow } from "@ui/domains/Earn/shared/FormFieldSet"
+import {
+  FormFieldSet,
+  FormFieldSetRow,
+  FormFieldSetSeparator,
+} from "@ui/domains/Earn/shared/FormFieldSet"
 import {
   SenderAccountPicker,
   type SenderAccountPickerIsAccountDisabled,
 } from "@ui/domains/Earn/shared/SenderAccountPicker"
+import {
+  TransactionsStepper,
+  type TransactionsStepperStep,
+} from "@ui/domains/Earn/shared/TransactionsStepper"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
+import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
@@ -35,7 +49,7 @@ import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTransaction } from "@ui/state/transactions"
 import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
-import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, erc20Abi } from "viem"
 import { removeSeekStakingPositionCache } from "./seekStakingCache"
@@ -120,9 +134,15 @@ const SeekStakingForm: FC<{
   const [address, setAddress] = useState<string | null>(initialAddress ?? null)
   const [amount, setAmount] = useState<bigint | null>(null)
   const [submittedHash, setSubmittedHash] = useState<string | null>(null)
-  // when an ERC-20 approval is in flight, we wait for it to confirm and then return to the form
-  // (rather than showing a terminal progress screen) so the user can stake without reopening
-  const [awaitingApproval, setAwaitingApproval] = useState(false)
+  // staking follows the yieldxyz wizard UX: the form leads to a confirm screen which walks the
+  // user through the required transactions (ERC-20 approval then stake) with a visible stepper
+  const [isConfirmStep, setIsConfirmStep] = useState(false)
+  // frozen when entering the confirm screen so the stepper keeps displaying both steps (with the
+  // second one active) once the approval is confirmed
+  const [hasApprovalStep, setHasApprovalStep] = useState(false)
+  // transaction submitted from the confirm screen, tracked in-place (no progress screen takeover)
+  const [pending, setPending] = useState<{ hash: string; isApproval: boolean } | null>(null)
+  const refProcessedHash = useRef<string | null>(null)
   const {
     isOpen: isAccountPickerOpen,
     open: openAccountPicker,
@@ -176,7 +196,10 @@ const SeekStakingForm: FC<{
   useEffect(() => {
     if (isOpen) {
       setSubmittedHash(null)
-      setAwaitingApproval(false)
+      setIsConfirmStep(false)
+      setHasApprovalStep(false)
+      setPending(null)
+      refProcessedHash.current = null
     }
   }, [isOpen])
 
@@ -304,6 +327,12 @@ const SeekStakingForm: FC<{
 
   const ethTx = useEthTransaction(txRequest, config.networkId as EthNetworkId)
 
+  const riskAnalysis = useEvmTransactionRiskAnalysis({
+    networkId: config.networkId as EthNetworkId,
+    tx: action === "stake" ? txRequest : undefined,
+    disableCriticalPane: true,
+  })
+
   const isApproval = action === "stake" && amount != null && (allowance.data ?? 0n) < amount
   const isCompleteLocked =
     action === "completeWithdrawal" &&
@@ -328,28 +357,66 @@ const SeekStakingForm: FC<{
     [address, config.networkId, config.stakingContractAddress, queryClient]
   )
 
-  const handleSubmit = useCallback(
+  const handleSubmit = useCallback((hash: string) => {
+    setSubmittedHash(hash)
+  }, [])
+
+  const handleReviewClick = useCallback(() => {
+    setHasApprovalStep(isApproval)
+    setIsConfirmStep(true)
+  }, [isApproval])
+
+  const handleConfirmBack = useCallback(() => {
+    setIsConfirmStep(false)
+  }, [])
+
+  const handleConfirmSubmit = useCallback(
     (hash: string) => {
-      setAwaitingApproval(isApproval)
-      setSubmittedHash(hash)
+      refProcessedHash.current = null
+      setPending({ hash, isApproval })
     },
     [isApproval]
   )
 
-  // once the approval transaction confirms, refresh the allowance and return to the form so the
-  // submit button flips from "Approve SEEK" to "Stake SEEK" within the same modal session
+  // walks the confirm screen transactions: on approval success, refresh the allowance before
+  // re-enabling the submit button so it flips straight to the stake transaction; on stake
+  // success, refresh the position and close the modal
+  const pendingTx = useTransaction(pending?.hash ?? "")
+  useEffect(() => {
+    if (!pending || !pendingTx || refProcessedHash.current === pending.hash) return
+
+    switch (pendingTx.status) {
+      case "success":
+        refProcessedHash.current = pending.hash
+        notify({ type: "success", title: t("Success"), subtitle: t("Transaction confirmed") })
+        if (pending.isApproval) {
+          void refreshSeekStakingQueries(false).finally(() => setPending(null))
+        } else {
+          void refreshSeekStakingQueries(true)
+          close()
+        }
+        break
+      case "error":
+        refProcessedHash.current = pending.hash
+        notify({ type: "error", title: t("Error"), subtitle: t("Transaction failed") })
+        setPending(null)
+        break
+      case "replaced":
+        // sped up or cancelled from the transactions list: refresh and let the user resume
+        refProcessedHash.current = pending.hash
+        void refreshSeekStakingQueries(false).finally(() => setPending(null))
+        break
+      default:
+        break
+    }
+  }, [close, pending, pendingTx, refreshSeekStakingQueries, t])
+
+  // refresh the cached position once a transaction submitted via the progress screen confirms
   const submittedTx = useTransaction(submittedHash ?? "")
   useEffect(() => {
-    if (!awaitingApproval || submittedTx?.status !== "success") return
-    void refreshSeekStakingQueries(false)
-    setAwaitingApproval(false)
-    setSubmittedHash(null)
-  }, [awaitingApproval, refreshSeekStakingQueries, submittedTx?.status])
-
-  useEffect(() => {
-    if (awaitingApproval || !submittedHash || submittedTx?.status !== "success") return
+    if (!submittedHash || submittedTx?.status !== "success") return
     void refreshSeekStakingQueries(true)
-  }, [awaitingApproval, refreshSeekStakingQueries, submittedHash, submittedTx?.status])
+  }, [refreshSeekStakingQueries, submittedHash, submittedTx?.status])
 
   if (!token) return null
 
@@ -365,10 +432,31 @@ const SeekStakingForm: FC<{
       </div>
     )
 
+  if (action === "stake" && isConfirmStep && address && amount)
+    return (
+      <SeekStakeConfirm
+        token={token}
+        amount={amount}
+        address={address}
+        networkId={config.networkId}
+        apr={metadata.data?.apr}
+        ethTx={ethTx}
+        feeTokenId={network?.nativeTokenId}
+        riskAnalysis={riskAnalysis}
+        hasApprovalStep={hasApprovalStep}
+        isApproval={isApproval}
+        isProcessing={!!pending}
+        isPreparing={ethTx.isLoading || allowance.isFetching}
+        onBackClick={pending ? undefined : handleConfirmBack}
+        onCloseClick={close}
+        onSubmit={handleConfirmSubmit}
+      />
+    )
+
   // computed after the `if (!token) return null` guard above so `token` is non-null here, making
   // the fallback (and thus the prop passed to SeekRewardsSummary) a non-nullable Token
   const displayRewardToken = rewardToken ?? token
-  const submitLabel = isApproval ? t("Approve SEEK") : getActionLabel(t, action)
+  const submitLabel = getActionLabel(t, action)
   const modalTitle = getModalTitle(t, action)
   const displayError = ethTx.error ?? (!isAmountAction(action) ? (error ?? undefined) : undefined)
 
@@ -415,11 +503,13 @@ const SeekStakingForm: FC<{
             withdrawDelay={metadata.data?.withdrawDelay ?? null}
             expectedApr={metadata.data?.apr}
           />
-          <SeekNetworkFeeDetails
-            ethTx={ethTx}
-            feeTokenId={network?.nativeTokenId}
-            containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
-          />
+          {action !== "stake" && (
+            <SeekNetworkFeeDetails
+              ethTx={ethTx}
+              feeTokenId={network?.nativeTokenId}
+              containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
+            />
+          )}
         </div>
 
         {action === "completeWithdrawal" && isCompleteLocked && (
@@ -434,23 +524,34 @@ const SeekStakingForm: FC<{
 
         <TransactionError error={displayError} errorDetails={ethTx.errorDetails} />
 
-        <TxSubmitButton
-          containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
-          tx={
-            ethTx.transaction
-              ? {
-                  platform: "ethereum",
-                  networkId: config.networkId,
-                  payload: ethTx.transaction,
-                }
-              : null
-          }
-          label={submitLabel}
-          className="w-full"
-          disabled={!!error || isCompleteLocked || !!ethTx.error || !ethTx.transaction}
-          isProcessing={ethTx.isLoading || allowance.isFetching}
-          onSubmit={handleSubmit}
-        />
+        {action === "stake" ? (
+          <Button
+            primary
+            className="w-full"
+            disabled={!!error || allowance.isLoading}
+            onClick={handleReviewClick}
+          >
+            {t("Review")}
+          </Button>
+        ) : (
+          <TxSubmitButton
+            containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
+            tx={
+              ethTx.transaction
+                ? {
+                    platform: "ethereum",
+                    networkId: config.networkId,
+                    payload: ethTx.transaction,
+                  }
+                : null
+            }
+            label={submitLabel}
+            className="w-full"
+            disabled={!!error || isCompleteLocked || !!ethTx.error || !ethTx.transaction}
+            isProcessing={ethTx.isLoading || allowance.isFetching}
+            onSubmit={handleSubmit}
+          />
+        )}
       </div>
 
       <SeekAccountPickerModal
@@ -463,6 +564,180 @@ const SeekStakingForm: FC<{
         onSelect={handleSelectAccount}
       />
     </WizardModalDialog>
+  )
+}
+
+const SeekStakeConfirm: FC<{
+  token: Token
+  amount: bigint
+  address: string
+  networkId: EthNetworkId
+  apr: number | null | undefined
+  ethTx: ReturnType<typeof useEthTransaction>
+  feeTokenId?: TokenId
+  riskAnalysis: ReturnType<typeof useEvmTransactionRiskAnalysis>
+  hasApprovalStep: boolean
+  isApproval: boolean
+  isProcessing: boolean
+  isPreparing: boolean
+  onBackClick?: () => void
+  onCloseClick: () => void
+  onSubmit: (hash: string) => void
+}> = ({
+  token,
+  amount,
+  address,
+  networkId,
+  apr,
+  ethTx,
+  feeTokenId,
+  riskAnalysis,
+  hasApprovalStep,
+  isApproval,
+  isProcessing,
+  isPreparing,
+  onBackClick,
+  onCloseClick,
+  onSubmit,
+}) => {
+  const { t } = useTranslation()
+
+  const steps = useMemo<TransactionsStepperStep[]>(
+    () =>
+      hasApprovalStep
+        ? [
+            { key: "approve", label: t("Approve") },
+            { key: "stake", label: t("Stake") },
+          ]
+        : [{ key: "stake", label: t("Stake") }],
+    [hasApprovalStep, t]
+  )
+  const stepIndex = hasApprovalStep && !isApproval ? 1 : 0
+
+  return (
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={SEEK_STAKING_MODAL_CONTAINER_ID}>
+      <WizardModalDialog
+        className="size-full border-none"
+        title={t("Enter Position")}
+        onBackClick={onBackClick}
+        onCloseClick={onCloseClick}
+      >
+        <div className="flex size-full flex-col gap-8 overflow-hidden">
+          <div className="line-clamp-2 w-full text-center font-bold text-md">
+            {steps.length > 1
+              ? t("Approve {{count}} transactions", { count: steps.length })
+              : t("Approve transaction")}
+          </div>
+          <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
+            <TransactionsStepper steps={steps} stepIndex={stepIndex} isProcessing={isProcessing} />
+            <div>
+              <RiskAnalysisPillButton />
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className={cn(
+                    "text-center text-brand-orange text-xs",
+                    // do not display error while isProcessing=true, as it has already been executed
+                    (isProcessing || !ethTx.error) && "invisible"
+                  )}
+                >
+                  <AlertCircleIcon className="inline-block align-text-top text-sm" /> {ethTx.error}
+                </div>
+              </TooltipTrigger>
+              {!!ethTx.errorDetails && <TooltipContent>{ethTx.errorDetails}</TooltipContent>}
+            </Tooltip>
+          </div>
+          <FormFieldSet>
+            <FormFieldSetRow label={t("Amount")}>
+              <TokensAndFiat withLogo noFiat tokenId={token.id} planck={amount.toString()} />
+            </FormFieldSetRow>
+            <FormFieldSetRow label={t("Account")} valueClassName="h-full">
+              <AccountDisplay address={address} />
+            </FormFieldSetRow>
+            <FormFieldSetSeparator />
+            <FormFieldSetRow label={t("DeFi Product")} variant="small">
+              {t("SEEK Staking")}
+            </FormFieldSetRow>
+            <FormFieldSetRow label={t("Provider")} variant="small">
+              {t("Talisman")}
+            </FormFieldSetRow>
+            <FormFieldSetRow label={t("Expected Rewards")} variant="small">
+              <SeekExpectedRewards apr={apr} />
+            </FormFieldSetRow>
+            <FormFieldSetSeparator />
+            <FormFieldSetRow label={t("Network")} variant="small">
+              <NetworkDisplay networkId={networkId} />
+            </FormFieldSetRow>
+            <SeekConfirmNetworkFeeRows ethTx={ethTx} feeTokenId={feeTokenId} />
+          </FormFieldSet>
+          <TxSubmitButton
+            containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
+            tx={
+              ethTx.transaction
+                ? {
+                    platform: "ethereum",
+                    networkId,
+                    payload: ethTx.transaction,
+                  }
+                : null
+            }
+            label={`${t("Approve")} (${stepIndex + 1}/${steps.length})`}
+            className="w-full"
+            disabled={!!ethTx.error || !ethTx.transaction}
+            isProcessing={isProcessing || isPreparing}
+            onSubmit={onSubmit}
+          />
+        </div>
+      </WizardModalDialog>
+    </RiskAnalysisProvider>
+  )
+}
+
+const SeekConfirmNetworkFeeRows: FC<{
+  ethTx: ReturnType<typeof useEthTransaction>
+  feeTokenId?: TokenId
+}> = ({ ethTx, feeTokenId }) => {
+  const { t } = useTranslation()
+  const { transaction, txDetails } = ethTx
+
+  return (
+    <>
+      <FormFieldSetRow label={t("Transaction Priority")} variant="small">
+        {!!transaction && !!txDetails && !!feeTokenId ? (
+          <EthFeeSelect
+            key={transaction.nonce?.toString() ?? "pending"} // reset internal state when tx changes
+            tokenId={feeTokenId}
+            drawerContainerId={SEEK_STAKING_MODAL_CONTAINER_ID}
+            gasSettingsByPriority={ethTx.gasSettingsByPriority}
+            priority={ethTx.priority}
+            txDetails={txDetails}
+            networkUsage={ethTx.networkUsage}
+            tx={transaction}
+            setCustomSettings={ethTx.setCustomSettings}
+            onChange={ethTx.setPriority}
+            className="h-8 rounded-xs text-body"
+          />
+        ) : (
+          <FeePlaceholder isLoading={ethTx.isLoading} />
+        )}
+      </FormFieldSetRow>
+      <FormFieldSetRow
+        label={t("Network Fee")}
+        variant="small"
+        valueClassName="text-body-secondary"
+      >
+        {!!txDetails && !!feeTokenId ? (
+          <TokensAndFiat
+            planck={txDetails.estimatedFee.toString()}
+            tokenId={feeTokenId}
+            tokensClassName="text-body"
+          />
+        ) : (
+          <FeePlaceholder isLoading={ethTx.isLoading} />
+        )}
+      </FormFieldSetRow>
+    </>
   )
 }
 
