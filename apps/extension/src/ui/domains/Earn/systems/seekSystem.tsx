@@ -65,7 +65,7 @@ const useProviders = () => {
 
 const usePositions = () => {
   const config = useSeekStakingConfig()
-  const { data: seekPositions, isFetching } = useSeekStakingPositions()
+  const { data: seekPositions, isLoading } = useSeekStakingPositions()
   const { data: metadata } = useSeekStakingMetadata({ enabled: !!seekPositions?.length })
   const tokensMap = useTokensMap()
   const tokenRatesMap = useTokenRatesMap()
@@ -126,11 +126,14 @@ const usePositions = () => {
 
   return useMemo(
     () => ({
-      status: bestEffortStatus(isFetching, !!seekPositions?.length),
+      // gate on isLoading (first fetch, nothing to show yet), not isFetching: the 30s background
+      // polls would otherwise flip this to "loading" and blank the aggregated positions list on
+      // every poll for users with no active SEEK position
+      status: bestEffortStatus(isLoading, !!seekPositions?.length),
       positions,
       isDuplicateDefiPosition,
     }),
-    [isFetching, seekPositions, positions, isDuplicateDefiPosition]
+    [isLoading, seekPositions, positions, isDuplicateDefiPosition]
   )
 }
 

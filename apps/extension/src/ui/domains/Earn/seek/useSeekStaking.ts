@@ -13,7 +13,7 @@ import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolSta
 import { useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
-import { useCallback, useMemo } from "react"
+import { useMemo } from "react"
 import { erc20Abi, formatUnits } from "viem"
 import type { EarnOpportunity } from "../types"
 import {
@@ -341,6 +341,25 @@ const getSeekPositionQueryOptions = ({
   refetchInterval: 30_000,
 })
 
+// Module-level combine keeps a stable reference so react-query applies structural sharing,
+// keeping `data` referentially stable when the underlying positions are unchanged.
+// Exported for tests.
+export const combineSeekPositionQueryResults = (
+  results: UseQueryResult<SeekAccountPosition | null>[]
+) => ({
+  data: results
+    .map((result) => result.data)
+    .filter(
+      (position): position is SeekAccountPosition =>
+        !!position && isSeekAccountPositionActive(position)
+    ),
+  // true only while a first fetch is in flight with nothing to show yet (react-query isLoading =
+  // isPending && isFetching). A settled empty result (cached null = known no position) and the
+  // 30s background refetches keep this false, so consumers gating the aggregated positions list
+  // on it don't flicker to a loading state on every poll.
+  isLoading: results.some((result) => result.isLoading),
+})
+
 export const useSeekStakingPositions = () => {
   const config = useSeekStakingConfig()
   const publicClient = usePublicClient(config.networkId)
@@ -367,27 +386,7 @@ export const useSeekStakingPositions = () => {
     [accountAddresses, config.networkId, config.stakingContractAddress, publicClient]
   )
 
-  // stable combine ref lets react-query apply structural sharing, keeping `data` referentially
-  // stable when the underlying positions are unchanged
-  const combine = useCallback(
-    (results: UseQueryResult<SeekAccountPosition | null>[]) => ({
-      data: results
-        .map((result) => result.data)
-        .filter(
-          (position): position is SeekAccountPosition =>
-            !!position && isSeekAccountPositionActive(position)
-        ),
-      isFetching: results.some((result) => result.isFetching),
-      status: results.some((result) => result.status === "error")
-        ? ("error" as const)
-        : results.every((result) => result.status === "success")
-          ? ("success" as const)
-          : ("pending" as const),
-    }),
-    []
-  )
-
-  return useQueries({ queries, combine })
+  return useQueries({ queries, combine: combineSeekPositionQueryResults })
 }
 
 export const useSeekStakingPosition = (address: string | undefined) => {

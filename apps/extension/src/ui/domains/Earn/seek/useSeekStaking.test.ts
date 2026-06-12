@@ -1,7 +1,12 @@
 import type { Token } from "@talismn/chaindata-provider"
+import type { UseQueryResult } from "@tanstack/react-query"
 import { describe, expect, it } from "vitest"
 import type { SeekAccountPosition } from "./useSeekStaking"
-import { calcSeekApr, getSeekPositionValueUsd } from "./useSeekStaking"
+import {
+  calcSeekApr,
+  combineSeekPositionQueryResults,
+  getSeekPositionValueUsd,
+} from "./useSeekStaking"
 
 const seekToken = {
   id: "1:evm-erc20:0x07c3e739c65f81ea79d19a88d27de4c9f15f8df0",
@@ -131,5 +136,55 @@ describe("getSeekPositionValueUsd", () => {
     )
     // stake skipped, 10 * $3 = 30
     expect(value).toBeCloseTo(30, 6)
+  })
+})
+
+describe("combineSeekPositionQueryResults", () => {
+  const activePosition: SeekAccountPosition = {
+    address: "0xabc",
+    staked: 1n,
+    earned: 0n,
+    pendingWithdrawal: { amount: 0n, unlockTimestamp: 0n },
+  }
+  const inactivePosition: SeekAccountPosition = {
+    address: "0xdef",
+    staked: 0n,
+    earned: 0n,
+    pendingWithdrawal: { amount: 0n, unlockTimestamp: 0n },
+  }
+
+  const queryResult = (overrides: { data?: SeekAccountPosition | null; isLoading?: boolean }) =>
+    ({
+      data: undefined,
+      isLoading: false,
+      ...overrides,
+    }) as UseQueryResult<SeekAccountPosition | null>
+
+  it("keeps only active positions", () => {
+    const { data } = combineSeekPositionQueryResults([
+      queryResult({ data: activePosition }),
+      queryResult({ data: inactivePosition }),
+      queryResult({ data: null }),
+    ])
+    expect(data).toEqual([activePosition])
+  })
+
+  it("is loading while any first fetch has nothing to show yet", () => {
+    const { isLoading } = combineSeekPositionQueryResults([
+      queryResult({ data: activePosition }),
+      queryResult({ data: undefined, isLoading: true }),
+    ])
+    expect(isLoading).toBe(true)
+  })
+
+  it("is not loading during background refetches of settled results", () => {
+    // a settled empty result (cached null = known no position) being refetched reports
+    // isFetching=true but isLoading=false — the combine must not surface it as loading, or the
+    // aggregated positions list would blank to a skeleton on every 30s poll
+    const { isLoading } = combineSeekPositionQueryResults([
+      queryResult({ data: null, isLoading: false }),
+      queryResult({ data: activePosition, isLoading: false }),
+    ])
+    expect(isLoading).toBe(false)
   })
 })
