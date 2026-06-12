@@ -22,7 +22,7 @@ import type {
 import { bigIntMax } from "@ethereumjs/util"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isBigInt, isNotNil } from "@talismn/util"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -54,6 +54,12 @@ const useNonce = (
 
   return { nonce: forcedValue ?? data ?? undefined, ...rest }
 }
+
+// the nonce is fetched once per address & network and cached for as long as the consuming
+// component stays mounted. Flows that submit several transactions from the same screen must
+// invalidate it after each confirmation, or the next transaction is prepared with a spent nonce.
+export const invalidateNonceQueries = (queryClient: QueryClient) =>
+  queryClient.invalidateQueries({ queryKey: ["useNonce"] })
 
 // TODO : could be skipped for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
 const useHasEip1559Support = (publicClient: PublicClient | undefined) => {

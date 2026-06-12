@@ -31,7 +31,7 @@ import {
   type TransactionsStepperStep,
 } from "@ui/domains/Earn/shared/TransactionsStepper"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
-import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { invalidateNonceQueries, useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -390,7 +390,12 @@ const SeekStakingForm: FC<{
         refProcessedHash.current = pending.hash
         notify({ type: "success", title: t("Success"), subtitle: t("Transaction confirmed") })
         if (pending.isApproval) {
-          void refreshSeekStakingQueries(false).finally(() => setPending(null))
+          // the nonce is cached for as long as the form is mounted: refresh it along with the
+          // allowance or the stake transaction is prepared with the nonce the approval just spent
+          void Promise.all([
+            refreshSeekStakingQueries(false),
+            invalidateNonceQueries(queryClient),
+          ]).finally(() => setPending(null))
         } else {
           void refreshSeekStakingQueries(true)
           close()
@@ -404,12 +409,15 @@ const SeekStakingForm: FC<{
       case "replaced":
         // sped up or cancelled from the transactions list: refresh and let the user resume
         refProcessedHash.current = pending.hash
-        void refreshSeekStakingQueries(false).finally(() => setPending(null))
+        void Promise.all([
+          refreshSeekStakingQueries(false),
+          invalidateNonceQueries(queryClient),
+        ]).finally(() => setPending(null))
         break
       default:
         break
     }
-  }, [close, pending, pendingTx, refreshSeekStakingQueries, t])
+  }, [close, pending, pendingTx, queryClient, refreshSeekStakingQueries, t])
 
   // refresh the cached position once a transaction submitted via the progress screen confirms
   const submittedTx = useTransaction(submittedHash ?? "")
