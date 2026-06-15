@@ -10,31 +10,24 @@ overrides:
   '@polkadot/api-base': 16.1.2
   '@polkadot/api-contract': 16.1.2
   '@polkadot/api-derive': 16.1.2
-  '@polkadot/extension': 0.59.2
   '@polkadot/extension-base': 0.59.2
   '@polkadot/extension-chains': 0.59.2
-  '@polkadot/extension-compat-metamask': 0.59.2
   '@polkadot/extension-dapp': 0.59.2
   '@polkadot/extension-inject': 0.59.2
-  '@polkadot/extension-mocks': 0.59.2
-  '@polkadot/extension-ui': 0.59.2
   '@polkadot/keyring': 13.5.3
   '@polkadot/networks': 13.5.3
   '@polkadot/react-qr': 3.14.1
   '@polkadot/rpc-augment': 16.1.2
   '@polkadot/rpc-core': 16.1.2
   '@polkadot/rpc-provider': 16.1.2
-  '@polkadot/typegen': 16.1.2
   '@polkadot/types': 16.1.2
   '@polkadot/types-augment': 16.1.2
   '@polkadot/types-codec': 16.1.2
   '@polkadot/types-create': 16.1.2
   '@polkadot/types-known': 16.1.2
   '@polkadot/types-support': 16.1.2
-  '@polkadot/ui-assets': 3.14.1
   '@polkadot/ui-keyring': 3.14.1
   '@polkadot/ui-settings': 3.14.1
-  '@polkadot/ui-shared': 3.14.1
   '@polkadot/util': 13.5.3
   '@polkadot/util-crypto': 13.5.3
   '@polkadot/wasm-bridge': 7.4.1
@@ -44,7 +37,6 @@ overrides:
   '@polkadot/wasm-crypto-wasm': 7.4.1
   '@polkadot/wasm-util': 7.4.1
   '@polkadot/x-bigint': 13.5.3
-  '@polkadot/x-bundle': 13.5.3
   '@polkadot/x-fetch': 13.5.3
   '@polkadot/x-global': 13.5.3
   '@polkadot/x-randomvalues': 13.5.3
@@ -52,13 +44,6 @@ overrides:
   '@polkadot/x-textencoder': 13.5.3
   '@polkadot/x-ws': 13.5.3
   '@substrate/txwrapper-core': 7.5.3
-  '@substrate/txwrapper-dev': 7.5.3
-  '@substrate/txwrapper-examples': 7.5.3
-  '@substrate/txwrapper-orml': 7.5.3
-  '@substrate/txwrapper-polkadot': 7.5.3
-  '@substrate/txwrapper-registry': 7.5.3
-  '@substrate/txwrapper-substrate': 7.5.3
-  '@substrate/txwrapper-template': 7.5.3
   braces@<3.0.3: '>=3.0.3'
   cookie@<0.7.0: '>=0.7.0'
   decode-uri-component: 0.2.2
@@ -76,7 +61,7 @@ overrides:
   undici@<=5.28.2: '>=5.28.3'
   ws@>=7.0.0 <7.5.10: '>=7.5.10'
   ws@>=8.0.0 <8.17.1: '>=8.17.1'
-  axios@>=1.0.0 <1.8.2: '>=1.8.2'
+  axios@<1.16.0: '>=1.16.0'
   '@babel/runtime@<7.26.10': '>=7.26.10'
   '@babel/helpers@<7.26.10': '>=7.26.10'
   image-size@>=1.1.0 <1.2.1: '>=1.2.1'
@@ -100,15 +85,13 @@ overrides:
   cipher-base@<=1.0.4: '>=1.0.5'
   '@metamask/sdk-communication-layer@>=0.16.0 <=0.33.0': '>=0.33.1'
   '@metamask/sdk@>=0.16.0 <=0.33.0': '>=0.33.1'
-  axios@>=1.0.0 <1.12.0: '>=1.12.0'
   vite@>=5.2.6 <=5.4.20: '>=5.4.21'
   playwright@<1.55.1: '>=1.55.1'
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
   glob@>=11.0.0 <11.1.0: '>=11.1.0'
   js-yaml@>=4.0.0 <4.1.1: '>=4.1.1'
   valibot@>=0.31.0 <1.2.0: '>=1.2.0'
-  devalue@<5.6.4: '>=5.6.4'
-  axios@>=1.0.0 <=1.13.4: '>=1.13.5'
+  devalue@<5.8.1: '>=5.8.1'
   bn.js@<4.12.3: '>=4.12.3'
   bn.js@>=5.0.0 <5.2.3: '>=5.2.3'
 
@@ -5012,8 +4995,8 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  axios@1.13.6:
-    resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
+  axios@1.17.0:
+    resolution: {integrity: sha512-J8SwNxprqqpbfenehxWYXE7CW+wM1BB4w3+N+g+/Wx40xM4rsLrfPmHHxSWIxJLYDgSY/HqlFPIYb2/S3rxafw==}
 
   b4a@1.7.1:
     resolution: {integrity: sha512-ZovbrBV0g6JxK5cGUF1Suby1vLfKjv4RWi8IxoaO/Mon8BDD9I21RxjHFtgQ+kskJqLAVyQZly3uMBui+vhc8Q==}
@@ -5803,8 +5786,8 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  devalue@5.6.4:
-    resolution: {integrity: sha512-Gp6rDldRsFh/7XuouDbxMH3Mx8GMCcgzIb1pDTvNyn8pZGQ22u+Wa+lGV9dQCltFQ7uVw0MhRyb8XDskNFOReA==}
+  devalue@5.8.1:
+    resolution: {integrity: sha512-4CXDYRBGqN+57wVJkuXBYmpAVUSg3L6JAQa/DFqm238G73E1wuyc/JhGQJzN7vUf/CMphYau2zXbfWzDR5aTEw==}
 
   dexie-react-hooks@1.1.7:
     resolution: {integrity: sha512-Lwv5W0Hk+uOW3kGnsU9GZoR1er1B7WQ5DSdonoNG+focTNeJbHW6vi6nBoX534VKI3/uwHebYzSw1fwY6a7mTw==}
@@ -6322,8 +6305,8 @@ packages:
   flatted@3.3.3:
     resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
 
-  follow-redirects@1.15.11:
-    resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
+  follow-redirects@1.16.0:
+    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -8206,6 +8189,10 @@ packages:
 
   proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+
+  proxy-from-env@2.1.0:
+    resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
+    engines: {node: '>=10'}
 
   psl@1.15.0:
     resolution: {integrity: sha512-JZd3gMVBAVQkSs6HdNZo9Sdo0LNcQeMNP3CozBJb3JYC/QUYZTnKxP+f8oWRX4rHP5EurWxqAHTSwUCjlNKa1w==}
@@ -11336,9 +11323,10 @@ snapshots:
   '@ledgerhq/cryptoassets-evm-signatures@13.5.6':
     dependencies:
       '@ledgerhq/live-env': 2.8.0
-      axios: 1.13.6
+      axios: 1.17.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@ledgerhq/devices@8.4.8':
     dependencies:
@@ -11352,12 +11340,13 @@ snapshots:
       '@ledgerhq/errors': 6.23.0
       '@ledgerhq/logs': 6.13.0
       '@ledgerhq/types-live': 6.70.0
-      axios: 1.13.6
+      axios: 1.17.0
       eip55: 2.1.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@ledgerhq/errors@6.23.0': {}
 
@@ -11367,10 +11356,11 @@ snapshots:
       '@ethersproject/hash': 5.7.0
       '@ledgerhq/cryptoassets-evm-signatures': 13.5.6
       '@ledgerhq/live-env': 2.8.0
-      axios: 1.13.6
+      axios: 1.17.0
       crypto-js: 4.2.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@ledgerhq/hw-app-eth@6.45.4':
     dependencies:
@@ -11385,12 +11375,13 @@ snapshots:
       '@ledgerhq/hw-transport-mocker': 6.29.4
       '@ledgerhq/logs': 6.13.0
       '@ledgerhq/types-live': 6.70.0
-      axios: 1.13.6
+      axios: 1.17.0
       bignumber.js: 9.1.2
       jest-sonar: 0.2.16
       semver: 7.6.3
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@ledgerhq/hw-app-solana@7.5.1':
     dependencies:
@@ -14619,7 +14610,7 @@ snapshots:
       '@tanstack/form-core': 1.12.3
       '@tanstack/react-store': 0.7.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       decode-formdata: 0.9.0
-      devalue: 5.6.4
+      devalue: 5.8.1
       react: 18.3.1
     transitivePeerDependencies:
       - react-dom
@@ -15502,9 +15493,10 @@ snapshots:
     dependencies:
       '@ledgerhq/hw-transport': 6.31.4
       '@zondax/ledger-js': 1.2.0
-      axios: 1.13.6
+      axios: 1.17.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@zxing/browser@0.1.5(@zxing/library@0.21.3)':
     dependencies:
@@ -15706,13 +15698,15 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.0.0
 
-  axios@1.13.6:
+  axios@1.17.0:
     dependencies:
-      follow-redirects: 1.15.11
+      follow-redirects: 1.16.0
       form-data: 4.0.5
-      proxy-from-env: 1.1.0
+      https-proxy-agent: 5.0.1
+      proxy-from-env: 2.1.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   b4a@1.7.1: {}
 
@@ -16592,7 +16586,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  devalue@5.6.4: {}
+  devalue@5.8.1: {}
 
   dexie-react-hooks@1.1.7(@types/react@18.3.12)(dexie@4.0.9)(react@18.3.1):
     dependencies:
@@ -17302,7 +17296,7 @@ snapshots:
 
   flatted@3.3.3: {}
 
-  follow-redirects@1.15.11: {}
+  follow-redirects@1.16.0: {}
 
   for-each@0.3.5:
     dependencies:
@@ -19412,6 +19406,8 @@ snapshots:
     optional: true
 
   proxy-from-env@1.1.0: {}
+
+  proxy-from-env@2.1.0: {}
 
   psl@1.15.0:
     dependencies:
