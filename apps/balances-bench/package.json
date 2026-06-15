@@ -24,7 +24,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.10.0",
   "dependencies": {
     "@polkadot/rpc-provider": "16.1.2",
     "@polkadot/util": "13.5.3",
