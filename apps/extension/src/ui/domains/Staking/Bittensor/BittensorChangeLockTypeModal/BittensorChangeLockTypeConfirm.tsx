@@ -53,8 +53,7 @@ export const BittensorChangeLockTypeConfirm = () => {
             { symbol }
           )
         : t(
-            "Switching to a decaying lock resumes the unlock: the locked amount decays gradually (about 50% every 90 days) and the conviction it carries will decline as it unwinds.",
-            { symbol }
+            "Switching to a decaying lock starts the unlock process: the locked amount decays gradually (about 50% every 90 days) and the conviction it carries declines as it unwinds."
           ),
     [symbol, t, targetIsPerpetual]
   )
