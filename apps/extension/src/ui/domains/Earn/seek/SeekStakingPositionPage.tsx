@@ -82,7 +82,7 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
       />
       <SeekBalanceGroup label={t("Supplied")}>
         <SeekBalanceRow
-          label={t("Staked")}
+          status={t("Staked")}
           token={token}
           tokenUsd={tokenUsd}
           planck={position.data?.staked ?? 0n}
@@ -90,18 +90,17 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
         />
         {!!position.data?.pendingWithdrawal.amount && (
           <SeekBalanceRow
-            label={t("Pending unstake")}
+            status={unlockLabel(Number(position.data.pendingWithdrawal.unlockTimestamp), t)}
             token={token}
             tokenUsd={tokenUsd}
             planck={position.data.pendingWithdrawal.amount}
-            subtitle={unlockLabel(Number(position.data.pendingWithdrawal.unlockTimestamp), t)}
             isLoading={position.isFetching}
           />
         )}
       </SeekBalanceGroup>
       <SeekBalanceGroup label={t("Rewards")}>
         <SeekBalanceRow
-          label={t("Claimable")}
+          status={t("Claimable")}
           token={rewardToken ?? token}
           tokenUsd={rewardTokenUsd}
           planck={position.data?.earned ?? 0n}
@@ -168,7 +167,9 @@ const SeekPositionHeader: FC<{
       <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="flex items-center gap-2 overflow-hidden">
           <div className="truncate font-bold text-base text-body">
-            {token.name || <TokenDisplaySymbol tokenId={token.id} />}
+            {token.symbol}{" "}
+            <span className="mx-2 inline-block size-2 shrink-0 rounded-full bg-body-disabled align-middle"></span>{" "}
+            {token.name}
           </div>
           {apr !== null && (
             <div className="shrink-0 text-primary text-sm">
@@ -220,13 +221,12 @@ const SeekBalanceGroup: FC<{ label: string; children: ReactNode }> = ({ label, c
 )
 
 const SeekBalanceRow: FC<{
-  label: string
+  status: string
   token: Token
   tokenUsd: number | undefined
   planck: bigint
-  subtitle?: string
   isLoading: boolean
-}> = ({ label, token, tokenUsd, planck, subtitle, isLoading }) => {
+}> = ({ status, token, tokenUsd, planck, isLoading }) => {
   const amount = useMemo(() => formatUnits(planck, token.decimals), [planck, token.decimals])
   const fiat = useMemo(
     () => (tokenUsd !== undefined ? Number(amount) * tokenUsd : null),
@@ -238,13 +238,15 @@ const SeekBalanceRow: FC<{
       <TokenLogo tokenId={token.id} className="size-16 shrink-0" />
       <div className="flex grow flex-col justify-center gap-1 overflow-hidden text-sm">
         <div className="flex w-full justify-between overflow-hidden font-bold text-body">
-          <div>{label}</div>
+          <div>
+            <TokenDisplaySymbol tokenId={token.id} />
+          </div>
           <div className={cn(isLoading && "animate-pulse")}>
             <Tokens amount={amount} noCountUp symbol={token.symbol} />
           </div>
         </div>
         <div className="flex w-full justify-between overflow-hidden text-body-secondary text-sm">
-          <div>{subtitle}</div>
+          <div>{status}</div>
           <div className={cn(isLoading && "animate-pulse")}>
             {fiat !== null ? <FiatFromUsd amount={fiat} noCountUp /> : "-"}
           </div>
