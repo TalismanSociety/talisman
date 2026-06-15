@@ -5,6 +5,7 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import { PopupLayout } from "../../Layout/PopupLayout"
 import { PopupEarnDefiPositionPage } from "./PopupEarnDefiPositionPage"
 import { PopupEarnDiscoverRoute, PopupEarnPage, PopupEarnPositionsRoute } from "./PopupEarnPage"
+import { PopupSeekStakingPositionPage } from "./PopupSeekStakingPositionPage"
 import { PopupYieldxyzYieldPositionsPage } from "./PopupYieldxyzYieldPositionsPage"
 
 export const PopupEarnRoutes: FC = () => {
@@ -21,6 +22,7 @@ export const PopupEarnRoutes: FC = () => {
             path="positions/yieldxyz/:yieldId/:address"
             element={<PopupYieldxyzYieldPositionsPage />}
           />
+          <Route path="positions/seek/:address" element={<PopupSeekStakingPositionPage />} />
           <Route path="positions/defi/:positionId" element={<PopupEarnDefiPositionPage />} />
         </Routes>
       </PopupLayout>

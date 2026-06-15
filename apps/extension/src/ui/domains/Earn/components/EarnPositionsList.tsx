@@ -25,7 +25,23 @@ import { useTranslation } from "react-i18next"
 import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPositions"
 import { useEarnPositions } from "../hooks/useEarnPositions"
 import { AccountDisplay } from "../shared/AccountDisplay"
+import { formatAprPercent } from "../shared/formatAprPercent"
+import { EARN_GRID_COLS } from "./EarnAvailableProducts"
 import { EarnTypeBadge } from "./EarnTypeBadge"
+
+const EarnPositionYield: FC<{
+  apr: number | null
+  rateType: string | null
+}> = ({ apr, rateType }) => {
+  if (apr === null) return null
+
+  return (
+    <>
+      <span className="flex h-9 items-center text-primary">{formatAprPercent(apr)}</span>
+      {rateType && <span className="text-body-secondary text-xs">{rateType}</span>}
+    </>
+  )
+}
 
 const EarnPositionRow: FC<{
   position: EarnPosition
@@ -38,15 +54,16 @@ const EarnPositionRow: FC<{
     <button
       type="button"
       className={cn(
-        "flex h-28 w-full items-center gap-6 px-8 text-sm hover:bg-grey-750",
-        IS_POPUP && "gap-4 px-6 text-xs"
+        "grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
+        EARN_GRID_COLS,
+        IS_POPUP ? "px-6 text-xs" : "px-8"
       )}
       onClick={() => navigate(position.detailUrl)}
     >
-      <AssetLogo url={position.logoUrl} className="size-16" />
-      <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
-        <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
-          <div className="flex h-9 w-full items-center gap-2 truncate text-body">
+      <div className={cn("flex items-center overflow-hidden", IS_POPUP ? "gap-4" : "gap-6")}>
+        <AssetLogo url={position.logoUrl} className="size-16 shrink-0" />
+        <div className="flex min-w-0 grow flex-col justify-center gap-1 overflow-hidden text-left">
+          <div className="flex h-9 items-center gap-2 truncate text-body">
             <span className="truncate">{position.title}</span>
             {position.networkId && (
               <Tooltip>
@@ -71,21 +88,26 @@ const EarnPositionRow: FC<{
               </EarnTypeBadge>
             )}
           </div>
-          <div className="shrink-0">
-            <DisplayTokensList displayTokens={position.displayTokens} />
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-body-secondary">
-          <div className="flex items-center gap-3 truncate">
+          <div className="flex items-center gap-3 truncate text-body-secondary">
             <AccountDisplay
               address={position.address}
               className="gap-[0.4em]"
               iconClassName="text-[1.2em]"
             />
           </div>
-          <div className={cn("shrink-0", status === "loading" && "animate-pulse")}>
-            <FiatFromUsd amount={position.totalAmountUsd} noCountUp isBalance />
-          </div>
+        </div>
+      </div>
+      {!IS_POPUP && (
+        <div className="flex flex-col items-end justify-center gap-1 text-right">
+          <EarnPositionYield apr={position.apr} rateType={position.rateType} />
+        </div>
+      )}
+      <div className="flex flex-col items-end justify-center gap-1 text-right">
+        <div className="flex h-9 items-center">
+          <DisplayTokensList displayTokens={position.displayTokens} />
+        </div>
+        <div className={cn("text-body-secondary", status === "loading" && "animate-pulse")}>
+          <FiatFromUsd amount={position.totalAmountUsd} noCountUp isBalance />
         </div>
       </div>
     </button>

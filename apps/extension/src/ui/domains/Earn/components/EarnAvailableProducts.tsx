@@ -1,4 +1,3 @@
-import type { YieldDto } from "@core/domains/earn/exports"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
@@ -11,18 +10,18 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state/chaindata"
 import type { NetworkOption } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
-import {
-  type TokenOpportunity,
-  useYieldxyzOpportunitiesByTokenId,
-} from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 
-const EARN_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30%]"
+import { useEarnDepositModal } from "../hooks/useEarnDepositModal"
+import { useEarnOpportunitiesByTokenId } from "../hooks/useEarnOpportunitiesByTokenId"
+import { useEarnProviders } from "../hooks/useEarnProviders"
+import type { EarnOpportunity, TokenOpportunity } from "../types"
+
+// shared with EarnPositionsList so both tables' columns line up (popup hides the middle column)
+export const EARN_GRID_COLS = IS_POPUP ? "grid-cols-[70%_30%]" : "grid-cols-[40%_30%_30%]"
 
 export const EarnAvailableProducts: FC<{
   search: string
@@ -31,12 +30,12 @@ export const EarnAvailableProducts: FC<{
   providerFilter?: string | null
   networkFilter?: NetworkOption | null
 }> = ({ search, sortBy = "yield", typeFilter, providerFilter, networkFilter }) => {
-  useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)
+  useEarnProviders() // preload providers (so their names and logos are available when expanding token rows)
   const { t } = useTranslation()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
 
-  const { status, heldProducts, discoverProducts } = useYieldxyzOpportunitiesByTokenId()
+  const { status, heldProducts, discoverProducts } = useEarnOpportunitiesByTokenId()
 
   const applyFilters = useMemo(() => {
     const hasTypeFilter = !!typeFilter
@@ -68,8 +67,8 @@ export const EarnAvailableProducts: FC<{
 
           // Filter individual products by type/provider
           if (hasTypeFilter || hasProviderFilter) {
-            const filtered = opp.products.filter((p) => {
-              if (hasTypeFilter && p.mechanics.type !== typeFilter) return false
+            const filtered = opp.opportunities.filter((p) => {
+              if (hasTypeFilter && p.type !== typeFilter) return false
               if (hasProviderFilter && p.providerId !== providerFilter) return false
               return true
             })
@@ -77,8 +76,8 @@ export const EarnAvailableProducts: FC<{
 
             return {
               ...opp,
-              products: filtered,
-              bestApr: Math.max(...filtered.map((p) => p.rewardRate.total * 100)),
+              opportunities: filtered,
+              bestApr: Math.max(...filtered.map((p) => p.apr ?? 0)),
             }
           }
 
@@ -136,10 +135,10 @@ export const EarnAvailableProducts: FC<{
           <div className="text-right">{t("APY up to")}</div>
         </div>
       )}
-      {displayHeld?.map(({ tokenId, products, bestApr, balances }) => (
+      {displayHeld?.map(({ tokenId, opportunities, bestApr, balances }) => (
         <TokenProducts
           key={tokenId}
-          products={products}
+          opportunities={opportunities}
           tokenId={tokenId}
           bestApr={bestApr}
           balances={balances}
@@ -152,11 +151,11 @@ export const EarnAvailableProducts: FC<{
             {t("Discover Opportunities")}
           </h2>
           <div className={cn("grid gap-4", IS_POPUP ? "grid-cols-2" : "grid-cols-4")}>
-            {displayDiscover.map(({ tokenId, products, bestApr }) => (
+            {displayDiscover.map(({ tokenId, opportunities, bestApr }) => (
               <DiscoverTokenCard
                 key={tokenId}
                 tokenId={tokenId}
-                products={products}
+                opportunities={opportunities}
                 bestApr={bestApr}
                 isLoading={status === "loading"}
               />
@@ -176,14 +175,14 @@ export const EarnAvailableProducts: FC<{
 
 const TokenProducts: FC<{
   tokenId: TokenId
-  products: YieldDto[]
+  opportunities: EarnOpportunity[]
   bestApr: number
   balances: Balances
   isLoading?: boolean
-}> = ({ tokenId, bestApr, balances, isLoading }) => {
+}> = ({ tokenId, opportunities, bestApr, balances, isLoading }) => {
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
-  const { open } = useYieldxyzEnterModal()
+  const { open } = useEarnDepositModal()
   const currency = useSelectedCurrency()
   const fiatTransferable = useMemo(
     () => balances.sum.fiat(currency).transferable,
@@ -196,7 +195,7 @@ const TokenProducts: FC<{
     <div className="w-full overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={() => open({ pickerTokenId: tokenId })}
+        onClick={() => open({ tokenId, opportunities })}
         className={cn(
           "grid h-28 w-full items-center overflow-hidden hover:bg-grey-750",
           EARN_GRID_COLS,
@@ -243,14 +242,14 @@ const TokenProducts: FC<{
 
 const DiscoverTokenCard: FC<{
   tokenId: TokenId
-  products: YieldDto[]
+  opportunities: EarnOpportunity[]
   bestApr: number
   isLoading?: boolean
-}> = ({ tokenId, bestApr, isLoading }) => {
+}> = ({ tokenId, opportunities, bestApr, isLoading }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
-  const { open } = useYieldxyzEnterModal()
+  const { open } = useEarnDepositModal()
 
   if (!token || !network) return null
 
@@ -258,7 +257,7 @@ const DiscoverTokenCard: FC<{
     <div className="self-start overflow-hidden rounded bg-grey-900">
       <button
         type="button"
-        onClick={() => open({ pickerTokenId: tokenId, discoverOnly: true })}
+        onClick={() => open({ tokenId, opportunities, discoverOnly: true })}
         className="flex w-full flex-col gap-2 p-6 text-left text-sm hover:bg-grey-750"
       >
         <div className="flex w-full items-center gap-4">

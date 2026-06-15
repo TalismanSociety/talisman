@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
-
-import { abiSeekStaking } from "./abiSeekStaking"
 
 export const useSeekStakingApr = () => {
   const remoteConfig = useRemoteConfig()
@@ -16,12 +15,12 @@ export const useSeekStakingApr = () => {
 
       const [totalStaked, rewardsPerSecond] = await Promise.all([
         publicClient.readContract({
-          abi: abiSeekStaking,
+          abi: seekSinglePoolStakingAbi,
           address: remoteConfig.seek.stakingContractAddress as `0x${string}`,
           functionName: "totalStaked",
         }),
         publicClient.readContract({
-          abi: abiSeekStaking,
+          abi: seekSinglePoolStakingAbi,
           address: remoteConfig.seek.stakingContractAddress as `0x${string}`,
           functionName: "rewardRate",
         }),

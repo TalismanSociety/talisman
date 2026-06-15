@@ -13,6 +13,8 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AddProxyModal } from "@ui/domains/AccountProxies/AddProxy/AddProxyModal"
 import { ManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/ManageProxyModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { EarnDepositModal } from "@ui/domains/Earn/components/EarnDepositModal"
+import { EarnSystemActionModals } from "@ui/domains/Earn/systems/EarnSystemActionModals"
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
 import { YieldxyzManagePositionModal } from "@ui/domains/Earn/yieldxyz/manage/YieldxyzManagePositionModal"
@@ -111,6 +113,8 @@ const Popup = () => {
         <SwapModal />
         <UnbondModal />
         <SeekBenefitsModal />
+        <EarnDepositModal />
+        <EarnSystemActionModals />
         <YieldxyzEnterPositionModal />
         <YieldxyzExitPositionModal />
         <YieldxyzManagePositionModal />

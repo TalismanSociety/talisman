@@ -1,99 +1,27 @@
 import { DEBUG } from "@common/constants"
 import type { DefiPosition } from "@core/domains/defi/exports"
-import type { TokenDto, YieldxyzProvider } from "@core/domains/earn/exports"
-import type { Network, NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import type { TokenRatesList } from "@talismn/token-rates"
 import { isNotNil, type Loadable } from "@talismn/util"
 import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { useDefiPositions } from "@ui/state/defi"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
-import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
-import { useYieldxyzPositionsEnhanced, useYieldxyzProviders } from "@ui/state/yieldxyz"
-import { keyBy } from "lodash-es"
 import { useEffect, useMemo, useRef } from "react"
 
 import { calcDefiItemValueUsd, resolveDefiTokenId } from "../defi/useDefiItemValueUsd"
-import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
+import { useEarnSystemPositions } from "../systems/registry"
+import { toEarnLoadable } from "../systems/status"
+import type { EarnPosition, EarnPositionDisplayToken } from "../types"
 
-export type EarnPositionDisplayToken = {
-  tokenId: TokenId | null
-  symbol: string
-  logoUrl: string | null
-}
-
-export type EarnPosition = {
-  id: string
-  address: string
-  networkId: string | null
-  logoUrl: string | null
-  providerName: string
-  title: string
-  type: string | null
-  isReadOnly: boolean
-  displayTokens: EarnPositionDisplayToken[]
-  totalAmountUsd: number
-  detailUrl: string
-  tokenIds: TokenId[]
-  searchTerms: string[]
-}
+export type { EarnPosition, EarnPositionDisplayToken } from "../types"
 
 const PRIMARY_DEFI_ITEM_TYPES = new Set(["deposit", "loan", "locked", "staked", "margin"])
 
-const mapYieldPosition = (
-  yp: YieldxyzPositionEnhanced,
-  getYieldxyzTokenId: (token: TokenDto) => string | null,
-  tokensMap: Record<string, unknown>,
-  provider: YieldxyzProvider | undefined
-): EarnPosition | null => {
-  const tokenIds = yp.product.inputTokens
-    .map((token) => getYieldxyzTokenId(token))
-    .filter(isNotNil)
-    .filter((id) => !!tokensMap[id])
+// stable empty reference returned while loading, so withholding partial data doesn't churn consumers
+const EMPTY_POSITIONS: EarnPosition[] = []
 
-  if (!tokenIds.length) return null
-
-  // Collect all tokens for display (input + output + balance tokens), deduplicated
-  const allTokens = [
-    ...yp.product.inputTokens,
-    ...(yp.product.outputToken ? [yp.product.outputToken] : []),
-    ...yp.balances.map((b) => b.token),
-  ]
-
-  const displayTokens: EarnPositionDisplayToken[] = []
-  const seen = new Set<string>()
-  for (const token of allTokens) {
-    const tokenId = getYieldxyzTokenId(token)
-    const key = tokenId ?? token.symbol
-    if (seen.has(key)) continue
-    if (tokenId && !tokensMap[tokenId]) continue
-    seen.add(key)
-    displayTokens.push({ tokenId, symbol: token.symbol, logoUrl: token.logoURI ?? null })
-  }
-  displayTokens.sort((a, b) => (a.tokenId ?? a.symbol).localeCompare(b.tokenId ?? b.symbol))
-
-  return {
-    id: `yieldxyz-${yp.yieldId}-${yp.address}`,
-    address: yp.address,
-    networkId: yp.networkId,
-    logoUrl: provider?.logoURI ?? null,
-    providerName: provider?.name ?? yp.product.providerId,
-    title: yp.product.metadata.name,
-    type: yp.product.mechanics?.type ?? null,
-    isReadOnly: false,
-    displayTokens,
-    totalAmountUsd: yp.totalAmountUsd,
-    detailUrl: `/earn/positions/yieldxyz/${encodeURIComponent(yp.yieldId)}/${encodeURIComponent(yp.address)}`,
-    tokenIds,
-    searchTerms: [
-      yp.product.metadata.name,
-      yp.product.providerId,
-      provider?.name ?? "",
-      ...(yp.product.tags ?? []),
-      ...yp.balances.map((b) => b.token.symbol),
-      ...yp.balances.map((b) => b.token.name),
-    ],
-  }
-}
+const getPositionAddressNetworkKey = (position: Pick<EarnPosition, "address" | "networkId">) =>
+  `${position.address.toLowerCase()}|${position.networkId}`
 
 const mapDefiPosition = (
   dp: DefiPosition,
@@ -145,6 +73,8 @@ const mapDefiPosition = (
     isReadOnly: true,
     displayTokens,
     totalAmountUsd,
+    apr: null,
+    rateType: null,
     detailUrl: `/earn/positions/defi/${encodeURIComponent(dp.id)}`,
     tokenIds,
     searchTerms: [
@@ -158,73 +88,56 @@ const mapDefiPosition = (
 }
 
 export const useEarnPositions = (): Loadable<EarnPosition[]> => {
-  const { status: yieldStatus, data: yieldPositions } = useYieldxyzPositionsEnhanced()
+  const systemResults = useEarnSystemPositions()
   const { status: defiStatus, data: defiPositions } = useDefiPositions()
-  const { data: providers } = useYieldxyzProviders()
-  const { getYieldxyzTokenId } = useGetYieldxyzToken()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
   const tokenRatesMap = useTokenRatesMap()
 
-  const providerByKey = useMemo(() => keyBy(providers ?? [], (p) => p.id), [providers])
-
   const { positions, excludedDefi } = useMemo(() => {
     const result: EarnPosition[] = []
 
-    // Build yieldxyz positions first (these are actionable, preferred source)
-    const yieldMapped: EarnPosition[] = []
-    for (const yp of yieldPositions ?? []) {
-      const mapped = mapYieldPosition(
-        yp,
-        getYieldxyzTokenId,
-        tokensMap,
-        providerByKey[yp.product.providerId]
-      )
-      if (mapped) yieldMapped.push(mapped)
-    }
+    // actionable positions from every system (registry order); these are the preferred source
+    const actionablePositions = systemResults.flatMap((systemResult) => systemResult.positions)
+    result.push(...actionablePositions)
 
     // Build defi positions
-    const defiMapped: EarnPosition[] = []
+    const defiMapped: { position: EarnPosition; source: DefiPosition }[] = []
     for (const dp of defiPositions ?? []) {
       const mapped = mapDefiPosition(dp, networksMap, tokensMap, tokenRatesMap)
-      if (mapped) defiMapped.push(mapped)
+      if (mapped) defiMapped.push({ position: mapped, source: dp })
     }
 
-    // Exclude defi positions that duplicate a yieldxyz position.
-    // A defi position is considered a duplicate when it shares the same wallet address,
-    // network, and at least one overlapping input token with a yieldxyz position.
-    // yieldxyz positions are preferred because they are actionable (not read-only).
-    const yieldTokensByAddressNetwork = new Map<string, Set<string>>()
-    for (const yp of yieldMapped) {
-      const key = `${yp.address.toLowerCase()}|${yp.networkId}`
-      const existing = yieldTokensByAddressNetwork.get(key)
-      if (existing) {
-        for (const tid of yp.tokenIds) existing.add(tid)
-      } else {
-        yieldTokensByAddressNetwork.set(key, new Set(yp.tokenIds))
+    // Exclude defi positions that duplicate an actionable system position. Each system contributes
+    // an address|network -> tokenIds map (matched on token overlap) plus an optional narrowing gate
+    // (e.g. SEEK only treats a defi position as a duplicate when its labels/pool match SEEK), so
+    // unrelated defi exposure on the same token is not hidden.
+    const systemDedup = systemResults.map((systemResult) => {
+      const tokensByKey = new Map<string, Set<string>>()
+      for (const position of systemResult.positions) {
+        const key = getPositionAddressNetworkKey(position)
+        const existing = tokensByKey.get(key)
+        if (existing) for (const tokenId of position.tokenIds) existing.add(tokenId)
+        else tokensByKey.set(key, new Set(position.tokenIds))
       }
-    }
+      return { tokensByKey, isDuplicateDefiPosition: systemResult.isDuplicateDefiPosition }
+    })
 
     const excluded: EarnPosition[] = []
-    result.push(...yieldMapped)
-    for (const dp of defiMapped) {
-      const key = `${dp.address.toLowerCase()}|${dp.networkId}`
-      const yieldTokenIds = yieldTokensByAddressNetwork.get(key)
-      const isDuplicate = yieldTokenIds != null && dp.tokenIds.some((tid) => yieldTokenIds.has(tid))
+    for (const { position: dp, source } of defiMapped) {
+      const key = getPositionAddressNetworkKey(dp)
+      const isDuplicate = systemDedup.some(({ tokensByKey, isDuplicateDefiPosition }) => {
+        const tokenIds = tokensByKey.get(key)
+        if (!tokenIds) return false
+        if (!dp.tokenIds.some((tokenId) => tokenIds.has(tokenId))) return false
+        return isDuplicateDefiPosition ? isDuplicateDefiPosition(source) : true
+      })
       if (isDuplicate) excluded.push(dp)
       else result.push(dp)
     }
 
     return { positions: result, excludedDefi: excluded }
-  }, [
-    yieldPositions,
-    defiPositions,
-    providerByKey,
-    getYieldxyzTokenId,
-    tokensMap,
-    networksMap,
-    tokenRatesMap,
-  ])
+  }, [systemResults, defiPositions, networksMap, tokensMap, tokenRatesMap])
 
   // Log excluded duplicates once per mount in dev builds
   const hasLoggedRef = useRef(false)
@@ -233,7 +146,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     hasLoggedRef.current = true
     // biome-ignore lint/suspicious/noConsole: development-only logging
     console.info(
-      "[EarnPositions] Excluded %d defi positions that duplicate yieldxyz positions:",
+      "[EarnPositions] Excluded %d defi positions that duplicate actionable earn positions:",
       excludedDefi.length,
       excludedDefi.map((p) => ({
         id: p.id,
@@ -245,15 +158,31 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
     )
   }, [excludedDefi])
 
-  // Show cached data immediately — only report "loading" when no positions are available
-  const isAnyLoading = yieldStatus === "loading" || defiStatus === "loading"
-  const isAnyError = yieldStatus === "error" || defiStatus === "error"
+  // Gate on every source settling so positions paint all at once. Otherwise a faster source
+  // (yieldxyz) renders first and a slower one (SEEK) pops in a tick later, causing flicker. Systems
+  // bake their own best-effort semantics into status (SEEK never reports "error", yieldxyz reports
+  // "success" while serving cached positions), so a SEEK read failure neither blocks the list nor
+  // flips it to "error". The defi source passes its status through raw and emits "loading" while
+  // serving cached storage data, so only gate on it when it has nothing to show — otherwise a cold
+  // open would hide every cached position behind a skeleton until the defi fetch settles.
+  const systemStatuses = systemResults.map((systemResult) => systemResult.status)
+  const isAnyLoading =
+    (defiStatus === "loading" && !defiPositions?.length) ||
+    systemStatuses.some((s) => s === "loading")
+  const isAnyError = defiStatus === "error" || systemStatuses.some((s) => s === "error")
 
-  const status =
-    positions.length > 0 ? "success" : isAnyLoading ? "loading" : isAnyError ? "error" : "success"
+  const status = isAnyLoading
+    ? "loading"
+    : positions.length > 0
+      ? "success"
+      : isAnyError
+        ? "error"
+        : "success"
 
+  // While still loading, withhold partial results so consumers render the loading state rather than
+  // a subset of positions that would otherwise grow (and flicker) as each source resolves.
   return useMemo(
-    () => ({ status, data: positions }) as Loadable<EarnPosition[]>,
+    () => toEarnLoadable(status, status === "loading" ? EMPTY_POSITIONS : positions),
     [status, positions]
   )
 }

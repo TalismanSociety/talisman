@@ -3,6 +3,7 @@ import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { Balance, Balances } from "@talismn/balances"
 import { getNetworkGenesisHash, type Network, type Token } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -25,11 +26,36 @@ type AccountOption = Account & {
   balances: Balances
 }
 
+// sort accounts by token holdings: highest value first (fiat, then raw amount as tie-breaker),
+// then by name/address so the order is stable for accounts with equal balances
+export const compareAccountsByTokenBalances = (
+  a: Pick<Account, "name" | "address"> & { balances: Balances },
+  b: Pick<Account, "name" | "address"> & { balances: Balances }
+): number => {
+  const fiat1 = a.balances.sum.fiat("usd").transferable ?? 0
+  const fiat2 = b.balances.sum.fiat("usd").transferable ?? 0
+  if (fiat1 > fiat2) return -1
+  if (fiat1 < fiat2) return 1
+
+  const planck1 = a.balances.sum.planck.transferable || 0n
+  const planck2 = b.balances.sum.planck.transferable || 0n
+  if (planck1 > planck2) return -1
+  if (planck1 < planck2) return 1
+
+  return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
+}
+
+export type SenderAccountPickerIsAccountDisabled = (account: Account, balances: Balances) => boolean
+
+const defaultIsAccountDisabled: SenderAccountPickerIsAccountDisabled = (_account, balances) =>
+  !balances.sum.planck.transferable
+
 export const SenderAccountPicker: FC<{
   tokenId: string
   address: string | null
+  isAccountDisabled?: SenderAccountPickerIsAccountDisabled
   onSelect: (address: string) => void
-}> = ({ address, tokenId, onSelect }) => {
+}> = ({ address, tokenId, isAccountDisabled = defaultIsAccountDisabled, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const allAccounts = useAccounts("owned")
@@ -43,28 +69,19 @@ export const SenderAccountPicker: FC<{
     return allAccounts
       .filter((account) => isAccountCompatibleWithNetwork(network, account))
       .map((account): AccountOption => {
-        const balances = allBalances.find({ address: account.address, tokenId })
-        const disabled = !balances.sum.planck.transferable
+        const balances = allBalances.find(
+          (balance) =>
+            balance.tokenId === tokenId && isAddressEqual(balance.address, account.address)
+        )
+        const disabled = isAccountDisabled(account, balances)
         return {
           ...account,
           balances,
           disabled,
         }
       })
-      .sort((a, b) => {
-        const fiat1 = a.balances.sum.fiat("usd").transferable || 0n
-        const fiat2 = b.balances.sum.fiat("usd").transferable || 0n
-        if (fiat1 > fiat2) return -1
-        if (fiat1 < fiat2) return 1
-
-        const planck1 = a.balances.sum.planck.transferable || 0n
-        const planck2 = b.balances.sum.planck.transferable || 0n
-        if (planck1 > planck2) return -1
-        if (planck1 < planck2) return 1
-
-        return a.name?.localeCompare(b.name || "") || a.address.localeCompare(b.address)
-      })
-  }, [token, network, allAccounts, allBalances, tokenId])
+      .sort(compareAccountsByTokenBalances)
+  }, [token, network, allAccounts, allBalances, tokenId, isAccountDisabled])
 
   const filteredAccounts = useMemo(() => {
     const ls = search.trim().toLowerCase()
@@ -110,7 +127,7 @@ const AccountsList: FC<{
         <AccountRow
           key={account.address}
           account={account}
-          selected={account.address === selected}
+          selected={!!selected && isAddressEqual(account.address, selected)}
           network={network}
           token={token}
           onClick={() => onSelect(account.address)}
