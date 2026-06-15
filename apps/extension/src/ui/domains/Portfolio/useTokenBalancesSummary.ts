@@ -118,14 +118,10 @@ export const useTokenBalancesSummary = (balances: Balances) => {
           b.token && tokenBalanceRates[b.token.id]
             ? (lockedFiat ?? 0) + (b.unavailable.fiat(currency) ?? 0)
             : lockedFiat,
-        // locks that exceed their own balance's free amount constrain the other balances of the group
-        // (eg dtao conviction locks, reported on the subnet's base token, constrain the staking positions)
-        availableTokens: availableTokens.plus(b.transferable.tokens).minus(b.lockOverflow.tokens),
+        availableTokens: availableTokens.plus(b.transferable.tokens),
         availableFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (availableFiat ?? 0) +
-              (b.transferable.fiat(currency) ?? 0) -
-              (b.lockOverflow.fiat(currency) ?? 0)
+            ? (availableFiat ?? 0) + (b.transferable.fiat(currency) ?? 0)
             : availableFiat,
       }),
       {
@@ -138,11 +134,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
       }
     )
 
-    return {
-      ...summary,
-      availableTokens: BigNumber.max(summary.availableTokens, 0),
-      availableFiat: summary.availableFiat !== null ? Math.max(summary.availableFiat, 0) : null,
-    }
+    return summary
   }, [currency, tokenBalanceRates, tokenBalances])
 
   return {

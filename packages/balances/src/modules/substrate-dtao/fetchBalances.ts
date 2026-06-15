@@ -217,8 +217,9 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
       // A conviction lock constrains the coldkey's TOTAL alpha on the subnet (across all of its
       // hotkeys), not a specific staking position: report it on the subnet's base token (no hotkey).
-      // Sum formatters subtract such overflowing locks from aggregated transferable amounts, and
-      // staking/transfer flows cap per-position amounts with the subnet-wide available amount.
+      // It surfaces in the portfolio's locked column but does NOT reduce available/transferable
+      // (the locked stake remains transferable via transfer_stake): staking/unstake flows cap
+      // per-position amounts with the subnet-wide available-to-unstake amount instead.
       const balance: SubDTaoBalance = {
         address,
         tokenId: subDTaoTokenId(networkId, netuid),
@@ -314,9 +315,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           type: "locked",
           label: getConvictionLockLabel(stake.convictionLock.lockType),
           amount: convictionLockAmount.toString(),
-          // the lock constrains the coldkey's total alpha across the whole subnet, not just this
-          // base-token balance: its excess over `free` must reduce the summed transferable amount
-          overflowToSumTransferable: true,
           meta: convictionLockMeta,
         })
       }
