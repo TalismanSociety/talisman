@@ -90,7 +90,7 @@ export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) =>
         />
         {!!position.data?.pendingWithdrawal.amount && (
           <SeekBalanceRow
-            status={unlockLabel(Number(position.data.pendingWithdrawal.unlockTimestamp), t)}
+            status={unlockLabel(Number(position.data.pendingWithdrawal.unlockTimestamp), t) || ""}
             token={token}
             tokenUsd={tokenUsd}
             planck={position.data.pendingWithdrawal.amount}
