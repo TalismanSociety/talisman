@@ -93,7 +93,7 @@ export const BittensorChangeLockHotkeyForm = () => {
         </div>
 
         {/* Fieldset 2: the editable field — the destination hotkey */}
-        <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
+        <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-paragraph">
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Hotkey")}</div>
             <PillButton className="h-16 max-w-full px-6!" onClick={() => setActivePicker("hotkey")}>
