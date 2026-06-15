@@ -14,6 +14,15 @@ export type SubDTaoTokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
 
 export type SubDTaoBalanceMeta = {
   scaledAlphaPrice: string
+  convictionLock?: SubDTaoConvictionLockMeta
+}
+
+export type SubDTaoConvictionLockType = "decaying" | "perpetual"
+
+export type SubDTaoConvictionLockMeta = {
+  type: "conviction-lock"
+  hotkey: string
+  lockType: SubDTaoConvictionLockType
 }
 
 export type SubDTaoBalance = {
@@ -22,9 +31,17 @@ export type SubDTaoBalance = {
   baseTokenId: string
   stake: bigint
   pendingRootClaim?: bigint
+  convictionLock?: SubDTaoConvictionLock
   hotkey: string
   netuid: number
   scaledAlphaPrice: bigint
+}
+
+export type SubDTaoConvictionLock = {
+  amount: bigint
+  hotkey: string
+  lockType: SubDTaoConvictionLockType
+  convictionRaw: string
 }
 
 export type GetDynamicInfosResult =
@@ -32,3 +49,12 @@ export type GetDynamicInfosResult =
 
 export type GetStakeInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]
+
+/**
+ * `undefined` when the coldkey has no lock on the subnet; `null` is our own fetch-failure marker.
+ * `conviction` is the raw U64F64 fixed-point value (shift right by 64 bits for the integer part),
+ * despite decoding as a plain bigint.
+ */
+export type GetColdkeyLockResult =
+  | (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_coldkey_lock"][1]
+  | null

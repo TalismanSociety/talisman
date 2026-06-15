@@ -8,6 +8,8 @@ import { map, Observable, shareReplay } from "rxjs"
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
+export const BITTENSOR_NETWORK_ID = "bittensor"
+
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
   const unsubscribe = api.bittensorValidatorsSubscribe((data) => {
     subscriber.next(data)
@@ -56,7 +58,7 @@ export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
     map((tokens) =>
       uniq(
         tokens
-          .filter((t) => t.type === "substrate-dtao" && t.networkId === "bittensor") // TODO: remove networkId check once testnets work
+          .filter((t) => t.type === "substrate-dtao" && t.networkId === BITTENSOR_NETWORK_ID) // TODO: remove networkId check once testnets work
           .map((t) => t.networkId)
       )
     )

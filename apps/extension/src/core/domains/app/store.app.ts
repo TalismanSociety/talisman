@@ -38,6 +38,7 @@ export type AppStoreData = {
   showLedgerPolkadotGenericMigrationAlert?: boolean
   hideManageAccountsWelcome?: boolean
   hideBittensorSubnetStakeWarning?: boolean
+  hideBittensorConvictionLockInfo?: boolean
   hideGetStarted?: boolean
 
   // dismissed earn disclaimer
@@ -118,6 +119,7 @@ if (DEBUG) {
       hideBackupWarningUntil: undefined,
       hideManageAccountsWelcome: false,
       hideBittensorSubnetStakeWarning: false,
+      hideBittensorConvictionLockInfo: false,
       hideGetStarted: false,
       hideEarnDisclaimer: false,
     })

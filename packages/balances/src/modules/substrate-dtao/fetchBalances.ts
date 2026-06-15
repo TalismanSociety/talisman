@@ -18,6 +18,7 @@ import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
+import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
 import type {
   GetDynamicInfosResult,
   GetStakeInfosResult,
@@ -97,6 +98,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       ),
     ])
 
+    const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
+
     const rootHotkeys = uniq(
       stakeInfos.flatMap(([, stakes]) =>
         stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey)
@@ -123,17 +126,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
     }
 
-    const rootClaimedAmounts =
+    const [rootClaimedAmounts, convictionLocks] = await Promise.all([
       addressHotkeyNetuidPairs.length && miniMetadata.data
-        ? await fetchRootClaimedAmounts(
-            connector,
-            networkId,
-            miniMetadata.data,
-            addressHotkeyNetuidPairs
-          )
-        : new Map<string, Map<string, Map<number, bigint>>>()
-
-    const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
+        ? fetchRootClaimedAmounts(connector, networkId, miniMetadata.data, addressHotkeyNetuidPairs)
+        : Promise.resolve(new Map<string, Map<string, Map<number, bigint>>>()),
+      miniMetadata.data
+        ? fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses)
+        : Promise.resolve([]),
+    ])
 
     // Upserts a balance into the accumulator, merging stake values if the balance already exists.
     // Eg: Acc X has root staked with validator Y, but also staked on sn 45 with the same validator Y.
@@ -153,6 +153,9 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           // If the new balance has pendingRootClaim, use it (it's calculated from current state)
           ...(balance.pendingRootClaim !== undefined && {
             pendingRootClaim: balance.pendingRootClaim,
+          }),
+          ...(balance.convictionLock !== undefined && {
+            convictionLock: balance.convictionLock,
           }),
         }
       } else {
@@ -206,6 +209,31 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       {}
     )
 
+    for (const { address, netuid, lock } of convictionLocks) {
+      const dynamicInfo = dynamicInfoByNetuid[netuid]
+      const scaledAlphaPrice = dynamicInfo
+        ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
+        : 0n
+
+      // A conviction lock constrains the coldkey's TOTAL alpha on the subnet (across all of its
+      // hotkeys), not a specific staking position: report it on the subnet's base token (no hotkey).
+      // It surfaces in the portfolio's locked column but does NOT reduce available/transferable
+      // (the locked stake remains transferable via transfer_stake): staking/unstake flows cap
+      // per-position amounts with the subnet-wide available-to-unstake amount instead.
+      const balance: SubDTaoBalance = {
+        address,
+        tokenId: subDTaoTokenId(networkId, netuid),
+        baseTokenId: subDTaoTokenId(networkId, netuid),
+        stake: 0n,
+        hotkey: lock.hotkey,
+        netuid,
+        scaledAlphaPrice,
+        convictionLock: lock,
+      }
+
+      upsertBalance(balancesRaw, address, balance.tokenId, balance)
+    }
+
     const balances = Object.values(balancesRaw)
 
     const tokensById = keyBy(
@@ -217,6 +245,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     // identify tokens that were not requested but have balances
     // BalanceProvider will be register them in ChaindataProvider at runtime, so they will be requested on next call
     for (const bal of balances) {
+      // base token balances (eg conviction locks) use the already-registered template token
+      if (bal.tokenId === bal.baseTokenId) continue
       if (!balanceDefs.some((def) => def.token.id === bal.tokenId)) {
         const baseToken = tokensById[bal.baseTokenId] as SubDTaoToken | undefined
         // define a token specific to this staking hotkey
@@ -240,6 +270,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
       const stakeAmount = BigInt(stake?.stake?.toString() ?? "0")
       const pendingRootClaimAmount = BigInt(stake?.pendingRootClaim?.toString() ?? "0")
+      const convictionLockAmount = BigInt(stake?.convictionLock?.amount?.toString() ?? "0")
+      const convictionLockConviction = BigInt(stake?.convictionLock?.convictionRaw ?? "0")
       const hasZeroStake = stakeAmount === 0n
       const hasPendingRootClaim = pendingRootClaimAmount > 0n
 
@@ -254,10 +286,34 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         type: "locked",
         label: "Pending root claim",
         amount: pendingRootClaimAmount.toString(),
+        // The pending claim is not part of the stake (free amount): on-chain it only becomes
+        // stake once claimed (root_claim_on_subnet). Since it was never included in `free`,
+        // it must not be subtracted from it either: flag it so it does not reduce the staked
+        // position's transferable amount.
+        includeInTransferable: true,
         meta,
       }
 
       const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
+      // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
+      // future lock_stake calls to their hotkey, so the lock wizard must know they exist
+      if (stake?.convictionLock && (convictionLockAmount > 0n || convictionLockConviction > 0n)) {
+        const convictionLockMeta: SubDTaoBalanceMeta = {
+          ...meta,
+          convictionLock: {
+            type: "conviction-lock",
+            hotkey: stake.convictionLock.hotkey,
+            lockType: stake.convictionLock.lockType,
+          },
+        }
+
+        values.push({
+          type: "locked",
+          label: getConvictionLockLabel(stake.convictionLock.lockType),
+          amount: convictionLockAmount.toString(),
+          meta: convictionLockMeta,
+        })
+      }
 
       // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
       // with includeInTotal: true so it counts toward the total balance.

@@ -1,10 +1,12 @@
 import type { Address } from "@core/types/base"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import type { ReactNode } from "react"
 
 import { PortfolioAccount } from "../PortfolioAccount"
 
 type AssetStateProps = {
   title: string
+  titleSuffix?: ReactNode
   description?: string
   render: boolean
   address?: Address
@@ -14,6 +16,7 @@ type AssetStateProps = {
 
 export const AssetState = ({
   title,
+  titleSuffix,
   description,
   render,
   address,
@@ -25,6 +28,8 @@ export const AssetState = ({
     <div className="flex h-full flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
         <div className="shrink-0 whitespace-nowrap font-bold text-white capitalize">{title}</div>
+        {/* center the suffix (eg the lock hotkey tag) without disturbing the title/description baseline */}
+        {titleSuffix && <span className="self-center">{titleSuffix}</span>}
         {/* show description next to title when address is set */}
         {description && address && (
           <Tooltip>

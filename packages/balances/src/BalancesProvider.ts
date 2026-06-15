@@ -37,7 +37,7 @@ import {
 } from "rxjs"
 import { withRetry } from "viem"
 
-import { BALANCE_MODULES, Balance, type ChainConnectors } from "."
+import { BALANCE_MODULES, Balance, type ChainConnectors, findDTaoConvictionLock } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
@@ -288,8 +288,18 @@ export class BalancesProvider {
           map(
             (results): BalancesResult => ({
               status: "live",
-              // exclude zero balances
-              balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+              // exclude zero balances, but keep balances that only hold a lock
+              // (eg dtao conviction locks, reported on the subnet's base token — including
+              // zero-mass "ghost" locks with residual conviction, which still pin the hotkey
+              // of future lock_stake calls)
+              balances: results.success.filter((b) => {
+                const balance = new Balance(b)
+                return (
+                  balance.total.planck > 0n ||
+                  balance.locks.some((lock) => lock.amount.planck > 0n) ||
+                  !!findDTaoConvictionLock(balance.locks)
+                )
+              }),
               failedBalanceIds: results.errors.map(({ tokenId, address }) =>
                 getBalanceId({ tokenId, address })
               ),

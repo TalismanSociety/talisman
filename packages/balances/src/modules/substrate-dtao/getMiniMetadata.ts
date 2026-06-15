@@ -48,11 +48,16 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
 
   compactMetadata(
     metadata,
-    [{ pallet: "SubtensorModule", items: ["TransferToggle", "RootClaimable", "RootClaimed"] }],
+    [
+      {
+        pallet: "SubtensorModule",
+        items: ["TransferToggle", "RootClaimable", "RootClaimed", "Lock", "DecayingLock"],
+      },
+    ],
     [
       {
         runtimeApi: "StakeInfoRuntimeApi",
-        methods: ["get_stake_info_for_coldkeys"],
+        methods: ["get_stake_info_for_coldkeys", "get_coldkey_lock"],
       },
       {
         runtimeApi: "SubnetInfoRuntimeApi",

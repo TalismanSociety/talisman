@@ -1,6 +1,6 @@
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
-import type { Balance, Balances } from "@talismn/balances"
+import { type Balance, type Balances, findDTaoConvictionLock } from "@talismn/balances"
 import { type NetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
@@ -172,6 +172,10 @@ const getBondableBalance = (
 
   // if dTAO, assume we can bond more native TAO
   if (token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)) {
+    // conviction-locked alpha can't be staked: the lock sits on the subnet's base token
+    // (no hotkey, zero stake), so such a balance offers nothing to bond
+    if (findDTaoConvictionLock(balance.locks)) return null
+
     const address = balance.address
     return {
       type: "bittensor",

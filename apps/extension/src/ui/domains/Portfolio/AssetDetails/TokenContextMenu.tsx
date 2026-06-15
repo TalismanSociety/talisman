@@ -1,4 +1,6 @@
+import { findDTaoConvictionLock } from "@talismn/balances"
 import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import {
@@ -9,12 +11,15 @@ import {
 } from "@ui/components/ContextMenu"
 import type { PopoverOptions } from "@ui/components/Popover"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useBittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockHotkeyModal"
+import { useBittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useBalances } from "@ui/state/balances"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -130,6 +135,88 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   return <ContextMenuItem onClick={handleClick}>{t("Change Validator")}</ContextMenuItem>
 }
 
+const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const { open } = useBittensorChangeLockTypeModal()
+  const { selectedAccount } = usePortfolioNavigation()
+  const allBalances = useBalances("owned")
+
+  const isBittensorDTao =
+    token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)
+
+  // the conviction lock is reported on the subnet's base token: show the entry on the
+  // group whose balances actually contain a lock (for the selected account, if any)
+  const lockBalance = useMemo(() => {
+    if (!isBittensorDTao) return null
+    return (
+      allBalances.each.find(
+        (b) =>
+          b.tokenId === token.id &&
+          (!selectedAccount?.address || isAddressEqual(b.address, selectedAccount.address)) &&
+          !!findDTaoConvictionLock(b.locks)
+      ) ?? null
+    )
+  }, [allBalances, isBittensorDTao, selectedAccount?.address, token.id])
+
+  const handleClick = useCallback(() => {
+    if (!lockBalance || token.type !== "substrate-dtao") return
+    open({
+      networkId: token.networkId,
+      netuid: token.netuid,
+      address: lockBalance.address,
+    })
+    genericEvent("open change conviction lock type modal", { tokenId: token.id })
+  }, [genericEvent, lockBalance, open, token])
+
+  if (!isBittensorDTao || !lockBalance) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("Change Conviction Lock Type")}</ContextMenuItem>
+}
+
+const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const { open } = useBittensorChangeLockHotkeyModal()
+  const { selectedAccount } = usePortfolioNavigation()
+  const allBalances = useBalances("owned")
+
+  const isBittensorDTao =
+    token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)
+
+  // the conviction lock is reported on the subnet's base token: show the entry on the
+  // group whose balances actually contain a lock (for the selected account, if any)
+  const lockBalance = useMemo(() => {
+    if (!isBittensorDTao) return null
+    return (
+      allBalances.each.find(
+        (b) =>
+          b.tokenId === token.id &&
+          (!selectedAccount?.address || isAddressEqual(b.address, selectedAccount.address)) &&
+          !!findDTaoConvictionLock(b.locks)
+      ) ?? null
+    )
+  }, [allBalances, isBittensorDTao, selectedAccount?.address, token.id])
+
+  const handleClick = useCallback(() => {
+    if (!lockBalance || token.type !== "substrate-dtao") return
+    open({
+      networkId: token.networkId,
+      netuid: token.netuid,
+      address: lockBalance.address,
+    })
+    genericEvent("open change conviction lock hotkey modal", { tokenId: token.id })
+  }, [genericEvent, lockBalance, open, token])
+
+  if (!isBittensorDTao || !lockBalance) return null
+
+  return (
+    <ContextMenuItem onClick={handleClick}>{t("Change Conviction Lock Hotkey")}</ContextMenuItem>
+  )
+}
+
 type Props = {
   tokenId: TokenId
   placement?: PopoverOptions["placement"]
@@ -167,6 +254,8 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         </Suspense>
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
         {token && <ChangeValidatorMenuItem token={token} />}
+        {token && <ChangeLockTypeMenuItem token={token} />}
+        {token && <ChangeLockHotkeyMenuItem token={token} />}
       </ContextMenuContent>
     </ContextMenu>
   )

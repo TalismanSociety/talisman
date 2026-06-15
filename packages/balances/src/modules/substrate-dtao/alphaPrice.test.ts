@@ -5,6 +5,7 @@ import {
   getScaledAlphaPrice,
   TAO_DECIMALS,
   taoToAlpha,
+  taoToAlphaCeil,
 } from "./alphaPrice"
 
 describe("TAO_DECIMALS", () => {
@@ -87,6 +88,34 @@ describe("taoToAlpha", () => {
 
   it("returns the same value when price is 1:1", () => {
     expect(taoToAlpha(1000n, ALPHA_PRICE_SCALE)).toBe(1000n)
+  })
+})
+
+describe("taoToAlphaCeil", () => {
+  it("rounds up when the division is inexact", () => {
+    const scaledPrice = 3_000_000_000n // 3 tao per alpha
+    // 100 tao / 3 = 33.33… alpha
+    expect(taoToAlpha(100n, scaledPrice)).toBe(33n)
+    expect(taoToAlphaCeil(100n, scaledPrice)).toBe(34n)
+  })
+
+  it("equals taoToAlpha when the division is exact", () => {
+    const scaledPrice = getScaledAlphaPrice(2000n, 1000n) // 0.5 tao per alpha
+    expect(taoToAlphaCeil(50n, scaledPrice)).toBe(taoToAlpha(50n, scaledPrice))
+  })
+
+  it("returns 0n on zero inputs", () => {
+    expect(taoToAlphaCeil(0n, 500_000_000n)).toBe(0n)
+    expect(taoToAlphaCeil(100n, 0n)).toBe(0n)
+  })
+
+  it("always converts back to at least the requested tao, where the floored variant can fall short", () => {
+    const scaledPrice = getScaledAlphaPrice(1000n, 3000n) // 3 tao per alpha
+    for (const tao of [1n, 7n, 100n, 12_345n]) {
+      expect(alphaToTao(taoToAlphaCeil(tao, scaledPrice), scaledPrice)).toBeGreaterThanOrEqual(tao)
+    }
+    // the floored threshold misses the bound: keeping/sending exactly it fails the chain check
+    expect(alphaToTao(taoToAlpha(100n, scaledPrice), scaledPrice)).toBeLessThan(100n)
   })
 })
 
