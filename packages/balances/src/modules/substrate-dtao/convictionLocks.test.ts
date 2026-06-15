@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  findDTaoConvictionLock,
-  getConvictionLockLabel,
-  toBigIntValue,
-  u64f64RawToPlanck,
-} from "./convictionLocks"
+import { findDTaoConvictionLock, getConvictionLockLabel, toBigIntValue } from "./convictionLocks"
 
 describe("toBigIntValue", () => {
   it("returns bigints as-is", () => {
@@ -26,21 +21,6 @@ describe("toBigIntValue", () => {
   })
 })
 
-describe("u64f64RawToPlanck", () => {
-  it("returns the integer part of a U64F64 raw value", () => {
-    expect(u64f64RawToPlanck(0n)).toBe(0n)
-    expect(u64f64RawToPlanck(42n << 64n)).toBe(42n)
-    // 42.5 in U64F64 is 85 * 2^63
-    expect(u64f64RawToPlanck(85n << 63n)).toBe(42n)
-    // pure fraction (0.5) truncates to 0
-    expect(u64f64RawToPlanck(1n << 63n)).toBe(0n)
-  })
-
-  it("unwraps a { bits } encoded fixed-point value", () => {
-    expect(u64f64RawToPlanck({ bits: 42n << 64n })).toBe(42n)
-  })
-})
-
 describe("getConvictionLockLabel", () => {
   it("labels perpetual locks", () => {
     expect(getConvictionLockLabel("perpetual")).toBe("Perpetual Conviction Lock")
@@ -59,10 +39,6 @@ describe("findDTaoConvictionLock", () => {
       type: "conviction-lock",
       hotkey: lockHotkey,
       lockType: "decaying",
-      conviction: "0",
-      convictionRaw: "0",
-      convictionFormat: "U64F64",
-      lastUpdate: "0",
     },
   }
 

@@ -288,8 +288,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         amount: pendingRootClaimAmount.toString(),
         // The pending claim is not part of the stake (free amount): on-chain it only becomes
         // stake once claimed (root_claim_on_subnet). Since it was never included in `free`,
-        // it must not be subtracted from it either: flag it so that the transferable amount
-        // (= the stake that can be unstaked/transferred) is only reduced by the conviction lock.
+        // it must not be subtracted from it either: flag it so it does not reduce the staked
+        // position's transferable amount.
         includeInTransferable: true,
         meta,
       }
@@ -304,10 +304,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             type: "conviction-lock",
             hotkey: stake.convictionLock.hotkey,
             lockType: stake.convictionLock.lockType,
-            conviction: stake.convictionLock.conviction,
-            convictionRaw: stake.convictionLock.convictionRaw,
-            convictionFormat: "U64F64",
-            lastUpdate: stake.convictionLock.lastUpdate,
           },
         }
 

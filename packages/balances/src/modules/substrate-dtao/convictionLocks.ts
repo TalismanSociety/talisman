@@ -16,8 +16,6 @@ import type {
   SubDTaoConvictionLockType,
 } from "./types"
 
-const U64F64_FRACTIONAL_BITS = 64n
-
 /** A decoded SubtensorModule.Lock storage key: (coldkey, netuid, hotkey) */
 type ConvictionLockStorageKey = {
   address: string
@@ -89,10 +87,6 @@ export const toBigIntValue = (value: unknown): bigint => {
   return 0n
 }
 
-export const u64f64RawToPlanck = (value: unknown): bigint => {
-  return toBigIntValue(value) >> U64F64_FRACTIONAL_BITS
-}
-
 /**
  * Fetches Bittensor conviction locks (SubtensorModule.Lock) for the given coldkey addresses.
  *
@@ -155,8 +149,6 @@ export const fetchConvictionLocks = async (
       const hotkey = hotkeyByPair.get(convictionLockKey(address, netuid))
       if (!hotkey) return []
 
-      const conviction = u64f64RawToPlanck(lockState?.conviction)
-
       return [
         {
           address,
@@ -165,9 +157,7 @@ export const fetchConvictionLocks = async (
             amount,
             hotkey,
             lockType: lockModesByPair.get(convictionLockKey(address, netuid)) ?? "decaying",
-            conviction: conviction.toString(),
             convictionRaw: convictionRaw.toString(),
-            lastUpdate: (lockState?.last_update ?? 0n).toString(),
           },
         },
       ]

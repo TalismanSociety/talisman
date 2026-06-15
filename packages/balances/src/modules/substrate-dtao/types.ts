@@ -23,10 +23,6 @@ export type SubDTaoConvictionLockMeta = {
   type: "conviction-lock"
   hotkey: string
   lockType: SubDTaoConvictionLockType
-  conviction: string
-  convictionRaw: string
-  convictionFormat: "U64F64"
-  lastUpdate: string
 }
 
 export type SubDTaoBalance = {
@@ -45,9 +41,7 @@ export type SubDTaoConvictionLock = {
   amount: bigint
   hotkey: string
   lockType: SubDTaoConvictionLockType
-  conviction: string
   convictionRaw: string
-  lastUpdate: string
 }
 
 export type GetDynamicInfosResult =
