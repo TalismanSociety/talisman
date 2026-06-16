@@ -86,6 +86,7 @@
     "bs58": "^6.0.0",
     "chart.js": "^4.5.1",
     "check-password-strength": "^2.0.10",
+    "color": "4.2.3",
     "date-fns": "^4.4.0",
     "dexie": "^4.4.3",
     "dexie-react-hooks": "^4.4.0",

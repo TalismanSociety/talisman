@@ -28,8 +28,7 @@ const restoreBackupKeyring = async (
 ): Promise<Result<boolean, "No keyring backup found" | "Unable to restore backup keyring">> => {
   const backupJsonObj = await chrome.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY)
 
-  if (!backupJsonObj || !backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY])
-    return Err("No keyring backup found")
+  if (!backupJsonObj?.[TALISMAN_BACKUP_KEYRING_KEY]) return Err("No keyring backup found")
 
   const backupJson = backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY]
   try {

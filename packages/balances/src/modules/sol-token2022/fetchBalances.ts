@@ -101,7 +101,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         }
 
         // Skip mints whose metadata fetch failed or returned invalid data.
-        if (!cached || !cached.isValid) return
+        if (!cached?.isValid) return
 
         const token: SolToken2022Token = {
           id: tokenId,

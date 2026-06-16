@@ -271,7 +271,7 @@ const EvmDrawerContent: FC<{
         </div>
       </div>
 
-      {canReplace && !!account && isAccountOfType(account, "ledger-ethereum") ? (
+      {canReplace && account && isAccountOfType(account, "ledger-ethereum") ? (
         <div className="w-full">
           <SignHardwareEthereum
             className="mt-6"

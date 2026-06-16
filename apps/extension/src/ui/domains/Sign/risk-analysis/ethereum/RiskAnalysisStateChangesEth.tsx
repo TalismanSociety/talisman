@@ -104,7 +104,7 @@ const StateChangeFooter: FC<{
       return isEqual(trace.asset, change.asset)
     })
 
-    if (!trace || trace.trace_type !== "AssetTrace") return null
+    if (trace?.trace_type !== "AssetTrace") return null
 
     return change.side === "in" ? trace?.from_address : trace?.to_address
   }, [change, simulation])

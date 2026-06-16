@@ -173,9 +173,9 @@ const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   return (
     <div className="flex flex-wrap gap-12">
       {!!collection &&
-        nfts.map((nft, i) => (
+        nfts.map((nft) => (
           <NftTileItem
-            key={`${collection.id}-${nft.id}-${i}`}
+            key={`${collection.id}-${nft.id}`}
             collection={collection}
             nft={nft}
             onClick={() => onNftClick(nft)}

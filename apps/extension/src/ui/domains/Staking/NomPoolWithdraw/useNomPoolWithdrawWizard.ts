@@ -144,13 +144,13 @@ export const useNomPoolWithdrawWizard = () => {
   const errorMessage = useMemo(() => {
     if (amountToWithdraw?.planck === 0n) return t("There is no balance to withdraw")
 
-    if (!!balance && !!feeEstimate && feeEstimate > balance.transferable.planck)
+    if (balance && feeEstimate && feeEstimate > balance.transferable.planck)
       return t("Insufficient balance to cover fee")
 
     if (
-      !!balance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
+      balance &&
+      feeEstimate &&
+      existentialDeposit?.planck &&
       existentialDeposit.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")

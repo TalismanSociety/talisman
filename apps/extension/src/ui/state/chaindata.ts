@@ -152,7 +152,9 @@ export const useDotNetwork = (id: DotNetworkId | `0x${string}` | null | undefine
   return network1 ?? network2 ?? null
 }
 
-export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
+const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
+
+export { useActiveTokensState }
 
 const rawTokens$ = new Observable<Token[]>((subscriber) => {
   const unsubscribe = api.tokens((data) => {

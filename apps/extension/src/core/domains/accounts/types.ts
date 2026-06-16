@@ -18,10 +18,9 @@ import type { HexString } from "@talismn/util"
 import type { Address } from "../../types/base"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 
+export type { RequestAccountList } from "@polkadot/extension-base/background/types"
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
 export type { AccountJson, ResponseAccountExport }
-
-export type { RequestAccountList } from "@polkadot/extension-base/background/types"
 
 // account types ----------------------------------
 

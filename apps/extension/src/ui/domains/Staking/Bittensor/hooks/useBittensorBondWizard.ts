@@ -313,7 +313,7 @@ const useBittensorBondWizardProvider = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (
-      !!currentHotkey &&
+      currentHotkey &&
       isHotkeyAutoSelected.current &&
       currentHotkey !== hotkey &&
       stakeDirection === "bond"
@@ -420,22 +420,22 @@ const useBittensorBondWizardProvider = () => {
   const stakeInputErrorMessage = useMemo(() => {
     if (!amountTao || typeof minTaoBondForInput !== "bigint") return null
 
-    if (!!amountTao.planck && amountTao.planck > (nativeBalance?.transferable?.planck ?? 0n))
+    if (amountTao.planck && amountTao.planck > (nativeBalance?.transferable?.planck ?? 0n))
       return t("Insufficient balance")
 
     if (
-      !!nativeBalance &&
-      !!feeEstimate &&
-      !!amountTao.planck &&
+      nativeBalance &&
+      feeEstimate &&
+      amountTao.planck &&
       amountTao.planck + feeEstimate > nativeBalance.transferable.planck
     )
       return t("Insufficient balance to cover fee")
 
     if (
-      !!nativeBalance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
-      !!amountTao.planck &&
+      nativeBalance &&
+      feeEstimate &&
+      existentialDeposit?.planck &&
+      amountTao.planck &&
       existentialDeposit.planck + amountTao.planck + feeEstimate > nativeBalance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
@@ -480,7 +480,7 @@ const useBittensorBondWizardProvider = () => {
     // When Alpha fees aren't supported, the user needs enough free TAO to cover fees
     if (
       !supportsAlphaFees &&
-      !!amountIn &&
+      amountIn &&
       existentialDeposit?.planck &&
       feeEstimate &&
       nativeBalance &&

@@ -44,7 +44,6 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [navigate, updateOnboarded])
 
   const completeOnboarding = useCallback(
-    // biome-ignore lint/suspicious/noAssignInExpressions: legact
     () => (location.href = "dashboard.html#/portfolio?onboarded"),
     []
   )

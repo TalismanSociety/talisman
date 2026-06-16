@@ -180,7 +180,7 @@ export const useBondWizard = () => {
      * if user is already staking in pool, set poolId to that pool
      * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
      */
-    if (!!currentPoolId && currentPoolId !== poolId && isDefaultOption)
+    if (currentPoolId && currentPoolId !== poolId && isDefaultOption)
       setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
   }, [bondType, currentPoolId, isDefaultOption, poolId, step, tokenId])
 
@@ -221,31 +221,31 @@ export const useBondWizard = () => {
 
     if (!formatter || typeof minJoinBond !== "bigint") return null
 
-    if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
+    if (balance && formatter.planck && formatter.planck > balance.transferable.planck)
       return t("Insufficient balance")
 
     if (
-      !!balance &&
-      !!feeEstimate &&
-      !!formatter.planck &&
+      balance &&
+      feeEstimate &&
+      formatter.planck &&
       formatter.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee")
 
     if (
-      !!balance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
-      !!formatter.planck &&
+      balance &&
+      feeEstimate &&
+      existentialDeposit?.planck &&
+      formatter.planck &&
       existentialDeposit.planck + formatter.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
 
     if (
-      !!balance &&
-      !!feeEstimate &&
-      !!existentialDeposit?.planck &&
-      !!formatter.planck &&
+      balance &&
+      feeEstimate &&
+      existentialDeposit?.planck &&
+      formatter.planck &&
       existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(

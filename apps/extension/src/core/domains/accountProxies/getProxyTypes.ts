@@ -27,7 +27,7 @@ export const getProxyTypes = (metadataRpc: HexString): ProxyTypeInfo[] => {
     if (!pallet || typeof pallet.calls?.type !== "number") return []
 
     const callsLookup = metadata.lookup.find((entry) => entry.id === pallet.calls?.type)
-    if (!callsLookup || callsLookup.def.tag !== "variant") return []
+    if (callsLookup?.def.tag !== "variant") return []
 
     const addProxyVariant = (
       callsLookup.def.value as Array<{
@@ -47,7 +47,7 @@ export const getProxyTypes = (metadataRpc: HexString): ProxyTypeInfo[] => {
     if (!proxyTypeField) return []
 
     const proxyTypeLookup = metadata.lookup.find((entry) => entry.id === proxyTypeField.type)
-    if (!proxyTypeLookup || proxyTypeLookup.def.tag !== "variant") return []
+    if (proxyTypeLookup?.def.tag !== "variant") return []
 
     const variants = proxyTypeLookup.def.value as Array<{
       name: string

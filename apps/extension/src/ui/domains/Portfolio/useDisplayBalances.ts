@@ -70,7 +70,7 @@ const shouldDisplayBalance = (
     }
 
     const genesisHash = getAccountGenesisHash(account)
-    if (!!genesisHash && genesisHash === getNetworkGenesisHash(network))
+    if (genesisHash && genesisHash === getNetworkGenesisHash(network))
       return balance.token?.type === "substrate-native" || balance.total.planck > 0n
 
     return false

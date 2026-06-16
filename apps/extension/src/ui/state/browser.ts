@@ -15,7 +15,7 @@ const [useCurrentTab, _currentTab$] = bind(
   from(getCurrentTab()).pipe(debugObservable("currentTab$"))
 )
 
-export const [useVideoInputDevices, videoInputDevices$] = bind(
+const [useVideoInputDevices, videoInputDevices$] = bind(
   from(TEST ? [] : BrowserCodeReader.listVideoInputDevices()).pipe(
     debugObservable("videoInputDevices$")
   )
@@ -33,4 +33,4 @@ const [useSelectedVideoInput, _selectedVideoInput$] = bind(
   )
 )
 
-export { useCurrentTab, useSelectedVideoInput }
+export { useCurrentTab, useSelectedVideoInput, useVideoInputDevices }

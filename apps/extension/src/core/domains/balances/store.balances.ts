@@ -22,6 +22,7 @@ const DEFAULT_DATA: BalancesStorage = {
 
 // balances store
 const [setBalances, balancesStore$] = splitSubject(new ReplaySubject<BalancesStorage>(1))
+
 export { balancesStore$ }
 
 export const updateBalancesStore = (data: BalancesStorage) => {

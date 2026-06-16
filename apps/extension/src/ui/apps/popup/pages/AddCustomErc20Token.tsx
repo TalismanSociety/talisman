@@ -56,7 +56,7 @@ export const AddCustomErc20Token = () => {
     window.close()
   }, [id])
 
-  if (!request || !request.token || !network) return null
+  if (!request?.token || !network) return null
 
   return (
     <PopupLayout>

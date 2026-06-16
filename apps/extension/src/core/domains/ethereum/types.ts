@@ -8,7 +8,6 @@ import type {
 import type {
   EIP1193Parameters,
   Address as EvmAddress,
-  Chain as EvmChain,
   PublicRpcSchema,
   RpcSchema,
   TransactionRequest,
@@ -18,7 +17,7 @@ import type { BaseRequest, BaseRequestId } from "../../types/base"
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
 import type { WalletTransactionInfo } from "../transactions"
 
-export type { EvmAddress, EvmChain }
+export type { EvmAddress }
 
 export interface AnyEthRequest {
   readonly method: string

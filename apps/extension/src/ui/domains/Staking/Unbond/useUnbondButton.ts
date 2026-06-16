@@ -227,10 +227,7 @@ const getUnbondableBalance = (
   /**
    * Nomination Pool Unstaking
    */
-  if (
-    token.type === "substrate-native" &&
-    !!remoteConfig.nominationPools[token.networkId]?.length
-  ) {
+  if (token.type === "substrate-native" && remoteConfig.nominationPools[token.networkId]?.length) {
     const accountStatus = nomPoolStakingAccounts?.find(
       (s) => s.address === balance.address && s.canUnstake
     )

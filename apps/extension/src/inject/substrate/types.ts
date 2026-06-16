@@ -19,14 +19,14 @@ import type {
 import type { TalismanSigner as TalismanInjectedSigner } from "./Injected"
 
 export type {
-  InjectOptions,
   InjectedAccount,
-  InjectedAccountWithMeta,
   InjectedAccounts,
+  InjectedAccountWithMeta,
   InjectedExtensionInfo,
   InjectedMetadataKnown,
   InjectedProvider,
   InjectedProviderWithMeta,
+  InjectOptions,
   MetadataDefBase,
   ProviderList,
   ProviderMeta,

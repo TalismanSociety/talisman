@@ -14,11 +14,11 @@ const assetDiscoveryBalances$ = from(liveQuery(() => db.assetDiscovery.toArray()
   shareReplay(1)
 )
 
-export const [useAssetDiscoveryScan, assetDiscoveryScan$] = bind(
-  assetDiscoveryStore.observable.pipe(
-    throttleTime(100, undefined, { leading: true, trailing: true })
-  )
+const assetDiscoveryScan$ = assetDiscoveryStore.observable.pipe(
+  throttleTime(100, undefined, { leading: true, trailing: true })
 )
+
+export const [useAssetDiscoveryScan] = bind(assetDiscoveryScan$)
 
 export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind(
   combineLatest([

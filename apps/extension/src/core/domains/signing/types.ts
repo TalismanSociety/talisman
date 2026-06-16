@@ -10,8 +10,6 @@ import type { RpcTransactionRequest } from "viem"
 import type { BaseRequest, BaseRequestId } from "../../types/base"
 import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
 
-export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
-
 export type {
   RequestSign,
   RequestSigningApprovePassword,
@@ -19,6 +17,7 @@ export type {
   RequestSigningIsLocked,
   ResponseSigningIsLocked,
 } from "@polkadot/extension-base/background/types"
+export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
 export type SigningRequestID<T extends keyof SigningRequests> = BaseRequestId<T>
 

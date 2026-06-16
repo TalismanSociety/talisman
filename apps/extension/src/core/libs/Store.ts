@@ -289,4 +289,4 @@ class SubscribableByIdStorageProvider<
   }
 }
 
-export { StorageProvider, SubscribableStorageProvider, SubscribableByIdStorageProvider }
+export { StorageProvider, SubscribableByIdStorageProvider, SubscribableStorageProvider }

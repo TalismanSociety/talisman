@@ -81,7 +81,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
       )
         return riskAnalysis.review.drawer.open()
 
-      if (!baseRequest || !baseRequest.id) return
+      if (!baseRequest?.id) return
 
       if (!refIsApproveCaptured.current) {
         refIsApproveCaptured.current = true

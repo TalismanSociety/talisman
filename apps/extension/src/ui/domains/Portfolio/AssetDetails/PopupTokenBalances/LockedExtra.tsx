@@ -38,7 +38,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
 
   const withdrawIn = useMemo(
     () =>
-      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+      rowMeta.unbonding && accountStatus?.canWithdrawIn
         ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }), {
             locale,
           })

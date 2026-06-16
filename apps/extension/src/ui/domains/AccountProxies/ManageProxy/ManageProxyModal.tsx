@@ -127,9 +127,9 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
           )}
           {isLoadingDetails && <p className="text-body-secondary">{t("Loading proxy details…")}</p>}
           {sets.flatMap((set) =>
-            set.proxies.map((entry, i) => (
+            set.proxies.map((entry) => (
               <ProxyCard
-                key={`${set.networkId}-${entry.delegate}-${entry.proxyType}-${entry.delay}-${i}`}
+                key={`${set.networkId}-${entry.delegate}-${entry.proxyType}-${entry.delay}`}
                 set={set}
                 entry={entry}
                 canDelete={canWrite}

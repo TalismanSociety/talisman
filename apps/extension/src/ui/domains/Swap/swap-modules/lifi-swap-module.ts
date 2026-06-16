@@ -522,7 +522,7 @@ const getApprovalInfo = (
   const { fromTokenId, fromAddress, selectedSubProtocol, quoteData } = params
   if (!fromTokenId || !fromAddress) return null
   const fromAsset = resolveAsset(fromTokenId)
-  if (!quoteData || !fromAsset || !fromAsset.contractAddress) return null
+  if (!quoteData || !fromAsset?.contractAddress) return null
 
   const quoteItem = Array.isArray(quoteData)
     ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)

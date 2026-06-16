@@ -192,10 +192,7 @@ const getBondableBalance = (
   /**
    * Nomination Pool Staking
    */
-  if (
-    token?.type === "substrate-native" &&
-    !!remoteConfig.nominationPools[token.networkId]?.length
-  ) {
+  if (token?.type === "substrate-native" && remoteConfig.nominationPools[token.networkId]?.length) {
     const defaultPoolId = remoteConfig.nominationPools[token.networkId][0]
 
     // cant stake in nom pools if solo staking

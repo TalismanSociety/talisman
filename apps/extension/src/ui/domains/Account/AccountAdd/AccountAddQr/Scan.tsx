@@ -27,6 +27,7 @@ export const Scan = () => {
                         className="text-body-secondary hover:text-body"
                         href={POLKADOT_VAULT_DOCS_URL}
                         target="_blank"
+                        rel="noopener"
                       >
                         <span className="underline underline-offset-2">
                           {t("Instructions for setting up Polkadot Vault on a new device")}

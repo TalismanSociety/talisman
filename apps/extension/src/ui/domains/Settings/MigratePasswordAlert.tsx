@@ -41,6 +41,7 @@ const AlertCard = ({ className, onAccept }: Props) => {
                 target="_blank"
                 rel="noreferrer noopener"
                 className="text-body underline"
+                aria-label="Learn more about Talisman's security model"
               >
                 Learn more
               </a>{" "}

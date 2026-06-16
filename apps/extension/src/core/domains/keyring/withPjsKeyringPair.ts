@@ -42,7 +42,7 @@ export const withPjsKeyringPair = async <T>(
   } finally {
     // cleanup
     secretKey?.fill(0)
-    if (!!pair && !pair.isLocked) pair.lock()
+    if (pair && !pair.isLocked) pair.lock()
     keyring.removePair(address)
   }
 }

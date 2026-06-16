@@ -68,6 +68,7 @@ export const PrivacyPage = () => {
                 className="text-body"
                 href={PRIVACY_POLICY_URL}
                 target="_blank"
+                rel="noopener"
               >
                 Privacy Policy
               </a>{" "}

@@ -212,7 +212,7 @@ export const InputFromAmount = () => {
   }, [editFiat, fiatValue, tokenDisplayValue])
 
   const [errorClassName, errorMessage] = useMemo(() => {
-    if (!!value && parsedAmount.kind === "invalid") return ["text-alert-error", t("Invalid amount")]
+    if (value && parsedAmount.kind === "invalid") return ["text-alert-error", t("Invalid amount")]
     if (parsedAmount.kind === "valid" && parsedAmount.amount > 0n) {
       // No balance record means user holds 0 of this token
       if (!fromBalance && fromToken) return ["text-alert-error", t("Insufficient balance")]

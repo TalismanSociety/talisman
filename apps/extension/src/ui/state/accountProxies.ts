@@ -39,7 +39,7 @@ const [, accountProxies$] = bind(rawAccountProxies$, EMPTY_RESPONSE)
 
 const accountProxySets$ = accountProxies$.pipe(map((res) => res.proxySets))
 
-export const [useAccountProxySets] = bind(accountProxySets$, [] as AccountProxySet[])
+const [useAccountProxySets] = bind(accountProxySets$, [] as AccountProxySet[])
 
 const accountProxiesStatus$ = accountProxies$.pipe(
   map((res) => res.status),
