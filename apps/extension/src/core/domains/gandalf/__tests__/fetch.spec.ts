@@ -1,6 +1,6 @@
 import type { Loadable } from "@talismn/util"
 import { BehaviorSubject } from "rxjs"
-import { afterEach, beforeEach, vi } from "vitest"
+import { afterEach, beforeEach, type Mock, vi } from "vitest"
 
 // ── Module mocks ────────────────────────────────────────────────────────────
 
@@ -18,10 +18,10 @@ vi.mock("@common/log", () => ({
 
 // We need to grab real fetch to spy on it
 const realFetch = globalThis.fetch
-let fetchSpy: ReturnType<typeof vi.fn>
+let fetchSpy: Mock<typeof fetch>
 
 beforeEach(() => {
-  fetchSpy = vi.fn().mockResolvedValue(new Response("ok", { status: 200 }))
+  fetchSpy = vi.fn<typeof fetch>().mockResolvedValue(new Response("ok", { status: 200 }))
   globalThis.fetch = fetchSpy
 })
 

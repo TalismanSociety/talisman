@@ -69,14 +69,14 @@
     "@playwright/test": "^1.60.0",
     "@polkadot/util-crypto": "13.5.3",
     "@types/node": "^24.5.1",
-    "@vitest/coverage-v8": "^3.2.6",
-    "@vitest/ui": "3.2.6",
+    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/ui": "4.1.8",
     "dotenv": "17.4.2",
     "esbuild-plugin-svgr": "3.1.1",
     "husky": "^9.1.7",
     "knip": "6.16.1",
     "tsup": "8.5.1",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.6"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }

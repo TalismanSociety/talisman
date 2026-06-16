@@ -2,8 +2,8 @@ import { Buffer } from "node:buffer"
 import { CompressionStream, DecompressionStream } from "node:stream/web"
 import { TextDecoder, TextEncoder } from "node:util"
 
-import type { Environment } from "vitest/environments"
-import { builtinEnvironments } from "vitest/environments"
+import type { Environment } from "vitest/runtime"
+import { builtinEnvironments } from "vitest/runtime"
 
 /**
  * Custom Vitest environment that extends jsdom with Node.js globals
@@ -11,7 +11,7 @@ import { builtinEnvironments } from "vitest/environments"
  */
 const JsdomWithNodeGlobals: Environment = {
   name: "jsdom-with-node-globals",
-  transformMode: "web",
+  viteEnvironment: "client",
   async setupVM(options) {
     return builtinEnvironments.jsdom.setupVM!(options)
   },
