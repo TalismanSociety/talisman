@@ -1,6 +1,5 @@
 import { log } from "@common/log"
 import { getTransactionSerializable } from "@core/domains/ethereum/helpers"
-import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
@@ -13,14 +12,21 @@ import {
   type TransactionRequest,
 } from "viem"
 
+// The GasPriceOracle is a predeploy living at the same address on every OP-stack L2.
+// Previously sourced from @eth-optimism/contracts-ts, inlined here to drop that dependency
+// (it pulled a large vulnerable wagmi/walletconnect/coinbase subtree).
+const OP_STACK_GAS_PRICE_ORACLE_ADDRESS = "0x420000000000000000000000000000000000000F" as const
+
+const getL1FeeAbi = parseAbi(["function getL1Fee(bytes memory _data) view returns (uint256)"])
+
 const getOpStackEthL1DataFee = async (
   publicClient: PublicClient,
   serializedTx: Hex
 ): Promise<bigint> => {
   try {
     const contract = getContract({
-      address: gasPriceOracleAddress[420],
-      abi: gasPriceOracleABI,
+      address: OP_STACK_GAS_PRICE_ORACLE_ADDRESS,
+      abi: getL1FeeAbi,
       client: { public: publicClient },
     })
     return await contract.read.getL1Fee([serializedTx])
@@ -38,7 +44,7 @@ const getScrollStackEthL1DataFee = async (
   try {
     const contract = getContract({
       address: l1PriceOracleAddress,
-      abi: parseAbi(["function getL1Fee(bytes memory _data) view returns (uint256)"]),
+      abi: getL1FeeAbi,
       client: { public: publicClient },
     })
     return await contract.read.getL1Fee([serializedTx])
