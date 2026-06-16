@@ -28,8 +28,9 @@ import { combineLatest, map, Observable, ReplaySubject, share } from "rxjs"
 import { getNetworksMapById$, getTokensMap$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
 
-export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
-  bind(remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap)))
+const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] = bind(
+  remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap))
+)
 
 const [_useTalismanNetworkIdFromYieldNetworkId, _getTalismanNetworkIdFromYieldNetworkId$] = bind(
   (yieldNetworkId: Networks | null | undefined) =>
@@ -64,7 +65,7 @@ const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subs
   }
 }).pipe(share({ connector: () => subjectRawYieldxyzProviders$, resetOnRefCountZero: false }))
 
-export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
+const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
   status: "loading",
   data: [],
 })
@@ -95,7 +96,7 @@ const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) =
   }
 }).pipe(share({ connector: () => subjectRawYieldxyzProducts$, resetOnRefCountZero: false }))
 
-export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
+const [useYieldxyzProducts, yieldxyzProducts$] = bind(
   combineLatest([
     rawYieldxyzProducts$,
     yieldNetworkIdToTalismanNetworkIdMap$,
@@ -279,8 +280,11 @@ const enhanceYieldxyzPositions = (
 }
 
 export {
+  useYieldNetworkIdToTalismanNetworkIdMap,
   useYieldxyzEnterableTokenIds,
   useYieldxyzPositionsEnhanced,
   useYieldxyzProduct,
+  useYieldxyzProducts,
   useYieldxyzProvider,
+  useYieldxyzProviders,
 }

@@ -91,7 +91,7 @@ const [_useNftNetworkOptions, nftNetworkOptions$] = bind(
   []
 )
 
-export const [useNfts, nfts$] = bind(
+const [useNfts, nfts$] = bind(
   combineLatest([
     nftData$,
     getAccountsByCategory$("portfolio"),
@@ -309,4 +309,4 @@ const [useNftCollection, _getNftCollection$] = bind(
   { collection: null, nfts: [] }
 )
 
-export { useIsFavoriteNft, useIsHiddenNftCollection, useNft, useNftCollection }
+export { useIsFavoriteNft, useIsHiddenNftCollection, useNft, useNftCollection, useNfts }

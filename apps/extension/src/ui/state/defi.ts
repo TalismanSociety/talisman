@@ -24,7 +24,9 @@ const rawDefiPositions$ = new Observable<Loadable<DefiPosition[]>>((subscriber) 
   }
 })
 
-export const [useDefiPositions, defiPositions$] = bind(rawDefiPositions$, DEFAULT_DEFI_POSITIONS)
+const [useDefiPositions, defiPositions$] = bind(rawDefiPositions$, DEFAULT_DEFI_POSITIONS)
+
+export { useDefiPositions }
 
 export const [useDefiPosition] = bind(
   (id: string | null | undefined) =>

@@ -113,7 +113,7 @@ export const [usePortfolioSearch, portfolioSearch$] = bind(subjectPortfolioSearc
 
 export const setPortfolioSearch = (search: string) => subjectPortfolioSearch$.next(search)
 
-export const [usePortfolioGlobalData, portfolioGlobalData$] = bind<PortfolioGlobalData>(
+const [usePortfolioGlobalData, portfolioGlobalData$] = bind<PortfolioGlobalData>(
   combineLatest({
     networks: getNetworks$({ activeOnly: true, includeTestnets: true }),
     tokens: getTokens$({ activeOnly: true, includeTestnets: true }),
@@ -132,6 +132,8 @@ export const [usePortfolioGlobalData, portfolioGlobalData$] = bind<PortfolioGlob
     isProvisioned: false,
   }
 )
+
+export { usePortfolioGlobalData }
 
 const portfolioForSelectedNetwork$ = combineLatest([
   portfolioGlobalData$,

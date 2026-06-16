@@ -20,7 +20,7 @@ const getDotNetworkType = (network: DotNetwork, networksById: NetworkList, t: TF
   }
 }
 
-export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind(
+const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind(
   combineLatest([getNetworks$(), getNetworksMapById$(), t$]).pipe(
     map(([networks, networksById, t]): Record<NetworkId, string | null> => {
       return fromPairs(
@@ -81,4 +81,4 @@ const [useNetworkDisplayName, _networkDisplayName$] = bind(
   }
 )
 
-export { useNetworkDisplayName, useNetworkDisplayType }
+export { useNetworkDisplayName, useNetworkDisplayType, useNetworkDisplayTypesMapById }

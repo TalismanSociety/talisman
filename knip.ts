@@ -7,6 +7,7 @@ const config: KnipConfig = {
   ignoreWorkspaces: [
     ".papi/descriptors", // Generated polkadot-api descriptors
     "apps/balances-bench", // Test project — unused artefacts expected
+    "config/tsconfig", // Ships only shared tsconfig .json files — no code for knip to analyze
   ],
 
   ignoreDependencies: [
@@ -14,6 +15,8 @@ const config: KnipConfig = {
     "@tailwindcss/forms",
     // Core framework — referenced via @tailwindcss/postcss, not direct JS imports
     "tailwindcss",
+    // Coverage provider loaded by `vitest run --coverage` (pnpm test:coverage), never imported
+    "@vitest/coverage-v8",
   ],
 
   // Shell utilities used in package.json scripts — not npm binaries
@@ -29,6 +32,8 @@ const config: KnipConfig = {
     "**/EthProviderRpcError.ts": ["exports"],
     "**/Sign/Qr/constants.ts": ["exports"],
     "**/inject/solana/solana.ts": ["exports"],
+    // Public injected web3 API types exposed to dapps (mirror @polkadot/extension-inject)
+    "**/inject/substrate/types.ts": ["types"],
     // Generated API clients export everything by design
     "**/bittensor/sn45/Sn45Api.ts": ["exports", "types"],
     "**/bittensor/tao-data/TaoDataApi.ts": ["exports", "types"],
@@ -49,11 +54,6 @@ const config: KnipConfig = {
       ],
       project: ["src/**/*.{ts,tsx}", "entrypoints/**/*.{ts,tsx}"],
       ignore: ["**/*.spec.ts", "**/__tests__/**"],
-    },
-
-    "config/tsconfig": {
-      entry: ["*.json"],
-      project: ["**/*.json"],
     },
   },
 

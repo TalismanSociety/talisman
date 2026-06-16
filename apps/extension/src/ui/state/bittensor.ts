@@ -28,7 +28,7 @@ const [useBittensorValidators, _bittensorValidators$] = bind(bittensorValidators
   data: [],
 })
 
-export const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
+const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
   bittensorValidatorsRaw$.pipe(
     map((loadable) => ({
       status: loadable.status,
@@ -53,7 +53,7 @@ const [useBittensorValidator, _getBittensorValidator$] = bind(
   { status: "loading", data: null }
 )
 
-export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
+const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
   getTokens$({ platform: "polkadot" }).pipe(
     map((tokens) =>
       uniq(
@@ -74,4 +74,9 @@ const [_useIsBittensorNetwork, _isBittensorNetwork$] = bind(
   false
 )
 
-export { useBittensorValidator, useBittensorValidators }
+export {
+  useBittensorNetworkIds,
+  useBittensorValidator,
+  useBittensorValidators,
+  useBittensorValidatorsMap,
+}
