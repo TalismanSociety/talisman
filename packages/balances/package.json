@@ -44,10 +44,10 @@
     "lodash-es": "4.17.21",
     "p-queue": "8.1.0",
     "polkadot-api": "1.23.3",
-    "rxjs": "^7.8.1",
+    "rxjs": "^7.8.2",
     "scale-ts": "^1.6.1",
     "viem": "^2.27.3",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@polkadot/api-contract": "16.1.2",
