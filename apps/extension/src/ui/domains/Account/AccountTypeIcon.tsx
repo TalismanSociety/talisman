@@ -30,7 +30,7 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({
   const [Icon, tooltip] = useMemo(() => {
     if (!type) return [undefined, undefined]
 
-    if (!!showLinked && type === "keypair") return [LinkIcon, t("Local account")]
+    if (showLinked && type === "keypair") return [LinkIcon, t("Local account")]
     if (["ledger-ethereum", "ledger-polkadot", "ledger-solana"].includes(type))
       return [UsbIcon, t("Ledger account")]
     if (type === "polkadot-vault") return [PolkadotVaultIcon, t("Polkadot Vault account")]

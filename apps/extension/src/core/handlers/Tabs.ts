@@ -140,7 +140,7 @@ export default class Tabs extends TabsHandler {
         if (!ok) return []
 
         const site = sites[siteId]
-        if (!site || !site.addresses) return []
+        if (!site?.addresses) return []
 
         return await this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
       }

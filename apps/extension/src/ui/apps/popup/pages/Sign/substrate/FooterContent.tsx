@@ -298,8 +298,8 @@ const FeeInfo = ({
   return (
     <TooltipContent>
       <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
-        {feeRows.map((row, idx) => (
-          <div key={`${row.tokenId}-${idx}`} className="flex w-full justify-between gap-8">
+        {feeRows.map((row) => (
+          <div key={`${row.tokenId}-${row.label}`} className="flex w-full justify-between gap-8">
             <div>{row.label}</div>
             <div>
               <TokensAndFiat tokenId={row.tokenId} planck={row.plancks} noTooltip noCountUp />

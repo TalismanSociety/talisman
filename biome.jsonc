@@ -6,6 +6,10 @@
     "useIgnoreFile": true,
     "defaultBranch": "dev"
   },
+  "files": {
+    // biome 2.5's scanner picks up .svg files and fails to parse them as code; exclude them.
+    "includes": ["**", "!**/*.svg"]
+  },
   "assist": {
     "actions": {
       "source": {
@@ -49,7 +53,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "correctness": {
         "noUnusedVariables": "warn",
         "noUnusedImports": "warn",

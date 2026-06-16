@@ -9,11 +9,7 @@ const config: KnipConfig = {
     "apps/balances-bench", // Test project — unused artefacts expected
   ],
 
-  ignore: ["**/dist/**", "**/.wxt/**", "**/coverage/**", "test-results/**", "playwright-report/**"],
-
   ignoreDependencies: [
-    // Generated workspace package — imported via type-only paths by packages/balances and packages/sapi
-    "@polkadot-api/descriptors",
     // Loaded via @plugin directive in CSS (knip can't parse CSS imports)
     "@tailwindcss/forms",
     // Core framework — referenced via @tailwindcss/postcss, not direct JS imports
@@ -45,24 +41,14 @@ const config: KnipConfig = {
     // Browser extension app (WXT — no native Knip plugin, needs manual entry config)
     "apps/extension": {
       entry: [
-        "entrypoints/background.ts",
-        "entrypoints/content.ts",
-        "entrypoints/page.ts",
-
         "entrypoints/popup/index.html",
-        "entrypoints/popup/main.tsx",
         "entrypoints/dashboard/index.html",
-        "entrypoints/dashboard/main.tsx",
         "entrypoints/onboarding/index.html",
-        "entrypoints/onboarding/main.tsx",
         "entrypoints/support/index.html",
-        "entrypoints/support/main.tsx",
-
-        "wxt.config.ts",
         "i18next-parser.config.cjs",
       ],
       project: ["src/**/*.{ts,tsx}", "entrypoints/**/*.{ts,tsx}"],
-      ignore: ["**/*.test.ts", "**/*.spec.ts", "**/__tests__/**", "tests/**"],
+      ignore: ["**/*.spec.ts", "**/__tests__/**"],
     },
 
     "config/tsconfig": {

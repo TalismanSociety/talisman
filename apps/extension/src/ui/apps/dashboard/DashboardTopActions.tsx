@@ -39,7 +39,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   const isBittensorEnabled = useIsBittensorEnabled()
 
   const [disableActions, disabledReason] = useMemo(() => {
-    if (!!selectedAccount && !isAccountOwned(selectedAccount))
+    if (selectedAccount && !isAccountOwned(selectedAccount))
       return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
 
     if (!selectedAccounts.some(isAccountOwned))
@@ -73,7 +73,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
         {
           analyticsName: "Goto" as const,
           analyticsAction: "open receive",
-          label: !!selectedAccount && !isAccountOwned(selectedAccount) ? t("Copy") : t("Receive"),
+          label: selectedAccount && !isAccountOwned(selectedAccount) ? t("Copy") : t("Receive"),
           icon: ArrowDownIcon,
           onClick: () =>
             openCopyAddressModal({

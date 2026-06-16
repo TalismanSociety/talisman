@@ -177,7 +177,12 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
             <>
               {tx?.confirmed ? t("Confirmed in") : t("Included in")}{" "}
               {href ? (
-                <a target="_blank" className="text-grey-200 hover:text-body" href={href}>
+                <a
+                  target="_blank"
+                  className="text-grey-200 hover:text-body"
+                  href={href}
+                  rel="noopener"
+                >
                   {t("block #{{blockNumber}}", { blockNumber })}{" "}
                   <ExternalLinkIcon className="inline align-text-top" />
                 </a>
@@ -188,7 +193,12 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
           ) : href ? (
             <Trans t={t}>
               View transaction on{" "}
-              <a target="_blank" className="text-grey-200 hover:text-body" href={href}>
+              <a
+                target="_blank"
+                className="text-grey-200 hover:text-body"
+                href={href}
+                rel="noopener"
+              >
                 block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
             </Trans>

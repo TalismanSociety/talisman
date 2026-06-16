@@ -21,4 +21,4 @@ const [useTransaction, _getTransaction$] = bind((id: string) =>
   )
 )
 
-export { useTransactions, useTransaction }
+export { useTransaction, useTransactions }

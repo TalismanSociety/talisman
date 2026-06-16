@@ -393,6 +393,7 @@ const SendPage = ({
                 href={POLKADOT_VAULT_DOCS_URL}
                 target="_blank"
                 className="text-grey-200 hover:text-body"
+                rel="noopener"
               >
                 {t("Learn more")}
               </a>
@@ -487,6 +488,7 @@ const SendPage = ({
               href={POLKADOT_VAULT_DOCS_URL}
               target="_blank"
               className="text-grey-200 hover:text-body"
+              rel="noopener"
             >
               {t("Learn more")}
             </a>
@@ -516,6 +518,7 @@ const SendPage = ({
               href={POLKADOT_VAULT_DOCS_URL}
               target="_blank"
               className="mt-8 font-light text-grey-200 text-xs hover:text-white"
+              rel="noopener"
             >
               {t("Still seeing an error?")}
             </a>

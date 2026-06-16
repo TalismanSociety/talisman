@@ -6,7 +6,7 @@ export const hasStorageItem = (
   itemName: string
 ): boolean => {
   const pallet = metadata.pallets.find((p) => p.name === palletName)
-  if (!pallet || !pallet.storage) return false
+  if (!pallet?.storage) return false
   return pallet.storage.items.some((item) => item.name === itemName)
 }
 
@@ -16,7 +16,7 @@ export const hasStorageItems = (
   itemNames: string[]
 ): boolean => {
   const pallet = metadata.pallets.find((p) => p.name === palletName)
-  if (!pallet || !pallet.storage) return false
+  if (!pallet?.storage) return false
   return itemNames.every((itemName) => pallet.storage?.items.some((item) => item.name === itemName))
 }
 
@@ -26,7 +26,7 @@ export const hasRuntimeApi = (
   method: string
 ): boolean => {
   const api = metadata.apis.find((api) => api.name === apiName)
-  if (!api || !api.methods) return false
+  if (!api?.methods) return false
   return api.methods.some((m) => m.name === method)
 }
 

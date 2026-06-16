@@ -74,4 +74,4 @@ const [_useIsBittensorNetwork, _isBittensorNetwork$] = bind(
   false
 )
 
-export { useBittensorValidators, useBittensorValidator }
+export { useBittensorValidator, useBittensorValidators }

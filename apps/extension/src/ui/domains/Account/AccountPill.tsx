@@ -16,7 +16,7 @@ type AccountPillProps = {
 export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, className }) => {
   const encodedAddress = useMemo(
     () =>
-      !!account && ss58Format !== undefined
+      account && ss58Format !== undefined
         ? encodeAnyAddress(account.address, { ss58Format })
         : account?.address,
     [account, ss58Format]

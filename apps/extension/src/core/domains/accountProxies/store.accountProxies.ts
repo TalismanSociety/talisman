@@ -16,10 +16,12 @@ const DEFAULT_DATA: AccountProxiesSnapshot = { sets: {} }
 const [setSnapshot, accountProxiesStore$] = splitSubject(
   new ReplaySubject<AccountProxiesSnapshot>(1)
 )
+
 export { accountProxiesStore$ }
 
 /** Emits once after the initial blob load completes (success or error). */
 const [setHydrated, storeHydrated$] = splitSubject(new ReplaySubject<true>(1))
+
 export { storeHydrated$ }
 
 const getAccountProxySetKey = (networkId: string, delegator: string) => `${networkId}|${delegator}`

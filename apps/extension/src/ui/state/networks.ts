@@ -81,4 +81,4 @@ const [useNetworkDisplayName, _networkDisplayName$] = bind(
   }
 )
 
-export { useNetworkDisplayType, useNetworkDisplayName }
+export { useNetworkDisplayName, useNetworkDisplayType }

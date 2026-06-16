@@ -431,7 +431,7 @@ const Header: FC = () => {
         )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {isInitializing || isInProgress || balances.length || !!percent ? (
+        {isInitializing || isInProgress || balances.length || percent ? (
           <>
             <div className="flex text-base">
               <div className="grow">

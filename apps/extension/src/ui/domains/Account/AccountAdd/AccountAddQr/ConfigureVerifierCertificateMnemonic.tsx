@@ -64,8 +64,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
           "To use your Polkadot Vault with Talisman, you need to configure your Polkadot Vault Verifier Certificate Mnemonic."
         )}
       />
-      {(!state.verifierCertificateConfig ||
-        state.verifierCertificateConfig.verifierCertificateType !== "import") && (
+      {state.verifierCertificateConfig?.verifierCertificateType !== "import" && (
         <div className="flex flex-col gap-8">
           <span>{t("Why do I need to do this?")}</span>
           <div className="text-body-secondary text-sm">
@@ -83,6 +82,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
               href={POLKADOT_VAULT_DOCS_URL}
               target="_blank"
               className="text-grey-200 hover:text-primary"
+              rel="noopener"
             >
               {t("Read more about Talisman's Polkadot Vault integration here.")}
             </a>

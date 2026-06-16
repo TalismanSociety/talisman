@@ -90,7 +90,7 @@ export const SeekNetworkFeeRows: FC<{
   return (
     <>
       <FormFieldSetRow label={t("Transaction Priority")} variant={variant}>
-        {!!transaction && !!txDetails && !!feeTokenId ? (
+        {transaction && txDetails && feeTokenId ? (
           <EthFeeSelect
             key={transaction.nonce?.toString() ?? "pending"} // reset internal state when tx changes
             tokenId={feeTokenId}
@@ -113,7 +113,7 @@ export const SeekNetworkFeeRows: FC<{
         variant={variant}
         valueClassName="text-body-secondary"
       >
-        {!!txDetails && !!feeTokenId ? (
+        {txDetails && feeTokenId ? (
           <TokensAndFiat
             planck={txDetails.estimatedFee.toString()}
             tokenId={feeTokenId}

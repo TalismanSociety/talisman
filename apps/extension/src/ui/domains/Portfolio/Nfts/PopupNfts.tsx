@@ -186,9 +186,9 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
 }) => {
   return (
     <div className="flex flex-col gap-4 text-sm">
-      {data.collections.map((collection, i) => (
+      {data.collections.map((collection) => (
         <NftCollectionRow
-          key={`${collection.id}-${i}`}
+          key={collection.id}
           collection={collection}
           data={data}
           onNftClick={onNftClick}
@@ -266,9 +266,9 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
 }) => {
   return (
     <div className="grid w-full grid-cols-2 gap-8">
-      {data.collections.map((collection, i) => (
+      {data.collections.map((collection) => (
         <NftCollectionTile
-          key={`${collection.id}-${i}`}
+          key={collection.id}
           collection={collection}
           data={data}
           onNftClick={onNftClick}

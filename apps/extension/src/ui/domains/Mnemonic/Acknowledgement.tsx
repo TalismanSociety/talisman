@@ -44,6 +44,7 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
           href={MNEMONIC_BACKUP_DOCS_URL}
           target="_blank"
           className="text-body-secondary text-sm hover:text-grey-300"
+          rel="noopener"
         >
           {t("Learn More")}
         </a>

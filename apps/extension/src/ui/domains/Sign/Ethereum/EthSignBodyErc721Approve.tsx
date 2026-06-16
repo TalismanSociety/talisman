@@ -57,7 +57,7 @@ export const EthSignBodyErc721Approve: FC = () => {
                 "This contract will have permission to transfer this NFT on your behalf until manually revoked."
               )}
             </span>{" "}
-            <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
+            <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank" rel="noopener">
               {t("Learn more")}
             </a>
           </SignAlertMessage>

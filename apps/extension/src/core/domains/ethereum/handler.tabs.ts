@@ -106,8 +106,7 @@ export class EthTabsHandler extends TabsHandler {
       // no-op, will throw below
     }
     if (
-      !site ||
-      !site.ethChainId ||
+      !site?.ethChainId ||
       (authorisedAddress && !site.ethAddresses?.includes(normalizeAddress(authorisedAddress)))
     )
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
