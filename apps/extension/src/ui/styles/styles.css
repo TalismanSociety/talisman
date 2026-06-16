@@ -403,6 +403,14 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/*
+ * react-toastify v11 removed ToastContainer's `bodyClassName` prop.
+ * Style the toast body here instead (was bodyClassName="px-4! py-0!").
+ */
+.Toastify__toast-body {
+  @apply px-4! py-0!;
+}
+
 @font-face {
   font-family: "Surt";
   font-weight: normal;

@@ -218,7 +218,7 @@ const useDevModeAutologin = ({
 }: {
   watch: UseFormWatch<FormData>
   setValue: UseFormSetValue<FormData>
-  handleSubmit: UseFormHandleSubmit<FormData, undefined>
+  handleSubmit: UseFormHandleSubmit<FormData, FormData>
   submit: SubmitHandler<FormData>
 }) => {
   const [passwordField] = watch(["password"])
