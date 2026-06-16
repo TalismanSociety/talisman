@@ -349,8 +349,8 @@ importers:
         specifier: ^1.98.2
         version: 1.98.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@spruceid/siwe-parser':
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^3.0.0
+        version: 3.0.0
       '@substrate/txwrapper-core':
         specifier: 7.5.3
         version: 7.5.3(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -394,8 +394,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/scale
       '@talismn/siws':
-        specifier: ^0.0.19
-        version: 0.0.19(@polkadot/api-contract@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/extension-dapp@0.59.2(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/types@16.1.2)(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+        specifier: ^1.0.0
+        version: 1.0.0(@polkadot/api-contract@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/extension-dapp@0.59.2(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/types@16.1.2)(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@talismn/solana':
         specifier: workspace:*
         version: link:../../packages/solana
@@ -3401,6 +3401,9 @@ packages:
   '@spruceid/siwe-parser@2.1.2':
     resolution: {integrity: sha512-d/r3S1LwJyMaRAKQ0awmo9whfXeE88Qt00vRj91q5uv5ATtWIQEGJ67Yr5eSZw5zp1/fZCXZYuEckt8lSkereQ==}
 
+  '@spruceid/siwe-parser@3.0.0':
+    resolution: {integrity: sha512-Y92k63ilw/8jH9Ry4G2e7lQd0jZAvb0d/Q7ssSD0D9mp/Zt2aCXIc3g0ny9yhplpAx1QXHsMz/JJptHK/zDGdw==}
+
   '@stablelib/binary@1.0.1':
     resolution: {integrity: sha512-ClJWvmL6UBM/wjkvv/7m5VP3GMr9t0osr4yVgLZsLCOz4hGN9gIAFEqnJ0TsSMAN+n840nf2cHZnA5/KFqHC7Q==}
 
@@ -3685,8 +3688,8 @@ packages:
   '@tailwindcss/postcss@4.2.1':
     resolution: {integrity: sha512-OEwGIBnXnj7zJeonOh6ZG9woofIjGrd2BORfvE5p9USYKDCZoQmfqLcfNiRWoJlRWLdNPn2IgVZuWAOM4iTYMw==}
 
-  '@talismn/siws@0.0.19':
-    resolution: {integrity: sha512-Fv3mj0S6Vp3jLMLIUf/jvznWyxYTaOCf70MuBm+iB3c9f9+yhgsQJ1H8Ow+wvcC6CFRIO/dEpBqAzFVFBhbwUA==}
+  '@talismn/siws@1.0.0':
+    resolution: {integrity: sha512-B4PQlWiwzjU+MbuVtwi0C+ilxw37C//NOaaIMzk7e+QODQG02qrllgWoZkc8DSbncUYh+H0Z5xiik3NBsJmoYg==}
     peerDependencies:
       '@polkadot/api': 16.1.2
       '@polkadot/extension-dapp': 0.59.2
@@ -4415,9 +4418,6 @@ packages:
 
   blueimp-md5@2.19.0:
     resolution: {integrity: sha512-DRQrD6gJyy8FbiE4s+bDoXS9hiW3Vbx5uCdwvcCf3zLHL+Iv7LtGHLpr+GZV8rHG8tK766FGYBwRbu8pELTt+w==}
-
-  bn.js@4.12.3:
-    resolution: {integrity: sha512-fGTi3gxV/23FTYdAoUtLYp6qySe2KE3teyZitipKNRuVYcBkoP/bB3guXN/XVKUe9mxCHXnc9C4ocyz8OmgN0g==}
 
   bn.js@5.2.3:
     resolution: {integrity: sha512-EAcmnPkxpntVL+DS7bO1zhcZNvCkxqtkd0ZY53h06GNQ3DEkkGZ/gKgmDv6DdZQGj9BgfSPKtJJ7Dp1GPP8f7w==}
@@ -12421,6 +12421,11 @@ snapshots:
       uri-js: 4.4.1
       valid-url: 1.0.9
 
+  '@spruceid/siwe-parser@3.0.0':
+    dependencies:
+      '@noble/hashes': 1.8.0
+      apg-js: 4.4.0
+
   '@stablelib/binary@1.0.1':
     dependencies:
       '@stablelib/int': 1.0.1
@@ -12706,7 +12711,7 @@ snapshots:
       postcss: 8.5.6
       tailwindcss: 4.2.1
 
-  '@talismn/siws@0.0.19(@polkadot/api-contract@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/extension-dapp@0.59.2(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/types@16.1.2)(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+  '@talismn/siws@1.0.0(@polkadot/api-contract@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/extension-dapp@0.59.2(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/types@16.1.2)(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
       '@azns/resolver-core': 1.7.0(@polkadot/api-contract@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/api@16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/types@16.1.2)(@polkadot/util-crypto@13.5.3(@polkadot/util@13.5.3))(@polkadot/util@13.5.3)
       '@polkadot/api': 16.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -13466,8 +13471,6 @@ snapshots:
 
   blueimp-md5@2.19.0: {}
 
-  bn.js@4.12.3: {}
-
   bn.js@5.2.3: {}
 
   boolbase@1.0.0: {}
@@ -13929,7 +13932,7 @@ snapshots:
 
   create-ecdh@4.0.4:
     dependencies:
-      bn.js: 4.12.3
+      bn.js: 5.2.3
       elliptic: 6.6.1
 
   create-hash@1.2.0:
@@ -14134,7 +14137,7 @@ snapshots:
 
   diffie-hellman@5.0.3:
     dependencies:
-      bn.js: 4.12.3
+      bn.js: 5.2.3
       miller-rabin: 4.0.1
       randombytes: 2.1.0
 
@@ -15366,7 +15369,7 @@ snapshots:
 
   jest-message-util@29.7.0:
     dependencies:
-      '@babel/code-frame': 7.27.1
+      '@babel/code-frame': 7.29.7
       '@jest/types': 29.6.3
       '@types/stack-utils': 2.0.1
       chalk: 4.1.2
@@ -15788,7 +15791,7 @@ snapshots:
 
   miller-rabin@4.0.1:
     dependencies:
-      bn.js: 4.12.3
+      bn.js: 5.2.3
       brorand: 1.1.0
 
   mime-db@1.52.0: {}
@@ -16556,7 +16559,7 @@ snapshots:
 
   public-encrypt@4.0.3:
     dependencies:
-      bn.js: 4.12.3
+      bn.js: 5.2.3
       browserify-rsa: 4.1.1
       create-hash: 1.2.0
       parse-asn1: 5.1.9
