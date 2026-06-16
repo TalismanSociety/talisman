@@ -13,7 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { firstValueFrom } from "rxjs"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import type { RampsFormSharedData } from "../shared/types"
 import type { RampsBuyQuote, RampsBuyQuoteSuccess } from "./types"
