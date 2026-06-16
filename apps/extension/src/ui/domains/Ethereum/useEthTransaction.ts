@@ -19,9 +19,8 @@ import type {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
-import { bigIntMax } from "@ethereumjs/util"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
-import { isBigInt, isNotNil } from "@talismn/util"
+import { BigMath, isBigInt, isNotNil } from "@talismn/util"
 import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
@@ -176,12 +175,16 @@ const useBlockFeeData = (
 
       const networkUsage = Number((gasUsed * 100n) / blockGasLimit) / 100
 
-      const allPossibleBaseFees = [feeHistoryAnalysis?.nextBaseFee, baseFeePerGas].filter(isNotNil)
+      const [firstBaseFee, ...otherBaseFees] = [
+        feeHistoryAnalysis?.nextBaseFee,
+        baseFeePerGas,
+      ].filter(isNotNil)
 
       return {
         estimatedGas,
         gasPrice,
-        baseFeePerGas: allPossibleBaseFees.length ? bigIntMax(...allPossibleBaseFees) : 0n,
+        baseFeePerGas:
+          firstBaseFee !== undefined ? BigMath.max(firstBaseFee, ...otherBaseFees) : 0n,
         blockGasLimit,
         networkUsage,
         feeHistoryAnalysis: adjustedFeeHistoryAnalysis,
