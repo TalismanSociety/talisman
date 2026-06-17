@@ -260,8 +260,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       '@metamask/browser-passworder':
-        specifier: 5.0.1
-        version: 5.0.1(supports-color@10.2.2)
+        specifier: 6.0.0
+        version: 6.0.0
       '@metamask/eth-sig-util':
         specifier: 8.2.0
         version: 8.2.0
@@ -443,8 +443,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(anylogger@1.0.11)(loglevel@1.9.2)
       bcryptjs:
-        specifier: ^2.4.3
-        version: 2.4.3
+        specifier: ^3.0.3
+        version: 3.0.3
       bignumber.js:
         specifier: ^9.1.2
         version: 9.1.2
@@ -611,9 +611,6 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@types/bcryptjs':
-        specifier: ^2.4.6
-        version: 2.4.6
       '@types/blueimp-md5':
         specifier: 2.18.2
         version: 2.18.2
@@ -894,8 +891,8 @@ importers:
   packages/crypto:
     dependencies:
       '@noble/ciphers':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.2.0
+        version: 2.2.0
       '@noble/curves':
         specifier: 1.9.2
         version: 1.9.2
@@ -921,8 +918,8 @@ importers:
         specifier: 0.1.3
         version: 0.1.3
       mlkem:
-        specifier: 2.5.0
-        version: 2.5.0
+        specifier: 2.7.0
+        version: 2.7.0
       scale-ts:
         specifier: 1.6.1
         version: 1.6.1
@@ -1993,10 +1990,6 @@ packages:
     resolution: {integrity: sha512-iYGzkV7fCSi/BK9nUgF64V4Yd4V6PQ38suh3ewUJsOk2/ksAq0HuugmLFJ7JeUmWUr9wZsGKJ3Z/jB9CJ91o0g==}
     engines: {node: ^18.18 || >=20}
 
-  '@metamask/browser-passworder@5.0.1':
-    resolution: {integrity: sha512-H7H6N6TKjTbefFLWQKGNsJzXLWnMH/p5AJ/vCM3BrZAmRz8Y4b8B5+xx02cCY4r7IxpE969I/b8IeyJp16WKxw==}
-    engines: {node: ^16.20 || ^18.16 || >=20}
-
   '@metamask/browser-passworder@6.0.0':
     resolution: {integrity: sha512-/LhNSOu8ThLtIOLKrHhXS4D0SuseK731tWH+1GxI6FO9j0XQtJvPdMw89EEXwCd8mA5iFUK/cU6kxsszfH7GaQ==}
     engines: {node: ^18.18 || ^20.14 || >=22}
@@ -2308,10 +2301,6 @@ packages:
     resolution: {integrity: sha512-0nF2CWjWQr/m0Y2t2lJnBTU1/CZPPTvKvcESLplyWe/tyeb8zFOi/FeneDmaFnML6LYRIGZU6f+xR0jKAIUZfw==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
-  '@metamask/utils@9.3.0':
-    resolution: {integrity: sha512-w8CVbdkDrVXFJbfBSlDfafDR6BAkpDmv1bC1UJVCoVny5tW2RKAdn9i68Xf7asYT4TnUhl/hN4zfUiKQq9II4g==}
-    engines: {node: '>=16.0.0'}
-
   '@metaplex-foundation/mpl-token-metadata@3.4.0':
     resolution: {integrity: sha512-AxBAYCK73JWxY3g9//z/C9krkR0t1orXZDknUPS4+GjwGH2vgPfsk04yfZ31Htka2AdS9YE/3wH7sMUBHKn9Rg==}
     peerDependencies:
@@ -2353,8 +2342,8 @@ packages:
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/ciphers@2.0.1':
-    resolution: {integrity: sha512-xHK3XHPUW8DTAobU+G0XT+/w+JLM7/8k1UFdB5xg/zTFPnFCobhftzw8wl4Lw2aq/Rvir5pxfZV5fEazmeCJ2g==}
+  '@noble/ciphers@2.2.0':
+    resolution: {integrity: sha512-Z6pjIZ/8IJcCGzb2S/0Px5J81yij85xASuk1teLNeg75bfT07MV3a/O2Mtn1I2se43k3lkVEcFaR10N4cgQcZA==}
     engines: {node: '>= 20.19.0'}
 
   '@noble/curves@1.4.2':
@@ -3848,9 +3837,6 @@ packages:
   '@types/babel__traverse@7.20.6':
     resolution: {integrity: sha512-r1bzfrm0tomOI8g1SzvCaQHo6Lcv6zu0EA+W2kHrt8dyrHQxGzBBL4kdkzIS+jBMV+EYcMAEAqXqYaLJq5rOZg==}
 
-  '@types/bcryptjs@2.4.6':
-    resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
-
   '@types/blueimp-md5@2.18.2':
     resolution: {integrity: sha512-dJ9yRry9Olt5GAWlgCtE5dK9d/Dfhn/V7hna86eEO2Pn76+E8Y0S0n61iEUEGhWXXgtKtHxtZLVNwL8X+vLHzg==}
 
@@ -3874,9 +3860,6 @@ packages:
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
-
-  '@types/debug@4.1.12':
-    resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
@@ -3925,9 +3908,6 @@ packages:
 
   '@types/minimatch@3.0.5':
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
-
-  '@types/ms@0.7.34':
-    resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -4373,8 +4353,9 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  bcryptjs@2.4.3:
-    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
+    hasBin: true
 
   bech32@1.1.4:
     resolution: {integrity: sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==}
@@ -6597,8 +6578,8 @@ packages:
     resolution: {integrity: sha512-IXnMcJ6ZyTuhRmJSjzvHSRhlVPiN9Jwc6e59V0bEJ0ba6OBeX2L0E+mRN1QseeOF4mM+F1Rit6Nh7o+rl2Yn/A==}
     engines: {node: '>0.9'}
 
-  mlkem@2.5.0:
-    resolution: {integrity: sha512-TnSvGBs0EVPukQcdPF0882ZoYXYuD2rb+VgO0kUDbFi/XM1rJOwnQoFW3wGGuc3nG3AT/zp3oWJ86W7ewwKYyA==}
+  mlkem@2.7.0:
+    resolution: {integrity: sha512-I2bcB5d6jtkdan6MLGOxObpUbidqv0ej+PhbCGnXUqmcGYZ6X8F0qBpU6HE4mvYc81NSznBrVDp+Uc808Ba2RA==}
     engines: {node: '>=16.0.0'}
 
   mlly@1.8.0:
@@ -9927,12 +9908,6 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/browser-passworder@5.0.1(supports-color@10.2.2)':
-    dependencies:
-      '@metamask/utils': 9.3.0(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
-
   '@metamask/browser-passworder@6.0.0':
     dependencies:
       '@metamask/utils': 11.11.0
@@ -10793,20 +10768,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/utils@9.3.0(supports-color@10.2.2)':
-    dependencies:
-      '@ethereumjs/tx': 4.2.0
-      '@metamask/superstruct': 3.2.1
-      '@noble/hashes': 1.8.0
-      '@scure/base': 1.2.6
-      '@types/debug': 4.1.12
-      debug: 4.4.3(supports-color@10.2.2)
-      pony-cause: 2.1.11
-      semver: 7.8.4
-      uuid: 9.0.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@metaplex-foundation/mpl-token-metadata@3.4.0(@metaplex-foundation/umi@1.5.1)':
     dependencies:
       '@metaplex-foundation/mpl-toolbox': 0.10.0(@metaplex-foundation/umi@1.5.1)
@@ -10855,7 +10816,7 @@ snapshots:
 
   '@noble/ciphers@1.3.0': {}
 
-  '@noble/ciphers@2.0.1': {}
+  '@noble/ciphers@2.2.0': {}
 
   '@noble/curves@1.4.2':
     dependencies:
@@ -12919,8 +12880,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.7
 
-  '@types/bcryptjs@2.4.6': {}
-
   '@types/blueimp-md5@2.18.2': {}
 
   '@types/bn.js@5.1.6':
@@ -12950,10 +12909,6 @@ snapshots:
   '@types/connect@3.4.38':
     dependencies:
       '@types/node': 24.12.0
-
-  '@types/debug@4.1.12':
-    dependencies:
-      '@types/ms': 0.7.34
 
   '@types/debug@4.1.13':
     dependencies:
@@ -12999,8 +12954,6 @@ snapshots:
   '@types/lodash@4.17.24': {}
 
   '@types/minimatch@3.0.5': {}
-
-  '@types/ms@0.7.34': {}
 
   '@types/ms@2.1.0': {}
 
@@ -13444,7 +13397,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  bcryptjs@2.4.3: {}
+  bcryptjs@3.0.3: {}
 
   bech32@1.1.4: {}
 
@@ -15821,7 +15774,7 @@ snapshots:
 
   mktemp@0.4.0: {}
 
-  mlkem@2.5.0: {}
+  mlkem@2.7.0: {}
 
   mlly@1.8.0:
     dependencies:
