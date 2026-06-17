@@ -10,6 +10,10 @@ const ETH_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
 const POLKADOT_MNEMONIC = "bottom drive obey lake curtain smoke basket hold race lonely fit walk"
 const POLKADOT_ALICE_DP = "//Alice"
+// hard (//Alice) + soft (/stash) — exercises sr25519 HDKD.secretSoft.
+// Address from @polkadot/keyring ({ type: "sr25519", ss58Format: 42 }).addFromUri(mnemonic + "//Alice/stash").
+const POLKADOT_ALICE_SOFT_DP = "//Alice/stash"
+const POLKADOT_ALICE_SOFT_ADDRESS_SR25519 = "5DZnGRAr28KP4GvbuxW2cBNo9Aodcm4QKUMj3Zqj67YjYStr"
 const POLKADOT_ALICE_ADDRESS_SR25519 = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 const POLKADOT_ALICE_ADDRESS_ED25519 = "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
 const POLKADOT_ALICE_ADDRESS_ECDSA = "5C7C2Z5sWbytvHpuLTvzKunnnRwQxft1jiqrLD5rhucQ5S9X"
@@ -32,12 +36,12 @@ const checkDerivedAddress = async (
 }
 
 describe("deriveKeyPair", () => {
-  it("ethereum", () => {
-    checkDerivedAddress(ETH_MNEMONIC, ETH_DERIVATION_PATH, "ethereum", ETH_ADDRESS)
+  it("ethereum", async () => {
+    await checkDerivedAddress(ETH_MNEMONIC, ETH_DERIVATION_PATH, "ethereum", ETH_ADDRESS)
   })
 
-  it("sr25519", () => {
-    checkDerivedAddress(
+  it("sr25519", async () => {
+    await checkDerivedAddress(
       POLKADOT_MNEMONIC,
       POLKADOT_ALICE_DP,
       "sr25519",
@@ -45,8 +49,19 @@ describe("deriveKeyPair", () => {
     )
   })
 
-  it("ed25519", () => {
-    checkDerivedAddress(
+  it("sr25519 soft derivation", async () => {
+    // exercises HDKD.secretSoft (the `/stash` segment is soft; `//Alice` is hard) — the only
+    // path that hits sr25519's soft-derivation code. Address verified against @polkadot/keyring.
+    await checkDerivedAddress(
+      POLKADOT_MNEMONIC,
+      POLKADOT_ALICE_SOFT_DP,
+      "sr25519",
+      POLKADOT_ALICE_SOFT_ADDRESS_SR25519
+    )
+  })
+
+  it("ed25519", async () => {
+    await checkDerivedAddress(
       POLKADOT_MNEMONIC,
       POLKADOT_ALICE_DP,
       "ed25519",
@@ -54,11 +69,16 @@ describe("deriveKeyPair", () => {
     )
   })
 
-  it("ecdsa", () => {
-    checkDerivedAddress(POLKADOT_MNEMONIC, POLKADOT_ALICE_DP, "ecdsa", POLKADOT_ALICE_ADDRESS_ECDSA)
+  it("ecdsa", async () => {
+    await checkDerivedAddress(
+      POLKADOT_MNEMONIC,
+      POLKADOT_ALICE_DP,
+      "ecdsa",
+      POLKADOT_ALICE_ADDRESS_ECDSA
+    )
   })
 
-  it("solana", () => {
-    checkDerivedAddress(SOLANA_MNEMONIC, SOLANA_DERIVATION_PATH, "solana", SOLANA_ADDRESS)
+  it("solana", async () => {
+    await checkDerivedAddress(SOLANA_MNEMONIC, SOLANA_DERIVATION_PATH, "solana", SOLANA_ADDRESS)
   })
 })

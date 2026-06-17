@@ -1,4 +1,4 @@
-import { ed25519 } from "@noble/curves/ed25519"
+import { ed25519 } from "@noble/curves/ed25519.js"
 
 const GANDALF_URL = "https://gandalf.talisman.xyz"
 
@@ -74,7 +74,7 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
   privateKeyHex: string
 }> {
   // Generate a new Ed25519 keypair
-  const privateKey = ed25519.utils.randomPrivateKey()
+  const privateKey = ed25519.utils.randomSecretKey()
   const publicKey = ed25519.getPublicKey(privateKey)
 
   const pubKeyJWK = {
