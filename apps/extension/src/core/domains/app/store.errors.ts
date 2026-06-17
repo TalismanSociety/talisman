@@ -1,4 +1,5 @@
-import type { ErrorEvent, EventHint } from "@sentry/types"
+// types only — `@sentry/browser` is biome-restricted (global API ban); @sentry/core re-exports them
+import type { ErrorEvent, EventHint } from "@sentry/core"
 import { Dexie, type DexieError } from "dexie"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 

@@ -1,4 +1,4 @@
-import type { AccountSummary, TransactionSimulation } from "@blockaid/client/resources/index.mjs"
+import type { TransactionScanResponse } from "@blockaid/client/resources/evm/transaction.mjs"
 import { log } from "@common/log"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -9,6 +9,18 @@ import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
 import type { RiskAnalysisResult } from "../useRiskAnalysisBase"
+
+// v1 dropped the flat `AccountSummary`/`TransactionSimulation` exports (they're now nested,
+// renamed namespace members). Derive them off the response — name-independent. `simulation` is a
+// Success|Error union; Extract the successful branch (the only one with `account_summary`).
+type TransactionSimulation = Extract<
+  NonNullable<TransactionScanResponse["simulation"]>,
+  { account_summary: unknown }
+>
+type AccountSummary = TransactionSimulation["account_summary"]
+// v1's trace union no longer shares a `trace_type` field across every member (bridge/exposure
+// traces differ); extract the asset-trace members — the only ones the counterparty logic reads.
+type AssetTrace = Extract<AccountSummary["traces"][number], { trace_type: "AssetTrace" }>
 
 const getAccountStateChanges = (accountSummary: AccountSummary) => {
   return accountSummary.assets_diffs.flatMap((diff) => {
@@ -97,7 +109,7 @@ const StateChangeFooter: FC<{
   }, [change, network])
 
   const counterparty = useMemo(() => {
-    const trace = simulation.account_summary.traces.find((trace) => {
+    const trace = (simulation.account_summary.traces as AssetTrace[]).find((trace) => {
       if (trace.trace_type !== "AssetTrace") return false
       if (change.side === "in" && trace.to_address !== simulation.params?.from) return false
       if (change.side === "out" && trace.from_address !== simulation.params?.from) return false

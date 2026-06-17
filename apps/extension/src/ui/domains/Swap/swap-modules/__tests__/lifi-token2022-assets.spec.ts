@@ -9,8 +9,8 @@ const TOKEN_2022_ID = solToken2022TokenId("solana-mainnet", TOKEN_2022_MINT)
 const mockLifiGetRoutes = vi.fn()
 
 vi.mock("@lifi/sdk", () => ({
-  createConfig: vi.fn(),
-  getRoutes: (...args: unknown[]) => mockLifiGetRoutes(...args),
+  createClient: vi.fn(() => ({})),
+  getRoutes: (_client: unknown, ...args: unknown[]) => mockLifiGetRoutes(...args),
   getStepTransaction: vi.fn(),
   getTokens: vi.fn().mockResolvedValue({
     tokens: {

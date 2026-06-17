@@ -1,9 +1,4 @@
-import type {
-  Erc20Exposure,
-  Erc721Exposure,
-  Erc1155Exposure,
-  TransactionScanResponse,
-} from "@blockaid/client/resources/index.mjs"
+import type { TransactionScanResponse } from "@blockaid/client/resources/evm/transaction.mjs"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkById } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -121,9 +116,12 @@ const getExposures = (scan: TransactionScanResponse | null | undefined) => {
   return values(scan.simulation.exposures)
     .flat()
     .flatMap(({ spenders, ...rest }) =>
-      toPairs(spenders as Record<string, Erc20Exposure | Erc721Exposure | Erc1155Exposure>).map(
-        ([spender, exposure]) => ({ ...rest, spender, exposure })
-      )
+      // v1 nested/renamed the per-spender exposure interfaces; only `.summary` is read here
+      toPairs(spenders as Record<string, { summary?: string }>).map(([spender, exposure]) => ({
+        ...rest,
+        spender,
+        exposure,
+      }))
     )
 }
 

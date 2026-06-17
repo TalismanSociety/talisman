@@ -1,5 +1,6 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
+import type { Event } from "@sentry/browser"
 import {
   BrowserClient,
   type captureEvent,
@@ -10,7 +11,6 @@ import {
   makeFetchTransport,
   Scope,
 } from "@sentry/browser"
-import type { Event } from "@sentry/types"
 import { firstValueFrom, of, ReplaySubject, timeout } from "rxjs"
 
 import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"
