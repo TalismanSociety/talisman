@@ -60,7 +60,10 @@ export const AccountAddMnemonicAccountsForm = () => {
   }, [])
 
   useEffect(() => {
-    if (!data.mnemonic || !data.curve) return navigate("/accounts/add/mnemonic")
+    if (!data.mnemonic || !data.curve) {
+      navigate("/accounts/add/mnemonic")
+      return
+    }
   }, [data.mnemonic, data.curve, navigate])
 
   if (!data.mnemonic || !data.curve) return <Navigate to="/accounts/add/mnemonic" replace />

@@ -140,6 +140,11 @@ overrides:
   "flatted@<3.4.2": ">=3.4.2 <4.0.0"
   "defu@<=6.1.4": ">=6.1.5 <7.0.0"
   "@babel/core@<7.29.1": ">=7.29.1 <8.0.0"
+  # dedupe to react 19 — transitive react-18 consumers (@ledgerhq/domain-service, react-icons,
+  # icons/orb devDeps) otherwise load a second copy and break rendering ("React Element from an
+  # older version of React"). All of them work on 19.
+  "react": "19.2.7"
+  "react-dom": "19.2.7"
 peerDependencyRules:
   ignoreMissing:
     - "react-native"

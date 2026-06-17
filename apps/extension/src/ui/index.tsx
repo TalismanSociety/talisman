@@ -8,7 +8,7 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { TalismanErrorBoundary } from "@ui/components/TalismanErrorBoundary"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import { type KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
-import { type ReactNode, StrictMode, Suspense } from "react"
+import { type ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
@@ -48,22 +48,25 @@ export const renderTalisman = (
 ) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
+  // NB: no <StrictMode>. React 19's StrictMode double-invokes mount (mount→unmount→remount),
+  // which tears down @react-rxjs/core's <Subscribe> subscription on the intermediate unmount.
+  // useStateObservable then reads via getSnapshot during render against a torn-down subscription
+  // and throws NoSubscribersError, crashing the app on load (dev only — StrictMode is inert in
+  // prod). react-rxjs 0.10.8 (latest) has no React-19 StrictMode fix. Re-add if/when it does.
   root.render(
-    <StrictMode>
-      <TalismanErrorBoundary>
-        <ErrorBoundaryDatabaseMigration>
-          <Suspense fallback={<SuspenseTracker name="Root" />}>
-            <KeepBackgroundOpen />
-            <KeepWalletUnlocked mode={keepWalletUnlockedMode} />
-            <Subscribe>
-              <QueryClientProvider client={queryClient}>
-                <HashRouter>{app}</HashRouter>
-                <NotificationsContainer />
-              </QueryClientProvider>
-            </Subscribe>
-          </Suspense>
-        </ErrorBoundaryDatabaseMigration>
-      </TalismanErrorBoundary>
-    </StrictMode>
+    <TalismanErrorBoundary>
+      <ErrorBoundaryDatabaseMigration>
+        <Suspense fallback={<SuspenseTracker name="Root" />}>
+          <KeepBackgroundOpen />
+          <KeepWalletUnlocked mode={keepWalletUnlockedMode} />
+          <Subscribe>
+            <QueryClientProvider client={queryClient}>
+              <HashRouter>{app}</HashRouter>
+              <NotificationsContainer />
+            </QueryClientProvider>
+          </Subscribe>
+        </Suspense>
+      </ErrorBoundaryDatabaseMigration>
+    </TalismanErrorBoundary>
   )
 }

@@ -820,7 +820,7 @@ export default defineConfig({
           // UI
           "@headlessui/react",
           "@floating-ui/react",
-          "framer-motion",
+          "motion",
         ],
         // The top-level `define` above only rewrites app code, not pre-bundled deps.
         // @polkadot/extension-base reads process.env['EXTENSION_PREFIX'] / ['PORT_PREFIX']

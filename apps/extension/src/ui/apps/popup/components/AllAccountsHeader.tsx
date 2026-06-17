@@ -4,11 +4,11 @@ import { TalismanOrbRectangle } from "@talismn/orb"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { IconButton } from "@ui/components/IconButton"
+import { useHoverDirty } from "@ui/hooks/reactUseCompat"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { useHoverDirty } from "react-use"
 
 export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
   const navigate = useNavigate()

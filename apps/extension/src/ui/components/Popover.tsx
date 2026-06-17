@@ -154,9 +154,9 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
         context.getReferenceProps({
           ref,
           ...props,
-          ...children.props,
+          ...(children.props as HTMLProps<Element>),
           "data-state": context.open ? "open" : "closed",
-        })
+        } as HTMLProps<Element>)
       )
     }
 

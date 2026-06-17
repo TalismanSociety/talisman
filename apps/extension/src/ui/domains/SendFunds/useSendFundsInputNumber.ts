@@ -24,7 +24,7 @@ const getInputFilter = (inputFilter: (text: string) => boolean) =>
     }
   }
 
-export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decimals = 18) => {
+export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement | null>, decimals = 18) => {
   useEffect(() => {
     const input = ref.current
     if (!input) return () => {}

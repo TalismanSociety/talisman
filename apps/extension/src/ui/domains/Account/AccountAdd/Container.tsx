@@ -83,7 +83,7 @@ function MethodTypeTab({
   methodType,
 }: {
   className?: string
-  icon: ReactElement
+  icon: ReactElement<{ className?: string }>
   title: ReactNode
   subtitle: ReactNode
   methodType: MethodType
