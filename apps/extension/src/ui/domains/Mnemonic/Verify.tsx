@@ -1,4 +1,4 @@
-import { wordlist } from "@scure/bip39/wordlists/english"
+import { wordlist } from "@scure/bip39/wordlists/english.js"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { cn } from "@ui/util/cn"

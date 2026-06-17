@@ -4,7 +4,7 @@ import {
   mnemonicToEntropy as mnemonicToEntropyBip39,
   validateMnemonic,
 } from "@scure/bip39"
-import { wordlist } from "@scure/bip39/wordlists/english"
+import { wordlist } from "@scure/bip39/wordlists/english.js"
 
 import type { KeypairCurve } from "../types"
 import { pbkdf2 } from "../utils"

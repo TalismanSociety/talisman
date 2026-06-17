@@ -1,4 +1,4 @@
-import { ed25519 } from "@noble/curves/ed25519"
+import { ed25519 } from "@noble/curves/ed25519.js"
 import { vi } from "vitest"
 
 import {
@@ -39,7 +39,7 @@ describe("base64urlEncode", () => {
   })
 
   it("encodes an Ed25519 public key to 43-char base64url", () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
     const pub = ed25519.getPublicKey(priv)
     const encoded = base64urlEncode(pub)
 
@@ -81,7 +81,7 @@ describe("bytesToHex", () => {
 
 describe("hexToBytes ↔ bytesToHex roundtrip", () => {
   it("roundtrips an Ed25519 private key", () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
     const hex = bytesToHex(priv)
     const back = hexToBytes(hex)
 
@@ -129,7 +129,7 @@ describe("solveProofOfWork", () => {
 
 describe("Ed25519 signing roundtrip (used by requestAccessToken)", () => {
   it("signs a canonical token_request string and the signature verifies", async () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
     const pub = ed25519.getPublicKey(priv)
     const privHex = bytesToHex(priv)
 
@@ -146,7 +146,7 @@ describe("Ed25519 signing roundtrip (used by requestAccessToken)", () => {
   })
 
   it("rejects tampered data", () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
     const pub = ed25519.getPublicKey(priv)
 
     const data = new TextEncoder().encode("token_request:id:123:nonce")
@@ -274,7 +274,7 @@ describe("requestAccessToken", () => {
   })
 
   it("sends a signed token request and returns JWT", async () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
     const privHex = bytesToHex(priv)
 
     globalThis.fetch = vi
@@ -300,7 +300,7 @@ describe("requestAccessToken", () => {
   })
 
   it("sends a verifiable Ed25519 signature", async () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
     const pub = ed25519.getPublicKey(priv)
     const privHex = bytesToHex(priv)
 
@@ -333,7 +333,7 @@ describe("requestAccessToken", () => {
   })
 
   it("throws with server message on failure", async () => {
-    const priv = ed25519.utils.randomPrivateKey()
+    const priv = ed25519.utils.randomSecretKey()
 
     globalThis.fetch = vi
       .fn()
