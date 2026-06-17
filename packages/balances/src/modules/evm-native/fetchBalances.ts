@@ -3,13 +3,9 @@ import { isEthereumAddress } from "@talismn/crypto"
 import type { PublicClient } from "viem"
 
 import type { IBalance } from "../../types"
-import type {
-  FetchBalanceErrors,
-  FetchBalanceResults,
-  IBalanceModule,
-} from "../../types/IBalanceModule"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { abiMulticall } from "../abis"
-import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
+import { BalanceFetchError } from "../shared/errors"
 import { type BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
 
@@ -38,15 +34,31 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
+  // Prefer a single multicall3.getEthBalance aggregate when the chain advertises a multicall3
+  // contract and there's more than one balance to fetch. Fall back to direct eth_getBalance if
+  // the multicall throws — which happens when multicall3 is advertised (via viem's chain
+  // definitions) but not actually deployed at the active RPC: a custom or forked RPC for a
+  // well-known chain id, or a fresh dev node, where `aggregate3` returns "0x".
   if (client.chain?.contracts?.multicall3 && balanceDefs.length > 1) {
-    const multicall3 = client.chain.contracts.multicall3
-    return fetchWithMulticall(client, balanceDefs, multicall3.address)
+    try {
+      return await fetchWithMulticall(
+        client,
+        balanceDefs,
+        client.chain.contracts.multicall3.address
+      )
+    } catch {
+      // multicall3 unavailable at this RPC — fall through to direct balance queries
+    }
   }
 
-  return fetchWithoutMulticall(client, balanceDefs)
+  return fetchWithGetBalance(client, balanceDefs)
 }
 
-const fetchWithoutMulticall = async (
+// Query `eth_getBalance` directly (not `client.getBalance(...)`): since viem 2.5x, getBalance
+// itself routes through multicall3.getEthBalance when the client has `batch.multicall` and the
+// chain advertises multicall3 — re-triggering the very failure this fallback exists for. The
+// raw request stays transport-batched (JSON-RPC array), so multiple addresses still coalesce.
+const fetchWithGetBalance = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[]
 ): Promise<FetchBalanceResults> => {
@@ -55,12 +67,15 @@ const fetchWithoutMulticall = async (
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }) => {
       try {
-        const result = await client.getBalance({ address })
+        const result = await client.request({
+          method: "eth_getBalance",
+          params: [address as `0x${string}`, "latest"],
+        })
 
         const balance: IBalance = {
           address,
           tokenId: token.id,
-          value: result.toString(),
+          value: BigInt(result).toString(),
           source: MODULE_TYPE,
           networkId: parseTokenId(token.id).networkId,
           status: "live",
@@ -95,6 +110,10 @@ const fetchWithoutMulticall = async (
   )
 }
 
+// `allowFailure: false` so a missing multicall3 (an RPC without it deployed → `aggregate3`
+// returns "0x") makes the whole call throw, letting the caller fall back to direct
+// eth_getBalance. getEthBalance never reverts per-address, so we don't lose per-call resilience
+// by disallowing failures.
 const fetchWithMulticall = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
@@ -102,54 +121,27 @@ const fetchWithMulticall = async (
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
-  try {
-    const callResults = await client.multicall({
-      contracts: balanceDefs.map(({ address }) => ({
-        address: multicall3Address,
-        abi: abiMulticall,
-        functionName: "getEthBalance",
-        args: [address],
-      })),
-    })
+  const results = await client.multicall({
+    allowFailure: false,
+    contracts: balanceDefs.map(({ address }) => ({
+      address: multicall3Address,
+      abi: abiMulticall,
+      functionName: "getEthBalance",
+      args: [address],
+    })),
+  })
 
-    return callResults.reduce<FetchBalanceResults>(
-      (acc, result, index) => {
-        if (result.status === "success") {
-          acc.success.push({
-            address: balanceDefs[index].address,
-            tokenId: balanceDefs[index].token.id,
-            value: result.result.toString(),
-            source: MODULE_TYPE,
-            networkId: parseTokenId(balanceDefs[index].token.id).networkId,
-            status: "live",
-          } as IBalance)
-        }
-        if (result.status === "failure") {
-          acc.errors.push({
-            tokenId: balanceDefs[index].token.id,
-            address: balanceDefs[index].address,
-            error: new BalanceFetchError(
-              `Failed to get balance for token ${balanceDefs[index].token.id} and address ${balanceDefs[index].address} on chain ${client.chain?.id}`,
-              balanceDefs[index].token.id,
-              balanceDefs[index].address,
-              result.error
-            ),
-          } as FetchBalanceErrors[number])
-        }
-        return acc
-      },
-      { success: [], errors: [] }
-    )
-  } catch (err) {
-    const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({
-      tokenId: balanceDef.token.id,
-      address: balanceDef.address,
-      error: new BalanceFetchNetworkError(
-        `Failed to get balances for evm-erc20 tokens on chain ${client.chain?.id}`,
-        String(client.chain?.id),
-        err as Error
-      ),
-    }))
-    return { success: [], errors }
+  return {
+    success: results.map(
+      (value, index): IBalance => ({
+        address: balanceDefs[index].address,
+        tokenId: balanceDefs[index].token.id,
+        value: String(value),
+        source: MODULE_TYPE,
+        networkId: parseTokenId(balanceDefs[index].token.id).networkId,
+        status: "live",
+      })
+    ),
+    errors: [],
   }
 }

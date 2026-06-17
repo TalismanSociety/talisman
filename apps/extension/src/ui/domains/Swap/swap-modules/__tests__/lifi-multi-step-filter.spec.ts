@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from "vitest"
 const mockLifiGetRoutes = vi.fn()
 
 vi.mock("@lifi/sdk", () => ({
-  createConfig: vi.fn(),
-  getRoutes: (...args: unknown[]) => mockLifiGetRoutes(...args),
+  createClient: vi.fn(() => ({})),
+  getRoutes: (_client: unknown, ...args: unknown[]) => mockLifiGetRoutes(...args),
   getStepTransaction: vi.fn(),
   getTokens: vi.fn().mockResolvedValue({
     tokens: {

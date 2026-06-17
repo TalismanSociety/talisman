@@ -1,5 +1,6 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
+import type { Event } from "@sentry/browser"
 import {
   BrowserClient,
   type captureEvent,
@@ -10,7 +11,6 @@ import {
   makeFetchTransport,
   Scope,
 } from "@sentry/browser"
-import type { Event } from "@sentry/types"
 import { firstValueFrom, of, ReplaySubject, timeout } from "rxjs"
 
 import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"
@@ -34,9 +34,20 @@ type SentryContext = "background" | "ui"
 // set by init(), for DEBUG logging purposes only
 let context: SentryContext | "unknown" = "unknown"
 
-// filter integrations that use the global variable
+// Drop integrations that rely on global / DOM state — they're inappropriate in a
+// browser extension (would pollute or read shared page state) and unavailable in the
+// MV3 background service worker, which has no DOM. List per Sentry's shared-environments
+// guide: https://docs.sentry.io/platforms/javascript/best-practices/shared-environments/
+// (v10 added BrowserSession + ConversationId vs the older BrowserApiErrors/Breadcrumbs/GlobalHandlers set).
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
-  return !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(defaultIntegration.name)
+  return ![
+    "BrowserApiErrors",
+    "BrowserSession",
+    "Breadcrumbs",
+    "ConversationId",
+    "GlobalHandlers",
+    "FunctionToString",
+  ].includes(defaultIntegration.name)
 })
 
 const client = new BrowserClient({
