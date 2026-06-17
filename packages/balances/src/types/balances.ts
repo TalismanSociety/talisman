@@ -12,7 +12,7 @@ import {
   type NonFunctionProperties,
   planckToTokens,
 } from "@talismn/util"
-import BigNumber from "bignumber.js"
+import BigNumber from "../configureBigNumber"
 
 import log from "../log"
 import type { SubDTaoBalanceMeta } from "../modules"

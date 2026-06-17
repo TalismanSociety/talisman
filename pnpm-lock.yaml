@@ -446,8 +446,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       bignumber.js:
-        specifier: ^9.1.2
-        version: 9.1.2
+        specifier: ^11.1.3
+        version: 11.1.3
       blueimp-md5:
         specifier: 2.19.0
         version: 2.19.0
@@ -743,8 +743,8 @@ importers:
         specifier: ^1.0.11
         version: 1.0.11
       bignumber.js:
-        specifier: ^9.1.2
-        version: 9.1.2
+        specifier: ^11.1.3
+        version: 11.1.3
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
@@ -1110,8 +1110,8 @@ importers:
   packages/util:
     dependencies:
       bignumber.js:
-        specifier: ^9.1.2
-        version: 9.1.2
+        specifier: ^11.1.3
+        version: 11.1.3
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
@@ -4380,6 +4380,9 @@ packages:
   bigint-buffer@1.1.5:
     resolution: {integrity: sha512-trfYco6AoZ+rKhKnxA0hgX0HAbVP/s808/EuDSe2JDzUnCp/xAsli35Orvk67UrTEcwuxZqYZDmfA2RXJgxVvA==}
     engines: {node: '>= 10.0.0'}
+
+  bignumber.js@11.1.3:
+    resolution: {integrity: sha512-+esZiNSo6VgFokTsYX6mYqNJfFd/IczzZCd4Z7cR8e+AQWhvIcj6nqQ1h9814D9u/TApU0jjTVmfWL0Pd1ZBdA==}
 
   bignumber.js@9.1.2:
     resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
@@ -13429,6 +13432,8 @@ snapshots:
   bigint-buffer@1.1.5:
     dependencies:
       bindings: 1.5.0
+
+  bignumber.js@11.1.3: {}
 
   bignumber.js@9.1.2: {}
 
