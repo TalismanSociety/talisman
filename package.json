@@ -67,7 +67,7 @@
     "@commitlint/config-conventional": "^21.0.2",
     "@noble/hashes": "1.8.0",
     "@playwright/test": "^1.60.0",
-    "@polkadot/util-crypto": "13.5.3",
+    "@polkadot/util-crypto": "14.0.3",
     "@types/node": "^24.5.1",
     "@vitest/coverage-v8": "^4.1.8",
     "@vitest/ui": "4.1.8",
