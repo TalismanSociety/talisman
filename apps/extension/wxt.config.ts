@@ -935,9 +935,17 @@ var browser = globalThis.browser;
                   : ""
 
                 return `${firefoxShim}
-// Document shim for service worker - some packages reference document which doesn't exist
+// Document shim for service worker - some packages reference document which doesn't exist.
+// @sentry/browser v10's BrowserClient constructor (and its browserSession integration) call
+// document.addEventListener("visibilitychange", ...); a service worker has no page lifecycle,
+// so expose no-op event APIs to keep the shim truthy without crashing SW boot.
 if (typeof document === "undefined") {
-  globalThis.document = { baseURI: self.location.href, currentScript: null };
+  globalThis.document = {
+    baseURI: self.location.href,
+    currentScript: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  };
 }
 `
               }
