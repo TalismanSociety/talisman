@@ -34,7 +34,8 @@
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "typescript": "^5.6.3"
+    "@types/node": "^24.5.1",
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "rxjs": ">= 7.8.1"

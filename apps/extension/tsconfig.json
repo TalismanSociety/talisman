@@ -2,8 +2,10 @@
   "extends": "@talismn/tsconfig/es6-react.json",
   "compilerOptions": {
     "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
     "tsBuildInfoFile": ".tsbuildinfo",
-    "baseUrl": ".",
     "moduleResolution": "bundler",
     "paths": {
       "@common": ["./src/common"],

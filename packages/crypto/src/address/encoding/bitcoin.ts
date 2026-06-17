@@ -82,8 +82,7 @@ export function fromBase58Check(address: string) {
     if (offset + 1 > buffer.length) {
       throw new Error("Offset is outside the bounds of Uint8Array")
     }
-    const buf = Buffer.from(buffer)
-    return buf.readUInt8(offset)
+    return buffer[offset]
   }
   const version = readUInt8(payload, 0)
   const hash = payload.slice(1)

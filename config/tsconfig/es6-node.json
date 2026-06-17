@@ -11,6 +11,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noEmit": false,
+    "types": ["node", "vitest/globals"],
     "customConditions": ["@talismn/source"]
   },
   "exclude": ["**/node_modules", "**/.*/"]
