@@ -17,7 +17,7 @@ const checkSize = (input: HTMLInputElement) => {
 }
 
 // works only with uncontrolled inputs
-export const useInputAutoWidth = (ref: RefObject<HTMLInputElement>) => {
+export const useInputAutoWidth = (ref: RefObject<HTMLInputElement | null>) => {
   useEffect(() => {
     const input = ref.current
     if (!input) return
