@@ -135,6 +135,7 @@ export const AddLedgerSelectNetwork = () => {
     watch,
     setValue,
     reset,
+    trigger,
     formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -163,15 +164,21 @@ export const AddLedgerSelectNetwork = () => {
         platform: "polkadot",
         chainId: chain?.id,
       })
+      // reset() doesn't re-run validation, so revalidate to refresh isValid
+      trigger()
     },
-    [reset]
+    [reset, trigger]
   )
 
   const handlePlatformChange = useCallback(
     (platform: AccountPlatform) => {
       reset({ platform })
+      // reset() doesn't re-run validation; without this, isValid stays false for
+      // ethereum/solana (which have no other field to trigger validation) and the
+      // Continue button never enables
+      trigger()
     },
-    [reset]
+    [reset, trigger]
   )
 
   const handleSubstrateAppTypeClick = useCallback(
