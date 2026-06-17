@@ -68,6 +68,12 @@ overrides:
   "@polkadot/x-textdecoder": "14.0.3"
   "@polkadot/x-textencoder": "14.0.3"
   "@polkadot/x-ws": "14.0.3"
+  # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 1.x
+  # pins 6.31.4 while hw-app-eth/solana 7.x and our transports use 6.35.4, which
+  # otherwise produces two incompatible Transport types. The Transport API is
+  # stable across 6.x. (Drops when zondax moves to 2.x.) devices follows transport.
+  "@ledgerhq/devices": "8.15.1"
+  "@ledgerhq/hw-transport": "6.35.4"
   "@substrate/txwrapper-core": "7.5.3"
   "braces@<3.0.3": ">=3.0.3"
   "cookie@<0.7.0": ">=0.7.0"
