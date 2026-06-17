@@ -4,6 +4,7 @@ import type { PublicClient } from "viem"
 
 import type { IBalance } from "../../types"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import { abiMulticall } from "../abis"
 import { BalanceFetchError } from "../shared/errors"
 import { type BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
@@ -33,22 +34,36 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-  return fetchNativeBalances(client, balanceDefs)
+  // Prefer a single multicall3.getEthBalance aggregate when the chain advertises a multicall3
+  // contract and there's more than one balance to fetch. Fall back to direct eth_getBalance if
+  // the multicall throws — which happens when multicall3 is advertised (via viem's chain
+  // definitions) but not actually deployed at the active RPC: a custom or forked RPC for a
+  // well-known chain id, or a fresh dev node, where `aggregate3` returns "0x".
+  if (client.chain?.contracts?.multicall3 && balanceDefs.length > 1) {
+    try {
+      return await fetchWithMulticall(
+        client,
+        balanceDefs,
+        client.chain.contracts.multicall3.address
+      )
+    } catch {
+      // multicall3 unavailable at this RPC — fall through to direct balance queries
+    }
+  }
+
+  return fetchWithGetBalance(client, balanceDefs)
 }
 
-const fetchNativeBalances = async (
+// Query `eth_getBalance` directly (not `client.getBalance(...)`): since viem 2.5x, getBalance
+// itself routes through multicall3.getEthBalance when the client has `batch.multicall` and the
+// chain advertises multicall3 — re-triggering the very failure this fallback exists for. The
+// raw request stays transport-batched (JSON-RPC array), so multiple addresses still coalesce.
+const fetchWithGetBalance = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[]
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
-  // Query `eth_getBalance` directly instead of `client.getBalance(...)`. Since viem 2.5x,
-  // `getBalance` routes through `multicall3.getEthBalance` whenever the client has
-  // `batch.multicall` enabled and the chain advertises a multicall3 contract. That breaks on
-  // any chain where multicall3 is advertised (via viem's chain definitions) but not actually
-  // deployed at the active RPC — e.g. a custom or forked RPC for a well-known chain id, or a
-  // fresh dev node — where the call returns "0x" and viem throws "Cannot decode zero data".
-  // A native balance never needs a contract; the raw request stays transport-batched.
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }) => {
       try {
@@ -93,4 +108,40 @@ const fetchNativeBalances = async (
     },
     { success: [], errors: [] }
   )
+}
+
+// `allowFailure: false` so a missing multicall3 (an RPC without it deployed → `aggregate3`
+// returns "0x") makes the whole call throw, letting the caller fall back to direct
+// eth_getBalance. getEthBalance never reverts per-address, so we don't lose per-call resilience
+// by disallowing failures.
+const fetchWithMulticall = async (
+  client: PublicClient,
+  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
+  multicall3Address: `0x${string}`
+): Promise<FetchBalanceResults> => {
+  if (balanceDefs.length === 0) return { success: [], errors: [] }
+
+  const results = await client.multicall({
+    allowFailure: false,
+    contracts: balanceDefs.map(({ address }) => ({
+      address: multicall3Address,
+      abi: abiMulticall,
+      functionName: "getEthBalance",
+      args: [address],
+    })),
+  })
+
+  return {
+    success: results.map(
+      (value, index): IBalance => ({
+        address: balanceDefs[index].address,
+        tokenId: balanceDefs[index].token.id,
+        value: String(value),
+        source: MODULE_TYPE,
+        networkId: parseTokenId(balanceDefs[index].token.id).networkId,
+        status: "live",
+      })
+    ),
+    errors: [],
+  }
 }
