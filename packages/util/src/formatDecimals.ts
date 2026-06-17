@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import BigNumber from "./configureBigNumber"
 
 const MIN_DIGITS = 4 // less truncates more than what compact formating is
 export const MAX_DECIMALS_FORMAT = 12

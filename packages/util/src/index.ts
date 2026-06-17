@@ -1,3 +1,5 @@
+import "./configureBigNumber"
+
 export * from "./addTrailingSlash"
 export * from "./BigMath"
 export * from "./deferred"

@@ -1,3 +1,5 @@
+import "./configureBigNumber"
+
 export * from "./BalancesProvider"
 export * from "./modules"
 export * from "./types"
