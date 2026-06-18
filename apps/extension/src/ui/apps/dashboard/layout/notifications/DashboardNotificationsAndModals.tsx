@@ -3,6 +3,8 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
+import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { AddProxyModal } from "@ui/domains/AccountProxies/AddProxy/AddProxyModal"
 import { ManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/ManageProxyModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
@@ -56,6 +58,8 @@ export const DashboardNotificationsAndModals = () => {
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
       <AccountRenameModal />
+      <RenameFolderModal />
+      <DeleteFolderModal />
       <BondModal />
       <BittensorBondModal />
       <BittensorConvictionLockModal />
