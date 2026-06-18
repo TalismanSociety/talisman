@@ -3,7 +3,6 @@ import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Spacer } from "@ui/components/Spacer"
-import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import {
   ManageAccountsLists,
   ManageAccountsProvider,
@@ -11,7 +10,6 @@ import {
   ManageAccountsWelcome,
 } from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
-import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { accounts$, accountsCatalog$ } from "@ui/state/accounts"
 import { balancesHydrate$ } from "@ui/state/balances"
@@ -42,8 +40,6 @@ const Content = () => {
         <ManageAccountsLists />
       </ManageAccountsProvider>
       <NewFolderModal />
-      <RenameFolderModal />
-      <DeleteFolderModal />
       <ManageAccountsWelcome />
     </>
   )
