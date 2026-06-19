@@ -46,4 +46,23 @@ describe("ChainConnectorSolStub", () => {
     const conn2 = await stub.getConnection()
     expect(conn1).toBe(conn2)
   })
+
+  it("stores a Connection coming from a different @solana/web3.js module instance", async () => {
+    // Regression test: in bundled builds @solana/web3.js can be duplicated across chunks,
+    // so a Connection can fail `instanceof Connection` against another copy's class. We
+    // simulate that with a Connection-shaped object that is NOT an instanceof Connection.
+    // The old `instanceof` code fell through to getSolConnection(undefined, undefined) and
+    // threw "Cannot read properties of undefined (reading '0')". The duck-typed check must
+    // treat it as a Connection (no `rpcs` field) and store it as-is.
+    const foreignConnection = {
+      rpcEndpoint: "https://foreign.example.com",
+      commitment: "confirmed",
+    }
+    expect(foreignConnection).not.toBeInstanceOf(Connection)
+
+    const stub = new ChainConnectorSolStub(foreignConnection as unknown as Connection)
+    const conn = await stub.getConnection()
+
+    expect(conn).toBe(foreignConnection)
+  })
 })
