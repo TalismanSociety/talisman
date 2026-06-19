@@ -1,4 +1,3 @@
-import { APIError } from "@blockaid/client"
 import type { JsonRpcScanParams } from "@blockaid/client/resources/evm/json-rpc.mjs"
 import { log } from "@common/log"
 import type { EthSignMessageMethod } from "@core/domains/signing/types"
@@ -6,6 +5,7 @@ import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 
 import { blockaid } from "../blockaid"
+import { getBlockaidErrorMessage } from "../getBlockaidErrorMessage"
 import { useRiskAnalysisBase } from "../useRiskAnalysisBase"
 
 type UseEvmMessageRiskAnalysisProps = {
@@ -52,8 +52,8 @@ export const useEvmMessageRiskAnalysis = ({
       } catch (err) {
         log.error("useEvmMessageRiskAnalysis", { scanParams, err })
 
-        if (err instanceof APIError && err.error.detail[0]?.msg)
-          throw new Error(err.error.detail[0]?.msg, { cause: err })
+        const blockaidErrorMessage = getBlockaidErrorMessage(err)
+        if (blockaidErrorMessage) throw new Error(blockaidErrorMessage, { cause: err })
 
         throw err
       }

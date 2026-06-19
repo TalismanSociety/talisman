@@ -1,10 +1,10 @@
-import { APIError } from "@blockaid/client"
 import type { MessageScanParams } from "@blockaid/client/resources/solana/message.mjs"
 import { log } from "@common/log"
 import type { SolNetworkId } from "@talismn/chaindata-provider"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 
 import { blockaid } from "../blockaid"
+import { getBlockaidErrorMessage } from "../getBlockaidErrorMessage"
 import { useRiskAnalysisBase } from "../useRiskAnalysisBase"
 
 type UseSolTransactionRiskAnalysisProps = {
@@ -54,8 +54,8 @@ export const useSolTransactionRiskAnalysis = ({
       } catch (err) {
         log.error("useSolTransactionRiskAnalysis", { params, err })
 
-        if (err instanceof APIError && err.error.detail[0]?.msg)
-          throw new Error(err.error.detail[0]?.msg, { cause: err })
+        const blockaidErrorMessage = getBlockaidErrorMessage(err)
+        if (blockaidErrorMessage) throw new Error(blockaidErrorMessage, { cause: err })
 
         throw err
       }
