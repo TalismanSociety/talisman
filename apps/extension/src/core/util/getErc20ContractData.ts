@@ -1,11 +1,5 @@
-import {
-  type Abi,
-  type Client,
-  ContractFunctionExecutionError,
-  getContract,
-  hexToString,
-  parseAbi,
-} from "viem"
+import { isErrorOfName } from "@talismn/util"
+import { type Abi, type Client, getContract, hexToString, parseAbi } from "viem"
 
 const NAME_ABI_METHOD = "function name() view returns (string)"
 const DECIMALS_ABI_METHOD = "function decimals() view returns (uint8)"
@@ -57,7 +51,7 @@ export const getErc20ContractData = async (
       contract.read.name(),
     ])
   } catch (e) {
-    if (e instanceof ContractFunctionExecutionError) {
+    if (isErrorOfName(e, "ContractFunctionExecutionError")) {
       // try to perform the contract read with bytes32 symbol
       const contract = getEr20ContractFn(PARSED_ABI_ERC20_BYTES_SYMBOL)
 
