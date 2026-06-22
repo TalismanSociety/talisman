@@ -1,5 +1,31 @@
 # @talismn/chaindata-provider
 
+## 1.5.0
+
+### Minor Changes
+
+- 0a94c4b: bump dependencies
+- 5133bff: minimetadata v11 - dtao conviction locks
+
+  conviction locks are reported on the subnet's base (hotkey-less) token balance, as on-chain they constrain the coldkey's total alpha on the subnet rather than a specific staking position. The lock surfaces in the balance's locked amount but does not reduce its available/transferable amount (the locked stake remains transferable via transfer_stake), and `findDTaoConvictionLock` is exposed to read a balance's conviction lock
+
+- bbf4fca: bump dependencies
+
+### Patch Changes
+
+- bc509f5: generate init data
+- b9f92ab: init data
+- ee110a0: update chaindata fallback url
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- 7d99a0a: init data
+- Updated dependencies [91cdabe]
+- Updated dependencies [c6ffb9c]
+- Updated dependencies [0a94c4b]
+- Updated dependencies [aa5e55b]
+- Updated dependencies [9aa9c72]
+- Updated dependencies [bbf4fca]
+  - @talismn/util@1.1.0
+
 ## 1.4.0
 
 ### Minor Changes

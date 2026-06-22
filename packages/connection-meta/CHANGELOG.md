@@ -1,5 +1,25 @@
 # @talismn/connection-meta
 
+## 0.3.0
+
+### Minor Changes
+
+- 0a94c4b: bump dependencies
+- bbf4fca: bump dependencies
+
+### Patch Changes
+
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- Updated dependencies [bc509f5]
+- Updated dependencies [0a94c4b]
+- Updated dependencies [b9f92ab]
+- Updated dependencies [ee110a0]
+- Updated dependencies [5133bff]
+- Updated dependencies [9aa9c72]
+- Updated dependencies [7d99a0a]
+- Updated dependencies [bbf4fca]
+  - @talismn/chaindata-provider@1.5.0
+
 ## 0.2.39
 
 ### Patch Changes

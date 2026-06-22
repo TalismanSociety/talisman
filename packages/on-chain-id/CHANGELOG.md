@@ -1,5 +1,23 @@
 # @talismn/on-chain-id
 
+## 0.2.11
+
+### Patch Changes
+
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- Updated dependencies [91cdabe]
+- Updated dependencies [73ee8d7]
+- Updated dependencies [c6ffb9c]
+- Updated dependencies [0a94c4b]
+- Updated dependencies [ab11fa6]
+- Updated dependencies [aa5e55b]
+- Updated dependencies [9aa9c72]
+- Updated dependencies [bbf4fca]
+- Updated dependencies [b672e3a]
+  - @talismn/util@1.1.0
+  - @talismn/crypto@0.3.5
+  - @talismn/chain-connectors@0.1.0
+
 ## 0.2.10
 
 ### Patch Changes
