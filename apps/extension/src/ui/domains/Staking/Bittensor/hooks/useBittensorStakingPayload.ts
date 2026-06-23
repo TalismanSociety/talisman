@@ -1,4 +1,4 @@
-import { taoToAlpha } from "@talismn/balances"
+import { taoToAlphaCeil } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -64,14 +64,14 @@ export const useBittensorStakingPayload = ({
   // an partial unstake operation will fail if the remaining stake is less than the alpha equivalent of minTaoBond
   const minAlphaBond = useMemo(() => {
     if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
-    return taoToAlpha(minTaoBond, alphaPrice)
+    return taoToAlphaCeil(minTaoBond, alphaPrice)
   }, [minTaoBond, alphaPrice])
 
   const minTaoStake = useGetBittensorDefaultMinStake({ networkId })
 
   const minAlphaUnstake = useMemo(() => {
     if (typeof minTaoStake !== "bigint" || typeof alphaPrice !== "bigint") return null
-    return taoToAlpha(minTaoStake, alphaPrice)
+    return taoToAlphaCeil(minTaoStake, alphaPrice)
   }, [minTaoStake, alphaPrice])
 
   // simulate swap for minimum stake to get swap fee

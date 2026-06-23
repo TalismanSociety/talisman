@@ -30,27 +30,21 @@ const mockInitChaindata = vi.hoisted(() => ({
   current: {} as Record<string, unknown>,
 }))
 
+// Getters forward to the swappable `current` value at access time. A Proxy was used
+// previously, but zod 4 reads input via property descriptors in a way the Proxy traps
+// didn't satisfy; a plain getter object is equivalent here and v4-compatible.
 vi.mock("./initChaindata.json", () => ({
-  default: new Proxy(
-    {},
-    {
-      get(_target, prop) {
-        return (mockInitChaindata.current as Record<string | symbol, unknown>)[prop]
-      },
-      ownKeys() {
-        return Reflect.ownKeys(mockInitChaindata.current)
-      },
-      getOwnPropertyDescriptor(_target, prop) {
-        if (prop in mockInitChaindata.current)
-          return {
-            configurable: true,
-            enumerable: true,
-            value: (mockInitChaindata.current as Record<string | symbol, unknown>)[prop],
-          }
-        return undefined
-      },
-    }
-  ),
+  default: {
+    get networks() {
+      return mockInitChaindata.current.networks
+    },
+    get tokens() {
+      return mockInitChaindata.current.tokens
+    },
+    get miniMetadatas() {
+      return mockInitChaindata.current.miniMetadatas
+    },
+  },
 }))
 
 vi.mock("../log", () => ({

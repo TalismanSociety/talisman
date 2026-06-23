@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
+import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "@ui/util/taoDataApi"
 
 export function useGetSubnetPools() {
   return useQuery({

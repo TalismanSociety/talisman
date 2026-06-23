@@ -91,7 +91,7 @@ const [_useNftNetworkOptions, nftNetworkOptions$] = bind(
   []
 )
 
-export const [useNfts, nfts$] = bind(
+const [useNfts, nfts$] = bind(
   combineLatest([
     nftData$,
     getAccountsByCategory$("portfolio"),
@@ -189,7 +189,7 @@ export const [useNfts, nfts$] = bind(
 
             const collectionName1 = collection1?.name
             const collectionName2 = collection2?.name
-            if (!!collectionName1 && !!collectionName2 && collectionName1 !== collectionName2)
+            if (collectionName1 && collectionName2 && collectionName1 !== collectionName2)
               return collectionName1.localeCompare(collectionName2)
 
             try {
@@ -309,4 +309,4 @@ const [useNftCollection, _getNftCollection$] = bind(
   { collection: null, nfts: [] }
 )
 
-export { useNft, useIsHiddenNftCollection, useIsFavoriteNft, useNftCollection }
+export { useIsFavoriteNft, useIsHiddenNftCollection, useNft, useNftCollection, useNfts }

@@ -24,7 +24,11 @@ export const encryptData = async (data: Uint8Array, password: string): Promise<s
     const key = await deriveKey(password, salt)
 
     // encrypt
-    const encryptedSeed = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data)
+    const encryptedSeed = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv },
+      key,
+      data as Uint8Array<ArrayBuffer>
+    )
 
     // Combine salt, IV, and encrypted seed
     const combined = new Uint8Array(salt.length + iv.length + encryptedSeed.byteLength)

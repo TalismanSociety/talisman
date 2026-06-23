@@ -20,7 +20,7 @@ const OptionButton = <O extends string>({
   className?: string
   selected: boolean
   option: O
-  onClick: (option: O, buttonRef: RefObject<HTMLButtonElement>) => void
+  onClick: (option: O, buttonRef: RefObject<HTMLButtonElement | null>) => void
   children: ReactNode
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -68,7 +68,7 @@ export const OptionSwitch = <O extends string>({
   const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties | null>(null)
 
   const handleChange = useCallback(
-    (option: O, buttonRef: RefObject<HTMLButtonElement>) => {
+    (option: O, buttonRef: RefObject<HTMLButtonElement | null>) => {
       setSelected(option)
       setSelectionOverlay({
         left: buttonRef.current?.offsetLeft || 0,

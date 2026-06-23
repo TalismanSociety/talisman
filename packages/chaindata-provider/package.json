@@ -31,17 +31,18 @@
   "dependencies": {
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "dexie": "^4.0.9",
-    "lodash-es": "4.17.21",
+    "dexie": "^4.4.3",
+    "lodash-es": "4.18.1",
     "lz-string": "^1.5.0",
-    "rxjs": "^7.8.1",
-    "zod": "^3.25.76"
+    "rxjs": "^7.8.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "tsx": "^4.20.3",
-    "typescript": "^5.6.3"
+    "@types/node": "^24.5.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
   },
   "types": "./dist/index.d.ts",
   "exports": {

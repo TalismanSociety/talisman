@@ -46,6 +46,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useIntersection } from "@ui/hooks/reactUseCompat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAccounts } from "@ui/state/accounts"
@@ -73,7 +74,6 @@ import {
 } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
 import { BehaviorSubject } from "rxjs"
 import urlJoin from "url-join"
 
@@ -431,7 +431,7 @@ const Header: FC = () => {
         )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {isInitializing || isInProgress || balances.length || !!percent ? (
+        {isInitializing || isInProgress || balances.length || percent ? (
           <>
             <div className="flex text-base">
               <div className="grow">

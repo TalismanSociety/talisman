@@ -14,6 +14,7 @@ import { t } from "i18next"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BittensorConvictionLockIndicator } from "../../components/BittensorConvictionLockIndicator"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
@@ -156,7 +157,8 @@ const Position: FC<{
               signetUrl={getAccountSignetUrl(account)}
             />
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            <BittensorConvictionLockIndicator position={position} />
             <Tokens
               amount={position.balance.free.tokens}
               decimals={position.token.decimals}

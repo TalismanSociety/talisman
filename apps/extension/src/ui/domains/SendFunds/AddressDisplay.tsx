@@ -134,7 +134,12 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           signetUrl={getAccountSignetUrl(account)}
         />
         {blockExplorerUrl ? (
-          <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">
+          <a
+            href={blockExplorerUrl}
+            target="_blank"
+            className="text-grey-300 hover:text-white"
+            rel="noopener"
+          >
             <ExternalLinkIcon />
           </a>
         ) : (

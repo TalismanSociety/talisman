@@ -1,8 +1,9 @@
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
-import type { Balance, Balances } from "@talismn/balances"
+import { type Balance, type Balances, findDTaoConvictionLock } from "@talismn/balances"
 import { type NetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
+import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -26,6 +27,7 @@ export const useBondButton = ({
 
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
+  const { open: openSeekStakingModal } = useSeekStakingModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const allBalances = useBalances("owned")
@@ -70,7 +72,7 @@ export const useBondButton = ({
           break
         }
         case "seek": {
-          window.open(remoteConfig.seek.stakingUrl, "_blank", "noopener")
+          openSeekStakingModal({ action: "stake", address: bestBondableBalance.address })
           break
         }
         case "nominationPool": {
@@ -85,7 +87,7 @@ export const useBondButton = ({
       genericEvent,
       handleOpenBittensorModal,
       ignoreExistingSettings,
-      remoteConfig.seek.stakingUrl,
+      openSeekStakingModal,
       open,
     ]
   )
@@ -170,6 +172,10 @@ const getBondableBalance = (
 
   // if dTAO, assume we can bond more native TAO
   if (token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)) {
+    // conviction-locked alpha can't be staked: the lock sits on the subnet's base token
+    // (no hotkey, zero stake), so such a balance offers nothing to bond
+    if (findDTaoConvictionLock(balance.locks)) return null
+
     const address = balance.address
     return {
       type: "bittensor",
@@ -186,10 +192,7 @@ const getBondableBalance = (
   /**
    * Nomination Pool Staking
    */
-  if (
-    token?.type === "substrate-native" &&
-    !!remoteConfig.nominationPools[token.networkId]?.length
-  ) {
+  if (token?.type === "substrate-native" && remoteConfig.nominationPools[token.networkId]?.length) {
     const defaultPoolId = remoteConfig.nominationPools[token.networkId][0]
 
     // cant stake in nom pools if solo staking

@@ -92,7 +92,9 @@ const feeTokenId = async (token: { address: string; chainId: number }): Promise<
     : evmErc20TokenId(token.chainId.toString(), token.address as `0x${string}`)
 }
 
-lifiSdk.createConfig({ integrator: "talisman", apiUrl })
+// LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
+// instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
+const lifiClient = lifiSdk.createClient({ integrator: "talisman", apiUrl })
 
 const isAbortError = (cause: unknown): boolean =>
   cause instanceof Error && cause.name === "AbortError"
@@ -194,7 +196,7 @@ const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]>
 const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
   const [allSdkTokens, swapsConfig] = await Promise.all([
     lifiSdk
-      .getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
+      .getTokens(lifiClient, { chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
       .then((r) => r?.tokens),
     remoteConfigStore.get("swaps"),
   ])
@@ -208,7 +210,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
     try {
       const lifiChainId =
         type === "sol-spl" || type === "sol-token2022" ? solanaChainId : parseInt(chainId, 10)
-      const token = await lifiSdk.getToken(lifiChainId, contractAddress)
+      const token = await lifiSdk.getToken(lifiClient, lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
       // biome-ignore lint/suspicious/noConsole: legacy
@@ -373,6 +375,7 @@ const getRoutes = async (
     const slippage = await getSwapSlippageDecimal()
     if (signal.aborted) return null
     const response = await lifiSdk.getRoutes(
+      lifiClient,
       {
         fromAddress: effectiveFromAddress,
         toAddress: effectiveToAddress,
@@ -522,7 +525,7 @@ const getApprovalInfo = (
   const { fromTokenId, fromAddress, selectedSubProtocol, quoteData } = params
   if (!fromTokenId || !fromAddress) return null
   const fromAsset = resolveAsset(fromTokenId)
-  if (!quoteData || !fromAsset || !fromAsset.contractAddress) return null
+  if (!quoteData || !fromAsset?.contractAddress) return null
 
   const quoteItem = Array.isArray(quoteData)
     ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)
@@ -562,7 +565,7 @@ const getTransaction = async (
     if (!step) throw new Error("No step found in route")
 
     // Fetch fresh transaction calldata from LiFi at confirmation time
-    const stepTransaction = await lifiSdk.getStepTransaction(step)
+    const stepTransaction = await lifiSdk.getStepTransaction(lifiClient, step)
     const txRequest = stepTransaction?.transactionRequest
     if (!txRequest) throw new Error("Unknown error, please try again")
 

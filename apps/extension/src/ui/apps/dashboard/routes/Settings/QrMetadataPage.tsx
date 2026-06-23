@@ -191,6 +191,7 @@ const MetadataPortalContent = () => {
                     href={POLKADOT_VAULT_DOCS_URL}
                     target="_blank"
                     className="text-grey-300 hover:text-grey-200"
+                    rel="noopener"
                   ></a>
                 ),
               }}

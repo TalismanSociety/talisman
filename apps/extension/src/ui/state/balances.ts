@@ -135,4 +135,4 @@ const [_usePreloadBalances, preloadBalances$] = bind(
   })
 )
 
-export { useBalance, preloadBalances$ }
+export { preloadBalances$, useBalance }

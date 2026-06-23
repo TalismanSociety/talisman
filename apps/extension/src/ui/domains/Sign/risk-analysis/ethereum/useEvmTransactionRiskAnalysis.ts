@@ -1,4 +1,3 @@
-import { APIError } from "@blockaid/client"
 import type { TransactionScanParams } from "@blockaid/client/resources/evm/transaction.mjs"
 import { log } from "@common/log"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
@@ -7,6 +6,7 @@ import { useMemo } from "react"
 import type { TransactionRequest } from "viem"
 
 import { blockaid } from "../blockaid"
+import { getBlockaidErrorMessage } from "../getBlockaidErrorMessage"
 import { useRiskAnalysisBase } from "../useRiskAnalysisBase"
 
 type UseEvmTransactionRiskAnalysisProps = {
@@ -65,8 +65,8 @@ export const useEvmTransactionRiskAnalysis = ({
       } catch (err) {
         log.error("useEvmTransactionRiskAnalysis", { params, err })
 
-        if (err instanceof APIError && err.error.detail[0]?.msg)
-          throw new Error(err.error.detail[0]?.msg, { cause: err })
+        const blockaidErrorMessage = getBlockaidErrorMessage(err)
+        if (blockaidErrorMessage) throw new Error(blockaidErrorMessage, { cause: err })
 
         throw err
       }

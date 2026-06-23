@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import BigNumber from "./configureBigNumber"
 
 export function planckToTokens(planck: string, tokenDecimals: number): string
 export function planckToTokens(planck: string, tokenDecimals?: number): string | undefined

@@ -38,25 +38,15 @@ export const makeContractCaller =
         u8aToHex(
           u8aConcatStrict([
             // origin
-            registry
-              .createType("AccountId", callFrom)
-              .toU8a(),
+            registry.createType("AccountId", callFrom).toU8a(),
             // dest
-            registry
-              .createType("AccountId", contractAddress)
-              .toU8a(),
+            registry.createType("AccountId", contractAddress).toU8a(),
             // value
-            registry
-              .createType("Balance", 0)
-              .toU8a(),
+            registry.createType("Balance", 0).toU8a(),
             // gasLimit
-            registry
-              .createType("Option<WeightV2>")
-              .toU8a(),
+            registry.createType("Option<WeightV2>").toU8a(),
             // storageDepositLimit
-            registry
-              .createType("Option<Balance>")
-              .toU8a(),
+            registry.createType("Option<Balance>").toU8a(),
             // inputData
             inputData instanceof Uint8Array ? inputData : inputData.toU8a(),
           ])

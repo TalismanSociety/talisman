@@ -38,5 +38,5 @@ const RaptorQrEncoder = async (data: Uint8Array): Promise<Uint8Array[]> => {
   return dataFrames
 }
 
-/** @knipignore dynamically imported by QrCode.tsx */
+// dynamically imported by QrCode.tsx
 export default RaptorQrEncoder

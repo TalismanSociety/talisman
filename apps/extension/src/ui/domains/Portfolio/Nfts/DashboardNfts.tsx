@@ -2,13 +2,13 @@ import type { NftCollection, NftData } from "@core/domains/nfts/exports"
 import { StarIcon } from "@talismn/icons"
 import { isNotNil } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useIntersection } from "@ui/hooks/reactUseCompat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useIsFavoriteNft, useNfts } from "@ui/state/nfts"
 import { useSetting } from "@ui/state/settings"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useIntersection } from "react-use"
 
 import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -183,9 +183,9 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
       </div>
 
       <div className="flex flex-col gap-4">
-        {data.collections.map((collection, i) => (
+        {data.collections.map((collection) => (
           <NftCollectionRow
-            key={`${collection.id}-${i}`}
+            key={collection.id}
             collection={collection}
             data={data}
             onNftClick={onNftClick}
@@ -264,9 +264,9 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
 }) => {
   return (
     <div className="flex flex-wrap gap-10">
-      {data.collections.map((collection, i) => (
+      {data.collections.map((collection) => (
         <NftCollectionTile
-          key={`${collection.id}-${i}`}
+          key={collection.id}
           collection={collection}
           data={data}
           onNftClick={onNftClick}

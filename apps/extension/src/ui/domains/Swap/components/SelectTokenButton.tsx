@@ -324,6 +324,7 @@ const SelectTokenWarningDrawer: FC<{
                 href={`https://gopluslabs.io/token-security/${token.networkId}/${contractAddress}`}
                 target="_blank"
                 className="flex h-14 items-center rounded-full bg-primary-500/10 px-6 text-primary-500/80 text-sm hover:bg-primary-500/20 hover:text-primary"
+                rel="noopener"
               >
                 <span>{t("View Report")}</span>
               </a>

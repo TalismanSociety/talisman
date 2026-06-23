@@ -1,5 +1,6 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon } from "@talismn/icons"
+import { isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { Skeleton } from "@ui/components/Skeleton"
@@ -22,7 +23,6 @@ import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { EstimateGasExecutionError } from "viem"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
@@ -119,10 +119,9 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
         else throw new Error("Approval reverted")
       } catch (cause) {
         notify({
-          title:
-            cause instanceof EstimateGasExecutionError
-              ? t("Insufficient gas for approval")
-              : t("Approval failed"),
+          title: isErrorOfName(cause, "EstimateGasExecutionError")
+            ? t("Insufficient gas for approval")
+            : t("Approval failed"),
           type: "error",
           subtitle: (cause as Error)?.message?.slice(0, 100),
         })

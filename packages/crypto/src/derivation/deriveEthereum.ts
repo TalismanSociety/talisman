@@ -1,4 +1,4 @@
-import { secp256k1 } from "@noble/curves/secp256k1"
+import { secp256k1 } from "@noble/curves/secp256k1.js"
 import { HDKey } from "@scure/bip32"
 import { addressFromPublicKey } from "../address"
 import type { Keypair } from "../types"
@@ -21,6 +21,7 @@ export const deriveEthereum = (seed: Uint8Array, derivationPath: string): Keypai
 }
 
 export const getPublicKeyEthereum = (secretKey: Uint8Array) => {
-  const scalar = secp256k1.utils.normPrivateKeyToScalar(secretKey)
-  return secp256k1.getPublicKey(scalar, false)
+  // noble v2 removed `utils.normPrivateKeyToScalar`; getPublicKey accepts the raw private-key
+  // bytes directly and applies the same normalization internally → byte-identical pubkey.
+  return secp256k1.getPublicKey(secretKey, false)
 }

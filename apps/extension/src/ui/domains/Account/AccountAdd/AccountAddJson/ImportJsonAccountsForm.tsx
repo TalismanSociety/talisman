@@ -235,8 +235,8 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
           accounts.length > 4 && "pr-4"
         )}
       >
-        {accounts.map((acc, i) => (
-          <JsonAccount key={`${i}-${acc.address}`} account={acc} onSelect={handleSelect(acc.id)} />
+        {accounts.map((acc) => (
+          <JsonAccount key={acc.id} account={acc} onSelect={handleSelect(acc.id)} />
         ))}
       </div>
       <div className="mt-16 flex w-full justify-between">

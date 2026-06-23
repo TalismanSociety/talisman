@@ -85,9 +85,9 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
         </div>
       ) : (
         <div className="flex grow flex-col">
-          {transactions.map((tx, i) => (
+          {transactions.map((tx) => (
             <TransactionRow
-              key={`${tx.hash}-${i}`}
+              key={tx.hash}
               alphaToken={alphaToken}
               taoToken={taoToken}
               transaction={tx}

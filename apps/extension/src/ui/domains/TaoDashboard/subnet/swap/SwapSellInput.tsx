@@ -201,7 +201,7 @@ const TokenPickerButton: FC<{
 
 const BalanceDisplay: FC = () => {
   const { t } = useTranslation()
-  const { balanceTokenIn, tokenIdIn } = useSwapSell()
+  const { maxValueIn, tokenIdIn, balanceTokenIn } = useSwapSell()
 
   const isInitializing = useIsBalanceInitializing()
   const isLoading = useMemo(
@@ -213,13 +213,7 @@ const BalanceDisplay: FC = () => {
 
   return (
     <div className={cn("text-body-secondary text-sm", isLoading && "animate-pulse")}>
-      {t("Bal:")}{" "}
-      <TokensAndFiat
-        planck={balanceTokenIn?.transferable.planck ?? 0n}
-        tokenId={tokenIdIn}
-        noCountUp
-        noFiat
-      />
+      {t("Bal:")} <TokensAndFiat planck={maxValueIn} tokenId={tokenIdIn} noCountUp noFiat />
     </div>
   )
 }

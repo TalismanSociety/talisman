@@ -91,7 +91,7 @@ export const watchEthereumTransaction = async (
           )
 
         // if tx orignates from a dapp, in case it's a swap for a new token, launch an asset discovery scan
-        if (!!siteUrl && !!unsigned.from)
+        if (siteUrl && unsigned.from)
           assetDiscoveryScanner.startScan({
             networkIds: [evmNetworkId],
             addresses: [unsigned.from],

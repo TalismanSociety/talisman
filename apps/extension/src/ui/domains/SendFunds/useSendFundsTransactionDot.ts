@@ -72,6 +72,8 @@ export const useSendFundsTransactionDot = ({
         return String(val > 0n ? val : 0n)
       }
       default:
+        // dtao conviction-locked stake is intentionally NOT subtracted here: the chain allows
+        // transferring it (the lock follows the stake) — the send flow warns instead of blocking
         return balance.transferable.planck?.toString() ?? "0"
     }
   }, [balance, qEstimateFee.data, qTip, tipToken?.id, token])

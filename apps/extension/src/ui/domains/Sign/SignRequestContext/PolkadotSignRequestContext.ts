@@ -170,7 +170,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
-      if (!baseRequest || !baseRequest.id) return
+      if (!baseRequest?.id) return
       baseRequest.setStatus.processing("Approving request")
       try {
         await api.approveSignHardware(baseRequest.id, signature, modifiedPayload)
@@ -186,7 +186,7 @@ const usePolkadotSigningRequestProvider = ({
   const approveQr = useCallback(
     async ({ signature }: { signature: HexString }) => {
       baseRequest.setStatus.processing("Approving request")
-      if (!baseRequest || !baseRequest.id) return
+      if (!baseRequest?.id) return
       try {
         await api.approveSignQr(baseRequest.id, signature, modifiedPayload)
         baseRequest.setStatus.success("Approved")
@@ -200,7 +200,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const approveSignet = useCallback(async () => {
     baseRequest.setStatus.processing("Approving request")
-    if (!baseRequest || !baseRequest.id) return
+    if (!baseRequest?.id) return
     try {
       await api.approveSignSignet(baseRequest.id)
       baseRequest.setStatus.success("Approved")
@@ -212,7 +212,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const approve = useCallback(async () => {
     baseRequest.setStatus.processing("Approving request")
-    if (!baseRequest || !baseRequest.id) return
+    if (!baseRequest?.id) return
     try {
       await api.approveSign(baseRequest.id, modifiedPayload)
       baseRequest.setStatus.success("Approved")

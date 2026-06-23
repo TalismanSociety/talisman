@@ -3,6 +3,7 @@ import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -32,7 +33,8 @@ export const SeekGetFeeDiscountsDrawer = ({
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
   const { open: openSwapModal } = useSwapModal()
-  const { tokenId, stakingUrl, docsUrl } = remoteConfig.seek
+  const { open: openSeekStakingModal } = useSeekStakingModal()
+  const { tokenId, docsUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
   const accounts = useAccounts("owned")
@@ -125,7 +127,7 @@ export const SeekGetFeeDiscountsDrawer = ({
           {totalOwned && totalOwned.planck > 0n && (
             <Button
               onClick={() => {
-                open(stakingUrl, "_blank", "noopener,noreferrer")
+                openSeekStakingModal({ action: "stake" })
                 onCloseModal()
               }}
             >

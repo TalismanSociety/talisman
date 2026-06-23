@@ -178,6 +178,10 @@ describe("net / getFallbackUrl", () => {
 })
 
 describe("net / fetchChaindata with slashed branch", () => {
+  beforeEach(() => {
+    mockFetch.mockReset()
+  })
+
   afterEach(() => {
     vi.doUnmock("../constants")
     vi.resetModules()

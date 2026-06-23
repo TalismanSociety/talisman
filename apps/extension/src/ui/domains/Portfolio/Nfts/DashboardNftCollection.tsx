@@ -1,6 +1,7 @@
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { StarIcon } from "@talismn/icons"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useIntersection } from "@ui/hooks/reactUseCompat"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useNftCollection } from "@ui/state/nfts"
 import { useSetting } from "@ui/state/settings"
@@ -8,7 +9,6 @@ import { format } from "date-fns/format"
 import { type FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { useIntersection } from "react-use"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
@@ -173,9 +173,9 @@ const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   return (
     <div className="flex flex-wrap gap-12">
       {!!collection &&
-        nfts.map((nft, i) => (
+        nfts.map((nft) => (
           <NftTileItem
-            key={`${collection.id}-${nft.id}-${i}`}
+            key={`${collection.id}-${nft.id}`}
             collection={collection}
             nft={nft}
             onClick={() => onNftClick(nft)}

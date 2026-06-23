@@ -72,6 +72,7 @@ export const EnterPasswordForm = () => {
             target="_blank"
             rel="noreferrer noopener"
             className="text-white opacity-100"
+            aria-label="Learn more about Talisman's security model"
           >
             Learn more
           </a>{" "}

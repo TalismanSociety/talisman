@@ -7,6 +7,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
+import { useIntersection } from "@ui/hooks/reactUseCompat"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
@@ -14,7 +15,6 @@ import { useActiveNetworksState, useNetworkById, useNetworks } from "@ui/state/c
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useIntersection } from "react-use"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 

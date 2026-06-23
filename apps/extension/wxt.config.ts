@@ -820,8 +820,20 @@ export default defineConfig({
           // UI
           "@headlessui/react",
           "@floating-ui/react",
-          "framer-motion",
+          "motion",
         ],
+        // The top-level `define` above only rewrites app code, not pre-bundled deps.
+        // @polkadot/extension-base reads process.env['EXTENSION_PREFIX'] / ['PORT_PREFIX']
+        // at module load, so without this the values fall back to the node-polyfills `process`
+        // shim's runtime env — which stopped carrying them across vite-plugin-node-polyfills
+        // versions and crashed the extension on boot. Replace them at pre-bundle time instead.
+        // (esbuild matches both dot and bracket member access for these keys.)
+        esbuildOptions: {
+          define: {
+            "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
+            "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+          },
+        },
       },
 
       build: {
@@ -923,9 +935,17 @@ var browser = globalThis.browser;
                   : ""
 
                 return `${firefoxShim}
-// Document shim for service worker - some packages reference document which doesn't exist
+// Document shim for service worker - some packages reference document which doesn't exist.
+// @sentry/browser v10's BrowserClient constructor (and its browserSession integration) call
+// document.addEventListener("visibilitychange", ...); a service worker has no page lifecycle,
+// so expose no-op event APIs to keep the shim truthy without crashing SW boot.
 if (typeof document === "undefined") {
-  globalThis.document = { baseURI: self.location.href, currentScript: null };
+  globalThis.document = {
+    baseURI: self.location.href,
+    currentScript: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  };
 }
 `
               }

@@ -1,8 +1,8 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import BigNumber from "bignumber.js"
 import { keyBy, uniq } from "lodash-es"
 import { getContract, type PublicClient } from "viem"
+import BigNumber from "../../configureBigNumber"
 
 import type { ExtraAmount } from "../../types"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"

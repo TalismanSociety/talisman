@@ -217,7 +217,12 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
             <>
               {tx?.confirmed ? t("Confirmed in") : t("Included in")}{" "}
               {explorerUrl ? (
-                <a target="_blank" className="text-grey-200 hover:text-body" href={explorerUrl}>
+                <a
+                  target="_blank"
+                  className="text-grey-200 hover:text-body"
+                  href={explorerUrl}
+                  rel="noopener"
+                >
                   {t("block #{{blockNumber}}", { blockNumber })}{" "}
                   <ExternalLinkIcon className="inline align-text-top" />
                 </a>
@@ -226,14 +231,24 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
               )}
             </>
           ) : explorerUrl ? (
-            <a target="_blank" className="text-grey-200 hover:text-body" href={explorerUrl}>
+            <a
+              target="_blank"
+              className="text-grey-200 hover:text-body"
+              href={explorerUrl}
+              rel="noopener"
+            >
               {t("View on block explorer")} <ExternalLinkIcon className="inline align-text-top" />
             </a>
           ) : null}
         </div>
         <div>
           {swapTrackerUrl && (
-            <a target="_blank" className="text-grey-200 hover:text-body" href={swapTrackerUrl}>
+            <a
+              target="_blank"
+              className="text-grey-200 hover:text-body"
+              href={swapTrackerUrl}
+              rel="noopener"
+            >
               {t("Track swap progress")} <ExternalLinkIcon className="inline align-text-top" />
             </a>
           )}

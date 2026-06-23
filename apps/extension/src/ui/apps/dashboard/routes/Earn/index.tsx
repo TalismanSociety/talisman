@@ -9,6 +9,7 @@ import {
   DashboardEarnPage,
   DashboardEarnPositionsRoute,
 } from "./DashboardEarnPage"
+import { DashboardSeekStakingPositionPage } from "./DashboardSeekStakingPositionPage"
 import { DashboardYieldxyzYieldPositionsPage } from "./DashboardYieldxyzYieldPositionsPage"
 
 export const DashboardEarnRoutes: FC = () => {
@@ -25,6 +26,7 @@ export const DashboardEarnRoutes: FC = () => {
             path="positions/yieldxyz/:yieldId/:address"
             element={<DashboardYieldxyzYieldPositionsPage />}
           />
+          <Route path="positions/seek/:address" element={<DashboardSeekStakingPositionPage />} />
           <Route path="positions/defi/:positionId" element={<DashboardEarnDefiPositionPage />} />
         </Routes>
       </DashboardLayout>

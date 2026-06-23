@@ -19,9 +19,7 @@ const INITIAL_REFRESH_DELAY_MS = 30_000
 
 const DEFAULT_ALLOW: ReadonlyArray<string> = [
   TALISMAN_WEB_APP_DOMAIN, // app.talisman.xyz
-  TALISMAN_WEB_APP_DOMAIN.split(".")
-    .slice(1)
-    .join("."), // talisman.xyz
+  TALISMAN_WEB_APP_DOMAIN.split(".").slice(1).join("."), // talisman.xyz
 ]
 
 type HostList = { allow: string[]; deny: string[] }

@@ -84,7 +84,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
       </TooltipContent>
       <TooltipTrigger
         className={cn(
-          "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
+          "inline-flex max-w-full cursor-default flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
           className
         )}
       >

@@ -1,3 +1,4 @@
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
@@ -14,10 +15,15 @@ export const useBittensorAlphaPrice = ({ networkId, netuid }: UseBittensorAlphaP
   return useQuery({
     queryKey: ["useBittensorAlphaPrice", sapi?.id, netuid],
     queryFn: async () => {
-      if (!sapi || !netuid) return null
+      if (netuid === 0) return ALPHA_PRICE_SCALE
+      if (!sapi || typeof netuid !== "number") return null
 
       return sapi.getRuntimeCallValue<bigint>("SwapRuntimeApi", "current_alpha_price", [netuid])
     },
-    refetchInterval: 2_000, // refresh often to account for changes in mempool
+    // netuid 0 resolves to the 1:1 constant without needing sapi. Without the gate, every consumer
+    // mounting this hook with a null netuid (eg send screens on non-dtao tokens) would run a no-op
+    // poll every refetch interval.
+    enabled: typeof netuid === "number" && (netuid === 0 || !!sapi),
+    refetchInterval: 12_000, // price may change every block
   })
 }

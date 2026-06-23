@@ -18,13 +18,21 @@ const randomName = (prefix: string) => {
 export const DEFAULT_PASSWORD = "talismanwallet"
 const DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
-const ethDevChain = "http://localhost:8545"
+export const ethDevChain = "http://localhost:8545"
+
+const isExternalDappError = (url: string | undefined) =>
+  !!url && !url.startsWith("chrome-extension://")
 
 export const test = base.extend<{
   context: BrowserContext
   extensionId: string
   onboardedPage: Page
-  importAccount: (opts: { type: AccountType; name?: string; mnemonic?: string }) => Promise<Page>
+  importAccount: (opts: {
+    type: AccountType
+    name?: string
+    mnemonic?: string
+    multipleAccs?: number
+  }) => Promise<Page>
   addNewAccount: (opts: { type: AccountType; name?: string }) => Promise<Page>
   addWatchedAccount: (opts: {
     type: WatchedAccountType
@@ -53,6 +61,7 @@ export const test = base.extend<{
     })
 
     context.on("weberror", (err) => {
+      if (isExternalDappError(err.page()?.url())) return
       throw new Error(`Failing test due to error in browser context: ${err.error()}`)
     })
 
@@ -71,6 +80,7 @@ export const test = base.extend<{
     const page = await context.newPage()
 
     page.on("pageerror", (err) => {
+      if (isExternalDappError(page.url())) return
       throw new Error(`Failing test due to error in browser page: ${err}`)
     })
 
@@ -106,10 +116,12 @@ export const test = base.extend<{
       type,
       name,
       mnemonic,
+      multipleAccs = 0,
     }: {
       type: "ethereum" | "substrate" | "solana"
       name?: string
       mnemonic?: string
+      multipleAccs?: number
     }) => {
       const defaultNames: Record<AccountType, string> = {
         ethereum: randomName("PW e2e - ETH"),
@@ -150,10 +162,33 @@ export const test = base.extend<{
       await expect(mnemonicError).toHaveText("Invalid recovery phrase")
       await expect(importButton).toBeDisabled()
 
-      // Try to submit a valid seed phrase
-      await mnemonicInput.fill(seed)
-      await expect(importButton).toBeEnabled()
-      await importButton.click()
+      // valid seed phrase
+      // with multiple accounts being selected
+      const multipleAccounts = multipleAccs
+      if (multipleAccounts > 0) {
+        await onboardedPage.getByTestId("derivation-dropdown").click()
+        await onboardedPage
+          .getByTestId("derivation-dropdown")
+          .getByText("Import Multiple Accounts")
+          .click()
+        await mnemonicInput.fill(seed)
+        await expect(importButton).toBeEnabled()
+        await importButton.click()
+        const accountCheckboxSection = onboardedPage.getByTestId(
+          "multiple-accounts-selection-section"
+        )
+        const items = accountCheckboxSection.getByText(accName)
+        for (let i = 0; i < multipleAccounts; i++) {
+          await items.nth(i).click()
+        }
+        await onboardedPage.getByTestId("account-add-mnemonic-import-button-multiple").click()
+      }
+      // with one account being selected
+      else {
+        await mnemonicInput.fill(seed)
+        await expect(importButton).toBeEnabled()
+        await importButton.click()
+      }
       await expect(onboardedPage.getByTestId("top-actions-buttons")).toBeVisible()
       expect(onboardedPage.url()).toContain("portfolio")
       return onboardedPage

@@ -18,12 +18,12 @@ import {
   usePortfolioNetworkFilter,
 } from "@ui/state/portfolio"
 import { useSetting } from "@ui/state/settings"
-import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useYieldxyzOpportunitiesByTokenId } from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
+import { useEarnOpportunitiesByTokenId } from "../hooks/useEarnOpportunitiesByTokenId"
+import { useEarnProviders } from "../hooks/useEarnProviders"
 import { type ProtocolOption, ProtocolOptionsModal } from "./ProtocolOptionsModal"
 
 const YIELD_TYPES = [
@@ -80,8 +80,8 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
   const { t } = useTranslation()
   const [typeFilter, setTypeFilter] = useSetting("earnDiscoverTypeFilter")
   const [providerFilter, setProviderFilter] = useSetting("earnDiscoverProviderFilter")
-  const { data: providers } = useYieldxyzProviders()
-  const { data: allOpportunities } = useYieldxyzOpportunitiesByTokenId()
+  const { data: providers } = useEarnProviders()
+  const { data: allOpportunities } = useEarnOpportunitiesByTokenId()
   const tokensMap = useTokensMap()
   const networkFilter = usePortfolioNetworkFilter() ?? null
 
@@ -93,13 +93,13 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
         const token = tokensMap[opp.tokenId]
         if (!token || !networkFilter.networkIds.includes(token.networkId)) return []
       }
-      return opp.products
+      return opp.opportunities
     })
   }, [allOpportunities, networkFilter, tokensMap])
 
   const availableTypes = useMemo(() => {
     const types = new Set<string>()
-    for (const p of allProducts) types.add(p.mechanics.type)
+    for (const p of allProducts) types.add(p.type)
     return types
   }, [allProducts])
 
@@ -117,13 +117,13 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
   const protocolProviders = useMemo(
     () =>
       (providers ?? [])
-        .filter((p) => p.type === "protocol" && availableProviderIds.has(p.id))
+        .filter((p) => availableProviderIds.has(p.id))
         .sort((a, b) => a.name.localeCompare(b.name)),
     [providers, availableProviderIds]
   )
 
   const protocolOptions: ProtocolOption[] = useMemo(
-    () => protocolProviders.map((p) => ({ id: p.id, name: p.name, logoURI: p.logoURI })),
+    () => protocolProviders.map((p) => ({ id: p.id, name: p.name, logoURI: p.logoURI ?? "" })),
     [protocolProviders]
   )
 
@@ -292,7 +292,7 @@ const EarnDiscoverNetworkFilterButton: FC<{
 
 export const EarnDiscoverToolbar: FC<{ buttonClassName?: string }> = ({ buttonClassName }) => {
   const allNetworks = useNetworks()
-  const { data: allProducts } = useYieldxyzOpportunitiesByTokenId()
+  const { data: allProducts } = useEarnOpportunitiesByTokenId()
   const tokensMap = useTokensMap()
   const networkFilter = usePortfolioNetworkFilter() ?? null
 

@@ -3,6 +3,7 @@ import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"
 import type { IBalanceModule } from "../../types/IBalanceModule"
+import { getBalanceDefs } from "../shared"
 import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"
 
@@ -15,6 +16,8 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
   miniMetadata,
 }) => {
   if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
+
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   return new Observable((subscriber) => {
     const abortController = new AbortController()
@@ -35,9 +38,11 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         if (abortController.signal.aborted) return
 
         subscriber.next(balances)
-
-        setTimeout(poll, SUBSCRIPTION_INTERVAL)
       } catch (error) {
+        if (abortController.signal.aborted) return
+
+        // don't kill the subscription (balances would be stuck as stale until next resubscribe),
+        // emit balance errors so the provider can mark cached balances stale, then retry on next poll
         log.error("Error", {
           module: MODULE_TYPE,
           networkId,
@@ -45,8 +50,18 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
           addressesByToken: tokensWithAddresses,
           error,
         })
-        subscriber.error(error)
+        const fetchError = error instanceof Error ? error : new Error(String(error))
+        subscriber.next({
+          success: [],
+          errors: balanceDefs.map((def) => ({
+            tokenId: def.token.id,
+            address: def.address,
+            error: fetchError,
+          })),
+        })
       }
+
+      if (!abortController.signal.aborted) setTimeout(poll, SUBSCRIPTION_INTERVAL)
     }
 
     poll()

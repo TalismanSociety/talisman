@@ -8,7 +8,7 @@ import { debugObservable } from "./util/debugObservable"
 
 const appState$ = appStore.observable.pipe(debugObservable("appState$"), shareReplay(1))
 
-export const [useAppStateValue, getAppStateValue$] = bind((key: keyof AppStoreData) =>
+const [useAppStateValue, getAppStateValue$] = bind((key: keyof AppStoreData) =>
   appState$.pipe(map((state) => state[key]))
 ) as [
   <K extends keyof AppStoreData, V = AppStoreData[K]>(key: K) => V,

@@ -64,7 +64,7 @@ const getQrSignPayload = (
   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload)
   const encodedPayload = extrinsicPayload.toU8a(false)
 
-  return !!proof && !!payload.metadataHash && payload.mode === 1
+  return proof && payload.metadataHash && payload.mode === 1
     ? u8aConcat(
         PV_PREFIX_SUBSTRATE,
         PV_PREFIX_CRYPTO_SR25519,

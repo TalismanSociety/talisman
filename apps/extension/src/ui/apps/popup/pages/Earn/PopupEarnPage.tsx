@@ -8,7 +8,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToolbar"
 import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
-import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
+import { useEarnOpportunitiesByTokenId } from "@ui/domains/Earn/hooks/useEarnOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -73,7 +73,7 @@ const PopupEarnHeader = () => {
   const currency = useSelectedCurrency()
 
   // this hook already filters selected accounts
-  const { status, data: tokenProducts } = useYieldxyzOpportunitiesByTokenId()
+  const { status, data: tokenProducts } = useEarnOpportunitiesByTokenId()
 
   const eligibleTotal = useMemo(() => {
     if (!tokenProducts) return null
@@ -85,7 +85,7 @@ const PopupEarnHeader = () => {
   return (
     <div className="flex justify-between rounded-[0.4688rem] border border-grey-800 bg-grey-850 text-left text-base text-body-secondary">
       <div className="flex flex-col gap-4 px-6 py-8">
-        <div className="text-body-secondary text-xs">{t("Yield-Eligible Capital")}</div>
+        <div className="text-body-secondary text-xs">{t("Earn-Eligible Capital")}</div>
         <div className="font-bold text-body text-xl">
           {!eligibleTotal && status === "loading" ? (
             <div className="animate-pulse rounded bg-grey-700 text-grey-700">$0.00</div>

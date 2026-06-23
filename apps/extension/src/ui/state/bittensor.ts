@@ -8,6 +8,8 @@ import { map, Observable, shareReplay } from "rxjs"
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
+export const BITTENSOR_NETWORK_ID = "bittensor"
+
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
   const unsubscribe = api.bittensorValidatorsSubscribe((data) => {
     subscriber.next(data)
@@ -26,7 +28,7 @@ const [useBittensorValidators, _bittensorValidators$] = bind(bittensorValidators
   data: [],
 })
 
-export const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
+const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
   bittensorValidatorsRaw$.pipe(
     map((loadable) => ({
       status: loadable.status,
@@ -51,12 +53,12 @@ const [useBittensorValidator, _getBittensorValidator$] = bind(
   { status: "loading", data: null }
 )
 
-export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
+const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
   getTokens$({ platform: "polkadot" }).pipe(
     map((tokens) =>
       uniq(
         tokens
-          .filter((t) => t.type === "substrate-dtao" && t.networkId === "bittensor") // TODO: remove networkId check once testnets work
+          .filter((t) => t.type === "substrate-dtao" && t.networkId === BITTENSOR_NETWORK_ID) // TODO: remove networkId check once testnets work
           .map((t) => t.networkId)
       )
     )
@@ -72,4 +74,9 @@ const [_useIsBittensorNetwork, _isBittensorNetwork$] = bind(
   false
 )
 
-export { useBittensorValidators, useBittensorValidator }
+export {
+  useBittensorNetworkIds,
+  useBittensorValidator,
+  useBittensorValidators,
+  useBittensorValidatorsMap,
+}

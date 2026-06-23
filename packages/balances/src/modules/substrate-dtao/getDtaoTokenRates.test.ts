@@ -157,4 +157,59 @@ describe("getDTaoTokenRates", () => {
       expect(result.usd!.change24h).toBeUndefined()
     })
   })
+
+  describe("change24h composition", () => {
+    it("compounds the pool change with the TAO change per currency", () => {
+      const tokenRates = makeTokenRatesList()
+      const token = makeToken(1)
+
+      // pool price +10%, TAO/usd +2.5%, TAO/btc -1.2%
+      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE, 10)!
+
+      expect(result.usd!.change24h).toBeCloseTo((1.1 * 1.025 - 1) * 100) // +12.75%
+      expect(result.btc!.change24h).toBeCloseTo((1.1 * 0.988 - 1) * 100) // +8.68%
+    })
+
+    it("uses the pool change directly for the tao currency", () => {
+      const taoRates = makeTaoRates()
+      // the store hardcodes the TAO-vs-TAO rate with no change
+      taoRates.tao = { price: 1, marketCap: undefined, change24h: undefined }
+      const tokenRates = makeTokenRatesList(taoRates)
+      const token = makeToken(1)
+
+      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE, -7.5)!
+
+      expect(result.tao!.change24h).toBe(-7.5)
+    })
+
+    it("stays undefined without a pool change", () => {
+      const tokenRates = makeTokenRatesList()
+      const token = makeToken(1)
+
+      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE, null)!
+
+      expect(result.usd!.change24h).toBeUndefined()
+    })
+
+    it("stays undefined for currencies without a TAO change", () => {
+      const taoRates = newTokenRates()
+      taoRates.usd = { price: 400, marketCap: undefined, change24h: undefined }
+      const tokenRates = makeTokenRatesList(taoRates)
+      const token = makeToken(1)
+
+      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE, 10)!
+
+      expect(result.usd!.change24h).toBeUndefined()
+    })
+
+    it("keeps the TAO clone untouched for the root subnet", () => {
+      const taoRates = makeTaoRates()
+      const tokenRates = makeTokenRatesList(taoRates)
+      const token = makeToken(0)
+
+      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE, 10)
+
+      expect(result).toEqual(taoRates)
+    })
+  })
 })

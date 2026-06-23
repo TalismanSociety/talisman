@@ -64,7 +64,7 @@ export const useSubnetTransactions = (
     return localTransactions
       .filter((tx): tx is WalletTransactionDot => {
         if (tx.platform !== "polkadot" || tx.networkId !== BITTENSOR_NETWORK_ID) return false
-        if (!tx.txInfo || tx.txInfo.type !== "bittensor-staking") return false
+        if (tx.txInfo?.type !== "bittensor-staking") return false
         return [tx.txInfo.fromTokenId, tx.txInfo.toTokenId]
           .map(parseTokenId)
           .some((parsed) => parsed.type === "substrate-dtao" && parsed.netuid === netuid)

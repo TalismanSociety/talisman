@@ -1,5 +1,5 @@
+import { sentry } from "@core/config/sentry"
 import type { IdenticonType } from "@core/domains/accounts/types"
-import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
 import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon/PolkadotAvatar"
 import { renderToString } from "react-dom/server"
@@ -32,7 +32,7 @@ const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) 
     // encode as base64 data uri
     return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`
   } catch (err) {
-    Sentry.captureException(err)
+    sentry.captureException(err)
     return null
   }
 }

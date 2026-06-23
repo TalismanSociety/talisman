@@ -1,5 +1,5 @@
-import { blake2b } from "@noble/hashes/blake2b"
-import { blake3 as blake3Hasher } from "@noble/hashes/blake3"
+import { blake2b } from "@noble/hashes/blake2.js"
+import { blake3 as blake3Hasher } from "@noble/hashes/blake3.js"
 import { base58 } from "@scure/base"
 
 export const blake3 = blake3Hasher

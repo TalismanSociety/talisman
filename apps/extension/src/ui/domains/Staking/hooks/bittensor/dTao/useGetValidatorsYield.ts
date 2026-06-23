@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { createQueryStoragePersister } from "@ui/hooks/queryStoragePersister"
 
-import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "./taoDataApi"
+import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "@ui/util/taoDataApi"
 
 export function useGetValidatorsYield({ netuid }: { netuid: number | null | undefined }) {
   return useQuery({

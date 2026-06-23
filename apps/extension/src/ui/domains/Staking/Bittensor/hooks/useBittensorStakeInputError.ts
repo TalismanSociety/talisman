@@ -52,9 +52,9 @@ export const useBittensorStakeInputError = ({
     if (!taoBalance || taoAmountIn > taoBalance) return t("Insufficient balance")
 
     if (
-      !!taoBalance &&
-      !!effectiveFeeEstimate &&
-      !!taoAmountIn &&
+      taoBalance &&
+      effectiveFeeEstimate &&
+      taoAmountIn &&
       taoAmountIn + effectiveFeeEstimate > taoBalance
     )
       return t("Insufficient balance to cover fee")

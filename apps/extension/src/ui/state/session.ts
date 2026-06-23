@@ -8,7 +8,7 @@ import { debugObservable } from "./util/debugObservable"
 
 const session$ = sessionStore.observable.pipe(debugObservable("session$"), shareReplay(1))
 
-export const [useSessionValue, getSessionValue$] = bind((key: keyof SessionStoreData) =>
+const [useSessionValue, getSessionValue$] = bind((key: keyof SessionStoreData) =>
   session$.pipe(map((state) => state[key]))
 ) as [
   <K extends keyof SessionStoreData, V = SessionStoreData[K]>(key: K) => V,

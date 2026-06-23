@@ -335,7 +335,7 @@ const getRouteHasCustomFee = async (
   if (!pairs || !Array.isArray(pairs)) return false
 
   const toAsset = toTokenId ? resolveAsset(toTokenId) : null
-  if (!toAsset || !toAsset.context.stealthex) return false
+  if (!toAsset?.context.stealthex) return false
 
   const toAssetKey = `${toAsset.context.stealthex.network}::${toAsset.context.stealthex.symbol}`
   const pair = pairs.find((pair) => pairKeyFromPair(pair) === toAssetKey)

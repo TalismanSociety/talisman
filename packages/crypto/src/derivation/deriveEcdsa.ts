@@ -1,4 +1,4 @@
-import { secp256k1 } from "@noble/curves/secp256k1"
+import { secp256k1 } from "@noble/curves/secp256k1.js"
 import { addressFromPublicKey } from "../address"
 import type { Keypair } from "../types"
 import { deriveSubstrateSecretKey } from "./common"

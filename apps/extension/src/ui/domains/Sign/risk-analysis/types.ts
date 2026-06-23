@@ -1,4 +1,4 @@
-import type { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
+import type { TransactionScanResponse } from "@blockaid/client/resources/evm/transaction.mjs"
 import type { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
 
 import type { useEvmMessageRiskAnalysis } from "./ethereum/useEvmMessageRiskAnalysis"
