@@ -24,12 +24,12 @@ export const ConvictionLockSendWarningDrawer = ({
         <div className="mt-5 text-body-secondary text-sm leading-paragraph">
           <p>
             {t(
-              "This includes conviction-locked stake. The lock moves with the stake, and the recipient cannot unstake it until the lock decays."
+              "This transfer includes conviction-locked stake. The lock and a share of its conviction move to the recipient, who cannot unstake that portion until the lock decays."
             )}
           </p>
           <p className="mt-5">
             {t(
-              "The transfer will fail if the recipient already has a lock on a different hotkey for this subnet."
+              "The transfer will fail if the recipient hasn't opted in to receive locked stake, or already has a lock on a different hotkey for this subnet."
             )}
           </p>
         </div>
