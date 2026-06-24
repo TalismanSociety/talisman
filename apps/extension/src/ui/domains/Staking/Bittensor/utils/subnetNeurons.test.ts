@@ -7,7 +7,8 @@ const OWNER = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 const VALIDATOR = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
 const MINER = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 
-const identity = (text: string) => ({ name: { asText: () => text } })
+// polkadot-api v2 decodes the identity name as a Uint8Array
+const identity = (text: string) => ({ name: new TextEncoder().encode(text) })
 
 const buildMetagraph = (overrides: Partial<NonNullable<Metagraph>> = {}): Metagraph =>
   ({

@@ -6,7 +6,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy, keys } from "lodash-es"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import type { QueryStorageResult } from "../shared"
@@ -63,15 +63,15 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         decimals?: number
         deposit?: bigint
         is_frozen?: boolean
-        name?: Binary
-        symbol?: Binary
+        name?: Uint8Array
+        symbol?: Uint8Array
       }
       return {
         assetId,
         decimals: metadata.decimals,
         isFrozen: metadata.is_frozen,
-        name: metadata.name?.asText(),
-        symbol: metadata.symbol?.asText(),
+        name: metadata.name ? Binary.toText(metadata.name) : undefined,
+        symbol: metadata.symbol ? Binary.toText(metadata.symbol) : undefined,
       }
     }),
     (a) => a.assetId

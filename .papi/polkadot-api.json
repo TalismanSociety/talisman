@@ -15,16 +15,16 @@
       "codeHash": "0x6e20bc52aaaafd1de82ba7d2a3c0fa39193787e240b93608489cf72a4c46a584"
     },
     "hydration": {
-      "wsUrl": "wss://hydration.ibp.network",
+      "wsUrl": "wss://hydration-rpc.n.dwellir.com",
       "metadata": ".papi/scale/hydration.scale",
       "genesis": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-      "codeHash": "0xf229884fe5c637f59db752a7c67df6c536681f88f1631c8bf7da4d5bf29ac6f1"
+      "codeHash": "0x906f5ac6f0b88e52361b92a2011b1379e12133c846aa5a12913202f9e8921253"
     },
     "acala": {
-      "wsUrl": "wss://acala-rpc.dwellir.com",
+      "wsUrl": "wss://acala-rpc-0.aca-api.network",
       "metadata": ".papi/scale/acala.scale",
       "genesis": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
-      "codeHash": "0x55f7b185fec5e7ba4ed5816324151344e0c20e87582502bf50d74bdc3e40ebbe"
+      "codeHash": "0xb9df022d99d523efb33c1568a814a4ccc82a5bf89a2b91966b56ca6593bd81ff"
     },
     "bittensor": {
       "wsUrl": "wss://entrypoint-finney.opentensor.ai:443",

@@ -106,8 +106,8 @@ export class SubHandler extends ExtensionHandler {
         return this.submit({ payload, txInfo })
       }
 
-      const nextKeyBinary = storageCodec.value.dec(hexValue) as Binary
-      const nextKeyBytes = nextKeyBinary.asBytes()
+      const nextKey = storageCodec.value.dec(hexValue) as `0x${string}` | Uint8Array
+      const nextKeyBytes = typeof nextKey === "string" ? Binary.fromHex(nextKey) : nextKey
 
       // compute xxhash128 of the public key for the ciphertext prefix
       const keyHash = Twox128(nextKeyBytes)
@@ -144,9 +144,9 @@ export class SubHandler extends ExtensionHandler {
       // craft the encrypted call (v2: commitment parameter removed)
       const { codec, location } = builder.buildCall("MevShield", "submit_encrypted")
       const args = {
-        ciphertext: new Binary(ciphertextBytes),
+        ciphertext: ciphertextBytes,
       }
-      const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
+      const method = mergeUint8([new Uint8Array(location), codec.enc(args)])
 
       // Fetch fresh block reference for the outer tx to avoid stale birth block.
       // The UI payload's blockNumber can be minutes old; with a mortal era of only 8 blocks,
@@ -174,7 +174,7 @@ export class SubHandler extends ExtensionHandler {
       })
       const outerPayload: SignerPayloadJSON = {
         ...payload,
-        method: method.asHex(),
+        method: Binary.toHex(method),
         era: outerEra,
         blockNumber: toPjsHex(freshBlockNumber, 4),
         blockHash: freshBlockHash,

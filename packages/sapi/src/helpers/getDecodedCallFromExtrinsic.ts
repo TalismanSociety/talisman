@@ -1,5 +1,5 @@
 import {
-  Bin,
+  Bytes,
   compactNumber,
   createDecoder,
   type Decoder,
@@ -13,7 +13,7 @@ import {
 import type { DecodedCall } from "../types"
 import type { Chain } from "./types"
 
-const allBytesDec = Bin(Infinity).dec
+const allBytesDec = Bytes(Infinity).dec
 
 /**
  * Decodes a signed extrinsic and extracts the call data.
@@ -106,7 +106,7 @@ export const getDecodedCallFromExtrinsic = <Res extends DecodedCall>(
       }),
       (v) => ({
         ...v,
-        call: callDec(v.callData.asBytes()),
+        call: callDec(v.callData),
       })
     )
 

@@ -23,7 +23,7 @@ export const getTransferCallData: IBalanceModule<
 
   return {
     address: from,
-    method: callData.asHex() as `0x${string}`,
+    method: Binary.toHex(callData) as `0x${string}`,
   }
 }
 
@@ -44,7 +44,10 @@ type CallDataOption = {
   getArgs: () => unknown
 }
 
-const getCallDataFromOptions = (builder: MetadataBuilder, options: CallDataOption[]): Binary => {
+const getCallDataFromOptions = (
+  builder: MetadataBuilder,
+  options: CallDataOption[]
+): Uint8Array => {
   for (const { pallet, method, getArgs } of options) {
     try {
       return buildCallData(builder, pallet, method, getArgs())
@@ -57,7 +60,7 @@ const getCallDataFromOptions = (builder: MetadataBuilder, options: CallDataOptio
 
 const buildCallData = (builder: MetadataBuilder, pallet: string, method: string, args: unknown) => {
   const { location, codec } = builder.buildCall(pallet, method)
-  return Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
+  return mergeUint8([new Uint8Array(location), codec.enc(args)])
 }
 
 const getCallDataOptions = (

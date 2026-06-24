@@ -6,7 +6,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy } from "lodash-es"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import type { QueryStorageResult } from "../shared"
@@ -44,8 +44,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         // parse results
         const [onChainId] = assetsCodec.keys.dec(key) as [number]
         const asset = assetsCodec.value.dec(value) as {
-          name: Binary | undefined
-          symbol: Binary | undefined
+          name: Uint8Array | undefined
+          symbol: Uint8Array | undefined
           decimals: number | undefined
           is_sufficient: boolean
           asset_type: { type: string }
@@ -56,8 +56,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           onChainId,
           assetType: asset.asset_type.type,
           isSufficient: asset.is_sufficient,
-          name: asset.name?.asText(),
-          symbol: asset.symbol?.asText(),
+          name: asset.name ? Binary.toText(asset.name) : undefined,
+          symbol: asset.symbol ? Binary.toText(asset.symbol) : undefined,
           decimals: asset.decimals,
           existentialDeposit: asset.existential_deposit.toString(),
         }

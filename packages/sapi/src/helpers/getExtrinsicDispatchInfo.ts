@@ -44,7 +44,7 @@ const stateCall = async <K extends string = string>(
   // on a state call there are always arguments
   const registry = args[0].registry
 
-  const bytes = registry.createType("Raw", mergeUint8(...args.map((arg) => arg.toU8a())))
+  const bytes = registry.createType("Raw", mergeUint8(args.map((arg) => arg.toU8a())))
 
   const result = await request("state_call", [method, bytes.toHex(), blockHash], isCacheable)
 

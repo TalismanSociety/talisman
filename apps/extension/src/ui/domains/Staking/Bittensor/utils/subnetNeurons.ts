@@ -1,5 +1,5 @@
 import { isAddressEqual } from "@talismn/crypto"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 export type NeuronRole = "owner" | "validator" | "miner"
 
@@ -26,7 +26,7 @@ export type Metagraph =
       coldkeys: string[]
       validator_permit: boolean[]
       alpha_stake: bigint[]
-      identities: Array<{ name: Binary } | undefined>
+      identities: Array<{ name: Uint8Array } | undefined>
     }
   | undefined
 
@@ -56,7 +56,8 @@ export const normalizeMetagraph = (mg: Metagraph): RawNeuron[] => {
     // on-chain identity name is a Binary; some blobs decode to garbage, so guard
     let onChainName: string | null = null
     try {
-      onChainName = cleanName(mg.identities[uid]?.name?.asText())
+      const identityName = mg.identities[uid]?.name
+      onChainName = cleanName(identityName ? Binary.toText(identityName) : undefined)
     } catch {
       onChainName = null
     }

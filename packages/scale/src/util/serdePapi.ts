@@ -5,8 +5,12 @@ import { Binary } from "@polkadot-api/substrate-bindings"
  * These queries are made to the tokens pallet.
  * E.g. api.query.Tokens.Account(accountAddress, papiParse(onChainId))
  *
- * The `onChainId` field on chaindata must be a JSON-parseable string, but for some SCALE types (especially the Binary type) we must
- * use specific `polkadot-api` classes to handle SCALE-encoding the statekey.
+ * The `onChainId` field on chaindata must be a JSON-parseable string, but for some SCALE types we must
+ * decode them into the values that `polkadot-api` expects.
+ *
+ * Note on polkadot-api v2: the `Binary` class was removed. Variable-length byte fields (`Vec<u8>`) are now
+ * plain `Uint8Array`s, and fixed-size byte fields (`[u8; N]`, e.g. `AccountId32`) are now plain hex strings
+ * (`SizedHex`). `Binary` is only a set of utilities for converting to/from `Uint8Array`.
  *
  * Some examples:
  * Input: `5`
@@ -22,17 +26,17 @@ import { Binary } from "@polkadot-api/substrate-bindings"
  * Output: `Enum("NativeToken", 2n)`
  *
  * Input: `{ type: "Erc20", value: "hex:0x07df96d1341a7d16ba1ad431e2c847d978bc2bce" }`
- * Output: `Enum("Erc20", Binary.fromHex("0x07df96d1341a7d16ba1ad431e2c847d978bc2bce"))`
+ * Output: `Enum("Erc20", Uint8Array([...]))`
  *
  * Input: `{ type: "Stellar", value: { code: "bin:TZS", issuer: "hex:0x34c94b2a4ba9e8b57b22547dcbb30f443c4cb02da3829a89aa1bd4780e4466ba" } }`
- * Output: `Enum("Stellar", { code: Binary.fromText("TZS"), issuer: Binary.fromHex("0x34c94b2a4ba9e8b57b22547dcbb30f443c4cb02da3829a89aa1bd4780e4466ba") })`
+ * Output: `Enum("Stellar", { code: Uint8Array([...]), issuer: Uint8Array([...]) })`
  */
 export const papiParse = <T = unknown>(text: string | T): T => {
   // biome-ignore lint/suspicious/noExplicitAny: legacy
   const reviver = (_key: string, value: any) => {
     if (typeof value !== "string") return value
     if (value.startsWith("bigint:")) return BigInt(value.slice("bigint:".length))
-    if (value.startsWith("hex:")) return Binary.fromHex(value.slice("hex:".length))
+    if (value.startsWith("hex:")) return Binary.fromHex(value.slice("hex:".length) as `0x${string}`)
     if (value.startsWith("bin:")) return Binary.fromText(value.slice("bin:".length))
     return value
   }
@@ -45,7 +49,7 @@ export const papiStringify = (value: unknown, space?: string | number): string =
   // biome-ignore lint/suspicious/noExplicitAny: legacy
   const replacer = (_key: string, value: any) => {
     if (typeof value === "bigint") return `bigint:${String(value)}`
-    if (value instanceof Binary) return `hex:${value.asHex()}`
+    if (value instanceof Uint8Array) return `hex:${Binary.toHex(value)}`
     return value
   }
 

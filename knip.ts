@@ -17,6 +17,9 @@ const config: KnipConfig = {
     "tailwindcss",
     // Coverage provider loaded by `vitest run --coverage` (pnpm test:coverage), never imported
     "@vitest/coverage-v8",
+    // Declared at the root so shamefullyHoist resolves the top-level copy to one that exports
+    // `isResponse` (the papi CLI's json-rpc-provider-proxy phantom-imports it); not imported in source
+    "@polkadot-api/json-rpc-provider",
   ],
 
   // Shell utilities used in package.json scripts — not npm binaries

@@ -1,6 +1,6 @@
 import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
-import type { Binary, Enum } from "polkadot-api"
+import { Binary, type Enum } from "polkadot-api"
 
 import type { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
 import { type BalanceDef, buildNetworkStorageCoders } from "../../shared"
@@ -215,7 +215,7 @@ const decodeLocksResult = (
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = Array<{
-    id?: Binary
+    id?: `0x${string}`
     amount?: bigint
   }>
 
@@ -226,13 +226,18 @@ const decodeLocksResult = (
   )
 
   const locksQueryLocks: Array<AmountWithLabel<string>> =
-    decoded?.map?.((lock) => ({
-      type: "locked",
-      source: "substrate-native-locks",
-      label: getLockedType(lock?.id?.asText?.()),
-      meta: { id: lock?.id?.asText?.() },
-      amount: (lock?.amount ?? 0n).toString(),
-    })) ?? []
+    decoded?.map?.((lock) => {
+      // lock id is a fixed-size `[u8; 8]` (LockIdentifier), decoded as a hex string by
+      // polkadot-api v2 — convert back to its ASCII text form (e.g. "staking ").
+      const id = lock?.id ? Binary.toText(Binary.fromHex(lock.id)) : undefined
+      return {
+        type: "locked" as const,
+        source: "substrate-native-locks",
+        label: getLockedType(id),
+        meta: { id },
+        amount: (lock?.amount ?? 0n).toString(),
+      }
+    }) ?? []
 
   return locksQueryLocks
 }
