@@ -2,7 +2,7 @@ import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { Toggle } from "@ui/components/Toggle"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -15,7 +15,7 @@ import {
   BittensorRewardTypePicker,
   useRewardTypeLabel,
 } from "../../components/BittensorRewardTypePicker"
-import { BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
+import { BITTENSOR_NETWORK_ID, BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorSettingsModal } from "../hooks/useBittensorSettingsModal"
 import { useBittensorSettingsWizard } from "../hooks/useBittensorSettingsWizard"
 
@@ -41,13 +41,14 @@ export const BittensorSettingsForm = () => {
     errorFeeEstimate,
     isLoadingPayload,
     setAddress,
-    setStep,
     setSelectedClaimType,
+    setSelectedSubnets,
     setSelectedAcceptLockedAlpha,
     onSubmitted,
   } = useBittensorSettingsWizard()
   const { close } = useBittensorSettingsModal()
   const rewardTypePicker = useOpenClose()
+  const [pickerInitialView, setPickerInitialView] = useState<"type" | "subnets">("type")
   const rewardTypeLabel = useRewardTypeLabel(selectedClaimType)
 
   const handleSelectAccount = useCallback(
@@ -58,7 +59,30 @@ export const BittensorSettingsForm = () => {
     [accountPicker, setAddress]
   )
 
+  const handleToggleSubnet = useCallback(
+    (netuid: number) => {
+      setSelectedSubnets(
+        selectedSubnets.includes(netuid)
+          ? selectedSubnets.filter((id) => id !== netuid)
+          : [...selectedSubnets, netuid]
+      )
+    },
+    [selectedSubnets, setSelectedSubnets]
+  )
+
+  const openRewardTypePicker = useCallback(() => {
+    setPickerInitialView("type")
+    rewardTypePicker.open()
+  }, [rewardTypePicker])
+
+  const openSubnetPicker = useCallback(() => {
+    setPickerInitialView("subnets")
+    rewardTypePicker.open()
+  }, [rewardTypePicker])
+
   const isKeepSubnets = selectedClaimType === "KeepSubnets"
+  // KeepSubnets needs at least one subnet selected before it can be submitted
+  const keepSubnetsInvalid = isKeepSubnets && selectedSubnets.length === 0
 
   return (
     <BittensorModalLayout
@@ -85,7 +109,7 @@ export const BittensorSettingsForm = () => {
           <PillButton
             className="h-12 max-w-full px-6!"
             disabled={isClaimTypeLoading || !selectedClaimType}
-            onClick={rewardTypePicker.open}
+            onClick={openRewardTypePicker}
           >
             <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
               <div className="grow truncate leading-base">{rewardTypeLabel}</div>
@@ -94,9 +118,15 @@ export const BittensorSettingsForm = () => {
         </div>
 
         {isKeepSubnets && (
-          <div className="flex min-h-8 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Selected subnets")}</div>
-            <div className="text-body">{selectedSubnets.length}</div>
+          <div className="flex min-h-12 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Subnets")}</div>
+            <PillButton className="h-12 max-w-full px-6!" onClick={openSubnetPicker}>
+              <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
+                <div className="grow truncate leading-base">
+                  {t("{{count}} selected", { count: selectedSubnets.length })}
+                </div>
+              </div>
+            </PillButton>
           </div>
         )}
 
@@ -146,12 +176,8 @@ export const BittensorSettingsForm = () => {
       <div className={"mt-auto grid w-full grid-cols-2 gap-8"}>
         <Button onClick={close}>{t("Cancel")}</Button>
 
-        {isKeepSubnets ? (
-          <Button primary disabled={isClaimTypeLoading} onClick={() => setStep("select-subnets")}>
-            {t("Next")}
-          </Button>
-        ) : isLoadingPayload || !payload || isClaimTypeLoading ? (
-          <Button className="px-2" primary disabled={!canSubmit}>
+        {isLoadingPayload || !payload || isClaimTypeLoading ? (
+          <Button className="px-2" primary disabled>
             {t("Confirm")}
           </Button>
         ) : (
@@ -161,7 +187,7 @@ export const BittensorSettingsForm = () => {
             payload={payload}
             onSubmitted={onSubmitted}
             txMetadata={txMetadata}
-            disabled={!canSubmit}
+            disabled={!canSubmit || keepSubnetsInvalid}
           />
         )}
       </div>
@@ -170,7 +196,11 @@ export const BittensorSettingsForm = () => {
         isOpen={rewardTypePicker.isOpen}
         containerId={BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID}
         value={selectedClaimType}
+        networkId={BITTENSOR_NETWORK_ID}
+        selectedSubnets={selectedSubnets}
+        initialView={pickerInitialView}
         onSelect={setSelectedClaimType}
+        onToggleSubnet={handleToggleSubnet}
         onDismiss={rewardTypePicker.close}
       />
 

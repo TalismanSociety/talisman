@@ -14,7 +14,7 @@ import type { Hex } from "viem"
 import { useBittensorSettingsPayload } from "../../hooks/useBittensorSettingsPayload"
 import { BITTENSOR_NETWORK_ID } from "../constants"
 
-export type BittensorSettingsStep = "settings" | "select-subnets" | "follow-up"
+export type BittensorSettingsStep = "settings" | "follow-up"
 
 type WizardState = {
   step: BittensorSettingsStep
