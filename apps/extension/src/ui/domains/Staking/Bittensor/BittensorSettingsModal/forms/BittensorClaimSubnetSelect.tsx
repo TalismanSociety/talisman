@@ -14,7 +14,7 @@ import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
+import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -32,12 +32,9 @@ import { useTranslation } from "react-i18next"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
-import {
-  BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID,
-  BITTENSOR_NETWORK_ID,
-} from "../constants"
-import { useBittensorClaimSettingsModal } from "../hooks/useBittensorClaimSettingsModal"
-import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
+import { BITTENSOR_NETWORK_ID, BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
+import { useBittensorSettingsModal } from "../hooks/useBittensorSettingsModal"
+import { useBittensorSettingsWizard } from "../hooks/useBittensorSettingsWizard"
 
 type SortValue = "netuid" | "emission"
 
@@ -64,14 +61,19 @@ export const BittensorClaimSubnetSelect = () => {
   const { t } = useTranslation()
   const {
     setStep,
-    account,
     nativeToken,
     selectedSubnets,
     setSelectedSubnets,
     canSubmit,
+    payload,
+    txMetadata,
+    isLoadingPayload,
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
     onSubmitted,
-  } = useBittensorClaimSettingsWizard()
-  const { close } = useBittensorClaimSettingsModal()
+  } = useBittensorSettingsWizard()
+  const { close } = useBittensorSettingsModal()
   const [sortMethod, setSortMethod] = useState<SortValue>("netuid")
   const [search, setSearch] = useState<string>("")
   const deferredSearch = useDeferredValue(search)
@@ -138,23 +140,15 @@ export const BittensorClaimSubnetSelect = () => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, deferredSearch])
 
-  const { data: setClaimTypePayload, isLoading: isPayloadLoading } =
-    useGetBittensorClaimTypePayload({
-      networkId: nativeToken?.networkId,
-      address: account?.address,
-      claimType: "KeepSubnets",
-      selectedSubnets,
-    })
-
   const isConfirmDisabled =
-    selectedSubnets.length === 0 || isPayloadLoading || !setClaimTypePayload?.payload || !canSubmit
+    selectedSubnets.length === 0 || isLoadingPayload || !payload || !canSubmit
 
   return (
     <BittensorModalLayout
       header={
         <BittensorStakingModalHeader
           title={t("Select Subnets")}
-          onBackClick={() => setStep("claim-settings")}
+          onBackClick={() => setStep("settings")}
           onCloseModal={close}
           withClose
         />
@@ -194,18 +188,29 @@ export const BittensorClaimSubnetSelect = () => {
           </ScrollContainer>
         </div>
 
-        <div className="px-12 pb-12">
+        <div className="flex flex-col gap-4 px-12 pb-12">
+          <div className="flex h-8 items-center justify-between gap-8 text-body-secondary text-xs">
+            <div className="whitespace-nowrap">{t("Estimated fee")}</div>
+            <div className="overflow-hidden">
+              <StakingFeeEstimate
+                plancks={feeEstimate}
+                tokenId={nativeToken?.id}
+                isLoading={isLoadingFeeEstimate}
+                error={errorFeeEstimate}
+              />
+            </div>
+          </div>
           {isConfirmDisabled ? (
             <Button className="w-full" primary disabled>
               {t("Confirm")}
             </Button>
           ) : (
             <SapiSendButton
-              containerId={BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID}
+              containerId={BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID}
               label={t("Confirm")}
-              payload={setClaimTypePayload?.payload}
+              payload={payload}
               onSubmitted={onSubmitted}
-              txMetadata={setClaimTypePayload?.txMetadata}
+              txMetadata={txMetadata}
             />
           )}
         </div>

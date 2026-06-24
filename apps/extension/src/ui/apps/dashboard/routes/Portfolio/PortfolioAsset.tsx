@@ -6,9 +6,9 @@ import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
-import { BittensorClaimSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimSettingsToolbarButton"
 import { BittensorConvictionLockToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorConvictionLockToolbarButton"
 import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorDashboardToolbarButton"
+import { BittensorSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorSettingsToolbarButton"
 import { BittensorStakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorStakeToolbarButton"
 import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeToolbarButton"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
@@ -135,7 +135,7 @@ const TokenBreadcrumb: FC<{
         <Breadcrumb items={items} />
       </div>
       <div className="flex h-20 items-center gap-2">
-        <BittensorClaimSettingsToolbarButton balances={balances} />
+        <BittensorSettingsToolbarButton balances={balances} />
         <BittensorStakeToolbarButton balances={balances} />
         <BittensorUnstakeToolbarButton balances={balances} />
         <BittensorConvictionLockToolbarButton balances={balances} />

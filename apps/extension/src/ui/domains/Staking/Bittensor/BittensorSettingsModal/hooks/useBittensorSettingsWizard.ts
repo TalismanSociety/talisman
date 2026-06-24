@@ -2,6 +2,7 @@ import type { Address } from "@core/types/base"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import type { RootClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
+import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorAcceptsLockedAlpha"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
@@ -9,42 +10,47 @@ import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
+
+import { useBittensorSettingsPayload } from "../../hooks/useBittensorSettingsPayload"
 import { BITTENSOR_NETWORK_ID } from "../constants"
 
-export type ClaimSettingsStep = "claim-settings" | "select-subnets" | "follow-up"
+export type BittensorSettingsStep = "settings" | "select-subnets" | "follow-up"
 
 type WizardState = {
-  step: ClaimSettingsStep
+  step: BittensorSettingsStep
   address: Address | null
   hash: Hex | null
   selectedClaimType: RootClaimType | null
   selectedSubnets: number[]
+  /** target accept-locked-alpha state (spec 421); null until seeded from chain */
+  selectedAcceptLockedAlpha: boolean | null
   onSubmittedCallback: (() => void) | null
 }
 
-export type BittensorClaimSettingsOpenOptions = {
+export type BittensorSettingsOpenOptions = {
   address: Address
-  step?: ClaimSettingsStep
+  step?: BittensorSettingsStep
   onSubmitted?: () => void
 }
 
 const DEFAULT_STATE: WizardState = {
-  step: "claim-settings",
+  step: "settings",
   address: null,
   hash: null,
   selectedClaimType: null,
   selectedSubnets: [],
+  selectedAcceptLockedAlpha: null,
   onSubmittedCallback: null,
 }
 
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
 
-export const useResetBittensorClaimSettingsWizard = () => {
-  const reset = useCallback((init: BittensorClaimSettingsOpenOptions) => {
+export const useResetBittensorSettingsWizard = () => {
+  const reset = useCallback((init: BittensorSettingsOpenOptions) => {
     wizardOpenState$.next({
       ...DEFAULT_STATE,
       address: init.address,
-      step: init.step ?? "claim-settings",
+      step: init.step ?? "settings",
       onSubmittedCallback: init.onSubmitted ?? null,
     })
   }, [])
@@ -52,9 +58,17 @@ export const useResetBittensorClaimSettingsWizard = () => {
   return reset
 }
 
-const useBittensorClaimSettingsWizardProvider = () => {
+const useBittensorSettingsWizardProvider = () => {
   const [
-    { address, step, hash, selectedClaimType, selectedSubnets, onSubmittedCallback },
+    {
+      address,
+      step,
+      hash,
+      selectedClaimType,
+      selectedSubnets,
+      selectedAcceptLockedAlpha,
+      onSubmittedCallback,
+    },
     setWizardState,
   ] = useState(() => wizardOpenState$.getValue())
 
@@ -74,6 +88,13 @@ const useBittensorClaimSettingsWizardProvider = () => {
     address: account?.address,
   })
 
+  // Fetch the current accept-locked-alpha flag from chain (spec 421); null = unsupported runtime
+  const { data: currentAcceptLockedAlpha, isLoading: isAcceptLockedAlphaLoading } =
+    useGetBittensorAcceptsLockedAlpha({
+      networkId: nativeToken?.networkId,
+      address: account?.address,
+    })
+
   // Populate selectedClaimType and selectedSubnets from chain data when it loads
   useEffect(() => {
     if (claimTypeData) {
@@ -85,14 +106,21 @@ const useBittensorClaimSettingsWizardProvider = () => {
     }
   }, [claimTypeData])
 
-  // Compare on-chain values with in-memory values to determine if submit is allowed
-  const canSubmit = useMemo(() => {
+  // Seed the accept-locked-alpha toggle from chain once (don't clobber a user toggle)
+  useEffect(() => {
+    if (typeof currentAcceptLockedAlpha === "boolean") {
+      setWizardState((prev) =>
+        prev.selectedAcceptLockedAlpha === null
+          ? { ...prev, selectedAcceptLockedAlpha: currentAcceptLockedAlpha }
+          : prev
+      )
+    }
+  }, [currentAcceptLockedAlpha])
+
+  // Whether the reward type / its selected subnets differ from chain
+  const claimSettingsChanged = useMemo(() => {
     if (!claimTypeData) return false
-
-    // If claim type changed, can submit
     if (selectedClaimType !== claimTypeData.claimType) return true
-
-    // If claim type is KeepSubnets, check if subnets changed
     if (selectedClaimType === "KeepSubnets") {
       const originalSubnets = claimTypeData.subnets ?? []
       if (selectedSubnets.length !== originalSubnets.length) return true
@@ -100,9 +128,37 @@ const useBittensorClaimSettingsWizardProvider = () => {
       const sortedOriginal = [...originalSubnets].sort((a, b) => a - b)
       return sortedSelected.some((subnet, i) => subnet !== sortedOriginal[i])
     }
-
     return false
   }, [claimTypeData, selectedClaimType, selectedSubnets])
+
+  // Whether the accept-locked-alpha toggle differs from chain (only when the flag is supported)
+  const rejectFlagChanged = useMemo(
+    () =>
+      typeof currentAcceptLockedAlpha === "boolean" &&
+      typeof selectedAcceptLockedAlpha === "boolean" &&
+      selectedAcceptLockedAlpha !== currentAcceptLockedAlpha,
+    [currentAcceptLockedAlpha, selectedAcceptLockedAlpha]
+  )
+
+  const canSubmit = claimSettingsChanged || rejectFlagChanged
+
+  // The combined payload only includes the calls whose value changed (batched when both change)
+  const {
+    payload,
+    txMetadata,
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    isLoadingPayload,
+  } = useBittensorSettingsPayload({
+    networkId: nativeToken?.networkId,
+    address: account?.address,
+    includeClaimSettings: claimSettingsChanged,
+    claimType: selectedClaimType,
+    selectedSubnets,
+    includeRejectFlag: rejectFlagChanged,
+    acceptLockedAlpha: selectedAcceptLockedAlpha ?? false,
+  })
 
   const setAddress = useCallback(
     (newAddress: Address) =>
@@ -111,12 +167,13 @@ const useBittensorClaimSettingsWizardProvider = () => {
         address: newAddress,
         selectedClaimType: null,
         selectedSubnets: [],
+        selectedAcceptLockedAlpha: null,
       })),
     []
   )
 
   const setStep = useCallback(
-    (newStep: ClaimSettingsStep) => setWizardState((prev) => ({ ...prev, step: newStep })),
+    (newStep: BittensorSettingsStep) => setWizardState((prev) => ({ ...prev, step: newStep })),
     []
   )
 
@@ -128,6 +185,11 @@ const useBittensorClaimSettingsWizardProvider = () => {
 
   const setSelectedSubnets = useCallback(
     (subnets: number[]) => setWizardState((prev) => ({ ...prev, selectedSubnets: subnets })),
+    []
+  )
+
+  const setSelectedAcceptLockedAlpha = useCallback(
+    (accept: boolean) => setWizardState((prev) => ({ ...prev, selectedAcceptLockedAlpha: accept })),
     []
   )
 
@@ -149,6 +211,11 @@ const useBittensorClaimSettingsWizardProvider = () => {
     hash,
     selectedClaimType,
     selectedSubnets,
+    selectedAcceptLockedAlpha,
+    currentAcceptLockedAlpha,
+    isAcceptLockedAlphaLoading,
+    // hide the toggle on runtimes that don't expose the flag (resolves to null once loaded)
+    acceptLockedAlphaUnsupported: !isAcceptLockedAlphaLoading && currentAcceptLockedAlpha === null,
     account,
     nativeToken,
     accountPicker,
@@ -157,13 +224,21 @@ const useBittensorClaimSettingsWizardProvider = () => {
     isClaimTypeError,
     refetchClaimType,
     canSubmit,
+    payload,
+    txMetadata,
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+    isLoadingPayload,
     setAddress,
     setStep,
     setSelectedClaimType,
     setSelectedSubnets,
+    setSelectedAcceptLockedAlpha,
     onSubmitted,
   }
 }
 
-export const [BittensorClaimSettingsWizardProvider, useBittensorClaimSettingsWizard] =
-  provideContext(useBittensorClaimSettingsWizardProvider)
+export const [BittensorSettingsWizardProvider, useBittensorSettingsWizard] = provideContext(
+  useBittensorSettingsWizardProvider
+)
