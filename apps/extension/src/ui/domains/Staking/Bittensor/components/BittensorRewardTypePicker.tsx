@@ -161,11 +161,11 @@ export const useRewardTypeLabel = (value: RootClaimType | null): string => {
   const { t } = useTranslation()
   switch (value) {
     case "Swap":
-      return t("Receive rewards in Tao")
+      return t("Tao")
     case "Keep":
-      return t("Receive rewards in Alpha")
+      return t("Alpha")
     case "KeepSubnets":
-      return t("Receive rewards in Selected Alpha")
+      return t("Selected Alpha")
     default:
       return t("Select")
   }

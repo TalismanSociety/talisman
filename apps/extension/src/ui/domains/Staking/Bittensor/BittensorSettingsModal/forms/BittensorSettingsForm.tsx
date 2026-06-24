@@ -103,11 +103,22 @@ export const BittensorSettingsForm = () => {
         accountLabel={t("Account")}
       />
 
-      <div className="mt-4 flex flex-col gap-2 rounded bg-grey-900 px-8 py-6 text-body-secondary text-xs leading-paragraph">
+      <div className="mt-4 flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
         <div className="flex min-h-12 items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Reward Type")}</div>
+          <div>
+            <div className="whitespace-nowrap text-body text-sm">{t("Root Staking Rewards")}</div>
+            <div className="text-body-inactive text-xs">
+              {t(
+                "Select how you want to receive your staking rewards. This applies to Root Staking only."
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex min-h-12 items-center justify-between gap-8">
+          <div className="whitespace-nowrap">{t("Receive rewards as")}</div>
           <PillButton
-            className="h-12 max-w-full px-6!"
+            className="h-12 max-w-full rounded-sm px-6!"
             disabled={isClaimTypeLoading || !selectedClaimType}
             onClick={openRewardTypePicker}
           >
@@ -120,7 +131,7 @@ export const BittensorSettingsForm = () => {
         {isKeepSubnets && (
           <div className="flex min-h-12 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Subnets")}</div>
-            <PillButton className="h-12 max-w-full px-6!" onClick={openSubnetPicker}>
+            <PillButton className="h-12 max-w-full rounded-sm px-6!" onClick={openSubnetPicker}>
               <div className="flex h-12 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-body">
                 <div className="grow truncate leading-base">
                   {t("{{count}} selected", { count: selectedSubnets.length })}
@@ -129,15 +140,21 @@ export const BittensorSettingsForm = () => {
             </PillButton>
           </div>
         )}
+      </div>
 
-        {!acceptLockedAlphaUnsupported && (
-          <div className="flex min-h-12 items-center justify-between gap-8 py-1">
-            <div className="flex flex-col gap-1">
-              <div className="text-body">{t("Accept transfers with conviction locks")}</div>
-              <div className="text-tiny">
-                {t("Allow incoming stake transfers that carry a conviction lock.")}
+      {!acceptLockedAlphaUnsupported && (
+        <div className="mt-4 flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
+          <div className="flex min-h-12 items-center justify-between gap-8">
+            <div>
+              <div className="whitespace-nowrap text-body text-sm">{t("Conviction Locks")}</div>
+              <div className="text-body-inactive text-xs">
+                {t("Select if you accept incoming transfers with conviction locks.")}
               </div>
             </div>
+          </div>
+
+          <div className="flex min-h-12 items-center justify-between gap-8 py-1">
+            <div className="text-body-secondary">{t("Accept transfers with conviction locks")}</div>
             <Toggle
               variant="sm"
               checked={!!selectedAcceptLockedAlpha}
@@ -145,20 +162,9 @@ export const BittensorSettingsForm = () => {
               onChange={(e) => setSelectedAcceptLockedAlpha(e.target.checked)}
             />
           </div>
-        )}
-
-        <div className="flex h-12 items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Estimated fee")}</div>
-          <div className="overflow-hidden">
-            <StakingFeeEstimate
-              plancks={feeEstimate}
-              tokenId={nativeToken?.id}
-              isLoading={isLoadingFeeEstimate}
-              error={errorFeeEstimate}
-            />
-          </div>
         </div>
-      </div>
+      )}
+      <div className="grow" />
 
       {isClaimTypeError && (
         <div className="flex items-center gap-4 text-alert-warn text-sm">
@@ -172,6 +178,20 @@ export const BittensorSettingsForm = () => {
           </button>
         </div>
       )}
+
+      <div className="my-4 flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-xs leading-paragraph">
+        <div className="flex h-12 items-center justify-between gap-8">
+          <div className="whitespace-nowrap">{t("Estimated fee")}</div>
+          <div className="overflow-hidden">
+            <StakingFeeEstimate
+              plancks={feeEstimate}
+              tokenId={nativeToken?.id}
+              isLoading={isLoadingFeeEstimate}
+              error={errorFeeEstimate}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className={"mt-auto grid w-full grid-cols-2 gap-8"}>
         <Button onClick={close}>{t("Cancel")}</Button>
