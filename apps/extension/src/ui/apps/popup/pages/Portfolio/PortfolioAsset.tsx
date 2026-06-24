@@ -7,9 +7,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
-import { BittensorClaimSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimSettingsToolbarButton"
 import { BittensorConvictionLockToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorConvictionLockToolbarButton"
 import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorDashboardToolbarButton"
+import { BittensorSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorSettingsToolbarButton"
 import { BittensorStakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorStakeToolbarButton"
 import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeToolbarButton"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
@@ -86,7 +86,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         <div className="mb-8 flex items-center justify-between">
           <div className="text-body-secondary text-sm">{t("All Tokens")}</div>
           <div className="flex items-center gap-2">
-            <BittensorClaimSettingsToolbarButton balances={balancesToDisplay} />
+            <BittensorSettingsToolbarButton balances={balancesToDisplay} />
             <BittensorStakeToolbarButton balances={balancesToDisplay} />
             <BittensorUnstakeToolbarButton balances={balancesToDisplay} />
             <BittensorConvictionLockToolbarButton balances={balancesToDisplay} />

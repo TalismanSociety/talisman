@@ -1,5 +1,15 @@
 # @talismn/keyring
 
+## 1.0.12
+
+### Patch Changes
+
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- Updated dependencies [73ee8d7]
+- Updated dependencies [ab11fa6]
+- Updated dependencies [9aa9c72]
+  - @talismn/crypto@0.3.5
+
 ## 1.0.11
 
 ### Patch Changes

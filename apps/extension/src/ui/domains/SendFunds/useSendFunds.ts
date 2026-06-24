@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
+import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinStake"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -173,11 +174,31 @@ const useSendFundsProvider = () => {
     [transaction?.maxAmount, token, tokenRates]
   )
 
-  // dtao (staked TAO/alpha): the chain ALLOWS transferring conviction-locked stake — the lock
-  // and a pro-rata share of its conviction silently follow to the recipient. Warn, don't block.
-  const dtaoLockedTransferWarning = useMemo(
+  // dtao (staked TAO/alpha): a transfer above the sender's available (unlocked) stake dips into
+  // the conviction-locked portion — the lock and a pro-rata share of its conviction follow to the
+  // recipient.
+  const dtaoLockedTransfer = useMemo(
     () => !!(transfer && dtaoAvailable !== null && transfer.planck > dtaoAvailable),
     [transfer, dtaoAvailable]
+  )
+
+  // since spec 421 the chain REJECTS incoming locked alpha by default: such a transfer reverts with
+  // AccountRejectsLockedAlpha unless the recipient opted in. data === false means we know they
+  // reject; null/undefined means unknown (older runtime, or still loading) — don't block on that.
+  const { data: dtaoRecipientAcceptsLockedAlpha } = useGetBittensorAcceptsLockedAlpha({
+    networkId: dtaoNetworkId,
+    address: to,
+  })
+  const dtaoLockedTransferBlocked = useMemo(
+    () => dtaoLockedTransfer && dtaoRecipientAcceptsLockedAlpha === false,
+    [dtaoLockedTransfer, dtaoRecipientAcceptsLockedAlpha]
+  )
+
+  // when the recipient accepts (or the flag is unknown, e.g. a pre-421 chain that still allows it):
+  // warn that the lock transfers; otherwise it's blocked above, so don't also warn.
+  const dtaoLockedTransferWarning = useMemo(
+    () => dtaoLockedTransfer && !dtaoLockedTransferBlocked,
+    [dtaoLockedTransfer, dtaoLockedTransferBlocked]
   )
 
   const tip = useMemo(
@@ -300,6 +321,15 @@ const useSendFundsProvider = () => {
       // some EVM networks will break on estimate fee if balance is insufficient, this simple check will prevent unfriendly error message
       if (token && transfer && (balance?.transferable.planck ?? 0n) < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
+
+      // (spec 421) a transfer that dips into conviction-locked stake reverts with
+      // AccountRejectsLockedAlpha unless the recipient opted in. Block proactively — subtensor has
+      // no DryRunApi, so this wouldn't otherwise surface until the on-chain failure.
+      if (dtaoLockedTransferBlocked)
+        return {
+          isValid: false,
+          error: t("Recipient hasn't opted in to receive locked stake"),
+        }
 
       // dtao (staked TAO/alpha) transfers are transfer_stake staking operations:
       if (
@@ -428,6 +458,7 @@ const useSendFundsProvider = () => {
     dtaoAlphaPrice,
     dtaoMinTaoTransfer,
     dtaoMinTaoKeep,
+    dtaoLockedTransferBlocked,
     feeToken,
     feeTokenBalance,
     from,

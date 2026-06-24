@@ -2,7 +2,6 @@ import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Button } from "@ui/components/Button"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -14,8 +13,6 @@ import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import {
@@ -29,15 +26,6 @@ import {
   useTransition,
 } from "react"
 import { useTranslation } from "react-i18next"
-
-import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
-import { BittensorModalLayout } from "../../components/BittensorModalLayout"
-import {
-  BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID,
-  BITTENSOR_NETWORK_ID,
-} from "../constants"
-import { useBittensorClaimSettingsModal } from "../hooks/useBittensorClaimSettingsModal"
-import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
 
 type SortValue = "netuid" | "emission"
 
@@ -60,25 +48,24 @@ const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] 
   return sorted
 }
 
-export const BittensorClaimSubnetSelect = () => {
+/**
+ * Searchable, sortable, virtualized multi-select of subnets — the list body only (no modal chrome
+ * or confirm button). Used inside the reward-type picker's "Selected Alpha" flow. Toggling a row
+ * calls `onToggle`; the parent owns the selection.
+ */
+export const BittensorSubnetMultiSelect: FC<{
+  networkId: string
+  selectedSubnets: number[]
+  onToggle: (netuid: number) => void
+}> = ({ networkId, selectedSubnets, onToggle }) => {
   const { t } = useTranslation()
-  const {
-    setStep,
-    account,
-    nativeToken,
-    selectedSubnets,
-    setSelectedSubnets,
-    canSubmit,
-    onSubmitted,
-  } = useBittensorClaimSettingsWizard()
-  const { close } = useBittensorClaimSettingsModal()
   const [sortMethod, setSortMethod] = useState<SortValue>("netuid")
   const [search, setSearch] = useState<string>("")
   const deferredSearch = useDeferredValue(search)
 
   const [preselectedSubnets, setPreselectedSubnets] = useState(() => selectedSubnets)
 
-  const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
+  const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
     sortSubnetOptions(subnetData, sortMethod)
@@ -105,17 +92,6 @@ export const BittensorClaimSubnetSelect = () => {
     return [...confirmed, ...others]
   }, [deferredSearch, preselectedSubnets, sortedSubnets])
 
-  const handleToggleSubnet = useCallback(
-    (netuid: number) => {
-      setSelectedSubnets(
-        selectedSubnets.includes(netuid)
-          ? selectedSubnets.filter((id) => id !== netuid)
-          : [...selectedSubnets, netuid]
-      )
-    },
-    [selectedSubnets, setSelectedSubnets]
-  )
-
   const handleSortMethodChange = useCallback(
     (method: SortValue) => {
       // if sort method changed, we want to update preselected subnets to match current selection
@@ -138,79 +114,41 @@ export const BittensorClaimSubnetSelect = () => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, deferredSearch])
 
-  const { data: setClaimTypePayload, isLoading: isPayloadLoading } =
-    useGetBittensorClaimTypePayload({
-      networkId: nativeToken?.networkId,
-      address: account?.address,
-      claimType: "KeepSubnets",
-      selectedSubnets,
-    })
-
-  const isConfirmDisabled =
-    selectedSubnets.length === 0 || isPayloadLoading || !setClaimTypePayload?.payload || !canSubmit
-
   return (
-    <BittensorModalLayout
-      header={
-        <BittensorStakingModalHeader
-          title={t("Select Subnets")}
-          onBackClick={() => setStep("claim-settings")}
-          onCloseModal={close}
-          withClose
-        />
-      }
-    >
-      <div className="flex size-full flex-col gap-6 overflow-hidden">
-        <div className="flex items-center gap-4 px-12">
-          <div className="grow">
-            <SearchInputControlled
-              containerClassName={cn(
-                "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
-                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
-              )}
-              placeholder={t("Search subnets")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClear={() => setSearch("")}
-              autoFocus
-            />
-          </div>
-          <SortMethodButton method={sortMethod} onChange={handleSortMethodChange} />
+    <div className="flex w-full grow flex-col gap-6 overflow-hidden">
+      <div className="flex items-center gap-4 px-12">
+        <div className="grow">
+          <SearchInputControlled
+            containerClassName={cn(
+              "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
+              "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
+            )}
+            placeholder={t("Search subnets")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onClear={() => setSearch("")}
+            autoFocus
+          />
         </div>
-
-        <div className="flex w-full grow flex-col overflow-hidden">
-          <ScrollContainer
-            ref={scrollContainerRef}
-            className="w-full grow"
-            innerClassName="flex flex-col w-full bg-black-secondary"
-          >
-            <SubnetRows
-              networkId={BITTENSOR_NETWORK_ID}
-              subnets={displayedSubnets}
-              selectedNetuids={selectedSubnets}
-              isLoading={isLoading || isSubnetsLoading}
-              onToggle={handleToggleSubnet}
-            />
-          </ScrollContainer>
-        </div>
-
-        <div className="px-12 pb-12">
-          {isConfirmDisabled ? (
-            <Button className="w-full" primary disabled>
-              {t("Confirm")}
-            </Button>
-          ) : (
-            <SapiSendButton
-              containerId={BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID}
-              label={t("Confirm")}
-              payload={setClaimTypePayload?.payload}
-              onSubmitted={onSubmitted}
-              txMetadata={setClaimTypePayload?.txMetadata}
-            />
-          )}
-        </div>
+        <SortMethodButton method={sortMethod} onChange={handleSortMethodChange} />
       </div>
-    </BittensorModalLayout>
+
+      <div className="flex w-full grow flex-col overflow-hidden">
+        <ScrollContainer
+          ref={scrollContainerRef}
+          className="w-full grow"
+          innerClassName="flex flex-col w-full bg-black-secondary"
+        >
+          <SubnetRows
+            networkId={networkId}
+            subnets={displayedSubnets}
+            selectedNetuids={selectedSubnets}
+            isLoading={isLoading || isSubnetsLoading}
+            onToggle={onToggle}
+          />
+        </ScrollContainer>
+      </div>
+    </div>
   )
 }
 

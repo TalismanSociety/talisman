@@ -1,5 +1,14 @@
 # @talismn/sapi
 
+## 0.1.7
+
+### Patch Changes
+
+- b408b0c: bump @polkadot/types and @polkadot/types-codec to 16.5.6
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- Updated dependencies [9aa9c72]
+  - @talismn/scale@0.3.5
+
 ## 0.1.6
 
 ### Patch Changes

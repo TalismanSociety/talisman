@@ -1,5 +1,31 @@
 # @talismn/chain-connectors
 
+## 0.1.0
+
+### Minor Changes
+
+- 0a94c4b: bump dependencies
+
+### Patch Changes
+
+- aa5e55b: fix unsafe instanceOf usage
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- b672e3a: bump viem to 2.52.2
+- Updated dependencies [91cdabe]
+- Updated dependencies [bc509f5]
+- Updated dependencies [c6ffb9c]
+- Updated dependencies [0a94c4b]
+- Updated dependencies [b9f92ab]
+- Updated dependencies [ee110a0]
+- Updated dependencies [5133bff]
+- Updated dependencies [aa5e55b]
+- Updated dependencies [9aa9c72]
+- Updated dependencies [7d99a0a]
+- Updated dependencies [bbf4fca]
+  - @talismn/util@1.1.0
+  - @talismn/chaindata-provider@1.5.0
+  - @talismn/connection-meta@0.3.0
+
 ## 0.0.19
 
 ### Patch Changes

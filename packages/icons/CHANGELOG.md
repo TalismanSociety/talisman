@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.10
+
+### Patch Changes
+
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+
 ## 0.1.9
 
 ### Patch Changes
