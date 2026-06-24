@@ -1,14 +1,14 @@
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { Toggle } from "@ui/components/Toggle"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
-import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import {
@@ -93,17 +93,25 @@ export const BittensorSettingsForm = () => {
           onCloseModal={close}
         />
       }
-      contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"
+      contentClassName="text-body-secondary flex size-full flex-col gap-8 p-12 pt-0"
     >
-      <BittensorAssetAccountSummary
-        token={nativeToken}
-        accountAddress={account?.address}
-        onAccountClick={accountPicker.open}
-        assetLabel={t("Network")}
-        accountLabel={t("Account")}
-      />
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <div className="whitespace-nowrap">{t("Network")}</div>
+          <div className="overflow-hidden text-body">
+            <NetworkLogo networkId={BITTENSOR_NETWORK_ID} className="mr-2 inline-block size-12" />{" "}
+            Bittensor
+          </div>
+        </div>
+        <div className="flex h-16 items-center justify-between gap-4">
+          <div className="whitespace-nowrap">{t("Account")}</div>
+          <div className="overflow-hidden">
+            <BondAccountPillButton address={account?.address} onClick={accountPicker.open} />
+          </div>
+        </div>
+      </div>
 
-      <div className="mt-4 flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
+      <div className="flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
         <div className="flex min-h-12 items-center justify-between gap-8">
           <div>
             <div className="whitespace-nowrap text-body text-sm">{t("Root Staking Rewards")}</div>
@@ -143,7 +151,7 @@ export const BittensorSettingsForm = () => {
       </div>
 
       {!acceptLockedAlphaUnsupported && (
-        <div className="mt-4 flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
+        <div className="flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
           <div className="flex min-h-12 items-center justify-between gap-8">
             <div>
               <div className="whitespace-nowrap text-body text-sm">{t("Conviction Locks")}</div>
@@ -179,7 +187,7 @@ export const BittensorSettingsForm = () => {
         </div>
       )}
 
-      <div className="my-4 flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-xs leading-paragraph">
+      <div className="flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
         <div className="flex h-12 items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Estimated fee")}</div>
           <div className="overflow-hidden">
@@ -193,7 +201,7 @@ export const BittensorSettingsForm = () => {
         </div>
       </div>
 
-      <div className={"mt-auto grid w-full grid-cols-2 gap-8"}>
+      <div className="grid w-full grid-cols-2 gap-8">
         <Button onClick={close}>{t("Cancel")}</Button>
 
         {isLoadingPayload || !payload || isClaimTypeLoading ? (
