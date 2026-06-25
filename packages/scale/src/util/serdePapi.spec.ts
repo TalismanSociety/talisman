@@ -71,4 +71,46 @@ describe("papiParse/papiStringify", () => {
       expect(papiStringify(papiParse(input))).toEqual(expectedOutput)
     }
   })
+
+  test("byte fields parse to 0x hex strings (papi v2 SizedHex codecs reject Uint8Array)", () => {
+    // Regression: under polkadot-api v2 the fixed-size byte codecs expect a `0x` hex string.
+    // The previous implementation returned a `Uint8Array` (`Binary.fromHex`/`fromText`), which made
+    // foreign-asset / token statekeys silently encode to garbage and balances disappear.
+    const erc20 = papiParse<{ type: string; value: unknown }>(
+      '{"type":"Erc20","value":"hex:0x07df96d1341a7d16ba1ad431e2c847d978bc2bce"}'
+    )
+    expect(erc20.value).toBe("0x07df96d1341a7d16ba1ad431e2c847d978bc2bce")
+    expect(erc20.value).not.toBeInstanceOf(Uint8Array)
+
+    const location = papiParse<{ interior: { value: Array<{ value: { key?: string } }> } }>(
+      '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}}]}}'
+    )
+    const accountKey20 = location.interior.value[1].value.key
+    expect(accountKey20).toBe("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+
+    // `bin:` (text) byte fields also become hex strings, not Uint8Arrays.
+    const stellar = papiParse<{ value: { code: string } }>(
+      '{"type":"Stellar","value":{"type":"AlphaNum4","value":{"code":"bin:TZS"}}}'
+    )
+    // `value.value` because of the nested AlphaNum4 enum
+    const code = (stellar.value as unknown as { value: { code: string } }).value.code
+    expect(code).toBe("0x545a53")
+    expect(code).not.toBeInstanceOf(Uint8Array)
+  })
+
+  test("bare 0x hex strings (papi v2 / chaindata v12 format) round-trip", () => {
+    // chaindata generated under papi v2 stores byte fields as bare `0x` strings (no `hex:` prefix).
+    // These must parse unchanged and re-serialise to the canonical `hex:` form.
+    expect(papiParse('"0xabcdef"')).toBe("0xabcdef")
+    expect(papiStringify(papiParse('"0xabcdef"'))).toBe('"hex:0xabcdef"')
+    expect(
+      papiStringify(
+        papiParse(
+          '{"parents":2,"interior":{"type":"X1","value":{"type":"AccountKey20","value":{"key":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}}}}'
+        )
+      )
+    ).toBe(
+      '{"parents":2,"interior":{"type":"X1","value":{"type":"AccountKey20","value":{"key":"hex:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}}}}'
+    )
+  })
 })
