@@ -18,13 +18,12 @@ import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useActiveNetworksState, useNetworks } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
-import { startCase } from "lodash-es"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
-import type { PlatformOption } from "./usePlatformOptions"
+import { getPlatformLabel, type PlatformOption } from "./usePlatformOptions"
 
 export const NetworksList: FC<{
   activeOnly: boolean
@@ -260,7 +259,7 @@ const ResetAllNetworksModalContent: FC<{
       title={
         platform === "all"
           ? t("Reset all networks")
-          : t("Reset {{platform}} networks", { platform: startCase(platform) })
+          : t("Reset {{platform}} networks", { platform: getPlatformLabel(platform, t) })
       }
       onClose={onClose}
     >
@@ -269,7 +268,7 @@ const ResetAllNetworksModalContent: FC<{
           ? t("This will reset active state of all networks to their Talisman defaults.")
           : t(
               "This will reset active state of all {{platform}} networks to their Talisman defaults.",
-              { platform }
+              { platform: getPlatformLabel(platform, t) }
             )}
       </p>
 
@@ -327,7 +326,7 @@ const DeactivateNetworksModalContent: FC<{
       title={
         platform === "all"
           ? t("Deactivate networks")
-          : t("Deactivate {{platform}} networks", { platform: startCase(platform) })
+          : t("Deactivate {{platform}} networks", { platform: getPlatformLabel(platform, t) })
       }
       onClose={onClose}
     >
@@ -360,7 +359,7 @@ const DeactivateNetworksModalContent: FC<{
             platform === "all"
               ? t("Deactivate all networks ({{count}})", { count: networks.length })
               : t("Deactivate all {{platform}} networks ({{count}})", {
-                  platform: startCase(platform),
+                  platform: getPlatformLabel(platform, t),
                   count: networks.length,
                 })
           }
@@ -376,7 +375,7 @@ const DeactivateNetworksModalContent: FC<{
                   count: unusedNetworkIds.length,
                 })
               : t("Deactivate unused {{platform}} networks ({{count}})", {
-                  platform: startCase(platform),
+                  platform: getPlatformLabel(platform, t),
                   count: unusedNetworkIds.length,
                 })
           }
