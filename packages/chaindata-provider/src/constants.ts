@@ -1,5 +1,5 @@
 /** @dev temporarily change branch here when testing changes in chaindata */
-const CHAINDATA_BRANCH = "feat/chaindata-v12" // TODO CHANGE BACK TO "main" BEFORE MERGING THE PR
+const CHAINDATA_BRANCH = "main"
 
 // pub subfolder needs to be incremented each time the schema of chaindata changes, or when the content of the minimetadata changes
 export const CHAINDATA_PUB_FOLDER = "pub/v12"
