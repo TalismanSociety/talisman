@@ -3,7 +3,6 @@ import type {
   SignatureOptions,
   SignerPayloadJSON,
 } from "@polkadot/types/types"
-import { Binary } from "polkadot-api"
 
 import log from "../log"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
@@ -33,14 +32,13 @@ export const getFeeEstimate = async (
   } as SignatureOptions)
 
   const bytes = extrinsic.toU8a(true)
-  const binary = Binary.fromBytes(bytes)
 
   try {
     const result = await getRuntimeCallResult<{ partial_fee: bigint }>(
       chain,
       "TransactionPaymentApi",
       "query_info",
-      [binary, bytes.length]
+      [bytes, bytes.length]
     )
     // Do not throw if partialFee is 0n. This is a valid response, eg: Bittensor remove_stake fee estimation is 0n.
     if (!result?.partial_fee && result.partial_fee !== 0n) {

@@ -10,6 +10,7 @@ import {
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { fromPairs } from "lodash-es"
+import { Binary } from "polkadot-api"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult, type QueryStorageResult } from "../shared"
@@ -52,8 +53,9 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
       let symbol = new TextDecoder().decode(Uint8Array.from(info.token_symbol))
       const subnetName =
-        info.subnet_identity?.subnet_name?.asText() ??
-        (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
+        (info.subnet_identity?.subnet_name
+          ? Binary.toText(info.subnet_identity.subnet_name)
+          : undefined) ?? (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
       const name = `SN${info.netuid} | ${subnetName} ${symbol}`
 
       // for root we want same symbol as native so they can be grouped together in portfolio

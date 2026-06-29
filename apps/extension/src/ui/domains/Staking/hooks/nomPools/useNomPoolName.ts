@@ -1,7 +1,7 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import { cleanupNomPoolName } from "../../helpers"
 
@@ -16,9 +16,9 @@ export const useNomPoolName = (
     queryFn: async () => {
       if (!sapi) return null
 
-      const metadata = await sapi.getStorage<Binary>("NominationPools", "Metadata", [poolId])
+      const metadata = await sapi.getStorage<Uint8Array>("NominationPools", "Metadata", [poolId])
 
-      return cleanupNomPoolName(metadata?.asText())
+      return cleanupNomPoolName(metadata ? Binary.toText(metadata) : undefined)
     },
     enabled: !!sapi,
     refetchInterval: false,

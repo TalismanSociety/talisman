@@ -58,7 +58,8 @@
     "check:licenses": "node scripts/check-direct-licenses.mjs"
   },
   "dependencies": {
-    "polkadot-api": "1.23.3"
+    "@polkadot-api/json-rpc-provider": "0.2.0",
+    "polkadot-api": "2.1.6"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",

@@ -3,7 +3,7 @@ import type { ScaleApi } from "@talismn/sapi"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useNetworkById } from "@ui/state/chaindata"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 import { type FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -247,9 +247,9 @@ const useNomPoolName = (sapi: ScaleApi | null | undefined, poolId: number | null
     queryFn: async () => {
       if (!sapi) return null
 
-      const metadata = await sapi.getStorage<Binary>("NominationPools", "Metadata", [poolId])
+      const metadata = await sapi.getStorage<Uint8Array>("NominationPools", "Metadata", [poolId])
 
-      return cleanupNomPoolName(metadata?.asText())
+      return cleanupNomPoolName(metadata ? Binary.toText(metadata) : undefined)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false,

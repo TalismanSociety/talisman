@@ -30,10 +30,10 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     alpha_amount: value,
   })
 
-  const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), args]))
+  const callData = mergeUint8([new Uint8Array(location), args])
 
   return {
     address: from,
-    method: callData.asHex() as `0x${string}`,
+    method: Binary.toHex(callData) as `0x${string}`,
   }
 }

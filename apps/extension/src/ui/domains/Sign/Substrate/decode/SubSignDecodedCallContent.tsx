@@ -130,23 +130,22 @@ const formatArgs = (args: unknown): unknown => {
   if (typeof args === "bigint") return `${args.toString()}n`
   if (Array.isArray(args)) return args.map(formatArgs)
 
-  if (args instanceof Binary) {
-    const text = args.asText()
-    return isAscii(text) ? text : args.asHex()
+  // polkadot-api v2: variable-length byte fields (`Vec<u8>`) are plain `Uint8Array`s
+  if (args instanceof Uint8Array) {
+    const text = Binary.toText(args)
+    return isAscii(text) ? text : Binary.toHex(args)
   }
 
   if (typeof args === "object") {
-    // workaround for AccountId32 - asText() returns glyphs so we need to decode it manually
+    // workaround for AccountId32 - decoding to text returns glyphs, so decode to an address instead.
+    // polkadot-api v2 decodes the fixed-size `id` as a hex string.
     // biome-ignore lint/suspicious/noExplicitAny: legacy
     const anyArgs = args as any
     if (anyArgs.type === "AccountId32" && anyArgs.value.id)
       return {
         type: "AccountId32",
-        value: encodeAddressSs58(anyArgs.value.id.asBytes()),
+        value: encodeAddressSs58(Binary.fromHex(anyArgs.value.id)),
       }
-
-    // workaround - cant detect type of FixedSizeBinary programmatically
-    if ("asHex" in args && typeof args.asHex === "function") return args.asHex()
 
     //console.log("decodedArgs Object", { args })
     const obj = args as Record<string, unknown>

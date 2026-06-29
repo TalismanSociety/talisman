@@ -21,11 +21,11 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
   const method = getTransferMethod(type)
   const { codec, location } = builder.buildCall("Assets", method)
   const args = getEncodedArgs(method, token.assetId, to, value, codec)
-  const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), args]))
+  const callData = mergeUint8([new Uint8Array(location), args])
 
   return {
     address: from,
-    method: callData.asHex() as `0x${string}`,
+    method: Binary.toHex(callData) as `0x${string}`,
   }
 }
 
