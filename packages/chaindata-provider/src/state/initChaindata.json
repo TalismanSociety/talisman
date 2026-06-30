@@ -347,7 +347,7 @@
     },
     {
       "id": "kusama-asset-hub",
-      "isDefault": true,
+      "isDefault": false,
       "name": "Kusama Asset Hub",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/kusama-asset-hub.svg",
       "nativeTokenId": "kusama-asset-hub:substrate-native",
