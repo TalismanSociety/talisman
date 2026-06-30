@@ -74,7 +74,7 @@
     "@wallet-standard/base": "^1.1.0",
     "@wallet-standard/features": "^1.1.0",
     "@yieldxyz/sdk": "^0.0.6",
-    "@zondax/ledger-substrate": "1.1.2",
+    "@zondax/ledger-substrate": "2.3.5",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "anylogger": "^1.0.11",

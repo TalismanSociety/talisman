@@ -5,12 +5,9 @@ import type { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { SubstrateApp } from "@zondax/ledger-substrate"
-import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
-
 import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE } from "./common"
 import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
@@ -20,6 +17,8 @@ import {
   getTalismanLedgerError,
   TalismanLedgerError,
 } from "./errors"
+import type { SubstrateAppParams } from "./legacy"
+import { SubstrateApp } from "./legacy"
 import { useLedgerSubstrateAppByChain } from "./useLedgerSubstrateApp"
 import { useLedgerTransport } from "./useLedgerTransport"
 
