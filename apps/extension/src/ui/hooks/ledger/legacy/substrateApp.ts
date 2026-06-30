@@ -5,13 +5,16 @@
  *  (the device-specific apps — Kusama, Acala, …) in favour of the single
  *  `PolkadotGenericApp`. Talisman still has to sign for accounts that were
  *  created under those legacy apps (and have not been migrated to the generic
- *  app), so we keep a byte-identical copy of the APDU implementation here while
- *  the live dependency moves to v2 for the generic app.
+ *  app), so we keep a TS reimplementation of the APDU layer here while the live
+ *  dependency moves to v2 for the generic app.
+ *
+ *  This is a reimplementation, not a verbatim copy — the methods are rewritten,
+ *  but every `transport.send` (CLA / INS / P1 / P2 / payload + path
+ *  serialization) is byte-for-byte what 1.1.2 sent, so the device sees identical
+ *  bytes. Verified against the 1.1.2 dist and guarded by substrateApp.test.ts.
  *
  *  Only the methods Talisman actually uses are kept (`getAddress`, `sign`,
  *  `signRaw`); the deprecated allowlist/upload/version helpers were removed.
- *  The serialization and `transport.send` calls are unchanged from upstream so
- *  the bytes sent to the device are identical.
  *
  *  (c) 2019 - 2024 Zondax AG
  *  (c) 2016-2017 Ledger

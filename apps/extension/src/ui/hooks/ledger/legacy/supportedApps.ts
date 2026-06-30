@@ -4,7 +4,8 @@
  *  The registry of legacy (per-chain) Substrate Ledger apps. @zondax/ledger-substrate
  *  v2 removed this list along with the legacy `SubstrateApp`; Talisman still needs
  *  it to resolve the CLA / SLIP-0044 of accounts created under those apps (see
- *  ./substrateApp.ts). Kept byte-identical to upstream.
+ *  ./substrateApp.ts). Values reproduced verbatim from 1.1.2
+ *  (name / cla / slip0044 / ss58); guarded by substrateApp.test.ts.
  *
  *  (c) 2019 - 2024 Zondax AG
  *  (c) 2016-2017 Ledger
