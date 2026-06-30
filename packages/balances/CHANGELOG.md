@@ -1,5 +1,27 @@
 # @talismn/balances
 
+## 2.0.0
+
+### Major Changes
+
+- 1e434d5: migrate to polkadot-api v2
+
+  BREAKING: the `Binary`/`FixedSizeBinary` classes are removed. Fixed-size `[u8; N]`
+  fields (`AccountId32`, `AccountKey20`, …) now decode to `0x` hex strings (`SizedHex`)
+  and variable-length `Vec<u8>` fields decode to `Uint8Array`. `@talismn/scale` drops
+  the `FixedSizeBinary` re-export and adds `SizedHex`.
+
+### Patch Changes
+
+- Updated dependencies [1e434d5]
+- Updated dependencies [3107f1b]
+- Updated dependencies [1e434d5]
+  - @talismn/scale@1.0.0
+  - @talismn/sapi@1.0.0
+  - @talismn/chaindata-provider@1.5.1
+  - @talismn/chain-connectors@0.1.1
+  - @talismn/token-rates@3.0.23
+
 ## 1.5.0
 
 ### Minor Changes
