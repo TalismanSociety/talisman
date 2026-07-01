@@ -20,8 +20,10 @@ allowBuilds:
   es5-ext: false
   esbuild: false
   keccak: false
+  node-hid: false
   secp256k1: false
   spawn-sync: false
+  usb: false
   utf-8-validate: false
 
 # don't install NPM dependencies which were published less than 3 days ago
@@ -68,10 +70,10 @@ overrides:
   "@polkadot/x-textdecoder": "14.0.3"
   "@polkadot/x-textencoder": "14.0.3"
   "@polkadot/x-ws": "14.0.3"
-  # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 1.x
-  # pins 6.31.4 while hw-app-eth/solana 7.x and our transports use 6.35.4, which
+  # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
+  # pins 6.35.3 while hw-app-eth/solana 7.x and our transports use 6.35.4, which
   # otherwise produces two incompatible Transport types. The Transport API is
-  # stable across 6.x. (Drops when zondax moves to 2.x.) devices follows transport.
+  # stable across 6.x. devices follows transport.
   "@ledgerhq/devices": "8.15.1"
   "@ledgerhq/hw-transport": "6.35.4"
   "@substrate/txwrapper-core": "7.5.3"

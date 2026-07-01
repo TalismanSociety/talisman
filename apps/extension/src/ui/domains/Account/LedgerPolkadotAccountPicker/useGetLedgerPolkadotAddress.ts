@@ -1,11 +1,9 @@
 import type { LedgerPolkadotCurve } from "@core/domains/keyring/exports"
 import { normalizeAddress } from "@talismn/crypto"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
+import type { SubstrateAppParams } from "@ui/hooks/ledger/legacy"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
-import type {
-  GenericeResponseAddress,
-  SubstrateAppParams,
-} from "@zondax/ledger-substrate/dist/common"
+import type { GenericeResponseAddress } from "@zondax/ledger-substrate/dist/common"
 import { useCallback, useRef } from "react"
 
 export const useGetLedgerPolkadotAddress = (
