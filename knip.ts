@@ -15,11 +15,12 @@ const config: KnipConfig = {
     "@tailwindcss/forms",
     // Core framework — referenced via @tailwindcss/postcss, not direct JS imports
     "tailwindcss",
-    // Coverage provider loaded by `vitest run --coverage` (pnpm test:coverage), never imported
-    "@vitest/coverage-v8",
     // Declared at the root so shamefullyHoist resolves the top-level copy to one that exports
     // `isResponse` (the papi CLI's json-rpc-provider-proxy phantom-imports it); not imported in source
     "@polkadot-api/json-rpc-provider",
+    // Generated workspace package (.papi/descriptors); provided to packages/{balances,sapi} via the
+    // root/extension declaration + shamefullyHoist, so they import it without declaring it directly
+    "@polkadot-api/descriptors",
   ],
 
   // Shell utilities used in package.json scripts — not npm binaries

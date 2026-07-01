@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query"
 import { describe, expect, it, vi } from "vitest"
 
 import { createQueryStoragePersister } from "../queryStoragePersister"
@@ -37,6 +38,8 @@ describe("createQueryStoragePersister", () => {
       queryKey: ["test"] as const,
       signal: new AbortController().signal,
       meta: undefined,
+      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+      client: {} as QueryClient,
     }
     const query = {
       state: { data: undefined, dataUpdatedAt: Date.now() },
@@ -62,6 +65,8 @@ describe("createQueryStoragePersister", () => {
       queryKey: ["test"] as const,
       signal: new AbortController().signal,
       meta: undefined,
+      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+      client: {} as QueryClient,
     }
     const query = {
       state: { data: undefined, dataUpdatedAt: 0 },
@@ -89,6 +94,8 @@ describe("createQueryStoragePersister", () => {
       queryKey: ["test"] as const,
       signal: new AbortController().signal,
       meta: undefined,
+      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+      client: {} as QueryClient,
     }
     const query = {
       state: { data: { existing: true }, dataUpdatedAt: Date.now() },
@@ -111,6 +118,8 @@ describe("createQueryStoragePersister", () => {
       queryKey: ["test"] as const,
       signal: new AbortController().signal,
       meta: undefined,
+      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+      client: {} as QueryClient,
     }
     const query = {
       state: { data: undefined, dataUpdatedAt: 0 },
@@ -132,6 +141,8 @@ describe("createQueryStoragePersister", () => {
       queryKey: ["test"] as const,
       signal: new AbortController().signal,
       meta: undefined,
+      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+      client: {} as QueryClient,
     }
     const query = {
       state: { data: undefined, dataUpdatedAt: Date.now() - 5_000 },
@@ -168,6 +179,8 @@ describe("createQueryStoragePersister", () => {
       queryKey: ["test"] as const,
       signal: new AbortController().signal,
       meta: undefined,
+      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+      client: {} as QueryClient,
     }
     const query = {
       state: { data: { stale: true }, dataUpdatedAt: Date.now() - 60_000 },

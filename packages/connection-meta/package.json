@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:*",
-    "dexie": "^4.4.3"
+    "dexie": "^4.4.4"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
