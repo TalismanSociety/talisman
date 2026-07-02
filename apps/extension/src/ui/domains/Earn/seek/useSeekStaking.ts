@@ -6,7 +6,7 @@ import {
   type Token,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { type UseQueryResult, useQueries, useQuery } from "@tanstack/react-query"
+import { queryOptions, type UseQueryResult, useQueries, useQuery } from "@tanstack/react-query"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
@@ -316,30 +316,35 @@ const getSeekPositionQueryOptions = ({
   networkId: EthNetworkId
   stakingContractAddress: `0x${string}`
   address: string | undefined
-}) => ({
-  queryKey: [
-    SEEK_STAKING_QUERY_KEY,
-    "position",
-    publicClient?.uid,
-    stakingContractAddress,
-    address,
-  ] as const,
-  queryFn: async (): Promise<SeekAccountPosition | null> => {
-    if (!publicClient || !address) return null
-    return readSeekAccountPosition(publicClient, stakingContractAddress, address as `0x${string}`)
-  },
-  enabled: !!publicClient && !!address,
-  // the persist key is scoped to the address (not the volatile publicClient.uid), so a cached
-  // position displays instantly even after the rpc client is recreated or the selection changes
-  persister: address
-    ? createSeekStakingPositionPersister(
-        networkId,
-        stakingContractAddress,
-        address as `0x${string}`
-      )
-    : undefined,
-  refetchInterval: 30_000,
-})
+}) =>
+  // queryOptions() pins the data type from queryFn at this pre-built-options site. Without it,
+  // react-query 5.100+ (which dropped `NoInfer` on `persister?: QueryPersister<TQueryFnData>`)
+  // infers TData from the generic persister too and collapses `data` to `{}`. Inline useQuery
+  // calls get this via contextual typing; a hoisted options object needs queryOptions().
+  queryOptions({
+    queryKey: [
+      SEEK_STAKING_QUERY_KEY,
+      "position",
+      publicClient?.uid,
+      stakingContractAddress,
+      address,
+    ] as const,
+    queryFn: async (): Promise<SeekAccountPosition | null> => {
+      if (!publicClient || !address) return null
+      return readSeekAccountPosition(publicClient, stakingContractAddress, address as `0x${string}`)
+    },
+    enabled: !!publicClient && !!address,
+    // the persist key is scoped to the address (not the volatile publicClient.uid), so a cached
+    // position displays instantly even after the rpc client is recreated or the selection changes
+    persister: address
+      ? createSeekStakingPositionPersister(
+          networkId,
+          stakingContractAddress,
+          address as `0x${string}`
+        )
+      : undefined,
+    refetchInterval: 30_000,
+  })
 
 // Module-level combine keeps a stable reference so react-query applies structural sharing,
 // keeping `data` referentially stable when the underlying positions are unchanged.

@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query"
 import { describe, expect, it, vi } from "vitest"
 
 import { createEarnQueryCachePersister, getEarnQueryCacheKey } from "./earnQueryCache"
@@ -57,6 +58,8 @@ describe("createEarnQueryCachePersister", () => {
         queryKey: ["test"] as const,
         signal: new AbortController().signal,
         meta: undefined,
+        // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+        client: {} as QueryClient,
       },
       {
         state: { data: undefined, dataUpdatedAt: 0 },
@@ -87,6 +90,8 @@ describe("createEarnQueryCachePersister", () => {
         queryKey: ["test"] as const,
         signal: new AbortController().signal,
         meta: undefined,
+        // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+        client: {} as QueryClient,
       },
       {
         state: { data: undefined, dataUpdatedAt: Date.now() },
