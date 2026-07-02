@@ -63,6 +63,10 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
   }
 
 const tokenAccountExists = async (rpc: SolRpc, address: Address) => {
-  const { value } = await rpc.getAccountInfo(address).send()
+  // encoding must be explicit: the node rejects base58 (its default) for account data >128 bytes,
+  // and we only care about existence — skip the data entirely
+  const { value } = await rpc
+    .getAccountInfo(address, { encoding: "base64", dataSlice: { offset: 0, length: 0 } })
+    .send()
   return value !== null
 }
