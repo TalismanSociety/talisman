@@ -1,4 +1,4 @@
-import type { TransactionInstruction } from "@solana/web3.js"
+import type { Instruction } from "@solana/kit"
 import type {
   IChainConnectorDot,
   IChainConnectorEth,
@@ -39,7 +39,7 @@ type EthTransferCallData = {
   value?: string // optional, for native transfers only
 }
 
-type SolTransferCallData = TransactionInstruction[]
+type SolTransferCallData = Instruction[]
 
 export type BalanceTransferType = "keep-alive" | "all" | "allow-death"
 

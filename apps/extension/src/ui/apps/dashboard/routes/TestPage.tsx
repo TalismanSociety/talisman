@@ -4,7 +4,7 @@ import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useDefiPositions } from "@ui/state/defi"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
-import { useSolanaRpc } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { groupBy } from "lodash-es"
 import {
   type Dispatch,

@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@ui/api", () => ({ api: { solSend: mocks.solSend } }))
 
-import { getFrontEndSolanaRpc } from "./useSolanaConnection"
+import { getFrontEndSolanaRpc } from "./useSolanaRpc"
 
 describe("background rpc transport", () => {
   it("relays requests as {id, method, params} and parses bigints losslessly from rawJson", async () => {

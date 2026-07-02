@@ -2,12 +2,16 @@ import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { MultiAddress } from "@polkadot-api/descriptors"
+import type { Instruction } from "@solana/kit"
+import { createNoopSigner, address as solAddress } from "@solana/kit"
+import { PublicKey, Transaction as SolTransaction } from "@solana/web3.js"
+import { getTransferSolInstruction } from "@solana-program/system"
 import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  createTransferInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token"
-import { PublicKey, Transaction as SolTransaction, SystemProgram } from "@solana/web3.js"
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenIdempotentInstruction,
+  getTransferInstruction,
+  TOKEN_PROGRAM_ADDRESS,
+} from "@solana-program/token"
 import type { SolRpc } from "@talismn/chain-connectors"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
@@ -15,6 +19,7 @@ import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$ } from "@ui/state/chaindata"
+import { toLegacyInstructions } from "@ui/util/solana/toLegacyInstructions"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
@@ -246,33 +251,53 @@ async function buildSolanaDepositTransaction(params: {
     if (fromAsset.platform !== "solana") return
 
     const depositAmount = parseUserInputToPlanck(deposit.depositAmount, fromAsset.decimals)
-    const fromPubkey = new PublicKey(fromAddress)
-    const toPubkey = new PublicKey(deposit.depositAddress)
+    const fromWallet = solAddress(fromAddress)
+    const toWallet = solAddress(deposit.depositAddress)
 
-    const transaction = new SolTransaction()
+    const instructions: Instruction[] = []
 
     if (!fromAsset.contractAddress) {
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports: depositAmount,
+      instructions.push(
+        getTransferSolInstruction({
+          source: createNoopSigner(fromWallet), // signature is provided at signing time
+          destination: toWallet,
+          amount: BigInt(depositAmount),
         })
       )
     } else {
-      const mintPubkey = new PublicKey(fromAsset.contractAddress)
-      const sourceAta = getAssociatedTokenAddressSync(mintPubkey, fromPubkey)
-      const destAta = getAssociatedTokenAddressSync(mintPubkey, toPubkey, true)
+      const mint = solAddress(fromAsset.contractAddress)
+      const [sourceAta] = await findAssociatedTokenPda({
+        mint,
+        owner: fromWallet,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      })
+      const [destAta] = await findAssociatedTokenPda({
+        mint,
+        owner: toWallet,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      })
 
-      transaction.add(
-        createAssociatedTokenAccountIdempotentInstruction(fromPubkey, destAta, toPubkey, mintPubkey)
+      instructions.push(
+        getCreateAssociatedTokenIdempotentInstruction({
+          payer: createNoopSigner(fromWallet),
+          ata: destAta,
+          owner: toWallet,
+          mint,
+        }),
+        getTransferInstruction({
+          source: sourceAta,
+          destination: destAta,
+          authority: fromWallet,
+          amount: BigInt(depositAmount),
+        })
       )
-      transaction.add(createTransferInstruction(sourceAta, destAta, fromPubkey, depositAmount))
     }
+
+    const transaction = new SolTransaction().add(...toLegacyInstructions(instructions))
 
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
     transaction.recentBlockhash = latestBlockhash.blockhash
-    transaction.feePayer = fromPubkey
+    transaction.feePayer = new PublicKey(fromAddress)
 
     return transaction
   } catch (cause) {

@@ -2,7 +2,7 @@ import type { TransactionMessageBytesBase64 } from "@solana/kit"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction } from "@talismn/solana"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaConnection"
+import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 
 type UseGetSolanaFeeEstimateParams = {
   networkId: string | null | undefined

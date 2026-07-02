@@ -6,7 +6,7 @@ import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useSolanaRpc } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { useMemo } from "react"
 
 import type { UseYieldxyzTransactionProps } from "./types"

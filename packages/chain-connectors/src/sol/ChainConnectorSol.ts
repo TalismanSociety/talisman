@@ -1,13 +1,11 @@
 import type { RpcTransport } from "@solana/kit"
 import { createSolanaRpcFromTransport } from "@solana/kit"
-import type { Connection } from "@solana/web3.js"
 import type {
   IChaindataNetworkProvider,
   IChaindataTokenProvider,
   SolNetworkId,
 } from "@talismn/chaindata-provider"
 
-import { getSolConnection } from "./getSolConnection"
 import type { SolRpc } from "./getSolRpc"
 import { getSolTransport } from "./getSolRpc"
 import type { IChainConnectorSol } from "./IChainConnectorSol"
@@ -43,9 +41,5 @@ export class ChainConnectorSol implements IChainConnectorSol {
       this.#rpcs.set(networkId, createSolanaRpcFromTransport(await this.getTransport(networkId)))
 
     return this.#rpcs.get(networkId)!
-  }
-
-  async getConnection(networkId: SolNetworkId): Promise<Connection> {
-    return getSolConnection(networkId, await this.#getNetworkRpcs(networkId))
   }
 }

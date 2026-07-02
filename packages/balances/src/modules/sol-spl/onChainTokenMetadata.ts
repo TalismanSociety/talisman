@@ -1,8 +1,7 @@
 import { deserializeMetadata } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, sol } from "@metaplex-foundation/umi"
-import { address as solAddress } from "@solana/kit"
-import { MintLayout } from "@solana/spl-token"
-import { PublicKey } from "@solana/web3.js"
+import { getAddressEncoder, getProgramDerivedAddress, address as solAddress } from "@solana/kit"
+import { getMintDecoder } from "@solana-program/token"
 import type { IChainConnectorSol } from "@talismn/chain-connectors"
 import { parseSolSplTokenId, SolSplTokenSchema } from "@talismn/chaindata-provider"
 import z from "zod/v4"
@@ -23,7 +22,7 @@ export const TokenCacheSchema = z.discriminatedUnion("isValid", [
 
 export type CachedToken = z.infer<typeof TokenCacheSchema>
 
-const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
+const METAPLEX_PROGRAM_ID = solAddress("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
 
 const ERROR_NO_MINT = "No mint info available"
 const ERROR_NO_METADATA = "No metadata account found"
@@ -42,20 +41,24 @@ export const fetchOnChainTokenData = async (
       return null
     }
 
-    const mintPubKey = new PublicKey(mintAddress)
     const { value: mintInfo } = await rpc
       .getAccountInfo(solAddress(mintAddress), { encoding: "base64" })
       .send()
     if (!mintInfo?.data) throw new Error(ERROR_NO_MINT)
-    const mint = MintLayout.decode(Buffer.from(mintInfo.data[0], "base64"))
+    const mint = getMintDecoder().decode(Buffer.from(mintInfo.data[0], "base64"))
 
-    const [metadataPDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPubKey.toBuffer()],
-      METAPLEX_PROGRAM_ID
-    )
+    const addressEncoder = getAddressEncoder()
+    const [metadataPDA] = await getProgramDerivedAddress({
+      programAddress: METAPLEX_PROGRAM_ID,
+      seeds: [
+        "metadata",
+        addressEncoder.encode(METAPLEX_PROGRAM_ID),
+        addressEncoder.encode(solAddress(mintAddress)),
+      ],
+    })
 
     const { value: metadataAccount } = await rpc
-      .getAccountInfo(solAddress(metadataPDA.toBase58()), { encoding: "base64" })
+      .getAccountInfo(metadataPDA, { encoding: "base64" })
       .send()
     if (!metadataAccount) throw new Error(ERROR_NO_METADATA)
 

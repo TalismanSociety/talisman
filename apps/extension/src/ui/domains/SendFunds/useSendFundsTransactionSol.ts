@@ -9,7 +9,8 @@ import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { getFrontEndSolanaConnector, useSolanaRpc } from "@ui/util/solana/useSolanaConnection"
+import { toLegacyInstructions } from "@ui/util/solana/toLegacyInstructions"
+import { getFrontEndSolanaConnector, useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { useMemo, useState } from "react"
 
 import { useSolTransactionRiskAnalysis } from "../Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
@@ -116,7 +117,7 @@ const useSolPayload = ({
 
       const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
 
-      const tx = new Transaction().add(...instructions)
+      const tx = new Transaction().add(...toLegacyInstructions(instructions))
       tx.feePayer = new PublicKey(from)
       tx.recentBlockhash = latestBlockhash.blockhash
       tx.lastValidBlockHeight = Number(latestBlockhash.lastValidBlockHeight)

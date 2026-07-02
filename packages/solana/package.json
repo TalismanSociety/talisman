@@ -27,6 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@solana/kit": "6.10.0",
     "@solana/web3.js": "^1.98.2",
     "@talismn/crypto": "workspace:*"
   },

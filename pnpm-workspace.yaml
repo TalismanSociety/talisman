@@ -161,3 +161,5 @@ peerDependencyRules:
   allowAny:
     - "utf-8-validate"
     - "eciesjs"
+    # @solana-program/token-2022 declares a stale ^5.0 peer, kit 6.10 ships sysvars 6.10
+    - "@solana/sysvars"

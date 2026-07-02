@@ -7,7 +7,7 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { useNetworks } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 
-import { getFrontEndSolanaRpc } from "./useSolanaConnection"
+import { getFrontEndSolanaRpc } from "./useSolanaRpc"
 
 /**
  * ⚠️ This hook suspenses until the network ID is found for the given transaction.
