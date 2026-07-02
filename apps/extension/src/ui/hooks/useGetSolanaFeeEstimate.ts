@@ -1,12 +1,10 @@
-import type { TransactionMessageBytesBase64 } from "@solana/kit"
-import type { Transaction, VersionedTransaction } from "@solana/web3.js"
-import { isVersionedTransaction } from "@talismn/solana"
+import { getMessageBase64, parseTransactionInfo, type SolTransaction } from "@talismn/solana"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 
 type UseGetSolanaFeeEstimateParams = {
   networkId: string | null | undefined
-  transaction: Transaction | VersionedTransaction | null | undefined
+  transaction: SolTransaction | null | undefined
 }
 
 /**
@@ -24,22 +22,13 @@ export const useGetSolanaFeeEstimate = ({
       "swap-solana-fee-estimate",
       networkId,
       // Serialize key fields so the query re-runs when the tx changes
-      transaction
-        ? isVersionedTransaction(transaction)
-          ? transaction.message.recentBlockhash
-          : transaction.recentBlockhash
-        : null,
+      transaction ? parseTransactionInfo(transaction).recentBlockhash : null,
     ],
     queryFn: async () => {
       const rpc = getFrontEndSolanaRpc(networkId)
       if (!rpc || !transaction) return null
 
-      const message = isVersionedTransaction(transaction)
-        ? transaction.message.serialize()
-        : transaction.compileMessage().serialize()
-      const base64Message = Buffer.from(message).toString("base64") as TransactionMessageBytesBase64
-
-      const result = await rpc.getFeeForMessage(base64Message).send()
+      const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
       // Solana RPC returns `value: null` when the message can't be processed
       // (e.g. expired blockhash). Surface this as an error so React-Query
       // populates `error` instead of `data: null`, otherwise downstream

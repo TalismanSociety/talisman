@@ -1,15 +1,17 @@
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import type { TransactionMessageBytesBase64 } from "@solana/kit"
-import { PublicKey, Transaction } from "@solana/web3.js"
 import { BALANCE_MODULES } from "@talismn/balances"
 import type { SolRpc } from "@talismn/chain-connectors"
 import { isTokenSol, type Token } from "@talismn/chaindata-provider"
-import { serializeTransaction } from "@talismn/solana"
+import {
+  buildUnsignedTransaction,
+  getMessageBase64,
+  type SolTransaction,
+  serializeTransaction,
+} from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { toLegacyInstructions } from "@ui/util/solana/toLegacyInstructions"
 import { getFrontEndSolanaConnector, useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { useMemo, useState } from "react"
 
@@ -117,12 +119,12 @@ const useSolPayload = ({
 
       const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
 
-      const tx = new Transaction().add(...toLegacyInstructions(instructions))
-      tx.feePayer = new PublicKey(from)
-      tx.recentBlockhash = latestBlockhash.blockhash
-      tx.lastValidBlockHeight = Number(latestBlockhash.lastValidBlockHeight)
-
-      return tx
+      return buildUnsignedTransaction({
+        feePayer: from,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        instructions,
+      })
     },
     refetchInterval: false, // it feels like we should refresh every 30 sec or so to get a fresh blockhash, but this would add loading states in the Confirm UI
   })
@@ -134,21 +136,21 @@ const useEstimatedFee = ({
   networkId,
   isLocked,
 }: {
-  transaction: Transaction | null | undefined
+  transaction: SolTransaction | null | undefined
   rpc: SolRpc | null
   networkId: string | null | undefined
   isLocked: boolean
 }) => {
   return useQuery({
-    queryKey: ["useSendFundsSolEstimateFee", transaction, networkId],
+    queryKey: [
+      "useSendFundsSolEstimateFee",
+      transaction && getMessageBase64(transaction),
+      networkId,
+    ],
     queryFn: async () => {
       if (!transaction || !rpc) return null
 
-      const base64Message = Buffer.from(transaction.compileMessage().serialize()).toString(
-        "base64"
-      ) as TransactionMessageBytesBase64
-
-      const result = await rpc.getFeeForMessage(base64Message).send()
+      const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
       return result.value ? String(result.value) : null
     },
     refetchInterval: !isLocked && 6_000, // refresh fee every 60 seconds

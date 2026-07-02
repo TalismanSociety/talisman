@@ -1,11 +1,11 @@
-import type { Base64EncodedWireTransaction } from "@solana/kit"
+import { getBase64EncodedWireTransaction } from "@solana/kit"
 import { stringifyJsonWithBigInts } from "@solana/rpc-spec-types"
 import { base58, ed25519 } from "@talismn/crypto"
 import {
   deserializeTransaction,
-  getKeypair,
-  isVersionedTransaction,
   parseTransactionInfo,
+  serializeTransaction,
+  signTransactionWithSecretKey,
 } from "@talismn/solana"
 
 import { ExtensionHandler } from "../../libs/Handler"
@@ -51,29 +51,23 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
         const rpc = await chainConnectorSol.getRpc(networkId)
 
+        // kit transactions are immutable - always reference the signed copy from here on
+        let signed = tx
         if (!signature) {
-          const signResult = await withSecretKey(account.address, async (secretKey) => {
-            const keypair = getKeypair(secretKey)
-
-            if (keypair.publicKey.toBase58() !== address) throw new Error("Address mismatch")
-
-            if (isVersionedTransaction(tx)) tx.sign([keypair])
-            else tx.sign(keypair)
-          })
-          signResult.unwrap()
+          const signResult = await withSecretKey(account.address, async (secretKey) =>
+            signTransactionWithSecretKey(tx, secretKey, address)
+          )
+          signed = signResult.unwrap()
         }
 
-        const wireTx = Buffer.from(tx.serialize()).toString(
-          "base64"
-        ) as Base64EncodedWireTransaction
         const sig = await rpc
-          .sendTransaction(wireTx, {
+          .sendTransaction(getBase64EncodedWireTransaction(signed), {
             encoding: "base64",
             skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
           })
           .send()
 
-        watchSolanaTransaction(networkId, tx, {
+        watchSolanaTransaction(networkId, signed, {
           txInfo,
           notifications: false,
         })
@@ -131,30 +125,28 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             const tx = deserializeTransaction(transaction ?? dappRequest.transaction)
             const { signature } = parseTransactionInfo(tx)
 
+            // kit transactions are immutable - always reference the signed copy from here on
+            let signed = tx
             if (!signature) {
               const signResult = await withSecretKey(
                 signRequest.account.address,
-                async (secretKey) => {
-                  const keypair = getKeypair(secretKey)
-                  if (isVersionedTransaction(tx)) tx.sign([keypair])
-                  else tx.sign(keypair)
-                }
+                async (secretKey) => signTransactionWithSecretKey(tx, secretKey)
               )
-              signResult.unwrap()
+              signed = signResult.unwrap()
             }
 
             if (dappRequest.send) {
               if (!networkId) throw new Error("Network ID is required for sending transactions")
               const rpc = await chainConnectorSol.getRpc(networkId)
-              const wireTx = Buffer.from(tx.serialize()).toString(
-                "base64"
-              ) as Base64EncodedWireTransaction
-              await rpc.sendTransaction(wireTx, { encoding: "base64" }).send()
+              await rpc
+                .sendTransaction(getBase64EncodedWireTransaction(signed), { encoding: "base64" })
+                .send()
             }
 
             return signRequest.resolve({
               type: "transaction",
-              transaction: base58.encode(tx.serialize()),
+              transaction: serializeTransaction(signed),
+              signature: parseTransactionInfo(signed).signature ?? undefined,
               networkId,
             })
           }

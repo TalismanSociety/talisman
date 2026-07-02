@@ -1,11 +1,10 @@
 import { log } from "@common/log"
 import type { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
-import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
+import { parseTransactionInfo, type SolTransaction, serializeTransaction } from "@talismn/solana"
 import merge from "lodash-es/merge"
 import type { Hex, TransactionRequest } from "viem"
 
@@ -25,7 +24,7 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 
 export const addSolTransaction = async (
   networkId: SolNetworkId,
-  transaction: Transaction | VersionedTransaction,
+  transaction: SolTransaction,
   options: AddTransactionOptions = {}
 ) => {
   const { siteUrl, label, txInfo } = merge(structuredClone(DEFAULT_OPTIONS), options)

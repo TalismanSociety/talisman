@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformSolana } from "@core/domains/keyring/exports"
-import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
+import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -21,14 +21,8 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation()
-  const address = useMemo(() => {
-    const transaction = tx.payload
-    if (isVersionedTransaction(transaction))
-      return transaction.message.staticAccountKeys
-        .find((_key, idx) => transaction.message.isAccountSigner(idx))
-        ?.toBase58()
-    else return transaction.feePayer?.toBase58()
-  }, [tx.payload])
+  // fee payer == first signer, equivalent to both legacy/versioned branches of the old code
+  const address = useMemo(() => parseTransactionInfo(tx.payload).feePayer, [tx.payload])
   const account = useAccountByAddress(address)
 
   const handleLedgerSignature = useCallback(

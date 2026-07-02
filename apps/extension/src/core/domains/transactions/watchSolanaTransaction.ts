@@ -1,9 +1,8 @@
 import { log } from "@common/log"
 import type { Signature } from "@solana/kit"
-import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import type { SolRpc } from "@talismn/chain-connectors"
 import { getBlockExplorerUrls, type SolNetworkId } from "@talismn/chaindata-provider"
-import { parseTransactionInfo } from "@talismn/solana"
+import { parseTransactionInfo, type SolTransaction } from "@talismn/solana"
 
 import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
@@ -15,7 +14,7 @@ import { watchSwapStatus } from "./watchSwapStatus"
 
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,
-  transaction: Transaction | VersionedTransaction,
+  transaction: SolTransaction,
   options: WatchTransactionOptions = {}
 ) => {
   try {

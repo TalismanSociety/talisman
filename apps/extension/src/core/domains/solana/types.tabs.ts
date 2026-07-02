@@ -62,7 +62,9 @@ export type RequestSolanaSignTransaction = {
 }
 
 export type ResponseSolanaSignTransaction = {
-  transaction: string // base58 encoded VersionedTransaction
+  transaction: string // base58 encoded serialized transaction
+  /** base58 signature of the signed transaction */
+  signature?: string
 }
 
 export type SolanaTabsMessages = {

@@ -4,7 +4,6 @@ import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import type { Instruction } from "@solana/kit"
 import { createNoopSigner, address as solAddress } from "@solana/kit"
-import { PublicKey, Transaction as SolTransaction } from "@solana/web3.js"
 import { getTransferSolInstruction } from "@solana-program/system"
 import {
   findAssociatedTokenPda,
@@ -16,10 +15,10 @@ import type { SolRpc } from "@talismn/chain-connectors"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
+import { buildUnsignedTransaction, type SolTransaction } from "@talismn/solana"
 import { api } from "@ui/api"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$ } from "@ui/state/chaindata"
-import { toLegacyInstructions } from "@ui/util/solana/toLegacyInstructions"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
@@ -293,13 +292,14 @@ async function buildSolanaDepositTransaction(params: {
       )
     }
 
-    const transaction = new SolTransaction().add(...toLegacyInstructions(instructions))
-
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
-    transaction.recentBlockhash = latestBlockhash.blockhash
-    transaction.feePayer = new PublicKey(fromAddress)
 
-    return transaction
+    return buildUnsignedTransaction({
+      feePayer: fromAddress,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      instructions,
+    })
   } catch (cause) {
     // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create solana transaction", { cause }))

@@ -195,6 +195,7 @@ const handleSolanaSignTransaction: TabMessageHandler<
 
   return {
     transaction: result.transaction,
+    signature: result.signature,
   }
 }
 

@@ -113,6 +113,8 @@ export type SolSignResult =
   | {
       type: "transaction"
       transaction: string
+      /** base58 signature of the signed transaction */
+      signature?: string
       networkId?: SolNetworkId
     }
 

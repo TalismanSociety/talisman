@@ -1,7 +1,6 @@
 import { log } from "@common/log"
 import type { Blockhash } from "@solana/kit"
-import type { Transaction, VersionedTransaction } from "@solana/web3.js"
-import { parseTransactionInfo } from "@talismn/solana"
+import { getMessageBase64, parseTransactionInfo, type SolTransaction } from "@talismn/solana"
 import { throwAfter } from "@talismn/util"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { useNetworks } from "@ui/state/chaindata"
@@ -15,15 +14,13 @@ import { getFrontEndSolanaRpc } from "./useSolanaRpc"
  * @param transaction
  * @returns
  */
-export const useSolanaNetworkIdForTransaction = (
-  transaction: VersionedTransaction | Transaction
-) => {
+export const useSolanaNetworkIdForTransaction = (transaction: SolTransaction) => {
   const { t } = useTranslation()
   // find on which network the tx is for, based on the transaction data
   const networks = useNetworks({ platform: "solana" })
 
   return useSuspenseQuery({
-    queryKey: ["useSolanaNetworkIdForTransaction", transaction, networks],
+    queryKey: ["useSolanaNetworkIdForTransaction", getMessageBase64(transaction), networks],
     queryFn: async () => {
       if (!transaction || !networks.length) return null
 

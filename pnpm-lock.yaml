@@ -194,7 +194,7 @@ importers:
     dependencies:
       '@polkadot/rpc-provider':
         specifier: 16.5.6
-        version: 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+        version: 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/util':
         specifier: 14.0.3
         version: 14.0.3
@@ -312,7 +312,7 @@ importers:
         version: 3.16.7(@polkadot/networks@14.0.3)(@polkadot/util-crypto@14.0.3(@polkadot/util@14.0.3))(@polkadot/util@14.0.3)(react-dom@19.2.7(react@19.2.7))(react-is@18.3.1)(react@19.2.7)
       '@polkadot/rpc-provider':
         specifier: 16.5.6
-        version: 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+        version: 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/types':
         specifier: 16.5.6
         version: 16.5.6
@@ -842,7 +842,7 @@ importers:
     devDependencies:
       '@polkadot/rpc-provider':
         specifier: 16.5.6
-        version: 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+        version: 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/x-global':
         specifier: 14.0.3
         version: 14.0.3
@@ -1107,9 +1107,6 @@ importers:
       '@solana/kit':
         specifier: 6.10.0
         version: 6.10.0(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)(utf-8-validate@6.0.4)
-      '@solana/web3.js':
-        specifier: ^1.98.2
-        version: 1.98.4(bufferutil@4.0.8)(typescript@6.0.3)(utf-8-validate@6.0.4)
       '@talismn/crypto':
         specifier: workspace:*
         version: link:../crypto
@@ -12040,7 +12037,7 @@ snapshots:
       '@polkadot/keyring': 14.0.3(@polkadot/util-crypto@14.0.3(@polkadot/util@14.0.3))(@polkadot/util@14.0.3)
       '@polkadot/rpc-augment': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/rpc-core': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/types': 16.5.6
       '@polkadot/types-augment': 16.5.6
       '@polkadot/types-codec': 16.5.6
@@ -12065,7 +12062,7 @@ snapshots:
       '@polkadot/keyring': 14.0.3(@polkadot/util-crypto@14.0.3(@polkadot/util@14.0.3))(@polkadot/util@14.0.3)
       '@polkadot/networks': 14.0.3
       '@polkadot/phishing': 0.25.25
-      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/types': 16.5.6
       '@polkadot/ui-keyring': 3.16.7(@polkadot/keyring@14.0.3(@polkadot/util-crypto@14.0.3(@polkadot/util@14.0.3))(@polkadot/util@14.0.3))(@polkadot/ui-settings@3.16.7(@polkadot/networks@14.0.3)(@polkadot/util@14.0.3))(@polkadot/util@14.0.3)
       '@polkadot/ui-settings': 3.16.7(@polkadot/networks@14.0.3)(@polkadot/util@14.0.3)
@@ -12134,7 +12131,7 @@ snapshots:
   '@polkadot/extension-inject@0.63.1(@polkadot/api@16.5.6(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@polkadot/util@14.0.3)(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@polkadot/api': 16.5.6(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/types': 16.5.6
       '@polkadot/util': 14.0.3
       '@polkadot/util-crypto': 14.0.3(@polkadot/util@14.0.3)
@@ -12221,11 +12218,32 @@ snapshots:
   '@polkadot/rpc-core@16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@polkadot/rpc-augment': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/rpc-provider': 16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot/types': 16.5.6
       '@polkadot/util': 14.0.3
       rxjs: 7.8.2
       tslib: 2.8.1
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@polkadot/rpc-provider@16.5.6(bufferutil@4.0.8)(supports-color@10.2.2)(utf-8-validate@6.0.4)':
+    dependencies:
+      '@polkadot/keyring': 14.0.3(@polkadot/util-crypto@14.0.3(@polkadot/util@14.0.3))(@polkadot/util@14.0.3)
+      '@polkadot/types': 16.5.6
+      '@polkadot/types-support': 16.5.6
+      '@polkadot/util': 14.0.3
+      '@polkadot/util-crypto': 14.0.3(@polkadot/util@14.0.3)
+      '@polkadot/x-fetch': 14.0.3
+      '@polkadot/x-global': 14.0.3
+      '@polkadot/x-ws': 14.0.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      eventemitter3: 5.0.4
+      mock-socket: 9.3.1
+      nock: 13.5.6(supports-color@10.2.2)
+      tslib: 2.8.1
+    optionalDependencies:
+      '@substrate/connect': 0.8.11(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -12243,31 +12261,10 @@ snapshots:
       '@polkadot/x-ws': 14.0.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       eventemitter3: 5.0.4
       mock-socket: 9.3.1
-      nock: 13.5.6
+      nock: 13.5.6(supports-color@10.2.2)
       tslib: 2.8.1
     optionalDependencies:
       '@substrate/connect': 0.8.11(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  '@polkadot/rpc-provider@16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
-    dependencies:
-      '@polkadot/keyring': 14.0.3(@polkadot/util-crypto@14.0.3(@polkadot/util@14.0.3))(@polkadot/util@14.0.3)
-      '@polkadot/types': 16.5.6
-      '@polkadot/types-support': 16.5.6
-      '@polkadot/util': 14.0.3
-      '@polkadot/util-crypto': 14.0.3(@polkadot/util@14.0.3)
-      '@polkadot/x-fetch': 14.0.3
-      '@polkadot/x-global': 14.0.3
-      '@polkadot/x-ws': 14.0.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      eventemitter3: 5.0.4
-      mock-socket: 9.3.1
-      nock: 13.5.6
-      tslib: 2.8.1
-    optionalDependencies:
-      '@substrate/connect': 0.8.11(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -13118,7 +13115,7 @@ snapshots:
       '@solana/rpc-api': 6.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)
       '@solana/rpc-parsed-types': 6.10.0(typescript@6.0.3)
       '@solana/rpc-spec-types': 6.10.0(typescript@6.0.3)
-      '@solana/rpc-subscriptions': 6.10.0(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)(utf-8-validate@6.0.4)
+      '@solana/rpc-subscriptions': 6.10.0(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)(utf-8-validate@5.0.10)
       '@solana/rpc-types': 6.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)
       '@solana/signers': 6.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)
       '@solana/subscribable': 6.10.0(typescript@6.0.3)
@@ -13627,7 +13624,7 @@ snapshots:
     dependencies:
       '@substrate/connect-extension-protocol': 2.2.1
       '@substrate/connect-known-chains': 1.8.0
-      '@substrate/light-client-extension-helpers': 1.0.0(smoldot@2.0.26(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@substrate/light-client-extension-helpers': 1.0.0(smoldot@2.0.26(bufferutil@4.0.8)(utf-8-validate@6.0.4))
       smoldot: 2.0.26(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - bufferutil
@@ -13644,6 +13641,18 @@ snapshots:
       '@substrate/connect-known-chains': 1.8.0
       rxjs: 7.8.2
       smoldot: 2.0.26(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+    optional: true
+
+  '@substrate/light-client-extension-helpers@1.0.0(smoldot@2.0.26(bufferutil@4.0.8)(utf-8-validate@6.0.4))':
+    dependencies:
+      '@polkadot-api/json-rpc-provider': 0.0.1
+      '@polkadot-api/json-rpc-provider-proxy': 0.1.0
+      '@polkadot-api/observable-client': 0.3.2(@polkadot-api/substrate-client@0.1.4)(rxjs@7.8.2)
+      '@polkadot-api/substrate-client': 0.1.4
+      '@substrate/connect-extension-protocol': 2.2.1
+      '@substrate/connect-known-chains': 1.8.0
+      rxjs: 7.8.2
+      smoldot: 2.0.26(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     optional: true
 
   '@substrate/ss58-registry@1.51.0': {}
@@ -16983,7 +16992,7 @@ snapshots:
       lower-case: 2.0.2
       tslib: 2.8.1
 
-  nock@13.5.6:
+  nock@13.5.6(supports-color@10.2.2):
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
       json-stringify-safe: 5.0.1

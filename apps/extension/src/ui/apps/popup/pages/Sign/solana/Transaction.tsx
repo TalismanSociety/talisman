@@ -1,11 +1,16 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
-import type { Blockhash, TransactionMessageBytesBase64 } from "@solana/kit"
-import type { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { Blockhash } from "@solana/kit"
 import { solNativeTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
-import { deserializeTransaction, serializeTransaction } from "@talismn/solana"
+import {
+  deserializeTransaction,
+  getMessageBase64,
+  parseTransactionInfo,
+  type SolTransaction,
+  serializeTransaction,
+} from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import {
@@ -36,7 +41,6 @@ import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
 import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaRpc"
-import { isVersionedTransaction } from "inject/solana/solana"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -106,7 +110,8 @@ export const SolSignTransactionRequest: FC<{
           id,
           type: "transaction",
           networkId: network?.id,
-          transaction: serializeTransaction(transaction),
+          // serialize the SIGNED transaction (kit transactions are immutable copies)
+          transaction: serializeTransaction(output.transaction),
         })
       } catch (error) {
         setState({
@@ -115,7 +120,7 @@ export const SolSignTransactionRequest: FC<{
         })
       }
     },
-    [id, network?.id, transaction, riskAnalysis.tokenIds, enableTokens]
+    [id, network?.id, riskAnalysis.tokenIds, enableTokens]
   )
 
   const displayError = useMemo(() => {
@@ -188,7 +193,7 @@ export const SolSignTransactionRequest: FC<{
 }
 
 const FeeEstimateRow: FC<{
-  transaction: VersionedTransaction | Transaction
+  transaction: SolTransaction
   networkId: string | null
   isLocked: boolean
   account: Account
@@ -257,24 +262,19 @@ const useEstimatedFee = ({
   networkId,
   isLocked,
 }: {
-  transaction: Transaction | VersionedTransaction
+  transaction: SolTransaction
   networkId: string | null
   isLocked: boolean
 }) => {
   return useQuery({
-    queryKey: ["useSolSignTransactionEstimateFee", transaction, networkId],
+    queryKey: ["useSolSignTransactionEstimateFee", getMessageBase64(transaction), networkId],
     queryFn: async () => {
       if (!networkId) return null
 
       const rpc = getFrontEndSolanaRpc(networkId)
       if (!rpc) return null
 
-      const message = isVersionedTransaction(transaction)
-        ? transaction.message.serialize()
-        : transaction.compileMessage().serialize()
-      const base64Message = Buffer.from(message).toString("base64") as TransactionMessageBytesBase64
-
-      const result = await rpc.getFeeForMessage(base64Message).send()
+      const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
 
       return result.value ? String(result.value) : null
     },
@@ -286,13 +286,13 @@ const useTransactionValidity = ({
   transaction,
   networkId,
 }: {
-  transaction: Transaction | VersionedTransaction
+  transaction: SolTransaction
   networkId: string | null
 }) => {
   const { t } = useTranslation()
 
   return useQuery({
-    queryKey: ["useSolSignTransactionValidity", transaction, networkId],
+    queryKey: ["useSolSignTransactionValidity", getMessageBase64(transaction), networkId],
     queryFn: async () => {
       if (!networkId) return { isValid: false, reason: t("Unknown network") }
 
@@ -300,9 +300,7 @@ const useTransactionValidity = ({
       if (!rpc) return { isValid: false, reason: t("No connection available") }
 
       try {
-        const recentBlockhash = isVersionedTransaction(transaction)
-          ? transaction.message.recentBlockhash
-          : transaction.recentBlockhash
+        const { recentBlockhash } = parseTransactionInfo(transaction)
 
         if (!recentBlockhash) return { isValid: false, reason: t("No blockhash found") }
 

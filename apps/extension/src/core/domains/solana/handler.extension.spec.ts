@@ -21,9 +21,9 @@ const {
 
 vi.mock("@talismn/solana", () => ({
   deserializeTransaction: deserializeTransactionMock,
-  getKeypair: vi.fn(),
-  isVersionedTransaction: vi.fn(() => false),
   parseTransactionInfo: parseTransactionInfoMock,
+  serializeTransaction: vi.fn(() => "serialized-transaction"),
+  signTransactionWithSecretKey: vi.fn((tx: unknown) => tx),
 }))
 
 vi.mock("../keyring/store", () => ({
@@ -63,10 +63,7 @@ describe("SolanaExtensionHandler", () => {
   })
 
   test("does not submit a transaction when signing fails", async () => {
-    const tx = {
-      serialize: vi.fn(() => new Uint8Array([1, 2, 3])),
-      sign: vi.fn(),
-    }
+    const tx = { messageBytes: new Uint8Array([1, 2, 3]), signatures: {} }
 
     deserializeTransactionMock.mockReturnValue(tx)
     parseTransactionInfoMock.mockReturnValue({ address: "sol-address", signature: undefined })
@@ -84,10 +81,7 @@ describe("SolanaExtensionHandler", () => {
   })
 
   test("does not resolve or send a transaction approval when signing fails", async () => {
-    const tx = {
-      serialize: vi.fn(() => new Uint8Array([4, 5, 6])),
-      sign: vi.fn(),
-    }
+    const tx = { messageBytes: new Uint8Array([4, 5, 6]), signatures: {} }
     const resolve = vi.fn()
 
     deserializeTransactionMock.mockReturnValue(tx)
