@@ -149,6 +149,9 @@ overrides:
   "flatted@<3.4.2": ">=3.4.2 <4.0.0"
   "defu@<=6.1.4": ">=6.1.5 <7.0.0"
   "@babel/core@<7.29.1": ">=7.29.1 <8.0.0"
+  # single resolution for ws's optional native peer — a 5.x/6.x split duplicates the whole
+  # @polkadot/api graph (peer-hash fork) and breaks types augmentation
+  "utf-8-validate": "6.0.4"
   # dedupe to react 19 — transitive react-18 consumers (@ledgerhq/domain-service, react-icons,
   # icons/orb devDeps) otherwise load a second copy and break rendering ("React Element from an
   # older version of React"). All of them work on 19.

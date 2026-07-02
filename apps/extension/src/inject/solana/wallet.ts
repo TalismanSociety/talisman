@@ -18,8 +18,6 @@ import {
   SolanaSignMessage,
   SolanaSignTransaction,
 } from "@solana/wallet-standard-features"
-import type { Transaction } from "@solana/web3.js"
-import { VersionedTransaction } from "@solana/web3.js"
 import type { Wallet } from "@wallet-standard/base"
 import type {
   StandardConnectFeature,
@@ -36,7 +34,7 @@ import bs58 from "bs58"
 import { TALISMAN_LOGO_BASE64 } from "inject/shared/logo"
 import type { TalismanSolWalletAccount } from "./account"
 import type { SolanaChain } from "./solana"
-import { isSolanaChain, isVersionedTransaction, SOLANA_CHAINS } from "./solana"
+import { isSolanaChain, SOLANA_CHAINS } from "./solana"
 import { deserializeSolWalletAccount } from "./util"
 import type { TalismanSol } from "./window"
 
@@ -186,15 +184,13 @@ export class TalismanSolWallet implements Wallet {
       if (account.address !== this.#account.address) throw new Error("invalid account")
       if (chain && !isSolanaChain(chain)) throw new Error("invalid chain")
 
-      const { signature } = await this.#talisman.signAndSendTransaction(
-        VersionedTransaction.deserialize(transaction),
-        {
-          preflightCommitment,
-          minContextSlot,
-          maxRetries,
-          skipPreflight,
-        }
-      )
+      // transactions cross this layer as raw wire bytes - no parsing needed page-side
+      const { signature } = await this.#talisman.signAndSendTransaction(transaction, {
+        preflightCommitment,
+        minContextSlot,
+        maxRetries,
+        skipPreflight,
+      })
 
       outputs.push({ signature: bs58.decode(signature) })
     } else if (inputs.length > 1) {
@@ -216,20 +212,9 @@ export class TalismanSolWallet implements Wallet {
       if (account !== this.#account) throw new Error("invalid account")
       if (chain && !isSolanaChain(chain)) throw new Error("invalid chain")
 
-      const signedTransaction = await this.#talisman.signTransaction(
-        VersionedTransaction.deserialize(transaction)
-      )
+      const signedTransaction = await this.#talisman.signTransaction(transaction)
 
-      const serializedTransaction = isVersionedTransaction(signedTransaction)
-        ? signedTransaction.serialize()
-        : new Uint8Array(
-            (signedTransaction as Transaction).serialize({
-              requireAllSignatures: false,
-              verifySignatures: false,
-            })
-          )
-
-      outputs.push({ signedTransaction: serializedTransaction })
+      outputs.push({ signedTransaction })
     } else if (inputs.length > 1) {
       let chain: SolanaChain | undefined
       for (const input of inputs) {
@@ -244,26 +229,11 @@ export class TalismanSolWallet implements Wallet {
         }
       }
 
-      const transactions = inputs.map(({ transaction }) =>
-        VersionedTransaction.deserialize(transaction)
-      )
+      const transactions = inputs.map(({ transaction }) => transaction)
 
       const signedTransactions = await this.#talisman.signAllTransactions(transactions)
 
-      outputs.push(
-        ...signedTransactions.map((signedTransaction) => {
-          const serializedTransaction = isVersionedTransaction(signedTransaction)
-            ? signedTransaction.serialize()
-            : new Uint8Array(
-                (signedTransaction as Transaction).serialize({
-                  requireAllSignatures: false,
-                  verifySignatures: false,
-                })
-              )
-
-          return { signedTransaction: serializedTransaction }
-        })
-      )
+      outputs.push(...signedTransactions.map((signedTransaction) => ({ signedTransaction })))
     }
 
     return outputs

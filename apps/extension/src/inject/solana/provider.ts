@@ -1,13 +1,18 @@
 import type { SendRequest } from "@core/types"
 import type { SolanaSignInOutput } from "@solana/wallet-standard-features"
-import { PublicKey } from "@solana/web3.js"
 import bs58 from "bs58"
 // biome-ignore lint/style/useNodejsImportProtocol: legacy
 import EventEmitter from "events"
 
-import { isVersionedTransaction } from "./solana"
-import { deserializeTransaction, serializeTransaction } from "./util"
 import type { TalismanSol } from "./window"
+
+/**
+ * Extracts the fee payer signature from wire-format transaction bytes.
+ * The signature count is a shortU16 — a single byte for any realistic signer count (<128) —
+ * followed by 64-byte signatures, the first of which belongs to the fee payer.
+ */
+const extractFeePayerSignature = (wireTransaction: Uint8Array): string =>
+  bs58.encode(wireTransaction.subarray(1, 65))
 
 export const getSolanaProvider = (send: SendRequest): TalismanSol => {
   const eventEmitter = new EventEmitter({ captureRejections: true })
@@ -29,7 +34,7 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
 
       eventEmitter.emit("connect")
 
-      return { publicKey: new PublicKey(account.address) }
+      return { publicKey: bs58.decode(account.address) }
     },
     disconnect: async () => {
       provider.account = null
@@ -40,34 +45,32 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     },
     signAndSendTransaction: async (transaction, _options) => {
       const result = await send("pub(solana.provider.signTransaction)", {
-        transaction: serializeTransaction(transaction),
+        transaction: bs58.encode(transaction),
         send: true,
       })
-      const signed = deserializeTransaction(result.transaction) as typeof transaction
 
-      const signature = isVersionedTransaction(signed)
-        ? bs58.encode(signed.signatures[0])
-        : bs58.encode(signed.signature!)
+      const signature =
+        result.signature ?? extractFeePayerSignature(bs58.decode(result.transaction))
 
       return { signature }
     },
     signTransaction: async (transaction) => {
       const result = await send("pub(solana.provider.signTransaction)", {
-        transaction: serializeTransaction(transaction),
+        transaction: bs58.encode(transaction),
         send: false,
       })
-      return deserializeTransaction(result.transaction) as typeof transaction
+      return bs58.decode(result.transaction)
     },
     signAllTransactions: async (transactions) => {
-      const results: typeof transactions = []
+      const results: Uint8Array[] = []
 
       // sign each tx sequentially
       for (const tx of transactions) {
         const result = await send("pub(solana.provider.signTransaction)", {
-          transaction: serializeTransaction(tx),
+          transaction: bs58.encode(tx),
           send: false,
         })
-        results.push(deserializeTransaction(result.transaction) as typeof tx)
+        results.push(bs58.decode(result.transaction))
       }
       return results
     },
