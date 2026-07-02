@@ -1,4 +1,5 @@
 import { log } from "@common/log"
+import type { Signature } from "@solana/kit"
 import type { SolNetworkId } from "@talismn/chaindata-provider"
 
 import { db } from "../../db"
@@ -146,11 +147,11 @@ const cleanupSolanaTransactions = async (txs: WalletTransactionSol[]): Promise<v
   const byNetwork = groupBy(txs, (tx) => tx.networkId)
   for (const [networkId, networkTxs] of byNetwork) {
     try {
-      const connection = await chainConnectorSol.getConnection(networkId as SolNetworkId)
-      const signatures = networkTxs.map((tx) => tx.signature)
-      const result = await connection.getSignatureStatuses(signatures, {
-        searchTransactionHistory: true,
-      })
+      const rpc = await chainConnectorSol.getRpc(networkId as SolNetworkId)
+      const signatures = networkTxs.map((tx) => tx.signature as Signature)
+      const result = await rpc
+        .getSignatureStatuses(signatures, { searchTransactionHistory: true })
+        .send()
 
       for (let i = 0; i < networkTxs.length; i++) {
         const tx = networkTxs[i]!

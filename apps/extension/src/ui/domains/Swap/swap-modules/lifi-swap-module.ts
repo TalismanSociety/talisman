@@ -585,10 +585,10 @@ const getTransaction = async (
 
       // Refresh the blockhash — the one from getStepTransaction may expire before the user
       // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
-      const connection = context.platform === "solana" ? context.connection : undefined
-      if (connection) {
-        const { blockhash } = await connection.getLatestBlockhash()
-        transaction.message.recentBlockhash = blockhash
+      const rpc = context.platform === "solana" ? context.rpc : undefined
+      if (rpc) {
+        const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+        transaction.message.recentBlockhash = latestBlockhash.blockhash
       }
 
       return { platform: "solana", transaction }

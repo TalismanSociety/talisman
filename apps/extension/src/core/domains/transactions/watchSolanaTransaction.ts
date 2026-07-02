@@ -1,5 +1,7 @@
 import { log } from "@common/log"
-import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { Signature } from "@solana/kit"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { SolRpc } from "@talismn/chain-connectors"
 import { getBlockExplorerUrls, type SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo } from "@talismn/solana"
 
@@ -22,8 +24,8 @@ export const watchSolanaTransaction = async (
     const network = await chaindataProvider.getNetworkById(networkId, "solana")
     if (!network) throw new Error(`Could not find ethereum network ${networkId}`)
 
-    const connection = await chainConnectorSol.getConnection(networkId)
-    if (!connection) throw new Error(`No connection for network ${networkId} (${network.name})`)
+    const rpc = await chainConnectorSol.getRpc(networkId)
+    if (!rpc) throw new Error(`No connection for network ${networkId} (${network.name})`)
 
     const { signature } = parseTransactionInfo(transaction)
     if (!signature) throw new Error("Transaction does not have a signature")
@@ -33,13 +35,7 @@ export const watchSolanaTransaction = async (
 
     await addSolTransaction(networkId, transaction, { siteUrl, txInfo })
 
-    watchUntilFinalized(
-      connection,
-      signature,
-      network.name,
-      notifications ? txUrl : undefined,
-      txInfo
-    )
+    watchUntilFinalized(rpc, signature, network.name, notifications ? txUrl : undefined, txInfo)
   } catch (err) {
     log.error("Failed to watch Solana transaction (outer)", { err, networkId, transaction })
     sentry.captureException(err, { tags: { networkId } })
@@ -47,7 +43,7 @@ export const watchSolanaTransaction = async (
 }
 // Helper function to poll for transaction confirmation
 async function watchUntilFinalized(
-  connection: Connection,
+  rpc: SolRpc,
   signature: string,
   networkName: string,
   notificationTxUrl?: string,
@@ -60,8 +56,8 @@ async function watchUntilFinalized(
   for (let i = 0; i < maxRetries; i++) {
     try {
       // Check if transaction is confirmed
-      const status = await connection.getSignatureStatus(signature)
-      const { confirmationStatus, err } = status?.value ?? {}
+      const status = await rpc.getSignatureStatuses([signature as Signature]).send()
+      const { confirmationStatus, err } = status?.value?.[0] ?? {}
 
       // TODO ideally we should check that the current block height (which is not the slot) is still < lastValidBlockHeight
       // but that would be one additional RPC call per poll
@@ -74,7 +70,7 @@ async function watchUntilFinalized(
       } else if (confirmationStatus === "confirmed" && txStatus !== "success") {
         txStatus = "success"
 
-        const txDetails = await tryGetTransactionDetails(connection, signature)
+        const txDetails = await tryGetTransactionDetails(rpc, signature)
         await updateTransactionStatus(signature, txStatus, txDetails?.slot)
 
         if (notificationTxUrl) await createNotification("success", networkName, notificationTxUrl)
@@ -84,7 +80,7 @@ async function watchUntilFinalized(
 
         // continue polling until finalized
       } else if (confirmationStatus === "finalized") {
-        const txDetails = await tryGetTransactionDetails(connection, signature)
+        const txDetails = await tryGetTransactionDetails(rpc, signature)
         await updateTransactionStatus(signature, txStatus, txDetails?.slot, true)
         return // we re done
       }
@@ -105,12 +101,16 @@ async function watchUntilFinalized(
   await updateTransactionStatus(signature, "unknown")
 }
 
-const tryGetTransactionDetails = async (connection: Connection, signature: string) => {
+const tryGetTransactionDetails = async (rpc: SolRpc, signature: string) => {
   try {
-    return await connection.getTransaction(signature, {
-      commitment: "confirmed",
-      maxSupportedTransactionVersion: 0,
-    })
+    const txDetails = await rpc
+      .getTransaction(signature as Signature, {
+        commitment: "confirmed",
+        encoding: "base64", // only `slot` is consumed, skip json parsing
+        maxSupportedTransactionVersion: 0,
+      })
+      .send()
+    return txDetails ? { ...txDetails, slot: Number(txDetails.slot) } : null
   } catch (error) {
     log.error("Failed to get transaction details", { error, signature })
     return null

@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { WsProvider } from "@polkadot/rpc-provider"
-import { Connection } from "@solana/web3.js"
+import { createSolanaRpc } from "@solana/kit"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"
 import {
   decAnyMetadata,
@@ -55,9 +55,9 @@ export const getSolGenesisHashFromRpc = (rpcUrl: string): Promise<string | null>
   if (cached) return cached
 
   const request = (async () => {
-    const connection = new Connection(rpcUrl, "confirmed")
+    const rpc = createSolanaRpc(rpcUrl)
     try {
-      return await Promise.race([connection.getGenesisHash(), throwAfter(3000, "timeout")])
+      return await Promise.race([rpc.getGenesisHash().send(), throwAfter(3000, "timeout")])
     } catch {
       return null
     } finally {

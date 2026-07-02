@@ -1,3 +1,5 @@
+import type { Base64EncodedWireTransaction } from "@solana/kit"
+import { stringifyJsonWithBigInts } from "@solana/rpc-spec-types"
 import { base58, ed25519 } from "@talismn/crypto"
 import {
   deserializeTransaction,
@@ -28,11 +30,13 @@ export class SolanaExtensionHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(solana.rpc.send)": {
         const { networkId, request: req } = request as RequestTypes["pri(solana.rpc.send)"]
-        const connection = await chainConnectorSol.getConnection(networkId)
+        const transport = await chainConnectorSol.getTransport(networkId)
 
-        return (
-          connection as unknown as { _rpcRequest: (method: string, params: unknown[]) => unknown }
-        )._rpcRequest(req.method, req.params)
+        const body = await transport({ payload: { ...req, jsonrpc: "2.0" } })
+
+        // response envelope is relayed as text: it may contain bigints, which cannot
+        // cross the extension messaging boundary
+        return { rawJson: stringifyJsonWithBigInts(body) }
       }
 
       case "pri(solana.rpc.submit)": {
@@ -45,7 +49,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         const account = await keyringStore.getAccount(address)
         if (!account) throw new Error("Account not found")
 
-        const connection = await chainConnectorSol.getConnection(networkId)
+        const rpc = await chainConnectorSol.getRpc(networkId)
 
         if (!signature) {
           const signResult = await withSecretKey(account.address, async (secretKey) => {
@@ -59,9 +63,15 @@ export class SolanaExtensionHandler extends ExtensionHandler {
           signResult.unwrap()
         }
 
-        const sig = await connection.sendRawTransaction(tx.serialize(), {
-          skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
-        })
+        const wireTx = Buffer.from(tx.serialize()).toString(
+          "base64"
+        ) as Base64EncodedWireTransaction
+        const sig = await rpc
+          .sendTransaction(wireTx, {
+            encoding: "base64",
+            skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
+          })
+          .send()
 
         watchSolanaTransaction(networkId, tx, {
           txInfo,
@@ -135,8 +145,11 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
             if (dappRequest.send) {
               if (!networkId) throw new Error("Network ID is required for sending transactions")
-              const connection = await chainConnectorSol.getConnection(networkId)
-              await connection.sendRawTransaction(tx.serialize())
+              const rpc = await chainConnectorSol.getRpc(networkId)
+              const wireTx = Buffer.from(tx.serialize()).toString(
+                "base64"
+              ) as Base64EncodedWireTransaction
+              await rpc.sendTransaction(wireTx, { encoding: "base64" }).send()
             }
 
             return signRequest.resolve({

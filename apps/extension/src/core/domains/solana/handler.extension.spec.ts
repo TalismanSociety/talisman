@@ -10,7 +10,7 @@ const {
   watchSolanaTransactionMock,
   withSecretKeyMock,
 } = vi.hoisted(() => ({
-  chainConnectorSolMock: { getConnection: vi.fn() },
+  chainConnectorSolMock: { getRpc: vi.fn() },
   deserializeTransactionMock: vi.fn(),
   keyringStoreMock: { getAccount: vi.fn() },
   parseTransactionInfoMock: vi.fn(),
@@ -50,12 +50,14 @@ import { SolanaExtensionHandler } from "./handler.extension"
 
 describe("SolanaExtensionHandler", () => {
   const handler = new SolanaExtensionHandler({} as never)
-  const sendRawTransaction = vi.fn()
+  const sendTransaction = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    chainConnectorSolMock.getConnection.mockResolvedValue({ sendRawTransaction })
+    chainConnectorSolMock.getRpc.mockResolvedValue({
+      sendTransaction: (...args: unknown[]) => ({ send: () => sendTransaction(...args) }),
+    })
     keyringStoreMock.getAccount.mockResolvedValue({ address: "sol-address" })
     withSecretKeyMock.mockResolvedValue(Err("Unauthorised"))
   })
@@ -77,7 +79,7 @@ describe("SolanaExtensionHandler", () => {
     ).rejects.toBeDefined()
 
     expect(withSecretKeyMock).toHaveBeenCalledTimes(1)
-    expect(sendRawTransaction).not.toHaveBeenCalled()
+    expect(sendTransaction).not.toHaveBeenCalled()
     expect(watchSolanaTransactionMock).not.toHaveBeenCalled()
   })
 
@@ -105,7 +107,7 @@ describe("SolanaExtensionHandler", () => {
     ).rejects.toBeDefined()
 
     expect(withSecretKeyMock).toHaveBeenCalledTimes(1)
-    expect(sendRawTransaction).not.toHaveBeenCalled()
+    expect(sendTransaction).not.toHaveBeenCalled()
     expect(resolve).not.toHaveBeenCalled()
   })
 })

@@ -1,5 +1,6 @@
 import { deserializeMetadata } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, sol } from "@metaplex-foundation/umi"
+import { address as solAddress } from "@solana/kit"
 import { MintLayout } from "@solana/spl-token"
 import { PublicKey } from "@solana/web3.js"
 import type { IChainConnectorSol } from "@talismn/chain-connectors"
@@ -35,31 +36,35 @@ export const fetchOnChainTokenData = async (
   try {
     const { networkId, mintAddress } = parseSolSplTokenId(tokenId)
 
-    const connection = await connector.getConnection(networkId)
-    if (!connection) {
+    const rpc = await connector.getRpc(networkId)
+    if (!rpc) {
       log.warn(`No connection found for network ${networkId}`)
       return null
     }
 
     const mintPubKey = new PublicKey(mintAddress)
-    const mintInfo = await connection.getAccountInfo(mintPubKey)
+    const { value: mintInfo } = await rpc
+      .getAccountInfo(solAddress(mintAddress), { encoding: "base64" })
+      .send()
     if (!mintInfo?.data) throw new Error(ERROR_NO_MINT)
-    const mint = MintLayout.decode(mintInfo.data)
+    const mint = MintLayout.decode(Buffer.from(mintInfo.data[0], "base64"))
 
     const [metadataPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPubKey.toBuffer()],
       METAPLEX_PROGRAM_ID
     )
 
-    const metadataAccount = await connection.getAccountInfo(new PublicKey(metadataPDA))
+    const { value: metadataAccount } = await rpc
+      .getAccountInfo(solAddress(metadataPDA.toBase58()), { encoding: "base64" })
+      .send()
     if (!metadataAccount) throw new Error(ERROR_NO_METADATA)
 
     const metadata = deserializeMetadata({
       publicKey: publicKey(metadataPDA),
       executable: metadataAccount.executable,
       owner: publicKey(metadataAccount.owner),
-      lamports: sol(metadataAccount.lamports),
-      data: metadataAccount.data,
+      lamports: sol(Number(metadataAccount.lamports)),
+      data: Buffer.from(metadataAccount.data[0], "base64"),
     })
 
     const parsed = TokenCacheSchema.safeParse({

@@ -1,5 +1,6 @@
 import { log } from "@common/log"
-import { type Connection, PublicKey } from "@solana/web3.js"
+import { address as solAddress } from "@solana/kit"
+import type { SolRpc } from "@talismn/chain-connectors"
 import {
   networkIdFromTokenId,
   solSplTokenId,
@@ -36,14 +37,14 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
       .map((acc) => acc.address)
   if (!addresses.length) return
 
-  const connection = await chainConnectorSol.getConnection(MAINNET_NETWORK_ID)
+  const rpc = await chainConnectorSol.getRpc(MAINNET_NETWORK_ID)
   const knownSplTokenIds = await chaindataProvider.getTokenIds("sol-spl")
   const knownToken2022Ids = await chaindataProvider.getTokenIds("sol-token2022")
 
   const results = await Promise.all(
     addresses.flatMap((address) => [
-      getSplTokenIdsForOwner(connection, address),
-      getToken2022IdsForOwner(connection, address),
+      getSplTokenIdsForOwner(rpc, address),
+      getToken2022IdsForOwner(rpc, address),
     ])
   )
 
@@ -64,16 +65,16 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
   }
 }
 
-const getSplTokenIdsForOwner = async (connection: Connection, address: string) => {
+const getSplTokenIdsForOwner = async (rpc: SolRpc, address: string) => {
   try {
     // fetch SPL balances for the address
-    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-      new PublicKey(address),
-      {
-        programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
-      },
-      "confirmed"
-    )
+    const tokenAccounts = await rpc
+      .getTokenAccountsByOwner(
+        solAddress(address),
+        { programId: solAddress(SPL_PROGRAM_ID) }, // SPL Token Program ID
+        { commitment: "confirmed", encoding: "jsonParsed" }
+      )
+      .send()
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solSplTokenId(MAINNET_NETWORK_ID, mintAddress))
@@ -82,15 +83,15 @@ const getSplTokenIdsForOwner = async (connection: Connection, address: string) =
   }
 }
 
-const getToken2022IdsForOwner = async (connection: Connection, address: string) => {
+const getToken2022IdsForOwner = async (rpc: SolRpc, address: string) => {
   try {
-    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-      new PublicKey(address),
-      {
-        programId: new PublicKey(TOKEN_2022_PROGRAM_ID),
-      },
-      "confirmed"
-    )
+    const tokenAccounts = await rpc
+      .getTokenAccountsByOwner(
+        solAddress(address),
+        { programId: solAddress(TOKEN_2022_PROGRAM_ID) },
+        { commitment: "confirmed", encoding: "jsonParsed" }
+      )
+      .send()
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solToken2022TokenId(MAINNET_NETWORK_ID, mintAddress))

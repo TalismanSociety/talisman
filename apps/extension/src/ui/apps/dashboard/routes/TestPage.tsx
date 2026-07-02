@@ -1,10 +1,10 @@
 import { log } from "@common/log"
-import { PublicKey } from "@solana/web3.js"
+import { address as solAddress } from "@solana/kit"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useDefiPositions } from "@ui/state/defi"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
-import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaRpc } from "@ui/util/solana/useSolanaConnection"
 import { groupBy } from "lodash-es"
 import {
   type Dispatch,
@@ -121,22 +121,23 @@ const TestEthNetworks = () => {
 }
 
 const TestSolanaBalance = () => {
-  const connection = useSolanaConnection("solana-mainnet")
+  const rpc = useSolanaRpc("solana-mainnet")
   const [balance, setBalance] = useState("")
 
   useEffect(() => {
-    if (!connection) return
+    if (!rpc) return
     // Example of fetching a balance, replace with actual logic
-    connection
-      .getBalance(new PublicKey("5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"))
-      .then((bal) => {
+    rpc
+      .getBalance(solAddress("5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"))
+      .send()
+      .then(({ value: bal }) => {
         setBalance(bal.toString())
         log.log("Fetched Solana balance:", bal)
       })
       .catch((error) => {
         log.error("Error fetching Solana balance:", error)
       })
-  }, [connection])
+  }, [rpc])
 
   // Placeholder for Solana balance test
   // This would typically involve fetching balances using a Solana connector

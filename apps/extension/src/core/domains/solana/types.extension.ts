@@ -11,13 +11,15 @@ export type SolRpcRequest = {
   params: unknown[]
 }
 
-export type SolRpcResponse<T = unknown> = {
-  id: string
-  jsonrpc: "2.0"
-  result: T
+export type ResponseSolanaRpcSend = {
+  /**
+   * Raw JSON text of the node's JSON-RPC response envelope.
+   * Kept as text because kit RPC responses contain lossless bigints, which
+   * cannot cross the extension messaging boundary (ports JSON-serialize).
+   * Parse with `parseJsonWithBigInts` from `@solana/rpc-spec-types`.
+   */
+  rawJson: string
 }
-
-export type ResponseSolanaRpcSend = SolRpcResponse
 
 export type RequestSolanaRpcSend = {
   networkId: SolNetworkId

@@ -7,8 +7,8 @@ import {
   createTransferInstruction,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token"
-import type { Connection } from "@solana/web3.js"
 import { PublicKey, Transaction as SolTransaction, SystemProgram } from "@solana/web3.js"
+import type { SolRpc } from "@talismn/chain-connectors"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
@@ -238,10 +238,10 @@ async function buildSolanaDepositTransaction(params: {
   fromAsset: DepositSwapAsset
   fromAddress: string
   deposit: DepositInfo
-  connection: Connection
+  rpc: SolRpc
 }): Promise<SolTransaction | undefined> {
   try {
-    const { fromAsset, fromAddress, deposit, connection } = params
+    const { fromAsset, fromAddress, deposit, rpc } = params
     if (!fromAddress) throw new Error("Missing from address")
     if (fromAsset.platform !== "solana") return
 
@@ -270,8 +270,8 @@ async function buildSolanaDepositTransaction(params: {
       transaction.add(createTransferInstruction(sourceAta, destAta, fromPubkey, depositAmount))
     }
 
-    const { blockhash } = await connection.getLatestBlockhash()
-    transaction.recentBlockhash = blockhash
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+    transaction.recentBlockhash = latestBlockhash.blockhash
     transaction.feePayer = fromPubkey
 
     return transaction
@@ -310,7 +310,7 @@ export async function buildDepositTransaction(params: {
       if (context.platform !== "solana") return null
       const transaction = await buildSolanaDepositTransaction({
         ...params,
-        connection: context.connection,
+        rpc: context.rpc,
       })
       return transaction ? { platform: "solana", transaction } : null
     }

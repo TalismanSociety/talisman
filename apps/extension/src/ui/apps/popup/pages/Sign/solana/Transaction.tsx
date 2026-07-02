@@ -1,6 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
+import type { Blockhash, TransactionMessageBytesBase64 } from "@solana/kit"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { solNativeTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
@@ -33,7 +34,7 @@ import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBa
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
-import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaConnection"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
 import { isVersionedTransaction } from "inject/solana/solana"
 import { type FC, useCallback, useMemo, useState } from "react"
@@ -265,12 +266,15 @@ const useEstimatedFee = ({
     queryFn: async () => {
       if (!networkId) return null
 
-      const connection = getFrontEndSolanaConnection(networkId)
-      if (!connection) return null
+      const rpc = getFrontEndSolanaRpc(networkId)
+      if (!rpc) return null
 
-      const result = await connection.getFeeForMessage(
-        isVersionedTransaction(transaction) ? transaction.message : transaction.compileMessage()
-      )
+      const message = isVersionedTransaction(transaction)
+        ? transaction.message.serialize()
+        : transaction.compileMessage().serialize()
+      const base64Message = Buffer.from(message).toString("base64") as TransactionMessageBytesBase64
+
+      const result = await rpc.getFeeForMessage(base64Message).send()
 
       return result.value ? String(result.value) : null
     },
@@ -292,8 +296,8 @@ const useTransactionValidity = ({
     queryFn: async () => {
       if (!networkId) return { isValid: false, reason: t("Unknown network") }
 
-      const connection = getFrontEndSolanaConnection(networkId)
-      if (!connection) return { isValid: false, reason: t("No connection available") }
+      const rpc = getFrontEndSolanaRpc(networkId)
+      if (!rpc) return { isValid: false, reason: t("No connection available") }
 
       try {
         const recentBlockhash = isVersionedTransaction(transaction)
@@ -303,9 +307,11 @@ const useTransactionValidity = ({
         if (!recentBlockhash) return { isValid: false, reason: t("No blockhash found") }
 
         // Check if the blockhash is still valid
-        const isValid = await connection.isBlockhashValid(recentBlockhash, {
-          commitment: "processed", // Fastest, but may include blocks that could be rolled back.
-        })
+        const isValid = await rpc
+          .isBlockhashValid(recentBlockhash as Blockhash, {
+            commitment: "processed", // Fastest, but may include blocks that could be rolled back.
+          })
+          .send()
 
         return {
           isValid: isValid.value,

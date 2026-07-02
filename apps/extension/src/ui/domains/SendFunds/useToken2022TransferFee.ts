@@ -31,7 +31,7 @@ export const useToken2022TransferFee = (
   const connection = useSolanaConnection(token?.networkId)
 
   return useQuery({
-    queryKey: ["token2022TransferFee", token?.id, value, connection?.rpcEndpoint],
+    queryKey: ["token2022TransferFee", token?.id, value, token?.networkId],
     queryFn: async (): Promise<TransferFeeInfo | null> => {
       if (!token || !isTokenOfType(token, "sol-token2022") || !connection || !value) return null
 

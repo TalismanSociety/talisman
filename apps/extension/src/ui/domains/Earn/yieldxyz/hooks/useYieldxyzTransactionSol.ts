@@ -1,11 +1,12 @@
 import { log } from "@common/log"
 import type { TransactionDto } from "@core/domains/earn/exports"
+import type { TransactionMessageBytesBase64 } from "@solana/kit"
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaRpc } from "@ui/util/solana/useSolanaConnection"
 import { useMemo } from "react"
 
 import type { UseYieldxyzTransactionProps } from "./types"
@@ -33,7 +34,7 @@ const deserializeYieldxyzSolTransaction = (
 
 export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | null) => {
   const network = useNetworkById(props?.networkId, "solana")
-  const connection = useSolanaConnection(props?.networkId)
+  const rpc = useSolanaRpc(props?.networkId)
 
   const solTx = useMemo(() => {
     if (!network || !props?.transaction) return null
@@ -45,17 +46,20 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
       "yieldxyz-sol-fee",
       props?.transaction?.id,
       props?.transaction?.unsignedTransaction,
-      connection?.rpcEndpoint,
+      props?.networkId,
     ],
     queryFn: async () => {
-      if (!solTx || !connection) return null
+      if (!solTx || !rpc) return null
 
-      const message = isVersionedTransaction(solTx) ? solTx.message : solTx.compileMessage()
+      const message = isVersionedTransaction(solTx)
+        ? solTx.message.serialize()
+        : solTx.compileMessage().serialize()
+      const base64Message = Buffer.from(message).toString("base64") as TransactionMessageBytesBase64
 
-      const result = await connection.getFeeForMessage(message)
-      return result.value
+      const result = await rpc.getFeeForMessage(base64Message).send()
+      return result.value != null ? String(result.value) : null
     },
-    enabled: !!solTx && !!connection,
+    enabled: !!solTx && !!rpc,
   })
 
   const serializedTx = useMemo(() => (solTx ? serializeTransaction(solTx) : null), [solTx])

@@ -1,9 +1,11 @@
-import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { TransactionMessageBytesBase64 } from "@solana/kit"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction } from "@talismn/solana"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaConnection"
 
 type UseGetSolanaFeeEstimateParams = {
-  connection: Connection | null | undefined
+  networkId: string | null | undefined
   transaction: Transaction | VersionedTransaction | null | undefined
 }
 
@@ -14,13 +16,13 @@ type UseGetSolanaFeeEstimateParams = {
  * page can treat both platforms uniformly.
  */
 export const useGetSolanaFeeEstimate = ({
-  connection,
+  networkId,
   transaction,
 }: UseGetSolanaFeeEstimateParams) => {
   return useQuery({
     queryKey: [
       "swap-solana-fee-estimate",
-      connection?.rpcEndpoint,
+      networkId,
       // Serialize key fields so the query re-runs when the tx changes
       transaction
         ? isVersionedTransaction(transaction)
@@ -29,13 +31,15 @@ export const useGetSolanaFeeEstimate = ({
         : null,
     ],
     queryFn: async () => {
-      if (!connection || !transaction) return null
+      const rpc = getFrontEndSolanaRpc(networkId)
+      if (!rpc || !transaction) return null
 
       const message = isVersionedTransaction(transaction)
-        ? transaction.message
-        : transaction.compileMessage()
+        ? transaction.message.serialize()
+        : transaction.compileMessage().serialize()
+      const base64Message = Buffer.from(message).toString("base64") as TransactionMessageBytesBase64
 
-      const result = await connection.getFeeForMessage(message)
+      const result = await rpc.getFeeForMessage(base64Message).send()
       // Solana RPC returns `value: null` when the message can't be processed
       // (e.g. expired blockhash). Surface this as an error so React-Query
       // populates `error` instead of `data: null`, otherwise downstream
@@ -45,7 +49,7 @@ export const useGetSolanaFeeEstimate = ({
 
       return BigInt(result.value)
     },
-    enabled: !!connection && !!transaction,
+    enabled: !!networkId && !!transaction,
     placeholderData: keepPreviousData,
   })
 }

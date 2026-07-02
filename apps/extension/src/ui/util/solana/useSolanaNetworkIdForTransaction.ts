@@ -1,4 +1,5 @@
 import { log } from "@common/log"
+import type { Blockhash } from "@solana/kit"
 import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { parseTransactionInfo } from "@talismn/solana"
 import { throwAfter } from "@talismn/util"
@@ -6,7 +7,7 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { useNetworks } from "@ui/state/chaindata"
 import { useTranslation } from "react-i18next"
 
-import { getFrontEndSolanaConnection } from "./useSolanaConnection"
+import { getFrontEndSolanaRpc } from "./useSolanaConnection"
 
 /**
  * ⚠️ This hook suspenses until the network ID is found for the given transaction.
@@ -34,11 +35,13 @@ export const useSolanaNetworkIdForTransaction = (
           firstNonNullString(
             networks.map(async (network) => {
               try {
-                const connection = getFrontEndSolanaConnection(network.id)
-                if (!connection) return null
-                const result = await connection.isBlockhashValid(recentBlockhash, {
-                  commitment: "processed", // Fastest, but may include blocks that could be rolled back.
-                })
+                const rpc = getFrontEndSolanaRpc(network.id)
+                if (!rpc) return null
+                const result = await rpc
+                  .isBlockhashValid(recentBlockhash as Blockhash, {
+                    commitment: "processed", // Fastest, but may include blocks that could be rolled back.
+                  })
+                  .send()
                 return result.value ? network.id : null
               } catch {
                 return null

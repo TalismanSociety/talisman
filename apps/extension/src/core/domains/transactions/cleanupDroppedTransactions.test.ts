@@ -26,8 +26,10 @@ vi.mock("../../rpcs/chain-connector", () => ({
 const mockGetSignatureStatuses = vi.fn()
 vi.mock("../../rpcs/chain-connector-sol", () => ({
   chainConnectorSol: {
-    getConnection: vi.fn().mockResolvedValue({
-      getSignatureStatuses: (...args: unknown[]) => mockGetSignatureStatuses(...args),
+    getRpc: vi.fn().mockResolvedValue({
+      getSignatureStatuses: (...args: unknown[]) => ({
+        send: () => mockGetSignatureStatuses(...args),
+      }),
     }),
   },
 }))
@@ -317,9 +319,7 @@ describe("cleanupDroppedTransactions", () => {
 
     it("leaves solana tx when connection unavailable (fail-safe)", async () => {
       const { chainConnectorSol } = await import("../../rpcs/chain-connector-sol")
-      vi.mocked(chainConnectorSol.getConnection).mockRejectedValueOnce(
-        new Error("Connection failed")
-      )
+      vi.mocked(chainConnectorSol.getRpc).mockRejectedValueOnce(new Error("Connection failed"))
       await db.transactionsV2.put(makeSolanaTx("sig1"))
 
       await cleanupAllDroppedTransactions()
