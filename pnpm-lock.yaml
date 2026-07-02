@@ -813,9 +813,6 @@ importers:
       '@solana/kit':
         specifier: 6.10.0
         version: 6.10.0(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)(utf-8-validate@6.0.4)
-      '@solana/rpc-spec-types':
-        specifier: 6.10.0
-        version: 6.10.0(typescript@6.0.3)
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider

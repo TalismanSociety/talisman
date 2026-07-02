@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@solana/kit": "6.10.0",
-    "@solana/rpc-spec-types": "6.10.0",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/connection-meta": "workspace:*",
     "@talismn/util": "workspace:*",
