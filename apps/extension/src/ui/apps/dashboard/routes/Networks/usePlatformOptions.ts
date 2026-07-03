@@ -1,4 +1,5 @@
 import { NetworkSchema } from "@talismn/chaindata-provider"
+import type { TFunction } from "i18next"
 import { startCase } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -10,6 +11,10 @@ const PlatformTypeOptionSchema = z.enum([
 ])
 
 export type PlatformOption = z.infer<typeof PlatformTypeOptionSchema>
+
+// the "polkadot" platform is internally named after the network type, but displayed as "Substrate" in the UI
+export const getPlatformLabel = (platform: PlatformOption, t: TFunction) =>
+  platform === "polkadot" ? t("Substrate") : startCase(platform)
 
 export const usePlatformOptions = (defaultValue?: PlatformOption) => {
   const { t } = useTranslation()
@@ -24,7 +29,7 @@ export const usePlatformOptions = (defaultValue?: PlatformOption) => {
       .sort()
       .map((value) => ({
         value,
-        label: value === "polkadot" ? t("Substrate") : startCase(value),
+        label: getPlatformLabel(value, t),
       }))
   }, [t])
 

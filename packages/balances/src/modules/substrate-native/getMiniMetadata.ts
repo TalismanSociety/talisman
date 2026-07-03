@@ -1,6 +1,6 @@
 import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import { deriveMiniMetadataId } from "../../types"
 import type { IBalanceModule } from "../../types/IBalanceModule"
@@ -47,11 +47,17 @@ export const getMiniMetadata: IBalanceModule<
     "Balances",
     "ExistentialDeposit"
   )?.toString()
-  const nominationPoolsPalletId = tryGetConstantValue<Binary>(
+  // NominationPools.PalletId is a fixed-size `[u8; 8]`, which polkadot-api v2 decodes to a hex
+  // string. Convert it back to its ASCII text form (e.g. "py/nopls"), which nompoolAccountId
+  // re-encodes as utf-8 to derive pool account ids.
+  const nominationPoolsPalletIdHex = tryGetConstantValue<`0x${string}`>(
     metadataRpc,
     "NominationPools",
     "PalletId"
-  )?.asText()
+  )
+  const nominationPoolsPalletId = nominationPoolsPalletIdHex
+    ? Binary.toText(Binary.fromHex(nominationPoolsPalletIdHex))
+    : undefined
 
   const hasFreezesItem = Boolean(
     unifiedMetadata.pallets

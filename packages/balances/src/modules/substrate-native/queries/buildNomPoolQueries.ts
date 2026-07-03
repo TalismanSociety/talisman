@@ -1,5 +1,5 @@
 import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import type { IBalance, MiniMetadata } from "../../../types"
 import { buildNetworkStorageCoders } from "../../shared"
@@ -136,7 +136,7 @@ const decodePoolStake = (coder: ScaleStorageCoder, value: string, networkId: str
 
 const decodePoolMeta = (coder: ScaleStorageCoder, value: string, networkId: string) => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-  type DecodedType = Binary
+  type DecodedType = Uint8Array
 
   const decoded = decodeScale<DecodedType>(
     coder,
@@ -144,7 +144,7 @@ const decodePoolMeta = (coder: ScaleStorageCoder, value: string, networkId: stri
     `Failed to decode metadata on chain ${networkId}`
   )
 
-  const metadata = decoded?.asText()
+  const metadata = decoded ? Binary.toText(decoded) : undefined
 
   return { metadata }
 }

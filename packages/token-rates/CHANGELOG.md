@@ -1,5 +1,28 @@
 # @talismn/token-rates
 
+## 3.0.23
+
+### Patch Changes
+
+- Updated dependencies [3107f1b]
+- Updated dependencies [1e434d5]
+  - @talismn/chaindata-provider@1.5.1
+
+## 3.0.22
+
+### Patch Changes
+
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- Updated dependencies [bc509f5]
+- Updated dependencies [0a94c4b]
+- Updated dependencies [b9f92ab]
+- Updated dependencies [ee110a0]
+- Updated dependencies [5133bff]
+- Updated dependencies [9aa9c72]
+- Updated dependencies [7d99a0a]
+- Updated dependencies [bbf4fca]
+  - @talismn/chaindata-provider@1.5.0
+
 ## 3.0.21
 
 ### Patch Changes

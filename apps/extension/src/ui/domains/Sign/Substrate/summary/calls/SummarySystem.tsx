@@ -1,5 +1,6 @@
 import type { PolkadotCalls } from "@polkadot-api/descriptors"
 import { isAscii } from "@talismn/util"
+import { Binary } from "polkadot-api"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -12,10 +13,10 @@ const Remark: DecodedCallSummaryComponent<PolkadotCalls["System"]["remark"]> = (
 }) => {
   const { t } = useTranslation()
 
-  const remark = useMemo(
-    () => (isAscii(args.remark.asText()) ? args.remark.asText() : args.remark.asHex()),
-    [args.remark]
-  )
+  const remark = useMemo(() => {
+    const text = Binary.toText(args.remark)
+    return isAscii(text) ? text : Binary.toHex(args.remark)
+  }, [args.remark])
 
   if (mode !== "block")
     return (
@@ -47,10 +48,10 @@ const RemarkWithEvent: DecodedCallSummaryComponent<
 > = ({ decodedCall: { args }, mode }) => {
   const { t } = useTranslation()
 
-  const remark = useMemo(
-    () => (isAscii(args.remark.asText()) ? args.remark.asText() : args.remark.asHex()),
-    [args.remark]
-  )
+  const remark = useMemo(() => {
+    const text = Binary.toText(args.remark)
+    return isAscii(text) ? text : Binary.toHex(args.remark)
+  }, [args.remark])
 
   if (mode !== "block")
     return (

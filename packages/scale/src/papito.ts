@@ -5,11 +5,10 @@ export {
   getLookupFn,
   type MetadataLookup,
 } from "@polkadot-api/metadata-builders"
-export type { Codec, UnifiedMetadata } from "@polkadot-api/substrate-bindings"
+export type { Codec, SizedHex, UnifiedMetadata } from "@polkadot-api/substrate-bindings"
 export {
   Binary,
   decAnyMetadata,
-  FixedSizeBinary,
   metadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings"

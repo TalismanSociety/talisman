@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import { checksumEthereumAddress, encodeAddressSs58 } from "@talismn/crypto"
-import { parseMetadataRpc, toHex } from "@talismn/scale"
+import { Binary, parseMetadataRpc, toHex } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
 
 import { chainConnector } from "../../rpcs/chain-connector"
@@ -63,12 +63,17 @@ const stringifyProxyType = (raw: unknown): string => {
 
 /**
  * Convert a delegate field (as produced by the Proxy storage codec) to a wallet
- * address. polkadot-api decodes `AccountId32` as a `FixedSizeBinary` (raw
- * bytes), not as an SS58 string — calling `.asText()` on that would produce
- * UTF-8 garbage. Some metadata may resolve directly to a string; handle both.
+ * address. polkadot-api v2 decodes `AccountId32` as a hex string (raw bytes), not
+ * as an SS58 string. A 0x-prefixed 20/32-byte hex is raw account bytes that must be
+ * encoded; any other string is already an address. Some shapes may still be a
+ * Uint8Array or a Binary-like object; handle all of them.
  */
 const decodeDelegate = (raw: unknown, ss58Format: number): string => {
-  if (typeof raw === "string") return raw
+  if (typeof raw === "string") {
+    if (/^0x[0-9a-fA-F]{40}$|^0x[0-9a-fA-F]{64}$/.test(raw))
+      return encodeDelegateBytes(Binary.fromHex(raw as `0x${string}`), ss58Format)
+    return raw
+  }
   if (raw instanceof Uint8Array) return encodeDelegateBytes(raw, ss58Format)
   if (raw && typeof raw === "object" && "asBytes" in raw && typeof raw.asBytes === "function")
     return encodeDelegateBytes((raw as { asBytes: () => Uint8Array }).asBytes(), ss58Format)

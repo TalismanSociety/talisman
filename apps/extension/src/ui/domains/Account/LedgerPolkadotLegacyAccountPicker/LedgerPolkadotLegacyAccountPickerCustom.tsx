@@ -9,12 +9,12 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Tooltip, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import type { SubstrateAppParams } from "@ui/hooks/ledger/legacy"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
-import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   type ChangeEventHandler,
   type FC,

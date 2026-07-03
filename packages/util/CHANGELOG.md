@@ -1,5 +1,19 @@
 # @talismn/util
 
+## 1.1.0
+
+### Minor Changes
+
+- c6ffb9c: add `stripHexPrefix` helper
+- 0a94c4b: bump dependencies
+- bbf4fca: bump dependencies
+
+### Patch Changes
+
+- 91cdabe: bump bignumber.js to 11.1.3
+- aa5e55b: fix unsafe instanceOf usage
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+
 ## 1.0.1
 
 ### Patch Changes

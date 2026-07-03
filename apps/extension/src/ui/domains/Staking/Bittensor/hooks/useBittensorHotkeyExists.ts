@@ -4,7 +4,7 @@ import { isSs58Address } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useDotNetwork } from "@ui/state/chaindata"
-import type { Binary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import { cleanName } from "../utils/subnetNeurons"
 
@@ -52,12 +52,13 @@ export const useBittensorHotkeyExists = (
       // resolve the coldkey's on-chain identity name (best-effort; absent or undecodable → null)
       let name: string | null = null
       try {
-        const identity = await sapi.getStorage<{ name: Binary } | null>(
+        const identity = await sapi.getStorage<{ name: Uint8Array } | null>(
           "SubtensorModule",
           "IdentitiesV2",
           [coldkey]
         )
-        name = cleanName(identity?.name?.asText())
+        const identityName = identity?.name
+        name = cleanName(identityName ? Binary.toText(identityName) : undefined)
       } catch {
         name = null
       }

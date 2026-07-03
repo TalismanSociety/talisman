@@ -1,5 +1,13 @@
 # @talismn/crypto
 
+## 0.3.5
+
+### Patch Changes
+
+- 73ee8d7: bump @noble/ciphers to 2.2.0 and mlkem to 2.7.0
+- ab11fa6: bump @noble/curves + @noble/hashes to 2.2 and @scure/base/bip32/bip39 to 2.2; port sr25519 derivation from micro-sr25519 to @scure/sr25519. Derivation outputs verified byte-identical.
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+
 ## 0.3.4
 
 ### Patch Changes

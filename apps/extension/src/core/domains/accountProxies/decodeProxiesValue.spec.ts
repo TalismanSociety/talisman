@@ -107,15 +107,11 @@ describe("decodeProxiesValue", () => {
     expect(out.proxies[0].delegate).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
   })
 
-  it("encodes a FixedSizeBinary-like delegate (asBytes) to SS58", () => {
-    const alicePubKey = new Uint8Array([
-      0xd4, 0x35, 0x93, 0xc7, 0x15, 0xfd, 0xd3, 0x1c, 0x61, 0x14, 0x1a, 0xbd, 0x04, 0xa9, 0x9f,
-      0xd6, 0x82, 0x2c, 0x85, 0x58, 0x85, 0x4c, 0xcd, 0xe3, 0x9a, 0x56, 0x84, 0xe7, 0xa5, 0x6d,
-      0xa2, 0x7d,
-    ])
-    const binaryLike = { asBytes: () => alicePubKey, asText: () => "garbage" }
+  it("encodes a hex-string AccountId32 delegate (polkadot-api v2) to SS58", () => {
+    // Alice public key as a hex string — polkadot-api v2 decodes AccountId32 as SizedHex
+    const aliceHex = "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
     const fakeCodec = {
-      value: { dec: () => [[{ delegate: binaryLike, proxy_type: "Any", delay: 0 }], 0n] },
+      value: { dec: () => [[{ delegate: aliceHex, proxy_type: "Any", delay: 0 }], 0n] },
     }
     const out = decodeProxiesValue("0x00", fakeCodec, 0)
     // prefix 0 → Polkadot SS58 encoding for Alice

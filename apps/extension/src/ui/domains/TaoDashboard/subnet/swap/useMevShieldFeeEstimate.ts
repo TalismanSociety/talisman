@@ -2,7 +2,6 @@ import type { SignerPayloadJSON } from "@polkadot/types/types"
 import type { ScaleApi } from "@talismn/sapi"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
-import { Binary } from "polkadot-api"
 
 // MEV Shield encryption overhead:
 // 16 (keyHash) + 2 (kemLen) + 1088 (kemCt) + 24 (nonce) + 16 (AEAD tag)
@@ -37,7 +36,7 @@ export const useMevShieldFeeEstimate = ({
       const ciphertextSize =
         MEV_SHIELD_ENCRYPTION_OVERHEAD + innerMethodBytes + SIGNED_EXTRINSIC_OVERHEAD
 
-      const dummyCiphertext = Binary.fromBytes(new Uint8Array(ciphertextSize))
+      const dummyCiphertext = new Uint8Array(ciphertextSize)
 
       const result = await sapi.getExtrinsicPayload(
         "MevShield",

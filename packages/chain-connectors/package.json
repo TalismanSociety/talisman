@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chain-connectors",
-  "version": "0.0.19",
+  "version": "0.1.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -32,7 +32,7 @@
     "@talismn/connection-meta": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "eventemitter3": "^5.0.0",
+    "eventemitter3": "^5.0.4",
     "lodash-es": "4.18.1",
     "viem": "2.52.2"
   },

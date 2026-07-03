@@ -1,5 +1,71 @@
 # @talismn/balances
 
+## 2.0.0
+
+### Major Changes
+
+- 1e434d5: migrate to polkadot-api v2
+
+  BREAKING: the `Binary`/`FixedSizeBinary` classes are removed. Fixed-size `[u8; N]`
+  fields (`AccountId32`, `AccountKey20`, …) now decode to `0x` hex strings (`SizedHex`)
+  and variable-length `Vec<u8>` fields decode to `Uint8Array`. `@talismn/scale` drops
+  the `FixedSizeBinary` re-export and adds `SizedHex`.
+
+### Patch Changes
+
+- Updated dependencies [1e434d5]
+- Updated dependencies [3107f1b]
+- Updated dependencies [1e434d5]
+  - @talismn/scale@1.0.0
+  - @talismn/sapi@1.0.0
+  - @talismn/chaindata-provider@1.5.1
+  - @talismn/chain-connectors@0.1.1
+  - @talismn/token-rates@3.0.23
+
+## 1.5.0
+
+### Minor Changes
+
+- 0a94c4b: bump dependencies
+- 5133bff: minimetadata v11 - dtao conviction locks
+
+  conviction locks are reported on the subnet's base (hotkey-less) token balance, as on-chain they constrain the coldkey's total alpha on the subnet rather than a specific staking position. The lock surfaces in the balance's locked amount but does not reduce its available/transferable amount (the locked stake remains transferable via transfer_stake), and `findDTaoConvictionLock` is exposed to read a balance's conviction lock
+
+- bbf4fca: bump dependencies
+
+### Patch Changes
+
+- 91cdabe: bump bignumber.js to 11.1.3
+- 5133bff: add `taoToAlphaCeil` for user-facing must-keep/must-send alpha minimums: the chain floors the alpha→TAO conversion when checking its TAO-denominated thresholds, so these minimums must round up — a floored value can sit one planck under the real bound and fail the check (or get the position force-swept) when met exactly
+- 21809ee: apply biome lint autofixes (optional chaining); no behaviour change
+- a0a1546: bump @solana/spl-token and @metaplex-foundation/umi (minor)
+- aa5e55b: fix unsafe instanceOf usage
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- 5133bff: expose the keyed hotkey on dtao conviction locks: `findDTaoConvictionLock` / `DTaoConvictionLockInfo` now return the lock's `hotkey` (also added to the conviction lock balance meta). This lets consumers top up an existing conviction lock, which the chain only allows against the lock's existing hotkey.
+- b672e3a: bump viem to 2.52.2
+- Updated dependencies [91cdabe]
+- Updated dependencies [bc509f5]
+- Updated dependencies [73ee8d7]
+- Updated dependencies [c6ffb9c]
+- Updated dependencies [0a94c4b]
+- Updated dependencies [b9f92ab]
+- Updated dependencies [ee110a0]
+- Updated dependencies [ab11fa6]
+- Updated dependencies [5133bff]
+- Updated dependencies [b408b0c]
+- Updated dependencies [aa5e55b]
+- Updated dependencies [9aa9c72]
+- Updated dependencies [7d99a0a]
+- Updated dependencies [bbf4fca]
+- Updated dependencies [b672e3a]
+  - @talismn/util@1.1.0
+  - @talismn/chaindata-provider@1.5.0
+  - @talismn/crypto@0.3.5
+  - @talismn/chain-connectors@0.1.0
+  - @talismn/sapi@0.1.7
+  - @talismn/scale@0.3.5
+  - @talismn/token-rates@3.0.22
+
 ## 1.4.0
 
 ### Minor Changes

@@ -25,7 +25,7 @@ export const getSignerPayloadJSON = async (
   shortMetadata: `0x${string}` | undefined
 }> => {
   const { codec, location } = chain.builder.buildCall(palletName, methodName)
-  const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
+  const method = mergeUint8([new Uint8Array(location), codec.enc(args)])
 
   // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
   // using a finalized block as reference for mortality is necessary for txs to get through
@@ -38,7 +38,7 @@ export const getSignerPayloadJSON = async (
 
   const [nonce, genesisHash, blockNumberFinalized, blockNumberCurrent] = await Promise.all([
     getSendRequestResult<number>(chain, "system_accountNextIndex", [signerConfig.address], false),
-    getStorageValue<Binary>(chain, "System", "BlockHash", [0]),
+    getStorageValue<`0x${string}`>(chain, "System", "BlockHash", [0]),
     getStorageValue<number>(chain, "System", "Number", [], blockHash),
     getStorageValue<number>(chain, "System", "Number", []),
   ])
@@ -53,8 +53,10 @@ export const getSignerPayloadJSON = async (
   if (blockNumberCurrent - blockNumberFinalized > 32) {
     blockNumber = blockNumberCurrent - 16
 
-    const binBlockHash = await getStorageValue<Binary>(chain, "System", "BlockHash", [blockNumber])
-    blockHash = binBlockHash.asHex() as `0x${string}`
+    const binBlockHash = await getStorageValue<`0x${string}`>(chain, "System", "BlockHash", [
+      blockNumber,
+    ])
+    blockHash = binBlockHash
   }
 
   const era = mortal({ period: ERA_PERIOD, phase: blockNumber % ERA_PERIOD })
@@ -65,9 +67,9 @@ export const getSignerPayloadJSON = async (
 
   const basePayload: SignerPayloadJSON = {
     address: signerConfig.address,
-    genesisHash: genesisHash.asHex() as `0x${string}`,
+    genesisHash,
     blockHash,
-    method: method.asHex(),
+    method: Binary.toHex(method),
     signedExtensions,
     nonce: toPjsHex(nonce, 4),
     specVersion: toPjsHex(chainInfo.specVersion, 4),

@@ -1,6 +1,6 @@
 {
   "name": "@talismn/connection-meta",
-  "version": "0.2.39",
+  "version": "0.3.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:*",
-    "dexie": "^4.4.3"
+    "dexie": "^4.4.4"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",

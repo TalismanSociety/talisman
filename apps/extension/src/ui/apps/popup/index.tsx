@@ -27,8 +27,8 @@ import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondM
 import { BittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor/BittensorChangeLockHotkeyModal"
 import { BittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/BittensorChangeLockTypeModal"
 import { BittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/BittensorChangeValidatorModal"
-import { BittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal"
 import { BittensorConvictionLockModal } from "@ui/domains/Staking/Bittensor/BittensorConvictionLockModal"
+import { BittensorSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorSettingsModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
@@ -114,7 +114,7 @@ const Popup = () => {
         <BittensorChangeLockTypeModal />
         <BittensorChangeLockHotkeyModal />
         <BittensorChangeValidatorModal />
-        <BittensorClaimSettingsModal />
+        <BittensorSettingsModal />
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />
         <LedgerPolkadotUpgradeAlertDrawer />

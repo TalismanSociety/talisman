@@ -4,15 +4,15 @@ import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
-import { PolkadotGenericApp, supportedApps } from "@zondax/ledger-substrate"
-import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import { PolkadotGenericApp } from "@zondax/ledger-substrate"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { lt } from "semver"
-
 import { getPolkadotLedgerDerivationPath } from "./common"
 import { getOpenLedgerAppError, getTalismanLedgerError, TalismanLedgerError } from "./errors"
+import type { SubstrateAppParams } from "./legacy"
+import { supportedApps } from "./legacy"
 import { useLedgerTransport } from "./useLedgerTransport"
 
 type LedgerRequest<T> = (ledger: PolkadotGenericApp) => Promise<T>

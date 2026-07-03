@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import type { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
+import type { XcmVersionedLocation } from "@polkadot-api/descriptors"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 
 const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): DotNetwork => {
@@ -45,7 +45,7 @@ const getRelay = (chain: DotNetwork, chains: DotNetwork[]): DotNetwork => {
 }
 
 export const getChainFromXcmLocation = (
-  multiLocation: XcmVersionedLocation | HydrationXcmVersionedLocation,
+  multiLocation: XcmVersionedLocation,
   chain: DotNetwork,
   chains: DotNetwork[]
 ): DotNetwork => {

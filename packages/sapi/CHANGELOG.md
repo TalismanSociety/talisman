@@ -1,5 +1,30 @@
 # @talismn/sapi
 
+## 1.0.0
+
+### Major Changes
+
+- 1e434d5: migrate to polkadot-api v2
+
+  BREAKING: the `Binary`/`FixedSizeBinary` classes are removed. Fixed-size `[u8; N]`
+  fields (`AccountId32`, `AccountKey20`, …) now decode to `0x` hex strings (`SizedHex`)
+  and variable-length `Vec<u8>` fields decode to `Uint8Array`. `@talismn/scale` drops
+  the `FixedSizeBinary` re-export and adds `SizedHex`.
+
+### Patch Changes
+
+- Updated dependencies [1e434d5]
+  - @talismn/scale@1.0.0
+
+## 0.1.7
+
+### Patch Changes
+
+- b408b0c: bump @polkadot/types and @polkadot/types-codec to 16.5.6
+- 9aa9c72: build with typescript 6 (dev tooling). crypto/keyring type-compat fixes are byte-identical with no behaviour change
+- Updated dependencies [9aa9c72]
+  - @talismn/scale@0.3.5
+
 ## 0.1.6
 
 ### Patch Changes

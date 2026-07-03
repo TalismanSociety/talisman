@@ -29,7 +29,8 @@ export const AssetState = ({
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
         <div className="shrink-0 whitespace-nowrap font-bold text-white capitalize">{title}</div>
         {/* center the suffix (eg the lock hotkey tag) without disturbing the title/description baseline */}
-        {titleSuffix && <span className="self-center">{titleSuffix}</span>}
+        {/* min-w-0 lets the suffix shrink so a long lock target truncates instead of being clipped */}
+        {titleSuffix && <span className="min-w-0 self-center">{titleSuffix}</span>}
         {/* show description next to title when address is set */}
         {description && address && (
           <Tooltip>

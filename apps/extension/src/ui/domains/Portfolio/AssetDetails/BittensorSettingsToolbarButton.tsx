@@ -3,8 +3,8 @@ import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { SettingsIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useBittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal/hooks/useBittensorClaimSettingsModal"
-import type { BittensorClaimSettingsOpenOptions } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal/hooks/useBittensorClaimSettingsWizard"
+import { useBittensorSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorSettingsModal/hooks/useBittensorSettingsModal"
+import type { BittensorSettingsOpenOptions } from "@ui/domains/Staking/Bittensor/BittensorSettingsModal/hooks/useBittensorSettingsWizard"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
@@ -13,17 +13,17 @@ import { useTranslation } from "react-i18next"
 
 import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
 
-export const BittensorClaimSettingsToolbarButton: FC<{
+export const BittensorSettingsToolbarButton: FC<{
   balances: Balances
   className?: string
 }> = ({ balances }) => {
   const { t } = useTranslation()
   const accounts = useAccounts("owned")
   const bittensorNetworkIds = useBittensorNetworkIds()
-  const { open: openBittensorClaimSettingsModal } = useBittensorClaimSettingsModal()
+  const { open: openBittensorSettingsModal } = useBittensorSettingsModal()
   const { genericEvent } = useAnalytics()
 
-  const openArgs = useMemo<BittensorClaimSettingsOpenOptions | null>(() => {
+  const openArgs = useMemo<BittensorSettingsOpenOptions | null>(() => {
     const balance = balances.each
       .filter(
         (b) =>
@@ -40,15 +40,15 @@ export const BittensorClaimSettingsToolbarButton: FC<{
 
     return {
       address: balance.address,
-      step: "claim-settings",
+      step: "settings",
     }
   }, [accounts, balances, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return
-    openBittensorClaimSettingsModal(openArgs)
-    genericEvent("open bittensor claim settings", { from: "token menu" })
-  }, [genericEvent, openArgs, openBittensorClaimSettingsModal])
+    openBittensorSettingsModal(openArgs)
+    genericEvent("open bittensor settings", { from: "token menu" })
+  }, [genericEvent, openArgs, openBittensorSettingsModal])
 
   if (!openArgs) return null
 
@@ -59,7 +59,7 @@ export const BittensorClaimSettingsToolbarButton: FC<{
           <SettingsIcon />
         </PortfolioToolbarButton>
       </TooltipTrigger>
-      <TooltipContent>{t("Root stake claim settings")}</TooltipContent>
+      <TooltipContent>{t("Bittensor settings")}</TooltipContent>
     </Tooltip>
   )
 }

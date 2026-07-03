@@ -401,16 +401,6 @@ const serializeForDisplay = (value: unknown): unknown => {
   // Handle BigInt - convert to string with 'n' suffix for clarity
   if (typeof value === "bigint") return `${value.toString()}n`
 
-  // Handle PAPI Binary (has asHex and asBytes methods)
-  if (
-    value &&
-    typeof value === "object" &&
-    "asHex" in value &&
-    typeof (value as { asHex: unknown }).asHex === "function"
-  ) {
-    return (value as { asHex: () => string }).asHex()
-  }
-
   // Handle Uint8Array / ArrayBuffer - convert to hex
   if (value instanceof Uint8Array) {
     return `0x${Array.from(value)

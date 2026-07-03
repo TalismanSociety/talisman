@@ -1,8 +1,7 @@
 import type { DotNetwork } from "@talismn/chaindata-provider"
-import { supportedApps } from "@zondax/ledger-substrate"
 import { useMemo } from "react"
-
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"
+import { supportedApps } from "./legacy"
 
 export const useLedgerSubstrateAppByChain = (chain: DotNetwork | null | undefined) => {
   return useMemo(
