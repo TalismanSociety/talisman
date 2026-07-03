@@ -89,7 +89,10 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             if (signature) {
               // if signature is supplied, it was signed with a hardware device - hardware wallets
               // sign the off-chain message envelope, not the raw bytes
-              const envelope = serializeOffchainMessage(base58.decode(dappRequest.message))
+              const envelope = serializeOffchainMessage(
+                base58.decode(dappRequest.message),
+                base58.decode(signRequest.account.address)
+              )
               if (
                 !envelope ||
                 !ed25519.verify(

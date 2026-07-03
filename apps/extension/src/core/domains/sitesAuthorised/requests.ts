@@ -126,7 +126,7 @@ export const requestSolanaSignIn = async (
   // hardware devices sign the off-chain message envelope, not the raw SIWS text
   const signedMessage =
     account.type === "ledger-solana"
-      ? (serializeOffchainMessage(messageBytes) ?? messageBytes)
+      ? (serializeOffchainMessage(messageBytes, base58.decode(account.address)) ?? messageBytes)
       : messageBytes
 
   const output: ResponseSolanaSignIn = {

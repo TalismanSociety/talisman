@@ -187,7 +187,9 @@ const getSolSignInSignature = async (
   // verify that the signature supplied by the frontend is valid - hardware devices sign
   // the off-chain message envelope, not the raw SIWS text
   const signedBytes =
-    account.type === "ledger-solana" ? serializeOffchainMessage(signedMessage) : signedMessage
+    account.type === "ledger-solana"
+      ? serializeOffchainMessage(signedMessage, base58.decode(address))
+      : signedMessage
   if (
     !signedBytes ||
     !ed25519.verify(base58.decode(signature), signedBytes, base58.decode(address))
