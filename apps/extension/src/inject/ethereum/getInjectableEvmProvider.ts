@@ -1,7 +1,6 @@
 import { log } from "@common/log"
 import type { SendRequest } from "@core/types"
-// biome-ignore lint/style/useNodejsImportProtocol: runs in browser context
-import EventEmitter from "events"
+import { EventEmitter } from "inject/shared/EventEmitter"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
@@ -33,7 +32,7 @@ interface JsonRpcResponse {
 type JsonRpcCallback = (error: Error | null, response: JsonRpcResponse | null) => unknown
 
 export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
-  const eventEmitter = new EventEmitter({ captureRejections: true })
+  const eventEmitter = new EventEmitter()
 
   const state = {
     initialized: false,

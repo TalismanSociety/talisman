@@ -1,13 +1,12 @@
 import type { SendRequest } from "@core/types"
 import type { SolanaSignInOutput } from "@solana/wallet-standard-features"
 import bs58 from "bs58"
-// biome-ignore lint/style/useNodejsImportProtocol: legacy
-import EventEmitter from "events"
+import { EventEmitter } from "inject/shared/EventEmitter"
 
 import type { TalismanSol } from "./window"
 
 export const getSolanaProvider = (send: SendRequest): TalismanSol => {
-  const eventEmitter = new EventEmitter({ captureRejections: true })
+  const eventEmitter = new EventEmitter()
 
   const provider: TalismanSol = {
     account: null,
