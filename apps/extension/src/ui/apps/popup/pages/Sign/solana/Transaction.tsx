@@ -276,7 +276,8 @@ const useEstimatedFee = ({
 
       const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
 
-      return result.value ? String(result.value) : null
+      // `value` is a bigint | null; use `!= null` so a legitimate zero fee isn't treated as Unknown
+      return result.value != null ? String(result.value) : null
     },
     refetchInterval: !isLocked && 5_000, // refresh fee every 5 seconds
   })

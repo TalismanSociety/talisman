@@ -1,17 +1,18 @@
 import type { RpcTransport } from "@solana/kit"
+import { createSolanaRpcFromTransport } from "@solana/kit"
 import type { SolNetwork } from "@talismn/chaindata-provider"
 
 import type { SolRpc } from "./getSolRpc"
-import { getSolRpc, getSolTransport } from "./getSolRpc"
+import { getSolTransport } from "./getSolRpc"
 import type { IChainConnectorSol } from "./IChainConnectorSol"
 
 export class ChainConnectorSolStub implements IChainConnectorSol {
-  #network: Pick<SolNetwork, "id" | "rpcs">
+  #transport: RpcTransport
   #rpc: SolRpc
 
   constructor(network: Pick<SolNetwork, "id" | "rpcs">) {
-    this.#network = network
-    this.#rpc = getSolRpc(network.id, network.rpcs)
+    this.#transport = getSolTransport(network.id, network.rpcs)
+    this.#rpc = createSolanaRpcFromTransport(this.#transport)
   }
 
   async getRpc(): Promise<SolRpc> {
@@ -19,6 +20,6 @@ export class ChainConnectorSolStub implements IChainConnectorSol {
   }
 
   async getTransport(): Promise<RpcTransport> {
-    return getSolTransport(this.#network.id, this.#network.rpcs)
+    return this.#transport
   }
 }

@@ -25,13 +25,22 @@ const createBackgroundRpcTransport = (networkId: string): RpcTransport => {
   return transport as RpcTransport
 }
 
+const TRANSPORT_CACHE = new Map<string, RpcTransport>()
 const RPC_CACHE = new Map<string, SolRpc>()
+
+/** Caches one background relay transport per network so the derived rpc reuses it. */
+const getBackgroundRpcTransport = (networkId: string): RpcTransport => {
+  if (!TRANSPORT_CACHE.has(networkId))
+    TRANSPORT_CACHE.set(networkId, createBackgroundRpcTransport(networkId))
+
+  return TRANSPORT_CACHE.get(networkId)!
+}
 
 export const getFrontEndSolanaRpc = (networkId: string | null | undefined) => {
   if (!networkId) return null
 
   if (!RPC_CACHE.has(networkId))
-    RPC_CACHE.set(networkId, createSolanaRpcFromTransport(createBackgroundRpcTransport(networkId)))
+    RPC_CACHE.set(networkId, createSolanaRpcFromTransport(getBackgroundRpcTransport(networkId)))
 
   return RPC_CACHE.get(networkId)!
 }
@@ -46,6 +55,6 @@ export const getFrontEndSolanaConnector = (networkId: SolNetworkId): IChainConne
 
   return {
     getRpc: async () => rpc,
-    getTransport: async () => createBackgroundRpcTransport(networkId),
+    getTransport: async () => getBackgroundRpcTransport(networkId),
   }
 }

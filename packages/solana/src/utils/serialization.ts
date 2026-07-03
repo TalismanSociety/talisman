@@ -1,6 +1,5 @@
 import type {
   Blockhash,
-  CompiledTransactionMessage,
   Instruction,
   SignaturesMap,
   TransactionMessageBytes,
@@ -128,6 +127,3 @@ export const txToHumanJSON = (tx: string | SolTransaction) => {
     })),
   }
 }
-
-// re-export for consumers that need the raw compiled message type
-export type { CompiledTransactionMessage }
