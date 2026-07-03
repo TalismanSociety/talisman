@@ -1,6 +1,10 @@
 import { address as solAddress } from "@solana/kit"
 import { fetchMint } from "@solana-program/token-2022"
-import { calculateToken2022TransferFee, getTransferFeeConfig } from "@talismn/balances"
+import {
+  calculateToken2022TransferFee,
+  getEpochTransferFee,
+  getTransferFeeConfig,
+} from "@talismn/balances"
 import type { SolRpc } from "@talismn/chain-connectors"
 import { isTokenOfType, type Token } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
@@ -47,10 +51,7 @@ const getToken2022TransferFee = async (
   if (!transferFeeConfig) return null
 
   const { epoch } = await rpc.getEpochInfo().send()
-  const currentTransferFee =
-    epoch >= transferFeeConfig.newerTransferFee.epoch
-      ? transferFeeConfig.newerTransferFee
-      : transferFeeConfig.olderTransferFee
+  const currentTransferFee = getEpochTransferFee(transferFeeConfig, epoch)
 
   const feeBasisPoints = currentTransferFee.transferFeeBasisPoints
   const maxFee = currentTransferFee.maximumFee

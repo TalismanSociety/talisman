@@ -1,4 +1,4 @@
-import type { Address, Instruction } from "@solana/kit"
+import type { Instruction } from "@solana/kit"
 import { createNoopSigner, address as solAddress } from "@solana/kit"
 import { findAssociatedTokenPda, getCreateAssociatedTokenInstruction } from "@solana-program/token"
 import type { TransferFee } from "@solana-program/token-2022"
@@ -13,6 +13,7 @@ import { isTokenOfType } from "@talismn/chaindata-provider"
 import { isOnCurveSolanaAddress } from "@talismn/crypto"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
+import { tokenAccountExists } from "../sol-shared/tokenAccountExists"
 import { MODULE_TYPE } from "./config"
 import { getTransferFeeConfig, getTransferHook, isNonTransferable } from "./mintExtensions"
 import { addExtraAccountMetasForTransferHook } from "./transferHook"
@@ -111,18 +112,16 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     return instructions
   }
 
-const tokenAccountExists = async (rpc: SolRpc, address: Address, tokenProgram: Address) => {
-  // encoding must be explicit: the node rejects base58 (its default) for account data >128 bytes,
-  // and the owner check is enough — skip the data entirely. An account not owned by the token
-  // program (e.g. a rent-dusted system account squatting the ATA address) must go through the
-  // create instruction, which handles pre-funded addresses; a bare transfer to it fails on-chain.
-  const { value } = await rpc
-    .getAccountInfo(address, { encoding: "base64", dataSlice: { offset: 0, length: 0 } })
-    .send()
-  return value !== null && value.owner === tokenProgram
-}
-
 const ONE_IN_BASIS_POINTS = 10_000n
+
+/** Selects the transfer-fee schedule (older vs newer) that applies to a given epoch. */
+export const getEpochTransferFee = (
+  transferFeeConfig: { olderTransferFee: TransferFee; newerTransferFee: TransferFee },
+  epoch: bigint
+): TransferFee =>
+  epoch >= transferFeeConfig.newerTransferFee.epoch
+    ? transferFeeConfig.newerTransferFee
+    : transferFeeConfig.olderTransferFee
 
 /**
  * Calculates the transfer fee for a given amount using the current epoch's fee configuration.
@@ -135,10 +134,7 @@ export const calculateToken2022TransferFee = (
   epoch: bigint,
   amount: bigint
 ): bigint => {
-  const { transferFeeBasisPoints, maximumFee } =
-    epoch >= transferFeeConfig.newerTransferFee.epoch
-      ? transferFeeConfig.newerTransferFee
-      : transferFeeConfig.olderTransferFee
+  const { transferFeeBasisPoints, maximumFee } = getEpochTransferFee(transferFeeConfig, epoch)
 
   if (transferFeeBasisPoints === 0 || amount === 0n) return 0n
 

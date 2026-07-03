@@ -1,6 +1,7 @@
 import type { AccountMeta, Address, Instruction } from "@solana/kit"
 import {
   AccountRole,
+  fetchEncodedAccount,
   getAddressDecoder,
   getAddressEncoder,
   getProgramDerivedAddress,
@@ -62,9 +63,9 @@ const getExtraAccountMetas = (data: Uint8Array) => {
 }
 
 const getAccountData = async (rpc: SolRpc, address: Address): Promise<Uint8Array | null> => {
-  const { value } = await rpc.getAccountInfo(address, { encoding: "base64" }).send()
-  if (!value) return null
-  return new Uint8Array(Buffer.from(value.data[0], "base64"))
+  // kit's fetchEncodedAccount already fetches with base64 and decodes the bytes for us
+  const account = await fetchEncodedAccount(rpc, address)
+  return account.exists ? new Uint8Array(account.data) : null
 }
 
 const unpackSeeds = async (
