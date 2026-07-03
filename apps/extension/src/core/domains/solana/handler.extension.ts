@@ -135,10 +135,15 @@ export class SolanaExtensionHandler extends ExtensionHandler {
               signed = signResult.unwrap()
             }
 
+            // `sendTransaction` returns the canonical transaction signature (its first, fee-payer
+            // signature) - the exact value dapps expect back from signAndSendTransaction. Capturing
+            // it here makes it the single source of truth: no second parse, no wire-byte extraction
+            // fallback in the inject provider. `signature` is only read on the send path.
+            let sentSignature: string | undefined
             if (dappRequest.send) {
               if (!networkId) throw new Error("Network ID is required for sending transactions")
               const rpc = await chainConnectorSol.getRpc(networkId)
-              await rpc
+              sentSignature = await rpc
                 .sendTransaction(getBase64EncodedWireTransaction(signed), { encoding: "base64" })
                 .send()
             }
@@ -146,7 +151,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             return signRequest.resolve({
               type: "transaction",
               transaction: serializeTransaction(signed),
-              signature: parseTransactionInfo(signed).signature ?? undefined,
+              signature: sentSignature,
               networkId,
             })
           }

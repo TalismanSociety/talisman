@@ -6,14 +6,6 @@ import EventEmitter from "events"
 
 import type { TalismanSol } from "./window"
 
-/**
- * Extracts the fee payer signature from wire-format transaction bytes.
- * The signature count is a shortU16 — a single byte for any realistic signer count (<128) —
- * followed by 64-byte signatures, the first of which belongs to the fee payer.
- */
-const extractFeePayerSignature = (wireTransaction: Uint8Array): string =>
-  bs58.encode(wireTransaction.subarray(1, 65))
-
 export const getSolanaProvider = (send: SendRequest): TalismanSol => {
   const eventEmitter = new EventEmitter({ captureRejections: true })
 
@@ -49,10 +41,10 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
         send: true,
       })
 
-      const signature =
-        result.signature ?? extractFeePayerSignature(bs58.decode(result.transaction))
+      // the backend always returns the canonical signature for a sent transaction
+      if (!result.signature) throw new Error("No signature returned for sent transaction")
 
-      return { signature }
+      return { signature: result.signature }
     },
     signTransaction: async (transaction) => {
       const result = await send("pub(solana.provider.signTransaction)", {
