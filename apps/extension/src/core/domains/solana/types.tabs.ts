@@ -47,6 +47,8 @@ export type RequestSolanaSignMessage = {
 }
 export type ResponseSolanaSignMessage = {
   signature: string // base58 encoded
+  /** base58 encoded bytes that were actually signed - set when a hardware device signed the off-chain message envelope instead of the raw bytes */
+  signedMessage?: string
 }
 
 export type RequestSolanaSignTransaction = {

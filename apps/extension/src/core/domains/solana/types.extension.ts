@@ -45,7 +45,7 @@ export type SolanaSignApproveResponse =
     }
   | {
       type: "message"
-      signature?: string // base58 encoded
+      signature?: string // base58 encoded, supplied if signed with hardware device from frontend
     }
 
 // this message works for all sign requests (msg sign, tx sign, tx sign & send)

@@ -44,6 +44,6 @@ export interface TalismanSol extends TalismanSolEventEmitter {
   ): Promise<{ signature: string }>
   signTransaction(transaction: Uint8Array): Promise<Uint8Array>
   signAllTransactions(transactions: readonly Uint8Array[]): Promise<Uint8Array[]>
-  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>
+  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array; signedMessage?: Uint8Array }>
   signIn(input?: SolanaSignInInput): Promise<SolanaSignInOutput>
 }

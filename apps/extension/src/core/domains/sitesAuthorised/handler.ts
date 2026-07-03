@@ -2,6 +2,7 @@ import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { base58, ed25519 } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
+import { serializeOffchainMessage } from "@talismn/solana"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -183,8 +184,14 @@ const getSolSignInSignature = async (
     return { account, signature: base58.encode(signResult.unwrap()) }
   }
 
-  // verify that the signature supplied by the frontend is valid
-  if (!ed25519.verify(base58.decode(signature), signedMessage, base58.decode(address)))
+  // verify that the signature supplied by the frontend is valid - hardware devices sign
+  // the off-chain message envelope, not the raw SIWS text
+  const signedBytes =
+    account.type === "ledger-solana" ? serializeOffchainMessage(signedMessage) : signedMessage
+  if (
+    !signedBytes ||
+    !ed25519.verify(base58.decode(signature), signedBytes, base58.decode(address))
+  )
     throw new Error("Signature verification failed")
 
   return { account, signature }

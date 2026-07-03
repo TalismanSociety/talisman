@@ -248,9 +248,9 @@ export class TalismanSolWallet implements Wallet {
       const { message, account } = inputs[0]!
       if (account.address !== this.#account.address) throw new Error("invalid account")
 
-      const { signature } = await this.#talisman.signMessage(message)
+      const { signature, signedMessage } = await this.#talisman.signMessage(message)
 
-      outputs.push({ signedMessage: message, signature })
+      outputs.push({ signedMessage: signedMessage ?? message, signature })
     } else if (inputs.length > 1) {
       for (const input of inputs) {
         outputs.push(...(await this.#signMessage(input)))

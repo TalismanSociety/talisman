@@ -73,7 +73,11 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
         message: bs58.encode(message),
       })
 
-      return { signature: bs58.decode(result.signature) }
+      return {
+        signature: bs58.decode(result.signature),
+        // hardware devices sign the off-chain message envelope instead of the raw bytes
+        signedMessage: result.signedMessage ? bs58.decode(result.signedMessage) : undefined,
+      }
     },
     signIn: async (input) => {
       // SolanaSignInOutput contains field that are not serializable

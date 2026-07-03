@@ -1,6 +1,7 @@
 import type { AccountLedgerSolana } from "@core/domains/keyring/exports"
 import LedgerSolanaApp from "@ledgerhq/hw-app-solana"
 import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
+import { serializeOffchainMessage } from "@talismn/solana"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -78,10 +79,15 @@ const signWithLedger = async (
 
   switch (type) {
     case "message": {
-      throw getTalismanLedgerError(t("Solana message signing with Ledger is not supported."))
+      // the ledger app only signs messages wrapped in the off-chain message envelope
+      const envelope = serializeOffchainMessage(new Uint8Array(payload))
+      if (!envelope)
+        throw getTalismanLedgerError(
+          t("Ledger can only sign text messages of 1212 characters or less.")
+        )
 
-      // const res = await ledger.signOffchainMessage(account.derivationPath, payload)
-      // return res.signature
+      const res = await ledger.signOffchainMessage(account.derivationPath, Buffer.from(envelope))
+      return res.signature
     }
     case "transaction": {
       const res = await ledger.signTransaction(account.derivationPath, payload)

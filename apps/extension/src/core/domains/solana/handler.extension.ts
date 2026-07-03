@@ -4,6 +4,7 @@ import { base58, ed25519 } from "@talismn/crypto"
 import {
   deserializeTransaction,
   parseTransactionInfo,
+  serializeOffchainMessage,
   serializeTransaction,
   signTransactionWithSecretKey,
 } from "@talismn/solana"
@@ -86,19 +87,23 @@ export class SolanaExtensionHandler extends ExtensionHandler {
           case "message": {
             const { signature } = request as Extract<RequestSolanaSignApprove, { type: "message" }>
             if (signature) {
+              // if signature is supplied, it was signed with a hardware device - hardware wallets
+              // sign the off-chain message envelope, not the raw bytes
+              const envelope = serializeOffchainMessage(base58.decode(dappRequest.message))
               if (
+                !envelope ||
                 !ed25519.verify(
                   base58.decode(signature),
-                  base58.decode(dappRequest.message),
+                  envelope,
                   base58.decode(signRequest.account.address)
                 )
               )
                 throw new Error("Signature verification failed")
 
-              // if signature is supplied, we assume it was signed with a hardware device
               return signRequest.resolve({
                 type: "message",
                 signature,
+                signedMessage: base58.encode(envelope),
               })
             }
 

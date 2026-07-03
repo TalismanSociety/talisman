@@ -2,6 +2,7 @@ import { DEFAULT_ETH_CHAIN_ID } from "@common/constants"
 import { assert } from "@polkadot/util"
 import { base58 } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
+import { serializeOffchainMessage } from "@talismn/solana"
 import { requestStore } from "../../libs/requests/store"
 import type { KnownRequestIdOnly } from "../../libs/requests/types"
 import type { Port } from "../../types/base"
@@ -121,6 +122,13 @@ export const requestSolanaSignIn = async (
     [domain]: siteAuth,
   })
 
+  const messageBytes = new TextEncoder().encode(message)
+  // hardware devices sign the off-chain message envelope, not the raw SIWS text
+  const signedMessage =
+    account.type === "ledger-solana"
+      ? (serializeOffchainMessage(messageBytes) ?? messageBytes)
+      : messageBytes
+
   const output: ResponseSolanaSignIn = {
     account: {
       address: account.address,
@@ -130,7 +138,7 @@ export const requestSolanaSignIn = async (
       icon: getTalismanOrbDataUrl(account.address),
     },
     signature,
-    signedMessage: base58.encode(new TextEncoder().encode(message)), // plaintext to base58
+    signedMessage: base58.encode(signedMessage),
     signatureType: "ed25519",
   }
 

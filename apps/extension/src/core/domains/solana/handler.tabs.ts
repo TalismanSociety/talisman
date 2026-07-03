@@ -160,6 +160,7 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
 
   return {
     signature: result.signature,
+    signedMessage: result.signedMessage,
   }
 }
 
