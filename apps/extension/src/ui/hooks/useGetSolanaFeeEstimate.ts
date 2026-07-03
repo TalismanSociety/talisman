@@ -1,34 +1,45 @@
-import { getMessageBase64, parseTransactionInfo, type SolTransaction } from "@talismn/solana"
+import { getMessageBase64, type SolTransaction } from "@talismn/solana"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { getFrontEndSolanaRpc } from "@ui/util/solana/useSolanaRpc"
+import { useMemo } from "react"
 
 type UseGetSolanaFeeEstimateParams = {
   networkId: string | null | undefined
   transaction: SolTransaction | null | undefined
+  /**
+   * Optional refetch interval (ms) to keep the estimate fresh while a confirm screen is open.
+   * Pass `false` (the default) to estimate once.
+   */
+  refetchInterval?: number | false
 }
 
 /**
  * Estimates the network fee for a Solana transaction using `getFeeForMessage`.
  *
- * Return shape mirrors the substrate `useGetFeeEstimate` hook so the confirm
- * page can treat both platforms uniformly.
+ * Single source of truth for Solana fee estimation (send, sign, swap, yield.xyz). Returns the
+ * fee as a `bigint` in lamports; the return shape mirrors the substrate `useGetFeeEstimate` hook
+ * so confirm pages can treat both platforms uniformly.
  */
 export const useGetSolanaFeeEstimate = ({
   networkId,
   transaction,
+  refetchInterval = false,
 }: UseGetSolanaFeeEstimateParams) => {
+  // `getMessageBase64` is the exact payload sent to `getFeeForMessage` and uniquely identifies
+  // the transaction. Memoize it so it isn't recomputed on every render, and key the query on it
+  // so two transactions that happen to share a blockhash don't collide in the cache.
+  const messageBase64 = useMemo(
+    () => (transaction ? getMessageBase64(transaction) : null),
+    [transaction]
+  )
+
   return useQuery({
-    queryKey: [
-      "swap-solana-fee-estimate",
-      networkId,
-      // Serialize key fields so the query re-runs when the tx changes
-      transaction ? parseTransactionInfo(transaction).recentBlockhash : null,
-    ],
+    queryKey: ["solana-fee-estimate", networkId, messageBase64],
     queryFn: async () => {
       const rpc = getFrontEndSolanaRpc(networkId)
-      if (!rpc || !transaction) return null
+      if (!rpc || !messageBase64) return null
 
-      const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
+      const result = await rpc.getFeeForMessage(messageBase64).send()
       // Solana RPC returns `value: null` when the message can't be processed
       // (e.g. expired blockhash). Surface this as an error so React-Query
       // populates `error` instead of `data: null`, otherwise downstream
@@ -38,7 +49,8 @@ export const useGetSolanaFeeEstimate = ({
 
       return BigInt(result.value)
     },
-    enabled: !!networkId && !!transaction,
+    enabled: !!networkId && !!messageBase64,
     placeholderData: keepPreviousData,
+    refetchInterval,
   })
 }

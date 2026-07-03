@@ -2,13 +2,9 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import { BALANCE_MODULES } from "@talismn/balances"
 import type { SolRpc } from "@talismn/chain-connectors"
 import { isTokenSol, type Token } from "@talismn/chaindata-provider"
-import {
-  buildUnsignedTransaction,
-  getMessageBase64,
-  type SolTransaction,
-  serializeTransaction,
-} from "@talismn/solana"
+import { buildUnsignedTransaction, serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
+import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -34,11 +30,10 @@ export const useSendFundsTransactionSol = ({
 
   const qPayload = useSolPayload({ token, from, to, value, rpc })
 
-  const qEstimatedFee = useEstimatedFee({
-    transaction: qPayload.data,
-    rpc,
+  const qEstimatedFee = useGetSolanaFeeEstimate({
     networkId: token?.networkId,
-    isLocked,
+    transaction: qPayload.data,
+    refetchInterval: !isLocked && 6_000, // refresh fee every 6 seconds
   })
 
   const maxAmount = useMemo(() => {
@@ -46,8 +41,8 @@ export const useSendFundsTransactionSol = ({
 
     switch (token.type) {
       case "sol-native": {
-        if (!qEstimatedFee.data) return null
-        const val = balance.transferable.planck - BigInt(qEstimatedFee.data)
+        if (qEstimatedFee.data == null) return null
+        const val = balance.transferable.planck - qEstimatedFee.data
         return String(val > 0n ? val : 0n)
       }
       default:
@@ -83,7 +78,7 @@ export const useSendFundsTransactionSol = ({
     error: qPayload.error || qEstimatedFee.error,
 
     maxAmount,
-    estimatedFee: qEstimatedFee.data ? String(qEstimatedFee.data) : null,
+    estimatedFee: qEstimatedFee.data != null ? String(qEstimatedFee.data) : null,
     feeTokenId: feeToken?.id,
     riskAnalysis,
 
@@ -127,33 +122,5 @@ const useSolPayload = ({
       })
     },
     refetchInterval: false, // it feels like we should refresh every 30 sec or so to get a fresh blockhash, but this would add loading states in the Confirm UI
-  })
-}
-
-const useEstimatedFee = ({
-  transaction,
-  rpc,
-  networkId,
-  isLocked,
-}: {
-  transaction: SolTransaction | null | undefined
-  rpc: SolRpc | null
-  networkId: string | null | undefined
-  isLocked: boolean
-}) => {
-  return useQuery({
-    queryKey: [
-      "useSendFundsSolEstimateFee",
-      transaction && getMessageBase64(transaction),
-      networkId,
-    ],
-    queryFn: async () => {
-      if (!transaction || !rpc) return null
-
-      const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
-      // `value` is a bigint | null; use `!= null` so a legitimate zero fee isn't treated as Unknown
-      return result.value != null ? String(result.value) : null
-    },
-    refetchInterval: !isLocked && 6_000, // refresh fee every 6 seconds
   })
 }

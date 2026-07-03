@@ -1,15 +1,9 @@
 import { log } from "@common/log"
 import type { TransactionDto } from "@core/domains/earn/exports"
-import {
-  getMessageBase64,
-  type SolTransaction,
-  serializeTransaction,
-  transactionFromBytes,
-} from "@talismn/solana"
-import { useQuery } from "@tanstack/react-query"
+import { type SolTransaction, serializeTransaction, transactionFromBytes } from "@talismn/solana"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
+import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { useMemo } from "react"
 
 import type { UseYieldxyzTransactionProps } from "./types"
@@ -30,27 +24,15 @@ const deserializeYieldxyzSolTransaction = (tx: TransactionDto): SolTransaction |
 
 export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | null) => {
   const network = useNetworkById(props?.networkId, "solana")
-  const rpc = useSolanaRpc(props?.networkId)
 
   const solTx = useMemo(() => {
     if (!network || !props?.transaction) return null
     return deserializeYieldxyzSolTransaction(props.transaction)
   }, [network, props?.transaction])
 
-  const { data: estimatedFee, ...feeQuery } = useQuery({
-    queryKey: [
-      "yieldxyz-sol-fee",
-      props?.transaction?.id,
-      props?.transaction?.unsignedTransaction,
-      props?.networkId,
-    ],
-    queryFn: async () => {
-      if (!solTx || !rpc) return null
-
-      const result = await rpc.getFeeForMessage(getMessageBase64(solTx)).send()
-      return result.value != null ? String(result.value) : null
-    },
-    enabled: !!solTx && !!rpc,
+  const { data: estimatedFee, ...feeQuery } = useGetSolanaFeeEstimate({
+    networkId: props?.networkId,
+    transaction: solTx,
   })
 
   const serializedTx = useMemo(() => (solTx ? serializeTransaction(solTx) : null), [solTx])

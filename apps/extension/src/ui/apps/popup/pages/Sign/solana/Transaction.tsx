@@ -37,6 +37,7 @@ import {
 } from "@ui/domains/Sign/SignLedgerSolana"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
+import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
@@ -204,7 +205,11 @@ const FeeEstimateRow: FC<{
     data: estimatedFee,
     isLoading,
     error,
-  } = useEstimatedFee({ transaction, networkId, isLocked })
+  } = useGetSolanaFeeEstimate({
+    networkId,
+    transaction,
+    refetchInterval: !isLocked && 5_000, // refresh fee every 5 seconds
+  })
 
   const balanceParams = useMemo<BalancesByParamsProps>(
     () =>
@@ -244,7 +249,7 @@ const FeeEstimateRow: FC<{
       <div>
         {isLoading || !tokenId ? (
           <LoaderIcon className="inline-block animate-spin-slow" />
-        ) : error || !estimatedFee ? (
+        ) : error || estimatedFee == null ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>
             <TooltipContent>{t("Failed to estimate fee")}</TooltipContent>
@@ -255,32 +260,6 @@ const FeeEstimateRow: FC<{
       </div>
     </div>
   )
-}
-
-const useEstimatedFee = ({
-  transaction,
-  networkId,
-  isLocked,
-}: {
-  transaction: SolTransaction
-  networkId: string | null
-  isLocked: boolean
-}) => {
-  return useQuery({
-    queryKey: ["useSolSignTransactionEstimateFee", getMessageBase64(transaction), networkId],
-    queryFn: async () => {
-      if (!networkId) return null
-
-      const rpc = getFrontEndSolanaRpc(networkId)
-      if (!rpc) return null
-
-      const result = await rpc.getFeeForMessage(getMessageBase64(transaction)).send()
-
-      // `value` is a bigint | null; use `!= null` so a legitimate zero fee isn't treated as Unknown
-      return result.value != null ? String(result.value) : null
-    },
-    refetchInterval: !isLocked && 5_000, // refresh fee every 5 seconds
-  })
 }
 
 const useTransactionValidity = ({
