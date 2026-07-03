@@ -40,6 +40,21 @@ export const deserializeTransaction = (transaction: string): SolTransaction =>
 export const getCompiledMessage = (tx: SolTransaction) =>
   getCompiledTransactionMessageDecoder().decode(tx.messageBytes)
 
+/**
+ * Whether the bytes parse as a complete compiled transaction message (legacy or v0).
+ * Wallets must refuse to sign such a payload as a "message": Solana software accounts sign raw
+ * message bytes with no domain separator, so the resulting ed25519 signature would double as a
+ * valid transaction signature.
+ */
+export const isCompiledTransactionMessage = (bytes: Uint8Array): boolean => {
+  try {
+    const [, offset] = getCompiledTransactionMessageDecoder().read(bytes, 0)
+    return offset === bytes.length
+  } catch {
+    return false
+  }
+}
+
 /** base64 of the compiled message bytes, the format `getFeeForMessage` expects */
 export const getMessageBase64 = (tx: SolTransaction): TransactionMessageBytesBase64 =>
   getBase64Decoder().decode(tx.messageBytes) as TransactionMessageBytesBase64

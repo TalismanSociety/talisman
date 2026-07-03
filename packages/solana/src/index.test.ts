@@ -8,7 +8,9 @@ import {
   buildUnsignedTransaction,
   deserializeTransaction,
   getMessageBase64,
+  isCompiledTransactionMessage,
   parseTransactionInfo,
+  serializeOffchainMessage,
   serializeTransaction,
   setTransactionBlockhash,
   signTransactionWithSecretKey,
@@ -156,5 +158,36 @@ describe("txToHumanJSON", () => {
       isSigner: true,
       isWritable: true,
     })
+  })
+})
+
+describe("isCompiledTransactionMessage", () => {
+  it.each(["legacy", 0] as const)("detects a compiled %s transaction message", (version) => {
+    const tx = makeUnsignedTx(version)
+    expect(isCompiledTransactionMessage(new Uint8Array(tx.messageBytes))).toBe(true)
+  })
+
+  it("rejects text messages", () => {
+    const encode = (text: string) => new TextEncoder().encode(text)
+    expect(isCompiledTransactionMessage(encode("Hello Solana!"))).toBe(false)
+    expect(
+      isCompiledTransactionMessage(
+        encode("kheopskit.pages.dev wants you to sign in with your Solana account:\n" + SIGNER)
+      )
+    ).toBe(false)
+  })
+
+  it("rejects the off-chain message envelope", () => {
+    const envelope = serializeOffchainMessage(
+      new TextEncoder().encode("hello"),
+      base58.decode(OTHER)
+    )
+    expect(isCompiledTransactionMessage(envelope!)).toBe(false)
+  })
+
+  it("rejects a transaction message with trailing bytes", () => {
+    const tx = makeUnsignedTx()
+    const padded = new Uint8Array([...tx.messageBytes, 0])
+    expect(isCompiledTransactionMessage(padded)).toBe(false)
   })
 })
