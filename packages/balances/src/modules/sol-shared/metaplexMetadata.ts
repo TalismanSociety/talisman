@@ -6,7 +6,7 @@ import type { SolRpc } from "@talismn/chain-connectors"
 const METAPLEX_PROGRAM_ID = solAddress("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
 
 /** Derives the Metaplex metadata PDA for a mint. */
-export const deriveMetaplexMetadataPda = async (mintAddress: string) => {
+const deriveMetaplexMetadataPda = async (mintAddress: string) => {
   const addressEncoder = getAddressEncoder()
   const [metadataPDA] = await getProgramDerivedAddress({
     programAddress: METAPLEX_PROGRAM_ID,
