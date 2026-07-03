@@ -42,4 +42,15 @@ export class ChainConnectorSol implements IChainConnectorSol {
 
     return this.#rpcs.get(networkId)!
   }
+
+  /** Drops cached transports/rpcs so the next call re-reads the network's rpcs from chaindata */
+  clearRpcProvidersCache(networkId?: SolNetworkId) {
+    if (networkId) {
+      this.#transports.delete(networkId)
+      this.#rpcs.delete(networkId)
+    } else {
+      this.#transports.clear()
+      this.#rpcs.clear()
+    }
+  }
 }

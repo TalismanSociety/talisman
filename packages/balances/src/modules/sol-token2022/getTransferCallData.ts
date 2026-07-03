@@ -10,6 +10,7 @@ import {
 } from "@solana-program/token-2022"
 import type { SolRpc } from "@talismn/chain-connectors"
 import { isTokenOfType } from "@talismn/chaindata-provider"
+import { isOnCurveSolanaAddress } from "@talismn/crypto"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
@@ -26,6 +27,12 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     const mint = solAddress(token.mintAddress)
     const fromWallet = solAddress(from)
     const toWallet = solAddress(to)
+
+    // off-curve (program-derived) recipients get an ATA no private key can control — tokens
+    // sent there are unrecoverable by a regular wallet (spl-token's getAssociatedTokenAddress
+    // enforced this; findAssociatedTokenPda does not)
+    if (!isOnCurveSolanaAddress(to))
+      throw new Error("Transfers to program-derived (off-curve) addresses are not supported.")
 
     // Fetch the mint account to detect extensions
     const mintAccount = await fetchMint(rpc, mint)
@@ -51,7 +58,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     })
 
     // Create the target token account if it doesn't exist
-    if (!(await tokenAccountExists(rpc, toTokenAccount))) {
+    if (!(await tokenAccountExists(rpc, toTokenAccount, TOKEN_2022_PROGRAM_ADDRESS))) {
       instructions.push(
         getCreateAssociatedTokenInstruction({
           payer: createNoopSigner(fromWallet), // signature is provided at signing time, not at instruction build time
@@ -104,13 +111,15 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     return instructions
   }
 
-const tokenAccountExists = async (rpc: SolRpc, address: Address) => {
+const tokenAccountExists = async (rpc: SolRpc, address: Address, tokenProgram: Address) => {
   // encoding must be explicit: the node rejects base58 (its default) for account data >128 bytes,
-  // and we only care about existence — skip the data entirely
+  // and the owner check is enough — skip the data entirely. An account not owned by the token
+  // program (e.g. a rent-dusted system account squatting the ATA address) must go through the
+  // create instruction, which handles pre-funded addresses; a bare transfer to it fails on-chain.
   const { value } = await rpc
     .getAccountInfo(address, { encoding: "base64", dataSlice: { offset: 0, length: 0 } })
     .send()
-  return value !== null
+  return value !== null && value.owner === tokenProgram
 }
 
 const ONE_IN_BASIS_POINTS = 10_000n
