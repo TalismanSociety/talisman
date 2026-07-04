@@ -30,7 +30,9 @@ export const addSolTransaction = async (
   const { siteUrl, label, txInfo } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
-    const { signature, address: account } = parseTransactionInfo(transaction)
+    const { signature, address, feePayer } = parseTransactionInfo(transaction)
+    // co-signed transactions don't resolve to a single signer - attribute them to the fee payer
+    const account = address ?? feePayer
     if (!networkId || !signature || !account) throw new Error("Invalid transaction")
 
     // Atomic read+write prevents a concurrent watcher from having its

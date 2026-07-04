@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest"
 const {
   chainConnectorSolMock,
   deserializeTransactionMock,
+  getVerifiedTransactionSignatureMock,
   keyringStoreMock,
   parseTransactionInfoMock,
   requestStoreMock,
@@ -12,6 +13,7 @@ const {
 } = vi.hoisted(() => ({
   chainConnectorSolMock: { getRpc: vi.fn() },
   deserializeTransactionMock: vi.fn(),
+  getVerifiedTransactionSignatureMock: vi.fn(),
   keyringStoreMock: { getAccount: vi.fn() },
   parseTransactionInfoMock: vi.fn(),
   requestStoreMock: { getRequest: vi.fn() },
@@ -21,6 +23,7 @@ const {
 
 vi.mock("@talismn/solana", () => ({
   deserializeTransaction: deserializeTransactionMock,
+  getVerifiedTransactionSignature: getVerifiedTransactionSignatureMock,
   parseTransactionInfo: parseTransactionInfoMock,
   serializeTransaction: vi.fn(() => "serialized-transaction"),
   signTransactionWithSecretKey: vi.fn((tx: unknown) => tx),
@@ -58,7 +61,8 @@ describe("SolanaExtensionHandler", () => {
     chainConnectorSolMock.getRpc.mockResolvedValue({
       sendTransaction: (...args: unknown[]) => ({ send: () => sendTransaction(...args) }),
     })
-    keyringStoreMock.getAccount.mockResolvedValue({ address: "sol-address" })
+    getVerifiedTransactionSignatureMock.mockReturnValue(null)
+    keyringStoreMock.getAccount.mockResolvedValue({ address: "sol-address", type: "keypair" })
     withSecretKeyMock.mockResolvedValue(Err("Unauthorised"))
   })
 
@@ -85,9 +89,8 @@ describe("SolanaExtensionHandler", () => {
     const resolve = vi.fn()
 
     deserializeTransactionMock.mockReturnValue(tx)
-    parseTransactionInfoMock.mockReturnValue({ signature: undefined })
     requestStoreMock.getRequest.mockReturnValue({
-      account: { address: "sol-address" },
+      account: { address: "sol-address", type: "keypair" },
       request: { type: "transaction", transaction: "encoded-transaction", send: true },
       resolve,
     })
@@ -101,6 +104,61 @@ describe("SolanaExtensionHandler", () => {
     ).rejects.toBeDefined()
 
     expect(withSecretKeyMock).toHaveBeenCalledTimes(1)
+    expect(sendTransaction).not.toHaveBeenCalled()
+    expect(resolve).not.toHaveBeenCalled()
+  })
+
+  test("resolves a hardware-signed transaction without touching the keyring", async () => {
+    const signature = new Uint8Array(64).fill(1)
+    const tx = { messageBytes: new Uint8Array([7, 8, 9]), signatures: { "sol-address": signature } }
+    const resolve = vi.fn()
+
+    deserializeTransactionMock.mockReturnValue(tx)
+    getVerifiedTransactionSignatureMock.mockReturnValue(signature)
+    sendTransaction.mockResolvedValue("tx-signature")
+    requestStoreMock.getRequest.mockReturnValue({
+      account: { address: "sol-address", type: "ledger-solana" },
+      request: { type: "transaction", transaction: "encoded-transaction", send: true },
+      resolve,
+    })
+
+    await handler.handle("id", "pri(solana.sign.approve)", {
+      id: "sol-sign.1",
+      type: "transaction",
+      networkId: "solana-testnet",
+      transaction: "signed-transaction",
+    } as never)
+
+    expect(getVerifiedTransactionSignatureMock).toHaveBeenCalledWith(tx, "sol-address")
+    expect(withSecretKeyMock).not.toHaveBeenCalled()
+    expect(resolve).toHaveBeenCalledWith({
+      type: "transaction",
+      transaction: "serialized-transaction",
+      signature: "tx-signature",
+      networkId: "solana-testnet",
+    })
+  })
+
+  test("rejects an unsigned transaction for a hardware account without touching the keyring", async () => {
+    const tx = { messageBytes: new Uint8Array([7, 8, 9]), signatures: {} }
+    const resolve = vi.fn()
+
+    deserializeTransactionMock.mockReturnValue(tx)
+    requestStoreMock.getRequest.mockReturnValue({
+      account: { address: "sol-address", type: "ledger-solana" },
+      request: { type: "transaction", transaction: "encoded-transaction", send: true },
+      resolve,
+    })
+
+    await expect(
+      handler.handle("id", "pri(solana.sign.approve)", {
+        id: "sol-sign.1",
+        type: "transaction",
+        networkId: "solana-testnet",
+      } as never)
+    ).rejects.toThrow("hardware device")
+
+    expect(withSecretKeyMock).not.toHaveBeenCalled()
     expect(sendTransaction).not.toHaveBeenCalled()
     expect(resolve).not.toHaveBeenCalled()
   })

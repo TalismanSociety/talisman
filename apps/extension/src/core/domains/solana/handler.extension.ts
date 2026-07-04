@@ -3,6 +3,7 @@ import { stringifyJsonWithBigInts } from "@solana/rpc-spec-types"
 import { base58, ed25519 } from "@talismn/crypto"
 import {
   deserializeTransaction,
+  getVerifiedTransactionSignature,
   parseTransactionInfo,
   serializeOffchainMessage,
   serializeTransaction,
@@ -44,7 +45,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         const { networkId, transaction, txInfo } = request as RequestTypes["pri(solana.rpc.submit)"]
 
         const tx = deserializeTransaction(transaction)
-        const { address, signature } = parseTransactionInfo(tx)
+        const { address } = parseTransactionInfo(tx)
         if (!address) throw new Error("Unknown signer")
 
         const account = await keyringStore.getAccount(address)
@@ -54,7 +55,10 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
         // kit transactions are immutable - always reference the signed copy from here on
         let signed = tx
-        if (!signature) {
+        if (!getVerifiedTransactionSignature(tx, account.address)) {
+          // hardware accounts sign in the frontend, their transactions must arrive here signed
+          if (account.type !== "keypair")
+            throw new Error("Transaction has not been signed by the hardware device")
           const signResult = await withSecretKey(account.address, async (secretKey) =>
             signTransactionWithSecretKey(tx, secretKey, address)
           )
@@ -110,6 +114,10 @@ export class SolanaExtensionHandler extends ExtensionHandler {
               })
             }
 
+            // hardware accounts sign in the frontend and supply the signature with the approval
+            if (signRequest.account.type !== "keypair")
+              throw new Error("Message has not been signed by the hardware device")
+
             const signResult = await withSecretKey(
               signRequest.account.address,
               async (secretKey) => {
@@ -131,11 +139,15 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
             // if frontend sent a transaction, it might be already signed by ledger
             const tx = deserializeTransaction(transaction ?? dappRequest.transaction)
-            const { signature } = parseTransactionInfo(tx)
 
             // kit transactions are immutable - always reference the signed copy from here on
             let signed = tx
-            if (!signature) {
+            // check the approving account's signature slot directly: dapp transactions may
+            // carry co-signers, which parseTransactionInfo's single-signer heuristic can't resolve
+            if (!getVerifiedTransactionSignature(tx, signRequest.account.address)) {
+              // hardware accounts sign in the frontend, their transactions must arrive here signed
+              if (signRequest.account.type !== "keypair")
+                throw new Error("Transaction has not been signed by the hardware device")
               const signResult = await withSecretKey(
                 signRequest.account.address,
                 async (secretKey) => signTransactionWithSecretKey(tx, secretKey)

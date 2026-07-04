@@ -23,6 +23,22 @@ export const attachTransactionSignature = (
 }
 
 /**
+ * Returns the signature attached for `address`, verified against the transaction's message
+ * bytes; null when missing, all-zeros, or invalid. Unlike `parseTransactionInfo`, this checks
+ * a specific signer's slot, so it works on transactions with co-signers.
+ */
+export const getVerifiedTransactionSignature = (
+  tx: SolTransaction,
+  address: string
+): Uint8Array | null => {
+  const signature = tx.signatures[address as keyof typeof tx.signatures]
+  return signature &&
+    ed25519.verify(signature, tx.messageBytes as unknown as Uint8Array, base58.decode(address))
+    ? signature
+    : null
+}
+
+/**
  * Signs the transaction's message bytes with the given ed25519 secret key and
  * attaches the signature. Signing happens with @noble/curves (via @talismn/crypto),
  * not WebCrypto — Ed25519 subtle crypto is too recent for the extension's support matrix.

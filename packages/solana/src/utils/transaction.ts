@@ -1,7 +1,8 @@
 import type { Transaction } from "@solana/kit"
-import { base58, ed25519 } from "@talismn/crypto"
+import { base58 } from "@talismn/crypto"
 
 import { getCompiledMessage } from "./serialization"
+import { getVerifiedTransactionSignature } from "./signing"
 
 /**
  * A Solana transaction: raw wire message bytes plus a signer-address → signature map.
@@ -23,13 +24,17 @@ export type SolTransactionInfo = {
    * dapp transactions) — callers use this to fall back to the dapp-provided address.
    */
   address: string | undefined
-  /** base58 signature of `address`, verified against the message bytes; null when unsigned */
+  /**
+   * canonical (fee payer) base58 transaction signature, verified against the message bytes;
+   * null when the fee payer hasn't signed
+   */
   signature: string | null
 }
 
 export const parseTransactionInfo = (tx: SolTransaction): SolTransactionInfo => {
   const message = getCompiledMessage(tx)
   const signerAddresses = Object.keys(tx.signatures)
+  const feePayer = message.staticAccounts[0] as string
 
   // Behavior preserved from the web3.js implementation: legacy transactions always
   // resolve to the fee payer, versioned ones only when there is a single signer.
@@ -40,21 +45,16 @@ export const parseTransactionInfo = (tx: SolTransaction): SolTransactionInfo => 
         ? signerAddresses[0]
         : undefined
 
-  // signature may be missing or all-zeros — always verify against the message bytes
-  const sigBytes = address ? (tx.signatures[address as keyof typeof tx.signatures] ?? null) : null
-  const signature =
-    sigBytes &&
-    address &&
-    ed25519.verify(sigBytes, tx.messageBytes as unknown as Uint8Array, base58.decode(address))
-      ? base58.encode(sigBytes)
-      : null
+  // the canonical transaction signature is the fee payer's — may be missing or
+  // all-zeros, so always verify against the message bytes
+  const sigBytes = getVerifiedTransactionSignature(tx, feePayer)
 
   return {
     version: message.version,
     recentBlockhash: "lifetimeToken" in message ? message.lifetimeToken : "",
-    feePayer: message.staticAccounts[0] as string,
+    feePayer,
     signerAddresses,
     address,
-    signature,
+    signature: sigBytes ? base58.encode(sigBytes) : null,
   }
 }

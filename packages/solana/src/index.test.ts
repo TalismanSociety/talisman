@@ -8,6 +8,7 @@ import {
   buildUnsignedTransaction,
   deserializeTransaction,
   getMessageBase64,
+  getVerifiedTransactionSignature,
   isCompiledTransactionMessage,
   parseTransactionInfo,
   serializeOffchainMessage,
@@ -40,6 +41,24 @@ const makeUnsignedTx = (version: "legacy" | 0 = "legacy") =>
     lastValidBlockHeight: 1000n,
     instructions: [makeTransferLikeInstruction(SIGNER, OTHER)],
     version,
+  })
+
+const makeMultiSignerTx = () =>
+  buildUnsignedTransaction({
+    feePayer: SIGNER,
+    blockhash: BLOCKHASH,
+    lastValidBlockHeight: 1000n,
+    instructions: [
+      {
+        programAddress: solAddress("11111111111111111111111111111111"),
+        accounts: [
+          { address: solAddress(SIGNER), role: AccountRole.WRITABLE_SIGNER },
+          { address: solAddress(OTHER), role: AccountRole.READONLY_SIGNER },
+        ],
+        data: new Uint8Array([1]),
+      },
+    ],
+    version: 0,
   })
 
 describe("serialization round-trips", () => {
@@ -100,27 +119,41 @@ describe("signing", () => {
 
 describe("parseTransactionInfo", () => {
   it("returns address undefined for multi-signer versioned transactions", () => {
-    const tx = buildUnsignedTransaction({
-      feePayer: SIGNER,
-      blockhash: BLOCKHASH,
-      lastValidBlockHeight: 1000n,
-      instructions: [
-        {
-          programAddress: solAddress("11111111111111111111111111111111"),
-          accounts: [
-            { address: solAddress(SIGNER), role: AccountRole.WRITABLE_SIGNER },
-            { address: solAddress(OTHER), role: AccountRole.READONLY_SIGNER },
-          ],
-          data: new Uint8Array([1]),
-        },
-      ],
-      version: 0,
-    })
-
-    const info = parseTransactionInfo(tx)
+    const info = parseTransactionInfo(makeMultiSignerTx())
     expect(info.signerAddresses).toEqual([SIGNER, OTHER])
     expect(info.address).toBeUndefined()
     expect(info.feePayer).toBe(SIGNER)
+  })
+
+  it("reports the fee payer's canonical signature even with co-signers", () => {
+    const signed = signTransactionWithSecretKey(makeMultiSignerTx(), SECRET_KEY)
+    const info = parseTransactionInfo(signed)
+
+    expect(info.address).toBeUndefined()
+    expect(info.signature).toBe(
+      base58.encode(signed.signatures[SIGNER as keyof typeof signed.signatures]!)
+    )
+  })
+})
+
+describe("getVerifiedTransactionSignature", () => {
+  it("resolves a specific signer's slot on a multi-signer transaction", () => {
+    const signed = signTransactionWithSecretKey(makeMultiSignerTx(), SECRET_KEY)
+
+    expect(getVerifiedTransactionSignature(signed, SIGNER)).toEqual(
+      signed.signatures[SIGNER as keyof typeof signed.signatures]
+    )
+    expect(getVerifiedTransactionSignature(signed, OTHER)).toBeNull()
+  })
+
+  it("rejects a signature that does not verify", () => {
+    const tx = attachTransactionSignature(makeUnsignedTx(), SIGNER, new Uint8Array(64))
+    expect(getVerifiedTransactionSignature(tx, SIGNER)).toBeNull()
+  })
+
+  it("returns null for a non-signer address", () => {
+    const signed = signTransactionWithSecretKey(makeUnsignedTx(), SECRET_KEY)
+    expect(getVerifiedTransactionSignature(signed, OTHER)).toBeNull()
   })
 })
 
