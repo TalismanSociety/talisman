@@ -991,6 +991,9 @@ importers:
       '@polkadot-api/metadata-builders':
         specifier: 0.14.3
         version: 0.14.3
+      '@polkadot-api/signers-common':
+        specifier: 0.2.3
+        version: 0.2.3
       '@polkadot-api/substrate-bindings':
         specifier: 0.20.3
         version: 0.20.3

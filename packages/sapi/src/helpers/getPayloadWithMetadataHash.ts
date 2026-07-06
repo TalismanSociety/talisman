@@ -1,9 +1,9 @@
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import { toHex } from "@polkadot-api/utils"
+import { getPjsTxHelper } from "@polkadot-api/tx-utils"
+import { mergeUint8, toHex } from "@polkadot-api/utils"
 
 import log from "../log"
-import { getTypeRegistry } from "./getTypeRegistry"
 import type { Chain, ChainInfo } from "./types"
 
 export const getPayloadWithMetadataHash = (
@@ -34,13 +34,10 @@ export const getPayloadWithMetadataHash = (
       withSignedTransaction: true,
     }
 
-    // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
-    // const { extra, additionalSigned } = getSignedExtensionValues(payload, metadata)
-    // const badExtPayload = mergeUint8([fromHex(payload.method), ...extra, ...additionalSigned])
-
-    const registry = getTypeRegistry(chain, payload)
-    const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)
-    const barePayload = extPayload.toU8a(true)
+    const { callData, extra, additionalSigned } = getPjsTxHelper(chain.hexMetadata)(
+      payloadWithMetadataHash as Parameters<ReturnType<typeof getPjsTxHelper>>[0]
+    )
+    const barePayload = mergeUint8([callData, extra, additionalSigned])
 
     const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)
 

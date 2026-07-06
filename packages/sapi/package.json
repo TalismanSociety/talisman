@@ -29,6 +29,7 @@
   "dependencies": {
     "@polkadot-api/merkleize-metadata": "1.2.3",
     "@polkadot-api/metadata-builders": "0.14.3",
+    "@polkadot-api/signers-common": "0.2.3",
     "@polkadot-api/substrate-bindings": "0.20.3",
     "@polkadot-api/tx-utils": "0.3.3",
     "@polkadot-api/utils": "0.4.0",
