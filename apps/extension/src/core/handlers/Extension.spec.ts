@@ -144,12 +144,14 @@ describe("Extension", () => {
       await db.metadata.put({
         genesisHash: POLKADOT_GENESIS,
         chain: "Polkadot",
+        icon: "",
         specVersion: SPEC_VERSION,
         ss58Format: 0,
         tokenDecimals: 10,
         tokenSymbol: "DOT",
         types: {},
-        metadataRpc: encodeMetadataRpc(metadataHex),
+        // the metadataRpc field actually holds base64 despite its hex-string type (pre-existing type lie)
+        metadataRpc: encodeMetadataRpc(metadataHex) as `0x${string}`,
       })
     })
 

@@ -1,9 +1,13 @@
 import type { AccountLedgerPolkadot, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
+import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import type { TypeRegistry } from "@polkadot/types"
+import { getPjsTxHelper } from "@polkadot-api/tx-utils"
+import { mergeUint8 } from "@polkadot-api/utils"
 import { isAddressEqual } from "@talismn/crypto"
-import { hexToU8a, u8aToHex, u8aWrapBytes } from "@talismn/util"
+import { hexToNumber, hexToU8a, u8aToHex, u8aWrapBytes } from "@talismn/util"
+import { api } from "@ui/api"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
@@ -181,16 +185,21 @@ const signPayload = async (
       )
     if (!registry) throw getTalismanLedgerError(t("Missing registry."))
 
-    const hasCheckMetadataHash = registry.metadata.extrinsic.transactionExtensions.some(
-      (ext) => ext.identifier.toString() === "CheckMetadataHash"
-    )
+    const hasCheckMetadataHash = payload.signedExtensions.includes("CheckMetadataHash")
     if (!hasCheckMetadataHash)
       throw getTalismanLedgerError(t("This network doesn't support Ledger Polkadot Generic App."))
     if (!txMetadata) throw getTalismanLedgerError(t("Missing short metadata"))
 
-    const unsigned = registry.createType("ExtrinsicPayload", payload)
+    const metadataDef = await api.subChainMetadata(
+      payload.genesisHash,
+      hexToNumber(payload.specVersion)
+    )
+    const metadataRpc = getMetadataRpcFromDef(metadataDef)
+    if (!metadataRpc) throw getTalismanLedgerError(t("Missing metadata"))
 
-    const blob = Buffer.from(unsigned.toU8a(true))
+    const { callData, extra, additionalSigned } = getPjsTxHelper(metadataRpc)(payload)
+
+    const blob = Buffer.from(mergeUint8([callData, extra, additionalSigned]))
     const metadata = Buffer.from(hexToU8a(txMetadata))
 
     const { signature } = await signWithMetadata(ledger, account.curve, path, blob, metadata)

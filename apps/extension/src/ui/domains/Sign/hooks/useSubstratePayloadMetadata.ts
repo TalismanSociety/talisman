@@ -10,7 +10,7 @@ import { api } from "@ui/api"
 import { useNetworkByGenesisHash, useToken } from "@ui/state/chaindata"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 
-const _useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
+export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const network = useNetworkByGenesisHash(payload?.genesisHash)
   const token = useToken(network?.nativeTokenId)
 
@@ -94,6 +94,7 @@ const getSubstratePayloadMetadata = async ({
         txMetadata: undefined,
         metadataHash: undefined,
         registry,
+        metadataRpc,
         payloadWithMetadataHash: payload,
         hasCheckMetadataHash,
         sapi,
@@ -129,6 +130,7 @@ const getSubstratePayloadMetadata = async ({
       txMetadata: u8aToHex(txMetadata),
       metadataHash,
       registry,
+      metadataRpc,
       payloadWithMetadataHash,
       hasCheckMetadataHash,
       sapi,
