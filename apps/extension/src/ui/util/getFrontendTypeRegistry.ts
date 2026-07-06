@@ -1,8 +1,7 @@
 import { getMetadataFromDef, getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { hexToNumber } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork } from "@talismn/chaindata-provider"
+import { type HexString, hexToNumber } from "@talismn/util"
 import { api } from "@ui/api"
 
 /**

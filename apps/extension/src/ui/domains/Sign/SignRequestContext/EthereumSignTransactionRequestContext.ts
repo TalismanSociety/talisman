@@ -4,7 +4,7 @@ import {
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"

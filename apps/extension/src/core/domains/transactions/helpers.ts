@@ -1,10 +1,10 @@
 import { log } from "@common/log"
 import type { TypeRegistry } from "@polkadot/types"
-import type { HexString } from "@polkadot/util/types"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { parseTransactionInfo, type SolTransaction, serializeTransaction } from "@talismn/solana"
+import type { HexString } from "@talismn/util"
 import merge from "lodash-es/merge"
 import type { Hex, TransactionRequest } from "viem"
 

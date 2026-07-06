@@ -1,5 +1,5 @@
-import { assert } from "@polkadot/util"
 import type { KeyringStorage } from "@talismn/keyring"
+import { assert } from "@talismn/util"
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../../../../tests/core/util"

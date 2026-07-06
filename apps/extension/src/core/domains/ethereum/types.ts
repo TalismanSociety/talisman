@@ -1,10 +1,10 @@
-import type { HexString } from "@polkadot/util/types"
 import type {
   EthNetwork,
   EthNetworkId,
   EvmErc20Token,
   EvmNativeToken,
 } from "@talismn/chaindata-provider"
+import type { HexString } from "@talismn/util"
 import type {
   EIP1193Parameters,
   Address as EvmAddress,

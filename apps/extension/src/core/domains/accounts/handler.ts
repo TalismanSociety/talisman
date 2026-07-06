@@ -2,7 +2,6 @@ import { log } from "@common/log"
 import type { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
-import { assert, objectSpread, stringToU8a } from "@polkadot/util"
 import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
   addressFromMnemonic,
@@ -14,6 +13,7 @@ import {
   type KeypairCurve,
 } from "@talismn/crypto"
 import type { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
+import { assert, stringToU8a } from "@talismn/util"
 import { combineLatest } from "rxjs"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -173,16 +173,13 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     // export accounts the same way as keyring.backupAccounts() from @polkadot/ui-keyring
-    const exportedJson = objectSpread(
-      {},
-      jsonEncrypt(stringToU8a(JSON.stringify(jsonAccounts)), ["batch-pkcs8"], exportPw),
-      {
-        accounts: jsonAccounts.map((account) => ({
-          address: account.address,
-          meta: account.meta,
-        })),
-      }
-    ) as KeyringPairs$Json
+    const exportedJson = {
+      ...jsonEncrypt(stringToU8a(JSON.stringify(jsonAccounts)), ["batch-pkcs8"], exportPw),
+      accounts: jsonAccounts.map((account) => ({
+        address: account.address,
+        meta: account.meta,
+      })),
+    } as KeyringPairs$Json
 
     return { exportedJson }
   }

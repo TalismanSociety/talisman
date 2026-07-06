@@ -1,7 +1,6 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { log } from "@common/log"
 import { PhishingDetector } from "@metamask/phishing-controller"
-import { checkHost } from "@polkadot/phishing"
 import { Dexie } from "dexie"
 
 import { sentry } from "../../../config/sentry"
@@ -158,6 +157,22 @@ function isValidPolkadotList(data: unknown): data is HostList {
   if (!data || typeof data !== "object") return false
   const obj = data as Record<string, unknown>
   return Array.isArray(obj.deny) && obj.deny.length > 0 && Array.isArray(obj.allow)
+}
+
+const toHostParts = (host: string) => host.toLowerCase().replace(/\.$/, "").split(".").reverse()
+
+/**
+ * Matches a host against a deny list, entry-wise: an entry matches if its (reversed) parts are a
+ * prefix of the host's (reversed) parts, i.e. the entry is the host or one of its parent domains.
+ * Replicates `checkHost` from `@polkadot/phishing` (minus tldts normalization — hosts passed in
+ * are already URL-parsed hostnames).
+ */
+const checkHost = (deny: string[], host: string): boolean => {
+  const hostParts = toHostParts(host)
+  return deny.some((entry) => {
+    const parts = toHostParts(entry)
+    return parts.length <= hostParts.length && parts.every((part, i) => hostParts[i] === part)
+  })
 }
 
 // ─── Module state ───────────────────────────────────────────────────────────

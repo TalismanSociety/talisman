@@ -1,6 +1,5 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/constants"
-import { assert } from "@polkadot/util"
-import { sleep } from "@talismn/util"
+import { assert, sleep } from "@talismn/util"
 import { BehaviorSubject } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"

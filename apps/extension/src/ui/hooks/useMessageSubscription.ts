@@ -1,6 +1,5 @@
 import { DEBUG } from "@common/constants"
 import type { UnsubscribeFn } from "@core/types"
-import { isFunction } from "@polkadot/util"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
 
@@ -54,7 +53,7 @@ export const useMessageSubscription = <S, R = S>(
       // biome-ignore lint/suspicious/noConsole: legacy
       DEBUG && console.debug(`[frontend] subscribing ${key}`)
 
-      if (isFunction(cb)) subscriptions[key].unsubscribe = cb
+      if (typeof cb === "function") subscriptions[key].unsubscribe = cb
       // this error should only happen when developping a new hook, let it bubble up
       else throw new Error(`${key} subscribe did not return an unsubscribe callback`)
     }

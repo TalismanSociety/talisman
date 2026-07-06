@@ -1,11 +1,10 @@
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isRawPayload } from "@core/util/isJsonPayload"
-import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
-import { u8aConcat, u8aToU8a } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { fromHex } from "@talismn/scale"
+import { u8aConcat, u8aToU8a, u8aWrapBytes } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useSetting } from "@ui/state/settings"
 import { type FC, useMemo } from "react"
@@ -56,7 +55,7 @@ const getQrSignPayload = (
       PV_PREFIX_CRYPTO_SR25519,
       PV_CMD_SIGN_MESSAGE,
       decodeAddress(account.address),
-      wrapBytes(payload.data),
+      u8aWrapBytes(payload.data),
       u8aToU8a(account.genesisHash || POLKADOT_GENESIS_HASH)
     )
 

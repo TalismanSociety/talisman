@@ -1,5 +1,5 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { hexToNumber, isHex } from "@polkadot/util"
+import { hexToNumber, isHexString } from "@talismn/util"
 
 import { getMetadataFromDef, getMetadataRpcFromDef } from "../domains/metadata/helpers"
 import { chaindataProvider } from "../rpcs/chaindata"
@@ -24,7 +24,7 @@ export const getTypeRegistry = async (
   const registry = new TypeRegistry()
 
   // TODO remove type override once chaindata-provider is fixed
-  const chain = await (isHex(chainIdOrHash)
+  const chain = await (isHexString(chainIdOrHash)
     ? chaindataProvider.getNetworkByGenesisHash(chainIdOrHash)
     : chaindataProvider.getNetworkById(chainIdOrHash, "polkadot"))
 

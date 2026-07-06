@@ -1,8 +1,6 @@
 import { log } from "@common/log"
 import type { TypeRegistry } from "@polkadot/types"
 import type { IU8a } from "@polkadot/types/types"
-import { assert } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import {
@@ -10,6 +8,8 @@ import {
   type DotNetworkId,
   getBlockExplorerUrls,
 } from "@talismn/chaindata-provider"
+import type { HexString } from "@talismn/util"
+import { assert } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"

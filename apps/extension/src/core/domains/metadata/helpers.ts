@@ -1,5 +1,5 @@
-import { hexToU8a, u8aToHex } from "@polkadot/util"
 import { base64Decode, base64Encode } from "@polkadot/util-crypto"
+import { hexToU8a, u8aToHex } from "@talismn/util"
 
 import type { TalismanMetadataDef } from "../substrate/types"
 

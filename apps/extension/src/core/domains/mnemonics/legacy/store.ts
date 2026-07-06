@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
-import { assert, isObject } from "@polkadot/util"
+import { assert } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../../libs/Store"
@@ -59,7 +59,7 @@ class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
     }
 
     try {
-      if (isObject(decryptedSeed)) {
+      if (decryptedSeed && typeof decryptedSeed === "object") {
         const unpackResult = decryptLegacyMnemonicObject(decryptedSeed)
         if (unpackResult.err) throw new Error(unpackResult.val)
         seed = unpackResult.val

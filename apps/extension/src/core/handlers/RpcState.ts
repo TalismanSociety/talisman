@@ -10,7 +10,7 @@ import type {
 } from "@polkadot/extension-base/background/types"
 import type { ProviderMeta } from "@polkadot/extension-inject/types"
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 
 import { sentry } from "../config/sentry"
 import type { UnknownJsonRpcResponse } from "../domains/talisman/types"

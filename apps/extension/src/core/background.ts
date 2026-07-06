@@ -1,7 +1,7 @@
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
-import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { assert } from "@talismn/util"
 
 import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"

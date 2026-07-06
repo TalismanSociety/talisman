@@ -1,5 +1,5 @@
 import keyring from "@polkadot/ui-keyring"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 

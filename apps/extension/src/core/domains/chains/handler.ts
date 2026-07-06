@@ -1,4 +1,4 @@
-import { assert, u8aToHex } from "@polkadot/util"
+import { assert, u8aToHex } from "@talismn/util"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"

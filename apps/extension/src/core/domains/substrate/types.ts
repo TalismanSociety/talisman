@@ -1,7 +1,7 @@
 import type { MetadataDef as PjsMetadataDef } from "@polkadot/extension-inject/types"
-import type { HexString } from "@polkadot/util/types"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { HexString } from "@talismn/util"
 
 import type { WalletTransactionInfo } from "../transactions"
 

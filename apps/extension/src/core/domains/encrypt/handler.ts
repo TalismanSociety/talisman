@@ -1,7 +1,7 @@
 import { log } from "@common/log"
-import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import type { Keypair } from "@polkadot/util-crypto/types"
 import { getPublicKeyFromSecret } from "@talismn/crypto"
+import { assert, u8aToHex, u8aToU8a } from "@talismn/util"
 import { sentry } from "../../config/sentry"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"

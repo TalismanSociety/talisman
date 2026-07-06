@@ -1,6 +1,5 @@
-import { assert } from "@polkadot/util"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
-import { sleep, throwAfter } from "@talismn/util"
+import { assert, sleep, throwAfter } from "@talismn/util"
 import type { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
 import { sentry } from "../../config/sentry"

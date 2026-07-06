@@ -4,11 +4,11 @@ import type { Account } from "@core/domains/keyring/exports"
 import { createPair } from "@polkadot/keyring"
 import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
-import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
 import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
 import type { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { type Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
+import { assert, hexToU8a, isHexString, u8aToString } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
@@ -51,7 +51,7 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
     { toSS58: encodeAddress, type: cryptoType as KeypairType },
     { publicKey: decodeAddress(address, true) },
     meta,
-    isHex(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
+    isHexString(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
     encType
   )
 }

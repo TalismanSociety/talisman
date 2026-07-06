@@ -6,7 +6,7 @@ import type {
   SolRpcRequest,
 } from "@core/domains/solana/exports"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 
 import type MessageTypes from "./types"
 

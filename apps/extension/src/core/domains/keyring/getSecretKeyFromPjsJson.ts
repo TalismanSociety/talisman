@@ -1,8 +1,9 @@
 // Copyright 2017-2022 @polkadot/keyring authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-import { u8aEq } from "@polkadot/util"
+
 import { jsonDecrypt } from "@polkadot/util-crypto"
 import type { EncryptedJson } from "@polkadot/util-crypto/types"
+import { u8aEq } from "@talismn/util"
 
 // values picked from polkadot keyring
 const PKCS8_DIVIDER = new Uint8Array([161, 35, 3, 33, 0])

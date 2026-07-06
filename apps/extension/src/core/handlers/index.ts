@@ -1,6 +1,6 @@
 import { PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import type { AnyEthRequest } from "../domains/ethereum/types"

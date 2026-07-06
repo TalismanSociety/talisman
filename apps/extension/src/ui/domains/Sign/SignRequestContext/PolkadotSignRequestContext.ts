@@ -8,10 +8,10 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "@polkadot/types/types"
-import type { HexString } from "@polkadot/util/types"
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
 import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
+import type { HexString } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useBalancesHydrate } from "@ui/state/balances"

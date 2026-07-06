@@ -1,10 +1,10 @@
 import { log } from "@common/log"
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
-import { u8aToHex } from "@polkadot/util"
 import { Twox128 } from "@polkadot-api/substrate-bindings"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { encryptKemAead } from "@talismn/crypto"
 import { Binary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
+import { u8aToHex } from "@talismn/util"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"

@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
-import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"
+import { assert } from "@talismn/util"
 import md5 from "blueimp-md5"
 import { Err, Ok, type Result } from "ts-results"
 

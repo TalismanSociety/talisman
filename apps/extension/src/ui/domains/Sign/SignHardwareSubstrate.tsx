@@ -1,7 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import type { TypeRegistry } from "@polkadot/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 import type { ButtonProps } from "@ui/components/Button"
 import { useAccountByAddress } from "@ui/state/accounts"
 import type { FC } from "react"

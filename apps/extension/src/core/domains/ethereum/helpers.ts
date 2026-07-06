@@ -1,7 +1,6 @@
-import { assert } from "@polkadot/util"
 import type { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import { isBigInt } from "@talismn/util"
+import { assert, isBigInt } from "@talismn/util"
 import {
   encodeFunctionData,
   erc20Abi,

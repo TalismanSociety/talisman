@@ -1,7 +1,9 @@
 import "./configureBigNumber"
 
 export * from "./addTrailingSlash"
+export * from "./assert"
 export * from "./BigMath"
+export * from "./bytes"
 export * from "./deferred"
 export * from "./FunctionPropertyNames"
 export * from "./firstThenDebounce"

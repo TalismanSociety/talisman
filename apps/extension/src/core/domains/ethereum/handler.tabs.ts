@@ -1,7 +1,6 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   type EthNetwork,
@@ -11,7 +10,7 @@ import {
   evmNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { throwAfter } from "@talismn/util"
+import { assert, throwAfter } from "@talismn/util"
 import i18next from "i18next"
 import {
   createClient,
