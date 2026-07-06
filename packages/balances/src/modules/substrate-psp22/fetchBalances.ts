@@ -1,13 +1,22 @@
-import { Abi } from "@polkadot/api-contract"
-import { TypeRegistry } from "@polkadot/types"
-
 import type { IBalance } from "../../types"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
-import psp22Abi from "../abis/psp22.json"
 import type { BalanceFetchError } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import type { MODULE_TYPE } from "./config"
-import { makeContractCaller } from "./util"
+import { encodePsp22Message, makeContractCaller } from "./util"
+
+/**
+ * Reads the first 16 bytes of the contract return data as a little-endian u128.
+ *
+ * Note: for contracts returning `MessageResult<u128, LangError>` the data starts with the
+ * `Ok` tag byte - this replicates the legacy `registry.createType("Balance", data)` behavior.
+ */
+const decodeBalance = (data: Uint8Array): bigint => {
+  const bytes = data.subarray(0, 16)
+  let value = 0n
+  for (let i = bytes.length - 1; i >= 0; i--) value = (value << 8n) | BigInt(bytes[i] as number)
+  return value
+}
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -20,13 +29,9 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   if (!balanceDefs.length) return { success: [], errors: [] }
 
-  const registry = new TypeRegistry()
-  const Psp22Abi = new Abi(psp22Abi)
-
   const contractCall = makeContractCaller({
     chainConnector: connector,
     chainId: networkId,
-    registry,
   })
 
   const results = await Promise.allSettled(
@@ -34,12 +39,12 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const result = await contractCall(
         address,
         token.contractAddress,
-        Psp22Abi.findMessage("PSP22::balance_of").toU8a([address])
+        encodePsp22Message.balanceOf(address)
       )
 
-      if (!result.result.isOk) throw new Error("Failed to fetch balance")
+      if (!result.result.success) throw new Error("Failed to fetch balance")
 
-      const value = registry.createType("Balance", result.result.asOk.data).toString()
+      const value = decodeBalance(result.result.value.data).toString()
 
       const balance: IBalance = {
         source: "substrate-psp22",

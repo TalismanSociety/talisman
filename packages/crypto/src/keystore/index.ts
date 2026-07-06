@@ -53,10 +53,14 @@ export const decryptPjsKeystore = (
   password: string
 ): Uint8Array => {
   if (!encoded) throw new Error("No encrypted data available to decode")
-  if (!encoding.type.includes("xsalsa20-poly1305"))
-    throw new Error(`Unsupported keystore encoding: ${encoding.type.join("/")}`)
 
   const bytes = base64.decode(encoded)
+
+  // unencrypted keystores (e.g. in-memory transfers) pass their payload through as-is
+  if (!encoding.type.includes("xsalsa20-poly1305")) {
+    if (encoding.type.includes("none")) return bytes
+    throw new Error(`Unsupported keystore encoding: ${encoding.type.join("/")}`)
+  }
 
   let offset = 0
   let key: Uint8Array
