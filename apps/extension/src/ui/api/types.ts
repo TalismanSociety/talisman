@@ -64,9 +64,9 @@ import type {
 } from "@core/domains/sitesAuthorised/types"
 import type {
   RequestSolanaSignApprove,
+  ResponseSolanaRpcSend,
   ResponseSolanaSubmit,
   SolRpcRequest,
-  SolRpcResponse,
 } from "@core/domains/solana/exports"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
@@ -299,7 +299,7 @@ export default interface MessageTypes {
     txInfo?: WalletTransactionInfo
   ) => Promise<{ hash: HexString; innerHash?: HexString }>
 
-  solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
+  solSend: (networkId: string, request: SolRpcRequest) => Promise<ResponseSolanaRpcSend>
   solSubmit: (
     networkId: string,
     transaction: string,

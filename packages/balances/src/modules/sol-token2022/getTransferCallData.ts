@@ -1,172 +1,154 @@
+import type { Instruction } from "@solana/kit"
+import { createNoopSigner, address as solAddress } from "@solana/kit"
+import { findAssociatedTokenPda, getCreateAssociatedTokenInstruction } from "@solana-program/token"
+import type { TransferFee } from "@solana-program/token-2022"
 import {
-  calculateEpochFee,
-  createAssociatedTokenAccountInstruction,
-  createTransferCheckedInstruction,
-  createTransferCheckedWithFeeAndTransferHookInstruction,
-  createTransferCheckedWithFeeInstruction,
-  createTransferCheckedWithTransferHookInstruction,
-  getAccount,
-  getAssociatedTokenAddress,
-  getMint,
-  getNonTransferable,
-  getTransferFeeConfig,
-  getTransferHook,
-  TOKEN_2022_PROGRAM_ID,
-  type TransferFeeConfig,
-} from "@solana/spl-token"
-import { type Connection, PublicKey, type TransactionInstruction } from "@solana/web3.js"
+  fetchMint,
+  getTransferCheckedInstruction,
+  getTransferCheckedWithFeeInstruction,
+  TOKEN_2022_PROGRAM_ADDRESS,
+} from "@solana-program/token-2022"
+import type { SolRpc } from "@talismn/chain-connectors"
 import { isTokenOfType } from "@talismn/chaindata-provider"
+import { isOnCurveSolanaAddress } from "@talismn/crypto"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
+import { tokenAccountExists } from "../sol-shared/tokenAccountExists"
 import { MODULE_TYPE } from "./config"
+import { getTransferFeeConfig, getTransferHook, isNonTransferable } from "./mintExtensions"
+import { addExtraAccountMetasForTransferHook } from "./transferHook"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] =
   async ({ from, to, value, token, connector }) => {
     if (!isTokenOfType(token, MODULE_TYPE))
       throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
 
-    const connection = await connector.getConnection(token.networkId)
+    const rpc = await connector.getRpc(token.networkId)
 
-    const mintPubkey = new PublicKey(token.mintAddress)
-    const fromWallet = new PublicKey(from)
-    const toWallet = new PublicKey(to)
+    const mint = solAddress(token.mintAddress)
+    const fromWallet = solAddress(from)
+    const toWallet = solAddress(to)
+
+    // off-curve (program-derived) recipients get an ATA no private key can control — tokens
+    // sent there are unrecoverable by a regular wallet (spl-token's getAssociatedTokenAddress
+    // enforced this; findAssociatedTokenPda does not)
+    if (!isOnCurveSolanaAddress(to))
+      throw new Error("Transfers to program-derived (off-curve) addresses are not supported.")
 
     // Fetch the mint account to detect extensions
-    const mintAccount = await getMint(connection, mintPubkey, undefined, TOKEN_2022_PROGRAM_ID)
+    const mintAccount = await fetchMint(rpc, mint)
 
     // Block non-transferable tokens
-    const nonTransferable = getNonTransferable(mintAccount)
-    if (nonTransferable) throw new Error("This token is non-transferable.")
+    if (isNonTransferable(mintAccount.data)) throw new Error("This token is non-transferable.")
 
-    const transferFeeConfig = getTransferFeeConfig(mintAccount)
-    const transferHook = getTransferHook(mintAccount)
+    const transferFeeConfig = getTransferFeeConfig(mintAccount.data)
+    const transferHook = getTransferHook(mintAccount.data)
 
-    const instructions: TransactionInstruction[] = []
+    const instructions: Instruction[] = []
 
-    // Token 2022 ATAs use the same ATA program but with TOKEN_2022_PROGRAM_ID as the programId seed
-    const fromTokenAccount = await getAssociatedTokenAddress(
-      mintPubkey,
-      fromWallet,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    )
-    const toTokenAccount = await getAssociatedTokenAddress(
-      mintPubkey,
-      toWallet,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    )
+    // Token 2022 ATAs use the same ATA program but with the token-2022 program as the programId seed
+    const [fromTokenAccount] = await findAssociatedTokenPda({
+      mint,
+      owner: fromWallet,
+      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    })
+    const [toTokenAccount] = await findAssociatedTokenPda({
+      mint,
+      owner: toWallet,
+      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    })
 
     // Create the target token account if it doesn't exist
-    if (!(await tokenAccountExists(connection, toTokenAccount))) {
+    if (!(await tokenAccountExists(rpc, toTokenAccount, TOKEN_2022_PROGRAM_ADDRESS))) {
       instructions.push(
-        createAssociatedTokenAccountInstruction(
-          fromWallet,
-          toTokenAccount,
-          toWallet,
-          mintPubkey,
-          TOKEN_2022_PROGRAM_ID
-        )
+        getCreateAssociatedTokenInstruction({
+          payer: createNoopSigner(fromWallet), // signature is provided at signing time, not at instruction build time
+          ata: toTokenAccount,
+          owner: toWallet,
+          mint,
+          tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+        })
       )
     }
 
     const amount = BigInt(value)
-    const transferFee = transferFeeConfig
-      ? await calculateCurrentEpochTransferFee(connection, transferFeeConfig, amount)
-      : 0n
 
-    if (transferFeeConfig && transferHook) {
-      // Both transfer fee AND transfer hook — use the combined instruction
-      instructions.push(
-        await createTransferCheckedWithFeeAndTransferHookInstruction(
-          connection,
-          fromTokenAccount,
-          mintPubkey,
-          toTokenAccount,
-          fromWallet,
+    const transferInstruction = transferFeeConfig
+      ? getTransferCheckedWithFeeInstruction({
+          source: fromTokenAccount,
+          mint,
+          destination: toTokenAccount,
+          authority: fromWallet,
           amount,
-          token.decimals,
-          transferFee,
-          [],
-          undefined,
-          TOKEN_2022_PROGRAM_ID
-        )
-      )
-    } else if (transferFeeConfig) {
-      // Transfer fee only — fee must be exact or the transaction fails
-      instructions.push(
-        createTransferCheckedWithFeeInstruction(
-          fromTokenAccount,
-          mintPubkey,
-          toTokenAccount,
-          fromWallet,
+          decimals: token.decimals,
+          // fee must be exact or the transaction fails
+          fee: await calculateCurrentEpochTransferFee(rpc, transferFeeConfig, amount),
+        })
+      : getTransferCheckedInstruction({
+          source: fromTokenAccount,
+          mint,
+          destination: toTokenAccount,
+          authority: fromWallet,
           amount,
-          token.decimals,
-          transferFee,
-          [],
-          TOKEN_2022_PROGRAM_ID
-        )
-      )
-    } else if (transferHook) {
-      // Transfer hook only — resolves extra accounts asynchronously
-      instructions.push(
-        await createTransferCheckedWithTransferHookInstruction(
-          connection,
-          fromTokenAccount,
-          mintPubkey,
-          toTokenAccount,
-          fromWallet,
-          amount,
-          token.decimals,
-          [],
-          undefined,
-          TOKEN_2022_PROGRAM_ID
-        )
-      )
-    } else {
-      // Standard Token 2022 transfer (no special extensions)
-      instructions.push(
-        createTransferCheckedInstruction(
-          fromTokenAccount,
-          mintPubkey,
-          toTokenAccount,
-          fromWallet,
-          amount,
-          token.decimals,
-          [],
-          TOKEN_2022_PROGRAM_ID
-        )
-      )
-    }
+          decimals: token.decimals,
+        })
+
+    instructions.push(
+      transferHook
+        ? // Transfer hook — resolves and appends the hook's extra accounts
+          await addExtraAccountMetasForTransferHook({
+            rpc,
+            instruction: transferInstruction,
+            hookProgramId: transferHook.programId,
+            source: fromTokenAccount,
+            mint,
+            destination: toTokenAccount,
+            authority: fromWallet,
+            amount,
+          })
+        : transferInstruction
+    )
 
     return instructions
   }
 
-const tokenAccountExists = async (connection: Connection, address: PublicKey) => {
-  try {
-    await getAccount(connection, address, undefined, TOKEN_2022_PROGRAM_ID)
-    return true
-  } catch {
-    return false
-  }
-}
+const ONE_IN_BASIS_POINTS = 10_000n
+
+/** Selects the transfer-fee schedule (older vs newer) that applies to a given epoch. */
+export const getEpochTransferFee = (
+  transferFeeConfig: { olderTransferFee: TransferFee; newerTransferFee: TransferFee },
+  epoch: bigint
+): TransferFee =>
+  epoch >= transferFeeConfig.newerTransferFee.epoch
+    ? transferFeeConfig.newerTransferFee
+    : transferFeeConfig.olderTransferFee
 
 /**
  * Calculates the transfer fee for a given amount using the current epoch's fee configuration.
+ *
+ * Same math as @solana/spl-token's `calculateEpochFee`: pick the fee schedule for the epoch,
+ * apply basis points with ceiling rounding, cap at `maximumFee`.
  */
 export const calculateToken2022TransferFee = (
-  transferFeeConfig: TransferFeeConfig,
+  transferFeeConfig: { olderTransferFee: TransferFee; newerTransferFee: TransferFee },
   epoch: bigint,
   amount: bigint
 ): bigint => {
-  return calculateEpochFee(transferFeeConfig, epoch, amount)
+  const { transferFeeBasisPoints, maximumFee } = getEpochTransferFee(transferFeeConfig, epoch)
+
+  if (transferFeeBasisPoints === 0 || amount === 0n) return 0n
+
+  const numerator = amount * BigInt(transferFeeBasisPoints)
+  const rawFee = (numerator + ONE_IN_BASIS_POINTS - 1n) / ONE_IN_BASIS_POINTS // ceil division
+
+  return rawFee > maximumFee ? maximumFee : rawFee
 }
 
 const calculateCurrentEpochTransferFee = async (
-  connection: Connection,
-  transferFeeConfig: TransferFeeConfig,
+  rpc: SolRpc,
+  transferFeeConfig: { olderTransferFee: TransferFee; newerTransferFee: TransferFee },
   amount: bigint
 ): Promise<bigint> => {
-  const { epoch } = await connection.getEpochInfo()
-  return calculateToken2022TransferFee(transferFeeConfig, BigInt(epoch), amount)
+  const { epoch } = await rpc.getEpochInfo().send()
+  return calculateToken2022TransferFee(transferFeeConfig, epoch, amount)
 }

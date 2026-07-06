@@ -210,6 +210,23 @@ const getErrorFromCode = (code: number | undefined, appName: string, cause: unkn
     case 21781:
       return new TalismanLedgerError("Locked", t("Please unlock your Ledger"), { cause })
 
+    case 26632: // 0x6808 ApduReplySdkNotSupported - solana app requires blind signing for UTF-8 messages
+      return new TalismanLedgerError(
+        "InvalidRequest",
+        t("Enable blind signing in the Solana app settings on your Ledger, then retry."),
+        { cause }
+      )
+
+    case 27264: // 0x6a80 ApduReplySolanaInvalidMessage
+    case 27265: // 0x6a81 ApduReplySolanaInvalidMessageHeader
+    case 27266: // 0x6a82 ApduReplySolanaInvalidMessageFormat
+    case 27267: // 0x6a83 ApduReplySolanaInvalidMessageSize
+      return new TalismanLedgerError(
+        "InvalidRequest",
+        t("The Ledger app rejected this message. Check for app updates in Ledger Live."),
+        { cause }
+      )
+
     // case 28160: // non-compatible app
     // case 28161: // home screen on Flex
     // case 25831: // home screen

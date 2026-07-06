@@ -1,6 +1,5 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
-import { VersionedTransaction } from "@solana/web3.js"
 import type {
   EthNetworkId,
   EvmErc20Token,
@@ -17,6 +16,7 @@ import {
   solToken2022TokenId,
   type TokenList,
 } from "@talismn/chaindata-provider"
+import { setTransactionBlockhash, transactionFromBytes } from "@talismn/solana"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
@@ -581,14 +581,14 @@ const getTransaction = async (
         ? Buffer.from(txRequest.data.slice(2), "hex")
         : Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
 
-      const transaction = VersionedTransaction.deserialize(txBytes)
+      let transaction = transactionFromBytes(txBytes)
 
       // Refresh the blockhash — the one from getStepTransaction may expire before the user
       // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
-      const connection = context.platform === "solana" ? context.connection : undefined
-      if (connection) {
-        const { blockhash } = await connection.getLatestBlockhash()
-        transaction.message.recentBlockhash = blockhash
+      const rpc = context.platform === "solana" ? context.rpc : undefined
+      if (rpc) {
+        const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+        transaction = setTransactionBlockhash(transaction, latestBlockhash.blockhash)
       }
 
       return { platform: "solana", transaction }

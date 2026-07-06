@@ -1,7 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { SolRpc } from "@talismn/chain-connectors"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -13,6 +13,7 @@ import {
   type TokenId,
 } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
+import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
 
@@ -86,7 +87,7 @@ export type ExchangeParams = {
 export type SwapTransactionContext =
   | { platform: "ethereum" }
   | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
-  | { platform: "solana"; connection: Connection }
+  | { platform: "solana"; rpc: SolRpc }
 
 export type GetTransactionParams = {
   fromTokenId: TokenId
@@ -107,7 +108,7 @@ export type SwapModuleTransaction =
     }
   | {
       platform: "solana"
-      transaction: Transaction | VersionedTransaction
+      transaction: SolTransaction
     }
 
 export type ApprovalInfo = {

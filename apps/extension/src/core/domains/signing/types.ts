@@ -109,10 +109,14 @@ export type SolSignResult =
   | {
       type: "message"
       signature: string
+      /** base58 encoded bytes that were actually signed - set when a hardware device signed the off-chain message envelope instead of the raw bytes */
+      signedMessage?: string
     }
   | {
       type: "transaction"
       transaction: string
+      /** base58 signature of the signed transaction */
+      signature?: string
       networkId?: SolNetworkId
     }
 

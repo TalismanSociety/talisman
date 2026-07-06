@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import type { AccountOfType } from "@core/domains/keyring/exports"
-import { PublicKey, type Transaction, type VersionedTransaction } from "@solana/web3.js"
-import { isVersionedTransaction } from "@talismn/solana"
+import type { SolTransaction } from "@talismn/solana"
+import { attachTransactionSignature } from "@talismn/solana"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
 import { type FC, useCallback } from "react"
@@ -12,7 +12,7 @@ import { useSignLedgerBase } from "./useSignLedgerBase"
 export type SolSignPayload =
   | {
       type: "transaction"
-      transaction: Transaction | VersionedTransaction
+      transaction: SolTransaction
     }
   | {
       type: "message"
@@ -22,7 +22,7 @@ export type SolSignPayload =
 export type SolSignOutput =
   | {
       type: "transaction"
-      transaction: Transaction | VersionedTransaction
+      transaction: SolTransaction
     }
   | {
       type: "message"
@@ -61,21 +61,19 @@ export const SignLedgerSolana: FC<{
     try {
       switch (payload.type) {
         case "transaction": {
-          const transaction = payload.transaction
+          // the ledger app signs the raw message bytes, for both legacy and versioned transactions
+          const signature = await sign(
+            "transaction",
+            Buffer.from(payload.transaction.messageBytes),
+            account
+          )
 
-          if (isVersionedTransaction(transaction)) {
-            const signature = await sign(
-              "transaction",
-              Buffer.from(transaction.message.serialize()),
-              account
-            )
-
-            // attach the signature, must be done at the correct index (same as in tx.message.staticAccountKeys)
-            transaction.signatures[0] = signature
-          } else {
-            const signature = await sign("transaction", transaction.serializeMessage(), account)
-            transaction.addSignature(new PublicKey(account.address), signature)
-          }
+          // the signatures map is keyed by signer address - no index juggling needed
+          const transaction = attachTransactionSignature(
+            payload.transaction,
+            account.address,
+            signature
+          )
 
           await onSigned({
             type: "transaction",

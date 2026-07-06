@@ -1,14 +1,16 @@
+import type { Instruction } from "@solana/kit"
+import { createNoopSigner, address as solAddress } from "@solana/kit"
 import {
-  createAssociatedTokenAccountInstruction,
-  createTransferInstruction,
-  getAccount,
-  getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token"
-import { type Connection, PublicKey, type TransactionInstruction } from "@solana/web3.js"
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenInstruction,
+  getTransferInstruction,
+  TOKEN_PROGRAM_ADDRESS,
+} from "@solana-program/token"
 import { isTokenOfType } from "@talismn/chaindata-provider"
+import { isOnCurveSolanaAddress } from "@talismn/crypto"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
+import { tokenAccountExists } from "../sol-shared/tokenAccountExists"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] =
@@ -16,50 +18,53 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     if (!isTokenOfType(token, MODULE_TYPE))
       throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
 
-    const connection = await connector.getConnection(token.networkId)
+    const rpc = await connector.getRpc(token.networkId)
 
-    const instructions: TransactionInstruction[] = []
+    const instructions: Instruction[] = []
 
-    const mint = new PublicKey(token.mintAddress)
-    const fromWallet = new PublicKey(from)
-    const toWallet = new PublicKey(to)
+    const mint = solAddress(token.mintAddress)
+    const fromWallet = solAddress(from)
+    const toWallet = solAddress(to)
+
+    // off-curve (program-derived) recipients get an ATA no private key can control — tokens
+    // sent there are unrecoverable by a regular wallet (spl-token's getAssociatedTokenAddress
+    // enforced this; findAssociatedTokenPda does not)
+    if (!isOnCurveSolanaAddress(to))
+      throw new Error("Transfers to program-derived (off-curve) addresses are not supported.")
 
     // Get associated token accounts
-    const fromTokenAccount = await getAssociatedTokenAddress(mint, fromWallet)
-    const toTokenAccount = await getAssociatedTokenAddress(mint, toWallet)
+    const [fromTokenAccount] = await findAssociatedTokenPda({
+      mint,
+      owner: fromWallet,
+      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    })
+    const [toTokenAccount] = await findAssociatedTokenPda({
+      mint,
+      owner: toWallet,
+      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    })
 
     // Create the target token account if it doesn't exist
-    if (!(await tokenAccountExists(connection, toTokenAccount))) {
+    if (!(await tokenAccountExists(rpc, toTokenAccount, TOKEN_PROGRAM_ADDRESS))) {
       instructions.push(
-        createAssociatedTokenAccountInstruction(
-          fromWallet, // funder
-          toTokenAccount,
-          toWallet,
-          mint
-        )
+        getCreateAssociatedTokenInstruction({
+          payer: createNoopSigner(fromWallet), // funder — signature is provided at signing time
+          ata: toTokenAccount,
+          owner: toWallet,
+          mint,
+        })
       )
     }
 
     // Transfer the tokens
     instructions.push(
-      createTransferInstruction(
-        fromTokenAccount,
-        toTokenAccount,
-        fromWallet,
-        BigInt(value),
-        [],
-        TOKEN_PROGRAM_ID
-      )
+      getTransferInstruction({
+        source: fromTokenAccount,
+        destination: toTokenAccount,
+        authority: fromWallet,
+        amount: BigInt(value),
+      })
     )
 
     return instructions
   }
-
-const tokenAccountExists = async (connection: Connection, address: PublicKey) => {
-  try {
-    await getAccount(connection, address)
-    return true
-  } catch {
-    return false
-  }
-}

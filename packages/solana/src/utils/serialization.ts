@@ -1,116 +1,144 @@
+import type {
+  Blockhash,
+  Instruction,
+  SignaturesMap,
+  TransactionMessageBytes,
+  TransactionMessageBytesBase64,
+} from "@solana/kit"
 import {
-  PublicKey,
-  Transaction,
-  type TransactionInstruction,
-  VersionedTransaction,
-} from "@solana/web3.js"
+  appendTransactionMessageInstructions,
+  compileTransaction,
+  createTransactionMessage,
+  getBase64Decoder,
+  getCompiledTransactionMessageDecoder,
+  getCompiledTransactionMessageEncoder,
+  getTransactionDecoder,
+  getTransactionEncoder,
+  pipe,
+  setTransactionMessageFeePayer,
+  setTransactionMessageLifetimeUsingBlockhash,
+  address as solAddress,
+} from "@solana/kit"
 import { base58 } from "@talismn/crypto"
 
-import { isVersionedTransaction } from "./transaction"
+import type { SolTransaction } from "./transaction"
 
-// Serialize TransactionInstruction to JSON
-export const solInstructionToJson = (instruction: TransactionInstruction) => {
-  return {
-    type: "solana-instruction" as const,
-    value: {
-      programId: instruction.programId.toString(),
-      keys: instruction.keys.map((key) => ({
-        pubkey: key.pubkey.toString(),
-        isSigner: key.isSigner,
-        isWritable: key.isWritable,
-      })),
-      data: instruction.data.toString("base64"),
-    },
-  }
-}
+export const transactionFromBytes = (bytes: Uint8Array): SolTransaction =>
+  getTransactionDecoder().decode(bytes)
 
-export type SolInstructionJson = ReturnType<typeof solInstructionToJson>
+export const transactionToBytes = (tx: SolTransaction): Uint8Array =>
+  new Uint8Array(getTransactionEncoder().encode(tx))
 
-// Deserialize JSON back to TransactionInstruction
-export const solInstructionFromJson = (serialized: SolInstructionJson): TransactionInstruction => {
-  if (serialized.type !== "solana-instruction")
-    throw new Error("Invalid serialized instruction type")
+/** base58 of the wire-format transaction — both legacy and v0, wire-compatible with web3.js */
+export const serializeTransaction = (tx: SolTransaction): string =>
+  base58.encode(transactionToBytes(tx))
 
-  return {
-    programId: new PublicKey(serialized.value.programId),
-    keys: serialized.value.keys.map((key) => ({
-      pubkey: new PublicKey(key.pubkey),
-      isSigner: key.isSigner,
-      isWritable: key.isWritable,
-    })),
-    data: Buffer.from(serialized.value.data, "base64"),
-  }
-}
+export const deserializeTransaction = (transaction: string): SolTransaction =>
+  transactionFromBytes(base58.decode(transaction))
 
-export const serializeTransaction = (transaction: Transaction | VersionedTransaction): string => {
-  if (isVersionedTransaction(transaction)) {
-    return base58.encode(transaction.serialize())
-  } else {
-    return base58.encode(
-      transaction.serialize({ requireAllSignatures: false, verifySignatures: false })
-    )
-  }
-}
+/** decoded compiled message — legacy and v0 wire formats are handled transparently */
+export const getCompiledMessage = (tx: SolTransaction) =>
+  getCompiledTransactionMessageDecoder().decode(tx.messageBytes)
 
-export const deserializeTransaction = (transaction: string): Transaction | VersionedTransaction => {
-  const bytes = base58.decode(transaction)
-
+/**
+ * Whether the bytes parse as a complete compiled transaction message (legacy or v0).
+ * Wallets must refuse to sign such a payload as a "message": Solana software accounts sign raw
+ * message bytes with no domain separator, so the resulting ed25519 signature would double as a
+ * valid transaction signature.
+ */
+export const isCompiledTransactionMessage = (bytes: Uint8Array): boolean => {
   try {
-    return VersionedTransaction.deserialize(bytes)
+    const [, offset] = getCompiledTransactionMessageDecoder().read(bytes, 0)
+    return offset === bytes.length
   } catch {
-    return Transaction.from(bytes)
+    return false
   }
 }
 
-export const txToHumanJSON = (tx: string | Transaction | VersionedTransaction) => {
+/** base64 of the compiled message bytes, the format `getFeeForMessage` expects */
+export const getMessageBase64 = (tx: SolTransaction): TransactionMessageBytesBase64 =>
+  getBase64Decoder().decode(tx.messageBytes) as TransactionMessageBytesBase64
+
+export const buildUnsignedTransaction = ({
+  feePayer,
+  blockhash,
+  lastValidBlockHeight,
+  instructions,
+  version = "legacy",
+}: {
+  feePayer: string
+  blockhash: string
+  lastValidBlockHeight: bigint
+  instructions: Instruction[]
+  version?: "legacy" | 0
+}): SolTransaction =>
+  pipe(
+    createTransactionMessage({ version }),
+    (m) => setTransactionMessageFeePayer(solAddress(feePayer), m),
+    (m) =>
+      setTransactionMessageLifetimeUsingBlockhash(
+        { blockhash: blockhash as Blockhash, lastValidBlockHeight },
+        m
+      ),
+    (m) => appendTransactionMessageInstructions(instructions, m),
+    compileTransaction
+  )
+
+/**
+ * Returns a copy of the transaction with its lifetime token (recent blockhash) replaced,
+ * re-encoding the compiled message. Existing signatures are reset to null — changing the
+ * blockhash invalidates them.
+ */
+export const setTransactionBlockhash = (tx: SolTransaction, blockhash: string): SolTransaction => {
+  const compiled = getCompiledTransactionMessageDecoder().decode(tx.messageBytes)
+  const messageBytes = getCompiledTransactionMessageEncoder().encode({
+    ...compiled,
+    lifetimeToken: blockhash,
+  }) as TransactionMessageBytes
+
+  return Object.freeze({
+    messageBytes,
+    signatures: Object.freeze(
+      Object.fromEntries(Object.keys(tx.signatures).map((address) => [address, null]))
+    ) as SignaturesMap,
+  })
+}
+
+export const txToHumanJSON = (tx: string | SolTransaction) => {
   if (typeof tx === "string") tx = deserializeTransaction(tx)
-  return isVersionedTransaction(tx) ? versionedTxToJSON(tx) : legacyTxToJSON(tx)
-}
+  const message = getCompiledMessage(tx)
+  const { header, staticAccounts } = message
 
-const legacyTxToJSON = (tx: Transaction) => {
-  return {
-    type: "legacy",
-    signatures: tx.signatures.map((s) => (s.signature ? base58.encode(s.signature) : null)),
-    feePayer: tx.feePayer?.toBase58() ?? null,
-    recentBlockhash: tx.recentBlockhash ?? null,
-    instructions: tx.instructions.map((ix) => ({
-      programId: ix.programId.toBase58(),
-      accounts: ix.keys.map((k) => ({
-        pubkey: k.pubkey.toBase58(),
-        isSigner: k.isSigner,
-        isWritable: k.isWritable,
-      })),
-      data: base58.encode(ix.data),
-    })),
-  }
-}
-
-const versionedTxToJSON = (tx: VersionedTransaction) => {
-  const msg = tx.message
-
-  // ⚠️ NOTE: without address lookup table accounts we only have static keys.
-  const staticKeys = msg.staticAccountKeys
+  // standard account ordering: writable signers, readonly signers, writable non-signers, readonly non-signers
+  const isSigner = (index: number) => index < header.numSignerAccounts
+  const isWritable = (index: number) =>
+    index < header.numSignerAccounts
+      ? index < header.numSignerAccounts - header.numReadonlySignerAccounts
+      : index < staticAccounts.length - header.numReadonlyNonSignerAccounts
 
   return {
-    type: "versioned",
-    version: msg.version, // usually 0
-    signatures: tx.signatures.map((sig) => base58.encode(sig)),
-    recentBlockhash: msg.recentBlockhash,
-    staticAccountKeys: staticKeys.map((k) => k.toBase58()),
+    version: message.version,
+    signatures: Object.values(tx.signatures).map((sig) => (sig ? base58.encode(sig) : null)),
+    feePayer: staticAccounts[0] ?? null,
+    recentBlockhash: "lifetimeToken" in message ? message.lifetimeToken : null,
+    staticAccountKeys: staticAccounts as readonly string[],
+    // ⚠️ NOTE: without address lookup table accounts we only have static keys.
     addressTableLookups:
-      msg.addressTableLookups?.map((l) => ({
-        accountKey: l.accountKey.toBase58(),
+      ("addressTableLookups" in message ? message.addressTableLookups : undefined)?.map((l) => ({
+        accountKey: l.lookupTableAddress as string,
         writableIndexes: Array.from(l.writableIndexes),
         readonlyIndexes: Array.from(l.readonlyIndexes),
       })) ?? [],
-    instructions: msg.compiledInstructions.map((ix) => ({
-      programIdIndex: ix.programIdIndex,
-      programId: staticKeys[ix.programIdIndex]?.toBase58() ?? null,
-      accounts: ix.accountKeyIndexes.map((i) => ({
+    instructions: ("instructions" in message ? message.instructions : []).map((ix) => ({
+      programIdIndex: ix.programAddressIndex,
+      programId: staticAccounts[ix.programAddressIndex] ?? null,
+      accounts: (ix.accountIndices ?? []).map((i) => ({
         index: i,
-        pubkey: staticKeys[i]?.toBase58() ?? null,
+        pubkey: staticAccounts[i] ?? null,
+        isSigner: isSigner(i),
+        isWritable: isWritable(i),
       })),
-      data: base58.encode(ix.data),
+      data: base58.encode((ix.data as Uint8Array | undefined) ?? new Uint8Array()),
     })),
   }
 }

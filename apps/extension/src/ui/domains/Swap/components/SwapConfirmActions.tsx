@@ -20,7 +20,7 @@ import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
@@ -147,9 +147,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     fromToken?.platform === "polkadot" ? fromToken.networkId : null
   )
 
-  const solanaConnection = useSolanaConnection(
-    fromToken?.platform === "solana" ? fromToken.networkId : null
-  )
+  const solanaRpc = useSolanaRpc(fromToken?.platform === "solana" ? fromToken.networkId : null)
 
   const exchangeAndTransactionQuery = useQuery({
     queryKey: [
@@ -221,8 +219,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
       const context: SwapTransactionContext = sapi
         ? { platform: "polkadot", sapi, allowReap }
-        : solanaConnection
-          ? { platform: "solana", connection: solanaConnection }
+        : solanaRpc
+          ? { platform: "solana", rpc: solanaRpc }
           : { platform: "ethereum" }
 
       const transaction = await swapModule.getTransaction({
@@ -248,7 +246,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       !approvalLoading &&
       !needsApproval &&
       (fromToken?.platform !== "polkadot" || !!sapi) &&
-      (fromToken?.platform !== "solana" || !!solanaConnection),
+      (fromToken?.platform !== "solana" || !!solanaRpc),
     retry: false,
   })
 
@@ -273,7 +271,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   })
 
   const solanaFee = useGetSolanaFeeEstimate({
-    connection: solanaConnection,
+    networkId: fromToken?.platform === "solana" ? fromToken.networkId : null,
     transaction:
       !needsApproval && transaction?.platform === "solana" ? transaction.transaction : undefined,
   })

@@ -1,30 +1,21 @@
 import { log } from "@common/log"
 import type { TransactionDto } from "@core/domains/earn/exports"
-import { Transaction, VersionedTransaction } from "@solana/web3.js"
-import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
-import { useQuery } from "@tanstack/react-query"
+import { type SolTransaction, serializeTransaction, transactionFromBytes } from "@talismn/solana"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
+import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useNetworkById } from "@ui/state/chaindata"
-import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useMemo } from "react"
 
 import type { UseYieldxyzTransactionProps } from "./types"
 
-const deserializeYieldxyzSolTransaction = (
-  tx: TransactionDto
-): Transaction | VersionedTransaction | null => {
+const deserializeYieldxyzSolTransaction = (tx: TransactionDto): SolTransaction | null => {
   try {
     const raw = tx.unsignedTransaction
     if (!raw || typeof raw !== "string") return null
 
     // yield.xyz sends Solana transactions as base64-encoded serialized transactions
-    const bytes = Buffer.from(raw, "base64")
-
-    try {
-      return VersionedTransaction.deserialize(bytes)
-    } catch {
-      return Transaction.from(bytes)
-    }
+    // (the kit decoder handles both legacy and versioned wire formats)
+    return transactionFromBytes(Buffer.from(raw, "base64"))
   } catch (error) {
     log.error("Failed to deserialize Yieldxyz SOL transaction", error)
     return null
@@ -33,29 +24,15 @@ const deserializeYieldxyzSolTransaction = (
 
 export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | null) => {
   const network = useNetworkById(props?.networkId, "solana")
-  const connection = useSolanaConnection(props?.networkId)
 
   const solTx = useMemo(() => {
     if (!network || !props?.transaction) return null
     return deserializeYieldxyzSolTransaction(props.transaction)
   }, [network, props?.transaction])
 
-  const { data: estimatedFee, ...feeQuery } = useQuery({
-    queryKey: [
-      "yieldxyz-sol-fee",
-      props?.transaction?.id,
-      props?.transaction?.unsignedTransaction,
-      connection?.rpcEndpoint,
-    ],
-    queryFn: async () => {
-      if (!solTx || !connection) return null
-
-      const message = isVersionedTransaction(solTx) ? solTx.message : solTx.compileMessage()
-
-      const result = await connection.getFeeForMessage(message)
-      return result.value
-    },
-    enabled: !!solTx && !!connection,
+  const { data: estimatedFee, ...feeQuery } = useGetSolanaFeeEstimate({
+    networkId: props?.networkId,
+    transaction: solTx,
   })
 
   const serializedTx = useMemo(() => (solTx ? serializeTransaction(solTx) : null), [solTx])

@@ -1,4 +1,5 @@
-import { PublicKey, SystemProgram } from "@solana/web3.js"
+import { createNoopSigner, address as solAddress } from "@solana/kit"
+import { getTransferSolInstruction } from "@solana-program/system"
 import { isTokenOfType } from "@talismn/chaindata-provider"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
@@ -13,12 +14,10 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
   if (!isTokenOfType(token, MODULE_TYPE))
     throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
 
-  const fromPubkey = new PublicKey(from)
-
-  const transferIx = SystemProgram.transfer({
-    fromPubkey,
-    toPubkey: new PublicKey(to),
-    lamports: Number(value),
+  const transferIx = getTransferSolInstruction({
+    source: createNoopSigner(solAddress(from)), // signature is provided at signing time
+    destination: solAddress(to),
+    amount: BigInt(value),
   })
 
   return [transferIx]

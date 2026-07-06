@@ -1,12 +1,5 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 import type { SolanaSignInInput, SolanaSignInOutput } from "@solana/wallet-standard-features"
-import type {
-  PublicKey,
-  SendOptions,
-  Transaction,
-  TransactionSignature,
-  VersionedTransaction,
-} from "@solana/web3.js"
 
 export interface TalismanSolEvent {
   connect(...args: unknown[]): unknown
@@ -29,16 +22,28 @@ type SerializedWalletAccount = {
   icon?: string
 }
 
+export type SolanaSendOptions = {
+  minContextSlot?: number
+  preflightCommitment?: string
+  skipPreflight?: boolean
+  maxRetries?: number
+}
+
+/**
+ * Internal page-side provider interface. Both ends are Talisman's (it is only consumed by
+ * the wallet-standard wrapper, never exposed on `window`), so transactions travel as raw
+ * wire bytes — the page bundle never parses them.
+ */
 export interface TalismanSol extends TalismanSolEventEmitter {
   account: SerializedWalletAccount | null
-  connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }>
+  connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: Uint8Array }>
   disconnect(): Promise<void>
-  signAndSendTransaction<T extends Transaction | VersionedTransaction>(
-    transaction: T,
-    options?: SendOptions
-  ): Promise<{ signature: TransactionSignature }>
-  signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T>
-  signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]>
-  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>
+  signAndSendTransaction(
+    transaction: Uint8Array,
+    options?: SolanaSendOptions
+  ): Promise<{ signature: string }>
+  signTransaction(transaction: Uint8Array): Promise<Uint8Array>
+  signAllTransactions(transactions: readonly Uint8Array[]): Promise<Uint8Array[]>
+  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array; signedMessage?: Uint8Array }>
   signIn(input?: SolanaSignInInput): Promise<SolanaSignInOutput>
 }

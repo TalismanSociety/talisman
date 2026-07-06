@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js"
+import { address as solAddress } from "@solana/kit"
 import { type SolSplToken, SolSplTokenSchema, solSplTokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
@@ -25,8 +25,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 }) => {
   if (!tokensWithAddresses.length) return { success: [], errors: [] }
 
-  const connection = await connector.getConnection(networkId)
-  if (!connection) throw new Error(`Could not get connection for Solana network ${networkId}`)
+  const rpc = await connector.getRpc(networkId)
+  if (!rpc) throw new Error(`Could not get connection for Solana network ${networkId}`)
 
   const accountAddresses = uniq(tokensWithAddresses.flatMap(([, addresses]) => addresses))
   const knownTokenIds = new Set(tokensWithAddresses.map(([token]) => token.id))
@@ -36,9 +36,13 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balancesPerAddress = await Promise.all(
     accountAddresses.map(async (address) => {
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
-        programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
-      })
+      const tokenAccounts = await rpc
+        .getTokenAccountsByOwner(
+          solAddress(address),
+          { programId: solAddress(SPL_PROGRAM_ID) }, // SPL Token Program ID
+          { encoding: "jsonParsed" }
+        )
+        .send()
 
       const balances = tokenAccounts.value
         .map((d): IBalance | null => {

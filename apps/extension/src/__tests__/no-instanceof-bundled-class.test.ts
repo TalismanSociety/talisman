@@ -20,7 +20,7 @@ import { describe, expect, it } from "vitest"
  *
  * Only *value* imports are flagged — `import type { ... }` cannot be used with `instanceof`.
  */
-const BANNED_PACKAGES = ["@solana/web3.js", "viem", "@blockaid/client"]
+const BANNED_PACKAGES = ["@solana/kit", "viem", "@blockaid/client"]
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../../..")
 

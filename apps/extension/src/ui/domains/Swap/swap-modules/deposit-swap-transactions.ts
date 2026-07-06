@@ -2,16 +2,20 @@ import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { MultiAddress } from "@polkadot-api/descriptors"
+import type { Instruction } from "@solana/kit"
+import { createNoopSigner, address as solAddress } from "@solana/kit"
+import { getTransferSolInstruction } from "@solana-program/system"
 import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  createTransferInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token"
-import type { Connection } from "@solana/web3.js"
-import { PublicKey, Transaction as SolTransaction, SystemProgram } from "@solana/web3.js"
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenIdempotentInstruction,
+  getTransferInstruction,
+  TOKEN_PROGRAM_ADDRESS,
+} from "@solana-program/token"
+import type { SolRpc } from "@talismn/chain-connectors"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
+import { buildUnsignedTransaction, type SolTransaction } from "@talismn/solana"
 import { api } from "@ui/api"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$ } from "@ui/state/chaindata"
@@ -238,43 +242,64 @@ async function buildSolanaDepositTransaction(params: {
   fromAsset: DepositSwapAsset
   fromAddress: string
   deposit: DepositInfo
-  connection: Connection
+  rpc: SolRpc
 }): Promise<SolTransaction | undefined> {
   try {
-    const { fromAsset, fromAddress, deposit, connection } = params
+    const { fromAsset, fromAddress, deposit, rpc } = params
     if (!fromAddress) throw new Error("Missing from address")
     if (fromAsset.platform !== "solana") return
 
     const depositAmount = parseUserInputToPlanck(deposit.depositAmount, fromAsset.decimals)
-    const fromPubkey = new PublicKey(fromAddress)
-    const toPubkey = new PublicKey(deposit.depositAddress)
+    const fromWallet = solAddress(fromAddress)
+    const toWallet = solAddress(deposit.depositAddress)
 
-    const transaction = new SolTransaction()
+    const instructions: Instruction[] = []
 
     if (!fromAsset.contractAddress) {
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports: depositAmount,
+      instructions.push(
+        getTransferSolInstruction({
+          source: createNoopSigner(fromWallet), // signature is provided at signing time
+          destination: toWallet,
+          amount: BigInt(depositAmount),
         })
       )
     } else {
-      const mintPubkey = new PublicKey(fromAsset.contractAddress)
-      const sourceAta = getAssociatedTokenAddressSync(mintPubkey, fromPubkey)
-      const destAta = getAssociatedTokenAddressSync(mintPubkey, toPubkey, true)
+      const mint = solAddress(fromAsset.contractAddress)
+      const [sourceAta] = await findAssociatedTokenPda({
+        mint,
+        owner: fromWallet,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      })
+      const [destAta] = await findAssociatedTokenPda({
+        mint,
+        owner: toWallet,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      })
 
-      transaction.add(
-        createAssociatedTokenAccountIdempotentInstruction(fromPubkey, destAta, toPubkey, mintPubkey)
+      instructions.push(
+        getCreateAssociatedTokenIdempotentInstruction({
+          payer: createNoopSigner(fromWallet),
+          ata: destAta,
+          owner: toWallet,
+          mint,
+        }),
+        getTransferInstruction({
+          source: sourceAta,
+          destination: destAta,
+          authority: fromWallet,
+          amount: BigInt(depositAmount),
+        })
       )
-      transaction.add(createTransferInstruction(sourceAta, destAta, fromPubkey, depositAmount))
     }
 
-    const { blockhash } = await connection.getLatestBlockhash()
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = fromPubkey
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
 
-    return transaction
+    return buildUnsignedTransaction({
+      feePayer: fromAddress,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      instructions,
+    })
   } catch (cause) {
     // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create solana transaction", { cause }))
@@ -310,7 +335,7 @@ export async function buildDepositTransaction(params: {
       if (context.platform !== "solana") return null
       const transaction = await buildSolanaDepositTransaction({
         ...params,
-        connection: context.connection,
+        rpc: context.rpc,
       })
       return transaction ? { platform: "solana", transaction } : null
     }
