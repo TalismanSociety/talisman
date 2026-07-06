@@ -1,32 +1,17 @@
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@talismn/util"
 
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
+import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
+import { getLegacyPjsAccounts } from "../keyring/legacyPjsAccounts"
 
 const LEGACY_ROOT = "ROOT"
 
-const getLegacyAuthenticationAccount = () => {
-  const allAccounts = keyring.getAccounts()
-
-  if (allAccounts.length === 0) return
-  const storedSeedAccount = allAccounts.find(({ meta }) => meta.origin === LEGACY_ROOT)
-
-  if (storedSeedAccount) return storedSeedAccount
-  return
-}
-
 // Deprecated login method since v1.19
 export const authenticateLegacyMethod = async (password: string) => {
-  await awaitKeyringLoaded()
   // attempt to log in via the legacy method
-  const primaryAccount = getLegacyAuthenticationAccount()
+  const accounts = await getLegacyPjsAccounts()
+  const primaryAccount = accounts.find(({ meta }) => meta.origin === LEGACY_ROOT)
   assert(primaryAccount, "No primary account, unable to authorise")
 
-  // fetch keyring pair from address
-  const pair = keyring.getPair(primaryAccount.address)
-
-  // attempt unlock the pair
-  // a successful unlock means authenticated
-  pair.unlock(password)
-  pair.lock()
+  // a successful decrypt of the keystore means authenticated
+  getSecretKeyFromPjsJson(primaryAccount, password)
 }
