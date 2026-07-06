@@ -1,5 +1,5 @@
 diff --git a/dist/from-pjs-to-tx-data.js b/dist/from-pjs-to-tx-data.js
-index 1675cbfc97b4963471e4931c1e1515d876fd57ff..9e25922803a679c489f3426af0abc323efc82dfd 100644
+index 1675cbfc97b4963471e4931c1e1515d876fd57ff..9cda7134d2cdf9e202f6ab08940ad39f6dd09111 100644
 --- a/dist/from-pjs-to-tx-data.js
 +++ b/dist/from-pjs-to-tx-data.js
 @@ -108,7 +108,7 @@ const fromPjsAssetIdToSigExt = (metadata, pjsAssetId) => {
@@ -11,20 +11,29 @@ index 1675cbfc97b4963471e4931c1e1515d876fd57ff..9e25922803a679c489f3426af0abc323
      mortal: true,
      blockHash: input.blockHash,
      phase: eraDecoded.phase,
-@@ -120,6 +120,8 @@ const fromPjsToTxData = (metadata, { genesisHash, ...input }) => {
+@@ -120,6 +120,9 @@ const fromPjsToTxData = (metadata, { genesisHash, ...input }) => {
      mortality,
      tip: BigInt(fromPjsHexStringToNumber(input.tip)),
      nonce: fromPjsHexStringToNumber(input.nonce),
++    appId: input.appId != null ? Number(input.appId) : 0,
 +    specVersion: fromPjsHexStringToNumber(input.specVersion),
 +    transactionVersion: fromPjsHexStringToNumber(input.transactionVersion),
      metadataHash: input.mode === 1 && input.metadataHash ? fromHex(input.metadataHash) : null,
      asset: input.assetId != null ? fromPjsAssetIdToSigExt(metadata, input.assetId) : void 0
    };
 diff --git a/dist/new-helper.js b/dist/new-helper.js
-index 2879c0fc603f90f121c5e7789d6caced8817ace7..4f4b4255e65f0f675ed6dc00f7ad879dfd66b9ce 100644
+index 2879c0fc603f90f121c5e7789d6caced8817ace7..d36c7d682df61111b26482edddf56afcc3976d1c 100644
 --- a/dist/new-helper.js
 +++ b/dist/new-helper.js
-@@ -69,7 +69,7 @@ const getTxHelper = (metadataRaw, token) => {
+@@ -7,6 +7,7 @@ import { CheckMetadataHash } from './signed-extensions/chain/CheckMetadataHash.j
+ import { CheckNonce } from './signed-extensions/chain/CheckNonce.js';
+ import { CheckSpecVersion } from './signed-extensions/chain/CheckSpecVersion.js';
+ import { CheckTxVersion } from './signed-extensions/chain/CheckTxVersion.js';
++import { EMPTY_SIGNED_EXTENSION as _EMPTY_SE, empty as _emptySE, signedExtension as _signedExtension } from './signed-extensions/utils.js';
+ import { ChargeTransactionPayment } from './signed-extensions/user/ChargeTransactionPayment.js';
+ import { CheckMortality } from './signed-extensions/user/CheckMortality.js';
+ import { ChargeAssetTxPayment } from './signed-extensions/user/ChargeAssetTxPayment.js';
+@@ -69,7 +70,7 @@ const getTxHelper = (metadataRaw, token) => {
            case "CheckNonce":
              return CheckNonce(nonce);
            case "CheckSpecVersion":
@@ -33,15 +42,21 @@ index 2879c0fc603f90f121c5e7789d6caced8817ace7..4f4b4255e65f0f675ed6dc00f7ad879d
            case "ChargeAssetTxPayment":
              return ChargeAssetTxPayment(tip, asset);
            case "ChargeTransactionPayment":
-@@ -77,7 +77,7 @@ const getTxHelper = (metadataRaw, token) => {
+@@ -77,8 +78,13 @@ const getTxHelper = (metadataRaw, token) => {
            case "CheckMortality":
              return CheckMortality(mortality);
            case "CheckTxVersion":
 -            return CheckTxVersion(lookup);
 +            return CheckTxVersion(lookup, parseInt(pjsPayload.transactionVersion, 16));
++          case "CheckAppId":
++            return _signedExtension(compactNumber.enc(pjsPayload.appId != null ? Number(pjsPayload.appId) : 0), _emptySE);
          }
++        // gracefully handle unknown Option-typed extensions by encoding None
++        if (lookup(type).type === "option" && dynamicBuilder.buildDefinition(additionalSigned) === _void)
++          return _signedExtension(new Uint8Array([0]), _emptySE);
          if (dynamicBuilder.buildDefinition(type) === _void && dynamicBuilder.buildDefinition(additionalSigned) === _void)
            return EMPTY_SIGNED_EXTENSION;
+         throw new Error(`Unsupported signed-extension: ${identifier}`);
 diff --git a/dist/signed-extensions/chain/CheckSpecVersion.js b/dist/signed-extensions/chain/CheckSpecVersion.js
 index 06a57b8e8ac13c581d1398389240cca93ef6ac5d..c6aeffda52a38037e0d4f12bed764dae614fa5fc 100644
 --- a/dist/signed-extensions/chain/CheckSpecVersion.js
@@ -69,15 +84,26 @@ index 307e0f4df1d127229119925d6fd60103625e828e..28768ede623775942ebac961bd344b48
  export { CheckTxVersion };
  //# sourceMappingURL=CheckTxVersion.js.map
 diff --git a/dist/signed-extensions/get-signed-extension-parts.js b/dist/signed-extensions/get-signed-extension-parts.js
-index 16b0fa760ec640cd05440962229da4ac37b7e8d7..b35b341ff4cedcfebd70251470db03cc2274ee40 100644
+index 16b0fa760ec640cd05440962229da4ac37b7e8d7..c40d56b69f619a7a6983b3f7ce6fbda6717046f1 100644
 --- a/dist/signed-extensions/get-signed-extension-parts.js
 +++ b/dist/signed-extensions/get-signed-extension-parts.js
-@@ -11,7 +11,7 @@ import { EMPTY_SIGNED_EXTENSION } from './utils.js';
+@@ -1,4 +1,4 @@
+-import { _void } from '@polkadot-api/substrate-bindings';
++import { _void, compactNumber } from '@polkadot-api/substrate-bindings';
+ import { ChargeTransactionPayment } from './user/ChargeTransactionPayment.js';
+ import { CheckMortality } from './user/CheckMortality.js';
+ import { ChargeAssetTxPayment } from './user/ChargeAssetTxPayment.js';
+@@ -7,11 +7,11 @@ import { CheckMetadataHash } from './chain/CheckMetadataHash.js';
+ import { CheckNonce } from './chain/CheckNonce.js';
+ import { CheckSpecVersion } from './chain/CheckSpecVersion.js';
+ import { CheckTxVersion } from './chain/CheckTxVersion.js';
+-import { EMPTY_SIGNED_EXTENSION } from './utils.js';
++import { EMPTY_SIGNED_EXTENSION, empty, signedExtension } from './utils.js';
  import { mergeUint8 } from '@polkadot-api/utils';
  
  const getSignedExtensionParts = (lookup, dynamicBuilder, data) => {
 -  const { tip, mortality, genesisHash, nonce, asset, metadataHash } = data;
-+  const { tip, mortality, genesisHash, nonce, asset, metadataHash, specVersion, transactionVersion } = data;
++  const { tip, mortality, genesisHash, nonce, asset, metadataHash, specVersion, transactionVersion, appId } = data;
    const signedExtensions = lookup.metadata.extrinsic.signedExtensions[0].map(
      ({ identifier, type, additionalSigned: additionalSigned2 }) => {
        switch (identifier) {
@@ -90,12 +116,18 @@ index 16b0fa760ec640cd05440962229da4ac37b7e8d7..b35b341ff4cedcfebd70251470db03cc
          case "ChargeAssetTxPayment":
            return ChargeAssetTxPayment(tip, asset);
          case "ChargeTransactionPayment":
-@@ -30,7 +30,7 @@ const getSignedExtensionParts = (lookup, dynamicBuilder, data) => {
+@@ -30,8 +30,13 @@ const getSignedExtensionParts = (lookup, dynamicBuilder, data) => {
          case "CheckMortality":
            return CheckMortality(mortality);
          case "CheckTxVersion":
 -          return CheckTxVersion(lookup);
 +          return CheckTxVersion(lookup, transactionVersion);
++        case "CheckAppId":
++          return signedExtension(compactNumber.enc(appId ?? 0), empty);
        }
++      // gracefully handle unknown Option-typed extensions by encoding None
++      if (lookup(type).type === "option" && dynamicBuilder.buildDefinition(additionalSigned2) === _void)
++        return signedExtension(new Uint8Array([0]), empty);
        if (dynamicBuilder.buildDefinition(type) === _void && dynamicBuilder.buildDefinition(additionalSigned2) === _void)
          return EMPTY_SIGNED_EXTENSION;
+       throw new Error(`Unsupported signed-extension: ${identifier}`);

@@ -123,7 +123,7 @@ overrides:
   react-dom: 19.2.7
 
 patchedDependencies:
-  '@polkadot-api/tx-utils@0.3.3': 0c82425dcc3c08e4843df3ac09a71ca3c7dd52d05468e1427af2698f560380aa
+  '@polkadot-api/tx-utils@0.3.3': 40a5f512fc9bdcf0109c76f748b028d6fe78e27949ad82f39233d29531210040
 
 importers:
 
@@ -283,7 +283,7 @@ importers:
         version: 0.7.0
       '@polkadot-api/tx-utils':
         specifier: 0.3.3
-        version: 0.3.3(patch_hash=0c82425dcc3c08e4843df3ac09a71ca3c7dd52d05468e1427af2698f560380aa)
+        version: 0.3.3(patch_hash=40a5f512fc9bdcf0109c76f748b028d6fe78e27949ad82f39233d29531210040)
       '@polkadot-api/utils':
         specifier: 0.4.0
         version: 0.4.0
@@ -999,7 +999,7 @@ importers:
         version: 0.20.3
       '@polkadot-api/tx-utils':
         specifier: 0.3.3
-        version: 0.3.3(patch_hash=0c82425dcc3c08e4843df3ac09a71ca3c7dd52d05468e1427af2698f560380aa)
+        version: 0.3.3(patch_hash=40a5f512fc9bdcf0109c76f748b028d6fe78e27949ad82f39233d29531210040)
       '@polkadot-api/utils':
         specifier: 0.4.0
         version: 0.4.0
@@ -11244,7 +11244,7 @@ snapshots:
       '@polkadot-api/raw-client': 0.3.0
       '@polkadot-api/utils': 0.4.0
 
-  '@polkadot-api/tx-utils@0.3.3(patch_hash=0c82425dcc3c08e4843df3ac09a71ca3c7dd52d05468e1427af2698f560380aa)':
+  '@polkadot-api/tx-utils@0.3.3(patch_hash=40a5f512fc9bdcf0109c76f748b028d6fe78e27949ad82f39233d29531210040)':
     dependencies:
       '@polkadot-api/merkleize-metadata': 1.2.3
       '@polkadot-api/metadata-builders': 0.14.3
