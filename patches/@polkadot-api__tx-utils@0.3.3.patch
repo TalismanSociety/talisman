@@ -1,0 +1,13 @@
+diff --git a/dist/from-pjs-to-tx-data.js b/dist/from-pjs-to-tx-data.js
+index 1675cbfc97b4963471e4931c1e1515d876fd57ff..918ba97e7287c231ba04d5c7be4e0d675c5d933b 100644
+--- a/dist/from-pjs-to-tx-data.js
++++ b/dist/from-pjs-to-tx-data.js
+@@ -108,7 +108,7 @@ const fromPjsAssetIdToSigExt = (metadata, pjsAssetId) => {
+ };
+ const fromPjsToTxData = (metadata, { genesisHash, ...input }) => {
+   const eraDecoded = mortalityDec(input.era);
+-  const mortality = eraDecoded.type === "inmortal" ? { mortal: false, genesisHash: input.era } : {
++  const mortality = eraDecoded.type === "inmortal" ? { mortal: false, genesisHash } : {
+     mortal: true,
+     blockHash: input.blockHash,
+     phase: eraDecoded.phase,

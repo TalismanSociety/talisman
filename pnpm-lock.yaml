@@ -122,6 +122,9 @@ overrides:
   react: 19.2.7
   react-dom: 19.2.7
 
+patchedDependencies:
+  '@polkadot-api/tx-utils@0.3.3': ca7c307b1fcf4e2061897940b07d1d9ac0d157a1df55dda3f709f0a8be00ff10
+
 importers:
 
   .:
@@ -269,12 +272,18 @@ importers:
       '@polkadot-api/merkleize-metadata':
         specifier: 1.2.3
         version: 1.2.3
+      '@polkadot-api/signers-common':
+        specifier: 0.2.3
+        version: 0.2.3
       '@polkadot-api/substrate-bindings':
         specifier: 0.20.3
         version: 0.20.3
       '@polkadot-api/substrate-client':
         specifier: 0.7.0
         version: 0.7.0
+      '@polkadot-api/tx-utils':
+        specifier: 0.3.3
+        version: 0.3.3(patch_hash=ca7c307b1fcf4e2061897940b07d1d9ac0d157a1df55dda3f709f0a8be00ff10)
       '@polkadot-api/utils':
         specifier: 0.4.0
         version: 0.4.0
@@ -985,6 +994,9 @@ importers:
       '@polkadot-api/substrate-bindings':
         specifier: 0.20.3
         version: 0.20.3
+      '@polkadot-api/tx-utils':
+        specifier: 0.3.3
+        version: 0.3.3(patch_hash=ca7c307b1fcf4e2061897940b07d1d9ac0d157a1df55dda3f709f0a8be00ff10)
       '@polkadot-api/utils':
         specifier: 0.4.0
         version: 0.4.0
@@ -2616,6 +2628,9 @@ packages:
 
   '@polkadot-api/substrate-client@0.7.0':
     resolution: {integrity: sha512-TWCc4MAMa5SLVQXmomLHknbj+bztQ/Yclgwm8ENBhz8hR7c9rw9FBAkCa02jMBMCAygPhp3ayGRq+UFcF8KIxQ==}
+
+  '@polkadot-api/tx-utils@0.3.3':
+    resolution: {integrity: sha512-QtoMFCN+4fnMG1AubTNNPksqKKJVlxXHPE1NafCNzrSiU5Qs0Ji7Ssj8Imr/EiH0aAeZ/qtlMLPp3QvCjKesbQ==}
 
   '@polkadot-api/utils@0.1.0':
     resolution: {integrity: sha512-MXzWZeuGxKizPx2Xf/47wx9sr/uxKw39bVJUptTJdsaQn/TGq+z310mHzf1RCGvC1diHM8f593KrnDgc9oNbJA==}
@@ -11224,6 +11239,14 @@ snapshots:
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.2.0
       '@polkadot-api/raw-client': 0.3.0
+      '@polkadot-api/utils': 0.4.0
+
+  '@polkadot-api/tx-utils@0.3.3(patch_hash=ca7c307b1fcf4e2061897940b07d1d9ac0d157a1df55dda3f709f0a8be00ff10)':
+    dependencies:
+      '@polkadot-api/merkleize-metadata': 1.2.3
+      '@polkadot-api/metadata-builders': 0.14.3
+      '@polkadot-api/signers-common': 0.2.3
+      '@polkadot-api/substrate-bindings': 0.20.3
       '@polkadot-api/utils': 0.4.0
 
   '@polkadot-api/utils@0.1.0':
