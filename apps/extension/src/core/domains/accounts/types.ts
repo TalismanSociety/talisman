@@ -1,7 +1,3 @@
-import type {
-  AccountJson,
-  RequestAccountSubscribe,
-} from "@polkadot/extension-base/background/types"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { KeypairCurve } from "@talismn/crypto"
 import type {
@@ -13,10 +9,15 @@ import type {
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { HexString } from "@talismn/util"
 import type { Address } from "../../types/base"
-import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "../../types/pjsInterop"
+import type {
+  AccountJson,
+  PjsKeyringPairJson,
+  PjsKeyringPairsJson,
+  RequestAccountSubscribe,
+} from "../../types/pjsInterop"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 
-export type { RequestAccountList } from "@polkadot/extension-base/background/types"
+export type { RequestAccountList } from "../../types/pjsInterop"
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
 export type { AccountJson }
 

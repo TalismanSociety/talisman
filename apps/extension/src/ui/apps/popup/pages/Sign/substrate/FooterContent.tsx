@@ -31,7 +31,6 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
     approveQr,
     approveSignet,
     status,
-    registry,
     shortMetadata,
   } = usePolkadotSigningRequest()
 
@@ -63,7 +62,6 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                   onSigned={approveHardware}
                   onCancel={reject}
                   containerId="main"
-                  registry={registry}
                   shortMetadata={shortMetadata}
                 />
               </Suspense>

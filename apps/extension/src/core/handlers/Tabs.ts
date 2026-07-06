@@ -1,18 +1,6 @@
 import { PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import type {
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
-} from "@polkadot/extension-base/background/types"
-import type {
-  InjectedAccount,
-  InjectedMetadataKnown,
-  MetadataDef,
-  ProviderMeta,
-} from "@polkadot/extension-inject/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { assert } from "@talismn/util"
 import { combineLatest } from "rxjs"
@@ -50,6 +38,16 @@ import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
 import type { Port } from "../types/base"
+import type {
+  InjectedAccount,
+  InjectedMetadataKnown,
+  MetadataDef,
+  ProviderMeta,
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+} from "../types/pjsInterop"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
 import type { TabStore } from "./stores"

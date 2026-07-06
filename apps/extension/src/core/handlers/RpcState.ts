@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 
-import type {
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
-} from "@polkadot/extension-base/background/types"
-import type { ProviderMeta } from "@polkadot/extension-inject/types"
 import { assert } from "@talismn/util"
 
 import { sentry } from "../config/sentry"
 import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import type { Port } from "../types/base"
+import type {
+  ProviderMeta,
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+} from "../types/pjsInterop"
 
 // structural equivalents of the legacy polkadot-js rpc-provider types
 // (this handler exposes no providers, it only exists for API compatibility with the polkadot-js extension)

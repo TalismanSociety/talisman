@@ -1,8 +1,10 @@
-import type { MetadataRequest as PolkadotMetadataRequest } from "@polkadot/extension-base/background/types"
-import type { MetadataDef } from "@polkadot/extension-inject/types"
 import type { HexString } from "@talismn/util"
 
 import type { BaseRequest, BaseRequestId } from "../../types/base"
+import type {
+  MetadataDef,
+  MetadataRequest as PolkadotMetadataRequest,
+} from "../../types/pjsInterop"
 
 export type { MetadataDef }
 
