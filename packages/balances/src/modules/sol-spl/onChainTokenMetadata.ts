@@ -1,12 +1,17 @@
-import { deserializeMetadata } from "@metaplex-foundation/mpl-token-metadata"
-import { publicKey, sol } from "@metaplex-foundation/umi"
-import { MintLayout } from "@solana/spl-token"
-import { PublicKey } from "@solana/web3.js"
+import { address as solAddress } from "@solana/kit"
+import { getMintDecoder } from "@solana-program/token"
 import type { IChainConnectorSol } from "@talismn/chain-connectors"
 import { parseSolSplTokenId, SolSplTokenSchema } from "@talismn/chaindata-provider"
 import z from "zod/v4"
 
 import log from "../../log"
+import {
+  ERROR_INVALID_DATA,
+  ERROR_NO_METADATA,
+  ERROR_NO_MINT,
+  fetchMetaplexMetadata,
+  isTokenDataError,
+} from "../sol-shared"
 
 export const TokenCacheSchema = z.discriminatedUnion("isValid", [
   z.strictObject({
@@ -22,12 +27,6 @@ export const TokenCacheSchema = z.discriminatedUnion("isValid", [
 
 export type CachedToken = z.infer<typeof TokenCacheSchema>
 
-const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
-
-const ERROR_NO_MINT = "No mint info available"
-const ERROR_NO_METADATA = "No metadata account found"
-const ERROR_INVALID_DATA = "Invalid on-chain data"
-
 export const fetchOnChainTokenData = async (
   connector: IChainConnectorSol,
   tokenId: string
@@ -35,37 +34,25 @@ export const fetchOnChainTokenData = async (
   try {
     const { networkId, mintAddress } = parseSolSplTokenId(tokenId)
 
-    const connection = await connector.getConnection(networkId)
-    if (!connection) {
+    const rpc = await connector.getRpc(networkId)
+    if (!rpc) {
       log.warn(`No connection found for network ${networkId}`)
       return null
     }
 
-    const mintPubKey = new PublicKey(mintAddress)
-    const mintInfo = await connection.getAccountInfo(mintPubKey)
+    const { value: mintInfo } = await rpc
+      .getAccountInfo(solAddress(mintAddress), { encoding: "base64" })
+      .send()
     if (!mintInfo?.data) throw new Error(ERROR_NO_MINT)
-    const mint = MintLayout.decode(mintInfo.data)
+    const mint = getMintDecoder().decode(Buffer.from(mintInfo.data[0], "base64"))
 
-    const [metadataPDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPubKey.toBuffer()],
-      METAPLEX_PROGRAM_ID
-    )
-
-    const metadataAccount = await connection.getAccountInfo(new PublicKey(metadataPDA))
-    if (!metadataAccount) throw new Error(ERROR_NO_METADATA)
-
-    const metadata = deserializeMetadata({
-      publicKey: publicKey(metadataPDA),
-      executable: metadataAccount.executable,
-      owner: publicKey(metadataAccount.owner),
-      lamports: sol(metadataAccount.lamports),
-      data: metadataAccount.data,
-    })
+    const metadata = await fetchMetaplexMetadata(rpc, mintAddress)
+    if (!metadata) throw new Error(ERROR_NO_METADATA)
 
     const parsed = TokenCacheSchema.safeParse({
       id: tokenId,
-      symbol: metadata.symbol.trim(),
-      name: metadata.name.trim(),
+      symbol: metadata.symbol,
+      name: metadata.name,
       decimals: mint.decimals,
       isValid: true,
     })
@@ -76,7 +63,7 @@ export const fetchOnChainTokenData = async (
   } catch (err) {
     const msg = (err as Error).message
 
-    if ([ERROR_NO_MINT, ERROR_NO_METADATA, ERROR_INVALID_DATA].includes(msg))
+    if (isTokenDataError(msg))
       return TokenCacheSchema.parse({
         id: tokenId,
         isValid: false,

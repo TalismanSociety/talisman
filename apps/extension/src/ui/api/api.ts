@@ -1,9 +1,9 @@
 import PortMessageService from "@common/PortMessageService"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type {
+  ResponseSolanaRpcSend,
   ResponseSolanaSubmit,
   SolRpcRequest,
-  SolRpcResponse,
 } from "@core/domains/solana/exports"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { HexString } from "@polkadot/util/types"
@@ -277,11 +277,11 @@ export const api: MessageTypes = {
     }),
 
   // solana
-  solSend: <T>(networkId: string, request: SolRpcRequest) =>
+  solSend: (networkId: string, request: SolRpcRequest) =>
     messageService.sendMessage("pri(solana.rpc.send)", {
       networkId,
       request,
-    }) as Promise<SolRpcResponse<T>>,
+    }) as Promise<ResponseSolanaRpcSend>,
   solSubmit: (networkId: string, transaction: string, txInfo?: WalletTransactionInfo) =>
     messageService.sendMessage("pri(solana.rpc.submit)", {
       networkId,

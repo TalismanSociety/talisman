@@ -5,39 +5,110 @@ import type {
   EncryptResult,
 } from "@core/domains/encrypt/types"
 import type { SendRequest } from "@core/types"
-import PolkadotInjected from "@polkadot/extension-base/page/Injected"
-import Signer from "@polkadot/extension-base/page/Signer"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
 
-// external to class
-let sendRequest: SendRequest
-export class TalismanSigner extends Signer {
-  constructor(_sendRequest: SendRequest) {
-    super(_sendRequest)
-    sendRequest = _sendRequest
+import type {
+  Injected,
+  InjectedAccount,
+  InjectedAccounts,
+  InjectedMetadata,
+  InjectedMetadataKnown,
+  MetadataDef,
+  Unsubcall,
+} from "./types"
+
+// Minimal reimplementation of @polkadot/extension-base/page's Injected/Accounts/Metadata/Signer.
+// Importing them drags PostMessageProvider and its dependency chain (@polkadot/util logger →
+// bn.js, eventemitter3) into page.js — ~25% of the bundle — to power an `injected.provider`
+// that is dead weight here: the background constructs RpcState with no providers, so
+// `listProviders` always returns {} and `startProvider`/`send`/`subscribe` always throw.
+// Dapp-facing message semantics below are identical to the upstream classes.
+
+class Accounts implements InjectedAccounts {
+  readonly #sendRequest: SendRequest
+
+  constructor(sendRequest: SendRequest) {
+    this.#sendRequest = sendRequest
   }
 
-  public async encryptMessage(payload: EncryptPayload): Promise<EncryptResult> {
-    const result = await sendRequest("pub(encrypt.encrypt)", payload)
-
-    return {
-      ...result,
-    }
+  public get(anyType?: boolean): Promise<InjectedAccount[]> {
+    return this.#sendRequest("pub(accounts.list)", { anyType })
   }
 
-  public async decryptMessage(payload: DecryptPayload): Promise<DecryptResult> {
-    const result = await sendRequest("pub(encrypt.decrypt)", payload)
+  public subscribe(cb: (accounts: InjectedAccount[]) => void | Promise<void>): Unsubcall {
+    let id: string | null = null
 
-    return {
-      ...result,
+    this.#sendRequest("pub(accounts.subscribe)", null, cb)
+      .then((subId) => {
+        id = subId
+      })
+      // biome-ignore lint/suspicious/noConsole: mirrors upstream, no logger in page context
+      .catch(console.error)
+
+    return (): void => {
+      // biome-ignore lint/suspicious/noConsole: mirrors upstream, no logger in page context
+      if (id) this.#sendRequest("pub(accounts.unsubscribe)", { id }).catch(console.error)
     }
   }
 }
 
-export default class TalismanInjected extends PolkadotInjected {
+class Metadata implements InjectedMetadata {
+  readonly #sendRequest: SendRequest
+
+  constructor(sendRequest: SendRequest) {
+    this.#sendRequest = sendRequest
+  }
+
+  public get(): Promise<InjectedMetadataKnown[]> {
+    return this.#sendRequest("pub(metadata.list)")
+  }
+
+  public provide(definition: MetadataDef): Promise<boolean> {
+    return this.#sendRequest("pub(metadata.provide)", definition)
+  }
+}
+
+// upstream Signer shares one id sequence across signPayload/signRaw - keep it module-level
+let nextSignerId = 0
+
+export class TalismanSigner {
+  readonly #sendRequest: SendRequest
+
+  constructor(sendRequest: SendRequest) {
+    this.#sendRequest = sendRequest
+  }
+
+  public async signPayload(payload: SignerPayloadJSON): Promise<SignerResult> {
+    const id = ++nextSignerId
+    const result = await this.#sendRequest("pub(extrinsic.sign)", payload)
+
+    return { ...result, id }
+  }
+
+  public async signRaw(payload: SignerPayloadRaw): Promise<SignerResult> {
+    const id = ++nextSignerId
+    const result = await this.#sendRequest("pub(bytes.sign)", payload)
+
+    return { ...result, id }
+  }
+
+  public async encryptMessage(payload: EncryptPayload): Promise<EncryptResult> {
+    return await this.#sendRequest("pub(encrypt.encrypt)", payload)
+  }
+
+  public async decryptMessage(payload: DecryptPayload): Promise<DecryptResult> {
+    return await this.#sendRequest("pub(encrypt.decrypt)", payload)
+  }
+}
+
+export default class TalismanInjected implements Injected {
+  public readonly accounts: InjectedAccounts
+  public readonly metadata: InjectedMetadata
   public readonly signer: TalismanSigner
 
   constructor(sendRequest: SendRequest) {
-    super(sendRequest)
+    this.accounts = new Accounts(sendRequest)
+    this.metadata = new Metadata(sendRequest)
     this.signer = new TalismanSigner(sendRequest)
   }
 }

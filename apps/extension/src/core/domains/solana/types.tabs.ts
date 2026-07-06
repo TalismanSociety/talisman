@@ -47,6 +47,8 @@ export type RequestSolanaSignMessage = {
 }
 export type ResponseSolanaSignMessage = {
   signature: string // base58 encoded
+  /** base58 encoded bytes that were actually signed - set when a hardware device signed the off-chain message envelope instead of the raw bytes */
+  signedMessage?: string
 }
 
 export type RequestSolanaSignTransaction = {
@@ -62,7 +64,9 @@ export type RequestSolanaSignTransaction = {
 }
 
 export type ResponseSolanaSignTransaction = {
-  transaction: string // base58 encoded VersionedTransaction
+  transaction: string // base58 encoded serialized transaction
+  /** base58 signature of the signed transaction */
+  signature?: string
 }
 
 export type SolanaTabsMessages = {

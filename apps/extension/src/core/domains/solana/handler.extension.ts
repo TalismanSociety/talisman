@@ -1,9 +1,13 @@
+import { getBase64EncodedWireTransaction } from "@solana/kit"
+import { stringifyJsonWithBigInts } from "@solana/rpc-spec-types"
 import { base58, ed25519 } from "@talismn/crypto"
 import {
   deserializeTransaction,
-  getKeypair,
-  isVersionedTransaction,
+  getVerifiedTransactionSignature,
   parseTransactionInfo,
+  serializeOffchainMessage,
+  serializeTransaction,
+  signTransactionWithSecretKey,
 } from "@talismn/solana"
 
 import { ExtensionHandler } from "../../libs/Handler"
@@ -28,42 +32,47 @@ export class SolanaExtensionHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(solana.rpc.send)": {
         const { networkId, request: req } = request as RequestTypes["pri(solana.rpc.send)"]
-        const connection = await chainConnectorSol.getConnection(networkId)
+        const transport = await chainConnectorSol.getTransport(networkId)
 
-        return (
-          connection as unknown as { _rpcRequest: (method: string, params: unknown[]) => unknown }
-        )._rpcRequest(req.method, req.params)
+        const body = await transport({ payload: { ...req, jsonrpc: "2.0" } })
+
+        // response envelope is relayed as text: it may contain bigints, which cannot
+        // cross the extension messaging boundary
+        return { rawJson: stringifyJsonWithBigInts(body) }
       }
 
       case "pri(solana.rpc.submit)": {
         const { networkId, transaction, txInfo } = request as RequestTypes["pri(solana.rpc.submit)"]
 
         const tx = deserializeTransaction(transaction)
-        const { address, signature } = parseTransactionInfo(tx)
+        const { address } = parseTransactionInfo(tx)
         if (!address) throw new Error("Unknown signer")
 
         const account = await keyringStore.getAccount(address)
         if (!account) throw new Error("Account not found")
 
-        const connection = await chainConnectorSol.getConnection(networkId)
+        const rpc = await chainConnectorSol.getRpc(networkId)
 
-        if (!signature) {
-          const signResult = await withSecretKey(account.address, async (secretKey) => {
-            const keypair = getKeypair(secretKey)
-
-            if (keypair.publicKey.toBase58() !== address) throw new Error("Address mismatch")
-
-            if (isVersionedTransaction(tx)) tx.sign([keypair])
-            else tx.sign(keypair)
-          })
-          signResult.unwrap()
+        // kit transactions are immutable - always reference the signed copy from here on
+        let signed = tx
+        if (!getVerifiedTransactionSignature(tx, account.address)) {
+          // hardware accounts sign in the frontend, their transactions must arrive here signed
+          if (account.type !== "keypair")
+            throw new Error("Transaction has not been signed by the hardware device")
+          const signResult = await withSecretKey(account.address, async (secretKey) =>
+            signTransactionWithSecretKey(tx, secretKey, address)
+          )
+          signed = signResult.unwrap()
         }
 
-        const sig = await connection.sendRawTransaction(tx.serialize(), {
-          skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
-        })
+        const sig = await rpc
+          .sendTransaction(getBase64EncodedWireTransaction(signed), {
+            encoding: "base64",
+            skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
+          })
+          .send()
 
-        watchSolanaTransaction(networkId, tx, {
+        watchSolanaTransaction(networkId, signed, {
           txInfo,
           notifications: false,
         })
@@ -82,21 +91,32 @@ export class SolanaExtensionHandler extends ExtensionHandler {
           case "message": {
             const { signature } = request as Extract<RequestSolanaSignApprove, { type: "message" }>
             if (signature) {
+              // if signature is supplied, it was signed with a hardware device - hardware wallets
+              // sign the off-chain message envelope, not the raw bytes
+              const envelope = serializeOffchainMessage(
+                base58.decode(dappRequest.message),
+                base58.decode(signRequest.account.address)
+              )
               if (
+                !envelope ||
                 !ed25519.verify(
                   base58.decode(signature),
-                  base58.decode(dappRequest.message),
+                  envelope,
                   base58.decode(signRequest.account.address)
                 )
               )
                 throw new Error("Signature verification failed")
 
-              // if signature is supplied, we assume it was signed with a hardware device
               return signRequest.resolve({
                 type: "message",
                 signature,
+                signedMessage: base58.encode(envelope),
               })
             }
+
+            // hardware accounts sign in the frontend and supply the signature with the approval
+            if (signRequest.account.type !== "keypair")
+              throw new Error("Message has not been signed by the hardware device")
 
             const signResult = await withSecretKey(
               signRequest.account.address,
@@ -119,29 +139,39 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
             // if frontend sent a transaction, it might be already signed by ledger
             const tx = deserializeTransaction(transaction ?? dappRequest.transaction)
-            const { signature } = parseTransactionInfo(tx)
 
-            if (!signature) {
+            // kit transactions are immutable - always reference the signed copy from here on
+            let signed = tx
+            // check the approving account's signature slot directly: dapp transactions may
+            // carry co-signers, which parseTransactionInfo's single-signer heuristic can't resolve
+            if (!getVerifiedTransactionSignature(tx, signRequest.account.address)) {
+              // hardware accounts sign in the frontend, their transactions must arrive here signed
+              if (signRequest.account.type !== "keypair")
+                throw new Error("Transaction has not been signed by the hardware device")
               const signResult = await withSecretKey(
                 signRequest.account.address,
-                async (secretKey) => {
-                  const keypair = getKeypair(secretKey)
-                  if (isVersionedTransaction(tx)) tx.sign([keypair])
-                  else tx.sign(keypair)
-                }
+                async (secretKey) => signTransactionWithSecretKey(tx, secretKey)
               )
-              signResult.unwrap()
+              signed = signResult.unwrap()
             }
 
+            // `sendTransaction` returns the canonical transaction signature (its first, fee-payer
+            // signature) - the exact value dapps expect back from signAndSendTransaction. Capturing
+            // it here makes it the single source of truth: no second parse, no wire-byte extraction
+            // fallback in the inject provider. `signature` is only read on the send path.
+            let sentSignature: string | undefined
             if (dappRequest.send) {
               if (!networkId) throw new Error("Network ID is required for sending transactions")
-              const connection = await chainConnectorSol.getConnection(networkId)
-              await connection.sendRawTransaction(tx.serialize())
+              const rpc = await chainConnectorSol.getRpc(networkId)
+              sentSignature = await rpc
+                .sendTransaction(getBase64EncodedWireTransaction(signed), { encoding: "base64" })
+                .send()
             }
 
             return signRequest.resolve({
               type: "transaction",
-              transaction: base58.encode(tx.serialize()),
+              transaction: serializeTransaction(signed),
+              signature: sentSignature,
               networkId,
             })
           }

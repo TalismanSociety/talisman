@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js"
+import { address as solAddress } from "@solana/kit"
 import { isSolanaAddress } from "@talismn/crypto"
 
 import type { IBalance } from "../../types"
@@ -14,8 +14,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 }) => {
   if (!tokensWithAddresses.length) return { success: [], errors: [] }
 
-  const connection = await connector.getConnection(networkId)
-  if (!connection) throw new Error(`Could not get rpc provider for sol network ${networkId}`)
+  const rpc = await connector.getRpc(networkId)
+  if (!rpc) throw new Error(`Could not get rpc provider for sol network ${networkId}`)
 
   for (const [token, addresses] of tokensWithAddresses) {
     if (token.type !== MODULE_TYPE || token.networkId !== networkId)
@@ -35,8 +35,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }): Promise<IBalance> => {
       try {
-        const publicKey = new PublicKey(address)
-        const lamports = await connection.getBalance(publicKey)
+        const { value: lamports } = await rpc.getBalance(solAddress(address)).send()
 
         return {
           address: address,

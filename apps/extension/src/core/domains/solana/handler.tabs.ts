@@ -1,7 +1,11 @@
 import { log } from "@common/log"
-import { isSolanaAddress } from "@talismn/crypto"
+import { base58, isSolanaAddress } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
-import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"
+import {
+  deserializeTransaction,
+  isCompiledTransactionMessage,
+  parseTransactionInfo,
+} from "@talismn/solana"
 import { isEqual } from "lodash-es"
 import { distinctUntilChanged, map, of, switchMap } from "rxjs"
 
@@ -148,6 +152,11 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
   const account = await keyringStore.getAccount(address)
   if (!account) throw new Error("Account not found")
 
+  // software accounts sign raw message bytes with no domain separator, so a "message" that
+  // encodes a transaction would yield a valid transaction signature - refuse to sign it
+  if (isCompiledTransactionMessage(base58.decode(message)))
+    throw new Error("Refusing to sign a message that encodes a transaction")
+
   const request: SolSignRequest = {
     type: "message",
     message,
@@ -160,6 +169,7 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
 
   return {
     signature: result.signature,
+    signedMessage: result.signedMessage,
   }
 }
 
@@ -195,6 +205,7 @@ const handleSolanaSignTransaction: TabMessageHandler<
 
   return {
     transaction: result.transaction,
+    signature: result.signature,
   }
 }
 

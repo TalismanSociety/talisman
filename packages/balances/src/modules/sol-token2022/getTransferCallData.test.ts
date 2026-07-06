@@ -1,18 +1,9 @@
-import type { TransferFeeConfig } from "@solana/spl-token"
-import { PublicKey } from "@solana/web3.js"
+import type { TransferFee } from "@solana-program/token-2022"
 import { describe, expect, it } from "vitest"
 
 import { calculateToken2022TransferFee } from "./getTransferCallData"
 
-const publicKey = new PublicKey("11111111111111111111111111111111")
-
-const makeTransferFeeConfig = (
-  olderTransferFee: TransferFeeConfig["olderTransferFee"],
-  newerTransferFee: TransferFeeConfig["newerTransferFee"]
-): TransferFeeConfig => ({
-  transferFeeConfigAuthority: publicKey,
-  withdrawWithheldAuthority: publicKey,
-  withheldAmount: 0n,
+const makeTransferFeeConfig = (olderTransferFee: TransferFee, newerTransferFee: TransferFee) => ({
   olderTransferFee,
   newerTransferFee,
 })

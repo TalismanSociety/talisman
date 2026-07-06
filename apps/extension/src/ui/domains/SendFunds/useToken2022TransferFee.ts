@@ -1,15 +1,14 @@
+import { address as solAddress } from "@solana/kit"
+import { fetchMint } from "@solana-program/token-2022"
 import {
-  calculateEpochFee,
-  getEpochFee,
-  getMint,
+  calculateToken2022TransferFee,
+  getEpochTransferFee,
   getTransferFeeConfig,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token"
-import type { Connection } from "@solana/web3.js"
-import { PublicKey } from "@solana/web3.js"
+} from "@talismn/balances"
+import type { SolRpc } from "@talismn/chain-connectors"
 import { isTokenOfType, type Token } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 
 type TransferFeeInfo = {
   feeBasisPoints: number
@@ -28,36 +27,35 @@ export const useToken2022TransferFee = (
   token: Token | null | undefined,
   value: string | null | undefined
 ) => {
-  const connection = useSolanaConnection(token?.networkId)
+  const rpc = useSolanaRpc(token?.networkId)
 
   return useQuery({
-    queryKey: ["token2022TransferFee", token?.id, value, connection?.rpcEndpoint],
+    queryKey: ["token2022TransferFee", token?.id, value, token?.networkId],
     queryFn: async (): Promise<TransferFeeInfo | null> => {
-      if (!token || !isTokenOfType(token, "sol-token2022") || !connection || !value) return null
+      if (!token || !isTokenOfType(token, "sol-token2022") || !rpc || !value) return null
 
-      return getToken2022TransferFee(connection, token.mintAddress, BigInt(value))
+      return getToken2022TransferFee(rpc, token.mintAddress, BigInt(value))
     },
-    enabled: !!token && isTokenOfType(token, "sol-token2022") && !!connection && !!value,
+    enabled: !!token && isTokenOfType(token, "sol-token2022") && !!rpc && !!value,
   })
 }
 
 const getToken2022TransferFee = async (
-  connection: Connection,
+  rpc: SolRpc,
   mintAddress: string,
   amount: bigint
 ): Promise<TransferFeeInfo | null> => {
-  const mintPubkey = new PublicKey(mintAddress)
-  const mintAccount = await getMint(connection, mintPubkey, undefined, TOKEN_2022_PROGRAM_ID)
+  const mintAccount = await fetchMint(rpc, solAddress(mintAddress))
 
-  const transferFeeConfig = getTransferFeeConfig(mintAccount)
+  const transferFeeConfig = getTransferFeeConfig(mintAccount.data)
   if (!transferFeeConfig) return null
 
-  const { epoch } = await connection.getEpochInfo()
-  const currentTransferFee = getEpochFee(transferFeeConfig, BigInt(epoch))
+  const { epoch } = await rpc.getEpochInfo().send()
+  const currentTransferFee = getEpochTransferFee(transferFeeConfig, epoch)
 
   const feeBasisPoints = currentTransferFee.transferFeeBasisPoints
   const maxFee = currentTransferFee.maximumFee
-  const feeAmount = calculateEpochFee(transferFeeConfig, BigInt(epoch), amount)
+  const feeAmount = calculateToken2022TransferFee(transferFeeConfig, epoch, amount)
 
   return {
     feeBasisPoints,

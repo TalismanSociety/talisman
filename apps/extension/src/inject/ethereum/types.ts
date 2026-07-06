@@ -1,5 +1,4 @@
-// biome-ignore lint/style/useNodejsImportProtocol: legacy
-import type EventEmitter from "events"
+import type { EventEmitter } from "inject/shared/EventEmitter"
 
 export interface AnyEthRequest {
   readonly method: string

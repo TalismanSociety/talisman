@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { getAccountPlatformFromAddress } from "../platform"
-import { encodeAddressSolana } from "./encoding"
+import { encodeAddressSolana, isOnCurveSolanaAddress } from "./encoding"
 import { detectAddressEncoding } from "./encoding/detectAddressEncoding"
 import { encodeAddressEthereum } from "./encoding/ethereum"
 import { encodeAddressSs58 } from "./encoding/ss58"
@@ -131,5 +131,23 @@ describe("detect address encoding", () => {
   it("SS58", () => {
     const ADDRESS = "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     expect(detectAddressEncoding(ADDRESS)).toEqual("ss58")
+  })
+})
+
+describe("isOnCurveSolanaAddress", () => {
+  it("accepts real ed25519 public keys", () => {
+    expect(isOnCurveSolanaAddress("oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96")).toBe(true)
+    // program ids are grinded keypairs, on-curve too
+    expect(isOnCurveSolanaAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")).toBe(true)
+  })
+
+  it("rejects program-derived addresses", () => {
+    // USDC associated token account of the system program — a PDA, off-curve by construction
+    expect(isOnCurveSolanaAddress("HJt8Tjdsc9ms9i4WCZEzhzr4oyf3ANcdzXrNdLPFqm3M")).toBe(false)
+  })
+
+  it("rejects malformed addresses", () => {
+    expect(isOnCurveSolanaAddress("not-an-address")).toBe(false)
+    expect(isOnCurveSolanaAddress("")).toBe(false)
   })
 })
