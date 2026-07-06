@@ -82,19 +82,47 @@ export const signPjsPayload = async (
   assert(prefix !== undefined, `Unsupported curve: ${curve}`)
   const signature = withPrefix ? u8aConcat(new Uint8Array([prefix]), rawSignature) : rawSignature
 
+  const { signedTransaction, signedTransactionBytes } = assemblePjsTransaction(
+    metadataRpc,
+    payload,
+    signature
+  )
+
+  return {
+    signature: u8aToHex(signature),
+    signedTransaction,
+    signedTransactionBytes,
+  }
+}
+
+/**
+ * Assembles a signed extrinsic from a payload and a ready-made signature
+ * (type-prefixed when the chain expects it — e.g. as returned by hardware/QR signers).
+ * Byte-compatible with polkadot-js `Extrinsic.addSignature` + `toHex`.
+ */
+export const assemblePjsTransaction = (
+  metadataRpc: HexString,
+  payload: SignerPayloadJSON,
+  signature: Uint8Array | HexString
+): { signedTransaction: HexString; signedTransactionBytes: Uint8Array; hash: HexString } => {
+  const { callData, extra } = getPjsTxHelper(metadataRpc)(payload)
+  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
+
+  const signatureBytes = typeof signature === "string" ? hexToU8a(signature) : signature
+
   // pass the final signature bytes and no signingType so createV4Tx embeds them verbatim
   const signedTransactionBytes = createV4Tx(
     unifiedMetadata,
     getAddressBytes(payload.address),
-    signature,
+    signatureBytes,
     [extra],
     callData
   )
 
   return {
-    signature: u8aToHex(signature),
     signedTransaction: u8aToHex(signedTransactionBytes),
     signedTransactionBytes,
+    hash: getSignedExtrinsicHash(signedTransactionBytes),
   }
 }
 

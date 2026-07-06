@@ -1,10 +1,8 @@
 import { log } from "@common/log"
-import type { TypeRegistry } from "@polkadot/types"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { parseTransactionInfo, type SolTransaction, serializeTransaction } from "@talismn/solana"
-import type { HexString } from "@talismn/util"
 import merge from "lodash-es/merge"
 import type { Hex, TransactionRequest } from "viem"
 
@@ -254,20 +252,6 @@ export const updateTransactionsRestart = async () => {
     console.error("updateTransactionsRestart", { err })
     return false
   }
-}
-
-export const getExtrinsicHash = (
-  registry: TypeRegistry,
-  payload: SignerPayloadJSON,
-  signature: HexString
-) => {
-  const tx = registry.createType(
-    "Extrinsic",
-    { method: payload.method },
-    { version: payload.version }
-  )
-  tx.addSignature(payload.address, signature, payload)
-  return tx.hash.toHex()
 }
 
 export const dismissTransaction = (hash: string) => db.transactionsV2.delete(hash)

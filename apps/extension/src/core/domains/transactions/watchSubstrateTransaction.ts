@@ -15,13 +15,11 @@ import { Err, Ok, type Result } from "ts-results"
 import { sentry } from "../../config/sentry"
 import { createNotification, type NotificationType } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
+import { getTypeRegistry } from "../../util/getTypeRegistry"
+import { validateHexString } from "../../util/validateHexString"
 import { settingsStore } from "../app/store.settings"
-import {
-  addSubstrateTransaction,
-  getExtrinsicHash,
-  getTransactionStatus,
-  updateTransactionStatus,
-} from "./helpers"
+import { assembleSubstrateTransaction } from "../signing/signSubstratePayload"
+import { addSubstrateTransaction, getTransactionStatus, updateTransactionStatus } from "./helpers"
 import type { WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
 
@@ -254,7 +252,6 @@ const watchExtrinsicStatus = async (
 
 export const watchSubstrateTransaction = async (
   chain: DotNetwork,
-  registry: TypeRegistry,
   payload: SignerPayloadJSON,
   signature: HexString,
   options: WatchTransactionOptions = {}
@@ -265,7 +262,17 @@ export const watchSubstrateTransaction = async (
   assert(chain.genesisHash === payload.genesisHash, "Genesis hash mismatch")
 
   try {
-    const hash = getExtrinsicHash(registry, payload, signature)
+    // registry is only needed to decode blocks/headers/events while watching (TODO replace with papi codecs)
+    const { registry } = await getTypeRegistry(
+      validateHexString(payload.genesisHash),
+      payload.specVersion,
+      payload.signedExtensions
+    )
+
+    const { hash } = await assembleSubstrateTransaction(
+      payload as Parameters<typeof assembleSubstrateTransaction>[0],
+      signature
+    )
 
     await addSubstrateTransaction(chain.id, hash, payload, { siteUrl, txInfo })
 

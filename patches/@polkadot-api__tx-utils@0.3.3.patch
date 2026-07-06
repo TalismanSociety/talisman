@@ -1,5 +1,5 @@
 diff --git a/dist/from-pjs-to-tx-data.js b/dist/from-pjs-to-tx-data.js
-index 1675cbfc97b4963471e4931c1e1515d876fd57ff..918ba97e7287c231ba04d5c7be4e0d675c5d933b 100644
+index 1675cbfc97b4963471e4931c1e1515d876fd57ff..9e25922803a679c489f3426af0abc323efc82dfd 100644
 --- a/dist/from-pjs-to-tx-data.js
 +++ b/dist/from-pjs-to-tx-data.js
 @@ -108,7 +108,7 @@ const fromPjsAssetIdToSigExt = (metadata, pjsAssetId) => {
@@ -11,3 +11,91 @@ index 1675cbfc97b4963471e4931c1e1515d876fd57ff..918ba97e7287c231ba04d5c7be4e0d67
      mortal: true,
      blockHash: input.blockHash,
      phase: eraDecoded.phase,
+@@ -120,6 +120,8 @@ const fromPjsToTxData = (metadata, { genesisHash, ...input }) => {
+     mortality,
+     tip: BigInt(fromPjsHexStringToNumber(input.tip)),
+     nonce: fromPjsHexStringToNumber(input.nonce),
++    specVersion: fromPjsHexStringToNumber(input.specVersion),
++    transactionVersion: fromPjsHexStringToNumber(input.transactionVersion),
+     metadataHash: input.mode === 1 && input.metadataHash ? fromHex(input.metadataHash) : null,
+     asset: input.assetId != null ? fromPjsAssetIdToSigExt(metadata, input.assetId) : void 0
+   };
+diff --git a/dist/new-helper.js b/dist/new-helper.js
+index 2879c0fc603f90f121c5e7789d6caced8817ace7..4f4b4255e65f0f675ed6dc00f7ad879dfd66b9ce 100644
+--- a/dist/new-helper.js
++++ b/dist/new-helper.js
+@@ -69,7 +69,7 @@ const getTxHelper = (metadataRaw, token) => {
+           case "CheckNonce":
+             return CheckNonce(nonce);
+           case "CheckSpecVersion":
+-            return CheckSpecVersion(lookup);
++            return CheckSpecVersion(lookup, parseInt(pjsPayload.specVersion, 16));
+           case "ChargeAssetTxPayment":
+             return ChargeAssetTxPayment(tip, asset);
+           case "ChargeTransactionPayment":
+@@ -77,7 +77,7 @@ const getTxHelper = (metadataRaw, token) => {
+           case "CheckMortality":
+             return CheckMortality(mortality);
+           case "CheckTxVersion":
+-            return CheckTxVersion(lookup);
++            return CheckTxVersion(lookup, parseInt(pjsPayload.transactionVersion, 16));
+         }
+         if (dynamicBuilder.buildDefinition(type) === _void && dynamicBuilder.buildDefinition(additionalSigned) === _void)
+           return EMPTY_SIGNED_EXTENSION;
+diff --git a/dist/signed-extensions/chain/CheckSpecVersion.js b/dist/signed-extensions/chain/CheckSpecVersion.js
+index 06a57b8e8ac13c581d1398389240cca93ef6ac5d..c6aeffda52a38037e0d4f12bed764dae614fa5fc 100644
+--- a/dist/signed-extensions/chain/CheckSpecVersion.js
++++ b/dist/signed-extensions/chain/CheckSpecVersion.js
+@@ -1,6 +1,7 @@
++import { u32 } from '@polkadot-api/substrate-bindings';
+ import { signedExtension, systemVersionProp, empty } from '../utils.js';
+ 
+-const CheckSpecVersion = (lookupFn) => signedExtension(empty, systemVersionProp("spec_version", lookupFn));
++const CheckSpecVersion = (lookupFn, specVersion) => signedExtension(empty, specVersion != null ? u32.enc(specVersion) : systemVersionProp("spec_version", lookupFn));
+ 
+ export { CheckSpecVersion };
+ //# sourceMappingURL=CheckSpecVersion.js.map
+diff --git a/dist/signed-extensions/chain/CheckTxVersion.js b/dist/signed-extensions/chain/CheckTxVersion.js
+index 307e0f4df1d127229119925d6fd60103625e828e..28768ede623775942ebac961bd344b48b842babd 100644
+--- a/dist/signed-extensions/chain/CheckTxVersion.js
++++ b/dist/signed-extensions/chain/CheckTxVersion.js
+@@ -1,6 +1,7 @@
++import { u32 } from '@polkadot-api/substrate-bindings';
+ import { signedExtension, systemVersionProp, empty } from '../utils.js';
+ 
+-const CheckTxVersion = (lookupFn) => signedExtension(empty, systemVersionProp("transaction_version", lookupFn));
++const CheckTxVersion = (lookupFn, transactionVersion) => signedExtension(empty, transactionVersion != null ? u32.enc(transactionVersion) : systemVersionProp("transaction_version", lookupFn));
+ 
+ export { CheckTxVersion };
+ //# sourceMappingURL=CheckTxVersion.js.map
+diff --git a/dist/signed-extensions/get-signed-extension-parts.js b/dist/signed-extensions/get-signed-extension-parts.js
+index 16b0fa760ec640cd05440962229da4ac37b7e8d7..b35b341ff4cedcfebd70251470db03cc2274ee40 100644
+--- a/dist/signed-extensions/get-signed-extension-parts.js
++++ b/dist/signed-extensions/get-signed-extension-parts.js
+@@ -11,7 +11,7 @@ import { EMPTY_SIGNED_EXTENSION } from './utils.js';
+ import { mergeUint8 } from '@polkadot-api/utils';
+ 
+ const getSignedExtensionParts = (lookup, dynamicBuilder, data) => {
+-  const { tip, mortality, genesisHash, nonce, asset, metadataHash } = data;
++  const { tip, mortality, genesisHash, nonce, asset, metadataHash, specVersion, transactionVersion } = data;
+   const signedExtensions = lookup.metadata.extrinsic.signedExtensions[0].map(
+     ({ identifier, type, additionalSigned: additionalSigned2 }) => {
+       switch (identifier) {
+@@ -22,7 +22,7 @@ const getSignedExtensionParts = (lookup, dynamicBuilder, data) => {
+         case "CheckNonce":
+           return CheckNonce(nonce);
+         case "CheckSpecVersion":
+-          return CheckSpecVersion(lookup);
++          return CheckSpecVersion(lookup, specVersion);
+         case "ChargeAssetTxPayment":
+           return ChargeAssetTxPayment(tip, asset);
+         case "ChargeTransactionPayment":
+@@ -30,7 +30,7 @@ const getSignedExtensionParts = (lookup, dynamicBuilder, data) => {
+         case "CheckMortality":
+           return CheckMortality(mortality);
+         case "CheckTxVersion":
+-          return CheckTxVersion(lookup);
++          return CheckTxVersion(lookup, transactionVersion);
+       }
+       if (dynamicBuilder.buildDefinition(type) === _void && dynamicBuilder.buildDefinition(additionalSigned2) === _void)
+         return EMPTY_SIGNED_EXTENSION;

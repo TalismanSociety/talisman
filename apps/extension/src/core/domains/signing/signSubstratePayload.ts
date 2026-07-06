@@ -4,10 +4,25 @@ import { assert } from "@talismn/util"
 
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
-import { type SignPjsPayloadResult, signPjsPayload } from "./signPjsPayload"
+import { assemblePjsTransaction, type SignPjsPayloadResult, signPjsPayload } from "./signPjsPayload"
 
 export type { SignPjsPayloadResult } from "./signPjsPayload"
 export { getSignedExtrinsicHash } from "./signPjsPayload"
+
+/**
+ * Assembles a signed extrinsic from a payload and a ready-made (prefixed) signature,
+ * using the wallet's cached metadata for the target chain.
+ */
+export const assembleSubstrateTransaction = async (
+  payload: SignerPayloadJSON,
+  signature: Uint8Array | `0x${string}`
+) => {
+  const metadataDef = await getMetadataDef(payload.genesisHash, parseInt(payload.specVersion, 16))
+  const metadataRpc = getMetadataRpcFromDef(metadataDef)
+  assert(metadataRpc, `Unable to find metadata for chain ${payload.genesisHash}`)
+
+  return assemblePjsTransaction(metadataRpc, payload, signature)
+}
 
 /**
  * Signs a `SignerPayloadJSON` using the wallet's cached metadata for the target chain.
