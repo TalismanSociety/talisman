@@ -661,10 +661,6 @@ export default defineConfig({
           preventAssignment: true,
           values: {
             "process.env.VERSION": JSON.stringify(pkg.version),
-            "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
-            "process.env['EXTENSION_PREFIX']": JSON.stringify("talisman"),
-            "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
-            "process.env['PORT_PREFIX']": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
             "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
             "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
             "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
@@ -709,28 +705,6 @@ export default defineConfig({
             return null
           },
         } satisfies Plugin,
-        // Replace environment variables in final chunks (handles mangled variable names)
-        {
-          name: "env-replace-final",
-          enforce: "post" as const,
-          renderChunk(code: string, chunk: { fileName: string }) {
-            // Only process background.js where the polkadot env vars are needed
-            if (chunk.fileName.includes("background")) {
-              // Replace patterns like process$1$1.env['EXTENSION_PREFIX'] or process.env['EXTENSION_PREFIX']
-              let result = code
-              result = result.replace(
-                /process(?:\$\d+)*\.env\s*\[\s*['"]EXTENSION_PREFIX['"]\s*\]/g,
-                JSON.stringify("talisman")
-              )
-              result = result.replace(
-                /process(?:\$\d+)*\.env\s*\[\s*['"]PORT_PREFIX['"]\s*\]/g,
-                JSON.stringify("talisman")
-              )
-              return { code: result, map: null }
-            }
-            return null
-          },
-        },
         // Firefox: Replace chrome.* with browser.* in both dev and production
         // In Firefox MV2, the 'browser' API provides Promise-based methods,
         // while 'chrome' uses callbacks. Since the codebase uses 'chrome.*' directly,
@@ -776,13 +750,8 @@ export default defineConfig({
       },
 
       // Define environment variables
-      // Note: @polkadot/extension-base uses bracket notation like process.env['PORT_PREFIX']
       define: {
         "process.env.VERSION": JSON.stringify(pkg.version),
-        "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
-        "process.env['EXTENSION_PREFIX']": JSON.stringify("talisman"),
-        "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
-        "process.env['PORT_PREFIX']": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
         "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
         "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
         "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
@@ -810,27 +779,11 @@ export default defineConfig({
           // Data & storage
           "dexie",
           "lodash-es",
-          // Crypto (heavy dependencies)
-          "@polkadot/util",
-          "@polkadot/util-crypto",
-          "@polkadot/keyring",
           // UI
           "@headlessui/react",
           "@floating-ui/react",
           "motion",
         ],
-        // The top-level `define` above only rewrites app code, not pre-bundled deps.
-        // @polkadot/extension-base reads process.env['EXTENSION_PREFIX'] / ['PORT_PREFIX']
-        // at module load, so without this the values fall back to the node-polyfills `process`
-        // shim's runtime env — which stopped carrying them across vite-plugin-node-polyfills
-        // versions and crashed the extension on boot. Replace them at pre-bundle time instead.
-        // (esbuild matches both dot and bracket member access for these keys.)
-        esbuildOptions: {
-          define: {
-            "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
-            "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
-          },
-        },
       },
 
       build: {
@@ -917,7 +870,6 @@ export default defineConfig({
             minifyInternalExports: !isDev && !isFirefox,
 
             // Add shims for service worker (background script)
-            // Some packages like @polkadot/util reference document which doesn't exist in service workers
             // For Firefox, we also need to set up 'browser' before any code runs
             banner: (chunk) => {
               if (chunk.fileName === "background.js" || chunk.name === "background") {

@@ -207,16 +207,6 @@ globalThis.chrome = chromeWithAsyncWindows as unknown as typeof chrome
   chromeWithAsyncWindows as unknown as Browser
 
 process.env.VERSION = process.env.npm_package_version
-// Required by @polkadot/extension-base to prevent message collisions between extensions
-process.env.EXTENSION_PREFIX = "talisman-test"
-
-// Hides this annoying warning which shows up for every test, as a result of us using pjs via an esm import:
-// https://github.com/polkadot-js/api/issues/5636
-//
-// The warning isn't helpful in this context, and it also makes it a PITA to find the result of any failed tests
-//
-// We can remove this when we completely switch away from the @polkadot/api family of packages
-process.env.POLKADOTJS_DISABLE_ESM_CJS_WARNING = "1"
 
 // Somehow not available in jsdom
 globalThis.structuredClone = cloneDeep

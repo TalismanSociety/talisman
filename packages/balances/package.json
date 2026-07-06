@@ -57,9 +57,7 @@
     "@types/node": "^24.5.1",
     "typescript": "^6.0.3"
   },
-  "peerDependencies": {
-    "@substrate/txwrapper-core": "*"
-  },
+  "peerDependencies": {},
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {

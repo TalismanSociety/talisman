@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { HexString } from "@talismn/util"
 

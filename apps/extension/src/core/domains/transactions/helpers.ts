@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { parseTransactionInfo, type SolTransaction, serializeTransaction } from "@talismn/solana"

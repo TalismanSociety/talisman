@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 import { Twox128 } from "@polkadot-api/substrate-bindings"
-import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import { encryptKemAead } from "@talismn/crypto"
 import { Binary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
 

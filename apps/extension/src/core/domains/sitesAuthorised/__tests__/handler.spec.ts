@@ -1,15 +1,10 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
-import { AccountsStore } from "@polkadot/extension-base/stores"
-import keyring from "@polkadot/ui-keyring"
-import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest"
 import { getMessageSenderFn } from "../../../../../tests/core/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
 import type { AuthorizedSites } from "../types"
-
-keyring.loadAll({ store: new AccountsStore() })
 
 describe("Sites Authorised Handler", () => {
   let handler: Extension
@@ -21,7 +16,6 @@ describe("Sites Authorised Handler", () => {
 
   async function createExtension(): Promise<Extension> {
     // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-    await cryptoWaitReady()
 
     return new Extension(extensionStores)
   }

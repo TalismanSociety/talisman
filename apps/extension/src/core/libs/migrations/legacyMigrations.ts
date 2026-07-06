@@ -1,7 +1,6 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { lt } from "semver"
 import { type LegacyAccount, LegacyAccountOrigin } from "../../domains/accounts/types"
-import { passwordStore } from "../../domains/app/store.password"
 import { createLegacyVerifierCertificateMnemonicStore } from "../../domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "../../domains/mnemonics/store"
 import sitesAuthorisedStore from "../../domains/sitesAuthorised/store"
@@ -44,41 +43,6 @@ const _migratePolkadotVaultVerifierCertificate = async (previousVersion: string)
       await verifierCertificateMnemonicStore.set(mnemonicsData)
     }
   }
-}
-
-export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
-  // changePassword operates on the legacy pjs keyring: import lazily so production
-  // entry points don't statically pull @polkadot/ui-keyring into their bundle
-  const { changePassword } = await import("./legacyHelpers")
-  const {
-    salt,
-    password: hashedPw,
-    check,
-    secret,
-  } = await passwordStore.createPassword(plaintextPw)
-  const { ok, val } = await changePassword({ currentPw: plaintextPw, newPw: hashedPw })
-  if (ok) {
-    // success
-    await passwordStore.set({ isHashed: true, salt, check, secret })
-    passwordStore.setPassword(hashedPw)
-    return true
-  }
-  throw new Error(val)
-}
-
-export const migratePasswordV2ToV1 = async (plaintextPw: string) => {
-  // changePassword operates on the legacy pjs keyring: import lazily so production
-  // entry points don't statically pull @polkadot/ui-keyring into their bundle
-  const { changePassword } = await import("./legacyHelpers")
-  const hashedPw = await passwordStore.getHashedPassword(plaintextPw)
-  const { ok, val } = await changePassword({ currentPw: hashedPw, newPw: plaintextPw })
-  if (ok) {
-    // success
-    await passwordStore.set({ salt: undefined, isTrimmed: false, isHashed: false })
-    passwordStore.setPassword(plaintextPw)
-    return true
-  }
-  throw new Error(val)
 }
 
 const hasQrCodeAccounts = async () => {

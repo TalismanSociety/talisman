@@ -1,9 +1,11 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import { Metadata, TypeRegistry } from "@polkadot/types"
-import type { SignerPayloadJSON } from "@polkadot/types/types"
-import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
+import { getPjsTxHelper } from "@polkadot-api/tx-utils"
+import { mergeUint8 } from "@polkadot-api/utils"
+import { verify as sr25519Verify } from "@scure/sr25519"
+import { getSs58AddressInfo } from "polkadot-api"
 import type { Account } from "@talismn/keyring"
+
+import type { SignerPayloadJSON } from "../types/pjsInterop"
 import { waitFor } from "@testing-library/dom"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
@@ -27,7 +29,6 @@ describe("Extension", () => {
 
   async function createExtension(): Promise<Extension> {
     // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-    await cryptoWaitReady()
 
     extensionStores.sites.set({
       "localhost:3000": {
@@ -184,7 +185,7 @@ describe("Extension", () => {
 
       const requestPromise = signSubstrate(
         "http://test.com",
-        new RequestExtrinsicSign(payload),
+        { payload },
         account,
         {} as chrome.runtime.Port
       )
@@ -201,16 +202,16 @@ describe("Extension", () => {
 
       const { signature } = await requestPromise
 
-      // verify against a polkadot-js built signing payload (independent reference implementation)
-      const registry = new TypeRegistry()
-      registry.setMetadata(new Metadata(registry, metadataHex))
-      registry.setSignedExtensions(payload.signedExtensions)
-      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-        version: payload.version,
-      })
-
-      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, account.address)
-      expect(verif.isValid).toBeTruthy()
+      // rebuild the signing input and verify the (type-prefixed) sr25519 signature
+      const { callData, extra, additionalSigned } = getPjsTxHelper(metadataHex)(
+        payload as Parameters<ReturnType<typeof getPjsTxHelper>>[0]
+      )
+      const signingInput = mergeUint8([callData, extra, additionalSigned])
+      const sigBytes = Buffer.from(signature.slice(2), "hex")
+      expect(sigBytes[0]).toBe(1) // MultiSignature type prefix: sr25519
+      const addressInfo = getSs58AddressInfo(account.address)
+      if (!addressInfo.isValid) throw new Error("Invalid address")
+      expect(sr25519Verify(signingInput, sigBytes.subarray(1), addressInfo.publicKey)).toBe(true)
     })
   })
 

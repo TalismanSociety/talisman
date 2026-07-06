@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 import { compactNumber, Twox128 } from "@polkadot-api/substrate-bindings"
-import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import {
   type DotNetwork,
   type DotNetworkId,
