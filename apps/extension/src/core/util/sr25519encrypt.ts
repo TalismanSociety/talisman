@@ -1,19 +1,15 @@
 // Code in this file is heavily derived from the approach outlined in this PR:
 // https://github.com/polkadot-js/common/pull/1331
 
-import {
-  hmacSha256AsU8a,
-  mnemonicGenerate,
-  mnemonicToMiniSecret,
-  naclEncrypt,
-  pbkdf2Encode,
-  randomAsU8a,
-  sr25519Agreement,
-  sr25519PairFromSeed,
-} from "@polkadot/util-crypto"
-import type { Keypair } from "@polkadot/util-crypto/types"
+import { xsalsa20poly1305 } from "@noble/ciphers/salsa.js"
+import { hmac } from "@noble/hashes/hmac.js"
+import { pbkdf2 } from "@noble/hashes/pbkdf2.js"
+import { sha256, sha512 } from "@noble/hashes/sha2.js"
+import { getPublicKey, getSharedSecret, secretFromSeed } from "@scure/sr25519"
 import type { HexString } from "@talismn/util"
 import { assert, u8aConcat, u8aToU8a } from "@talismn/util"
+
+export type Keypair = { publicKey: Uint8Array; secretKey: Uint8Array }
 
 const encryptionKeySize = 32
 const macKeySize = 32
@@ -36,14 +32,16 @@ export function sr25519Encrypt(
     messageKeyPair,
     receiverPublicKey
   )
-  const { encrypted, nonce } = naclEncrypt(u8aToU8a(message), encryptionKey, randomAsU8a(nonceSize))
+  const nonce = crypto.getRandomValues(new Uint8Array(nonceSize))
+  const encrypted = xsalsa20poly1305(encryptionKey, nonce).encrypt(u8aToU8a(message))
   const macValue = macData(nonce, encrypted, messageKeyPair.publicKey, macKey)
 
   return u8aConcat(nonce, keyDerivationSalt, messageKeyPair.publicKey, macValue, encrypted)
 }
 
 function generateEphemeralKeypair(): Keypair {
-  return sr25519PairFromSeed(mnemonicToMiniSecret(mnemonicGenerate()))
+  const secretKey = secretFromSeed(crypto.getRandomValues(new Uint8Array(32)))
+  return { secretKey, publicKey: getPublicKey(secretKey) }
 }
 
 function generateEncryptionKey(senderKeyPair: Keypair, receiverPublicKey: Uint8Array) {
@@ -64,16 +62,16 @@ export function buildSR25519EncryptionKey(
   publicKey: Uint8Array,
   secretKey: Uint8Array,
   encryptedMessagePairPublicKey: Uint8Array,
-  salt: Uint8Array = randomAsU8a(keyDerivationSaltSize)
+  salt: Uint8Array = crypto.getRandomValues(new Uint8Array(keyDerivationSaltSize))
 ) {
-  const agreementKey = sr25519Agreement(secretKey, publicKey)
+  const agreementKey = getSharedSecret(secretKey, publicKey)
   const masterSecret = u8aConcat(encryptedMessagePairPublicKey, agreementKey)
 
   return deriveKey(masterSecret, salt)
 }
 
 function deriveKey(masterSecret: Uint8Array, salt: Uint8Array) {
-  const { password } = pbkdf2Encode(masterSecret, salt, derivationKeyRounds)
+  const password = pbkdf2(sha512, masterSecret, salt, { c: derivationKeyRounds, dkLen: 64 })
 
   assert(password.byteLength >= macKeySize + encryptionKeySize, "Wrong derived key length")
 
@@ -90,5 +88,5 @@ export function macData(
   encryptedMessagePairPublicKey: Uint8Array,
   macKey: Uint8Array
 ): Uint8Array {
-  return hmacSha256AsU8a(macKey, u8aConcat(nonce, encryptedMessagePairPublicKey, encryptedMessage))
+  return hmac(sha256, macKey, u8aConcat(nonce, encryptedMessagePairPublicKey, encryptedMessage))
 }

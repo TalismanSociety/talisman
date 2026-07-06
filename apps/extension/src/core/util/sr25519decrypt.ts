@@ -1,13 +1,13 @@
 // Code in this file is heavily derived from the approach outlined in this PR:
 // https://github.com/polkadot-js/common/pull/1331
 
-import { naclDecrypt } from "@polkadot/util-crypto"
-import type { Keypair } from "@polkadot/util-crypto/types"
+import { xsalsa20poly1305 } from "@noble/ciphers/salsa.js"
 import type { HexString } from "@talismn/util"
 import { assert, u8aCmp, u8aToU8a } from "@talismn/util"
 
 import {
   buildSR25519EncryptionKey,
+  type Keypair,
   keyDerivationSaltSize,
   macData,
   nonceSize,
@@ -44,7 +44,12 @@ export function sr25519Decrypt(
 
   assert(u8aCmp(decryptedMacValue, macValue) === 0, "Mac values don't match")
 
-  return naclDecrypt(sealed, nonce, encryptionKey)
+  try {
+    return xsalsa20poly1305(encryptionKey, nonce).decrypt(sealed)
+  } catch {
+    // same behavior as the previous naclDecrypt implementation
+    return null
+  }
 }
 
 /**

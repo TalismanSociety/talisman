@@ -1,5 +1,10 @@
 import { log } from "@common/log"
-import { Keyring } from "@polkadot/keyring"
+import {
+  entropyToSeed,
+  getPublicKeyFromSecret,
+  mnemonicToEntropy,
+  signSubstrate,
+} from "@talismn/crypto"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@talismn/util"
 
@@ -43,12 +48,18 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
   try {
     const mnemonic = await getVerifierMnemonic()
 
-    const keyring = new Keyring()
-    const signingPair = keyring.createFromUri(mnemonic, {}, "sr25519")
+    // same key as pjs keyring.createFromUri(mnemonic, {}, "sr25519"): substrate-bip39 mini secret, no derivation
+    const seed = await entropyToSeed(mnemonicToEntropy(mnemonic), "sr25519")
+    const { secretFromSeed } = await import("@scure/sr25519")
+    const secretKey = secretFromSeed(seed)
+    const publicKey = getPublicKeyFromSecret(secretKey, "sr25519")
 
     // For network specs, sign the specs (not the entire payload)
-    const { type, publicKey } = signingPair
-    return { type, publicKey, signature: signingPair.sign(unsigned) }
+    return {
+      type: "sr25519" as const,
+      publicKey,
+      signature: signSubstrate("sr25519", secretKey, unsigned),
+    }
   } catch (error) {
     throw new Error(`Failed to sign : ${(error as Error).message}`)
   }
