@@ -1,21 +1,12 @@
-import {
-  encryptPjsKeystore,
-  getPublicKeyFromSecret,
-  type KeypairCurve,
-  type PjsKeystore,
-} from "@talismn/crypto"
+import { encryptPjsKeystore, getPublicKeyFromSecret, type KeypairCurve } from "@talismn/crypto"
 import { u8aConcat } from "@talismn/util"
 
+import type { PjsKeyringPairJson } from "../../types/pjsInterop"
 import { curveToPjsKeypairType } from "./migration-utils"
 
 // values picked from polkadot keyring (encodePair)
 const PKCS8_DIVIDER = new Uint8Array([161, 35, 3, 33, 0])
 const PKCS8_HEADER = new Uint8Array([48, 83, 2, 1, 1, 48, 5, 6, 3, 43, 101, 112, 4, 34, 4, 32])
-
-export type PjsKeyringPairJson = PjsKeystore & {
-  address: string
-  meta: Record<string, unknown>
-}
 
 /**
  * Exports an account as a polkadot-js keystore json, compatible with `KeyringPair.toJson`

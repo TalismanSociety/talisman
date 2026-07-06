@@ -5,7 +5,6 @@ import { passwordStore } from "../../domains/app/store.password"
 import { createLegacyVerifierCertificateMnemonicStore } from "../../domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "../../domains/mnemonics/store"
 import sitesAuthorisedStore from "../../domains/sitesAuthorised/store"
-import { changePassword } from "./legacyHelpers"
 
 export const migrateConnectAllSubstrate = async (previousVersion: string) => {
   if (!lt(previousVersion, "1.14.0")) return
@@ -48,6 +47,9 @@ const _migratePolkadotVaultVerifierCertificate = async (previousVersion: string)
 }
 
 export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
+  // changePassword operates on the legacy pjs keyring: import lazily so production
+  // entry points don't statically pull @polkadot/ui-keyring into their bundle
+  const { changePassword } = await import("./legacyHelpers")
   const {
     salt,
     password: hashedPw,
@@ -65,6 +67,9 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
 }
 
 export const migratePasswordV2ToV1 = async (plaintextPw: string) => {
+  // changePassword operates on the legacy pjs keyring: import lazily so production
+  // entry points don't statically pull @polkadot/ui-keyring into their bundle
+  const { changePassword } = await import("./legacyHelpers")
   const hashedPw = await passwordStore.getHashedPassword(plaintextPw)
   const { ok, val } = await changePassword({ currentPw: hashedPw, newPw: plaintextPw })
   if (ok) {

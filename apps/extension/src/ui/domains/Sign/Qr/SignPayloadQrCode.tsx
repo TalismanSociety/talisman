@@ -1,10 +1,10 @@
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isRawPayload } from "@core/util/isJsonPayload"
-import { decodeAddress } from "@polkadot/util-crypto"
 import { compact } from "@polkadot-api/substrate-bindings"
 import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
+import { decodeSs58Address } from "@talismn/crypto"
 import { fromHex } from "@talismn/scale"
 import { u8aConcat, u8aToU8a, u8aWrapBytes } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -66,7 +66,7 @@ const getQrSignPayload = (
       PV_PREFIX_SUBSTRATE,
       PV_PREFIX_CRYPTO_SR25519,
       PV_CMD_SIGN_MESSAGE,
-      decodeAddress(account.address),
+      decodeSs58Address(account.address)[0],
       u8aWrapBytes(payload.data),
       u8aToU8a(account.genesisHash || POLKADOT_GENESIS_HASH)
     )
@@ -87,7 +87,7 @@ const getQrSignPayload = (
         PV_PREFIX_SUBSTRATE,
         PV_PREFIX_CRYPTO_SR25519,
         PV_CMD_SIGN_TX_WITH_PROOF,
-        decodeAddress(account.address),
+        decodeSs58Address(account.address)[0],
         fromHex(proof),
         u8aToU8a(encodedPayload),
         u8aToU8a(payload.genesisHash)
@@ -96,7 +96,7 @@ const getQrSignPayload = (
         PV_PREFIX_SUBSTRATE,
         PV_PREFIX_CRYPTO_SR25519,
         PV_CMD_SIGN_TX,
-        decodeAddress(account.address),
+        decodeSs58Address(account.address)[0],
         u8aToU8a(encodedPayload),
         u8aToU8a(payload.genesisHash)
       )

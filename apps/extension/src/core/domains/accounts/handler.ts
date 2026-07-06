@@ -1,7 +1,4 @@
 import { log } from "@common/log"
-import type { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import {
   addressFromMnemonic,
   base58,
@@ -20,6 +17,7 @@ import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
+import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "../../types/pjsInterop"
 import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
 import { encodePjsKeyringPairJson } from "../keyring/pjsKeystore"
 import { keyringStore } from "../keyring/store"
@@ -44,6 +42,7 @@ import type {
   RequestAddressLookup,
   RequestNextDerivationPath,
   ResponseAccountExport,
+  ResponseAccountsExport,
 } from "./types"
 
 // existing values for the method field, prior to keyring migration
@@ -92,7 +91,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const options: AddAccountKeypairOptions[] = unlockedPairs.map((json) => {
       return {
-        name: json.meta?.name || "Json Import",
+        name: (json.meta?.name as string) || "Json Import",
         curve: json.encoding.content[1] as KeypairCurve,
         secretKey: getSecretKeyFromPjsJson(json, ""),
       }
@@ -144,7 +143,7 @@ export default class AccountsHandler extends ExtensionHandler {
           { address: account.address, name: account.name, curve },
           secretKey,
           exportPw
-        ) as KeyringPair$Json,
+        ),
       }
     })
     if (err) throw new Error(val as string)
@@ -170,7 +169,7 @@ export default class AccountsHandler extends ExtensionHandler {
         ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve)
     )
 
-    const jsonAccounts: KeyringPair$Json[] = []
+    const jsonAccounts: PjsKeyringPairJson[] = []
 
     // fetch secretKeys sequentially to avoid lock issues
     for (const account of accountsToExport) {
@@ -182,17 +181,17 @@ export default class AccountsHandler extends ExtensionHandler {
         )
       )
       if (err) throw new Error(val as string)
-      jsonAccounts.push(val as KeyringPair$Json)
+      jsonAccounts.push(val as PjsKeyringPairJson)
     }
 
     // export accounts the same way as keyring.backupAccounts() from @polkadot/ui-keyring
-    const exportedJson = {
+    const exportedJson: PjsKeyringPairsJson = {
       ...encryptPjsKeystore(stringToU8a(JSON.stringify(jsonAccounts)), ["batch-pkcs8"], exportPw),
       accounts: jsonAccounts.map((account) => ({
         address: account.address,
         meta: account.meta,
       })),
-    } as KeyringPairs$Json
+    }
 
     return { exportedJson }
   }

@@ -1,4 +1,4 @@
-import { decodeAddress } from "@polkadot/util-crypto"
+import { decodeSs58Address } from "@talismn/crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { Toggle } from "@ui/components/Toggle"
 import {
@@ -208,7 +208,7 @@ const parseAddress = (data: string) => {
   const isSubstrateAddress = prefix === "substrate"
   const isEthereumAddress = prefix === "ethereum"
   const isAddress = isSubstrateAddress || isEthereumAddress
-  if (isSubstrateAddress) decodeAddress(address) // throws if invalid
+  if (isSubstrateAddress) decodeSs58Address(address) // throws if invalid
 
   const genesisHash = isEthereumAddress ? null : rest[0]
   const name = isEthereumAddress ? rest.slice(1) : rest

@@ -1,7 +1,9 @@
-import type { KeypairType } from "@polkadot/util-crypto/types"
 import type { KeypairCurve } from "@talismn/crypto"
 
-export const pjsKeypairTypeToCurve = (type: KeypairType): KeypairCurve => {
+/** Same union as `KeypairType` from `@polkadot/util-crypto/types` */
+export type PjsKeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum"
+
+export const pjsKeypairTypeToCurve = (type: PjsKeypairType): KeypairCurve => {
   switch (type) {
     case "ed25519":
     case "sr25519":
@@ -11,7 +13,7 @@ export const pjsKeypairTypeToCurve = (type: KeypairType): KeypairCurve => {
   }
 }
 
-export const curveToPjsKeypairType = (curve: KeypairCurve): KeypairType => {
+export const curveToPjsKeypairType = (curve: KeypairCurve): PjsKeypairType => {
   switch (curve) {
     case "ed25519":
     case "sr25519":

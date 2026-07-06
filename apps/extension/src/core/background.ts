@@ -1,6 +1,5 @@
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
-import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { assert } from "@talismn/util"
 
 import { sentry } from "./config/sentry"
@@ -30,19 +29,6 @@ self.addEventListener("unhandledrejection", (event) => {
   sentry.captureException(event.reason, {
     mechanism: { handled: false, type: "onunhandledrejection" },
   })
-})
-
-// Initialize @polkadot/util-crypto WASM module at startup.
-// Vite loads WASM asynchronously, so we must ensure readiness before handling
-// any requests that might touch WASM-only interfaces.
-const cryptoReady = (async (): Promise<void> => {
-  const ok = await cryptoWaitReady()
-  if (!ok) throw new Error("Unable to initialize @polkadot/util-crypto WASM")
-  log.debug("@polkadot/util-crypto WASM initialized")
-})().catch((err) => {
-  log.error("Failed to initialize crypto WASM", err)
-  sentry.captureException(err)
-  throw err
 })
 
 // Use chrome.action (MV3) or chrome.browserAction (MV2) for badge
@@ -84,9 +70,6 @@ chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
 // Migrations occur on login to ensure that password is present for any migrations that require it
 const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   if (isLoggedIn === "TRUE") {
-    // Migrations and anything that touches keyring/crypto must wait for WASM init.
-    await cryptoReady
-
     const password = await passwordStore.getPassword()
     if (!password) {
       sentry.captureMessage("Unable to run migrations, no password present")
@@ -127,15 +110,7 @@ chrome.runtime.onConnect.addListener((_port): void => {
   let port: chrome.runtime.Port | undefined = _port
 
   // biome-ignore lint/suspicious/noExplicitAny: it is literally anything
-  const messageHandler = async (data: any) => {
-    try {
-      await cryptoReady
-    } catch {
-      // Crypto WASM init failed; do not attempt to process requests.
-      port?.disconnect()
-      return
-    }
-
+  const messageHandler = (data: any) => {
     if (port) talismanHandler(data, port)
   }
   port.onMessage.addListener(messageHandler)

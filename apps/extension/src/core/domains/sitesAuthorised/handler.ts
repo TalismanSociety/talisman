@@ -1,5 +1,4 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
-import { base58, ed25519 } from "@talismn/crypto"
+import { base58, ed25519, isEthereumAddress } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
 import { serializeOffchainMessage } from "@talismn/solana"
 import { assert } from "@talismn/util"

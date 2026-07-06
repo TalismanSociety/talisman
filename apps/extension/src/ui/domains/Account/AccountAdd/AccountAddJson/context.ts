@@ -1,8 +1,7 @@
 import { log } from "@common/log"
 import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Account } from "@core/domains/keyring/exports"
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "@core/types/pjsInterop"
 import { type Address, Balances } from "@talismn/balances"
 import {
   base64,
@@ -34,19 +33,19 @@ export type JsonImportAccount = {
   isLoading: boolean
 }
 
-type SingleAccountJsonFile = { type: "single"; content: KeyringPair$Json }
+type SingleAccountJsonFile = { type: "single"; content: PjsKeyringPairJson }
 type MultiAccountJsonFile = {
   type: "multi"
-  content: KeyringPairs$Json
+  content: PjsKeyringPairsJson
 }
 type UnknownAccountJsonFile = SingleAccountJsonFile | MultiAccountJsonFile
 
 type UnknownJson = { address?: string; accounts?: unknown[] }
 
-const isMultiAccountJson = (json: UnknownJson): json is UnknownJson & KeyringPairs$Json => {
+const isMultiAccountJson = (json: UnknownJson): json is UnknownJson & PjsKeyringPairsJson => {
   return json.accounts !== undefined
 }
-const isSingleAccountJson = (json: UnknownJson): json is UnknownJson & KeyringPair$Json => {
+const isSingleAccountJson = (json: UnknownJson): json is UnknownJson & PjsKeyringPairJson => {
   return json.address !== undefined
 }
 
@@ -58,10 +57,10 @@ const SEED_LENGTH = 32
 
 /** local replacement for the polkadot-js KeyringPair used by the previous implementation */
 type JsonImportPair = {
-  json: KeyringPair$Json
+  json: PjsKeyringPairJson
   address: string
   type: string
-  meta: KeyringPair$Json["meta"]
+  meta: PjsKeyringPairJson["meta"]
   isLocked: boolean
   secretKey: Uint8Array | null
   publicKey: Uint8Array | null
@@ -69,6 +68,13 @@ type JsonImportPair = {
 
 const u8aStartsWith = (bytes: Uint8Array, prefix: Uint8Array, offset = 0) =>
   prefix.every((byte, i) => bytes[offset + i] === byte)
+
+/** pjs keystores may carry `content`/`type` as plain strings (v1/v2) - normalize to arrays */
+const normalizeEncoding = (encoding: PjsKeyringPairJson["encoding"]) => ({
+  ...encoding,
+  content: Array.isArray(encoding.content) ? encoding.content : [encoding.content],
+  type: Array.isArray(encoding.type) ? encoding.type : [encoding.type],
+})
 
 /** parses a decrypted pkcs8 blob into secret + public keys (same layouts as polkadot-js decodePair) */
 const decodePkcs8 = (decrypted: Uint8Array): { secretKey: Uint8Array; publicKey: Uint8Array } => {
@@ -92,7 +98,7 @@ const decodePkcs8 = (decrypted: Uint8Array): { secretKey: Uint8Array; publicKey:
   return { secretKey, publicKey }
 }
 
-const createPairFromJson = (json: KeyringPair$Json): JsonImportPair => {
+const createPairFromJson = (json: PjsKeyringPairJson): JsonImportPair => {
   const cryptoType = Array.isArray(json.encoding.content) ? json.encoding.content[1] : "ed25519"
 
   return {
@@ -108,13 +114,12 @@ const createPairFromJson = (json: KeyringPair$Json): JsonImportPair => {
 
 const unlockPair = (pair: JsonImportPair, password: string) => {
   const { encoded, encoding } = pair.json
-  const encType = Array.isArray(encoding.type) ? encoding.type : [encoding.type]
 
   // pjs also supports hex-encoded keystores - normalize to base64 for the decrypt helper
   const encodedB64 = isHexString(encoded) ? base64.encode(hexToU8a(encoded)) : encoded
 
   const decrypted = decryptPjsKeystore(
-    { encoded: encodedB64, encoding: { ...encoding, type: encType } },
+    { encoded: encodedB64, encoding: normalizeEncoding(encoding) },
     password
   )
   const { secretKey, publicKey } = decodePkcs8(decrypted)
@@ -216,16 +221,10 @@ const useJsonAccountImportProvider = () => {
             } else if (file.type === "multi") {
               const { encoded, encoding } = file.content
               const data = decryptPjsKeystore(
-                {
-                  encoded,
-                  encoding: {
-                    ...encoding,
-                    type: Array.isArray(encoding.type) ? encoding.type : [encoding.type],
-                  },
-                },
+                { encoded, encoding: normalizeEncoding(encoding) },
                 password
               )
-              const accounts = JSON.parse(u8aToString(data)) as KeyringPair$Json[]
+              const accounts = JSON.parse(u8aToString(data)) as PjsKeyringPairJson[]
               const pairs = accounts.map(createPairFromJson)
 
               setPairs(pairs)
@@ -368,7 +367,7 @@ const useJsonAccountImportProvider = () => {
     }
 
     // same shape as pjs pair.toJson() without password: unencrypted pkcs8, base64-encoded
-    const unlockedPairs = pairsToImport.map((pair): KeyringPair$Json => {
+    const unlockedPairs = pairsToImport.map((pair): PjsKeyringPairJson => {
       assert(pair.secretKey && pair.publicKey, "Account is locked")
       const pkcs8 = u8aConcat(PKCS8_HEADER, pair.secretKey, PKCS8_DIVIDER, pair.publicKey)
       return {
@@ -380,7 +379,7 @@ const useJsonAccountImportProvider = () => {
           version: "3",
         },
         meta: pair.meta,
-      } as KeyringPair$Json
+      }
     })
 
     return api.accountCreateFromJson(unlockedPairs)

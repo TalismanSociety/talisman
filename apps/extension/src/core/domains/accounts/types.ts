@@ -1,10 +1,7 @@
 import type {
   AccountJson,
   RequestAccountSubscribe,
-  ResponseAccountExport,
-  ResponseAccountsExport,
 } from "@polkadot/extension-base/background/types"
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { KeypairCurve } from "@talismn/crypto"
 import type {
@@ -16,11 +13,20 @@ import type {
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { HexString } from "@talismn/util"
 import type { Address } from "../../types/base"
+import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "../../types/pjsInterop"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 
 export type { RequestAccountList } from "@polkadot/extension-base/background/types"
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
-export type { AccountJson, ResponseAccountExport }
+export type { AccountJson }
+
+export interface ResponseAccountExport {
+  exportedJson: PjsKeyringPairJson
+}
+
+export interface ResponseAccountsExport {
+  exportedJson: PjsKeyringPairsJson
+}
 
 // account types ----------------------------------
 
@@ -134,7 +140,7 @@ export enum SubstrateLedgerAppType {
 }
 
 export interface RequestAccountCreateFromJson {
-  unlockedPairs: KeyringPair$Json[]
+  unlockedPairs: PjsKeyringPairJson[]
 }
 
 export interface RequestAccountExternalSetIsPortfolio {

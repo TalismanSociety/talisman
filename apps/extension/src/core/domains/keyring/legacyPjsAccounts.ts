@@ -17,13 +17,22 @@ const isLegacyPjsAccountJson = (value: unknown): value is LegacyPjsAccountJson =
   typeof (value as LegacyPjsAccountJson).address === "string" &&
   !!(value as LegacyPjsAccountJson).encoding
 
-export const getLegacyPjsAccounts = async (): Promise<LegacyPjsAccountJson[]> => {
+export const getLegacyPjsAccountEntries = async (): Promise<
+  [key: string, json: LegacyPjsAccountJson][]
+> => {
   const all = await chrome.storage.local.get(null)
-  return Object.entries(all)
-    .filter(([key]) => key.startsWith("account:0x"))
-    .map(([, json]) => json)
-    .filter(isLegacyPjsAccountJson)
+  return Object.entries(all).filter(
+    (entry): entry is [string, LegacyPjsAccountJson] =>
+      entry[0].startsWith("account:0x") && isLegacyPjsAccountJson(entry[1])
+  )
 }
+
+export const getLegacyPjsAccounts = async (): Promise<LegacyPjsAccountJson[]> =>
+  (await getLegacyPjsAccountEntries()).map(([, json]) => json)
+
+/** Persists a legacy pjs account json back to its storage slot (`account:0x<publicKey>`) */
+export const saveLegacyPjsAccount = (key: string, json: LegacyPjsAccountJson): Promise<void> =>
+  chrome.storage.local.set({ [key]: json })
 
 /** pjs keypair type of a legacy account (same fallback as polkadot-js createFromJson) */
 export const getLegacyPjsAccountType = (json: LegacyPjsAccountJson): string =>

@@ -1,11 +1,11 @@
 import { log } from "@common/log"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import {
   entropyToSeed,
   getPublicKeyFromSecret,
   mnemonicToEntropy,
   signSubstrate,
 } from "@talismn/crypto"
-import type { DotNetwork } from "@talismn/chaindata-provider"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@talismn/util"
 
 import { appStore } from "../../domains/app/store.app"
