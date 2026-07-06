@@ -13,7 +13,6 @@ import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
 import { getSapiConnector } from "./helpers/getSapiConnector"
 import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
-import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { hasEvent } from "./helpers/hasEvent"
 import { isApiAvailable } from "./helpers/isApiAvailable"
 import { submit } from "./helpers/submit"
@@ -93,8 +92,6 @@ export const getScaleApi = (
 
     getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[]) =>
       getRuntimeCallResult<T>(chain, apiName, method, args),
-
-    getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(chain, payload),
 
     submit: (
       payload: SignerPayloadJSON,

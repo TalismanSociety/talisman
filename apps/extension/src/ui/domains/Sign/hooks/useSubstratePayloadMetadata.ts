@@ -1,6 +1,9 @@
 import { log } from "@common/log"
+import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
+import { getPjsTxHelper } from "@polkadot-api/tx-utils"
+import { mergeUint8 } from "@polkadot-api/utils"
 import { type DotNetwork, isNetworkDot, type Token } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
@@ -8,7 +11,6 @@ import { assert, hexToNumber, u8aToHex } from "@talismn/util"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useNetworkByGenesisHash, useToken } from "@ui/state/chaindata"
-import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 
 export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const network = useNetworkByGenesisHash(payload?.genesisHash)
@@ -52,12 +54,10 @@ const getSubstratePayloadMetadata = async ({
   try {
     const specVersion = hexToNumber(payload.specVersion)
 
+    // metadata must be loaded by backend, this leverages its metadata cache
     // metadata v15 is required by the shortener
-    const { registry, metadataRpc } = await getFrontendTypeRegistry(
-      network,
-      payload.specVersion,
-      payload.signedExtensions
-    )
+    const metadataDef = await api.subChainMetadata(payload.genesisHash, specVersion)
+    const metadataRpc = getMetadataRpcFromDef(metadataDef)
     assert(metadataRpc, "Unable to get metadata rpc")
 
     const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
@@ -93,7 +93,6 @@ const getSubstratePayloadMetadata = async ({
       return {
         txMetadata: undefined,
         metadataHash: undefined,
-        registry,
         metadataRpc,
         payloadWithMetadataHash: payload,
         hasCheckMetadataHash,
@@ -103,7 +102,7 @@ const getSubstratePayloadMetadata = async ({
     const metadataHashInputs = {
       tokenSymbol: token.symbol,
       decimals: token.decimals,
-      base58Prefix: registry.chainSS58 ?? 42,
+      base58Prefix: sapi?.base58Prefix ?? network.prefix,
       specName: network.specName,
       specVersion,
     }
@@ -121,15 +120,15 @@ const getSubstratePayloadMetadata = async ({
         } as SignerPayloadJSON)
       : payload
 
-    const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)
-    const hexPayload = u8aToHex(extPayload.toU8a(true))
+    const { callData, extra, additionalSigned } =
+      getPjsTxHelper(metadataRpc)(payloadWithMetadataHash)
+    const barePayload = mergeUint8([callData, extra, additionalSigned])
 
-    const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(hexPayload)
+    const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)
 
     return {
       txMetadata: u8aToHex(txMetadata),
       metadataHash,
-      registry,
       metadataRpc,
       payloadWithMetadataHash,
       hasCheckMetadataHash,

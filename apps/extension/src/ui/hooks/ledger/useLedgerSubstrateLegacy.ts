@@ -2,7 +2,6 @@ import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import type { TypeRegistry } from "@polkadot/types"
 import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isAddressEqual } from "@talismn/crypto"
@@ -68,13 +67,8 @@ export const useLedgerSubstrateLegacy = (genesis?: `0x${string}` | null) => {
   )
 
   const sign = useCallback(
-    (
-      payload: SignerPayloadJSON | SignerPayloadRaw,
-      account: AccountLedgerPolkadot,
-      registry?: TypeRegistry
-    ) => {
+    (payload: SignerPayloadJSON | SignerPayloadRaw, account: AccountLedgerPolkadot) => {
       if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
-      if (isJsonPayload(payload) && !registry) throw getTalismanLedgerError("Missing registry.")
 
       return withLedger((ledger) =>
         isJsonPayload(payload)

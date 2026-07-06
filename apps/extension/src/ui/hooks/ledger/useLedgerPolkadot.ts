@@ -2,7 +2,6 @@ import type { AccountLedgerPolkadot, LedgerPolkadotCurve } from "@core/domains/k
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import type { TypeRegistry } from "@polkadot/types"
 import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isAddressEqual } from "@talismn/crypto"
@@ -59,11 +58,10 @@ export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
     (
       payload: SignerPayloadJSON | SignerPayloadRaw,
       account: AccountLedgerPolkadot,
-      registry?: TypeRegistry | null,
       txMetadata?: string | null
     ) => {
       return withLedger((ledger) => {
-        return signPayload(ledger, payload, account, registry, txMetadata)
+        return signPayload(ledger, payload, account, txMetadata)
       })
     },
     [withLedger]
@@ -151,7 +149,6 @@ const signPayload = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
   account: AccountLedgerPolkadot,
-  registry?: TypeRegistry | null,
   txMetadata?: string | null
 ) => {
   if (!ledger) throw new Error("Ledger not connected")
@@ -183,7 +180,6 @@ const signPayload = async (
       throw getTalismanLedgerError(
         t("This dapp needs to be updated in order to support Ledger signing.")
       )
-    if (!registry) throw getTalismanLedgerError(t("Missing registry."))
 
     const hasCheckMetadataHash = payload.signedExtensions.includes("CheckMetadataHash")
     if (!hasCheckMetadataHash)

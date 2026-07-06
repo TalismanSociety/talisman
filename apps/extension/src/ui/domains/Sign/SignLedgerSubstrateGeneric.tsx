@@ -20,7 +20,6 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   payload,
   containerId,
   shortMetadata,
-  registry,
   color,
 }) => {
   const account = useAccountByAddress(payload?.address)
@@ -42,12 +41,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     setIsSigning(true)
 
     try {
-      const signature = await sign(
-        payload,
-        account as AccountLedgerPolkadot,
-        registry,
-        shortMetadata
-      )
+      const signature = await sign(payload, account as AccountLedgerPolkadot, shortMetadata)
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })
@@ -58,17 +52,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     } finally {
       onSentToDevice?.(false)
     }
-  }, [
-    payload,
-    onSigned,
-    account,
-    onSentToDevice,
-    setIsSigning,
-    setError,
-    registry,
-    shortMetadata,
-    sign,
-  ])
+  }, [payload, onSigned, account, onSentToDevice, setIsSigning, setError, shortMetadata, sign])
 
   return (
     <SignLedgerBase

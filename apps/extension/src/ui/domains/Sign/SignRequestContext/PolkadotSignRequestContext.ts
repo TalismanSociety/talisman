@@ -74,12 +74,11 @@ const usePolkadotSigningRequestProvider = ({
   const { data: payloadMetadata } = useSubstratePayloadMetadataSuspense(jsonPayload)
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
-  const [modifiedPayload, registry, shortMetadata, sapi, metadataRpc] = useMemo(() => {
+  const [modifiedPayload, shortMetadata, sapi, metadataRpc] = useMemo(() => {
     return !jsonPayload || !payloadMetadata
-      ? [undefined, undefined, undefined, undefined, undefined]
+      ? [undefined, undefined, undefined, undefined]
       : [
           payloadMetadata.payloadWithMetadataHash,
-          payloadMetadata.registry,
           payloadMetadata.txMetadata,
           payloadMetadata.sapi,
           payloadMetadata.metadataRpc,
@@ -200,7 +199,6 @@ const usePolkadotSigningRequestProvider = ({
     fee,
     isLoadingFee,
     errorFee,
-    registry,
     shortMetadata,
     sapi,
     metadataRpc,
