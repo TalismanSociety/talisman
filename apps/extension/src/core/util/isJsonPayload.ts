@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "../types/pjsInterop"
 
 export const isJsonPayload = (
   value: SignerPayloadJSON | SignerPayloadRaw

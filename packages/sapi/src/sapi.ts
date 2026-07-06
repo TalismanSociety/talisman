@@ -1,7 +1,4 @@
-import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { parseMetadataRpc } from "@talismn/scale"
-
 import { getCallDocs } from "./helpers/getCallDocs"
 import { getChainInfo } from "./helpers/getChainInfo"
 import { getConstantValue } from "./helpers/getConstantValue"
@@ -17,6 +14,7 @@ import { hasEvent } from "./helpers/hasEvent"
 import { isApiAvailable } from "./helpers/isApiAvailable"
 import { submit } from "./helpers/submit"
 import type { Chain } from "./helpers/types"
+import type { ExtDef, SignerPayloadJSON } from "./pjsInterop"
 import type {
   DecodedCall,
   PayloadSignerConfig,

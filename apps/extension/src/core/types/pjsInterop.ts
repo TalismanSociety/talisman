@@ -1,4 +1,70 @@
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
+/** Same shape as `SignerPayloadJSON` from `@polkadot/types/types` */
+export interface SignerPayloadJSON {
+  /** The ss-58 encoded address */
+  address: string
+  /** The id of the asset used to pay fees, in hex */
+  assetId?: HexString
+  /** The checkpoint hash of the block, in hex */
+  blockHash: HexString
+  /** The checkpoint block number, in hex */
+  blockNumber: HexString
+  /** The era for this transaction, in hex */
+  era: HexString
+  /** The genesis hash of the chain, in hex */
+  genesisHash: HexString
+  /** The metadataHash for the CheckMetadataHash SignedExtension, as hex */
+  metadataHash?: HexString
+  /** The encoded method (with arguments) in hex */
+  method: string
+  /** The mode for the CheckMetadataHash SignedExtension, in hex */
+  mode?: number
+  /** The nonce for this transaction, in hex */
+  nonce: HexString
+  /** The current spec version for the runtime */
+  specVersion: HexString
+  /** The tip for this transaction, in hex */
+  tip: HexString
+  /** The current transaction version for the runtime */
+  transactionVersion: HexString
+  /** The applicable signed extensions for this runtime */
+  signedExtensions: string[]
+  /** The version of the extrinsic we are dealing with */
+  version: number
+  /** Optional flag that enables the use of the `signedTransaction` field */
+  withSignedTransaction?: boolean
+}
+
+/** Same shape as `SignerPayloadRaw` from `@polkadot/types/types` */
+export interface SignerPayloadRaw {
+  /** The hex-encoded data for this request */
+  data: string
+  /** The ss-58 encoded address */
+  address: string
+  /** The type of the contained data */
+  type: "bytes" | "payload"
+}
+
+/** Same shape as `SignerResult` from `@polkadot/types/types` */
+export interface SignerResult {
+  /** The id for this request */
+  id: number
+  /** The resulting signature in hex */
+  signature: HexString
+  /** The signed transaction, when `withSignedTransaction` was enabled */
+  signedTransaction?: HexString | Uint8Array
+}
+
+/** Same shape as `Message` from `@polkadot/extension-base/types` (dapp window message envelope) */
+export interface PjsWindowMessage extends MessageEvent {
+  data: {
+    error?: string
+    id: string
+    origin: string
+    response?: string
+    subscription?: string
+  }
+}
+
 import type { HexString } from "@talismn/util"
 
 /**

@@ -1,9 +1,8 @@
-import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
 import type { RpcTransactionRequest } from "viem"
-
 import type { BaseRequest, BaseRequestId } from "../../types/base"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "../../types/pjsInterop"
 import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
 
 // structural equivalents of the legacy @polkadot/extension-base signing request types

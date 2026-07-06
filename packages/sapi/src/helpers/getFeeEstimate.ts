@@ -1,10 +1,9 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { createV4Tx } from "@polkadot-api/signers-common"
 import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { fromHex } from "@polkadot-api/utils"
 import { getSs58AddressInfo } from "polkadot-api"
-
 import log from "../log"
+import type { SignerPayloadJSON } from "../pjsInterop"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import type { Chain, ChainInfo } from "./types"

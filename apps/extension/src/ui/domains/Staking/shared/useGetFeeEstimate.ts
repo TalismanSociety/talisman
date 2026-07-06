@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "@core/types/pjsInterop"
 import type { ScaleApi } from "@talismn/sapi"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 

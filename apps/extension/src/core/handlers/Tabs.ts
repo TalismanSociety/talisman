@@ -1,7 +1,6 @@
 import { PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { assert } from "@talismn/util"
 import { combineLatest } from "rxjs"
 import { sentry } from "../config/sentry"
@@ -47,6 +46,8 @@ import type {
   RequestRpcSubscribe,
   RequestRpcUnsubscribe,
   ResponseRpcListProviders,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
 } from "../types/pjsInterop"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"

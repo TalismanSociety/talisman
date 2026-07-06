@@ -1,5 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/pjsInterop"
 import type { HexString } from "@talismn/util"
 import type { ButtonProps } from "@ui/components/Button"
 import { useAccountByAddress } from "@ui/state/accounts"

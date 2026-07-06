@@ -5,7 +5,7 @@ import type {
   EncryptResult,
 } from "@core/domains/encrypt/types"
 import type { SendRequest } from "@core/types"
-import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@core/types/pjsInterop"
 
 import type {
   Injected,
