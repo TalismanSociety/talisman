@@ -1,8 +1,6 @@
 import { PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import type {
   RequestRpcSend,
   RequestRpcSubscribe,
@@ -157,7 +155,7 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
-    return signSubstrate(url, new RequestBytesSign(request), account, port)
+    return signSubstrate(url, { payload: request }, account, port)
   }
 
   private async extrinsicSign(
@@ -170,7 +168,7 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
-    return signSubstrate(url, new RequestExtrinsicSign(request), account, port)
+    return signSubstrate(url, { payload: request }, account, port)
   }
 
   private async messageEncrypt(
