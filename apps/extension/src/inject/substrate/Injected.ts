@@ -23,6 +23,10 @@ import type {
 // that is dead weight here: the background constructs RpcState with no providers, so
 // `listProviders` always returns {} and `startProvider`/`send`/`subscribe` always throw.
 // Dapp-facing message semantics below are identical to the upstream classes.
+//
+// All methods are arrow-function fields: upstream methods never touch `this` (module-level
+// sendRequest), and dapps rely on it — @polkadot/extension-dapp's web3AccountsSubscribe
+// destructures `subscribe` off `accounts` and calls it detached.
 
 class Accounts implements InjectedAccounts {
   readonly #sendRequest: SendRequest
@@ -31,11 +35,11 @@ class Accounts implements InjectedAccounts {
     this.#sendRequest = sendRequest
   }
 
-  public get(anyType?: boolean): Promise<InjectedAccount[]> {
+  public get = (anyType?: boolean): Promise<InjectedAccount[]> => {
     return this.#sendRequest("pub(accounts.list)", { anyType })
   }
 
-  public subscribe(cb: (accounts: InjectedAccount[]) => void | Promise<void>): Unsubcall {
+  public subscribe = (cb: (accounts: InjectedAccount[]) => void | Promise<void>): Unsubcall => {
     let id: string | null = null
 
     this.#sendRequest("pub(accounts.subscribe)", null, cb)
@@ -59,11 +63,11 @@ class Metadata implements InjectedMetadata {
     this.#sendRequest = sendRequest
   }
 
-  public get(): Promise<InjectedMetadataKnown[]> {
+  public get = (): Promise<InjectedMetadataKnown[]> => {
     return this.#sendRequest("pub(metadata.list)")
   }
 
-  public provide(definition: MetadataDef): Promise<boolean> {
+  public provide = (definition: MetadataDef): Promise<boolean> => {
     return this.#sendRequest("pub(metadata.provide)", definition)
   }
 }
@@ -78,25 +82,25 @@ export class TalismanSigner {
     this.#sendRequest = sendRequest
   }
 
-  public async signPayload(payload: SignerPayloadJSON): Promise<SignerResult> {
+  public signPayload = async (payload: SignerPayloadJSON): Promise<SignerResult> => {
     const id = ++nextSignerId
     const result = await this.#sendRequest("pub(extrinsic.sign)", payload)
 
     return { ...result, id }
   }
 
-  public async signRaw(payload: SignerPayloadRaw): Promise<SignerResult> {
+  public signRaw = async (payload: SignerPayloadRaw): Promise<SignerResult> => {
     const id = ++nextSignerId
     const result = await this.#sendRequest("pub(bytes.sign)", payload)
 
     return { ...result, id }
   }
 
-  public async encryptMessage(payload: EncryptPayload): Promise<EncryptResult> {
+  public encryptMessage = async (payload: EncryptPayload): Promise<EncryptResult> => {
     return await this.#sendRequest("pub(encrypt.encrypt)", payload)
   }
 
-  public async decryptMessage(payload: DecryptPayload): Promise<DecryptResult> {
+  public decryptMessage = async (payload: DecryptPayload): Promise<DecryptResult> => {
     return await this.#sendRequest("pub(encrypt.decrypt)", payload)
   }
 }

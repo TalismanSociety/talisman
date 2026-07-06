@@ -184,7 +184,7 @@
     "chore:generate-init-data": "tsx scripts/generateRemoteConfigInitData.ts",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
-    "dev:kill": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true",
+    "dev:kill": "lsof -ti:8254 | xargs kill -9 2>/dev/null || true",
     "build": "wxt zip",
     "build:firefox": "wxt zip -b firefox --mv3",
     "build:prod": "BUILD_TYPE=production wxt zip",

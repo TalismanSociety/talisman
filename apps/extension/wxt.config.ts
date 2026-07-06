@@ -459,7 +459,8 @@ export default defineConfig({
   dev: {
     server: {
       host: "0.0.0.0",
-      port: 3000,
+      // 8254 = "TALI" on phone keypad, avoids common dev ports
+      port: 8254,
     },
     // Persist browser profile between restarts (keeps extension storage, logins, etc.)
     reloadCommand: "Alt+R",
