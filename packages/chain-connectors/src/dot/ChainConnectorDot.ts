@@ -1,11 +1,9 @@
-import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
 import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
-import type { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
-import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
+import { getWsProvider, type StatusChange, WsEvent, type WsJsonRpcProvider } from "polkadot-api/ws"
 
 import log from "../log"
-import type { IChainConnectorDot } from "./IChainConnectorDot"
-import { Websocket } from "./Websocket"
+import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 // errors that require an rpc fallback
 // https://docs.blastapi.io/blast-documentation/things-you-need-to-know/error-reference
@@ -13,6 +11,10 @@ const BAD_RPC_ERRORS: Record<string, string> = {
   "-32097": "Rate limit exceeded",
   "-32098": "Capacity exceeded",
 }
+
+const RESPONSE_TIMEOUT = 30_000 // max wait for an rpc response (including connection time)
+const KEEP_ALIVE_INTERVAL = 20_000 // periodic system_health to keep idle sockets alive (ws-provider kills quiet sockets after its 40s heartbeat)
+const STALE_NOTIFY_TIMEOUT = 30_000 // how long a chain can be disconnected before subscribers are notified
 
 export class ChainConnectionError extends Error {
   type: "CHAIN_CONNECTION_ERROR"
@@ -37,42 +39,41 @@ export class StaleRpcError extends Error {
     this.chainId = chainId
   }
 }
-export class WebsocketAllocationExhaustedError extends Error {
-  type: "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
-  chainId: string
-
-  constructor(chainId: string, options?: ErrorOptions) {
-    super(
-      `No websockets are available from the browser pool to connect to chain ${chainId}`,
-      options
-    )
-
-    this.type = "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
-    this.chainId = chainId
-  }
-}
-class CallerUnsubscribedError extends Error {
-  type: "CALLER_UNSUBSCRIBED_ERROR"
-  chainId: string
-  unsubscribeMethod: string
-
-  constructor(chainId: string, unsubscribeMethod: string, options?: ErrorOptions) {
-    super(`Caller unsubscribed from ${chainId}`, options)
-
-    this.type = "CALLER_UNSUBSCRIBED_ERROR"
-    this.chainId = chainId
-    this.unsubscribeMethod = unsubscribeMethod
-  }
-}
 
 type SocketUserId = number
 
+type Subscription = {
+  subscribeMethod: string
+  params: unknown[]
+  callback: SubscriptionCallback
+  /** cancels the pending subscribe request, if any */
+  cancelRequest: (() => void) | null
+  /** stops routing notifications to the callback */
+  stopFollow: (() => void) | null
+  serverSubId: string | number | null
+  unsubscribed: boolean
+}
+
+type Connection = {
+  chainId: DotNetworkId
+  provider: WsJsonRpcProvider
+  client: SubstrateClient
+  users: Set<SocketUserId>
+  subscriptions: Set<Subscription>
+  wasConnected: boolean
+  keepAliveInterval: ReturnType<typeof setInterval> | null
+  staleTimeout: ReturnType<typeof setTimeout> | null
+}
+
 /**
- * ChainConnector provides an interface similar to WsProvider, but with three points of difference:
+ * ChainConnector provides an interface similar to a websocket JSON-RPC provider, but with three points of difference:
  *
  * 1. ChainConnector methods all accept a `chainId` instead of an array of RPCs. RPCs are then fetched internally from chaindata.
- * 2. ChainConnector creates only one `WsProvider` per chain and ensures that all downstream requests to a chain share the one socket connection.
- * 3. Subscriptions return a callable `unsubscribe` method instead of an id.
+ * 2. ChainConnector creates only one socket connection per chain (via polkadot-api's ws-provider, which handles
+ *    endpoint rotation, reconnection and stale-socket detection) and ensures that all downstream requests to a chain
+ *    share that connection.
+ * 3. Subscriptions return a callable `unsubscribe` method instead of an id, and are automatically re-established
+ *    when the provider reconnects (possibly to another endpoint).
  *
  * Additionally, when run on the clientside of a dapp where `window.talismanSub` is available, instead of spinning up new websocket
  * connections this class will forward all requests through to the wallet backend - where another instance of this class will
@@ -80,75 +81,12 @@ type SocketUserId = number
  */
 export class ChainConnectorDot implements IChainConnectorDot {
   #chaindataChainProvider: IChaindataNetworkProvider
-  #connectionMetaDb?: TalismanConnectionMetaDatabase
 
-  #socketConnections: Record<DotNetworkId, Websocket> = {}
-  #socketKeepAliveIntervals: Record<DotNetworkId, ReturnType<typeof setInterval>> = {}
-  #socketUsers: Record<DotNetworkId, SocketUserId[]> = {}
+  #connections: Record<DotNetworkId, Connection> = {}
+  #pendingConnections: Record<DotNetworkId, Promise<Connection>> = {}
 
-  constructor(
-    chaindataChainProvider: IChaindataNetworkProvider,
-    connectionMetaDb?: TalismanConnectionMetaDatabase
-  ) {
+  constructor(chaindataChainProvider: IChaindataNetworkProvider) {
     this.#chaindataChainProvider = chaindataChainProvider
-    this.#connectionMetaDb = connectionMetaDb
-
-    if (this.#connectionMetaDb) {
-      this.#chaindataChainProvider.getNetworkIds("polkadot").then((chainIds) => {
-        // tidy up connectionMeta for chains which no longer exist
-        this.#connectionMetaDb?.chainPriorityRpcs.where("id").noneOf(chainIds).delete()
-        this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
-      })
-    }
-  }
-
-  /**
-   * Creates a facade over this ChainConnector which conforms to the PJS ProviderInterface
-   * @example // Using a chainConnector as a Provider for an ApiPromise
-   *   const provider = chainConnector.asProvider('polkadot')
-   *   const api = new ApiPromise({ provider })
-   */
-  asProvider(chainId: DotNetworkId): ProviderInterface {
-    const unsubHandler = new Map<string, (unsubscribeMethod: string) => void>()
-
-    const providerFacade: ProviderInterface = {
-      hasSubscriptions: true,
-      isClonable: false,
-      isConnected: true,
-      clone: () => providerFacade,
-      connect: () => Promise.resolve(),
-      disconnect: () => Promise.resolve(),
-      on: () => () => {},
-
-      // biome-ignore lint/suspicious/noExplicitAny: legacy
-      send: async <T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> =>
-        await this.send(chainId, method, params, isCacheable),
-
-      subscribe: async (
-        type: string,
-        method: string,
-        params: unknown[],
-        cb: ProviderInterfaceCallback
-      ): Promise<string> => {
-        const unsubscribe = await this.subscribe(chainId, method, type, params, cb)
-
-        const subscriptionId = this.getExclusiveRandomId(
-          [...unsubHandler.keys()].map(Number)
-        ).toString()
-        unsubHandler.set(subscriptionId, unsubscribe)
-
-        return subscriptionId
-      },
-
-      unsubscribe: async (_type: string, unsubscribeMethod: string, subscriptionId: string) => {
-        unsubHandler.get(subscriptionId)?.(unsubscribeMethod)
-        unsubHandler.delete(subscriptionId)
-
-        return true
-      },
-    }
-
-    return providerFacade
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -156,7 +94,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     chainId: DotNetworkId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean | undefined,
+    _isCacheable?: boolean | undefined,
     extraOptions?: {
       /**
        * Set to `true` if this query is speculative, i.e. if on some chains it's expected that it will raise a wasm unreachable error of the form:
@@ -173,13 +111,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
-        if (!chain) throw new Error(`Chain ${chainId} not found in store`)
-
-        const { genesisHash } = chain
-        if (typeof genesisHash !== "string")
-          throw new Error(`Chain ${chainId} has no genesisHash in store`)
-
+        const genesisHash = await this.getGenesisHash(chainId)
         return await talismanSub.send(genesisHash, method, params)
       } catch (error) {
         log.warn(
@@ -189,44 +121,29 @@ export class ChainConnectorDot implements IChainConnectorDot {
       }
     }
 
+    let socketUserId: SocketUserId
+    let connection: Connection
     try {
-      // biome-ignore lint/correctness/noInnerDeclarations: legacy
-      var [socketUserId, ws] = await this.connectChainSocket(chainId)
+      ;[socketUserId, connection] = await this.acquireConnection(chainId)
     } catch (error) {
       throw new StaleRpcError(chainId, { cause: error })
     }
 
     try {
-      // wait for ws to be ready, but don't wait forever
-      const timeout = 15_000 // 15 seconds in milliseconds
-      await this.waitForWs(ws, timeout)
-    } catch (error) {
-      await this.disconnectChainSocket(chainId, socketUserId)
-      throw new ChainConnectionError(chainId, { cause: error })
-    }
-
-    try {
-      const timeout = 30_000 // throw after 30 seconds if no response
-      // biome-ignore lint/correctness/noInnerDeclarations: legacy
-      var response = await Promise.race([
-        ws.send(method, params, isCacheable),
-        throwAfter(timeout, "TIMEOUT"),
-      ])
+      return await this.request<T>(connection, method, params)
     } catch (err) {
       const error = err as (Error & { code?: number; data?: unknown }) | null
 
       if (error?.message === "TIMEOUT") {
-        log.error(`ChainConnector timeout`, { chainId, endpoint: ws.endpoint, error })
-        await this.updateRpcPriority(chainId, ws.endpoint, "last")
-        await this.reset(chainId)
+        log.error(`ChainConnector timeout`, { chainId, error })
+        connection.provider.switch()
         throw new Error("Timeout")
       }
 
       const badRpcError = BAD_RPC_ERRORS[error?.code?.toString() ?? ""]
       if (badRpcError) {
-        log.error(`ChainConnector ${badRpcError}`, { error, chainId, endpoint: ws.endpoint })
-        await this.updateRpcPriority(chainId, ws.endpoint, "last")
-        await this.reset(chainId)
+        log.error(`ChainConnector ${badRpcError}`, { error, chainId })
+        connection.provider.switch()
         throw new Error(badRpcError)
       }
 
@@ -235,17 +152,13 @@ export class ChainConnectorDot implements IChainConnectorDot {
           `Failed to send ${method} on chain ${chainId}\nparams: ${JSON.stringify(params)}`,
           {
             error,
-            endpoint: ws.endpoint,
           }
         )
 
-      await this.disconnectChainSocket(chainId, socketUserId)
       throw error
+    } finally {
+      this.releaseConnection(chainId, socketUserId)
     }
-
-    await this.disconnectChainSocket(chainId, socketUserId)
-
-    return response
   }
 
   async subscribe(
@@ -253,18 +166,13 @@ export class ChainConnectorDot implements IChainConnectorDot {
     subscribeMethod: string,
     responseMethod: string,
     params: unknown[],
-    callback: ProviderInterfaceCallback,
+    callback: SubscriptionCallback,
     timeout: number | false = 30_000 // 30 seconds in milliseconds
   ): Promise<(unsubscribeMethod: string) => void> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
-        if (!chain) throw new Error(`Chain ${chainId} not found in store`)
-
-        const { genesisHash } = chain
-        if (typeof genesisHash !== "string")
-          throw new Error(`Chain ${chainId} has no genesisHash in store`)
+        const genesisHash = await this.getGenesisHash(chainId)
 
         const subscriptionId = await talismanSub.subscribe(
           genesisHash,
@@ -285,272 +193,300 @@ export class ChainConnectorDot implements IChainConnectorDot {
       }
     }
 
+    let socketUserId: SocketUserId
+    let connection: Connection
     try {
-      // biome-ignore lint/correctness/noInnerDeclarations: legacy
-      var [socketUserId, ws] = await this.connectChainSocket(chainId)
+      ;[socketUserId, connection] = await this.acquireConnection(chainId)
     } catch (error) {
       throw new StaleRpcError(chainId, { cause: error })
     }
 
-    // by using this `Deferred` promise
-    // (a promise which can be resolved or rejected by code outside of the scope of the promise's constructor)
-    // we can queue up our async cleanup on the promise and then immediately return an unsubscribe method to the caller
-    const unsubDeferred = Deferred()
-    // we return this to the caller so that they can let us know when they're no longer interested in this subscription
-    const unsubscribe = (unsubscribeMethod: string) =>
-      unsubDeferred.reject(new CallerUnsubscribedError(chainId, unsubscribeMethod))
-    // we queue up our work to clean up our subscription when this promise rejects
-    const callerUnsubscribed = unsubDeferred.promise
+    const subscription: Subscription = {
+      subscribeMethod,
+      params,
+      callback,
+      cancelRequest: null,
+      stopFollow: null,
+      serverSubId: null,
+      unsubscribed: false,
+    }
+    connection.subscriptions.add(subscription)
 
-    // used to detect when there are no more websockets available from the browser websocket pool
-    // in this scenario, we'll be waiting for ws.isReady until some existing sockets are closed
-    //
-    // while we're waiting, we'll send an error back to the caller so that they can show some useful
-    // info to the user
-    let noMoreSocketsTimeout: NodeJS.Timeout | undefined
+    // if the chain can't be reached at all, let the caller know after a while (the provider keeps retrying)
+    if (timeout && !connection.wasConnected) {
+      const staleWarning = setTimeout(() => {
+        if (!subscription.unsubscribed && !connection.wasConnected)
+          callback(new StaleRpcError(chainId), null)
+      }, timeout)
+      const clear = () => clearTimeout(staleWarning)
+      // piggyback on the follow setup to clear the warning once anything happens
+      const originalCallback = subscription.callback
+      subscription.callback = (error, result) => {
+        clear()
+        subscription.callback = originalCallback
+        originalCallback(error, result)
+      }
+    }
 
-    // create subscription asynchronously so that the caller can unsubscribe without waiting for
-    // the subscription to be created (which can take some time if e.g. the connection can't be established)
-    ;(async () => {
-      // wait for ws to be ready, but don't wait forever
-      // if timeout is number, cancel when timeout is reached (or caller unsubscribes)
-      // if timeout is false, only cancel when the caller unsubscribes
-      let unsubRpcStatus: (() => void) | null = null
-      try {
-        const unsubStale = ws.on(
-          "stale-rpcs",
-          ({ nextBackoffInterval }: { nextBackoffInterval?: number } = {}) => {
-            callback(new StaleRpcError(chainId), null)
+    this.startSubscription(connection, subscription)
 
-            if (this.#connectionMetaDb && nextBackoffInterval) {
-              const id = chainId
-              this.#connectionMetaDb.chainBackoffInterval.put(
-                { id, interval: nextBackoffInterval },
-                id
-              )
-            }
-          }
-        )
-        const unsubConnected = ws.on("connected", () => {
-          if (this.#connectionMetaDb) this.#connectionMetaDb.chainBackoffInterval.delete(chainId)
-        })
-        unsubRpcStatus = () => {
-          unsubStale()
-          unsubConnected()
+    return (unsubscribeMethod: string) => {
+      if (subscription.unsubscribed) return
+      subscription.unsubscribed = true
+
+      subscription.cancelRequest?.()
+      subscription.stopFollow?.()
+
+      // the connection may have been replaced by a reset() since we subscribed
+      const current = this.#connections[chainId]
+      if (subscription.serverSubId !== null && current)
+        try {
+          current.client
+            .request(unsubscribeMethod, [subscription.serverSubId])
+            .catch((error) => log.warn(`Failed to unsubscribe from ${chainId}`, error))
+        } catch (error) {
+          log.warn(`Failed to unsubscribe from ${chainId}`, error)
         }
 
-        noMoreSocketsTimeout = setTimeout(
-          () => callback(new WebsocketAllocationExhaustedError(chainId), null),
-          30_000 // 30 seconds in ms
-        )
-
-        if (timeout) await Promise.race([this.waitForWs(ws, timeout), callerUnsubscribed])
-        else await Promise.race([ws.isReady, callerUnsubscribed])
-
-        clearTimeout(noMoreSocketsTimeout)
-      } catch {
-        clearTimeout(noMoreSocketsTimeout)
-
-        unsubRpcStatus?.()
-        await this.disconnectChainSocket(chainId, socketUserId)
-        return
-      }
-
-      // create subscription on ws
-      // handle the scenarios where the caller unsubscribes before the subscription has been created and:
-      // - the subscriptionId is already set
-      // - the subscriptionId is not set yet, but will be
-      let subscriptionId: string | number | null = null
-      let disconnected = false
-      let unsubscribeMethod: string | undefined
-      try {
-        await Promise.race([
-          ws.subscribe(responseMethod, subscribeMethod, params, callback).then((id) => {
-            if (disconnected) {
-              unsubscribeMethod && ws.unsubscribe(responseMethod, unsubscribeMethod, id)
-            } else subscriptionId = id
-          }),
-          callerUnsubscribed,
-        ])
-      } catch (error) {
-        if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
-
-        unsubRpcStatus?.()
-        disconnected = true
-
-        if (subscriptionId !== null && unsubscribeMethod)
-          await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
-
-        await this.disconnectChainSocket(chainId, socketUserId)
-        return
-      }
-
-      // unsubscribe from ws subscription when the caller has unsubscribed
-      callerUnsubscribed
-        .catch(async (error) => {
-          // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
-          let unsubscribeMethod
-          if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
-
-          unsubRpcStatus?.()
-
-          if (subscriptionId !== null && unsubscribeMethod)
-            await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
-
-          await this.disconnectChainSocket(chainId, socketUserId)
-        })
-        .catch((error) => log.warn(error))
-    })()
-
-    return unsubscribe
+      current?.subscriptions.delete(subscription)
+      this.releaseConnection(chainId, socketUserId)
+    }
   }
 
   /**
-   * Kills current websocket if any
-   * Useful after changing rpc order to make sure it's applied for futher requests
+   * Kills and recreates the connection for a chain, if any.
+   * Useful after changing a network's rpcs to make sure the new list is applied for further requests.
+   * Active subscriptions are automatically re-established on the new connection.
    */
   async reset(chainId: DotNetworkId) {
     log.info("ChainConnector reset", chainId)
-    const ws = this.#socketConnections[chainId]
-    if (!ws) return
+    const connection = this.#connections[chainId]
+    if (!connection) return
 
-    try {
-      clearTimeout(this.#socketKeepAliveIntervals[chainId])
-      delete this.#socketConnections[chainId]
-      delete this.#socketUsers[chainId]
-      await ws.disconnect()
-    } catch (error) {
-      log.warn(`Error occurred reseting socket ${chainId}`, error)
+    this.destroyConnection(connection)
+    delete this.#connections[chainId]
+
+    // recreate a connection for the active subscriptions, if any
+    if (connection.subscriptions.size) {
+      try {
+        const fresh = await this.createConnection(chainId)
+        fresh.users = connection.users
+        fresh.subscriptions = connection.subscriptions
+        this.#connections[chainId] = fresh
+        for (const subscription of fresh.subscriptions) this.startSubscription(fresh, subscription)
+      } catch (error) {
+        log.warn(`Failed to recreate connection for ${chainId} after reset`, error)
+        for (const subscription of connection.subscriptions)
+          subscription.callback(new StaleRpcError(chainId, { cause: error }), null)
+      }
     }
   }
 
-  /**
-   * Wait for websocket to be ready, but don't wait forever
-   */
-  private async waitForWs(
-    ws: Websocket,
-    timeout: number | false = 30_000 // 30 seconds in milliseconds
-  ): Promise<void> {
-    const timer = timeout
-      ? sleep(timeout).then(() => {
-          throw new Error(`RPC connect timeout reached: ${ws.endpoint}`)
-        })
-      : false
+  /** Sends a request over a connection, throwing `Error("TIMEOUT")` if no response arrives in time */
+  private request<T>(
+    connection: Connection,
+    method: string,
+    params: unknown[],
+    timeoutMs = RESPONSE_TIMEOUT
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        cancel()
+        reject(new Error("TIMEOUT"))
+      }, timeoutMs)
 
-    await Promise.race([ws.isReady, timer].filter(isTruthy))
-  }
-
-  /**
-   * Connect to an RPC via chainId
-   *
-   * The caller must call disconnectChainSocket with the returned SocketUserId once they are finished with it
-   */
-  private async connectChainSocket(chainId: DotNetworkId): Promise<[SocketUserId, Websocket]> {
-    const rpcs = await this.getEndpoints(chainId)
-    const socketUserId = this.addSocketUser(chainId)
-
-    // retrieve next rpc backoff interval from connection meta db (if one exists)
-    let nextBackoffInterval: number | undefined
-    if (this.#connectionMetaDb)
-      nextBackoffInterval = (await this.#connectionMetaDb.chainBackoffInterval.get(chainId))
-        ?.interval
-
-    // NOTE: Make sure there are no calls to `await` between this check and the
-    // next step where we assign a `new Websocket` to `this.#socketConnections[chainId]`
-    //
-    // If there is an `await` between these two steps then there will be a race condition introduced.
-    // The result of this race condition will be the unnecessary creation of multiple instances of
-    // `Websocket` per chain, rather than the intended behaviour where every call to send/subscribe
-    // shares a single `Websocket` per chain.
-    if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
-
-    if (rpcs.length)
-      this.#socketConnections[chainId] = new Websocket(
-        rpcs,
-        undefined,
-        undefined,
-        nextBackoffInterval
-      )
-    else {
-      throw new Error(`No healthy RPCs available for chain ${chainId}`)
-    }
-
-    // on ws connected event, store current rpc as most recently connected rpc
-    if (this.#connectionMetaDb) {
-      this.#socketConnections[chainId].on("connected", () => {
-        if (!this.#connectionMetaDb) return
-
-        const id = chainId
-        const url = this.#socketConnections[chainId]?.endpoint
-        if (!url) return
-
-        this.updateRpcPriority(id, url, "first").catch((err) =>
-          log.warn(`updateRpcPriority failed`, err)
-        )
+      const cancel = connection.client._request<T, unknown>(method, params, {
+        onSuccess: (result) => {
+          clearTimeout(timer)
+          resolve(result)
+        },
+        onError: (error) => {
+          clearTimeout(timer)
+          reject(error)
+        },
       })
-    }
-    // set up healthcheck (keeps ws open when idle), don't wait for setup to complete
-    ;(async () => {
-      if (!this.#socketConnections[chainId])
-        return log.warn(`ignoring ${chainId} rpc ws healthcheck initialization: ws is not defined`)
-      await this.#socketConnections[chainId].isReady
-
-      if (this.#socketKeepAliveIntervals[chainId])
-        clearInterval(this.#socketKeepAliveIntervals[chainId])
-
-      const intervalMs = 10_000 // 10,000ms = 10s
-      this.#socketKeepAliveIntervals[chainId] = setInterval(() => {
-        if (!this.#socketConnections[chainId])
-          return log.warn(`skipping ${chainId} rpc ws healthcheck: ws is not defined`)
-
-        if (!this.#socketConnections[chainId].isConnected)
-          return log.warn(`skipping ${chainId} rpc ws healthcheck: ws is not connected`)
-
-        this.#socketConnections[chainId]
-          .send("system_health", [])
-          .catch((error) => log.warn(`Failed keep-alive for socket ${chainId}`, error))
-      }, intervalMs)
-    })()
-
-    return [socketUserId, this.#socketConnections[chainId]]
+    })
   }
 
-  private async disconnectChainSocket(
-    chainId: DotNetworkId,
-    socketUserId: SocketUserId
-  ): Promise<void> {
-    this.removeSocketUser(chainId, socketUserId)
+  /** Issues the subscribe request and routes notifications to the subscription callback */
+  private startSubscription(connection: Connection, subscription: Subscription) {
+    subscription.serverSubId = null
+    subscription.stopFollow = null
 
-    if (this.#socketUsers[chainId].length > 0) return
+    subscription.cancelRequest = connection.client._request<string | number, unknown>(
+      subscription.subscribeMethod,
+      subscription.params,
+      {
+        onSuccess: (serverSubId, follow) => {
+          subscription.cancelRequest = null
+          if (subscription.unsubscribed) return
 
-    if (!this.#socketConnections[chainId])
-      return log.warn(`Failed to disconnect socket: socket ${chainId} not found`)
+          subscription.serverSubId = serverSubId
+          // raw-client matches notifications by the raw (not stringified) subscription id, but types it as string
+          subscription.stopFollow = follow(serverSubId as string, {
+            next: (result) => subscription.callback(null, result),
+            error: (error) => subscription.callback(error, null),
+          })
+        },
+        onError: (error) => {
+          subscription.cancelRequest = null
+          if (!subscription.unsubscribed) subscription.callback(error, null)
+        },
+      }
+    )
+  }
+
+  /**
+   * Get (or create) the shared connection for a chain.
+   *
+   * The caller must call releaseConnection with the returned SocketUserId once they are finished with it.
+   */
+  private async acquireConnection(chainId: DotNetworkId): Promise<[SocketUserId, Connection]> {
+    // a single creation promise per chain guarantees that concurrent callers share the same connection
+    let connection = this.#connections[chainId]
+    if (!connection) {
+      if (!this.#pendingConnections[chainId]) {
+        this.#pendingConnections[chainId] = this.createConnection(chainId)
+          .then((created) => {
+            this.#connections[chainId] = created
+            return created
+          })
+          .finally(() => {
+            delete this.#pendingConnections[chainId]
+          })
+      }
+      connection = await this.#pendingConnections[chainId]
+    }
+
+    const socketUserId = this.getExclusiveRandomId([...connection.users])
+    connection.users.add(socketUserId)
+
+    return [socketUserId, connection]
+  }
+
+  private async createConnection(chainId: DotNetworkId): Promise<Connection> {
+    const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
+    if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+
+    const rpcs = chain.rpcs.concat()
+    if (!rpcs.length) throw new Error(`No healthy RPCs available for chain ${chainId}`)
+
+    // will be assigned below - the provider config needs to reference the connection
+    let connection: Connection = null as unknown as Connection
+
+    const provider = getWsProvider(rpcs, {
+      onStatusChanged: (status: StatusChange) => this.handleStatusChange(connection, status),
+    })
+
+    const client = createClient(provider)
+
+    connection = {
+      chainId,
+      provider,
+      client,
+      users: new Set(),
+      subscriptions: new Set(),
+      wasConnected: false,
+      keepAliveInterval: null,
+      staleTimeout: null,
+    }
+
+    return connection
+  }
+
+  private handleStatusChange(connection: Connection, status: StatusChange) {
+    // connection is still being constructed on the initial CONNECTING event
+    if (!connection) return
+    // ignore events from a connection that has been reset/destroyed
+    if (this.#connections[connection.chainId] !== connection) return
+
+    if (status.type === WsEvent.CONNECTED) {
+      if (connection.staleTimeout) {
+        clearTimeout(connection.staleTimeout)
+        connection.staleTimeout = null
+      }
+
+      const isReconnect = connection.wasConnected
+      connection.wasConnected = true
+
+      // periodically send a request to keep the socket alive when there is no other traffic
+      if (connection.keepAliveInterval) clearInterval(connection.keepAliveInterval)
+      connection.keepAliveInterval = setInterval(() => {
+        this.request(connection, "system_health", [], KEEP_ALIVE_INTERVAL).catch((error) =>
+          log.warn(`Failed keep-alive for socket ${connection.chainId}`, error)
+        )
+      }, KEEP_ALIVE_INTERVAL)
+
+      // server-side subscriptions died with the previous socket : re-establish them
+      // (skip author_* subscriptions : resubmitting an extrinsic is not safe)
+      if (isReconnect)
+        for (const subscription of connection.subscriptions) {
+          if (subscription.unsubscribed) continue
+          if (subscription.subscribeMethod.startsWith("author_")) continue
+          subscription.stopFollow?.()
+          subscription.cancelRequest?.()
+          this.startSubscription(connection, subscription)
+        }
+    } else {
+      if (connection.keepAliveInterval) {
+        clearInterval(connection.keepAliveInterval)
+        connection.keepAliveInterval = null
+      }
+
+      // notify subscribers if the chain stays unreachable for too long
+      if (!connection.staleTimeout && connection.subscriptions.size) {
+        connection.staleTimeout = setTimeout(() => {
+          connection.staleTimeout = null
+          for (const subscription of connection.subscriptions)
+            if (!subscription.unsubscribed)
+              subscription.callback(new StaleRpcError(connection.chainId), null)
+        }, STALE_NOTIFY_TIMEOUT)
+      }
+    }
+  }
+
+  private releaseConnection(chainId: DotNetworkId, socketUserId: SocketUserId): void {
+    const connection = this.#connections[chainId]
+    if (!connection) return
+
+    connection.users.delete(socketUserId)
+    if (connection.users.size > 0) return
+
+    this.destroyConnection(connection)
+    delete this.#connections[chainId]
+  }
+
+  private destroyConnection(connection: Connection): void {
+    if (connection.keepAliveInterval) clearInterval(connection.keepAliveInterval)
+    if (connection.staleTimeout) clearTimeout(connection.staleTimeout)
+    connection.keepAliveInterval = null
+    connection.staleTimeout = null
+
+    // detach subscriptions before destroying the client so their callbacks don't receive a DestroyedError
+    for (const subscription of connection.subscriptions) {
+      subscription.stopFollow?.()
+      subscription.cancelRequest?.()
+      subscription.stopFollow = null
+      subscription.cancelRequest = null
+      subscription.serverSubId = null
+    }
 
     try {
-      this.#socketConnections[chainId].disconnect()
+      connection.client.destroy()
     } catch (error) {
-      log.warn(`Error occurred disconnecting socket ${chainId}`, error)
+      log.warn(`Error occurred destroying connection ${connection.chainId}`, error)
     }
-    delete this.#socketConnections[chainId]
-    clearInterval(this.#socketKeepAliveIntervals[chainId])
-    delete this.#socketKeepAliveIntervals[chainId]
   }
 
-  private addSocketUser(chainId: DotNetworkId): SocketUserId {
-    if (!Array.isArray(this.#socketUsers[chainId])) this.#socketUsers[chainId] = []
-    const socketUserId: SocketUserId = this.getExclusiveRandomId(this.#socketUsers[chainId])
-    this.#socketUsers[chainId].push(socketUserId)
-    return socketUserId
-  }
-  private removeSocketUser(chainId: DotNetworkId, socketUserId: SocketUserId) {
-    const userIndex = this.#socketUsers[chainId].indexOf(socketUserId)
-    if (userIndex === -1)
-      throw new Error(
-        `Can't remove user ${socketUserId} from socket ${chainId}: user not in list ${this.#socketUsers[
-          chainId
-        ].join(", ")}`
-      )
-    this.#socketUsers[chainId].splice(userIndex, 1)
+  private async getGenesisHash(chainId: DotNetworkId): Promise<string> {
+    const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
+    if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+
+    const { genesisHash } = chain
+    if (typeof genesisHash !== "string")
+      throw new Error(`Chain ${chainId} has no genesisHash in store`)
+
+    return genesisHash
   }
 
   /** continues to generate a random number until it finds one which is not present in the exclude list */
@@ -592,7 +528,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
         subscribeMethod: string,
         responseMethod: string,
         params: unknown[],
-        callback: ProviderInterfaceCallback,
+        callback: SubscriptionCallback,
         timeout: number | false
       ): Promise<string> =>
         rpcByGenesisHashSubscribe(
@@ -608,43 +544,4 @@ export class ChainConnectorDot implements IChainConnectorDot {
         rpcByGenesisHashUnsubscribe(subscriptionId, unsubscribeMethod),
     }
   }
-
-  private async updateRpcPriority(chainId: DotNetworkId, rpc: string, priority: "first" | "last") {
-    if (!this.#connectionMetaDb) return
-
-    const rpcs = await this.getEndpoints(chainId)
-    if (!rpcs.includes(rpc)) throw new Error(`Unknown rpc for chain ${chainId} : ${rpc}`)
-
-    const urls = rpcs.filter((r) => r !== rpc)
-
-    if (priority === "first") urls.unshift(rpc)
-    if (priority === "last") urls.push(rpc)
-
-    if (!isEqual(urls, rpcs)) {
-      // order may not change, especially if there is only one
-      await this.#connectionMetaDb.chainPriorityRpcs.put({ id: chainId, urls }, chainId)
-    }
-  }
-
-  private async getEndpoints(chainId: DotNetworkId): Promise<string[]> {
-    const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
-    if (!chain) throw new Error(`Chain ${chainId} not found in store`)
-
-    let rpcs = chain.rpcs.concat() // clone to avoid mutating the original array
-    const priorityRpcs = this.#connectionMetaDb
-      ? await this.#connectionMetaDb.chainPriorityRpcs.get(chainId)
-      : undefined
-
-    if (priorityRpcs) {
-      // use existing priority list of rpcs that still exist, and include missing ones
-      rpcs = [
-        ...priorityRpcs.urls.filter((rpc) => rpcs.includes(rpc)),
-        ...rpcs.filter((rpc) => !priorityRpcs.urls.includes(rpc)),
-      ]
-    }
-
-    return rpcs
-  }
 }
-
-const isEqual = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i])

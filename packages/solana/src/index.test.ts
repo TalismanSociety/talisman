@@ -205,7 +205,7 @@ describe("isCompiledTransactionMessage", () => {
     expect(isCompiledTransactionMessage(encode("Hello Solana!"))).toBe(false)
     expect(
       isCompiledTransactionMessage(
-        encode("kheopskit.pages.dev wants you to sign in with your Solana account:\n" + SIGNER)
+        encode(`kheopskit.pages.dev wants you to sign in with your Solana account:\n${SIGNER}`)
       )
     ).toBe(false)
   })

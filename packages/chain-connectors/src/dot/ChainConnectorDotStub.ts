@@ -1,59 +1,71 @@
-import { WsProvider } from "@polkadot/rpc-provider"
-import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
 import type { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
+import { getWsProvider } from "polkadot-api/ws"
 
-import type { IChainConnectorDot } from "./IChainConnectorDot"
+import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
-const AUTO_CONNECT_TIMEOUT = 3_000
 const TIMEOUT = 10_000
 
 export class ChainConnectorDotStub implements IChainConnectorDot {
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: legacy
-  #network: DotNetwork
-  #provider: WsProvider
+  #client: SubstrateClient
 
   constructor(network: DotNetwork) {
-    this.#network = network
-    this.#provider = new WsProvider(network.rpcs, AUTO_CONNECT_TIMEOUT, undefined, TIMEOUT)
-  }
-
-  asProvider(): ProviderInterface {
-    return this.#provider as ProviderInterface
+    this.#client = createClient(getWsProvider(network.rpcs.concat()))
   }
 
   async send<T = unknown>(
     _chainId: DotNetworkId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean
+    _isCacheable?: boolean
   ): Promise<T> {
-    await this.#provider.isReady
-
-    return this.#provider.send(method, params, isCacheable) as Promise<T>
+    return await Promise.race([
+      this.#client.request<T>(method, params),
+      throwAfter(TIMEOUT, `Request ${method} timed out after ${TIMEOUT}ms`),
+    ])
   }
 
   async subscribe(
     _chainId: DotNetworkId,
     subscribeMethod: string,
-    responseMethod: string,
+    _responseMethod: string,
     params: unknown[],
-    callback: ProviderInterfaceCallback,
+    callback: SubscriptionCallback,
     timeout?: number | false
   ): Promise<(unsubscribeMethod: string) => void> {
-    await this.#provider.isReady
+    let stopFollow: (() => void) | null = null
+    let unsubscribed = false
 
-    const subId = await Promise.race([
-      throwAfter(timeout || TIMEOUT, `Subscription timed out after ${timeout}ms`),
-      this.#provider.subscribe(responseMethod, subscribeMethod, params, callback),
+    const serverSubId = await Promise.race([
+      new Promise<string | number>((resolve, reject) => {
+        this.#client._request<string | number, unknown>(subscribeMethod, params, {
+          onSuccess: (subId, follow) => {
+            stopFollow = follow(subId as string, {
+              next: (result) => callback(null, result),
+              error: (error) => callback(error, null),
+            })
+            resolve(subId)
+          },
+          onError: reject,
+        })
+      }),
+      throwAfter(timeout || TIMEOUT, `Subscription timed out after ${timeout || TIMEOUT}ms`),
     ])
 
     return (unsubscribeMethod: string) => {
-      this.#provider.unsubscribe(responseMethod, unsubscribeMethod, subId)
+      if (unsubscribed) return
+      unsubscribed = true
+      stopFollow?.()
+      this.#client.request(unsubscribeMethod, [serverSubId]).catch(() => {}) // connection may already be gone
     }
   }
 
   reset(): Promise<void> {
     throw new Error("ChainConnectorDotStub does not implement reset")
+  }
+
+  destroy() {
+    this.#client.destroy()
   }
 }

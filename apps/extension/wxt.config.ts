@@ -359,10 +359,6 @@ function createPackageSourceAliases(): Alias[] {
       find: "@talismn/chaindata-provider",
       replacement: resolve(packagesDir, "chaindata-provider/src"),
     },
-    {
-      find: "@talismn/connection-meta",
-      replacement: resolve(packagesDir, "connection-meta/src"),
-    },
     { find: "@talismn/crypto", replacement: resolve(packagesDir, "crypto/src") },
     { find: "@talismn/icons", replacement: resolve(packagesDir, "icons/src") },
     { find: "@talismn/keyring", replacement: resolve(packagesDir, "keyring/src") },

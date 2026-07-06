@@ -9,12 +9,30 @@ import type {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import type { ProviderMeta } from "@polkadot/extension-inject/types"
-import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { assert } from "@talismn/util"
 
 import { sentry } from "../config/sentry"
 import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import type { Port } from "../types/base"
+
+// structural equivalents of the legacy polkadot-js rpc-provider types
+// (this handler exposes no providers, it only exists for API compatibility with the polkadot-js extension)
+// biome-ignore lint/suspicious/noExplicitAny: legacy
+type ProviderInterfaceCallback = (error: Error | null, result: any) => void
+type ProviderInterface = {
+  isConnected: boolean
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
+  send: <T = any>(method: string, params: unknown[]) => Promise<T>
+  subscribe: (
+    type: string,
+    method: string,
+    params: unknown[],
+    cb: ProviderInterfaceCallback
+  ) => Promise<number | string>
+  unsubscribe: (type: string, method: string, id: number | string) => Promise<boolean>
+  on: (type: "connected" | "disconnected" | "error", sub: (value?: unknown) => void) => () => void
+  disconnect: () => Promise<void>
+}
 
 // List of providers passed into constructor. This is the list of providers
 // exposed by the extension.
