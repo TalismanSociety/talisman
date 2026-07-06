@@ -1,23 +1,23 @@
 import { log } from "@common/log"
-import type { TypeRegistry } from "@polkadot/types"
-import type { IU8a } from "@polkadot/types/types"
-import { xxhashAsHex } from "@polkadot/util-crypto"
+import { compactNumber, Twox128 } from "@polkadot-api/substrate-bindings"
 import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import {
   type DotNetwork,
   type DotNetworkId,
   getBlockExplorerUrls,
 } from "@talismn/chaindata-provider"
+import { blake2b256 } from "@talismn/crypto"
+import { parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
-import { assert } from "@talismn/util"
+import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
 import { createNotification, type NotificationType } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
-import { getTypeRegistry } from "../../util/getTypeRegistry"
-import { validateHexString } from "../../util/validateHexString"
+import { getMetadataDef } from "../../util/getMetadataDef"
 import { settingsStore } from "../app/store.settings"
+import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction } from "../signing/signSubstratePayload"
 import { addSubstrateTransaction, getTransactionStatus, updateTransactionStatus } from "./helpers"
 import type { WatchTransactionOptions } from "./types"
@@ -38,67 +38,81 @@ type ExtrinsicStatusChangeHandler = (
   finalized: boolean
 ) => void
 
+/** shape of a header as returned by the chain_subscribe*Heads JSON-RPC subscriptions */
+type JsonHeader = {
+  parentHash: HexString
+  number: HexString
+  stateRoot: HexString
+  extrinsicsRoot: HexString
+  digest?: { logs?: HexString[] }
+}
+
+/** decoded System.Events record (papi dynamic-builder shape) */
+type SystemEventRecord = {
+  phase?: { type: string; value?: number }
+  event?: { type: string; value?: { type: string } }
+}
+
+type DecodeSystemEvents = (scaleHex: HexString) => SystemEventRecord[]
+
 const getStorageKeyHash = (...names: string[]) => {
-  return `0x${names.map((name) => xxhashAsHex(name, 128).slice(2)).join("")}`
+  return `0x${names.map((name) => u8aToHex(Twox128(new TextEncoder().encode(name))).slice(2)).join("")}`
+}
+
+/** computes a header's hash (blake2b-256 of its SCALE encoding) and number from its JSON-RPC form */
+const getHeaderInfo = (header: JsonHeader): { hash: HexString; blockNumber: number } => {
+  const blockNumber = parseInt(header.number, 16)
+  const logs = header.digest?.logs ?? []
+  const encoded = u8aConcat(
+    hexToU8a(header.parentHash),
+    compactNumber.enc(blockNumber),
+    hexToU8a(header.stateRoot),
+    hexToU8a(header.extrinsicsRoot),
+    compactNumber.enc(logs.length),
+    ...logs.map((logItem) => hexToU8a(logItem))
+  )
+  return { hash: u8aToHex(blake2b256(encoded)), blockNumber }
 }
 
 const getExtrinsincResult = async (
-  registry: TypeRegistry,
-  blockHash: IU8a,
+  decodeSystemEvents: DecodeSystemEvents,
+  blockHash: HexString,
   chainId: DotNetworkId,
   extrinsicHash: string
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
-    const blockData = await chainConnector.send(chainId, "chain_getBlock", [blockHash])
-    const block = registry.createType("SignedBlock", blockData)
+    const blockData = await chainConnector.send<{
+      block: { header: JsonHeader; extrinsics: HexString[] }
+    }>(chainId, "chain_getBlock", [blockHash])
 
     const eventsStorageKey = getStorageKeyHash("System", "Events")
-    const response = await chainConnector.send(chainId, "state_queryStorageAt", [
-      [eventsStorageKey],
-      blockHash,
-    ])
+    const response = await chainConnector.send<{ changes: [string, HexString | null][] }[] | null>(
+      chainId,
+      "state_queryStorageAt",
+      [[eventsStorageKey], blockHash]
+    )
 
-    const eventsFrame = response[0]?.changes[0][1] || []
+    const eventsFrame = response?.[0]?.changes[0][1]
+    const events = eventsFrame ? decodeSystemEvents(eventsFrame) : []
 
-    const events = (() => {
-      try {
-        return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
-      } catch {
-        log.warn(
-          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
-        )
-        return registry.createType("Vec<EventRecord>", eventsFrame)
-      }
-    })()
+    const blockNumber = parseInt(blockData.block.header.number, 16)
 
-    for (const [txIndex, x] of block.block.extrinsics.entries()) {
-      if (x.hash.eq(extrinsicHash)) {
-        const relevantEvent = events.find(
-          ({ phase, event }) =>
-            phase.isApplyExtrinsic &&
-            phase.asApplyExtrinsic.eqn(txIndex) &&
-            ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method)
-        )
-        if (relevantEvent)
-          if (relevantEvent?.event.method === "ExtrinsicSuccess") {
-            // we don't need associated data (whether if a fee has been paid or not, and extrinsic weight)
-            // const info = relevantEvent?.event.data[0] as DispatchInfo
-            return Ok({
-              result: "success",
-              blockNumber: block.block.header.number.toNumber(),
-              extIndex: txIndex,
-            })
-          } else if (relevantEvent?.event.method === "ExtrinsicFailed") {
-            // from our tests this DispatchError object doesn't provide any relevant information for a user
-            // const error = relevantEvent?.event.data[0] as DispatchError
-            // const info = relevantEvent?.event.data[1] as DispatchInfo
-            return Ok({
-              result: "error",
-              blockNumber: block.block.header.number.toNumber(),
-              extIndex: txIndex,
-            })
-          }
-      }
+    for (const [txIndex, extrinsic] of blockData.block.extrinsics.entries()) {
+      if (u8aToHex(blake2b256(hexToU8a(extrinsic))) !== extrinsicHash) continue
+
+      const relevantEvent = events.find(
+        (record) =>
+          record.phase?.type === "ApplyExtrinsic" &&
+          Number(record.phase.value) === txIndex &&
+          record.event?.type === "System" &&
+          ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(record.event.value?.type ?? "")
+      )
+      if (relevantEvent)
+        return Ok({
+          result: relevantEvent.event?.value?.type === "ExtrinsicSuccess" ? "success" : "error",
+          blockNumber,
+          extIndex: txIndex,
+        })
     }
   } catch (error) {
     // errors commonly arise here due to misconfigured metadata
@@ -112,11 +126,11 @@ const getExtrinsincResult = async (
 
 const watchExtrinsicStatus = async (
   chainId: DotNetworkId,
-  registry: TypeRegistry,
+  decodeSystemEvents: DecodeSystemEvents,
   extrinsicHash: string,
   cb: ExtrinsicStatusChangeHandler
 ) => {
-  let foundInBlockHash: IU8a
+  let foundInBlockHash: HexString
   let timeout: NodeJS.Timeout | null = null
 
   // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times
@@ -151,9 +165,9 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash: blockHash } = registry.createType("Header", data)
+        const { hash: blockHash } = getHeaderInfo(data as JsonHeader)
         const { val: extResult, err } = await getExtrinsincResult(
-          registry,
+          decodeSystemEvents,
           blockHash,
           chainId,
           extrinsicHash
@@ -165,7 +179,7 @@ const watchExtrinsicStatus = async (
         cb(result, blockNumber, extIndex, true)
 
         await unsubscribe("finalizedHeads", () =>
-          unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
+          unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
         )
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
@@ -192,9 +206,9 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash: blockHash } = registry.createType("Header", data)
+        const { hash: blockHash } = getHeaderInfo(data as JsonHeader)
         const { val: extResult, err } = await getExtrinsincResult(
-          registry,
+          decodeSystemEvents,
           blockHash,
           chainId,
           extrinsicHash
@@ -207,12 +221,12 @@ const watchExtrinsicStatus = async (
         if (result === "success") foundInBlockHash = blockHash
         cb(result, blockNumber, extIndex, false)
 
-        await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
+        await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
 
         // if error, no need to wait for a confirmation
         if (result === "error") {
           await unsubscribe("finalizedHeads", () =>
-            unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
+            unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
           )
           if (timeout !== null) clearTimeout(timeout)
         }
@@ -224,15 +238,15 @@ const watchExtrinsicStatus = async (
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
   timeout = setTimeout(async () => {
-    await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
+    await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
     if (subscriptions.finalizedHeads) {
       await unsubscribe("finalizedHeads", () =>
-        unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
+        unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
       )
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
         const { val: extResult, err } = await getExtrinsincResult(
-          registry,
+          decodeSystemEvents,
           foundInBlockHash,
           chainId,
           extrinsicHash
@@ -262,12 +276,14 @@ export const watchSubstrateTransaction = async (
   assert(chain.genesisHash === payload.genesisHash, "Genesis hash mismatch")
 
   try {
-    // registry is only needed to decode blocks/headers/events while watching (TODO replace with papi codecs)
-    const { registry } = await getTypeRegistry(
-      validateHexString(payload.genesisHash),
-      payload.specVersion,
-      payload.signedExtensions
-    )
+    const metadataDef = await getMetadataDef(payload.genesisHash, parseInt(payload.specVersion, 16))
+    const metadataRpc = getMetadataRpcFromDef(metadataDef)
+    assert(metadataRpc, `Unable to find metadata for chain ${payload.genesisHash}`)
+
+    const { builder } = parseMetadataRpc(metadataRpc)
+    const eventsCodec = builder.buildStorage("System", "Events").value
+    const decodeSystemEvents: DecodeSystemEvents = (scaleHex) =>
+      eventsCodec.dec(scaleHex) as SystemEventRecord[]
 
     const { hash } = await assembleSubstrateTransaction(
       payload as Parameters<typeof assembleSubstrateTransaction>[0],
@@ -278,7 +294,7 @@ export const watchSubstrateTransaction = async (
 
     await watchExtrinsicStatus(
       chain.id,
-      registry,
+      decodeSystemEvents,
       hash,
       async (result, blockNumber, _extIndex, finalized) => {
         const type: NotificationType = result === "included" ? "submitted" : result
