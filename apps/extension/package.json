@@ -66,7 +66,7 @@
     "@talismn/orb": "workspace:*",
     "@talismn/sapi": "workspace:*",
     "@talismn/scale": "workspace:*",
-    "@talismn/siws": "^1.0.0",
+    "@talismn/siws": "^2.0.0",
     "@talismn/solana": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
