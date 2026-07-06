@@ -768,12 +768,6 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@polkadot/api-contract':
-        specifier: 16.5.6
-        version: 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/types':
-        specifier: 16.5.6
-        version: 16.5.6
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
@@ -2660,10 +2654,6 @@ packages:
 
   '@polkadot/api-base@16.5.6':
     resolution: {integrity: sha512-eBLIv86ZZY4t5OrobVoGC+QXbErOGlBpI2rJI5OMvTNPoVvtEoI++u+wwRScjkOZaUhXyQikd+0Uv71qr3xnsA==}
-    engines: {node: '>=18'}
-
-  '@polkadot/api-contract@16.5.6':
-    resolution: {integrity: sha512-SswGhCSSYTSeoCT1GwtP1km3FdD7a5oD5LGNNXmMnkCOkIYKYWiqCKmStOu8yw35F2tkZdApczhPNuX1PXTV2A==}
     engines: {node: '>=18'}
 
   '@polkadot/api-derive@16.5.6':
@@ -11294,22 +11284,6 @@ snapshots:
       '@polkadot/rpc-core': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/types': 16.5.6
       '@polkadot/util': 14.0.3
-      rxjs: 7.8.2
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  '@polkadot/api-contract@16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
-    dependencies:
-      '@polkadot/api': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/api-augment': 16.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/types': 16.5.6
-      '@polkadot/types-codec': 16.5.6
-      '@polkadot/types-create': 16.5.6
-      '@polkadot/util': 14.0.3
-      '@polkadot/util-crypto': 14.0.3(@polkadot/util@14.0.3)
       rxjs: 7.8.2
       tslib: 2.8.1
     transitivePeerDependencies:

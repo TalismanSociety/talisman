@@ -34,7 +34,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
       },
       storage_deposit_limit:
         dryRunResult.storageDeposit.tag === "Charge" ? dryRunResult.storageDeposit.value : null,
-      data: Binary.fromBytes(data),
+      data,
     })
 
     const callData = mergeUint8([new Uint8Array(location), args])
