@@ -1,8 +1,8 @@
-import { isEqual } from "lodash-es"
 import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"
-import type { IBalanceModule } from "../../types/IBalanceModule"
+import { isEqualModuleResults } from "../../types/fingerprint"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"
 
@@ -15,7 +15,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 }) => {
   if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
 
-  return new Observable((subscriber) => {
+  return new Observable<FetchBalanceResults>((subscriber) => {
     const abortController = new AbortController()
 
     const poll = async () => {
@@ -49,5 +49,5 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
     return () => {
       abortController.abort()
     }
-  }).pipe(distinctUntilChanged(isEqual))
+  }).pipe(distinctUntilChanged(isEqualModuleResults))
 }

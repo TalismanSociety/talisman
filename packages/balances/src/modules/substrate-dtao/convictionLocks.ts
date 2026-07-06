@@ -1,13 +1,9 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
-import {
-  decodeScale,
-  type MetadataBuilder,
-  parseMetadataRpc,
-  type ScaleStorageCoder,
-} from "@talismn/scale"
+import { decodeScale, type MetadataBuilder, type ScaleStorageCoder } from "@talismn/scale"
 
 import log from "../../log"
 import { fetchRuntimeCallResult, hasRuntimeApi, hasStorageItems } from "../shared"
+import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
 import type {
   GetColdkeyLockResult,
@@ -107,7 +103,7 @@ export const fetchConvictionLocks = async (
 ): Promise<FetchedConvictionLock[]> => {
   if (!addresses.length) return []
 
-  const { unifiedMetadata, builder } = parseMetadataRpc(metadataRpc)
+  const { unifiedMetadata, builder } = parseMetadataRpcCached(metadataRpc)
   if (
     !hasRuntimeApi(unifiedMetadata, "StakeInfoRuntimeApi", "get_coldkey_lock") ||
     !hasStorageItems(unifiedMetadata, "SubtensorModule", ["Lock", "DecayingLock"])

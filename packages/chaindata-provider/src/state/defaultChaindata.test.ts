@@ -159,6 +159,9 @@ describe("getDefaultChaindata$", () => {
       const valid = makeChaindata()
 
       storage$.next(makeUnknownTokenTypeData() as ChaindataStorage)
+      // validation is chunked with latest-wins semantics: a second synchronous next()
+      // would supersede the first before it emits, so wait for the first result
+      await waitForCount(1)
       storage$.next(valid)
 
       const values = await waitForCount(2)

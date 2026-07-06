@@ -1,8 +1,7 @@
-import type z from "zod/v4"
-
 import { githubChaindataDistUrl } from "../constants"
 import log from "../log"
-import { ChaindataFileSchema } from "./schema"
+import { type ChunkedParseResult, parseChaindataFileChunked } from "./chunkedValidation"
+import { markChaindataValidated } from "./validatedCache"
 
 const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
@@ -26,13 +25,14 @@ export const getFallbackUrl = (url: string) => {
 }
 
 type FetchJsonFromGitHubOptions<T> = {
-  schema?: z.ZodType<T>
+  /** chunked validator (e.g. parseChaindataFileChunked) — runs in time slices, yielding the thread between them */
+  validate?: (data: unknown, signal?: AbortSignal) => Promise<ChunkedParseResult<T>>
   signal?: AbortSignal
 }
 
 const fetchJsonFromGithubUrl = async <T>(
   url: string,
-  { signal, schema }: FetchJsonFromGitHubOptions<T> = {}
+  { signal, validate }: FetchJsonFromGitHubOptions<T> = {}
 ): Promise<T> => {
   const req = await fetch(url, { signal })
 
@@ -41,15 +41,15 @@ const fetchJsonFromGithubUrl = async <T>(
 
   if (!req.ok) {
     const fallbackUrl = getFallbackUrl(url)
-    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, { schema, signal })
+    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, { validate, signal })
     throw new Error(`Failed to fetch from ${url}: ${req.status} ${req.statusText}`)
   }
 
   const data = await req.json()
 
-  if (schema) {
+  if (validate) {
     const start = performance.now()
-    const result = schema.safeParse(data)
+    const result = await validate(data, signal)
     log.debug(
       `[ChaindataProvider] Validating downloaded ${url?.split("/").pop()} took ${performance.now() - start} ms`
     )
@@ -65,4 +65,12 @@ const fetchJsonFromGithubUrl = async <T>(
 
 // export because of generate-init-data script
 export const fetchChaindata = (signal?: AbortSignal) =>
-  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, { schema: ChaindataFileSchema, signal })
+  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, {
+    validate: async (data, signal) => {
+      const result = await parseChaindataFileChunked(data, { signal })
+      // mark so storageValidated$ doesn't re-validate this exact object on every emission
+      if (result.success) markChaindataValidated(result.data)
+      return result
+    },
+    signal,
+  })

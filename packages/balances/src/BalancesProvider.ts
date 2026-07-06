@@ -17,7 +17,6 @@ import {
 import { getSharedObservable, isNotNil, isTruthy, keepAlive } from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
 import {
-  BehaviorSubject,
   catchError,
   combineLatest,
   defer,
@@ -29,6 +28,7 @@ import {
   map,
   type Observable,
   of,
+  ReplaySubject,
   shareReplay,
   startWith,
   switchMap,
@@ -37,7 +37,7 @@ import {
 } from "rxjs"
 import { withRetry } from "viem"
 
-import { BALANCE_MODULES, Balance, type ChainConnectors, findDTaoConvictionLock } from "."
+import { BALANCE_MODULES, type ChainConnectors, findDTaoConvictionLock } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
@@ -45,7 +45,12 @@ import {
   type Address,
   deriveMiniMetadataId,
   getBalanceId,
+  getBalanceStorageFingerprint,
+  getRawLocks,
+  getRawTotalPlanck,
   type IBalance,
+  isEqualBalancesResult,
+  isEqualMiniMetadatas,
   type MiniMetadata,
 } from "./types"
 import type { TokensWithAddresses } from "./types/IBalanceModule"
@@ -76,7 +81,9 @@ const DEFAULT_STORAGE: BalancesStorage = {
 export class BalancesProvider {
   #chaindataProvider: ChaindataProvider
   #chainConnectors: ChainConnectors
-  #storage: BehaviorSubject<ProviderBalancesStorage>
+  #storage: ReplaySubject<ProviderBalancesStorage>
+  #storageValue: ProviderBalancesStorage
+  #storage$: Observable<BalancesStorage>
 
   constructor(
     chaindataProvider: ChaindataProvider,
@@ -85,28 +92,42 @@ export class BalancesProvider {
   ) {
     this.#chaindataProvider = chaindataProvider
     this.#chainConnectors = chainConnectors
-    this.#storage = new BehaviorSubject<ProviderBalancesStorage>({
+    this.#storageValue = {
       balances: keyBy(storage.balances.filter(isNotNil), (b) => getBalanceId(b)),
       miniMetadatas: keyBy(storage.miniMetadatas.filter(isNotNil), (m) => m.id),
-    })
-  }
-
-  get storage$() {
-    return this.#storage.pipe(
+    }
+    this.#storage = new ReplaySubject<ProviderBalancesStorage>(1)
+    this.#storage.next(this.#storageValue)
+    // built once so the sort/projection is shared by all subscribers (a previous version
+    // passed shareReplay as a 2nd argument to map, which made it inert — every subscriber
+    // re-ran the sort on every emission)
+    this.#storage$ = this.#storage.pipe(
       map(
         ({ balances, miniMetadatas }): BalancesStorage => ({
           balances: values(balances).filter(isNotNil).sort(sortByBalanceId),
           miniMetadatas: values(miniMetadatas).filter(isNotNil).sort(sortByMiniMetadataId),
-        }),
-        shareReplay(1)
-      )
+        })
+      ),
+      shareReplay({ bufferSize: 1, refCount: true })
     )
+  }
+
+  get storage$() {
+    return this.#storage$
+  }
+
+  #nextStorage(value: ProviderBalancesStorage) {
+    this.#storageValue = value
+    this.#storage.next(value)
   }
 
   private get storedMiniMetadataMapById$() {
     return this.#storage.pipe(
-      map((storage) => keyBy(storage.miniMetadatas, (m) => m.id)),
-      distinctUntilChanged<Record<string, MiniMetadata>>(isEqual),
+      // storage.miniMetadatas is already keyed by id, and its object reference is only
+      // replaced when miniMetadatas are actually written (see getMiniMetadatas$ tap) —
+      // so a reference compare replaces the old keyBy + deep isEqual on every emission
+      map((storage) => storage.miniMetadatas),
+      distinctUntilChanged(),
       shareReplay(1)
     )
   }
@@ -161,7 +182,7 @@ export class BalancesProvider {
           failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
         })
       ),
-      distinctUntilChanged<BalancesResult>(isEqual)
+      distinctUntilChanged(isEqualBalancesResult)
     )
   }
 
@@ -186,9 +207,22 @@ export class BalancesProvider {
     const tokensMapById$ = this.#chaindataProvider.getTokensMapById$()
 
     return combineLatest([network$, tokensMapById$]).pipe(
-      switchMap(([network, tokensMapById]) => {
+      // only re-subscribe the module pipelines below when THIS network or the tokens THIS
+      // pipeline uses actually change — chaindata emissions for unrelated networks/tokens
+      // must not tear down live balance subscriptions. Relies on chaindata-provider's
+      // per-item reference stability (combinedChaindata section stabilizer).
+      map(([network, tokensMapById]) => ({
+        network,
+        // keys(addressesByTokenId) and toPairs(addressesByTokenId) enumerate in the same
+        // order, so indexing tokens by position below is safe
+        tokens: keys(addressesByTokenId).map((tokenId) => tokensMapById[tokenId]),
+      })),
+      distinctUntilChanged(
+        (a, b) => a.network === b.network && a.tokens.every((token, i) => token === b.tokens[i])
+      ),
+      switchMap(({ network, tokens }) => {
         const tokensAndAddresses: TokensWithAddresses = toPairs(addressesByTokenId).map(
-          ([tokenId, addresses]) => [tokensMapById[tokenId], addresses] as [Token, Address[]]
+          ([, addresses], i) => [tokens[i], addresses] as [Token, Address[]]
         )
 
         return combineLatest(
@@ -219,7 +253,7 @@ export class BalancesProvider {
         // for each balance that could not be fetched, see if we have a stored balance and return it, marked as stale
         const errorBalanceIds = results.flatMap((result) => result.failedBalanceIds)
         const staleBalances = errorBalanceIds
-          .map((balanceId) => this.#storage.value.balances[balanceId])
+          .map((balanceId) => this.#storageValue.balances[balanceId])
           .filter(isNotNil)
           .map((b): IBalance => ({ ...b, status: "stale" }))
 
@@ -232,7 +266,7 @@ export class BalancesProvider {
           failedBalanceIds: [],
         }
       }),
-      distinctUntilChanged<BalancesResult>(isEqual)
+      distinctUntilChanged(isEqualBalancesResult)
     )
   }
 
@@ -292,12 +326,19 @@ export class BalancesProvider {
               // (eg dtao conviction locks, reported on the subnet's base token — including
               // zero-mass "ghost" locks with residual conviction, which still pin the hotkey
               // of future lock_stake calls)
+              // raw helpers instead of new Balance(b): this filter runs per result per
+              // block, and Balance.total allocates several BalanceFormatters per access
               balances: results.success.filter((b) => {
-                const balance = new Balance(b)
+                const rawLocks = getRawLocks(b)
                 return (
-                  balance.total.planck > 0n ||
-                  balance.locks.some((lock) => lock.amount.planck > 0n) ||
-                  !!findDTaoConvictionLock(balance.locks)
+                  getRawTotalPlanck(b) > 0n ||
+                  rawLocks.some((lock) => BigInt(lock.amount) > 0n) ||
+                  !!findDTaoConvictionLock(
+                    rawLocks.map((lock) => ({
+                      amount: { planck: BigInt(lock.amount) },
+                      meta: lock.meta,
+                    }))
+                  )
                 )
               }),
               failedBalanceIds: results.errors.map(({ tokenId, address }) =>
@@ -371,7 +412,7 @@ export class BalancesProvider {
               (results): BalancesResult => ({
                 status: "live",
                 // exclude zero balances
-                balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+                balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
                 failedBalanceIds: results.errors.map(({ tokenId, address }) =>
                   getBalanceId({ tokenId, address })
                 ),
@@ -449,7 +490,7 @@ export class BalancesProvider {
               (results): BalancesResult => ({
                 status: "live",
                 // exclude zero balances
-                balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+                balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
                 failedBalanceIds: results.errors.map(({ tokenId, address }) =>
                   getBalanceId({ tokenId, address })
                 ),
@@ -480,29 +521,69 @@ export class BalancesProvider {
   private updateStorage$(balanceIds: string[], balancesResult: BalancesResult) {
     if (balancesResult.status !== "live") return
 
-    const storage = this.#storage.getValue()
+    const storage = this.#storageValue
     const failedIds = new Set(balancesResult.failedBalanceIds)
-    const balances = assign(
-      {},
-      storage.balances,
-      // delete all balances expected in the result set (except the ones that failed). because if they are not present it means they are empty.
-      fromPairs(
-        balanceIds.filter((bid) => !failedIds.has(bid)).map((balanceId) => [balanceId, undefined])
-      ),
-      keyBy(
-        // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
-        balancesResult.balances.map((b) => ({ ...b, status: "cache" })),
-        (b) => getBalanceId(b)
-      )
+    const incomingById = new Map(
+      balancesResult.balances.map((b) => [getBalanceIdCached(b), b] as const)
     )
 
-    // update status of stale balances
-    for (const errorBalanceId of balancesResult.failedBalanceIds) {
-      const balance = balances[errorBalanceId] as IBalance
-      if (balance) balance.status = "stale"
+    // no-op detection: on quiet blocks nothing changed — skip the merge, the storage$
+    // re-projection/sort and the host's downstream persistence entirely.
+    // fingerprints are status-agnostic (stored entries carry "cache", results "live"),
+    // so status transitions are checked separately.
+    let changed = false
+    for (const [balanceId, balance] of incomingById) {
+      const stored = storage.balances[balanceId]
+      if (
+        stored?.status !== "cache" || // missing, or e.g. a stale entry recovering
+        getBalanceStorageFingerprint(stored) !== getBalanceStorageFingerprint(balance)
+      ) {
+        changed = true
+        break
+      }
+    }
+    if (!changed) {
+      // balances expected in the result set but absent (and not failed) mean they are now
+      // empty and must be removed
+      for (const balanceId of balanceIds) {
+        if (failedIds.has(balanceId) || incomingById.has(balanceId)) continue
+        if (storage.balances[balanceId]) {
+          changed = true
+          break
+        }
+      }
+    }
+    if (!changed) {
+      // failed balances transition to stale
+      for (const errorBalanceId of balancesResult.failedBalanceIds) {
+        const stored = storage.balances[errorBalanceId]
+        if (stored && stored.status !== "stale") {
+          changed = true
+          break
+        }
+      }
+    }
+    if (!changed) return
+
+    const balances = { ...storage.balances }
+    // delete all balances expected in the result set (except the ones that failed). because if they are not present it means they are empty.
+    for (const balanceId of balanceIds) {
+      if (!failedIds.has(balanceId) && !incomingById.has(balanceId)) delete balances[balanceId]
+    }
+    // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
+    for (const [balanceId, balance] of incomingById) {
+      balances[balanceId] = { ...balance, status: "cache" } as IBalance
     }
 
-    this.#storage.next(assign({}, storage, { balances }))
+    // update status of stale balances (copy, don't mutate: stored objects may be shared
+    // with previous storage snapshots and with the fingerprint caches)
+    for (const errorBalanceId of balancesResult.failedBalanceIds) {
+      const balance = balances[errorBalanceId]
+      if (balance && balance.status !== "stale")
+        balances[errorBalanceId] = { ...balance, status: "stale" } as IBalance
+    }
+
+    this.#nextStorage({ ...storage, balances })
   }
 
   private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<MiniMetadata[]> {
@@ -517,7 +598,7 @@ export class BalancesProvider {
               )
             : of([])
         ),
-        distinctUntilChanged<MiniMetadata[]>(isEqual)
+        distinctUntilChanged<MiniMetadata[]>(isEqualMiniMetadatas)
       )
     })
   }
@@ -587,7 +668,7 @@ export class BalancesProvider {
           // and persist in storage for later reuse
           tap((newMiniMetadatas) => {
             if (!newMiniMetadatas.length) return
-            const storage = this.#storage.getValue()
+            const storage = this.#storageValue
             const miniMetadatas = assign(
               // keep minimetadatas of other networks
               keyBy(
@@ -598,12 +679,12 @@ export class BalancesProvider {
               keyBy(newMiniMetadatas, (m) => m.id)
             )
 
-            this.#storage.next(assign({}, storage, { miniMetadatas }))
+            this.#nextStorage(assign({}, storage, { miniMetadatas }))
           })
         )
       }),
       // emit only when mini metadata changes, as a change here would restart all subscriptions for the network
-      distinctUntilChanged<MiniMetadata[]>(isEqual)
+      distinctUntilChanged<MiniMetadata[]>(isEqualMiniMetadatas)
     )
   }
 
@@ -614,7 +695,7 @@ export class BalancesProvider {
         return miniMetadatas.length && miniMetadatas.every(isTruthy) ? miniMetadatas : null
       }),
       // source changes very often
-      distinctUntilChanged<MiniMetadata[] | null>(isEqual)
+      distinctUntilChanged<MiniMetadata[] | null>(isEqualMiniMetadatas)
     )
   }
 
@@ -633,7 +714,7 @@ export class BalancesProvider {
     )
 
     return balanceDefs
-      .map(([tokenId, address]) => this.#storage.value.balances[getBalanceId({ address, tokenId })])
+      .map(([tokenId, address]) => this.#storageValue.balances[getBalanceId({ address, tokenId })])
       .filter(isNotNil)
       .sort(sortByBalanceId) as IBalance[]
   }
@@ -655,7 +736,11 @@ export class BalancesProvider {
             })
             .filter(([, addresses]) => addresses.length > 0)
         )
-      })
+      }),
+      // the produced record is small (token ids → addresses): a deep compare here
+      // prevents unrelated network-map emissions from re-running the whole getBalances$
+      // switchMap (which would tear down and restart every module subscription)
+      distinctUntilChanged<Record<TokenId, Address[]>>(isEqual)
     )
   }
 }
@@ -695,6 +780,24 @@ const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
   return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }
 
-const sortByBalanceId = (a: IBalance, b: IBalance) => getBalanceId(a).localeCompare(getBalanceId(b))
+// memoized: getBalanceId is called O(n log n) times per sort, on every storage$ emission
+const balanceIdCache = new WeakMap<IBalance, string>()
+const getBalanceIdCached = (balance: IBalance): string => {
+  let id = balanceIdCache.get(balance)
+  if (id === undefined) {
+    id = getBalanceId(balance)
+    balanceIdCache.set(balance, id)
+  }
+  return id
+}
 
-const sortByMiniMetadataId = (a: MiniMetadata, b: MiniMetadata) => a.id.localeCompare(b.id)
+// plain string compare instead of localeCompare: ids are ASCII `address::tokenId` and
+// locale collation is ~10x slower (note: sort order differs for non-ASCII ids only)
+const sortByBalanceId = (a: IBalance, b: IBalance) => {
+  const aId = getBalanceIdCached(a)
+  const bId = getBalanceIdCached(b)
+  return aId < bId ? -1 : aId > bId ? 1 : 0
+}
+
+const sortByMiniMetadataId = (a: MiniMetadata, b: MiniMetadata) =>
+  a.id < b.id ? -1 : a.id > b.id ? 1 : 0

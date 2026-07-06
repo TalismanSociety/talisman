@@ -1,8 +1,8 @@
-import { isEqual } from "lodash-es"
 import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"
-import type { IBalanceModule } from "../../types/IBalanceModule"
+import { isEqualModuleResults } from "../../types/fingerprint"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"
@@ -19,7 +19,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-  return new Observable((subscriber) => {
+  return new Observable<FetchBalanceResults>((subscriber) => {
     const abortController = new AbortController()
 
     // on hydration balances are fetched using a runtimeApi, which can't be subscribed to.
@@ -33,6 +33,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
           tokensWithAddresses: tokensWithAddresses,
           connector,
           miniMetadata,
+          signal: abortController.signal,
         })
 
         if (abortController.signal.aborted) return
@@ -69,5 +70,5 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
     return () => {
       abortController.abort()
     }
-  }).pipe(distinctUntilChanged(isEqual))
+  }).pipe(distinctUntilChanged(isEqualModuleResults))
 }

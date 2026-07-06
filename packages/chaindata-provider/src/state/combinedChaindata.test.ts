@@ -304,6 +304,10 @@ describe("getCombinedChaindata$", () => {
       // collect two emissions
       const emissions = firstValueFrom(result$.pipe(take(2), toArray()))
 
+      // the merge is chunked with latest-wins semantics: pushing data2 while data1's
+      // merge is in flight would supersede it, so wait for the first emission
+      await firstValueFrom(result$)
+
       // push a second emission
       const data2 = makeChaindata({
         tokens: [makeEvmNativeToken({ id: "1-evm-native", symbol: "UPDATED" })],

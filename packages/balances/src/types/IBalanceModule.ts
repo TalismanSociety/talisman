@@ -113,11 +113,15 @@ export interface IBalanceModule<
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
+          /** abort in-flight (time-sliced) decoding, e.g. when a poll loop unsubscribes */
+          signal?: AbortSignal
         }
       : {
           networkId: EthNetworkId
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
+          /** abort in-flight (time-sliced) decoding, e.g. when a poll loop unsubscribes */
+          signal?: AbortSignal
         }
   ) => Promise<FetchBalanceResults>
 
