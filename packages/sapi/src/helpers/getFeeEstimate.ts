@@ -35,7 +35,7 @@ export const getFeeEstimate = async (
   )
   const fakeSignature = isEthereumAddress(payload.address)
     ? new Uint8Array(65) // AccountId20 chains: raw 65-byte signature, no MultiSignature prefix
-    : new Uint8Array(65).fill(1, 0, 1) // MultiSignature type byte + zeroed 64-byte signature
+    : new Uint8Array(66).fill(2, 0, 1) // MultiSignature ecdsa variant, the longest (type byte + 65) so the length fee is never underestimated
 
   const signedTx = createV4Tx(
     chain.metadata,
