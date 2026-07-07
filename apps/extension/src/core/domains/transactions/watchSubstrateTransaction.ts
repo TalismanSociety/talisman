@@ -58,19 +58,33 @@ const getStorageKeyHash = (...names: string[]) => {
   return `0x${names.map((name) => u8aToHex(Twox128(new TextEncoder().encode(name))).slice(2)).join("")}`
 }
 
-/** computes a header's hash (blake2b-256 of its SCALE encoding) and number from its JSON-RPC form */
-const getHeaderInfo = (header: JsonHeader): { hash: HexString; blockNumber: number } => {
+/**
+ * computes a header's hash (blake2b-256 of its SCALE encoding) and number from its JSON-RPC form.
+ * Some chains extend the standard header (e.g. Avail's data-availability extension): re-encoding
+ * their JSON form with the standard layout yields a wrong hash, so ask the node instead.
+ */
+const getHeaderInfo = async (
+  chainId: DotNetworkId,
+  header: JsonHeader
+): Promise<{ hash: HexString; blockNumber: number }> => {
   const blockNumber = parseInt(header.number, 16)
   const logs = header.digest?.logs ?? []
-  const encoded = u8aConcat(
-    hexToU8a(header.parentHash),
-    compactNumber.enc(blockNumber),
-    hexToU8a(header.stateRoot),
-    hexToU8a(header.extrinsicsRoot),
-    compactNumber.enc(logs.length),
-    ...logs.map((logItem) => hexToU8a(logItem))
+  const isStandardHeader = Object.keys(header).every((key) =>
+    ["parentHash", "number", "stateRoot", "extrinsicsRoot", "digest"].includes(key)
   )
-  return { hash: u8aToHex(blake2b256(encoded)), blockNumber }
+  if (isStandardHeader) {
+    const encoded = u8aConcat(
+      hexToU8a(header.parentHash),
+      compactNumber.enc(blockNumber),
+      hexToU8a(header.stateRoot),
+      hexToU8a(header.extrinsicsRoot),
+      compactNumber.enc(logs.length),
+      ...logs.map((logItem) => hexToU8a(logItem))
+    )
+    return { hash: u8aToHex(blake2b256(encoded)), blockNumber }
+  }
+  const hash = await chainConnector.send<HexString>(chainId, "chain_getBlockHash", [blockNumber])
+  return { hash, blockNumber }
 }
 
 const getExtrinsincResult = async (
@@ -164,7 +178,7 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash: blockHash } = getHeaderInfo(data as JsonHeader)
+        const { hash: blockHash } = await getHeaderInfo(chainId, data as JsonHeader)
         const { val: extResult, err } = await getExtrinsincResult(
           decodeSystemEvents,
           blockHash,
@@ -205,7 +219,7 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash: blockHash } = getHeaderInfo(data as JsonHeader)
+        const { hash: blockHash } = await getHeaderInfo(chainId, data as JsonHeader)
         const { val: extResult, err } = await getExtrinsincResult(
           decodeSystemEvents,
           blockHash,
