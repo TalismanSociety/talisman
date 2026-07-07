@@ -468,14 +468,20 @@ export const isValidWatchAssetRequestParam = (obj: unknown) =>
 export const sanitizeWatchAssetRequestParam = (obj: unknown) =>
   schemaWatchAssetRequest.validate(obj)
 
-// for now, only allow eth_accounts property with an empty object
-const schemaRequestedPermissions = yup
-  .object()
-  .required()
-  .shape({
-    eth_accounts: yup.object().required().shape({}).noUnknown(),
-  })
-  .noUnknown()
+// eth_accounts is the only permission we support, but dapps may request several permissions
+// in a single object (ex: MetaMask's endowment:permitted-chains) => ignore unknown ones.
+// caveats may be specified as the permission's value => accept any object
+const schemaRequestedPermissions = yup.object().required().shape({
+  eth_accounts: yup.object().required(),
+})
 
 export const isValidRequestedPermissions = (obj: unknown) =>
   schemaRequestedPermissions.isValidSync(obj)
+
+// for revocation any set of permissions is acceptable, unsupported ones are no-ops
+const schemaRevokedPermissions = yup
+  .object()
+  .required()
+  .test("atLeastOnePermission", (obj) => !!obj && Object.keys(obj).length > 0)
+
+export const isValidRevokedPermissions = (obj: unknown) => schemaRevokedPermissions.isValidSync(obj)

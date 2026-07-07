@@ -63,6 +63,7 @@ import { getEvmErrorCause } from "./errors"
 import {
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
+  isValidRevokedPermissions,
   isValidWatchAssetRequestParam,
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
@@ -682,13 +683,22 @@ export class EthTabsHandler extends TabsHandler {
 
     // derive eth_accounts permission from the site's connected accounts rather than from the stored permissions,
     // as accounts may be connected/disconnected from the wallet UI without any dapp interaction.
-    // the stored permission only provides the grant date, it may be missing for sites connected via the wallet UI.
+    // the stored record only provides the grant metadata (id & date), it may be missing for sites connected via the wallet UI.
     const accounts = await this.accountsList(url)
     if (accounts.length) {
-      const date = site.ethPermissions?.eth_accounts?.date
+      let grant = site.ethPermissions?.eth_accounts
+      if (!grant?.id || !grant.date) {
+        // self-heal sites connected via the wallet UI so id & date remain stable across calls
+        grant = { id: grant?.id ?? crypto.randomUUID(), date: grant?.date ?? Date.now() }
+        await this.stores.sites.updateSite(site.id, {
+          ethPermissions: { ...(site.ethPermissions ?? {}), eth_accounts: grant },
+        })
+      }
       permissions.push({
+        id: grant.id,
         parentCapability: "eth_accounts",
-        ...(date ? { date } : {}),
+        invoker: new URL(site.url).origin,
+        date: grant.date,
         // some dapps read the list of permitted accounts from this caveat
         caveats: [{ type: "restrictReturnedAccounts", value: accounts }],
       })
@@ -740,7 +750,7 @@ export class EthTabsHandler extends TabsHandler {
     ) {
       await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port, force)
       if (missingPerms.includes("eth_accounts"))
-        grantedPermissions.eth_accounts = { date: Date.now() }
+        grantedPermissions.eth_accounts = { id: crypto.randomUUID(), date: Date.now() }
     }
 
     // if any, store missing permissions
@@ -772,7 +782,7 @@ export class EthTabsHandler extends TabsHandler {
       )
 
     const [requestedPerms] = request.params
-    if (!isValidRequestedPermissions(requestedPerms))
+    if (!isValidRevokedPermissions(requestedPerms))
       throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: legacy

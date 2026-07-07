@@ -142,10 +142,16 @@ export interface Web3WalletPermissionCaveat {
   value: unknown
 }
 
-// from https://docs.metamask.io/guide/rpc-api.html#restricted-methods
+// https://eips.ethereum.org/EIPS/eip-2255
 export interface Web3WalletPermission {
+  // The permission identifier, assigned when the permission is granted
+  id?: string
+
   // The name of the method corresponding to the permission
   parentCapability: Web3WalletPermissionTarget
+
+  // The URI of the dapp the permission is granted to
+  invoker?: string
 
   // The date the permission was granted, in UNIX epoch time
   date?: number
