@@ -14,6 +14,10 @@ const BAD_RPC_ERRORS: Record<string, string> = {
 
 const RESPONSE_TIMEOUT = 30_000 // max wait for an rpc response (including connection time)
 const KEEP_ALIVE_INTERVAL = 20_000 // periodic system_health to keep idle sockets alive (ws-provider kills quiet sockets after its 40s heartbeat)
+
+/** in-flight requests reject with DestroyedError when a connection is torn down - expected, not worth logging */
+const isDestroyedError = (error: unknown): boolean =>
+  error instanceof Error && error.name === "DestroyedError"
 const STALE_NOTIFY_TIMEOUT = 30_000 // how long a chain can be disconnected before subscribers are notified
 
 export class ChainConnectionError extends Error {
@@ -239,13 +243,16 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
       // the connection may have been replaced by a reset() since we subscribed
       const current = this.#connections[chainId]
-      if (subscription.serverSubId !== null && current)
+      // if we are the last user the connection is about to be destroyed: skip the
+      // unsubscribe call, server-side subscriptions die with the socket anyway
+      const isLastUser = !!current && current.users.size === 1 && current.users.has(socketUserId)
+      if (subscription.serverSubId !== null && current && !isLastUser)
         try {
-          current.client
-            .request(unsubscribeMethod, [subscription.serverSubId])
-            .catch((error) => log.warn(`Failed to unsubscribe from ${chainId}`, error))
+          current.client.request(unsubscribeMethod, [subscription.serverSubId]).catch((error) => {
+            if (!isDestroyedError(error)) log.warn(`Failed to unsubscribe from ${chainId}`, error)
+          })
         } catch (error) {
-          log.warn(`Failed to unsubscribe from ${chainId}`, error)
+          if (!isDestroyedError(error)) log.warn(`Failed to unsubscribe from ${chainId}`, error)
         }
 
       current?.subscriptions.delete(subscription)
@@ -412,9 +419,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
       // periodically send a request to keep the socket alive when there is no other traffic
       if (connection.keepAliveInterval) clearInterval(connection.keepAliveInterval)
       connection.keepAliveInterval = setInterval(() => {
-        this.request(connection, "system_health", [], KEEP_ALIVE_INTERVAL).catch((error) =>
-          log.warn(`Failed keep-alive for socket ${connection.chainId}`, error)
-        )
+        this.request(connection, "system_health", [], KEEP_ALIVE_INTERVAL).catch((error) => {
+          if (!isDestroyedError(error))
+            log.warn(`Failed keep-alive for socket ${connection.chainId}`, error)
+        })
       }, KEEP_ALIVE_INTERVAL)
 
       // server-side subscriptions died with the previous socket : re-establish them
