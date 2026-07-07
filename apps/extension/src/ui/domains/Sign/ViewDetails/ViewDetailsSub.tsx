@@ -1,9 +1,6 @@
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import {
-  getTxHelper,
-  type SignerPayloadJSON as TxUtilsSignerPayloadJSON,
-} from "@polkadot-api/tx-utils"
+import { getTxHelper } from "@polkadot-api/tx-utils"
 import { BalanceFormatter } from "@talismn/balances"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
@@ -46,7 +43,7 @@ const useDecodedTxInput = () => {
       if (!metadataRpc || !isJsonPayload(payload)) return null
 
       const { fromPjsToInputRaw, getTxInputDecoded } = getTxHelper(metadataRpc)
-      const { input, blockNumber } = fromPjsToInputRaw(payload as TxUtilsSignerPayloadJSON)
+      const { input, blockNumber } = fromPjsToInputRaw(payload)
 
       return getTxInputDecoded(input, blockNumber)
     } catch {

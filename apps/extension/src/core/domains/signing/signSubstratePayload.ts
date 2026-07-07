@@ -1,5 +1,5 @@
-import type { SignerPayloadJSON } from "@polkadot-api/tx-utils"
 import type { KeypairCurve } from "@talismn/crypto"
+import type { SignerPayloadJSON } from "@talismn/sapi"
 import { assert } from "@talismn/util"
 
 import { getMetadataDef } from "../../util/getMetadataDef"

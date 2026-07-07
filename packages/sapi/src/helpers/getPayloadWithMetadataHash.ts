@@ -34,7 +34,7 @@ export const getPayloadWithMetadataHash = (
     }
 
     const { callData, extra, additionalSigned } = getPjsTxHelper(chain.hexMetadata)(
-      payloadWithMetadataHash as Parameters<ReturnType<typeof getPjsTxHelper>>[0]
+      payloadWithMetadataHash
     )
     const barePayload = mergeUint8([callData, extra, additionalSigned])
 

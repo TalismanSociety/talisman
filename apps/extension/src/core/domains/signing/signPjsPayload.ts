@@ -1,6 +1,6 @@
 import { createV4Tx } from "@polkadot-api/signers-common"
 import { Blake2256 } from "@polkadot-api/substrate-bindings"
-import { getPjsTxHelper, type SignerPayloadJSON } from "@polkadot-api/tx-utils"
+import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import {
   blake2b256,
   isEthereumAddress,
@@ -8,6 +8,7 @@ import {
   SIGNATURE_TYPE_PREFIX,
   signSubstrate,
 } from "@talismn/crypto"
+import type { SignerPayloadJSON } from "@talismn/sapi"
 import { parseMetadataRpc, type UnifiedMetadata } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"

@@ -30,9 +30,7 @@ export const getFeeEstimate = async (
   _chainInfo: ChainInfo
 ) => {
   // build a fake-signed extrinsic - fees depend on the encoded length, not the signature content
-  const { callData, extra } = getPjsTxHelper(chain.hexMetadata)(
-    payload as Parameters<ReturnType<typeof getPjsTxHelper>>[0]
-  )
+  const { callData, extra } = getPjsTxHelper(chain.hexMetadata)(payload)
   const fakeSignature = isEthereumAddress(payload.address)
     ? new Uint8Array(65) // AccountId20 chains: raw 65-byte signature, no MultiSignature prefix
     : new Uint8Array(66).fill(2, 0, 1) // MultiSignature ecdsa variant, the longest (type byte + 65) so the length fee is never underestimated

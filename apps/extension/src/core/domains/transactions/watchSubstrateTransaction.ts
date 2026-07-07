@@ -315,10 +315,7 @@ export const watchSubstrateTransaction = async (
     const decodeSystemEvents: DecodeSystemEvents = (scaleHex) =>
       eventsCodec.dec(scaleHex) as SystemEventRecord[]
 
-    const { hash } = await assembleSubstrateTransaction(
-      payload as Parameters<typeof assembleSubstrateTransaction>[0],
-      signature
-    )
+    const { hash } = await assembleSubstrateTransaction(payload, signature)
 
     await addSubstrateTransaction(chain.id, hash, payload, { siteUrl, txInfo })
 

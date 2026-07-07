@@ -201,9 +201,7 @@ describe("Extension", () => {
       const { signature } = await requestPromise
 
       // rebuild the signing input and verify the (type-prefixed) sr25519 signature
-      const { callData, extra, additionalSigned } = getPjsTxHelper(metadataHex)(
-        payload as Parameters<ReturnType<typeof getPjsTxHelper>>[0]
-      )
+      const { callData, extra, additionalSigned } = getPjsTxHelper(metadataHex)(payload)
       const signingInput = mergeUint8([callData, extra, additionalSigned])
       const sigBytes = Buffer.from(signature.slice(2), "hex")
       expect(sigBytes[0]).toBe(1) // MultiSignature type prefix: sr25519
