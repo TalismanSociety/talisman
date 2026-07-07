@@ -514,12 +514,12 @@ export class EthTabsHandler extends TabsHandler {
     const message =
       typeof uncheckedMessage === "string" ? uncheckedMessage : JSON.stringify(uncheckedMessage)
 
+    // throws if `from` is not one of the accounts connected to the site
     const site = await this.getSiteDetails(url, from)
 
-    const address = site.ethAddresses[0]
-    const account = await keyringStore.getAccount(address)
+    const account = await keyringStore.getAccount(from)
 
-    if (!address || !account || getAddress(address) !== getAddress(from)) {
+    if (!account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
         ETH_ERROR_EIP1993_UNAUTHORIZED
@@ -647,15 +647,13 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
     }
 
-    const address = site.ethAddresses[0]
-
-    // allow only the currently selected account in "from" field
-    if (txRequest.from?.toLowerCase() !== address.toLowerCase())
+    // "from" account must be one of the accounts connected to the site (validated by getSiteDetails above)
+    if (!txRequest.from)
       throw new EthProviderRpcError("Invalid from account", ETH_ERROR_EIP1474_INVALID_INPUT)
 
-    const account = await keyringStore.getAccount(address)
+    const account = await keyringStore.getAccount(txRequest.from)
 
-    if (!address || !account) {
+    if (!account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
         ETH_ERROR_EIP1993_UNAUTHORIZED
