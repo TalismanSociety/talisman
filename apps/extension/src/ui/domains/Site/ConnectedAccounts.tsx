@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
+import { ConnectedAccountsMultiSelect } from "./ConnectedAccountsMultiSelect"
 import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 
 const isMatch = (acc: Account) => (address: string) => isAddressEqual(acc.address, address)
@@ -46,36 +47,22 @@ const AccountSeparator = () => <div className="mx-6 h-0.5 bg-grey-800"></div>
 
 const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const accounts = useInjectableAccounts(site?.url ?? "", "ethereum")
-  const activeAccounts = useMemo(
-    () =>
-      accounts.map((acc) => [acc, site?.ethAddresses?.some(isMatch(acc))] as [Account, boolean]),
-    [accounts, site?.ethAddresses]
-  )
 
-  const handleAccountClick = useCallback(
-    (address: string) => async () => {
+  const handleUpdateAccounts = useCallback(
+    (ethAddresses: string[]) => {
       if (!site?.id) return
-      const isConnected = site?.ethAddresses?.includes(address)
-      const ethAddresses = isConnected ? [] : [address]
-      await api.authorizedSiteUpdate(site?.id, { ethAddresses })
+      api.authorizedSiteUpdate(site.id, { ethAddresses })
     },
-    [site?.ethAddresses, site?.id]
+    [site?.id]
   )
 
   return (
-    <>
-      {activeAccounts.map(([acc, isConnected], idx) => (
-        <Fragment key={acc.address}>
-          {!!idx && <AccountSeparator />}
-          <ConnectAccountToggleButtonRow
-            account={acc}
-            showAddress
-            checked={isConnected}
-            onClick={handleAccountClick(acc.address)}
-          />
-        </Fragment>
-      ))}
-    </>
+    <ConnectedAccountsMultiSelect
+      accounts={accounts}
+      connected={site?.ethAddresses ?? []}
+      onUpdateAccounts={handleUpdateAccounts}
+      showAddress
+    />
   )
 }
 
@@ -136,7 +123,7 @@ export const ConnectedAccounts: FC = () => {
           status={site.ethAddresses.length ? "connected" : "disconnected"}
           connectedAddresses={site.ethAddresses}
           isSingleProvider={!site.addresses}
-          infoText={t("Account connected via the Ethereum provider")}
+          infoText={t("Accounts connected via the Ethereum provider")}
         >
           <EthAccounts site={site} />
         </ConnectAccountsContainer>

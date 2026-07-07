@@ -9,9 +9,11 @@ import { Drawer } from "@ui/components/Drawer"
 import { notify } from "@ui/components/Notifications"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
+import { ConnectedAccountsMultiSelect } from "@ui/domains/Site/ConnectedAccountsMultiSelect"
 import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
+import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { useRequest } from "@ui/state/requests"
 import capitalize from "lodash-es/capitalize"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -57,6 +59,7 @@ const NoAccountWarning = ({
 
 type ConnectComponent = FC<{
   siteUrl: string
+  siteId: string
   connected: string[]
   setConnected: (connected: string[]) => void
   onNoAccountClose: (navigateToAddAccount: boolean) => () => void
@@ -123,6 +126,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       </PopupHeader>
       <ConnectContentComponent
         siteUrl={authRequest.url}
+        siteId={authRequest.idStr}
         connected={connected}
         setConnected={setConnected}
         onNoAccountClose={onNoAccountClose}
@@ -204,15 +208,36 @@ const ConnectPolkadot: ConnectComponent = ({
   )
 }
 
-const ConnectEth: ConnectComponent = ({ siteUrl, connected, setConnected, onNoAccountClose }) => {
+const ConnectEth: ConnectComponent = ({
+  siteUrl,
+  siteId,
+  connected,
+  setConnected,
+  onNoAccountClose,
+}) => {
   const { t } = useTranslation()
 
   const accounts = useInjectableAccounts(siteUrl, "ethereum")
+  const sites = useAuthorisedSites()
+  const site = sites[siteId]
+
+  // seed selection : accounts already connected to the site if any (dapp asking to change accounts),
+  // fallback to the first available account (most dapps expect the wallet to preselect one)
+  const [initialized, setInitialized] = useState(false)
+  useEffect(() => {
+    if (initialized || !accounts.length) return
+    setInitialized(true)
+    const existing =
+      site?.ethAddresses?.filter((address) =>
+        accounts.some((account) => account.address === address)
+      ) ?? []
+    setConnected(existing.length ? existing : [accounts[0].address])
+  }, [accounts, initialized, setConnected, site?.ethAddresses])
 
   return (
     <PopupContent>
       <h3 className="mt-0 mb-6 pt-10 text-body-secondary text-sm">
-        {t("Choose the account you'd like to connect")}
+        {t("Choose the account(s) you'd like to connect")}
       </h3>
       <section className="flex flex-col gap-4">
         <ConnectAccountsContainer
@@ -222,14 +247,11 @@ const ConnectEth: ConnectComponent = ({ siteUrl, connected, setConnected, onNoAc
           infoText={t(`Accounts will be connected via the Ethereum provider`)}
           isSingleProvider
         >
-          {accounts.map((account) => (
-            <ConnectAccountToggleButtonRow
-              key={account.address}
-              account={account}
-              checked={connected.includes(account?.address)}
-              onClick={() => setConnected([account.address])}
-            />
-          ))}
+          <ConnectedAccountsMultiSelect
+            accounts={accounts}
+            connected={connected}
+            onUpdateAccounts={setConnected}
+          />
         </ConnectAccountsContainer>
         {!accounts.length && (
           <NoAccountWarning
