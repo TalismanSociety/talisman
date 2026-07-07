@@ -1,4 +1,5 @@
 import { parseMetadataRpc } from "@talismn/scale"
+import { reportJsActivity } from "@talismn/util"
 
 /**
  * parseMetadataRpc does a full metadata decode + dynamic-builder build (tens to hundreds
@@ -20,7 +21,17 @@ export const parseMetadataRpcCached = (
     return cached
   }
 
+  // cache misses are a prime JS-thread stall suspect: the parse is indivisible, and with
+  // more than CACHE_SIZE distinct metadata blobs live the LRU thrashes and re-parses on
+  // every rotation — report each miss (with duration + cache pressure) to the host
+  // watchdog so stalls can be attributed to it
+  const start = performance.now()
   const result = parseMetadataRpc(metadataRpc)
+  reportJsActivity(
+    `parseMetadataRpc miss (~${Math.round(metadataRpc.length / 2048)}KB, cache ${cache.size}/${CACHE_SIZE})`,
+    performance.now() - start
+  )
+
   cache.set(metadataRpc, result)
   while (cache.size > CACHE_SIZE) cache.delete(cache.keys().next().value as string)
 

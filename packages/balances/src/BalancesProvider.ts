@@ -183,27 +183,32 @@ export class BalancesProvider {
       }),
       // aggregation is time-sliced: yields the JS thread on budget, and a newer emission
       // aborts the in-flight pass (latest-wins)
-      switchMapChunked(async ({ isStale, results }, { slicer }): Promise<BalancesResult> => {
-        const balanceArrays = await mapWithYield(
-          results,
-          (result) =>
-            isStale
-              ? result.balances.map((b): IBalance => (b.status !== "live" ? getStaleVariant(b) : b))
-              : result.balances,
-          { slicer }
-        )
+      switchMapChunked(
+        async ({ isStale, results }, { slicer }): Promise<BalancesResult> => {
+          const balanceArrays = await mapWithYield(
+            results,
+            (result) =>
+              isStale
+                ? result.balances.map(
+                    (b): IBalance => (b.status !== "live" ? getStaleVariant(b) : b)
+                  )
+                : result.balances,
+            { slicer }
+          )
 
-        return {
-          status:
-            !isStale && results.some(({ status }) => status === "initialising")
-              ? "initialising"
-              : "live",
-          // per-network arrays are already sorted (see getNetworkBalances$): merge instead
-          // of re-sorting the whole set
-          balances: await mergeSortedBalanceArrays(balanceArrays, slicer),
-          failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
-        }
-      }),
+          return {
+            status:
+              !isStale && results.some(({ status }) => status === "initialising")
+                ? "initialising"
+                : "live",
+            // per-network arrays are already sorted (see getNetworkBalances$): merge instead
+            // of re-sorting the whole set
+            balances: await mergeSortedBalanceArrays(balanceArrays, slicer),
+            failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
+          }
+        },
+        { label: "balances aggregate" }
+      ),
       distinctUntilChanged(isEqualBalancesResult)
     )
   }
@@ -271,27 +276,32 @@ export class BalancesProvider {
           })
         )
       }),
-      switchMapChunked(async (results, { slicer }): Promise<BalancesResult> => {
-        // for each balance that could not be fetched, see if we have a stored balance and return it, marked as stale
-        const errorBalanceIds = results.flatMap((result) => result.failedBalanceIds)
-        const staleBalances = errorBalanceIds
-          .map((balanceId) => this.#storageValue.balances[balanceId])
-          .filter(isNotNil)
-          .map(getStaleVariant)
+      switchMapChunked(
+        async (results, { slicer }): Promise<BalancesResult> => {
+          // for each balance that could not be fetched, see if we have a stored balance and return it, marked as stale
+          const errorBalanceIds = results.flatMap((result) => result.failedBalanceIds)
+          const staleBalances = errorBalanceIds
+            .map((balanceId) => this.#storageValue.balances[balanceId])
+            .filter(isNotNil)
+            .map(getStaleVariant)
 
-        const balances = results.flatMap((result) => result.balances).concat(staleBalances)
+          const balances = results.flatMap((result) => result.balances).concat(staleBalances)
 
-        // yield before the (atomic) sort so it starts on a fresh slice; per-network result
-        // sets are small enough that the sort itself stays within a frame
-        const yielded = slicer.yieldIfNeeded()
-        if (yielded) await yielded
+          // yield before the (atomic) sort so it starts on a fresh slice; per-network result
+          // sets are small enough that the sort itself stays within a frame
+          const yielded = slicer.yieldIfNeeded()
+          if (yielded) await yielded
 
-        return {
-          status: results.some(({ status }) => status === "initialising") ? "initialising" : "live",
-          balances: balances.sort(sortByBalanceId),
-          failedBalanceIds: [],
-        }
-      }),
+          return {
+            status: results.some(({ status }) => status === "initialising")
+              ? "initialising"
+              : "live",
+            balances: balances.sort(sortByBalanceId),
+            failedBalanceIds: [],
+          }
+        },
+        { label: `network balances ${networkId}` }
+      ),
       distinctUntilChanged(isEqualBalancesResult)
     )
   }

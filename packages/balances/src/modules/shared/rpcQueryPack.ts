@@ -93,8 +93,9 @@ export const getRpcQueryPack$ = <T>(
   // arrive mid-decode the in-flight decode is aborted (the new snapshot contains the
   // aborted block's changes too, so nothing is lost — emissions coalesce under load)
   return getRawStorageUpdates$(connector, networkId, allStateKeys, timeout).pipe(
-    switchMapChunked((changesByKey, { slicer }) =>
-      decodeRpcQueryPackChunked(queries, changesByKey, { slicer })
+    switchMapChunked(
+      (changesByKey, { slicer }) => decodeRpcQueryPackChunked(queries, changesByKey, { slicer }),
+      { label: `decode ${networkId}` }
     )
   )
 }

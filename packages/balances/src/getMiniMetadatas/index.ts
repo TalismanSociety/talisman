@@ -1,5 +1,6 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import type { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
+import { reportJsActivity } from "@talismn/util"
 import PQueue from "p-queue"
 
 import log from "../log"
@@ -69,6 +70,10 @@ const fetchMiniMetadatas = async (
       )
     )
   } finally {
+    // end-of-work marker (no duration: the span includes async fetch time; the heavy
+    // sync parse is reported separately by parseMetadataRpcCached) — lets host stall
+    // watchdogs place miniMetadata builds inside a stall window
+    reportJsActivity(`getMiniMetadatas ${chainId}`)
     log.debug(
       "[miniMetadata] updated miniMetadatas for %s in %sms",
       chainId,

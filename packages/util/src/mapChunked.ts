@@ -13,13 +13,17 @@ export type ChunkedProjectContext = {
 
 const runChunkedProject = <T, R>(
   project: (value: T, ctx: ChunkedProjectContext, index: number) => Promise<R>,
-  budgetMs: number | undefined,
+  options: { budgetMs?: number; label?: string } | undefined,
   value: T,
   index: number
 ): Observable<R> =>
   new Observable<R>((subscriber) => {
     const controller = new AbortController()
-    const slicer = createTimeSlicer({ budgetMs, signal: controller.signal })
+    const slicer = createTimeSlicer({
+      budgetMs: options?.budgetMs,
+      signal: controller.signal,
+      label: options?.label,
+    })
 
     project(value, { slicer, signal: controller.signal }, index).then(
       (result) => {
@@ -49,11 +53,9 @@ const runChunkedProject = <T, R>(
  */
 export const switchMapChunked = <T, R>(
   project: (value: T, ctx: ChunkedProjectContext, index: number) => Promise<R>,
-  options?: { budgetMs?: number }
+  options?: { budgetMs?: number; label?: string }
 ): OperatorFunction<T, R> =>
-  switchMap((value: T, index: number) =>
-    runChunkedProject(project, options?.budgetMs, value, index)
-  )
+  switchMap((value: T, index: number) => runChunkedProject(project, options, value, index))
 
 /**
  * `concatMap` variant of switchMapChunked — ordered: upstream values queue and are
@@ -62,8 +64,6 @@ export const switchMapChunked = <T, R>(
  */
 export const concatMapChunked = <T, R>(
   project: (value: T, ctx: ChunkedProjectContext, index: number) => Promise<R>,
-  options?: { budgetMs?: number }
+  options?: { budgetMs?: number; label?: string }
 ): OperatorFunction<T, R> =>
-  concatMap((value: T, index: number) =>
-    runChunkedProject(project, options?.budgetMs, value, index)
-  )
+  concatMap((value: T, index: number) => runChunkedProject(project, options, value, index))

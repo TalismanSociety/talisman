@@ -1,3 +1,4 @@
+import { reportJsActivity } from "./jsActivityHook"
 import { yieldToEventLoop } from "./yieldToEventLoop"
 
 /**
@@ -13,6 +14,8 @@ export type TimeSlicerOptions = {
   signal?: AbortSignal
   /** injectable clock for tests; defaults to performance.now, falling back to Date.now */
   now?: () => number
+  /** identifies this slicer in host JS-activity reports (see jsActivityHook) */
+  label?: string
 }
 
 export type TimeSlicer = {
@@ -58,6 +61,7 @@ export const createTimeSlicer = ({
   budgetMs = DEFAULT_TIME_SLICE_BUDGET_MS,
   signal,
   now = defaultNow,
+  label,
 }: TimeSlicerOptions = {}): TimeSlicer => {
   let sliceStart = now()
 
@@ -68,6 +72,13 @@ export const createTimeSlicer = ({
   const shouldYield = () => now() - sliceStart >= budgetMs
 
   const doYield = async () => {
+    // a slice that ran way past its budget means a SINGLE work item blocked the thread
+    // (yield checks only happen between items) — report it so host stall watchdogs can
+    // attribute the block to this pipeline instead of showing an anonymous stall
+    const elapsed = now() - sliceStart
+    if (elapsed >= budgetMs * 3)
+      reportJsActivity(`timeSlicer over-budget slice${label ? ` (${label})` : ""}`, elapsed)
+
     await yieldToEventLoop()
     sliceStart = now()
     throwIfAborted()
