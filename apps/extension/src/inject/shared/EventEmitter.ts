@@ -12,11 +12,12 @@ type Listener = (...args: any[]) => unknown
  * ignoring the Node-only `captureRejections` option.
  */
 export class EventEmitter {
-  #listeners = new Map<string, Set<Listener>>()
+  // listener → `this` context for its invocation (usually undefined)
+  #listeners = new Map<string, Map<Listener, unknown>>()
 
-  on(event: string, listener: Listener): this {
-    const listeners = this.#listeners.get(event) ?? new Set<Listener>()
-    listeners.add(listener)
+  on(event: string, listener: Listener, context?: unknown): this {
+    const listeners = this.#listeners.get(event) ?? new Map<Listener, unknown>()
+    listeners.set(listener, context)
     this.#listeners.set(event, listeners)
     return this
   }
@@ -45,9 +46,9 @@ export class EventEmitter {
     if (!listeners?.size) return false
 
     // iterate a copy so handlers that add/remove listeners during dispatch don't disrupt it
-    for (const listener of [...listeners]) {
+    for (const [listener, context] of [...listeners]) {
       try {
-        const result = listener(...args)
+        const result = listener.apply(context, args)
         if (result instanceof Promise) result.catch(() => {})
       } catch {
         // isolate sync listener errors so one bad dapp handler can't break our provider
