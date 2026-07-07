@@ -749,6 +749,47 @@ export class EthTabsHandler extends TabsHandler {
     return this.getPermissions(url)
   }
 
+  private async revokePermissions(
+    url: string,
+    request: EthRequestArguments<"wallet_revokePermissions">
+  ): Promise<EthRequestResult<"wallet_revokePermissions">> {
+    if (request.params.length !== 1)
+      throw new EthProviderRpcError(
+        "This method expects an array with only 1 entry",
+        ETH_ERROR_EIP1474_INVALID_PARAMS
+      )
+
+    const [requestedPerms] = request.params
+    if (!isValidRequestedPermissions(requestedPerms))
+      throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
+    let site
+    try {
+      // url validation carried out inside stores.sites.getSiteFromUrl
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch {
+      return null
+    }
+    if (!site) return null
+
+    if (
+      Object.keys(requestedPerms).includes("eth_accounts") &&
+      (site.ethAddresses?.length || site.ethPermissions?.eth_accounts)
+    ) {
+      const ethPermissions = { ...(site.ethPermissions ?? {}) }
+      delete ethPermissions.eth_accounts
+
+      // sites observable will emit disconnect & accountsChanged events to the dapp
+      await this.stores.sites.updateSite(site.id, {
+        ethAddresses: [],
+        ethPermissions: ethPermissions as EthWalletPermissions,
+      })
+    }
+
+    return null
+  }
+
   private async ethRequest(
     _id: string,
     url: string,
@@ -766,6 +807,7 @@ export class EthTabsHandler extends TabsHandler {
         "wallet_addEthereumChain",
         "wallet_watchAsset",
         "wallet_requestPermissions",
+        "wallet_revokePermissions",
       ].includes(request.method)
     )
       await this.checkAccountAuthorised(url)
@@ -839,6 +881,11 @@ export class EthTabsHandler extends TabsHandler {
       // always prompt : dapps rely on this method to display the account selection view
       case "wallet_requestPermissions":
         return this.requestPermissions(url, request, port, true)
+
+      // https://docs.metamask.io/wallet/reference/json-rpc-methods/wallet_revokepermissions/
+      // dapps use this method to implement their disconnect button
+      case "wallet_revokePermissions":
+        return this.revokePermissions(url, request)
 
       default:
         return this.getFallbackRequest(url, request)
