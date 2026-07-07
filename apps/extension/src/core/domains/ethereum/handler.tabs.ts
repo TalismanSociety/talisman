@@ -814,6 +814,7 @@ export class EthTabsHandler extends TabsHandler {
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
         "wallet_watchAsset",
+        "wallet_getPermissions",
         "wallet_requestPermissions",
         "wallet_revokePermissions",
       ].includes(request.method)
