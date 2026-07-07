@@ -1,4 +1,5 @@
 import { log } from "@common/log"
+import { secretFromSeed } from "@scure/sr25519"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import {
   entropyToSeed,
@@ -50,7 +51,6 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
 
     // same key as pjs keyring.createFromUri(mnemonic, {}, "sr25519"): substrate-bip39 mini secret, no derivation
     const seed = await entropyToSeed(mnemonicToEntropy(mnemonic), "sr25519")
-    const { secretFromSeed } = await import("@scure/sr25519")
     const secretKey = secretFromSeed(seed)
     const publicKey = getPublicKeyFromSecret(secretKey, "sr25519")
 
