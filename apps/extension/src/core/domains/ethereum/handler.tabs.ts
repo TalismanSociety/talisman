@@ -136,7 +136,8 @@ export class EthTabsHandler extends TabsHandler {
   private async authoriseEth(
     url: string,
     request: RequestAuthorizeTab,
-    port: Port
+    port: Port,
+    force = false
   ): Promise<boolean> {
     // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let siteFromUrl
@@ -145,11 +146,10 @@ export class EthTabsHandler extends TabsHandler {
     } catch {
       return false
     }
-    if (siteFromUrl?.ethAddresses) {
-      if (siteFromUrl.ethAddresses.length)
-        return true //already authorized
-      else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected : 4100	Unauthorized
-    }
+
+    // already authorized => no prompt, unless the dapp explicitly asks for the account selection view
+    // note: an empty ethAddresses array (disconnected/revoked site) must re-prompt, as dapps have no other way to reconnect
+    if (!force && siteFromUrl?.ethAddresses?.length) return true
 
     try {
       await requestAuthoriseSite(url, request, port)
@@ -685,7 +685,8 @@ export class EthTabsHandler extends TabsHandler {
   private async requestPermissions(
     url: string,
     request: EthRequestArguments<"wallet_requestPermissions">,
-    port: Port
+    port: Port,
+    force = false
   ): Promise<EthRequestResult<"wallet_requestPermissions">> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
@@ -708,17 +709,23 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     const existingPerms = site?.ethPermissions ?? ({} as EthWalletPermissions)
-    const missingPerms = Object.keys(requestedPerms)
-      .map((perm) => perm as Web3WalletPermissionTarget)
-      .filter((perm) => !existingPerms[perm])
+    const requestedTargets = Object.keys(requestedPerms).map(
+      (perm) => perm as Web3WalletPermissionTarget
+    )
+    const missingPerms = requestedTargets.filter((perm) => !existingPerms[perm])
 
     // request all missing permissions to the user
     // for now we only support eth_accounts, which we consider granted when user authenticates
+    // when force is set, always prompt : dapps call wallet_requestPermissions to display the account selection view
     // @dev: cannot proceed with a loop here as order may have some importance, and we may want to group multiple permissions in a single request
     const grantedPermissions: Partial<EthWalletPermissions> = {}
-    if (missingPerms.includes("eth_accounts")) {
-      await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port)
-      grantedPermissions.eth_accounts = { date: Date.now() }
+    if (
+      requestedTargets.includes("eth_accounts") &&
+      (force || missingPerms.includes("eth_accounts"))
+    ) {
+      await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port, force)
+      if (missingPerms.includes("eth_accounts"))
+        grantedPermissions.eth_accounts = { date: Date.now() }
     }
 
     // if any, store missing permissions
@@ -826,8 +833,9 @@ export class EthTabsHandler extends TabsHandler {
         return this.getPermissions(url)
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
+      // always prompt : dapps rely on this method to display the account selection view
       case "wallet_requestPermissions":
-        return this.requestPermissions(url, request, port)
+        return this.requestPermissions(url, request, port, true)
 
       default:
         return this.getFallbackRequest(url, request)
