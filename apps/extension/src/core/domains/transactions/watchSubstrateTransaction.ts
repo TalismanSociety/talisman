@@ -62,11 +62,12 @@ const getStorageKeyHash = (...names: string[]) => {
  * computes a header's hash (blake2b-256 of its SCALE encoding) and number from its JSON-RPC form.
  * Some chains extend the standard header (e.g. Avail's data-availability extension): re-encoding
  * their JSON form with the standard layout yields a wrong hash, so ask the node instead.
+ * Returns null when the hash can't be determined (e.g. the header is on a fork the node dropped).
  */
 const getHeaderInfo = async (
   chainId: DotNetworkId,
   header: JsonHeader
-): Promise<{ hash: HexString; blockNumber: number }> => {
+): Promise<{ hash: HexString; blockNumber: number } | null> => {
   const blockNumber = parseInt(header.number, 16)
   const logs = header.digest?.logs ?? []
   const isStandardHeader = Object.keys(header).every((key) =>
@@ -83,7 +84,21 @@ const getHeaderInfo = async (
     )
     return { hash: u8aToHex(blake2b256(encoded)), blockNumber }
   }
-  const hash = await chainConnector.send<HexString>(chainId, "chain_getBlockHash", [blockNumber])
+  // chain_getBlockHash returns the node's best-chain block at that height, which under
+  // chain_subscribeAllHeads may be a different fork than the header we received: fetch that
+  // block's header and make sure it is the same one before using the hash
+  const hash = await chainConnector.send<HexString | null>(chainId, "chain_getBlockHash", [
+    blockNumber,
+  ])
+  if (!hash) return null
+  const check = await chainConnector.send<JsonHeader | null>(chainId, "chain_getHeader", [hash])
+  if (
+    !check ||
+    check.parentHash !== header.parentHash ||
+    check.stateRoot !== header.stateRoot ||
+    check.extrinsicsRoot !== header.extrinsicsRoot
+  )
+    return null
   return { hash, blockNumber }
 }
 
@@ -178,10 +193,11 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash: blockHash } = await getHeaderInfo(chainId, data as JsonHeader)
+        const headerInfo = await getHeaderInfo(chainId, data as JsonHeader)
+        if (!headerInfo) return
         const { val: extResult, err } = await getExtrinsincResult(
           decodeSystemEvents,
-          blockHash,
+          headerInfo.hash,
           chainId,
           extrinsicHash
         )
@@ -219,10 +235,11 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash: blockHash } = await getHeaderInfo(chainId, data as JsonHeader)
+        const headerInfo = await getHeaderInfo(chainId, data as JsonHeader)
+        if (!headerInfo) return
         const { val: extResult, err } = await getExtrinsincResult(
           decodeSystemEvents,
-          blockHash,
+          headerInfo.hash,
           chainId,
           extrinsicHash
         )
@@ -231,7 +248,7 @@ const watchExtrinsicStatus = async (
 
         const { result, blockNumber, extIndex } = extResult
 
-        if (result === "success") foundInBlockHash = blockHash
+        if (result === "success") foundInBlockHash = headerInfo.hash
         cb(result, blockNumber, extIndex, false)
 
         await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
