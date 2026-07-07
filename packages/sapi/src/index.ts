@@ -1,4 +1,5 @@
 export * from "./fetchBestMetadata"
+export * from "./helpers/papi"
 export * from "./pjsInterop"
 export * from "./sapi"
 export * from "./types"

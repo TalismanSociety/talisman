@@ -1,21 +1,11 @@
 import { createV4Tx } from "@polkadot-api/signers-common"
 import { getPjsTxHelper } from "@polkadot-api/tx-utils"
-import { fromHex } from "@polkadot-api/utils"
-import { getSs58AddressInfo } from "polkadot-api"
 import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
+import { getAddressBytes, isEthereumAddress } from "./papi"
 import type { Chain, ChainInfo } from "./types"
-
-const isEthereumAddress = (address: string) => /^0x[0-9a-fA-F]{40}$/.test(address)
-
-const getAddressBytes = (address: string): Uint8Array => {
-  if (isEthereumAddress(address)) return fromHex(address)
-  const info = getSs58AddressInfo(address)
-  if (!info.isValid) throw new Error(`Invalid address: ${address}`)
-  return info.publicKey
-}
 
 /** strips the leading compact length prefix from an encoded extrinsic */
 const stripLengthPrefix = (tx: Uint8Array): Uint8Array => {

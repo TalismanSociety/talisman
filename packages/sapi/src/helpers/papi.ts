@@ -1,4 +1,6 @@
 import { Bytes, enhanceEncoder, u16 } from "@polkadot-api/substrate-bindings"
+import { fromHex } from "@polkadot-api/utils"
+import { getSs58AddressInfo } from "polkadot-api"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////                 Utilities from PAPI                 /////////////////////////////
@@ -25,4 +27,14 @@ function trailingZeroes(n: number) {
     n >>= 1
   }
   return i
+}
+
+export const isEthereumAddress = (address: string) => /^0x[0-9a-fA-F]{40}$/.test(address)
+
+/** decodes an ss58 or ethereum address into its raw account bytes */
+export const getAddressBytes = (address: string): Uint8Array => {
+  if (isEthereumAddress(address)) return fromHex(address)
+  const info = getSs58AddressInfo(address)
+  if (!info.isValid) throw new Error(`Invalid address: ${address}`)
+  return info.publicKey
 }

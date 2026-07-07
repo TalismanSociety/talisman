@@ -3,16 +3,14 @@ import { Blake2256 } from "@polkadot-api/substrate-bindings"
 import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import {
   blake2b256,
-  isEthereumAddress,
   type KeypairCurve,
   SIGNATURE_TYPE_PREFIX,
   signSubstrate,
 } from "@talismn/crypto"
-import type { SignerPayloadJSON } from "@talismn/sapi"
+import { getAddressBytes, type SignerPayloadJSON } from "@talismn/sapi"
 import { parseMetadataRpc, type UnifiedMetadata } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
-import { getSs58AddressInfo } from "polkadot-api"
 
 export type SignPjsPayloadResult = {
   /** hex signature, MultiSignature-type-prefixed when the chain expects it */
@@ -42,13 +40,6 @@ const getHasSignatureTypePrefix = (metadata: UnifiedMetadata, lookupFn: LookupFn
   }
   assert(signatureTypeId !== undefined, "Unable to locate ExtrinsicSignature type in metadata")
   return lookupFn(signatureTypeId).type === "enum"
-}
-
-const getAddressBytes = (address: string): Uint8Array => {
-  if (isEthereumAddress(address)) return hexToU8a(address)
-  const info = getSs58AddressInfo(address)
-  assert(info.isValid, `Invalid address: ${address}`)
-  return info.publicKey
 }
 
 /**

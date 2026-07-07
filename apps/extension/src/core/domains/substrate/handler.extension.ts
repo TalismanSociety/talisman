@@ -1,7 +1,9 @@
 import { log } from "@common/log"
 import { Twox128 } from "@polkadot-api/substrate-bindings"
 import { encryptKemAead } from "@talismn/crypto"
+import { mortal, toPjsHex } from "@talismn/sapi"
 import { Binary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
+import { u8aToHex } from "@talismn/util"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -139,10 +141,12 @@ export class SubHandler extends ExtensionHandler {
       if (!Number.isFinite(freshBlockNumber)) throw new Error("Invalid fresh block number")
 
       // outer payload uses short mortal era (≤8 blocks) as required by CheckMortality
-      const outerEra = mortalEra({
-        period: MEV_SHIELD_ERA_PERIOD,
-        phase: freshBlockNumber % MEV_SHIELD_ERA_PERIOD,
-      })
+      const outerEra = u8aToHex(
+        mortal({
+          period: MEV_SHIELD_ERA_PERIOD,
+          phase: freshBlockNumber % MEV_SHIELD_ERA_PERIOD,
+        })
+      )
       const outerPayload: SignerPayloadJSON = {
         ...payload,
         method: Binary.toHex(method),
@@ -227,33 +231,5 @@ export class SubHandler extends ExtensionHandler {
   }
 }
 
-const toPjsHex = (value: number | bigint, minByteLen?: number) => {
-  let inner = value.toString(16)
-  inner = (inner.length % 2 ? "0" : "") + inner
-  const nPaddedBytes = Math.max(0, (minByteLen || 0) - inner.length / 2)
-  return `0x${"00".repeat(nPaddedBytes)}${inner}` as `0x${string}`
-}
-
 /** Maximum era period for MEV Shield transactions (≤8 blocks enforced by CheckMortality on subtensor) */
 const MEV_SHIELD_ERA_PERIOD = 8
-
-/** Encode a mortal era as a hex string for SignerPayloadJSON */
-const mortalEra = (value: { period: number; phase: number }): `0x${string}` => {
-  const factor = Math.max(value.period >> 12, 1)
-  const left = Math.min(Math.max(trailingZeroes(value.period) - 1, 1), 15)
-  const right = (value.phase / factor) << 4
-  const encoded = left | right
-  // era is encoded as a u16 LE
-  const byte0 = encoded & 0xff
-  const byte1 = (encoded >> 8) & 0xff
-  return `0x${byte0.toString(16).padStart(2, "0")}${byte1.toString(16).padStart(2, "0")}`
-}
-
-function trailingZeroes(n: number) {
-  let i = 0
-  while (!(n & 1)) {
-    i++
-    n >>= 1
-  }
-  return i
-}
