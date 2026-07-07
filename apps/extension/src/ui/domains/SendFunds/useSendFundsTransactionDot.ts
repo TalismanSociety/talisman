@@ -170,7 +170,10 @@ const usePayload = ({
         tip: tip?.length ? BigInt(tip) : 0n,
       })
     },
-    refetchInterval: false,
+    // the payload embeds a mortality era: rebuild it periodically or the transaction
+    // becomes invalid once the era window (~6 min) elapses
+    refetchInterval: 60_000,
+    staleTime: 0,
     enabled: !isLocked,
   })
 }
