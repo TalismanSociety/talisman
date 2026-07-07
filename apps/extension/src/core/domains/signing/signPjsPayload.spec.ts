@@ -17,11 +17,13 @@ import { getSignedExtrinsicHash, signPjsPayload } from "./signPjsPayload"
  * for each case, pjs's `ExtrinsicPayload.sign(pair)` + `Extrinsic.addSignature` produced
  * the reference signature, signed transaction and hash. Deterministic curves only
  * (sr25519 is covered by a sign+verify round-trip in Extension.spec and @talismn/crypto).
+ * Coverage includes CheckMetadataHash mode=1 (polkadot) and ChargeAssetTxPayment assetId
+ * + unknown Option-typed extensions (assethub, StorageWeightReclaim/EthSetOrigin).
  */
 
 type ParityFixture = {
   name: string
-  chain: "polkadot" | "moonbeam"
+  chain: "polkadot" | "moonbeam" | "assethub"
   curve: KeypairCurve
   secretKey: `0x${string}`
   payload: SignerPayloadJSON
@@ -40,6 +42,7 @@ const FIXTURES = JSON.parse(
 const METADATA: Record<ParityFixture["chain"], `0x${string}`> = {
   polkadot: `0x${gunzipSync(readFileSync(path.join(fixturesDir, "polkadot-metadata-v15.scale.gz"))).toString("hex")}`,
   moonbeam: `0x${gunzipSync(readFileSync(path.join(fixturesDir, "moonbeam-metadata-v15.scale.gz"))).toString("hex")}`,
+  assethub: `0x${gunzipSync(readFileSync(path.join(fixturesDir, "assethub-metadata-v15.scale.gz"))).toString("hex")}`,
 }
 
 describe("signPjsPayload (polkadot-js parity fixtures)", () => {
