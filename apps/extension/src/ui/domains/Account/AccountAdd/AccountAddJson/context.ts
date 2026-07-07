@@ -6,6 +6,7 @@ import { type Address, Balances } from "@talismn/balances"
 import {
   base64,
   decryptPjsKeystore,
+  encodeAddressEthereum,
   encodeAnyAddress,
   isAddressEqual,
   type KeypairCurve,
@@ -98,12 +99,23 @@ const decodePkcs8 = (decrypted: Uint8Array): { secretKey: Uint8Array; publicKey:
   return { secretKey, publicKey }
 }
 
+/** pjs keystores may store the public key (compressed or not) as address for ethereum accounts */
+const getPairAddress = (json: PjsKeyringPairJson, cryptoType: string) => {
+  if (
+    cryptoType === "ethereum" &&
+    isHexString(json.address) &&
+    [68, 132].includes(json.address.length)
+  )
+    return encodeAddressEthereum(hexToU8a(json.address))
+  return json.address
+}
+
 const createPairFromJson = (json: PjsKeyringPairJson): JsonImportPair => {
   const cryptoType = Array.isArray(json.encoding.content) ? json.encoding.content[1] : "ed25519"
 
   return {
     json,
-    address: json.address,
+    address: getPairAddress(json, cryptoType),
     type: cryptoType,
     meta: json.meta ?? {},
     isLocked: true,
