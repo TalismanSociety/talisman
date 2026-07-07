@@ -676,21 +676,25 @@ export class EthTabsHandler extends TabsHandler {
       // no-op
     }
 
-    if (!site?.ethPermissions) return []
+    if (!site) return []
 
-    // some dapps read the list of permitted accounts from the eth_accounts caveat
+    const permissions: Web3WalletPermission[] = []
+
+    // derive eth_accounts permission from the site's connected accounts rather than from the stored permissions,
+    // as accounts may be connected/disconnected from the wallet UI without any dapp interaction.
+    // the stored permission only provides the grant date, it may be missing for sites connected via the wallet UI.
     const accounts = await this.accountsList(url)
+    if (accounts.length) {
+      const date = site.ethPermissions?.eth_accounts?.date
+      permissions.push({
+        parentCapability: "eth_accounts",
+        ...(date ? { date } : {}),
+        // some dapps read the list of permitted accounts from this caveat
+        caveats: [{ type: "restrictReturnedAccounts", value: accounts }],
+      })
+    }
 
-    return Object.entries(site.ethPermissions).map(
-      ([parentCapability, otherProps]) =>
-        ({
-          parentCapability,
-          ...otherProps,
-          ...(parentCapability === "eth_accounts"
-            ? { caveats: [{ type: "restrictReturnedAccounts", value: accounts }] }
-            : {}),
-        }) as Web3WalletPermission
-    )
+    return permissions
   }
 
   private async requestPermissions(
