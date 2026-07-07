@@ -97,7 +97,7 @@
     "openapi-fetch": "^0.17.0",
     "p-queue": "8.1.0",
     "pako": "^2.1.0",
-    "polkadot-api": "2.1.6",
+    "polkadot-api": "2.1.7",
     "raptorq": "1.7.24",
     "react": "19.2.7",
     "react-countup": "^6.5.3",

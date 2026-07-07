@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "polkadot-api": "2.1.6",
+    "polkadot-api": "2.1.7",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
