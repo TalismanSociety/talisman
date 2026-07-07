@@ -48,15 +48,15 @@ import type {
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
 import {
+  ETH_ERROR_EIP1193_CHAIN_DISCONNECTED,
+  ETH_ERROR_EIP1193_DISCONNECTED,
+  ETH_ERROR_EIP1193_UNAUTHORIZED,
+  ETH_ERROR_EIP1193_UNSUPPORTED_METHOD,
+  ETH_ERROR_EIP1193_USER_REJECTED,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
-  ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
-  ETH_ERROR_EIP1993_DISCONNECTED,
-  ETH_ERROR_EIP1993_UNAUTHORIZED,
-  ETH_ERROR_EIP1993_UNSUPPORTED_METHOD,
-  ETH_ERROR_EIP1993_USER_REJECTED,
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
 } from "./EthProviderRpcError"
@@ -127,7 +127,7 @@ export class EthTabsHandler extends TabsHandler {
       !site?.ethChainId ||
       (authorisedAddress && !site.ethAddresses?.includes(normalizeAddress(authorisedAddress)))
     )
-      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
+      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1193_UNAUTHORIZED)
     return site as EthAuthorizedSite
   }
 
@@ -139,13 +139,13 @@ export class EthTabsHandler extends TabsHandler {
       "ethereum"
     )
     if (!ethereumNetwork)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
 
     const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(ethereumNetwork.id)
     if (!provider)
       throw new EthProviderRpcError(
         `No provider for network ${ethereumNetwork.id} (${ethereumNetwork.name})`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+        ETH_ERROR_EIP1193_CHAIN_DISCONNECTED
       )
 
     return provider
@@ -179,7 +179,7 @@ export class EthTabsHandler extends TabsHandler {
         throw new EthProviderRpcError(error.message, ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE)
 
       // 4001	User Rejected Request	The user rejected the request.
-      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
+      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
     }
   }
 
@@ -298,7 +298,7 @@ export class EthTabsHandler extends TabsHandler {
           sendToClient({
             type: "disconnect",
             data: {
-              code: chainId ? ETH_ERROR_EIP1993_CHAIN_DISCONNECTED : ETH_ERROR_EIP1993_DISCONNECTED,
+              code: chainId ? ETH_ERROR_EIP1193_CHAIN_DISCONNECTED : ETH_ERROR_EIP1193_DISCONNECTED,
             },
           })
         }
@@ -463,7 +463,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError(
         `Failed to connect to network ${ethChainId}`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+        ETH_ERROR_EIP1193_CHAIN_DISCONNECTED
       )
 
     const { err, val } = urlToDomain(url)
@@ -543,7 +543,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
-        ETH_ERROR_EIP1993_UNAUTHORIZED
+        ETH_ERROR_EIP1193_UNAUTHORIZED
       )
     }
 
@@ -564,7 +564,7 @@ export class EthTabsHandler extends TabsHandler {
 
     const ethChainId = await this.getChainId(url)
     if (typeof ethChainId !== "number")
-      throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
 
     const tokenId = evmErc20TokenId(ethChainId.toString(), address as `0x${string}`)
     const existing = await chaindataProvider.getTokenById(tokenId)
@@ -573,7 +573,7 @@ export class EthTabsHandler extends TabsHandler {
 
     const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId.toString())
     if (!client)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let tokenInfo
@@ -634,7 +634,7 @@ export class EthTabsHandler extends TabsHandler {
         throw new EthProviderRpcError(message, ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE)
       log.error("Failed to add watch asset", { err })
       // popup closed or port disconnected
-      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
+      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
     }
 
     return true
@@ -690,7 +690,7 @@ export class EthTabsHandler extends TabsHandler {
       // ensure that we have a valid provider for the current network
       await this.getPublicClient(url, txRequest.from)
     } catch {
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
     }
 
     // "from" account must be one of the accounts connected to the site (validated by getSiteDetails above)
@@ -702,7 +702,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
-        ETH_ERROR_EIP1993_UNAUTHORIZED
+        ETH_ERROR_EIP1193_UNAUTHORIZED
       )
     }
 
@@ -800,7 +800,7 @@ export class EthTabsHandler extends TabsHandler {
       // fetch site again as it might have been created/updated while authenticating (eth_accounts permission)
       // no need to handle URL invalid error this time as we know the URL is ok
       const siteAgain = await this.stores.sites.getSiteFromUrl(url)
-      if (!siteAgain) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1993_UNAUTHORIZED)
+      if (!siteAgain) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1193_UNAUTHORIZED)
 
       const ethPermissions = {
         ...(siteAgain.ethPermissions ?? {}),
@@ -864,7 +864,7 @@ export class EthTabsHandler extends TabsHandler {
     if (request.method in UNSUPPORTED_METHOD_MESSAGES)
       throw new EthProviderRpcError(
         UNSUPPORTED_METHOD_MESSAGES[request.method],
-        ETH_ERROR_EIP1993_UNSUPPORTED_METHOD
+        ETH_ERROR_EIP1193_UNSUPPORTED_METHOD
       )
 
     // no blanket authorization check here : account-bound methods (signing, transactions) validate
@@ -954,7 +954,7 @@ export class EthTabsHandler extends TabsHandler {
         if (request.method.startsWith("wallet_"))
           throw new EthProviderRpcError(
             `The method ${request.method} is not supported`,
-            ETH_ERROR_EIP1993_UNSUPPORTED_METHOD
+            ETH_ERROR_EIP1193_UNSUPPORTED_METHOD
           )
 
         // proxy anything else to the RPC node (read-only calls, no connection required)
@@ -977,7 +977,7 @@ export class EthTabsHandler extends TabsHandler {
       await this.stores.app.ensureOnboarded()
     } catch (err) {
       if (err instanceof TalismanNotOnboardedError)
-        throw new EthProviderRpcError(err.message, ETH_ERROR_EIP1993_UNAUTHORIZED)
+        throw new EthProviderRpcError(err.message, ETH_ERROR_EIP1193_UNAUTHORIZED)
     }
 
     switch (type) {

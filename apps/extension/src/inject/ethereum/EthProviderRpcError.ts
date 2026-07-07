@@ -8,11 +8,11 @@
 // In other words, 4901 implies that the Provider is connected to other chains, just not the requested one.
 
 // https://eips.ethereum.org/EIPS/eip-1193#provider-errors
-export const ETH_ERROR_EIP1993_USER_REJECTED = 4001
-export const ETH_ERROR_EIP1993_UNAUTHORIZED = 4100
-export const ETH_ERROR_EIP1993_UNSUPPORTED_METHOD = 4200
-export const ETH_ERROR_EIP1993_DISCONNECTED = 4900
-export const ETH_ERROR_EIP1993_CHAIN_DISCONNECTED = 4901
+export const ETH_ERROR_EIP1193_USER_REJECTED = 4001
+export const ETH_ERROR_EIP1193_UNAUTHORIZED = 4100
+export const ETH_ERROR_EIP1193_UNSUPPORTED_METHOD = 4200
+export const ETH_ERROR_EIP1193_DISCONNECTED = 4900
+export const ETH_ERROR_EIP1193_CHAIN_DISCONNECTED = 4901
 
 // https://eips.ethereum.org/EIPS/eip-1474#error-codes
 export const ETH_ERROR_EIP1474_PARSE_ERROR = -32700

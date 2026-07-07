@@ -166,7 +166,6 @@ export interface EthMessages {
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, unknown]
   "pub(eth.subscribe)": [null, boolean, EthProviderMessage]
-  "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, unknown]
   "pri(eth.transactions.count)": [EthNonceRequest, number]
