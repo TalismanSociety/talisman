@@ -649,6 +649,32 @@ export class EthTabsHandler extends TabsHandler {
     const site = await this.getSiteDetails(url, txRequest.from)
 
     {
+      // reject unsupported transaction types & fields instead of silently dropping them,
+      // signing a rewritten transaction would not match the dapp's intent
+      const { type, authorizationList, blobs, blobVersionedHashes, maxFeePerBlobGas } =
+        txRequest as unknown as Record<string, unknown>
+      if (authorizationList !== undefined)
+        throw new EthProviderRpcError(
+          "EIP-7702 transactions are not supported",
+          ETH_ERROR_EIP1474_INVALID_PARAMS
+        )
+      if (
+        blobs !== undefined ||
+        blobVersionedHashes !== undefined ||
+        maxFeePerBlobGas !== undefined
+      )
+        throw new EthProviderRpcError(
+          "EIP-4844 blob transactions are not supported",
+          ETH_ERROR_EIP1474_INVALID_PARAMS
+        )
+      if (isHex(type) && hexToNumber(type) >= 3)
+        throw new EthProviderRpcError(
+          `Unsupported transaction type ${type}`,
+          ETH_ERROR_EIP1474_INVALID_PARAMS
+        )
+    }
+
+    {
       // eventhough not standard, some transactions specify a chainId in the request
       // throw an error if it's not the current tab's chainId
       let specifiedChainId = (txRequest as unknown as { chainId?: string | number }).chainId
