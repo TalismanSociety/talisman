@@ -74,18 +74,33 @@ export const signPjsPayload = async (
   assert(prefix !== undefined, `Unsupported curve: ${curve}`)
   const signature = withPrefix ? u8aConcat(new Uint8Array([prefix]), rawSignature) : rawSignature
 
-  const { signedTransaction, signedTransactionBytes } = assemblePjsTransaction(
-    metadataRpc,
+  // reuse the already-computed tx parts and parsed metadata instead of assemblePjsTransaction,
+  // which would re-parse the metadata blob
+  const signedTransactionBytes = assembleFromParts(
+    unifiedMetadata,
     payload,
-    signature
+    signature,
+    extra,
+    callData
   )
 
   return {
     signature: u8aToHex(signature),
-    signedTransaction,
+    signedTransaction: u8aToHex(signedTransactionBytes),
     signedTransactionBytes,
   }
 }
+
+/** assembles the signed extrinsic from already-computed tx parts and parsed metadata */
+const assembleFromParts = (
+  unifiedMetadata: UnifiedMetadata,
+  payload: SignerPayloadJSON,
+  signatureBytes: Uint8Array,
+  extra: Uint8Array,
+  callData: Uint8Array
+): Uint8Array =>
+  // pass the final signature bytes and no signingType so createV4Tx embeds them verbatim
+  createV4Tx(unifiedMetadata, getAddressBytes(payload.address), signatureBytes, [extra], callData)
 
 /**
  * Assembles a signed extrinsic from a payload and a ready-made signature
@@ -102,12 +117,11 @@ export const assemblePjsTransaction = (
 
   const signatureBytes = typeof signature === "string" ? hexToU8a(signature) : signature
 
-  // pass the final signature bytes and no signingType so createV4Tx embeds them verbatim
-  const signedTransactionBytes = createV4Tx(
+  const signedTransactionBytes = assembleFromParts(
     unifiedMetadata,
-    getAddressBytes(payload.address),
+    payload,
     signatureBytes,
-    [extra],
+    extra,
     callData
   )
 
