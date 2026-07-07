@@ -11,9 +11,11 @@ type ExtrinsicDispatchInfo = {
 // (the runtime-call codecs needed to decode this with the dynamic builder require metadata v15)
 export const getExtrinsicDispatchInfo = async (
   chain: Chain,
-  bareTxBytes: Uint8Array
+  // the full encoded extrinsic, INCLUDING its compact length prefix: the runtime
+  // decodes the uxt argument as an opaque length-prefixed UncheckedExtrinsic
+  signedTxBytes: Uint8Array
 ): Promise<ExtrinsicDispatchInfo> => {
-  const args = mergeUint8([bareTxBytes, u32.enc(bareTxBytes.length)])
+  const args = mergeUint8([signedTxBytes, u32.enc(signedTxBytes.length)])
 
   const result = (await chain.connector.send(
     "state_call",

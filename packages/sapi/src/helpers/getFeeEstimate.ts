@@ -65,7 +65,7 @@ export const getFeeEstimate = async (
 
   // fallback to pjs encoded state call, in case the above fails (extracting runtime calls codecs might require metadata V15)
   // Note: PAPI will consider TransactionPaymentApi as first class api so it should work even without V15, but this is not the case yet.
-  const { partialFee } = await getExtrinsicDispatchInfo(chain, bytes)
+  const { partialFee } = await getExtrinsicDispatchInfo(chain, signedTx)
 
   return BigInt(partialFee)
 }
