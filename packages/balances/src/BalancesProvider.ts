@@ -14,9 +14,18 @@ import {
   getAccountPlatformFromAddress,
   normalizeAddress,
 } from "@talismn/crypto"
-import { getSharedObservable, isNotNil, isTruthy, keepAlive } from "@talismn/util"
+import {
+  getSharedObservable,
+  isNotNil,
+  isTruthy,
+  keepAlive,
+  mapWithYield,
+  switchMapChunked,
+  type TimeSlicer,
+} from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
 import {
+  auditTime,
   catchError,
   combineLatest,
   defer,
@@ -41,6 +50,7 @@ import { BALANCE_MODULES, type ChainConnectors, findDTaoConvictionLock } from ".
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
+import { stabilizeModuleResults } from "./modules/shared/stabilizeBalances"
 import {
   type Address,
   deriveMiniMetadataId,
@@ -162,26 +172,38 @@ export class BalancesProvider {
             toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
               this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId])
             )
+          ).pipe(
+            // each network is an independent emission train (per-block for substrate
+            // subscriptions, 6s polls for the rest): coalesce near-simultaneous network
+            // emissions so the aggregation below runs at most once per window instead of
+            // once per network (matters most during the startup storm)
+            auditTime(100)
           ),
         })
       }),
-      map(
-        // combine
-        ({ isStale, results }): BalancesResult => ({
+      // aggregation is time-sliced: yields the JS thread on budget, and a newer emission
+      // aborts the in-flight pass (latest-wins)
+      switchMapChunked(async ({ isStale, results }, { slicer }): Promise<BalancesResult> => {
+        const balanceArrays = await mapWithYield(
+          results,
+          (result) =>
+            isStale
+              ? result.balances.map((b): IBalance => (b.status !== "live" ? getStaleVariant(b) : b))
+              : result.balances,
+          { slicer }
+        )
+
+        return {
           status:
             !isStale && results.some(({ status }) => status === "initialising")
               ? "initialising"
               : "live",
-          balances: results
-            .flatMap((result) =>
-              result.balances.map(
-                (b): IBalance => (isStale && b.status !== "live" ? { ...b, status: "stale" } : b)
-              )
-            )
-            .sort(sortByBalanceId),
+          // per-network arrays are already sorted (see getNetworkBalances$): merge instead
+          // of re-sorting the whole set
+          balances: await mergeSortedBalanceArrays(balanceArrays, slicer),
           failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
-        })
-      ),
+        }
+      }),
       distinctUntilChanged(isEqualBalancesResult)
     )
   }
@@ -249,20 +271,24 @@ export class BalancesProvider {
           })
         )
       }),
-      map((results): BalancesResult => {
+      switchMapChunked(async (results, { slicer }): Promise<BalancesResult> => {
         // for each balance that could not be fetched, see if we have a stored balance and return it, marked as stale
         const errorBalanceIds = results.flatMap((result) => result.failedBalanceIds)
         const staleBalances = errorBalanceIds
           .map((balanceId) => this.#storageValue.balances[balanceId])
           .filter(isNotNil)
-          .map((b): IBalance => ({ ...b, status: "stale" }))
+          .map(getStaleVariant)
+
+        const balances = results.flatMap((result) => result.balances).concat(staleBalances)
+
+        // yield before the (atomic) sort so it starts on a fresh slice; per-network result
+        // sets are small enough that the sort itself stays within a frame
+        const yielded = slicer.yieldIfNeeded()
+        if (yielded) await yielded
 
         return {
           status: results.some(({ status }) => status === "initialising") ? "initialising" : "live",
-          balances: results
-            .flatMap((result) => result.balances)
-            .concat(staleBalances)
-            .sort(sortByBalanceId),
+          balances: balances.sort(sortByBalanceId),
           failedBalanceIds: [],
         }
       }),
@@ -312,6 +338,10 @@ export class BalancesProvider {
               miniMetadata: miniMetadata as AnyMiniMetadata,
             })
           ),
+          // keep unchanged balances reference-stable across emissions (module decode
+          // allocates all-new objects every block), so downstream fingerprint caches and
+          // per-item === compares hit instead of re-serializing the whole result set
+          stabilizeModuleResults(),
           catchError(() => EMPTY), // don't emit, let provider mark balances stale
           tap((results) => {
             if (results.dynamicTokens?.length) {
@@ -407,6 +437,9 @@ export class BalancesProvider {
             connector: this.#chainConnectors.evm,
           })
           .pipe(
+            // keep unchanged balances reference-stable across poll emissions (see the
+            // polkadot pipeline for rationale)
+            stabilizeModuleResults(),
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
             map(
               (results): BalancesResult => ({
@@ -479,6 +512,9 @@ export class BalancesProvider {
             connector: this.#chainConnectors.solana,
           })
           .pipe(
+            // keep unchanged balances reference-stable across poll emissions (see the
+            // polkadot pipeline for rationale)
+            stabilizeModuleResults(),
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
             tap((results) => {
               if (results.dynamicTokens?.length) {
@@ -797,6 +833,68 @@ const sortByBalanceId = (a: IBalance, b: IBalance) => {
   const aId = getBalanceIdCached(a)
   const bId = getBalanceIdCached(b)
   return aId < bId ? -1 : aId > bId ? 1 : 0
+}
+
+// memoized `{ ...b, status: "stale" }`: stale-marking runs on every aggregation pass
+// while a network is stale/failed, and a fresh copy each pass would break the reference
+// stability that downstream fingerprint caches and === compares rely on
+const staleVariants = new WeakMap<IBalance, IBalance>()
+const getStaleVariant = (balance: IBalance): IBalance => {
+  if (balance.status === "stale") return balance
+  let variant = staleVariants.get(balance)
+  if (variant === undefined) {
+    variant = { ...balance, status: "stale" } as IBalance
+    staleVariants.set(balance, variant)
+  }
+  return variant
+}
+
+const mergeTwoSortedBalanceArrays = async (
+  a: IBalance[],
+  b: IBalance[],
+  slicer: TimeSlicer
+): Promise<IBalance[]> => {
+  if (!a.length) return b
+  if (!b.length) return a
+
+  const merged: IBalance[] = new Array(a.length + b.length)
+  let i = 0
+  let j = 0
+  let k = 0
+  while (i < a.length && j < b.length) {
+    const yielded = slicer.yieldIfNeeded()
+    if (yielded) await yielded
+    merged[k++] = sortByBalanceId(a[i], b[j]) <= 0 ? a[i++] : b[j++]
+  }
+  while (i < a.length) merged[k++] = a[i++]
+  while (j < b.length) merged[k++] = b[j++]
+  return merged
+}
+
+/**
+ * K-way merge of per-network arrays that are each already sorted by balance id —
+ * O(N log K) instead of the O(N log N) full re-sort, and it yields the JS thread on
+ * budget (Array.prototype.sort is atomic and cannot).
+ */
+const mergeSortedBalanceArrays = async (
+  arrays: IBalance[][],
+  slicer: TimeSlicer
+): Promise<IBalance[]> => {
+  if (!arrays.length) return []
+
+  let round = arrays
+  while (round.length > 1) {
+    const next: IBalance[][] = []
+    for (let i = 0; i < round.length; i += 2) {
+      next.push(
+        i + 1 < round.length
+          ? await mergeTwoSortedBalanceArrays(round[i], round[i + 1], slicer)
+          : round[i]
+      )
+    }
+    round = next
+  }
+  return round[0]
 }
 
 const sortByMiniMetadataId = (a: MiniMetadata, b: MiniMetadata) =>

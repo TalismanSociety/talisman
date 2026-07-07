@@ -342,6 +342,31 @@ export class Balance {
 
   #db: HydrateDb | null = null
 
+  // lazily-computed caches for the hot accessors: sorting/summing/filtering loops read
+  // these repeatedly, and each uncached access re-derives values and allocates several
+  // BalanceFormatters. `undefined` = not yet computed. #storage is immutable in practice
+  // (the only mutator, addValue, is unused legacy), so caches only invalidate when the
+  // hydrate db changes (rates/tokens affect every derived value).
+  #cachedRates: TokenRates | null | undefined = undefined
+  #cachedTotal: BalanceFormatter | undefined = undefined
+  #cachedFree: BalanceFormatter | undefined = undefined
+  #cachedReserved: BalanceFormatter | undefined = undefined
+  #cachedLocked: BalanceFormatter | undefined = undefined
+  #cachedTransferable: BalanceFormatter | undefined = undefined
+  #cachedUnavailable: BalanceFormatter | undefined = undefined
+  #cachedFeePayable: BalanceFormatter | undefined = undefined
+
+  #invalidateComputed = () => {
+    this.#cachedRates = undefined
+    this.#cachedTotal = undefined
+    this.#cachedFree = undefined
+    this.#cachedReserved = undefined
+    this.#cachedLocked = undefined
+    this.#cachedTransferable = undefined
+    this.#cachedUnavailable = undefined
+    this.#cachedFeePayable = undefined
+  }
+
   //
   // Methods
   //
@@ -370,7 +395,10 @@ export class Balance {
   // }
 
   hydrate = (hydrate?: HydrateDb) => {
-    if (hydrate !== undefined) this.#db = hydrate
+    if (hydrate !== undefined && hydrate !== this.#db) {
+      this.#db = hydrate
+      this.#invalidateComputed()
+    }
   }
 
   #format = (balance: bigint | string) =>
@@ -418,6 +446,11 @@ export class Balance {
     return this.token?.decimals || null
   }
   get rates(): TokenRates | null {
+    if (this.#cachedRates === undefined) this.#cachedRates = this.#computeRates()
+    return this.#cachedRates
+  }
+
+  #computeRates = (): TokenRates | null => {
     // uniswap v2 lp tokens need the rates from the underlying pool assets
     //
     // To note: `@talismn/token-rates` knows to fetch the `coingeckoId0` and `coingeckoId1` rates for evm-uniswapv2 tokens.
@@ -531,6 +564,11 @@ export class Balance {
    * The balance will be reaped if this goes below the existential deposit.
    */
   get total() {
+    if (this.#cachedTotal === undefined) this.#cachedTotal = this.#computeTotal()
+    return this.#cachedTotal
+  }
+
+  #computeTotal = () => {
     const extra = this.getValue("extra") as FormattedAmount<ExtraAmount<string>, string>[]
 
     // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
@@ -550,6 +588,11 @@ export class Balance {
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
+    if (this.#cachedFree === undefined) this.#cachedFree = this.#computeFree()
+    return this.#cachedFree
+  }
+
+  #computeFree = () => {
     // for simple balances
     if ("value" in this.#storage && this.#storage.value) return this.#format(this.#storage.value)
 
@@ -560,6 +603,11 @@ export class Balance {
   }
   /** The reserved balance of this token. Is included in the total. */
   get reserved() {
+    if (this.#cachedReserved === undefined) this.#cachedReserved = this.#computeReserved()
+    return this.#cachedReserved
+  }
+
+  #computeReserved = () => {
     const reservedValues = this.getValue("reserved")
     if (reservedValues.length === 0) return this.#format(0n)
 
@@ -572,9 +620,11 @@ export class Balance {
   }
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
-    return this.#format(
-      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
-    )
+    if (this.#cachedLocked === undefined)
+      this.#cachedLocked = this.#format(
+        this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
+      )
+    return this.#cachedLocked
   }
 
   get locks() {
@@ -598,6 +648,12 @@ export class Balance {
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
+    if (this.#cachedTransferable === undefined)
+      this.#cachedTransferable = this.#computeTransferable()
+    return this.#cachedTransferable
+  }
+
+  #computeTransferable = () => {
     /**
      * As you can see here, `locked` is subtracted from `free` in order to derive `transferable`.
      *
@@ -651,6 +707,11 @@ export class Balance {
    * Now, it is the bigger of the locked amount and the reserved amounts, i.e. `max(locked, reserved)`.
    */
   get unavailable() {
+    if (this.#cachedUnavailable === undefined) this.#cachedUnavailable = this.#computeUnavailable()
+    return this.#cachedUnavailable
+  }
+
+  #computeUnavailable = () => {
     const oldCalculation = () => this.locked.planck + this.reserved.planck
     const newCalculation = () => BigMath.max(this.locked.planck, this.reserved.planck)
     const baseUnavailable = this.#storage.useLegacyTransferableCalculation
@@ -670,6 +731,11 @@ export class Balance {
 
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
+    if (this.#cachedFeePayable === undefined) this.#cachedFeePayable = this.#computeFeePayable()
+    return this.#cachedFeePayable
+  }
+
+  #computeFeePayable = () => {
     // if no locks exist, feePayable is equal to the free amount
     if (this.locks.length === 0) return this.free
 

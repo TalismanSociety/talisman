@@ -4,8 +4,10 @@ import log from "../../log"
 import { isEqualModuleResults } from "../../types/fingerprint"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
+import { stabilizeModuleResults } from "../shared/stabilizeBalances"
 import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"
+import { isEffectivelyEqualDTaoBalance } from "./isEffectivelyEqualDTaoBalance"
 
 const SUBSCRIPTION_INTERVAL = 6_000
 
@@ -70,5 +72,11 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
     return () => {
       abortController.abort()
     }
-  }).pipe(distinctUntilChanged(isEqualModuleResults))
+  }).pipe(
+    // reuse previous objects for balances whose only change is sub-tolerance drift of the
+    // AMM price / root-claim accrual — without this, those values move every block and
+    // the distinctUntilChanged below never suppresses a poll
+    stabilizeModuleResults(isEffectivelyEqualDTaoBalance),
+    distinctUntilChanged(isEqualModuleResults)
+  )
 }
