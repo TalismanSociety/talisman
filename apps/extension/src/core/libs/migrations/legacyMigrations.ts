@@ -1,8 +1,5 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { lt } from "semver"
-import { type LegacyAccount, LegacyAccountOrigin } from "../../domains/accounts/types"
-import { createLegacyVerifierCertificateMnemonicStore } from "../../domains/mnemonics/legacy/store"
-import { mnemonicsStore } from "../../domains/mnemonics/store"
 import sitesAuthorisedStore from "../../domains/sitesAuthorised/store"
 
 export const migrateConnectAllSubstrate = async (previousVersion: string) => {
@@ -25,30 +22,4 @@ export const migrateConnectAllSubstrate = async (previousVersion: string) => {
       },
     })
   }
-}
-
-const _migratePolkadotVaultVerifierCertificate = async (previousVersion: string) => {
-  if (!lt(previousVersion, "1.17.0")) return
-  // once off migration to add a Polkadot Vault verifier certificate seed store
-  const hasVaultAccounts = await hasQrCodeAccounts()
-  if (hasVaultAccounts) {
-    // add a vault verifier certificate if any of the addresses are from a vault
-    //first check if any of the addresses are from a vault
-    // check if a vault verifier certificate store already exists
-    const verifierCertificateMnemonicStore = createLegacyVerifierCertificateMnemonicStore()
-    const verifierCertMnemonicCipher = await verifierCertificateMnemonicStore.get("cipher")
-    const mnemonicsData = await mnemonicsStore.get()
-    if (!verifierCertMnemonicCipher && mnemonicsData.cipher) {
-      // if not, create one
-      await verifierCertificateMnemonicStore.set(mnemonicsData)
-    }
-  }
-}
-
-const hasQrCodeAccounts = async () => {
-  const localData = await chrome.storage.local.get(null)
-  return Object.entries(localData).some(
-    ([key, account]: [string, LegacyAccount]) =>
-      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr
-  )
 }

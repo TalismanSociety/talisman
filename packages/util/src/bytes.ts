@@ -90,7 +90,7 @@ export const isAsciiPrintable = (value?: string | Uint8Array | null): boolean =>
 const U8A_WRAP_PREFIX = stringToU8a("<Bytes>")
 const U8A_WRAP_POSTFIX = stringToU8a("</Bytes>")
 
-export const u8aIsWrapped = (value: Uint8Array): boolean =>
+const u8aIsWrapped = (value: Uint8Array): boolean =>
   value.length >= U8A_WRAP_PREFIX.length + U8A_WRAP_POSTFIX.length &&
   u8aEq(value.subarray(0, U8A_WRAP_PREFIX.length), U8A_WRAP_PREFIX) &&
   u8aEq(value.subarray(value.length - U8A_WRAP_POSTFIX.length), U8A_WRAP_POSTFIX)
