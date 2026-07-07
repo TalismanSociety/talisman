@@ -1,6 +1,5 @@
 import { log } from "@common/log"
 import { compactNumber, Twox128 } from "@polkadot-api/substrate-bindings"
-import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import {
   type DotNetwork,
   type DotNetworkId,
@@ -11,10 +10,10 @@ import { parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
-
 import { sentry } from "../../config/sentry"
 import { createNotification, type NotificationType } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { settingsStore } from "../app/store.settings"
 import { getMetadataRpcFromDef } from "../metadata/helpers"

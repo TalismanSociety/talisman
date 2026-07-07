@@ -1,12 +1,11 @@
 import { log } from "@common/log"
-import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { parseTransactionInfo, type SolTransaction, serializeTransaction } from "@talismn/solana"
 import merge from "lodash-es/merge"
 import type { Hex, TransactionRequest } from "viem"
-
 import { db } from "../../db"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
 import type { SwapStatus, TransactionStatus, WalletTransactionInfo } from "./types"
 

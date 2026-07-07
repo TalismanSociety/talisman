@@ -1,8 +1,6 @@
-import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { HexString } from "@talismn/util"
-
-import type { MetadataDef as PjsMetadataDef } from "../../types/pjsInterop"
+import type { MetadataDef as PjsMetadataDef, SignerPayloadJSON } from "../../types/pjsInterop"
 import type { WalletTransactionInfo } from "../transactions"
 
 export interface TalismanMetadataDef extends PjsMetadataDef {

@@ -1,11 +1,10 @@
-import type { SignerPayloadJSON } from "../../../types/pjsInterop"
 import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { describe, expect, vi } from "vitest"
-
 import { signSubstrate } from "../../../domains/signing/requests"
 import { requestStore } from "../../../libs/requests/store"
 import { windowManager } from "../../../libs/WindowManager"
+import type { SignerPayloadJSON } from "../../../types/pjsInterop"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
