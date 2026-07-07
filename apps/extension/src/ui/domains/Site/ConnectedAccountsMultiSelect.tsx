@@ -30,6 +30,14 @@ export const ConnectedAccountsMultiSelect: FC<{
     [connected, onUpdateAccounts]
   )
 
+  const handleSetPrimary = useCallback(
+    (address: string) => {
+      // move the account first, dapps consider the first account as the active one
+      onUpdateAccounts([address, ...connected.filter((a) => !isAddressEqual(a, address))])
+    },
+    [connected, onUpdateAccounts]
+  )
+
   const handleDisconnectAllClick = useCallback(() => {
     onUpdateAccounts([])
   }, [onUpdateAccounts])
@@ -63,18 +71,27 @@ export const ConnectedAccountsMultiSelect: FC<{
           {t("Connect All")}
         </button>
       </div>
-      {accounts.map((account, idx) => (
-        <Fragment key={account.address}>
-          {!!idx && <AccountSeparator />}
-          <ConnectAccountToggleButtonRow
-            account={account}
-            showAddress={showAddress}
-            checked={connected.some((a) => isAddressEqual(a, account.address))}
-            isPrimary={connected.length > 1 && isAddressEqual(connected[0], account.address)}
-            onClick={() => handleToggle(account.address)}
-          />
-        </Fragment>
-      ))}
+      {accounts.map((account, idx) => {
+        const isConnected = connected.some((a) => isAddressEqual(a, account.address))
+        const isPrimary = connected.length > 1 && isAddressEqual(connected[0], account.address)
+        return (
+          <Fragment key={account.address}>
+            {!!idx && <AccountSeparator />}
+            <ConnectAccountToggleButtonRow
+              account={account}
+              showAddress={showAddress}
+              checked={isConnected}
+              isPrimary={isPrimary}
+              onSetPrimaryClick={
+                isConnected && !isPrimary && connected.length > 1
+                  ? () => handleSetPrimary(account.address)
+                  : undefined
+              }
+              onClick={() => handleToggle(account.address)}
+            />
+          </Fragment>
+        )
+      })}
     </>
   )
 }

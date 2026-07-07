@@ -25,13 +25,38 @@ const PrimaryBadge: FC = () => {
   )
 }
 
+const SetPrimaryButton: FC<{ onClick: () => void }> = ({ onClick }) => {
+  const { t } = useTranslation()
+  return (
+    // biome-ignore lint/a11y/useSemanticElements: cannot nest a button inside the row button
+    <span
+      role="button"
+      tabIndex={0}
+      className="shrink-0 rounded-xs px-3 py-1 text-body-disabled text-tiny hover:bg-grey-750 hover:text-body"
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation()
+          onClick()
+        }
+      }}
+    >
+      {t("Set primary")}
+    </span>
+  )
+}
+
 export const ConnectAccountToggleButtonRow: FC<{
   account: Account
   showAddress?: boolean
   checked?: boolean
   isPrimary?: boolean
+  onSetPrimaryClick?: () => void
   onClick?: () => void
-}> = ({ account, checked: isConnected, isPrimary, onClick }) => (
+}> = ({ account, checked: isConnected, isPrimary, onSetPrimaryClick, onClick }) => (
   <button
     type="button"
     onClick={onClick}
@@ -72,6 +97,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     />
     <div className="grow"></div>
     {isPrimary && <PrimaryBadge />}
+    {!isPrimary && onSetPrimaryClick && <SetPrimaryButton onClick={onSetPrimaryClick} />}
     <div
       className={cn(
         "mx-2 h-4 w-4 shrink-0 rounded-full",

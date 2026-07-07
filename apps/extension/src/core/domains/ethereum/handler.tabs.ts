@@ -178,6 +178,8 @@ export class EthTabsHandler extends TabsHandler {
     // case is used for checksum when validating user input addresses : https://eips.ethereum.org/EIPS/eip-55
     // signature checks methods return lowercase addresses too and are compared to addresses returned by provider
     // => we have to return addresses as lowercase too
+    const connectedAddresses = (site.ethAddresses ?? []).map((address) => address.toLowerCase())
+
     return (
       getPublicAccounts(
         await keyringStore.getAccounts(),
@@ -190,6 +192,8 @@ export class EthTabsHandler extends TabsHandler {
         .filter(({ type }) => type === "ethereum")
         // send as
         .map(({ address }) => getAddress(address).toLowerCase())
+        // preserve the user-defined order, first entry is the site's primary (active) account
+        .sort((a, b) => connectedAddresses.indexOf(a) - connectedAddresses.indexOf(b))
     )
   }
 
@@ -215,8 +219,6 @@ export class EthTabsHandler extends TabsHandler {
       }
     }
 
-    // TODO use same behavior as in the accountsList method above (observe keyring and settings too, to check accounts still exist, and filter watched accounts based on developerMode setting)
-
     const init = () =>
       this.stores.sites
         .getSiteFromUrl(url)
@@ -226,7 +228,8 @@ export class EthTabsHandler extends TabsHandler {
             siteId = site.id
             if (site.ethChainId && site.ethAddresses?.length) {
               chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
-              accounts = site.ethAddresses ?? []
+              // use accountsList to get the same filtering, casing and ordering as eth_accounts
+              accounts = await this.accountsList(url)
 
               // check that the network is still registered before broadcasting
               connected = !!accounts.length
@@ -261,8 +264,8 @@ export class EthTabsHandler extends TabsHandler {
       try {
         // new state for this dapp
         chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
-        //TODO check eth addresses still exist
-        accounts = site?.ethAddresses ?? []
+        // use accountsList to get the same filtering, casing and ordering as eth_accounts
+        accounts = site?.ethAddresses?.length ? await this.accountsList(url) : []
         connected = !!accounts.length
 
         if (typeof siteId === "undefined") {
@@ -271,13 +274,16 @@ export class EthTabsHandler extends TabsHandler {
         }
 
         // compare old and new state and emit corresponding events
-        if (prevConnected && !connected)
+        if (prevConnected && !connected) {
+          // dapp libraries typically watch accountsChanged (with an empty array) to detect disconnection
+          sendToClient({ type: "accountsChanged", data: [] })
           sendToClient({
             type: "disconnect",
             data: {
               code: chainId ? ETH_ERROR_EIP1993_CHAIN_DISCONNECTED : ETH_ERROR_EIP1993_DISCONNECTED,
             },
           })
+        }
 
         if (!prevConnected && connected) {
           sendToClient({ type: "connect", data: { chainId } })
@@ -286,10 +292,7 @@ export class EthTabsHandler extends TabsHandler {
         }
 
         if (connected && chainId && prevAccounts?.join() !== accounts.join()) {
-          sendToClient({
-            type: "accountsChanged",
-            data: accounts.map((ac) => getAddress(ac).toLowerCase()),
-          })
+          sendToClient({ type: "accountsChanged", data: accounts })
         }
       } catch (err) {
         // biome-ignore lint/suspicious/noConsole: legacy
