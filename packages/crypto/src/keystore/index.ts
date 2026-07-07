@@ -14,7 +14,18 @@ const SALT_LENGTH = 32
 const SCRYPT_PARAMS_LENGTH = 12
 const NONCE_LENGTH = 24
 
-// polkadot-js scrypt defaults - other values are rejected, same as pjs jsonDecryptData
+// scrypt param combos accepted by polkadot-js (scryptFromU8a ALLOWED_PARAMS) - includes
+// historical defaults (e.g. N=1<<15) so old exports remain importable; anything else is rejected
+const ALLOWED_SCRYPT_PARAMS = [
+  { N: 1 << 13, p: 10, r: 8 },
+  { N: 1 << 14, p: 5, r: 8 },
+  { N: 1 << 15, p: 3, r: 8 },
+  { N: 1 << 15, p: 1, r: 8 },
+  { N: 1 << 16, p: 2, r: 8 },
+  { N: 1 << 17, p: 1, r: 8 },
+]
+
+// current polkadot-js scrypt defaults, used for encryption
 const SCRYPT_N = 1 << 17
 const SCRYPT_P = 1
 const SCRYPT_R = 8
@@ -39,13 +50,12 @@ const readU32LE = (bytes: Uint8Array, offset: number) =>
 const writeU32LE = (value: number) =>
   new Uint8Array([value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff])
 
-const deriveKey = (password: string, salt: Uint8Array): Uint8Array =>
-  scrypt(new TextEncoder().encode(password), salt, {
-    N: SCRYPT_N,
-    p: SCRYPT_P,
-    r: SCRYPT_R,
-    dkLen: 64,
-  }).subarray(0, 32)
+const deriveKey = (
+  password: string,
+  salt: Uint8Array,
+  params: { N: number; p: number; r: number }
+): Uint8Array =>
+  scrypt(new TextEncoder().encode(password), salt, { ...params, dkLen: 64 }).subarray(0, 32)
 
 /** Decrypts a polkadot-js encrypted keystore (`jsonDecrypt` equivalent) */
 export const decryptPjsKeystore = (
@@ -70,9 +80,9 @@ export const decryptPjsKeystore = (
     const p = readU32LE(bytes, SALT_LENGTH + 4)
     const r = readU32LE(bytes, SALT_LENGTH + 8)
     // just a safeguard against DoS by malicious params, same as polkadot-js
-    if (N !== SCRYPT_N || p !== SCRYPT_P || r !== SCRYPT_R)
+    if (!ALLOWED_SCRYPT_PARAMS.some((preset) => preset.N === N && preset.p === p && preset.r === r))
       throw new Error("Invalid injected scrypt params found")
-    key = deriveKey(password, salt)
+    key = deriveKey(password, salt, { N, p, r })
     offset = SALT_LENGTH + SCRYPT_PARAMS_LENGTH
   } else {
     // legacy non-scrypt keystores use the raw password padded to 32 bytes
@@ -96,7 +106,7 @@ export const encryptPjsKeystore = (
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
   const nonce = crypto.getRandomValues(new Uint8Array(NONCE_LENGTH))
 
-  const key = deriveKey(password, salt)
+  const key = deriveKey(password, salt, { N: SCRYPT_N, p: SCRYPT_P, r: SCRYPT_R })
   const ciphertext = xsalsa20poly1305(key, nonce).encrypt(data)
 
   const encoded = new Uint8Array(
