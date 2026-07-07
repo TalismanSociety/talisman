@@ -27,7 +27,8 @@ export const getExtrinsicDispatchInfo = async (
   // the weight shape varies across old runtimes, but partial_fee is always the trailing fixed-size field
   const bytes = fromHex(result)
   if (bytes.length < 16) throw new Error("Invalid RuntimeDispatchInfo")
-  const partialFee = u128.dec(bytes.subarray(bytes.length - 16))
+  // .slice (copy), NOT .subarray: papi codecs read offset views from the buffer start
+  const partialFee = u128.dec(bytes.slice(bytes.length - 16))
 
   return {
     partialFee: partialFee.toString(),
