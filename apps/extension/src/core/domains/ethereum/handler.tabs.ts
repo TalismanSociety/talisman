@@ -55,6 +55,7 @@ import {
   ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
   ETH_ERROR_EIP1993_DISCONNECTED,
   ETH_ERROR_EIP1993_UNAUTHORIZED,
+  ETH_ERROR_EIP1993_UNSUPPORTED_METHOD,
   ETH_ERROR_EIP1993_USER_REJECTED,
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
@@ -85,15 +86,31 @@ interface EthAuthorizedSite extends AuthorizedSite {
   ethAddresses: AuthorizedSiteAddresses
 }
 
-export class EthTabsHandler extends TabsHandler {
-  private async checkAccountAuthorised(url: string, address?: string) {
-    try {
-      await this.stores.sites.ensureUrlAuthorized(url, true, address)
-    } catch {
-      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
-    }
-  }
+// methods that a wallet could handle but that Talisman deliberately does not support.
+// must be rejected with EIP-1193 error 4200 (Unsupported Method) instead of being proxied to an RPC node
+const UNSUPPORTED_METHOD_MESSAGES: Record<string, string> = {
+  // signs arbitrary hashes (blind signing), unsafe - removed by most wallets
+  eth_sign:
+    "eth_sign is disabled for security reasons, use personal_sign or eth_signTypedData_v4 instead",
+  // EIP-1024 encryption, abandoned proposal
+  eth_decrypt: "The method eth_decrypt is not supported",
+  eth_getEncryptionPublicKey: "The method eth_getEncryptionPublicKey is not supported",
+  eth_signTransaction: "The method eth_signTransaction is not supported",
+  // EIP-5792
+  wallet_sendCalls: "The method wallet_sendCalls is not supported",
+  wallet_getCallsStatus: "The method wallet_getCallsStatus is not supported",
+  wallet_showCallsStatus: "The method wallet_showCallsStatus is not supported",
+  wallet_getCapabilities: "The method wallet_getCapabilities is not supported",
+  // ERC-7715
+  wallet_grantPermissions: "The method wallet_grantPermissions is not supported",
+  // ERC-7811
+  wallet_getAssets: "The method wallet_getAssets is not supported",
+  // subscriptions require a persistent connection to a node
+  eth_subscribe: "The method eth_subscribe is not supported",
+  eth_unsubscribe: "The method eth_unsubscribe is not supported",
+}
 
+export class EthTabsHandler extends TabsHandler {
   private async getSiteDetails(
     url: string,
     authorisedAddress?: string
@@ -818,22 +835,16 @@ export class EthTabsHandler extends TabsHandler {
     request: EthRequestArgs,
     port: Port
   ): Promise<unknown> {
-    if (
-      ![
-        "eth_requestAccounts",
-        "eth_accounts",
-        "eth_chainId", // TODO check if necessary ?
-        "eth_blockNumber", // TODO check if necessary ?
-        "net_version", // TODO check if necessary ?
-        "wallet_switchEthereumChain",
-        "wallet_addEthereumChain",
-        "wallet_watchAsset",
-        "wallet_getPermissions",
-        "wallet_requestPermissions",
-        "wallet_revokePermissions",
-      ].includes(request.method)
-    )
-      await this.checkAccountAuthorised(url)
+    // methods that could exist on a wallet but that Talisman doesn't support => EIP-1193 4200
+    if (request.method in UNSUPPORTED_METHOD_MESSAGES)
+      throw new EthProviderRpcError(
+        UNSUPPORTED_METHOD_MESSAGES[request.method],
+        ETH_ERROR_EIP1993_UNSUPPORTED_METHOD
+      )
+
+    // no blanket authorization check here : account-bound methods (signing, transactions) validate
+    // that the "from" account is connected to the site, everything else is either public wallet state
+    // (eth_accounts returns [] when not connected) or read-only calls proxied to the RPC node
 
     // TODO typecheck return types against rpc schema
     switch (request.method) {
@@ -910,7 +921,18 @@ export class EthTabsHandler extends TabsHandler {
       case "wallet_revokePermissions":
         return this.revokePermissions(url, request)
 
+      case "web3_clientVersion":
+        return `Talisman/v${process.env.VERSION}`
+
       default:
+        // unknown wallet-namespace methods can't be served by a node => EIP-1193 4200
+        if (request.method.startsWith("wallet_"))
+          throw new EthProviderRpcError(
+            `The method ${request.method} is not supported`,
+            ETH_ERROR_EIP1993_UNSUPPORTED_METHOD
+          )
+
+        // proxy anything else to the RPC node (read-only calls, no connection required)
         return this.getFallbackRequest(url, request)
     }
   }
