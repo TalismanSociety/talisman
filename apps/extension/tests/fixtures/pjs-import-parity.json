@@ -1,0 +1,280 @@
+{
+  "$generator": "generated once with @polkadot/{keyring,util-crypto,util} 14.0.3 - see pjsImportPairs.spec.ts",
+  "password": "talisman-import-parity",
+  "message": "0x74616c69736d616e206a736f6e20696d706f72742070617269747920636865636b",
+  "singles": [
+    {
+      "name": "single sr25519 (pjs toJson)",
+      "curve": "sr25519",
+      "json": {
+        "encoded": "Tm6o6XbD1skzxKUBtyNyBZIrHJY+4MowHgcnob4fZpQAAAIAAQAAAAgAAAC3n7qrWx/DXvsfNWlIseXWbxfVoT/83n1mwrXrfvVCvSv0EGPIBaTVzu8s+D8afoTUqo0EaojGueQ1P/3mMsKh/nnvZ+FZC1Mb7xRp5EqIzvOOK74ZU63ahPL3lwOS387izlyAtRx8JJbo2Welj1wFeMGje8Y22pm356WMh/5cNv0Tk28qgu7ZjbO26RXFvXknxe12dJm2hL2AoV5l",
+        "encoding": {
+          "content": ["pkcs8", "sr25519"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "meta": {
+          "name": "parity sr25519"
+        }
+      },
+      "expected": {
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "publicKey": "0x10c68432943c68a6e1be650818b5e08db79e57823de9f34df7ba36d404d91e1d",
+        "signature": "0x70b1db3f213a95991eb12235278d350f627556e752addaf93277005ee127222df473305fb339919c95230a0c6461a01d12a1095d3b432bf59ec8dcb6bcb18586"
+      }
+    },
+    {
+      "name": "single ed25519 (pjs toJson)",
+      "curve": "ed25519",
+      "json": {
+        "encoded": "s55R9U1ZvEC8znw9Bv5Ii56oseTuHY+p7uZt0PC2onYAAAIAAQAAAAgAAABCQoDH8xTAO8NBrilO1wNpz4axnooXu+rnI6ylQ3/k6Hg7Pkfqx8q+damgmZZuazs9Wkad1xGbAzM6SbQpoC3BQoD7YGakEKngHHlEF7t9kj/9JxJqF/L0y60IAzfTPGR4owdRU7OxdpDxxMurz4GliYBxKGlWw9z/jKZ7nKxLV8uYijhvP5HiM2P58OPg15vwGyjIJKJzBBQUAKjy",
+        "encoding": {
+          "content": ["pkcs8", "ed25519"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "5EpHX5foDtnhZngj4GsKq5eKGpUvuMqbpUG48ZfCCCs7EzKR",
+        "meta": {
+          "name": "parity ed25519"
+        }
+      },
+      "expected": {
+        "address": "5EpHX5foDtnhZngj4GsKq5eKGpUvuMqbpUG48ZfCCCs7EzKR",
+        "publicKey": "0x79b5562e8fe654f94078b112e8a98ba7901f853ae695bed7e0e3910bad049664",
+        "signature": "0x72b508caa6cf817f08255cf2a40d46bdf0d0e9a46306c5a40aedc2f708c9dc84508faaa48536ecd871e668fb1291288178e5a0b4451a7dc32a189bb83de15302"
+      }
+    },
+    {
+      "name": "single ecdsa (pjs toJson)",
+      "curve": "ecdsa",
+      "json": {
+        "encoded": "b/bqAyNkBcOs6Jls9yTTOgGfj3L5quyM7wS/pd9R7pUAAAIAAQAAAAgAAACtSohwGory5mpI2g0ZSVCO55Zj3qcfE+atKrVcsBV6Y7srSJ0KUDJ/+bGgCLk090WmwPNAfqeqcQgIL2e4DYf/K2Ni+L3mqqIgB6T/AutelyJHVd8jmIu2rqAk9VtfxVcebHveu/sOozPp3r2GOgkxoabbUfwuP8tPIgrYnI4=",
+        "encoding": {
+          "content": ["pkcs8", "ecdsa"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "meta": {
+          "name": "parity ecdsa"
+        }
+      },
+      "expected": {
+        "address": "5HdMykwhjK8Ab28C5wmLsgKPsZjEgN8y62TXC6RrRuixGjcB",
+        "publicKey": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "signature": "0x9a08f649f60dc9f3d4faeb1444ef798b182c7251aae551a41f666d027d7c342c1c21a853b0baa613367650efa714c5814e8cbe806d42f6fd95b069ea499479e401"
+      }
+    },
+    {
+      "name": "single ethereum (pjs toJson)",
+      "curve": "ethereum",
+      "json": {
+        "encoded": "aQm3/AD4nq3FtaIqbUKK60i6BPLanQdJ7x5HTnmwI8YAAAIAAQAAAAgAAAB7MxagRPRQdlNFT+naTEE5ipUAuGOHOmRyExhBeZqSHvqO8GTS2i5Nv/mPhNLoxp7Yzb5av1QZo+th/TWh5nvtL5f5Xq2pcIirjfYth24VKmtiOIvUgLUM9MymH9dadJEPQ4xevQb6LQoNfMyK8dHbbtRt5y8EVSpk+3dvec8=",
+        "encoding": {
+          "content": ["pkcs8", "ethereum"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "meta": {
+          "name": "parity ethereum"
+        }
+      },
+      "expected": {
+        "address": "0x6370eF2f4Db3611D657b90667De398a2Cc2a370C",
+        "publicKey": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "signature": "0x8710054319672ad46327dd1570b05d97a537aab2ec9038b381c060424d5a153b4fb7ddeeb94bc988d3155bc3fd79f177508cb3f5e30b9bb47e416b8ca50cdf9700"
+      }
+    },
+    {
+      "name": "single sr25519 with hex encoded field",
+      "curve": "sr25519",
+      "json": {
+        "encoded": "0xa65522fba8322a127193575f5d33688245c2bd55917c156e24c9bcd101d8c740000002000100000008000000846593891c4a3a8d80d68065cb765ef97167a6958bbf2f64ecac3361de69f0d94d03917b6fe654af455b452190d61934ccd8329ef9b3e85f4b706d9d760440c672fcb4f17337f7b9b8c2c3cfc50e4600086b43744975031246088c680cde444156a3a5051bba02d90aa4f21957cd9a16e8be840993f311eadac79ac4374d2fb9808ea09100942383c9f2bd39d8e9e69e0fb799185a903f887dac7ca69f",
+        "encoding": {
+          "content": ["pkcs8", "sr25519"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "meta": {
+          "name": "parity sr25519"
+        }
+      },
+      "expected": {
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "publicKey": "0x10c68432943c68a6e1be650818b5e08db79e57823de9f34df7ba36d404d91e1d",
+        "signature": "0x12710411e783e68076145be2ff3aed1b07a3cc06d7af9aa70748cb4fbdfeb21d7d88b04877d047a52b16493771b728e96fe9c7c1468f13e0ad3ad12c86c80788"
+      }
+    },
+    {
+      "name": "single ed25519 with public key as address",
+      "curve": "ed25519",
+      "json": {
+        "encoded": "qnNs8rqcdpT7XBf6CqmwwgCDtgS51pLPkUeTT5WdcHwAAAIAAQAAAAgAAADdHYS3v968Mwea5eCPXdM31Suf2OnxvlOdRt5vAB8ULconPCVptHOzwjD6nKNM//Vx+3xAgJpKnKPGZCQVwCt2XV5vVQj8lCC8dK2Cyqph8aefQYuD0Hk7zHvQn9IJ93oWWQGW7MLedhg+VFU/4gutnTvxVKZMSfVmWSNdBeMVR6zHfth1TpPVFh3oXEcS3pwLLBARtLAXNZmMLXp7",
+        "encoding": {
+          "content": ["pkcs8", "ed25519"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "0x79b5562e8fe654f94078b112e8a98ba7901f853ae695bed7e0e3910bad049664",
+        "meta": {
+          "name": "parity ed25519"
+        }
+      },
+      "expected": {
+        "address": "5EpHX5foDtnhZngj4GsKq5eKGpUvuMqbpUG48ZfCCCs7EzKR",
+        "publicKey": "0x79b5562e8fe654f94078b112e8a98ba7901f853ae695bed7e0e3910bad049664",
+        "signature": "0x72b508caa6cf817f08255cf2a40d46bdf0d0e9a46306c5a40aedc2f708c9dc84508faaa48536ecd871e668fb1291288178e5a0b4451a7dc32a189bb83de15302"
+      }
+    },
+    {
+      "name": "single ecdsa with public key as address",
+      "curve": "ecdsa",
+      "json": {
+        "encoded": "zQfgRlyVt890oL8+PCo4tFRF5r6yg1E2Q12Ntdw0ax0AAAIAAQAAAAgAAAA++HmhhcULNRIgMgUoc+7R2XCZbiQL8RZADzDULF+OJcBJTxl64N2597ZENDxbA5hVGOFpMdr7Fvff9M5ghugFuiQ6SzyE3s2DblTQWc/rc7z4D/07LGjLEcdsc9KmIWGue8Da6o2rOzjIDgkO0whqaMVKaK4OAGHYAnsZbPg=",
+        "encoding": {
+          "content": ["pkcs8", "ecdsa"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "meta": {
+          "name": "parity ecdsa"
+        }
+      },
+      "expected": {
+        "address": "5HdMykwhjK8Ab28C5wmLsgKPsZjEgN8y62TXC6RrRuixGjcB",
+        "publicKey": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "signature": "0x9a08f649f60dc9f3d4faeb1444ef798b182c7251aae551a41f666d027d7c342c1c21a853b0baa613367650efa714c5814e8cbe806d42f6fd95b069ea499479e401"
+      }
+    },
+    {
+      "name": "single ethereum with public key as address",
+      "curve": "ethereum",
+      "json": {
+        "encoded": "+DXDypj2p7soF57yQDD/CxqisWHW6AnGglo+UGpk0n0AAAIAAQAAAAgAAACQrK0HsyfkJEJ6mnNZ8kdtJxVtgbMwX5CaiRn1yDYY2FpQapb+i8NMF65nVxPBmuCrT30mZ5kbPH7Spv9VN/vidKF8ExaHwhWlXmM2aiqMPBiOp2kuOxHoVcu7i4FUb4enpC7lWIH7SBbpTYpDcxOEImAr63KQaokYkYVakwU=",
+        "encoding": {
+          "content": ["pkcs8", "ethereum"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "meta": {
+          "name": "parity ethereum"
+        }
+      },
+      "expected": {
+        "address": "0x6370eF2f4Db3611D657b90667De398a2Cc2a370C",
+        "publicKey": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "signature": "0x8710054319672ad46327dd1570b05d97a537aab2ec9038b381c060424d5a153b4fb7ddeeb94bc988d3155bc3fd79f177508cb3f5e30b9bb47e416b8ca50cdf9700"
+      }
+    },
+    {
+      "name": "single sr25519 with corrupted address checksum",
+      "curve": "sr25519",
+      "json": {
+        "encoded": "Rgz+Ha245uxYXGOVgaWH35NjMLgnLSXnrNnlwkPIY9sAAAIAAQAAAAgAAACDDKtyeatMVK/PCKX8K8SFeSQizeci9C3wHKXm6R80WpDwK7sHvTGPFc8xFM74G8C/YmNIv1/38uwimREJc8XGsZ+Fp4X7xwdAwF3B5ayQrtTF1DCmaQZMxrBPK8TLYkhgPmr4S0Ov5g8s9520wOYBLdv6r2yEL2JJNQ6+Vy95RVJo1YoH36FTb+dRBaOYC4XEMBzuIk0nrV7mXV4P",
+        "encoding": {
+          "content": ["pkcs8", "sr25519"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrTyg",
+        "meta": {
+          "name": "parity sr25519"
+        }
+      },
+      "expected": {
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "publicKey": "0x10c68432943c68a6e1be650818b5e08db79e57823de9f34df7ba36d404d91e1d",
+        "signature": "0xe23a18f9e0337ded4b7fe5877d769acaf0e43034f806fea1cd23dd34ff042667669494c0deff66b80cb10d0003aed6be67eb6bc106a56257602284a4fcd65f8d"
+      }
+    },
+    {
+      "name": "single sr25519 with legacy scrypt params (N=1<<15)",
+      "curve": "sr25519",
+      "json": {
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "encoded": "yCXTm1p9KDEUdVNqn1I/74ensZpD0vdC0U+8wuBIf0kAgAAAAQAAAAgAAABgbJpMnalcX6GnWDWjdZNy+cSARAtP2GACrKJIuExMR4qjBmX76H8FwQCH3WolZpnQhxdgq27oZFwLbvIUBQY5A/jBDXqfQjqGLGPNZxG0US0nVHw9ocymu1Vx84JCJgmxA9CtXp3KygFVM6fEWQUOPIIdWOCRjFD/yQiN7n5Ve+T0D4TMb052/7WaD1lQM6RDRHnhTxyMUJ3bXATz",
+        "encoding": {
+          "content": ["pkcs8", "sr25519"],
+          "type": ["scrypt", "xsalsa20-poly1305"],
+          "version": "3"
+        },
+        "meta": {
+          "name": "parity sr25519 legacy"
+        }
+      },
+      "expected": {
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "publicKey": "0x10c68432943c68a6e1be650818b5e08db79e57823de9f34df7ba36d404d91e1d",
+        "signature": "0xea6834d53ebe79037534573fa42519f5e67bd5dd22e30c3c48795616882ec5417b9a6557e6938d273ba64e61fe6a75a56f6b5b8e9a7316e6b11a1b2401e0b080"
+      }
+    }
+  ],
+  "batch": {
+    "name": "batch file with all curves",
+    "json": {
+      "encoded": "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",
+      "encoding": {
+        "content": ["batch-pkcs8"],
+        "type": ["scrypt", "xsalsa20-poly1305"],
+        "version": "3"
+      },
+      "accounts": [
+        {
+          "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+          "meta": {
+            "name": "parity sr25519"
+          }
+        },
+        {
+          "address": "5EpHX5foDtnhZngj4GsKq5eKGpUvuMqbpUG48ZfCCCs7EzKR",
+          "meta": {
+            "name": "parity ed25519"
+          }
+        },
+        {
+          "address": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+          "meta": {
+            "name": "parity ecdsa"
+          }
+        },
+        {
+          "address": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+          "meta": {
+            "name": "parity ethereum"
+          }
+        }
+      ]
+    },
+    "accounts": [
+      {
+        "curve": "sr25519",
+        "address": "5CShbTqxKUgKZBRDu1VGVpivm3m415stz86A5GBdoV7wrU1d",
+        "publicKey": "0x10c68432943c68a6e1be650818b5e08db79e57823de9f34df7ba36d404d91e1d",
+        "signature": "0xd45021bf0556dd9767d03b1786cc5eff135f115dba7bfec47d342f7f3233ce45ea1f0bf2227efb147dbc9a4584ec6820e006760faf7f08acb3ba79a7a1c16d8e"
+      },
+      {
+        "curve": "ed25519",
+        "address": "5EpHX5foDtnhZngj4GsKq5eKGpUvuMqbpUG48ZfCCCs7EzKR",
+        "publicKey": "0x79b5562e8fe654f94078b112e8a98ba7901f853ae695bed7e0e3910bad049664",
+        "signature": "0x72b508caa6cf817f08255cf2a40d46bdf0d0e9a46306c5a40aedc2f708c9dc84508faaa48536ecd871e668fb1291288178e5a0b4451a7dc32a189bb83de15302"
+      },
+      {
+        "curve": "ecdsa",
+        "address": "5HdMykwhjK8Ab28C5wmLsgKPsZjEgN8y62TXC6RrRuixGjcB",
+        "publicKey": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "signature": "0x9a08f649f60dc9f3d4faeb1444ef798b182c7251aae551a41f666d027d7c342c1c21a853b0baa613367650efa714c5814e8cbe806d42f6fd95b069ea499479e401"
+      },
+      {
+        "curve": "ethereum",
+        "address": "0x6370eF2f4Db3611D657b90667De398a2Cc2a370C",
+        "publicKey": "0x0284bf7562262bbd6940085748f3be6afa52ae317155181ece31b66351ccffa4b0",
+        "signature": "0x8710054319672ad46327dd1570b05d97a537aab2ec9038b381c060424d5a153b4fb7ddeeb94bc988d3155bc3fd79f177508cb3f5e30b9bb47e416b8ca50cdf9700"
+      }
+    ]
+  }
+}

@@ -4,22 +4,26 @@ import type { Account } from "@core/domains/keyring/exports"
 import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "@core/types/pjsInterop"
 import { type Address, Balances } from "@talismn/balances"
 import {
-  base64,
-  decryptPjsKeystore,
-  encodeAddressEthereum,
-  encodeAddressSs58,
   encodeAnyAddress,
   isAddressEqual,
   type KeypairCurve,
   normalizeAddress,
 } from "@talismn/crypto"
-import { assert, hexToU8a, isHexString, u8aConcat, u8aToString } from "@talismn/util"
+import { assert } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
+import {
+  createPairFromJson,
+  type JsonImportPair,
+  toUnencryptedPjsJson,
+  unlockMultiAccountsJson,
+  unlockPair,
+} from "./pjsImportPairs"
 
 export type JsonImportAccount = {
   id: string
@@ -49,101 +53,6 @@ const isMultiAccountJson = (json: UnknownJson): json is UnknownJson & PjsKeyring
 }
 const isSingleAccountJson = (json: UnknownJson): json is UnknownJson & PjsKeyringPairJson => {
   return json.address !== undefined
-}
-
-// values picked from polkadot keyring (decodePair)
-const PKCS8_DIVIDER = new Uint8Array([161, 35, 3, 33, 0])
-const PKCS8_HEADER = new Uint8Array([48, 83, 2, 1, 1, 48, 5, 6, 3, 43, 101, 112, 4, 34, 4, 32])
-const SEC_LENGTH = 64
-const SEED_LENGTH = 32
-
-/** local replacement for the polkadot-js KeyringPair used by the previous implementation */
-type JsonImportPair = {
-  json: PjsKeyringPairJson
-  address: string
-  type: string
-  meta: PjsKeyringPairJson["meta"]
-  isLocked: boolean
-  secretKey: Uint8Array | null
-  publicKey: Uint8Array | null
-}
-
-const u8aStartsWith = (bytes: Uint8Array, prefix: Uint8Array, offset = 0) =>
-  prefix.every((byte, i) => bytes[offset + i] === byte)
-
-/** pjs keystores may carry `content`/`type` as plain strings (v1/v2) - normalize to arrays */
-const normalizeEncoding = (encoding: PjsKeyringPairJson["encoding"]) => ({
-  ...encoding,
-  content: Array.isArray(encoding.content) ? encoding.content : [encoding.content],
-  type: Array.isArray(encoding.type) ? encoding.type : [encoding.type],
-})
-
-/** parses a decrypted pkcs8 blob into secret + public keys (same layouts as polkadot-js decodePair) */
-const decodePkcs8 = (decrypted: Uint8Array): { secretKey: Uint8Array; publicKey: Uint8Array } => {
-  assert(u8aStartsWith(decrypted, PKCS8_HEADER), "Invalid Pkcs8 header found in body")
-
-  // current format (v3): 64-byte secret
-  const secOffset = PKCS8_HEADER.length
-  let secLength = SEC_LENGTH
-  if (!u8aStartsWith(decrypted, PKCS8_DIVIDER, secOffset + secLength)) {
-    // legacy format: 32-byte secret
-    secLength = SEED_LENGTH
-    assert(
-      u8aStartsWith(decrypted, PKCS8_DIVIDER, secOffset + secLength),
-      "Invalid Pkcs8 divider found in body"
-    )
-  }
-
-  const secretKey = decrypted.subarray(secOffset, secOffset + secLength)
-  const publicKey = decrypted.subarray(secOffset + secLength + PKCS8_DIVIDER.length)
-
-  return { secretKey, publicKey }
-}
-
-/** pjs keystores may store the raw public key as address (ethereum and ecdsa accounts) */
-const getPairAddress = (json: PjsKeyringPairJson, cryptoType: string) => {
-  if (!isHexString(json.address)) return json.address // ss58, keep as is
-
-  if (cryptoType === "ethereum")
-    // 20 bytes = already an ethereum address, else compressed/uncompressed public key
-    return json.address.length === 42 ? json.address : encodeAddressEthereum(hexToU8a(json.address))
-
-  const publicKey = hexToU8a(json.address)
-  // 33-byte (ecdsa) keys are blake2-hashed into a 32-byte account id, pjs-style
-  if ([32, 33].includes(publicKey.length)) return encodeAddressSs58(publicKey)
-
-  return json.address
-}
-
-const createPairFromJson = (json: PjsKeyringPairJson): JsonImportPair => {
-  const cryptoType = Array.isArray(json.encoding.content) ? json.encoding.content[1] : "ed25519"
-
-  return {
-    json,
-    address: getPairAddress(json, cryptoType),
-    type: cryptoType,
-    meta: json.meta ?? {},
-    isLocked: true,
-    secretKey: null,
-    publicKey: null,
-  }
-}
-
-const unlockPair = (pair: JsonImportPair, password: string) => {
-  const { encoded, encoding } = pair.json
-
-  // pjs also supports hex-encoded keystores - normalize to base64 for the decrypt helper
-  const encodedB64 = isHexString(encoded) ? base64.encode(hexToU8a(encoded)) : encoded
-
-  const decrypted = decryptPjsKeystore(
-    { encoded: encodedB64, encoding: normalizeEncoding(encoding) },
-    password
-  )
-  const { secretKey, publicKey } = decodePkcs8(decrypted)
-
-  pair.secretKey = new Uint8Array(secretKey)
-  pair.publicKey = new Uint8Array(publicKey)
-  pair.isLocked = false
 }
 
 const useAccountsBalances = (pairs: JsonImportPair[] = []) => {
@@ -236,12 +145,7 @@ const useJsonAccountImportProvider = () => {
               )
                 setSelectedAccounts([pair.address])
             } else if (file.type === "multi") {
-              const { encoded, encoding } = file.content
-              const data = decryptPjsKeystore(
-                { encoded, encoding: normalizeEncoding(encoding) },
-                password
-              )
-              const accounts = JSON.parse(u8aToString(data)) as PjsKeyringPairJson[]
+              const accounts = unlockMultiAccountsJson(file.content, password)
               const pairs = accounts.map(createPairFromJson)
 
               setPairs(pairs)
@@ -263,31 +167,39 @@ const useJsonAccountImportProvider = () => {
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {
     if (!pairs) return undefined
 
-    const result = pairs.map((pair) => {
-      const chain = pair.meta.genesisHash
-        ? chains.find((c) => c.genesisHash === pair.meta.genesisHash)
-        : undefined
+    const result = pairs.flatMap((pair): JsonImportAccount[] => {
+      try {
+        const chain = pair.meta.genesisHash
+          ? chains.find((c) => c.genesisHash === pair.meta.genesisHash)
+          : undefined
 
-      const address = normalizeAddress(pair.address)
-      const isExisting = existingAccounts.some((a) => isAddressEqual(a.address, address))
+        const address = normalizeAddress(pair.address)
+        const isExisting = existingAccounts.some((a) => isAddressEqual(a.address, address))
 
-      const { balances, isLoading } = accountBalances[address] ?? {
-        balances: new Balances([]),
-        isLoading: true,
-      }
+        const { balances, isLoading } = accountBalances[address] ?? {
+          balances: new Balances([]),
+          isLoading: true,
+        }
 
-      return {
-        id: pair.address,
-        address: encodeAnyAddress(pair.address, { ss58Format: chain?.prefix }),
-        name: pair.meta.name as string,
-        genesisHash: pair.meta.genesisHash as `0x${string}` | undefined,
-        origin: pair.meta.origin as LegacyAccountOrigin,
-        isExisting,
-        selected: !isExisting && selectedAccounts.includes(pair.address),
-        isLocked: pair.isLocked,
-        isPrivateKeyAvailable: !pair.meta.isExternal && !pair.meta.isHardware,
-        balances,
-        isLoading,
+        return [
+          {
+            id: pair.address,
+            address: encodeAnyAddress(pair.address, { ss58Format: chain?.prefix }),
+            name: pair.meta.name as string,
+            genesisHash: pair.meta.genesisHash as `0x${string}` | undefined,
+            origin: pair.meta.origin as LegacyAccountOrigin,
+            isExisting,
+            selected: !isExisting && selectedAccounts.includes(pair.address),
+            isLocked: pair.isLocked,
+            isPrivateKeyAvailable: !pair.meta.isExternal && !pair.meta.isHardware,
+            balances,
+            isLoading,
+          },
+        ]
+      } catch (err) {
+        // exclude accounts whose address can't be displayed instead of failing the whole list
+        log.error("Failed to display account from json file", { err, address: pair.address })
+        return []
       }
     })
 
@@ -383,21 +295,7 @@ const useJsonAccountImportProvider = () => {
       assert(!pair.isLocked, "Account is locked")
     }
 
-    // same shape as pjs pair.toJson() without password: unencrypted pkcs8, base64-encoded
-    const unlockedPairs = pairsToImport.map((pair): PjsKeyringPairJson => {
-      assert(pair.secretKey && pair.publicKey, "Account is locked")
-      const pkcs8 = u8aConcat(PKCS8_HEADER, pair.secretKey, PKCS8_DIVIDER, pair.publicKey)
-      return {
-        address: pair.address,
-        encoded: base64.encode(pkcs8),
-        encoding: {
-          content: ["pkcs8", pair.type],
-          type: ["none"],
-          version: "3",
-        },
-        meta: pair.meta,
-      }
-    })
+    const unlockedPairs = pairsToImport.map(toUnencryptedPjsJson)
 
     return api.accountCreateFromJson(unlockedPairs)
   }, [pairs, selectedAccounts])

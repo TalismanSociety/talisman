@@ -1,3 +1,4 @@
+import { secp256k1 } from "@noble/curves/secp256k1.js"
 import { encryptPjsKeystore, getPublicKeyFromSecret, type KeypairCurve } from "@talismn/crypto"
 import { u8aConcat } from "@talismn/util"
 
@@ -17,7 +18,13 @@ export const encodePjsKeyringPairJson = (
   secretKey: Uint8Array,
   exportPw: string
 ): PjsKeyringPairJson => {
-  const publicKey = getPublicKeyFromSecret(secretKey, account.curve)
+  const rawPublicKey = getPublicKeyFromSecret(secretKey, account.curve)
+  // polkadot-js embeds the compressed form of secp256k1 public keys (ethereum keys are
+  // uncompressed internally, for keccak address derivation)
+  const publicKey =
+    rawPublicKey.length === 65
+      ? secp256k1.Point.fromBytes(rawPublicKey).toBytes(true)
+      : rawPublicKey
   const pkcs8 = u8aConcat(PKCS8_HEADER, secretKey, PKCS8_DIVIDER, publicKey)
 
   const keystore = encryptPjsKeystore(

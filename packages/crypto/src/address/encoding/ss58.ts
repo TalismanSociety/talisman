@@ -33,7 +33,11 @@ const ss58Encode = (payload: Uint8Array, prefix = 42) => {
 }
 
 const VALID_ADDRESS_LENGTHS = [35, 36, 37]
-export const decodeSs58Address = (addressStr: string): [publicKey: Uint8Array, prefix: number] => {
+export const decodeSs58Address = (
+  addressStr: string,
+  // polkadot-js keyring decodes keystore addresses with ignoreChecksum=true, replicate when needed
+  ignoreChecksum = false
+): [publicKey: Uint8Array, prefix: number] => {
   const address = base58.decode(addressStr)
   if (!VALID_ADDRESS_LENGTHS.includes(address.length)) throw new Error("Invalid address length")
 
@@ -41,7 +45,7 @@ export const decodeSs58Address = (addressStr: string): [publicKey: Uint8Array, p
   const checksum = blake2b512(
     Uint8Array.of(...SS58PRE, ...address.subarray(0, address.length - CHECKSUM_LENGTH))
   ).subarray(0, CHECKSUM_LENGTH)
-  if (addressChecksum[0] !== checksum[0] || addressChecksum[1] !== checksum[1])
+  if (!ignoreChecksum && (addressChecksum[0] !== checksum[0] || addressChecksum[1] !== checksum[1]))
     throw new Error("Invalid checksum")
 
   const prefixLength = address[0]! & 0b0100_0000 ? 2 : 1
