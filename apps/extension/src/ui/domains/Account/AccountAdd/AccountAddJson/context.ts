@@ -7,6 +7,7 @@ import {
   base64,
   decryptPjsKeystore,
   encodeAddressEthereum,
+  encodeAddressSs58,
   encodeAnyAddress,
   isAddressEqual,
   type KeypairCurve,
@@ -99,14 +100,18 @@ const decodePkcs8 = (decrypted: Uint8Array): { secretKey: Uint8Array; publicKey:
   return { secretKey, publicKey }
 }
 
-/** pjs keystores may store the public key (compressed or not) as address for ethereum accounts */
+/** pjs keystores may store the raw public key as address (ethereum and ecdsa accounts) */
 const getPairAddress = (json: PjsKeyringPairJson, cryptoType: string) => {
-  if (
-    cryptoType === "ethereum" &&
-    isHexString(json.address) &&
-    [68, 132].includes(json.address.length)
-  )
-    return encodeAddressEthereum(hexToU8a(json.address))
+  if (!isHexString(json.address)) return json.address // ss58, keep as is
+
+  if (cryptoType === "ethereum")
+    // 20 bytes = already an ethereum address, else compressed/uncompressed public key
+    return json.address.length === 42 ? json.address : encodeAddressEthereum(hexToU8a(json.address))
+
+  const publicKey = hexToU8a(json.address)
+  // 33-byte (ecdsa) keys are blake2-hashed into a 32-byte account id, pjs-style
+  if ([32, 33].includes(publicKey.length)) return encodeAddressSs58(publicKey)
+
   return json.address
 }
 
