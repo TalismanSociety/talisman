@@ -676,13 +676,21 @@ export class EthTabsHandler extends TabsHandler {
       // no-op
     }
 
-    return site?.ethPermissions
-      ? Object.entries(site.ethPermissions).reduce<Web3WalletPermission[]>(
-          (permissions, [parentCapability, otherProps]) =>
-            permissions.concat({ parentCapability, ...otherProps } as Web3WalletPermission),
-          []
-        )
-      : []
+    if (!site?.ethPermissions) return []
+
+    // some dapps read the list of permitted accounts from the eth_accounts caveat
+    const accounts = await this.accountsList(url)
+
+    return Object.entries(site.ethPermissions).map(
+      ([parentCapability, otherProps]) =>
+        ({
+          parentCapability,
+          ...otherProps,
+          ...(parentCapability === "eth_accounts"
+            ? { caveats: [{ type: "restrictReturnedAccounts", value: accounts }] }
+            : {}),
+        }) as Web3WalletPermission
+    )
   }
 
   private async requestPermissions(

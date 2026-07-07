@@ -137,6 +137,11 @@ export type EthNonceRequest = {
 
 export type Web3WalletPermissionTarget = "eth_accounts" // add more options as needed using |
 
+export interface Web3WalletPermissionCaveat {
+  type: string
+  value: unknown
+}
+
 // from https://docs.metamask.io/guide/rpc-api.html#restricted-methods
 export interface Web3WalletPermission {
   // The name of the method corresponding to the permission
@@ -144,6 +149,9 @@ export interface Web3WalletPermission {
 
   // The date the permission was granted, in UNIX epoch time
   date?: number
+
+  // restrictions applied to the permitted method (ex: restrictReturnedAccounts)
+  caveats?: Web3WalletPermissionCaveat[]
 
   // more to come...
 }
