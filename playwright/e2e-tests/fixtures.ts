@@ -1,16 +1,15 @@
 import { existsSync } from "node:fs"
 
-import { randomBytes } from "@noble/hashes/utils"
+import { bytesToHex, randomBytes } from "@noble/hashes/utils"
 import type { BrowserContext, Locator, Page } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
-import { xxhashAsHex } from "@polkadot/util-crypto"
 
 type AccountType = "ethereum" | "substrate" | "solana"
 type WatchedAccountType = "ethereum" | "substrate" | "solana"
 type PrivateKeyAccountType = "ethereum" | "solana"
 
 const randomName = (prefix: string) => {
-  const suffix = xxhashAsHex(randomBytes(16)).slice("0x".length, "0x".length + 3)
+  const suffix = bytesToHex(randomBytes(2)).slice(0, 3)
   return `${prefix} (${suffix})`
 }
 

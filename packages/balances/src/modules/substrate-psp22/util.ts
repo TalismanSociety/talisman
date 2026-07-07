@@ -1,17 +1,7 @@
 import { fromHex, mergeUint8, toHex } from "@polkadot-api/utils"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { getSs58AddressInfo } from "polkadot-api"
-import {
-  Bytes,
-  type CodecType,
-  compact,
-  Enum,
-  enhanceCodec,
-  Result,
-  Struct,
-  u32,
-  u128,
-} from "scale-ts"
+import { Bytes, compact, Enum, enhanceCodec, Result, Struct, u32, u128 } from "scale-ts"
 
 import psp22Abi from "../abis/psp22.json"
 
@@ -76,10 +66,8 @@ const ContractExecResultCodec = Struct({
   ),
 })
 
-export type ContractExecResult = CodecType<typeof ContractExecResultCodec>
-
 /** encodes the arguments of the ContractsApi_call runtime api */
-export const encodeContractsApiCallArgs = (
+const encodeContractsApiCallArgs = (
   callFrom: string,
   contractAddress: string,
   inputData: Uint8Array

@@ -92,7 +92,7 @@ importers:
         version: 0.2.0
       polkadot-api:
         specifier: 2.1.6
-        version: 2.1.6(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(utf-8-validate@6.0.4)
+        version: 2.1.6(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(supports-color@10.2.2)(utf-8-validate@6.0.4)
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.1
@@ -129,7 +129,7 @@ importers:
         version: 6.22.0
       tsup:
         specifier: 8.5.1
-        version: 8.5.1(@swc/core@1.7.39(@swc/helpers@0.5.13))(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
+        version: 8.5.1(@swc/core@1.7.39(@swc/helpers@0.5.13))(jiti@2.7.0)(postcss@8.5.15)(supports-color@10.2.2)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -218,6 +218,9 @@ importers:
       '@metamask/phishing-controller':
         specifier: ^17.2.0
         version: 17.2.0(@babel/runtime@7.29.7)(@metamask/eth-block-tracker@15.0.1(typescript@6.0.3))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(typescript@6.0.3)(utf-8-validate@6.0.4)(webextension-polyfill@0.12.0)
+      '@noble/ciphers':
+        specifier: 2.2.0
+        version: 2.2.0
       '@noble/curves':
         specifier: 2.2.0
         version: 2.2.0
@@ -247,6 +250,9 @@ importers:
         version: 0.10.8(react@19.2.7)(rxjs@7.8.2)
       '@scure/bip39':
         specifier: ^2.2.0
+        version: 2.2.0
+      '@scure/sr25519':
+        specifier: 2.2.0
         version: 2.2.0
       '@sentry/browser':
         specifier: 10.62.0
@@ -617,7 +623,7 @@ importers:
         version: 0.12.0
       wxt:
         specifier: 0.20.27
-        version: 0.20.27(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.62.2)(terser@5.44.0)(tsx@4.22.4)(yaml@2.9.0)
+        version: 0.20.27(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.62.2)(supports-color@10.2.2)(terser@5.44.0)(tsx@4.22.4)(yaml@2.9.0)
 
   config/tsconfig: {}
 
@@ -10303,7 +10309,7 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@polkadot-api/cli@0.21.5(bufferutil@4.0.8)(esbuild@0.28.1)(utf-8-validate@6.0.4)':
+  '@polkadot-api/cli@0.21.5(bufferutil@4.0.8)(esbuild@0.28.1)(supports-color@10.2.2)(utf-8-validate@6.0.4)':
     dependencies:
       '@commander-js/extra-typings': 15.0.0(commander@15.0.0)
       '@polkadot-api/codegen': 0.22.5
@@ -10327,7 +10333,7 @@ snapshots:
       ora: 9.4.1
       read-pkg: 10.1.0
       rollup: 4.62.2
-      rollup-plugin-esbuild: 6.2.1(esbuild@0.28.1)(rollup@4.62.2)
+      rollup-plugin-esbuild: 6.2.1(esbuild@0.28.1)(rollup@4.62.2)(supports-color@10.2.2)
       rxjs: 7.8.2
       tsc-prog: 2.3.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -10362,7 +10368,7 @@ snapshots:
       ora: 9.4.1
       read-pkg: 10.1.0
       rollup: 4.62.2
-      rollup-plugin-esbuild: 6.2.1(esbuild@0.28.1)(rollup@4.62.2)
+      rollup-plugin-esbuild: 6.2.1(esbuild@0.28.1)(rollup@4.62.2)(supports-color@10.2.2)
       rxjs: 7.8.2
       tsc-prog: 2.3.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -12508,12 +12514,12 @@ snapshots:
   chownr@1.1.4:
     optional: true
 
-  chrome-launcher@1.2.0:
+  chrome-launcher@1.2.0(supports-color@10.2.2):
     dependencies:
       '@types/node': 24.12.0
       escape-string-regexp: 4.0.0
       is-wsl: 2.2.0
-      lighthouse-logger: 2.0.2
+      lighthouse-logger: 2.0.2(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -14025,7 +14031,7 @@ snapshots:
     dependencies:
       immediate: 3.0.6
 
-  lighthouse-logger@2.0.2:
+  lighthouse-logger@2.0.2(supports-color@10.2.2):
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
       marky: 1.3.0
@@ -14808,9 +14814,9 @@ snapshots:
 
   pluralize@8.0.0: {}
 
-  polkadot-api@2.1.6(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(utf-8-validate@6.0.4):
+  polkadot-api@2.1.6(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(supports-color@10.2.2)(utf-8-validate@6.0.4):
     dependencies:
-      '@polkadot-api/cli': 0.21.5(bufferutil@4.0.8)(esbuild@0.28.1)(utf-8-validate@6.0.4)
+      '@polkadot-api/cli': 0.21.5(bufferutil@4.0.8)(esbuild@0.28.1)(supports-color@10.2.2)(utf-8-validate@6.0.4)
       '@polkadot-api/ink-contracts': 0.6.3
       '@polkadot-api/json-rpc-provider': 0.2.0
       '@polkadot-api/known-chains': 0.11.5
@@ -15245,7 +15251,7 @@ snapshots:
     dependencies:
       bn.js: 5.2.3
 
-  rollup-plugin-esbuild@6.2.1(esbuild@0.28.1)(rollup@4.62.2):
+  rollup-plugin-esbuild@6.2.1(esbuild@0.28.1)(rollup@4.62.2)(supports-color@10.2.2):
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
       es-module-lexer: 1.7.0
@@ -15856,7 +15862,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.5.1(@swc/core@1.7.39(@swc/helpers@0.5.13))(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0):
+  tsup@8.5.1(@swc/core@1.7.39(@swc/helpers@0.5.13))(jiti@2.7.0)(postcss@8.5.15)(supports-color@10.2.2)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.28.1)
       cac: 6.7.14
@@ -16263,11 +16269,11 @@ snapshots:
       glob-to-regexp: 0.4.1
       graceful-fs: 4.2.11
 
-  web-ext-run@0.2.4:
+  web-ext-run@0.2.4(supports-color@10.2.2):
     dependencies:
       '@babel/runtime': 7.28.2
       '@devicefarmer/adbkit': 3.3.8
-      chrome-launcher: 1.2.0
+      chrome-launcher: 1.2.0(supports-color@10.2.2)
       debounce: 1.2.1
       es6-error: 4.1.1
       firefox-profile: 4.7.0
@@ -16402,7 +16408,7 @@ snapshots:
       is-wsl: 3.1.1
       powershell-utils: 0.1.0
 
-  wxt@0.20.27(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.62.2)(terser@5.44.0)(tsx@4.22.4)(yaml@2.9.0):
+  wxt@0.20.27(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.62.2)(supports-color@10.2.2)(terser@5.44.0)(tsx@4.22.4)(yaml@2.9.0):
     dependencies:
       '@1natsu/wait-element': 4.1.2
       '@aklinker1/rollup-plugin-visualizer': 5.12.0(rollup@4.62.2)
@@ -16445,7 +16451,7 @@ snapshots:
       unimport: 5.6.0
       vite: 7.1.12(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.44.0)(tsx@4.22.4)(yaml@2.9.0)
       vite-node: 5.2.0(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.44.0)(tsx@4.22.4)(yaml@2.9.0)
-      web-ext-run: 0.2.4
+      web-ext-run: 0.2.4(supports-color@10.2.2)
     transitivePeerDependencies:
       - '@types/node'
       - canvas

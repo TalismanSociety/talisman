@@ -7,7 +7,6 @@ import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assemblePjsTransaction, type SignPjsPayloadResult, signPjsPayload } from "./signPjsPayload"
 
 export type { SignPjsPayloadResult } from "./signPjsPayload"
-export { getSignedExtrinsicHash } from "./signPjsPayload"
 
 /**
  * Assembles a signed extrinsic from a payload and a ready-made (prefixed) signature,

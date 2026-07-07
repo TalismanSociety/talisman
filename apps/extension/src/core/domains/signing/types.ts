@@ -7,10 +7,6 @@ import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/ty
 
 // structural equivalents of the legacy @polkadot/extension-base signing request types
 export type RequestSign = { payload: SignerPayloadJSON | SignerPayloadRaw }
-export type RequestSigningApprovePassword = { id: string; password?: string; savePass: boolean }
-export type RequestSigningCancel = { id: string }
-export type RequestSigningIsLocked = { id: string }
-export type ResponseSigningIsLocked = { isLocked: boolean; remainingTime: number }
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
