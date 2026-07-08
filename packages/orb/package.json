@@ -31,7 +31,7 @@
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "react": "*"
+    "react": ">=18.2.0"
   },
   "types": "./dist/index.d.ts",
   "exports": {

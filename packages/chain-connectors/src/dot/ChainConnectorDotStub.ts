@@ -1,7 +1,7 @@
 import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
 import type { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
-import { getWsProvider } from "polkadot-api/ws"
+import { getWsProvider } from "@polkadot-api/ws-provider"
 
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 

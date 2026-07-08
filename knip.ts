@@ -18,6 +18,9 @@ const config: KnipConfig = {
     // Declared at the root so shamefullyHoist resolves the top-level copy to one that exports
     // `isResponse` (the papi CLI's json-rpc-provider-proxy phantom-imports it); not imported in source
     "@polkadot-api/json-rpc-provider",
+    // Root-pinned to keep the ws-provider copy consumed by @talismn/chain-connectors deduped with
+    // the one polkadot-api pulls transitively; imported in that package, not at the root
+    "@polkadot-api/ws-provider",
     // Generated workspace package (.papi/descriptors); provided to packages/{balances,sapi} via the
     // root/extension declaration + shamefullyHoist, so they import it without declaring it directly
     "@polkadot-api/descriptors",

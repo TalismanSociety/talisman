@@ -90,6 +90,9 @@ importers:
       '@polkadot-api/json-rpc-provider':
         specifier: 0.2.0
         version: 0.2.0
+      '@polkadot-api/ws-provider':
+        specifier: 0.9.0
+        version: 0.9.0(rxjs@7.8.2)
       polkadot-api:
         specifier: 2.1.6
         version: 2.1.6(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(supports-color@10.2.2)(utf-8-validate@6.0.4)
@@ -717,6 +720,9 @@ importers:
       '@polkadot-api/substrate-client':
         specifier: 0.7.0
         version: 0.7.0
+      '@polkadot-api/ws-provider':
+        specifier: 0.9.0
+        version: 0.9.0(rxjs@7.8.2)
       '@solana/kit':
         specifier: 6.10.0
         version: 6.10.0(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@6.0.3)(utf-8-validate@6.0.4)
@@ -739,9 +745,6 @@ importers:
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
-      polkadot-api:
-        specifier: 2.1.7
-        version: 2.1.7(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(utf-8-validate@6.0.4)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
