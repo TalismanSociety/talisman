@@ -1,3 +1,4 @@
+import type { AccessList } from "viem"
 import { parseGwei } from "viem"
 import { describe, expect, test } from "vitest"
 import {
@@ -7,6 +8,7 @@ import {
   getMaxFeePerGas,
   getTotalFeesFromGasSettings,
   isSafeImageUrl,
+  parseRpcTransactionRequestBase,
 } from "../helpers"
 
 const baseFeePerGas = parseGwei("2")
@@ -135,5 +137,24 @@ describe("Test ethereum helpers", () => {
     expect(isSafeImageUrl("http://legit-domain/anysvgfile_(1).svg")).toEqual(false) // uses http
     expect(isSafeImageUrl("https://legit-domain/anysvgfile_(1).js")).toEqual(false)
     expect(isSafeImageUrl("https://legit-domain/anysvgfile_(1).svg")).toEqual(true)
+  })
+
+  test("parseRpcTransactionRequestBase preserves an EIP-2930 access list", () => {
+    const from = "0x1111111111111111111111111111111111111111" as const
+    const accessList: AccessList = [
+      {
+        address: "0x2222222222222222222222222222222222222222",
+        storageKeys: ["0x0000000000000000000000000000000000000000000000000000000000000000"],
+      },
+    ]
+
+    const result = parseRpcTransactionRequestBase({ from, accessList })
+    expect(result.accessList).toEqual(accessList)
+  })
+
+  test("parseRpcTransactionRequestBase omits the access list when absent", () => {
+    const from = "0x1111111111111111111111111111111111111111" as const
+    const result = parseRpcTransactionRequestBase({ from })
+    expect(result.accessList).toBeUndefined()
   })
 })

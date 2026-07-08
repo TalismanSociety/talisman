@@ -3,17 +3,60 @@ import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyrin
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
 
+const PrimaryBadge: FC = () => {
+  const { t } = useTranslation()
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="shrink-0 rounded-xs bg-primary/10 px-3 py-1 text-primary text-tiny">
+          {t("Primary")}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        {t("The primary account is the active account from the app's point of view")}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+const SetPrimaryButton: FC<{ onClick: () => void }> = ({ onClick }) => {
+  const { t } = useTranslation()
+  return (
+    // biome-ignore lint/a11y/useSemanticElements: cannot nest a button inside the row button
+    <span
+      role="button"
+      tabIndex={0}
+      className="shrink-0 rounded-xs px-3 py-1 text-body-disabled text-tiny hover:bg-grey-750 hover:text-body"
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation()
+          onClick()
+        }
+      }}
+    >
+      {t("Set primary")}
+    </span>
+  )
+}
+
 export const ConnectAccountToggleButtonRow: FC<{
   account: Account
   showAddress?: boolean
   checked?: boolean
+  isPrimary?: boolean
+  onSetPrimaryClick?: () => void
   onClick?: () => void
-}> = ({ account, checked: isConnected, onClick }) => (
+}> = ({ account, checked: isConnected, isPrimary, onSetPrimaryClick, onClick }) => (
   <button
     type="button"
     onClick={onClick}
@@ -53,6 +96,8 @@ export const ConnectAccountToggleButtonRow: FC<{
       signetUrl={getAccountSignetUrl(account)}
     />
     <div className="grow"></div>
+    {isPrimary && <PrimaryBadge />}
+    {!isPrimary && onSetPrimaryClick && <SetPrimaryButton onClick={onSetPrimaryClick} />}
     <div
       className={cn(
         "mx-2 h-4 w-4 shrink-0 rounded-full",

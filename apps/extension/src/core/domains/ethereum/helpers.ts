@@ -3,6 +3,7 @@ import type { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { isBigInt } from "@talismn/util"
 import {
+  type AccessList,
   encodeFunctionData,
   erc20Abi,
   getAddress,
@@ -178,7 +179,7 @@ export const parseTransactionRequest = (
 }
 
 export const parseRpcTransactionRequestBase = (
-  rtx: TransactionRequestBase<Hex, Hex>
+  rtx: TransactionRequestBase<Hex, Hex> & { accessList?: AccessList }
 ): TransactionRequest => {
   const txBase: TransactionRequest = { from: rtx.from }
 
@@ -187,6 +188,8 @@ export const parseRpcTransactionRequestBase = (
   if (isHex(rtx.value)) txBase.value = hexToBigInt(rtx.value)
   if (isHex(rtx.gas)) txBase.gas = hexToBigInt(rtx.gas)
   if (isHex(rtx.nonce)) txBase.nonce = hexToNumber(rtx.nonce)
+  // EIP-2930 access lists ride on both type-1 and type-2 transactions, keep them (fees are wallet-controlled, access lists aren't)
+  if (Array.isArray(rtx.accessList)) txBase.accessList = rtx.accessList
 
   return txBase
 }
@@ -370,14 +373,20 @@ export const getMaxTransactionCost = (transaction: TransactionRequest) => {
 }
 
 export const prepareTransaction = (
-  txBase: TransactionRequestBase,
+  txBase: TransactionRequestBase & { accessList?: AccessList },
   gasSettings: EthGasSettings,
   nonce: number
-): TransactionRequest => ({
-  ...txBase,
-  ...gasSettings,
-  nonce,
-})
+): TransactionRequest => {
+  const { accessList, ...base } = txBase
+
+  if (gasSettings.type === "eip1559") return { ...base, ...gasSettings, accessList, nonce }
+
+  // access lists require a typed transaction envelope, they can't ride a type-0 legacy transaction
+  if (accessList !== undefined)
+    return { ...base, ...gasSettings, type: "eip2930", accessList, nonce }
+
+  return { ...base, ...gasSettings, nonce }
+}
 
 /**
  * Ensures that the transaction request has the correct fee fields according to the gas settings type, and removes any incompatible fields.
@@ -468,14 +477,20 @@ export const isValidWatchAssetRequestParam = (obj: unknown) =>
 export const sanitizeWatchAssetRequestParam = (obj: unknown) =>
   schemaWatchAssetRequest.validate(obj)
 
-// for now, only allow eth_accounts property with an empty object
-const schemaRequestedPermissions = yup
-  .object()
-  .required()
-  .shape({
-    eth_accounts: yup.object().required().shape({}).noUnknown(),
-  })
-  .noUnknown()
+// eth_accounts is the only permission we support, but dapps may request several permissions
+// in a single object (ex: MetaMask's endowment:permitted-chains) => ignore unknown ones.
+// caveats may be specified as the permission's value => accept any object
+const schemaRequestedPermissions = yup.object().required().shape({
+  eth_accounts: yup.object().required(),
+})
 
 export const isValidRequestedPermissions = (obj: unknown) =>
   schemaRequestedPermissions.isValidSync(obj)
+
+// for revocation any set of permissions is acceptable, unsupported ones are no-ops
+const schemaRevokedPermissions = yup
+  .object()
+  .required()
+  .test("atLeastOnePermission", (obj) => !!obj && Object.keys(obj).length > 0)
+
+export const isValidRevokedPermissions = (obj: unknown) => schemaRevokedPermissions.isValidSync(obj)
