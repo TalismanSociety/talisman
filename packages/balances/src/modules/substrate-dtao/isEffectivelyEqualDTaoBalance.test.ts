@@ -43,27 +43,27 @@ describe("isEffectivelyEqualDTaoBalance", () => {
     expect(isEffectivelyEqualDTaoBalance(makeDTaoBalance(), makeDTaoBalance())).toBe(true)
   })
 
-  test("tolerates sub-0.1% alpha price drift", () => {
+  test("tolerates sub-0.5% alpha price drift", () => {
     const previous = makeDTaoBalance({ scaledAlphaPrice: "250000000" })
-    const next = makeDTaoBalance({ scaledAlphaPrice: "250100000" }) // +0.04%
+    const next = makeDTaoBalance({ scaledAlphaPrice: "251000000" }) // +0.4%
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe(true)
   })
 
-  test("rejects >0.1% alpha price move", () => {
+  test("rejects >0.5% alpha price move", () => {
     const previous = makeDTaoBalance({ scaledAlphaPrice: "250000000" })
-    const next = makeDTaoBalance({ scaledAlphaPrice: "251000000" }) // +0.4%
+    const next = makeDTaoBalance({ scaledAlphaPrice: "252500000" }) // +1%
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe(false)
   })
 
-  test("tolerates sub-0.1% pending root claim accrual", () => {
+  test("tolerates sub-1% pending root claim accrual", () => {
     const previous = makeDTaoBalance({ pendingRootClaim: "5000000000" })
-    const next = makeDTaoBalance({ pendingRootClaim: "5001000000" }) // +0.02%
+    const next = makeDTaoBalance({ pendingRootClaim: "5010000000" }) // +0.2%
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe(true)
   })
 
-  test("rejects >0.1% pending root claim growth", () => {
+  test("rejects >1% pending root claim growth", () => {
     const previous = makeDTaoBalance({ pendingRootClaim: "5000000000" })
-    const next = makeDTaoBalance({ pendingRootClaim: "5010000000" }) // +0.2%
+    const next = makeDTaoBalance({ pendingRootClaim: "5100000000" }) // +2%
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe(false)
   })
 

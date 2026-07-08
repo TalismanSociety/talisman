@@ -1,8 +1,14 @@
 import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
 import type { SubDTaoBalanceMeta } from "./types"
 
-/** 10 bps = 0.1% — imperceptible in fiat display, but AMM price rarely moves this much per block */
-const DRIFT_TOLERANCE_BPS = 10n
+/**
+ * Volatile subnet AMM pools drift ~0.5%/min in normal trading, so a tighter tolerance
+ * re-emits (and re-renders) on nearly every 6s poll. 50 bps keeps the displayed fiat
+ * value of alpha positions at most 0.5% stale between genuine updates.
+ */
+const PRICE_DRIFT_TOLERANCE_BPS = 50n
+/** root dividends accrue continuously; the pending-claim display is informational */
+const CLAIM_DRIFT_TOLERANCE_BPS = 100n
 
 /**
  * dtao balances embed two values that drift on (nearly) every block even when the user's
@@ -15,14 +21,14 @@ const DRIFT_TOLERANCE_BPS = 10n
  * storage persistence, UI re-render) to run even though nothing user-visible changed.
  *
  * This comparator treats two emissions of the same balance as equal when every field
- * matches exactly EXCEPT the drift-prone values above, which may differ by up to
- * DRIFT_TOLERANCE_BPS relative to the previously EMITTED value. Because comparison is
- * always against the last emitted balance (see stabilizeBalances), drift accumulates and
- * a sustained move still surfaces once it crosses the tolerance — downstream values are
- * never more than 0.1% stale.
+ * matches exactly EXCEPT the drift-prone values above, which may differ by up to the
+ * tolerances relative to the previously EMITTED value. Because comparison is always
+ * against the last emitted balance (see stabilizeBalances), drift accumulates and a
+ * sustained move still surfaces once it crosses the tolerance — downstream values are
+ * never more stale than the tolerance.
  */
 
-const isWithinDriftTolerance = (previous: string, next: string): boolean => {
+const isWithinDriftTolerance = (previous: string, next: string, toleranceBps: bigint): boolean => {
   if (previous === next) return true
 
   let a: bigint
@@ -39,7 +45,7 @@ const isWithinDriftTolerance = (previous: string, next: string): boolean => {
 
   const diff = a > b ? a - b : b - a
   const max = a > b ? a : b
-  return diff * 10_000n <= max * DRIFT_TOLERANCE_BPS
+  return diff * 10_000n <= max * toleranceBps
 }
 
 /** the only labels whose amounts accrue per block (see fetchBalances) */
@@ -81,7 +87,8 @@ const isEffectivelyEqualValue = (
   if (
     !isWithinDriftTolerance(
       previousMeta?.scaledAlphaPrice ?? "0",
-      nextMeta?.scaledAlphaPrice ?? "0"
+      nextMeta?.scaledAlphaPrice ?? "0",
+      PRICE_DRIFT_TOLERANCE_BPS
     )
   )
     return false
@@ -89,7 +96,7 @@ const isEffectivelyEqualValue = (
   // pending root claim accrues per block — tolerate sub-threshold accrual;
   // all other amounts (stake, conviction locks) must match exactly
   if (previous.label === PENDING_ROOT_CLAIM_LABEL)
-    return isWithinDriftTolerance(previous.amount, next.amount)
+    return isWithinDriftTolerance(previous.amount, next.amount, CLAIM_DRIFT_TOLERANCE_BPS)
   return previous.amount === next.amount
 }
 
