@@ -6,6 +6,11 @@ import { reportJsActivity } from "@talismn/util"
  * of ms, indivisible). Modules that poll (e.g. substrate-dtao every 6s) call it with the
  * same metadata hex over and over — memoize by the hex string so it runs once per
  * metadata blob instead of several times per poll tick.
+ *
+ * WARNING: the returned objects are SHARED between callers. Callers must treat them as
+ * read-only — in particular, do NOT pass the cached `metadata` to `compactMetadata`,
+ * which mutates it in place (getMiniMetadata paths intentionally use the uncached
+ * parseMetadataRpc for this reason).
  */
 const CACHE_SIZE = 8
 const cache = new Map<string, ReturnType<typeof parseMetadataRpc>>()

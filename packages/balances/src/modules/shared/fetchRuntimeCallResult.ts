@@ -1,6 +1,8 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
-import { type MetadataBuilder, parseMetadataRpc, toHex } from "@talismn/scale"
+import { type MetadataBuilder, toHex } from "@talismn/scale"
 import { reportJsActivity } from "@talismn/util"
+
+import { parseMetadataRpcCached } from "./parseMetadataRpcCached"
 
 export const fetchRuntimeCallResult = async <T>(
   connector: IChainConnectorDot,
@@ -12,9 +14,12 @@ export const fetchRuntimeCallResult = async <T>(
   args: unknown[]
 ): Promise<T> => {
   try {
+    // MUST be the cached parse: substrate-hydration passes the raw hex once PER ADDRESS
+    // on every 6s poll — the uncached parse here was a full metadata decode+builder
+    // build (~200ms, indivisible) per call, i.e. a recurring near-second JS-thread stall
     const builder =
       typeof metadataRpcOrBuilder === "string"
-        ? parseMetadataRpc(metadataRpcOrBuilder).builder
+        ? parseMetadataRpcCached(metadataRpcOrBuilder).builder
         : metadataRpcOrBuilder
     const call = builder.buildRuntimeCall(apiName, method)
 

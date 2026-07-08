@@ -5,11 +5,12 @@ import {
   SubForeignAssetsTokenSchema,
   subForeignAssetTokenId,
 } from "@talismn/chaindata-provider"
-import { getStorageKeyPrefix, papiStringify, parseMetadataRpc } from "@talismn/scale"
+import { getStorageKeyPrefix, papiStringify } from "@talismn/scale"
 import { assign, keyBy, keys } from "lodash-es"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import type { QueryStorageResult } from "../shared"
+import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { MODULE_TYPE, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -21,7 +22,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 
-  const { builder } = parseMetadataRpc(anyMiniMetadata.data)
+  const { builder } = parseMetadataRpcCached(anyMiniMetadata.data)
   const assetCodec = builder.buildStorage("ForeignAssets", "Asset")
   const metadataCodec = builder.buildStorage("ForeignAssets", "Metadata")
 
