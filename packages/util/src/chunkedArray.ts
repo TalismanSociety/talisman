@@ -9,10 +9,13 @@ export type ChunkedOptions = {
   signal?: AbortSignal
   /** share one slicer across multiple phases of work so the time budget spans them */
   slicer?: TimeSlicer
+  /** identifies this work in host JS-activity reports (ignored when `slicer` is provided) */
+  label?: string
 }
 
 const getSlicer = (options?: ChunkedOptions): TimeSlicer =>
-  options?.slicer ?? createTimeSlicer({ budgetMs: options?.budgetMs, signal: options?.signal })
+  options?.slicer ??
+  createTimeSlicer({ budgetMs: options?.budgetMs, signal: options?.signal, label: options?.label })
 
 /**
  * `Array.prototype.forEach`, chunked: iterates synchronously until the time budget is
@@ -32,6 +35,11 @@ export const forEachWithYield = async <T>(
     if (yielded) await yielded
     fn(items[i], i)
   }
+  // final check point: without it, a loop whose LAST item blows the budget (including
+  // the common single-item case, e.g. one storage query decoding a huge map) would
+  // neither report over-budget work to the host watchdog nor honor a late abort
+  const yielded = slicer.yieldIfNeeded()
+  if (yielded) await yielded
 }
 
 /** `Array.prototype.map`, chunked (see forEachWithYield for semantics) */

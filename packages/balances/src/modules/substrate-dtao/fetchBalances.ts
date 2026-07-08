@@ -176,7 +176,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
     // one shared slicer across all loops below: the nested stakes×hotkeys×netuids work is
     // time-sliced so it yields the thread on budget, and aborts when the poll unsubscribes
-    const slicer = createTimeSlicer({ signal })
+    const slicer = createTimeSlicer({ signal, label: `dtao fetchBalances ${networkId}` })
 
     const balancesRaw: Record<string, SubDTaoBalance> = {}
     for (const [address, stakes] of stakeInfos) {

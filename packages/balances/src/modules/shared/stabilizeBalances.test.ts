@@ -66,6 +66,45 @@ describe("createBalanceStabilizer", () => {
     expect(emitted).toBe(aAgain)
   })
 
+  test("drift-classified changes re-emit at most once per driftRefreshMs", () => {
+    let clock = 0
+    const stabilize = createBalanceStabilizer(
+      (previous, next) => {
+        const [prevValue] = ("values" in previous ? (previous.values ?? []) : []) as {
+          amount: string
+        }[]
+        const [nextValue] = ("values" in next ? (next.values ?? []) : []) as { amount: string }[]
+        return prevValue?.amount === nextValue?.amount ? "equal" : "drift"
+      },
+      { driftRefreshMs: 30_000, now: () => clock }
+    )
+
+    const at = (amount: string) =>
+      makeBalance({
+        address: "a",
+        tokenId: "t",
+        values: [{ type: "free", label: "free", amount }],
+      })
+
+    const first = at("100")
+    expect(stabilize([first])[0]).toBe(first)
+
+    // drift within the refresh window → previous object reused
+    clock = 10_000
+    expect(stabilize([at("101")])[0]).toBe(first)
+    clock = 20_000
+    expect(stabilize([at("102")])[0]).toBe(first)
+
+    // window elapsed → the fresh object is emitted and becomes the new baseline
+    clock = 31_000
+    const refreshed = at("103")
+    expect(stabilize([refreshed])[0]).toBe(refreshed)
+
+    // new window starts from the refresh
+    clock = 40_000
+    expect(stabilize([at("104")])[0]).toBe(refreshed)
+  })
+
   test("custom equivalence short-circuits reuse, exact fingerprint still wins otherwise", () => {
     // comparator that tolerates any difference in the value's amount
     const stabilize = createBalanceStabilizer(

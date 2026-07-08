@@ -31,7 +31,9 @@ export const fetchRpcQueryPack = async <T>(
     allStateKeys,
   ])
 
-  return decodeRpcQueryPackChunked(queries, result ? new Map(result.changes) : null)
+  return decodeRpcQueryPackChunked(queries, result ? new Map(result.changes) : null, {
+    label: `rpcQueryPack decode ${networkId}`,
+  })
 }
 
 /**
