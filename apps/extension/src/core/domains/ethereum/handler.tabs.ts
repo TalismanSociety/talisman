@@ -736,10 +736,18 @@ export class EthTabsHandler extends TabsHandler {
           ethPermissions: { ...(site.ethPermissions ?? {}), eth_accounts: grant },
         })
       }
+      // guard against a legacy/corrupt stored url : eth_requestAccounts ends in getPermissions,
+      // an unhandled throw here would break connect for that site
+      let invoker = site.url
+      try {
+        invoker = new URL(site.url).origin
+      } catch {
+        // keep the raw stored url as fallback
+      }
       permissions.push({
         id: grant.id,
         parentCapability: "eth_accounts",
-        invoker: new URL(site.url).origin,
+        invoker,
         date: grant.date,
         // some dapps read the list of permitted accounts from this caveat
         caveats: [{ type: "restrictReturnedAccounts", value: accounts }],
