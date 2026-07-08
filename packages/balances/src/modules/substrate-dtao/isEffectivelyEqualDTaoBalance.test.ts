@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest"
 
 import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
-import type { SubDTaoBalanceMeta } from "./types"
 import { isEffectivelyEqualDTaoBalance } from "./isEffectivelyEqualDTaoBalance"
+import type { SubDTaoBalanceMeta } from "./types"
 
 const makeDTaoBalance = ({
   stake = "1000000000000",

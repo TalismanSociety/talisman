@@ -2,9 +2,9 @@ import type { MonoTypeOperatorFunction, Observable } from "rxjs"
 import { defer, map } from "rxjs"
 
 import type { IBalance } from "../../types"
-import type { FetchBalanceResults } from "../../types/IBalanceModule"
 import { getBalanceId } from "../../types"
 import { getBalanceFingerprint } from "../../types/fingerprint"
+import type { FetchBalanceResults } from "../../types/IBalanceModule"
 
 /**
  * How a freshly fetched balance relates to the last EMITTED balance with the same id:
