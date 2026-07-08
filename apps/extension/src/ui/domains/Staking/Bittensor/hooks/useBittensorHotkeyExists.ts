@@ -1,10 +1,10 @@
 import { isAddressCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isSs58Address } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useDotNetwork } from "@ui/state/chaindata"
-import { Binary } from "@polkadot-api/substrate-bindings"
 
 import { cleanName } from "../utils/subnetNeurons"
 

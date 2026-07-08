@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
+import { getWsProvider } from "@polkadot-api/ws-provider"
 import { createSolanaRpc } from "@solana/kit"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"
 import {
@@ -11,7 +12,6 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
-import { getWsProvider } from "@polkadot-api/ws-provider"
 import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"
 

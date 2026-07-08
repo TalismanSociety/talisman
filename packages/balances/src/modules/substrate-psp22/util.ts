@@ -1,6 +1,6 @@
+import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { fromHex, mergeUint8, toHex } from "@polkadot-api/utils"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
-import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { Bytes, compact, Enum, enhanceCodec, Result, Struct, u32, u128 } from "scale-ts"
 
 import psp22Abi from "../abis/psp22.json"

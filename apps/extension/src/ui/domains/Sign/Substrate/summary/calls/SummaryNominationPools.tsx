@@ -1,9 +1,9 @@
 import type { PolkadotCalls } from "@polkadot-api/descriptors"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import type { ScaleApi } from "@talismn/sapi"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useNetworkById } from "@ui/state/chaindata"
-import { Binary } from "@polkadot-api/substrate-bindings"
 import { type FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

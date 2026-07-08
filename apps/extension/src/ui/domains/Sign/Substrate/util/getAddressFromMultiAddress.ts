@@ -1,6 +1,6 @@
 import type { MultiAddress } from "@polkadot-api/descriptors"
-import { encodeAddressSs58, normalizeAddress } from "@talismn/crypto"
 import { Binary } from "@polkadot-api/substrate-bindings"
+import { encodeAddressSs58, normalizeAddress } from "@talismn/crypto"
 
 export const getAddressFromMultiAddress = (multiAddress: MultiAddress | string) => {
   if (typeof multiAddress === "string") return multiAddress

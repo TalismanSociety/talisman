@@ -1,7 +1,7 @@
 import { log } from "@common/log"
+import type { Enum } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork, Token } from "@talismn/chaindata-provider"
 import { isEqual } from "lodash-es"
-import type { Enum } from "@polkadot-api/substrate-bindings"
 
 const normalizeTokenId = (tokenId: unknown) => {
   if (typeof tokenId === "string" && tokenId.startsWith("{") && tokenId.endsWith("}"))

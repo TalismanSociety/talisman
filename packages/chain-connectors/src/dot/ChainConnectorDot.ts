@@ -1,11 +1,11 @@
 import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
-import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 import {
   getWsProvider,
   type StatusChange,
   WsEvent,
   type WsJsonRpcProvider,
 } from "@polkadot-api/ws-provider"
+import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 
 import log from "../log"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"

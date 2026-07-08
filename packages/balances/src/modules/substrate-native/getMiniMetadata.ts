@@ -1,6 +1,6 @@
+import { Binary } from "@polkadot-api/substrate-bindings"
 import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
-import { Binary } from "@polkadot-api/substrate-bindings"
 
 import { deriveMiniMetadataId } from "../../types"
 import type { IBalanceModule } from "../../types/IBalanceModule"
