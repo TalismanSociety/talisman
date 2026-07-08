@@ -73,10 +73,34 @@ describe("isEffectivelyEqualDTaoBalance", () => {
     expect(isEffectivelyEqualDTaoBalance(previous, next)).not.toBe("equal")
   })
 
-  test("stake changes are never tolerated", () => {
+  test("small stake accrual (auto-compounding dividends) classifies as drift", () => {
     const previous = makeDTaoBalance({ stake: "1000000000000" })
     const next = makeDTaoBalance({ stake: "1000000000001" }) // 1 planck
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
+  })
+
+  test("large stake moves (real stake/unstake) emit immediately", () => {
+    const previous = makeDTaoBalance({ stake: "1000000000000" })
+    const next = makeDTaoBalance({ stake: "1100000000000" }) // +10%
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("changed")
+  })
+
+  test("decaying conviction lock amounts classify as drift", () => {
+    const withLock = (amount: string) =>
+      makeDTaoBalance({
+        extraValues: [
+          {
+            type: "locked",
+            label: "Decaying lock",
+            amount,
+            meta: {
+              scaledAlphaPrice: "250000000",
+              convictionLock: { type: "conviction-lock", hotkey: "5Hotkey", lockType: "decaying" },
+            },
+          } as AmountWithLabel<string>,
+        ],
+      })
+    expect(isEffectivelyEqualDTaoBalance(withLock("1000"), withLock("999"))).toBe("drift")
   })
 
   test("status changes are never tolerated", () => {

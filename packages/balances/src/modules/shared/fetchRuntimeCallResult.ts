@@ -4,6 +4,33 @@ import { reportJsActivity } from "@talismn/util"
 
 import { parseMetadataRpcCached } from "./parseMetadataRpcCached"
 
+// buildRuntimeCall compiles the arg/result codecs from the type graph — expensive and
+// allocation-heavy, and previously re-ran for EVERY call (pollers like substrate-hydration
+// issue several runtime calls per address per 6s poll). Memoized per (builder, api.method);
+// the builder key is reference-stable thanks to parseMetadataRpcCached.
+const runtimeCallCache = new WeakMap<
+  MetadataBuilder,
+  Map<string, ReturnType<MetadataBuilder["buildRuntimeCall"]>>
+>()
+
+const getRuntimeCall = (builder: MetadataBuilder, apiName: string, method: string) => {
+  let byName = runtimeCallCache.get(builder)
+  if (!byName) {
+    byName = new Map()
+    runtimeCallCache.set(builder, byName)
+  }
+
+  const key = `${apiName}.${method}`
+  let call = byName.get(key)
+  if (!call) {
+    const start = performance.now()
+    call = builder.buildRuntimeCall(apiName, method)
+    reportJsActivity(`buildRuntimeCall ${key}`, performance.now() - start)
+    byName.set(key, call)
+  }
+  return call
+}
+
 export const fetchRuntimeCallResult = async <T>(
   connector: IChainConnectorDot,
   networkId: string,
@@ -21,7 +48,7 @@ export const fetchRuntimeCallResult = async <T>(
       typeof metadataRpcOrBuilder === "string"
         ? parseMetadataRpcCached(metadataRpcOrBuilder).builder
         : metadataRpcOrBuilder
-    const call = builder.buildRuntimeCall(apiName, method)
+    const call = getRuntimeCall(builder, apiName, method)
 
     const hex = await connector.send<string>(networkId, "state_call", [
       `${apiName}_${method}`,

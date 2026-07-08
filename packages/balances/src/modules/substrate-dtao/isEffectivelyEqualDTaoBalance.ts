@@ -10,6 +10,13 @@ import type { SubDTaoBalanceMeta } from "./types"
 const PRICE_DRIFT_TOLERANCE_BPS = 50n
 /** root dividends accrue continuously; the pending-claim display is informational */
 const CLAIM_DRIFT_TOLERANCE_BPS = 100n
+/**
+ * subnet staking positions auto-compound: dividend injections land once per subnet tempo
+ * (staggered across subnets, so with many positions SOME position bumps on nearly every
+ * poll). Moves up to this size classify as drift (surfaced within the refresh interval);
+ * anything larger (a real stake/unstake) emits immediately.
+ */
+const STAKE_DRIFT_TOLERANCE_BPS = 100n
 
 /**
  * dtao balances embed two values that drift on (nearly) every block even when the user's
@@ -89,13 +96,26 @@ const classifyValue = (
   )
     return "changed"
 
-  // pending root claim accrues per block; all other amounts (stake, conviction locks)
-  // must match exactly
-  const amountsEqual =
-    previous.label === PENDING_ROOT_CLAIM_LABEL
-      ? isWithinDriftTolerance(previous.amount, next.amount, CLAIM_DRIFT_TOLERANCE_BPS)
-      : previous.amount === next.amount
-  if (!amountsEqual) return previous.label === PENDING_ROOT_CLAIM_LABEL ? "drift" : "changed"
+  // amounts: every dtao amount kind moves continuously in its own way
+  let drift = false
+  if (previous.amount !== next.amount) {
+    if (previous.label === PENDING_ROOT_CLAIM_LABEL) {
+      // dividends accrue per block: sub-tolerance accrual is not worth surfacing at all,
+      // beyond-tolerance accrual is drift (bounded by the refresh interval)
+      if (!isWithinDriftTolerance(previous.amount, next.amount, CLAIM_DRIFT_TOLERANCE_BPS))
+        drift = true
+    } else if (previousLock) {
+      // decaying conviction locks shrink every block — always drift (a lock disappearing
+      // entirely removes its value and is caught by the value-count check instead)
+      drift = true
+    } else {
+      // stake: auto-compounding dividend injections are drift, real stake/unstake moves
+      // emit immediately
+      if (isWithinDriftTolerance(previous.amount, next.amount, STAKE_DRIFT_TOLERANCE_BPS))
+        drift = true
+      else return "changed"
+    }
+  }
 
   // AMM price may drift
   if (
@@ -105,9 +125,9 @@ const classifyValue = (
       PRICE_DRIFT_TOLERANCE_BPS
     )
   )
-    return "drift"
+    drift = true
 
-  return "equal"
+  return drift ? "drift" : "equal"
 }
 
 export const isEffectivelyEqualDTaoBalance = (
