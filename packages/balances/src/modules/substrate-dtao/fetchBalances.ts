@@ -35,6 +35,44 @@ import type {
 
 const ROOT_NETUID = 0
 
+/**
+ * get_all_dynamic_info returns full dynamic info for EVERY subnet (~130 entries) and its
+ * SCALE decode is ~150ms of indivisible JS-thread time — too heavy to pay on every 6s
+ * poll. It only feeds `scaledAlphaPrice` (and the alpha↔tao conversions derived from
+ * it), which downstream only surfaces on the drift-refresh interval anyway, so a short
+ * TTL cache loses nothing user-visible. Stake changes are still detected every poll via
+ * the (tiny) get_stake_info_for_coldkeys call.
+ */
+const DYNAMIC_INFO_TTL_MS = 30_000
+const dynamicInfosCache = new Map<
+  string,
+  { fetchedAt: number; promise: Promise<GetDynamicInfosResult> }
+>()
+
+const fetchDynamicInfosCached = (
+  connector: IChainConnectorDot,
+  networkId: string,
+  builder: ReturnType<typeof parseMetadataRpc>["builder"]
+): Promise<GetDynamicInfosResult> => {
+  const cached = dynamicInfosCache.get(networkId)
+  if (cached && performance.now() - cached.fetchedAt < DYNAMIC_INFO_TTL_MS) return cached.promise
+
+  const promise = fetchRuntimeCallResult<GetDynamicInfosResult>(
+    connector,
+    networkId,
+    builder,
+    "SubnetInfoRuntimeApi",
+    "get_all_dynamic_info",
+    []
+  )
+  dynamicInfosCache.set(networkId, { fetchedAt: performance.now(), promise })
+  // a failed fetch must not be cached for the TTL — evict so the next poll retries
+  promise.catch(() => {
+    if (dynamicInfosCache.get(networkId)?.promise === promise) dynamicInfosCache.delete(networkId)
+  })
+  return promise
+}
+
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
   tokensWithAddresses,
@@ -99,14 +137,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         "get_stake_info_for_coldkeys",
         [addresses]
       ),
-      fetchRuntimeCallResult<GetDynamicInfosResult>(
-        connector,
-        networkId,
-        builder,
-        "SubnetInfoRuntimeApi",
-        "get_all_dynamic_info",
-        []
-      ),
+      fetchDynamicInfosCached(connector, networkId, builder),
     ])
 
     const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
