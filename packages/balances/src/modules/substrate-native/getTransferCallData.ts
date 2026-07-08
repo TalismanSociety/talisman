@@ -6,7 +6,7 @@ import {
   parseMetadataRpc,
   type UnifiedMetadata,
 } from "@talismn/scale"
-import { Binary, Enum } from "polkadot-api"
+import { Binary, Enum } from "@polkadot-api/substrate-bindings"
 
 import type { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"

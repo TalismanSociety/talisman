@@ -1,5 +1,5 @@
 import { mergeUint8, toHex } from "@polkadot-api/utils"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
 import type { PayloadSignerConfig } from "../types"

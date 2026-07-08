@@ -10,7 +10,7 @@ import {
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult, type QueryStorageResult } from "../shared"

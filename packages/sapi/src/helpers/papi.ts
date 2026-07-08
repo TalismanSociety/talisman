@@ -1,6 +1,6 @@
 import { Bytes, enhanceEncoder, u16 } from "@polkadot-api/substrate-bindings"
 import { fromHex } from "@polkadot-api/utils"
-import { getSs58AddressInfo } from "polkadot-api"
+import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////                 Utilities from PAPI                 /////////////////////////////

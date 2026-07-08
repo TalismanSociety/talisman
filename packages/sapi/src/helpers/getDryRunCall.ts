@@ -1,5 +1,5 @@
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
-import { Enum } from "polkadot-api"
+import { Enum } from "@polkadot-api/substrate-bindings"
 
 import log from "../log"
 import type { DecodedCall } from "../types"

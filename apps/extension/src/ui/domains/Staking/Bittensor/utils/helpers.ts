@@ -1,7 +1,7 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { TAO_DECIMALS } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 
 import type { StakeDirection } from "../hooks/types"
 import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./constants"

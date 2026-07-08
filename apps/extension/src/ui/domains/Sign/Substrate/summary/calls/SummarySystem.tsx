@@ -1,6 +1,6 @@
 import type { PolkadotCalls } from "@polkadot-api/descriptors"
 import { isAscii } from "@talismn/util"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

@@ -2,7 +2,7 @@ import { log } from "@common/log"
 import type { Address } from "@core/types/base"
 import type { XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { encodeAddressEthereum, encodeAddressSs58 } from "@talismn/crypto"
-import { Binary, type SizedHex } from "polkadot-api"
+import { Binary, type SizedHex } from "@polkadot-api/substrate-bindings"
 
 export const getAddressFromXcmLocation = (multiLocation: XcmVersionedLocation): Address => {
   try {

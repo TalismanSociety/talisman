@@ -11,7 +11,7 @@ import DOMPurify from "dompurify"
 import htmlParser from "html-react-parser"
 import { dump as convertToYaml } from "js-yaml"
 import { marked } from "marked"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import { type FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

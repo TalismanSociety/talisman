@@ -11,7 +11,7 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
-import { getWsProvider } from "polkadot-api/ws"
+import { getWsProvider } from "@polkadot-api/ws-provider"
 import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"
 

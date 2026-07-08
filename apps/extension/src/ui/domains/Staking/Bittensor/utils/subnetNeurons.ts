@@ -1,5 +1,5 @@
 import { isAddressEqual } from "@talismn/crypto"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 
 export type NeuronRole = "owner" | "validator" | "miner"
 

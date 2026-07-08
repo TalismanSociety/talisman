@@ -1,7 +1,7 @@
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType } from "@talismn/chaindata-provider"
 import { parseMetadataRpc } from "@talismn/scale"
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"

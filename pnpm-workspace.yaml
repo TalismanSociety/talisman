@@ -117,6 +117,9 @@ overrides:
   # older version of React"). All of them work on 19.
   "react": "19.2.7"
   "react-dom": "19.2.7"
+  # dedupe @types/react too — icons/orb pin 18.3.12, extension 19.x; whichever hoists wins, and a
+  # split makes react-icons' ReactNode (no bigint) clash with react 19's, breaking extension tsc.
+  "@types/react": "19.2.17"
 peerDependencyRules:
   ignoreMissing:
     - "react-native"
