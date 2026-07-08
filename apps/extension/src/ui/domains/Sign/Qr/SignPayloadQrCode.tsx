@@ -74,7 +74,6 @@ const getQrSignPayload = (
   if (!metadataRpc) throw new Error("Missing metadata")
 
   const { callData, extra, additionalSigned } = getPjsTxHelper(metadataRpc)(payload)
-  // same bytes as pjs `ExtrinsicPayload.toU8a(false)`: only the method carries a compact length prefix
   const encodedPayload = mergeUint8([
     compact.enc(callData.length),
     callData,
