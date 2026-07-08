@@ -1,6 +1,7 @@
 import { normalizeAddress } from "@talismn/crypto"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { getPublicAccounts } from "../accounts/helpers"
 import { requestAuthoriseSite } from "../sitesAuthorised/requests"
 import type { AuthorizedSite } from "../sitesAuthorised/types"
 import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "./EthProviderRpcError"
@@ -12,6 +13,12 @@ vi.mock("../sitesAuthorised/requests", async (importOriginal) => ({
   requestAuthoriseSite: vi.fn().mockResolvedValue(undefined),
 }))
 
+// keep filterAccountsByAddresses real, control the account list feeding accountsList
+vi.mock("../accounts/helpers", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../accounts/helpers")>()),
+  getPublicAccounts: vi.fn(),
+}))
+
 const URL = "https://app.uniswap.org/swap"
 const ADDRESS = normalizeAddress("0x1111111111111111111111111111111111111111")
 const port = {} as never
@@ -21,14 +28,17 @@ type FakeSites = {
   updateSite: ReturnType<typeof vi.fn>
 }
 
-const makeHandler = (site?: Partial<AuthorizedSite> | null) => {
+const makeHandler = (
+  site?: Partial<AuthorizedSite> | null,
+  { developerMode = false }: { developerMode?: boolean } = {}
+) => {
   const sites: FakeSites = {
     getSiteFromUrl: vi.fn().mockResolvedValue(site ?? null),
     updateSite: vi.fn().mockResolvedValue(undefined),
   }
   const stores = {
     sites,
-    settings: { get: vi.fn().mockResolvedValue(false) },
+    settings: { get: vi.fn().mockResolvedValue(developerMode) },
     app: { ensureOnboarded: vi.fn().mockResolvedValue(undefined) },
   }
   // biome-ignore lint/suspicious/noExplicitAny: injecting fake stores to unit-test private handler methods
@@ -47,6 +57,7 @@ const site = (props: Partial<AuthorizedSite> = {}): Partial<AuthorizedSite> => (
 beforeEach(() => {
   vi.mocked(requestAuthoriseSite).mockClear()
   vi.mocked(requestAuthoriseSite).mockResolvedValue(undefined)
+  vi.mocked(getPublicAccounts).mockReset()
 })
 
 describe("authoriseEth (reconnect / Gap 6)", () => {
@@ -189,5 +200,43 @@ describe("revokePermissions", () => {
     const { handler } = makeHandler(site())
     await expect(revoke(handler, [])).rejects.toBeInstanceOf(EthProviderRpcError)
     await expect(revoke(handler, [{}])).rejects.toBeInstanceOf(EthProviderRpcError)
+  })
+})
+
+describe("accountsList (order, casing, filtering)", () => {
+  const ADDR_A = "0x1111111111111111111111111111111111111111"
+  const ADDR_B = "0x2222222222222222222222222222222222222222"
+
+  it("returns eth accounts lowercased, in stored ethAddresses order, non-eth filtered out", async () => {
+    // getPublicAccounts yields a different order + a non-eth account
+    vi.mocked(getPublicAccounts).mockReturnValue([
+      { type: "ethereum", address: ADDR_A },
+      { type: "ethereum", address: ADDR_B },
+      { type: "sr25519", address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" },
+      // biome-ignore lint/suspicious/noExplicitAny: partial injected-account stubs are enough for accountsList
+    ] as any)
+
+    // stored order is B then A → output must follow it, not the getPublicAccounts order
+    const { handler } = makeHandler(site({ ethAddresses: [ADDR_B, ADDR_A] }))
+    await expect(handler.accountsList(URL)).resolves.toEqual([
+      ADDR_B.toLowerCase(),
+      ADDR_A.toLowerCase(),
+    ])
+  })
+
+  it("forwards the developerMode setting to getPublicAccounts", async () => {
+    vi.mocked(getPublicAccounts).mockReturnValue([])
+    const { handler } = makeHandler(site(), { developerMode: true })
+    await handler.accountsList(URL)
+    expect(getPublicAccounts).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({ developerMode: true })
+    )
+  })
+
+  it("returns [] for an unknown site", async () => {
+    const { handler } = makeHandler(null)
+    await expect(handler.accountsList(URL)).resolves.toEqual([])
   })
 })
