@@ -12,10 +12,10 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     account: null,
 
     on: (event, listener, context) => {
-      eventEmitter.on(event, listener.bind(context))
+      eventEmitter.on(event, listener, context)
     },
-    off: (event, listener, context) => {
-      eventEmitter.off(event, listener.bind(context))
+    off: (event, listener) => {
+      eventEmitter.off(event, listener)
     },
 
     connect: async (options: { onlyIfTrusted?: boolean } = {}) => {
