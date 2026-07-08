@@ -12,6 +12,10 @@ import { type Keypair, sr25519Encrypt } from "../../util/sr25519encrypt"
 import { withSecretKey } from "../keyring/withSecretKey"
 import type { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
 
+/**
+ * @deprecated sr25519 message encrypt/decrypt was an experiment for the now-defunct SUMI chain,
+ * is not part of the injected-web3 spec, and is scheduled for removal.
+ */
 export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: EncryptRequestIdOnly) {
     const queued = requestStore.getRequest(id)

@@ -27,6 +27,8 @@ interface sr25519EncryptedMessage {
 /**
  * @name sr25519Decrypt
  * @description Returns decrypted message of `encryptedMessage`, using the supplied pair
+ * @deprecated Experiment for the now-defunct SUMI chain, not part of the injected-web3 spec.
+ * Scheduled for removal — do not use in new code.
  */
 export function sr25519Decrypt(
   encryptedMessage: HexString | Uint8Array | string,

@@ -21,6 +21,8 @@ export const nonceSize = 24
 /**
  * @name sr25519Encrypt
  * @description Returns encrypted message of `message`, using the supplied pair
+ * @deprecated Experiment for the now-defunct SUMI chain, not part of the injected-web3 spec.
+ * Scheduled for removal — do not use in new code.
  */
 export function sr25519Encrypt(
   message: HexString | Uint8Array | string,

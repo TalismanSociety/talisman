@@ -75,6 +75,12 @@ class Metadata implements InjectedMetadata {
 // upstream Signer shares one id sequence across signPayload/signRaw - keep it module-level
 let nextSignerId = 0
 
+// Shown in the dapp's console when the deprecated message encrypt/decrypt endpoints are hit.
+const ENCRYPT_DEPRECATION_WARNING =
+  "[Talisman] Message encrypt/decrypt is deprecated and will be removed in a future release. " +
+  "sr25519 message encryption was an experiment for the defunct SUMI chain, is not part of the " +
+  "injected-web3 spec, and should not be relied upon."
+
 export class TalismanSigner {
   readonly #sendRequest: SendRequest
 
@@ -96,11 +102,25 @@ export class TalismanSigner {
     return { ...result, id }
   }
 
+  /**
+   * @deprecated Talisman's sr25519 message encryption was an experiment for the now-defunct SUMI
+   * chain. It is not part of the injected-web3 spec and will be removed in a future release — do
+   * not build on it.
+   */
   public encryptMessage = async (payload: EncryptPayload): Promise<EncryptResult> => {
+    // biome-ignore lint/suspicious/noConsole: dapp-facing deprecation notice, no logger in page context
+    console.warn(ENCRYPT_DEPRECATION_WARNING)
     return await this.#sendRequest("pub(encrypt.encrypt)", payload)
   }
 
+  /**
+   * @deprecated Talisman's sr25519 message encryption was an experiment for the now-defunct SUMI
+   * chain. It is not part of the injected-web3 spec and will be removed in a future release — do
+   * not build on it.
+   */
   public decryptMessage = async (payload: DecryptPayload): Promise<DecryptResult> => {
+    // biome-ignore lint/suspicious/noConsole: dapp-facing deprecation notice, no logger in page context
+    console.warn(ENCRYPT_DEPRECATION_WARNING)
     return await this.#sendRequest("pub(encrypt.decrypt)", payload)
   }
 }

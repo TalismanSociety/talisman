@@ -102,6 +102,10 @@ export type ResponseEncryptDecrypt = {
 export type AnyEncryptRequestIdOnly = EncryptRequestIdOnly | DecryptRequestIdOnly
 export type RequestEncryptCancel = AnyEncryptRequestIdOnly
 
+/**
+ * @deprecated sr25519 message encrypt/decrypt was an experiment for the now-defunct SUMI chain,
+ * is not part of the injected-web3 spec, and is scheduled for removal.
+ */
 export interface EncryptMessages {
   // Encrypt message signatures
   "pub(encrypt.encrypt)": [EncryptPayload, EncryptResult]

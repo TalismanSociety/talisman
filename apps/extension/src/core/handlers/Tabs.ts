@@ -170,6 +170,10 @@ export default class Tabs extends TabsHandler {
     return signSubstrate(url, { payload: request }, account, port)
   }
 
+  /**
+   * @deprecated sr25519 message encryption — SUMI-chain experiment, not part of the injected-web3
+   * spec, scheduled for removal.
+   */
   private async messageEncrypt(
     url: string,
     request: EncryptPayload,
@@ -181,6 +185,10 @@ export default class Tabs extends TabsHandler {
     return requestEncrypt(url, request, account, port)
   }
 
+  /**
+   * @deprecated sr25519 message decryption — SUMI-chain experiment, not part of the injected-web3
+   * spec, scheduled for removal.
+   */
   private async messageDecrypt(
     url: string,
     request: DecryptPayload,
