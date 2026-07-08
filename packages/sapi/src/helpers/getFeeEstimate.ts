@@ -5,7 +5,7 @@ import type { SignerPayloadJSON } from "../pjsInterop"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { getAddressBytes, isEthereumAddress } from "./papi"
-import type { Chain, ChainInfo } from "./types"
+import type { Chain } from "./types"
 
 /** strips the leading compact length prefix from an encoded extrinsic */
 const stripLengthPrefix = (tx: Uint8Array): Uint8Array => {
@@ -14,11 +14,7 @@ const stripLengthPrefix = (tx: Uint8Array): Uint8Array => {
   return tx.subarray(prefixLen)
 }
 
-export const getFeeEstimate = async (
-  chain: Chain,
-  payload: SignerPayloadJSON,
-  _chainInfo: ChainInfo
-) => {
+export const getFeeEstimate = async (chain: Chain, payload: SignerPayloadJSON) => {
   // build a fake-signed extrinsic - fees depend on the encoded length, not the signature content
   const { callData, extra } = getPjsTxHelper(chain.hexMetadata)(payload)
   const fakeSignature = isEthereumAddress(payload.address)

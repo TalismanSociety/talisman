@@ -86,7 +86,7 @@ export const getScaleApi = (
       config: PayloadSignerConfig
     ) => getSignerPayloadJSON(chain, pallet, method, args, config, chainInfo),
 
-    getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload, chainInfo),
+    getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload),
 
     getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[]) =>
       getRuntimeCallResult<T>(chain, apiName, method, args),
