@@ -1,8 +1,7 @@
 import { log } from "@common/log"
+import { isSiweDomainMismatch } from "@core/domains/ethereum/siwe"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { hexToString } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
-import { ParsedMessage } from "@spruceid/siwe-parser"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -109,16 +108,10 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   )
 
   // EIP-4361 : the sign-in domain must match the domain of the requesting site
-  const siweDomainMismatch = useMemo(() => {
-    if (request?.method !== "personal_sign") return false
-    try {
-      const siwe = new ParsedMessage(hexToString(request.request))
-      return siwe.domain !== new URL(request.url).hostname
-    } catch {
-      // not a SIWE message
-      return false
-    }
-  }, [request])
+  const siweDomainMismatch = useMemo(
+    () => isSiweDomainMismatch(request?.method, request?.request, request?.url),
+    [request]
+  )
 
   // user may explicitly acknowledge the mismatch to sign anyway
   const [isSiweMismatchAcknowledged, setIsSiweMismatchAcknowledged] = useState(false)
