@@ -20,7 +20,7 @@ import { activeTokensStore } from "../balances/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
-import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
+import { ETH_ERROR_EIP1193_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
 import { getNextNonce, releaseReservedNonce } from "./nonceManager"
@@ -307,7 +307,7 @@ export class EthHandler extends ExtensionHandler {
 
     const { reject } = queued
 
-    reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
+    reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1193_USER_REJECTED))
 
     talismanAnalytics.captureDelayed("sign reject", {
       method: queued.method,
@@ -325,7 +325,7 @@ export class EthHandler extends ExtensionHandler {
 
     const { reject } = queued
 
-    reject(new EthProviderRpcError("Rejected", ETH_ERROR_EIP1993_USER_REJECTED))
+    reject(new EthProviderRpcError("Rejected", ETH_ERROR_EIP1193_USER_REJECTED))
 
     return true
   }
@@ -368,7 +368,7 @@ export class EthHandler extends ExtensionHandler {
 
     const { reject } = queued
 
-    reject(new EthProviderRpcError("Rejected", ETH_ERROR_EIP1993_USER_REJECTED))
+    reject(new EthProviderRpcError("Rejected", ETH_ERROR_EIP1193_USER_REJECTED))
 
     return true
   }

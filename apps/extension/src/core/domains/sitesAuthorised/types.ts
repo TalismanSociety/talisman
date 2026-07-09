@@ -70,7 +70,7 @@ export declare type AuthUrls = AuthorizedSites
 
 export type EthWalletPermissions = Record<
   Web3WalletPermissionTarget,
-  Pick<Web3WalletPermission, "date">
+  Pick<Web3WalletPermission, "date" | "id">
 >
 
 export type AuthorizedSite = {

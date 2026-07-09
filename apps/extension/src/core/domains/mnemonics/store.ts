@@ -39,7 +39,7 @@ export type MnemonicsStoreData = Record<string, MnemonicData>
 /**
  * @deprecated
  */
-export enum MnemonicErrors {
+enum MnemonicErrors {
   IncorrectPassword = "Incorrect password",
   InvalidMnemonic = "Invalid mnemonic",
   UnableToDecrypt = "Unable to decrypt mnemonic",
@@ -65,7 +65,7 @@ export const encryptMnemonic = async (mnemonic: string, password: string) => {
 /**
  * @deprecated
  */
-export const decryptMnemonic = async (
+const decryptMnemonic = async (
   cipher: string,
   password: string
 ): Promise<Result<string, MnemonicErrors.IncorrectPassword>> => {

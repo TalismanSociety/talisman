@@ -2,7 +2,6 @@ import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { gt } from "semver"
 
 import type { GeneralReport } from "../../libs/GeneralReport"
-import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
 import { TalismanNotOnboardedError } from "./utils"
 
@@ -127,6 +126,4 @@ if (DEBUG) {
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {
     appStore.set(settings)
   }
-
-  hostObj.migratePasswordV2ToV1 = migratePasswordV2ToV1
 }
