@@ -20,6 +20,7 @@ import {
   isTruthy,
   keepAlive,
   mapWithYield,
+  reportJsActivity,
   switchMapChunked,
   type TimeSlicer,
 } from "@talismn/util"
@@ -50,7 +51,10 @@ import { BALANCE_MODULES, type ChainConnectors, findDTaoConvictionLock } from ".
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
-import { stabilizeModuleResults } from "./modules/shared/stabilizeBalances"
+import {
+  classifySmallAmountDrift,
+  stabilizeModuleResults,
+} from "./modules/shared/stabilizeBalances"
 import {
   type Address,
   deriveMiniMetadataId,
@@ -66,6 +70,13 @@ import {
 import type { TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
+
+/**
+ * Cross-module drift tolerance (see classifySmallAmountDrift): amounts moving by no more
+ * than this classify as drift and re-emit at most once per stabilizer refresh interval.
+ * Kept tight — a real incoming transfer above 0.1% of the position emits immediately.
+ */
+const GENERIC_DRIFT_TOLERANCE_BPS = 10n
 
 export type BalancesResult = {
   status: BalancesStatus
@@ -350,10 +361,21 @@ export class BalancesProvider {
           ),
           // keep unchanged balances reference-stable across emissions (module decode
           // allocates all-new objects every block), so downstream fingerprint caches and
-          // per-item === compares hit instead of re-serializing the whole result set
-          stabilizeModuleResults(),
+          // per-item === compares hit instead of re-serializing the whole result set.
+          // dtao ships its own drift classifier (inside its subscribeBalances); everyone
+          // else gets the generic small-amount-drift classifier so continuously-moving
+          // positions (LP shares, yield-bearing tokens) can't re-emit on every poll
+          stabilizeModuleResults(
+            mod.type === "substrate-dtao"
+              ? undefined
+              : classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)
+          ),
           catchError(() => EMPTY), // don't emit, let provider mark balances stale
           tap((results) => {
+            // marks which module's poll/subscription just produced results, so JS-thread
+            // stall reports can attribute blocked windows to the right pipeline
+            reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
+
             if (results.dynamicTokens?.length) {
               // register missing tokens in the chaindata provider
               this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
@@ -447,9 +469,12 @@ export class BalancesProvider {
             connector: this.#chainConnectors.evm,
           })
           .pipe(
+            tap((results) =>
+              reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
+            ),
             // keep unchanged balances reference-stable across poll emissions (see the
             // polkadot pipeline for rationale)
-            stabilizeModuleResults(),
+            stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
             map(
               (results): BalancesResult => ({
@@ -522,9 +547,12 @@ export class BalancesProvider {
             connector: this.#chainConnectors.solana,
           })
           .pipe(
+            tap((results) =>
+              reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
+            ),
             // keep unchanged balances reference-stable across poll emissions (see the
             // polkadot pipeline for rationale)
-            stabilizeModuleResults(),
+            stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
             tap((results) => {
               if (results.dynamicTokens?.length) {

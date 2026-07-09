@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 
 import type { IBalance } from "../../types"
-import { createBalanceStabilizer } from "./stabilizeBalances"
+import { classifySmallAmountDrift, createBalanceStabilizer } from "./stabilizeBalances"
 
 const makeBalance = (overrides: Partial<IBalance> & { address: string; tokenId: string }) =>
   ({
@@ -142,5 +142,86 @@ describe("createBalanceStabilizer", () => {
     const [emittedA, emittedB] = stabilize([a2, b2])
     expect(emittedA).toBe(a1)
     expect(emittedB).toBe(b2)
+  })
+})
+
+describe("classifySmallAmountDrift", () => {
+  const classify = classifySmallAmountDrift(10n) // 0.1%
+
+  test("identical balances classify as equal", () => {
+    const a = makeBalance({ address: "a", tokenId: "t" })
+    const b = makeBalance({ address: "a", tokenId: "t" })
+    expect(classify(a, b)).toBe("equal")
+  })
+
+  test("sub-tolerance amount movement classifies as drift", () => {
+    const previous = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1000000000" }],
+    })
+    const next = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1000100000" }], // +0.01%
+    })
+    expect(classify(previous, next)).toBe("drift")
+  })
+
+  test("beyond-tolerance amount movement classifies as changed", () => {
+    const previous = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1000000000" }],
+    })
+    const next = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1100000000" }], // +10%
+    })
+    expect(classify(previous, next)).toBe("changed")
+  })
+
+  test("zero → non-zero classifies as changed", () => {
+    const previous = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "0" }],
+    })
+    const next = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1" }],
+    })
+    expect(classify(previous, next)).toBe("changed")
+  })
+
+  test("simple `value` balances drift within tolerance", () => {
+    const previous = {
+      address: "a",
+      tokenId: "t",
+      networkId: "1",
+      source: "evm-native",
+      status: "live",
+      value: "1000000000",
+    } as IBalance
+    const next = { ...previous, value: "1000050000" } as IBalance // +0.005%
+    expect(classify(previous, next)).toBe("drift")
+  })
+
+  test("status or structural changes classify as changed", () => {
+    const previous = makeBalance({ address: "a", tokenId: "t", status: "cache" })
+    const next = makeBalance({ address: "a", tokenId: "t", status: "live" })
+    expect(classify(previous, next)).toBe("changed")
+
+    const withExtra = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [
+        { type: "free", label: "free", amount: "100" },
+        { type: "locked", label: "frozen", amount: "1" },
+      ],
+    })
+    expect(classify(makeBalance({ address: "a", tokenId: "t" }), withExtra)).toBe("changed")
   })
 })

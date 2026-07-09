@@ -1,6 +1,6 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import type { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
-import { reportJsActivity } from "@talismn/util"
+import { reportJsActivity, yieldToEventLoop } from "@talismn/util"
 import PQueue from "p-queue"
 
 import log from "../log"
@@ -59,16 +59,26 @@ const fetchMiniMetadatas = async (
 
     const metadataRpc = await getMetadataRpc(chainConnector, chainId)
 
-    return Promise.all(
-      BALANCE_MODULES.filter((m) => m.platform === "polkadot").map((mod) =>
-        mod.getMiniMetadata({
+    // sequential with yields, NOT Promise.all: each module's build does a full
+    // parse+compact+encode of the metadata — synchronous and potentially seconds each on
+    // large chains. Promise.all starts them all in one tick, fusing the builds into a
+    // single 10s+ JS-thread block. The work is CPU-bound, so sequencing costs no
+    // wall-clock time; the yields let the app respond between builds.
+    const miniMetadatas: MiniMetadata[] = []
+    for (const mod of BALANCE_MODULES.filter((m) => m.platform === "polkadot")) {
+      const buildStart = performance.now()
+      miniMetadatas.push(
+        await mod.getMiniMetadata({
           networkId: chainId,
           metadataRpc,
           specVersion,
           config: network.balancesConfig?.[mod.type],
         })
       )
-    )
+      reportJsActivity(`getMiniMetadata ${mod.type} ${chainId}`, performance.now() - buildStart)
+      await yieldToEventLoop()
+    }
+    return miniMetadatas
   } finally {
     // end-of-work marker (no duration: the span includes async fetch time; the heavy
     // sync parse is reported separately by parseMetadataRpcCached) — lets host stall

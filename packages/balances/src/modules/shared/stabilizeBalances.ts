@@ -118,6 +118,69 @@ export const createBalanceStabilizer = (
 }
 
 /**
+ * Default cross-module drift classifier: balances whose SHAPE is identical (same
+ * address/token/status, same value set with same types/labels/metas) but whose amounts
+ * moved by no more than `toleranceBps` classify as "drift" — continuously-moving
+ * positions (LP shares, yield-bearing tokens, rebasing assets) otherwise re-emit on
+ * every poll and defeat all downstream dedup. Anything structural, or any amount move
+ * beyond the tolerance, classifies as "changed" and emits immediately.
+ */
+export const classifySmallAmountDrift =
+  (toleranceBps: bigint): IsEffectivelyEqualBalance =>
+  (previous: IBalance, next: IBalance): BalanceEquivalence => {
+    if (previous.address !== next.address) return "changed"
+    if (previous.tokenId !== next.tokenId) return "changed"
+    if (previous.networkId !== next.networkId) return "changed"
+    if (previous.source !== next.source) return "changed"
+    if (previous.status !== next.status) return "changed"
+
+    let drift = false
+
+    const classifyAmount = (a: string | undefined, b: string | undefined): boolean => {
+      if (a === b) return true
+      let prevAmount: bigint
+      let nextAmount: bigint
+      try {
+        prevAmount = BigInt(a ?? "0")
+        nextAmount = BigInt(b ?? "0")
+      } catch {
+        return false
+      }
+      // zero → non-zero (and vice versa) is always a real transition
+      if (prevAmount === 0n || nextAmount === 0n) return false
+      const diff = prevAmount > nextAmount ? prevAmount - nextAmount : nextAmount - prevAmount
+      const max = prevAmount > nextAmount ? prevAmount : nextAmount
+      if (diff * 10_000n > max * toleranceBps) return false
+      drift = true
+      return true
+    }
+
+    // simple balances carry a single `value` amount
+    const previousValue = "value" in previous ? previous.value : undefined
+    const nextValue = "value" in next ? next.value : undefined
+    if (!classifyAmount(previousValue, nextValue)) return "changed"
+
+    const previousValues = ("values" in previous ? previous.values : undefined) ?? []
+    const nextValues = ("values" in next ? next.values : undefined) ?? []
+    if (previousValues.length !== nextValues.length) return "changed"
+
+    for (let i = 0; i < previousValues.length; i++) {
+      const prevEntry = previousValues[i]
+      const nextEntry = nextValues[i]
+      if (prevEntry.type !== nextEntry.type) return "changed"
+      if (prevEntry.label !== nextEntry.label) return "changed"
+      if (!classifyAmount(prevEntry.amount, nextEntry.amount)) return "changed"
+      // metas and variant flags must match exactly (compared cheaply by JSON — only runs
+      // for balances that already failed the fingerprint fast path)
+      const { amount: _prevAmount, ...prevRest } = prevEntry
+      const { amount: _nextAmount, ...nextRest } = nextEntry
+      if (JSON.stringify(prevRest) !== JSON.stringify(nextRest)) return "changed"
+    }
+
+    return drift ? "drift" : "equal"
+  }
+
+/**
  * Operator form of createBalanceStabilizer for module result streams: stabilizes
  * `success` (errors/dynamicTokens pass through). One stabilizer per subscription.
  *
