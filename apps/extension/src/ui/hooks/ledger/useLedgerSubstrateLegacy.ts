@@ -2,9 +2,9 @@ import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isAddressEqual } from "@talismn/crypto"
+import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import { hexToNumber, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { api } from "@ui/api"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
@@ -131,7 +131,10 @@ const signJsonPayload = async (
   const metadataRpc = getMetadataRpcFromDef(metadataDef)
   if (!metadataRpc) throw getTalismanLedgerError(t("Missing metadata"))
 
-  const { callData, extra, additionalSigned } = getPjsTxHelper(metadataRpc)(payload)
+  const { callData, extra, additionalSigned } = getPjsTxHelper(
+    metadataRpc,
+    CUSTOM_SIGNED_EXTENSIONS
+  )(payload)
 
   const unsigned = mergeUint8([callData, extra, additionalSigned])
 

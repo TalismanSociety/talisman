@@ -2,10 +2,9 @@ import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { type DotNetwork, isNetworkDot, type Token } from "@talismn/chaindata-provider"
-import { getScaleApi } from "@talismn/sapi"
+import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper, getScaleApi } from "@talismn/sapi"
 import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
 import { assert, hexToNumber, u8aToHex } from "@talismn/util"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
@@ -120,8 +119,10 @@ const getSubstratePayloadMetadata = async ({
         } as SignerPayloadJSON)
       : payload
 
-    const { callData, extra, additionalSigned } =
-      getPjsTxHelper(metadataRpc)(payloadWithMetadataHash)
+    const { callData, extra, additionalSigned } = getPjsTxHelper(
+      metadataRpc,
+      CUSTOM_SIGNED_EXTENSIONS
+    )(payloadWithMetadataHash)
     const barePayload = mergeUint8([callData, extra, additionalSigned])
 
     const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)

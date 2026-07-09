@@ -2,9 +2,9 @@ import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isRawPayload } from "@core/util/isJsonPayload"
 import { compact } from "@polkadot-api/substrate-bindings"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { decodeSs58Address } from "@talismn/crypto"
+import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import { fromHex } from "@talismn/scale"
 import { u8aConcat, u8aToU8a, u8aWrapBytes } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -73,7 +73,10 @@ const getQrSignPayload = (
 
   if (!metadataRpc) throw new Error("Missing metadata")
 
-  const { callData, extra, additionalSigned } = getPjsTxHelper(metadataRpc)(payload)
+  const { callData, extra, additionalSigned } = getPjsTxHelper(
+    metadataRpc,
+    CUSTOM_SIGNED_EXTENSIONS
+  )(payload)
   const encodedPayload = mergeUint8([
     compact.enc(callData.length),
     callData,

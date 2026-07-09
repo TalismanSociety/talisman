@@ -45,6 +45,8 @@ const config: KnipConfig = {
     "**/bittensor/sn45/Sn45Api.ts": ["exports", "types"],
     "**/bittensor/tao-data/TaoDataApi.ts": ["exports", "types"],
     "**/app/remote-config/RemoteConfigApi.ts": ["exports", "types"],
+    // Vendored upstream source kept verbatim (incl. its unused public API) for direct diffing
+    "**/sapi/src/vendor/tx-utils/**": ["exports", "types"],
   },
 
   workspaces: {

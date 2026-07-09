@@ -28,7 +28,6 @@
     "@polkadot-api/signers-common": "0.2.3",
     "@polkadot-api/substrate-bindings": "0.20.3",
     "@polkadot-api/substrate-client": "0.7.0",
-    "@polkadot-api/tx-utils": "0.3.3",
     "@polkadot-api/utils": "0.4.0",
     "@polkadot-api/ws-provider": "0.9.0",
     "@react-rxjs/core": "^0.10.8",

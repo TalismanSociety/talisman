@@ -19,6 +19,10 @@ import { getSignedExtrinsicHash, signPjsPayload } from "./signPjsPayload"
  * (sr25519 is covered by a sign+verify round-trip in Extension.spec and @talismn/crypto).
  * Coverage includes CheckMetadataHash mode=1 (polkadot) and ChargeAssetTxPayment assetId
  * + unknown Option-typed extensions (assethub, StorageWeightReclaim/EthSetOrigin).
+ *
+ * CheckSpecVersion/CheckTxVersion encode the metadata's System.Version constant (matching
+ * upstream tx-utils), so each payload's declared specVersion/transactionVersion is set to that
+ * same constant — pjs and our output agree only when they match.
  */
 
 type ParityFixture = {

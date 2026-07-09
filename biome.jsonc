@@ -159,6 +159,20 @@
       "formatter": {
         "enabled": false
       }
+    },
+    {
+      // Vendored upstream source kept byte-close to the original (upstream prettier style)
+      // so it can be diffed directly against it — see the folder's README
+      "includes": ["packages/sapi/src/vendor/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
     }
   ]
 }

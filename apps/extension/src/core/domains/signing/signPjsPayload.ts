@@ -1,13 +1,17 @@
 import { createV4Tx } from "@polkadot-api/signers-common"
 import { Blake2256 } from "@polkadot-api/substrate-bindings"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import {
   blake2b256,
   type KeypairCurve,
   SIGNATURE_TYPE_PREFIX,
   signSubstrate,
 } from "@talismn/crypto"
-import { getAddressBytes, type SignerPayloadJSON } from "@talismn/sapi"
+import {
+  CUSTOM_SIGNED_EXTENSIONS,
+  getAddressBytes,
+  getPjsTxHelper,
+  type SignerPayloadJSON,
+} from "@talismn/sapi"
 import { parseMetadataRpc, type UnifiedMetadata } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
@@ -58,7 +62,10 @@ export const signPjsPayload = async (
     hasExtrinsicSignatureTypePrefix?: boolean
   }
 ): Promise<SignPjsPayloadResult> => {
-  const { callData, extra, additionalSigned } = getPjsTxHelper(metadataRpc)(payload)
+  const { callData, extra, additionalSigned } = getPjsTxHelper(
+    metadataRpc,
+    CUSTOM_SIGNED_EXTENSIONS
+  )(payload)
 
   // substrate signing rule: payloads over 256 bytes are blake2b-256 hashed before signing
   const fullPayload = u8aConcat(callData, extra, additionalSigned)
@@ -112,7 +119,7 @@ export const assemblePjsTransaction = (
   payload: SignerPayloadJSON,
   signature: Uint8Array | HexString
 ): { signedTransaction: HexString; signedTransactionBytes: Uint8Array; hash: HexString } => {
-  const { callData, extra } = getPjsTxHelper(metadataRpc)(payload)
+  const { callData, extra } = getPjsTxHelper(metadataRpc, CUSTOM_SIGNED_EXTENSIONS)(payload)
   const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
 
   const signatureBytes = typeof signature === "string" ? hexToU8a(signature) : signature

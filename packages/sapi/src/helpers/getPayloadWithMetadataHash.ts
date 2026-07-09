@@ -1,8 +1,9 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
+import { CUSTOM_SIGNED_EXTENSIONS } from "../customSignedExtensions"
 import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
+import { getPjsTxHelper } from "../vendor/tx-utils"
 import type { Chain, ChainInfo } from "./types"
 
 export const getPayloadWithMetadataHash = (
@@ -33,9 +34,10 @@ export const getPayloadWithMetadataHash = (
       withSignedTransaction: true,
     }
 
-    const { callData, extra, additionalSigned } = getPjsTxHelper(chain.hexMetadata)(
-      payloadWithMetadataHash
-    )
+    const { callData, extra, additionalSigned } = getPjsTxHelper(
+      chain.hexMetadata,
+      CUSTOM_SIGNED_EXTENSIONS
+    )(payloadWithMetadataHash)
     const barePayload = mergeUint8([callData, extra, additionalSigned])
 
     const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)

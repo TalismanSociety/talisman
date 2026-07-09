@@ -1,7 +1,8 @@
 import { createV4Tx } from "@polkadot-api/signers-common"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
+import { CUSTOM_SIGNED_EXTENSIONS } from "../customSignedExtensions"
 import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
+import { getPjsTxHelper } from "../vendor/tx-utils"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { getAddressBytes, isEthereumAddress } from "./papi"
@@ -16,7 +17,7 @@ const stripLengthPrefix = (tx: Uint8Array): Uint8Array => {
 
 export const getFeeEstimate = async (chain: Chain, payload: SignerPayloadJSON) => {
   // build a fake-signed extrinsic - fees depend on the encoded length, not the signature content
-  const { callData, extra } = getPjsTxHelper(chain.hexMetadata)(payload)
+  const { callData, extra } = getPjsTxHelper(chain.hexMetadata, CUSTOM_SIGNED_EXTENSIONS)(payload)
   const fakeSignature = isEthereumAddress(payload.address)
     ? new Uint8Array(65) // AccountId20 chains: raw 65-byte signature, no MultiSignature prefix
     : new Uint8Array(66).fill(2, 0, 1) // MultiSignature ecdsa variant, the longest (type byte + 65) so the length fee is never underestimated

@@ -129,5 +129,3 @@ peerDependencyRules:
     - "eciesjs"
     # @solana-program/token-2022 declares a stale ^5.0 peer, kit 6.10 ships sysvars 6.10
     - "@solana/sysvars"
-patchedDependencies:
-  '@polkadot-api/tx-utils@0.3.3': patches/@polkadot-api__tx-utils@0.3.3.patch

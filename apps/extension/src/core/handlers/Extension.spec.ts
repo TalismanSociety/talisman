@@ -1,9 +1,9 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { verify as sr25519Verify } from "@scure/sr25519"
 import type { Account } from "@talismn/keyring"
+import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import { waitFor } from "@testing-library/dom"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 import { getMessageSenderFn } from "../../../tests/core/util"
@@ -201,7 +201,10 @@ describe("Extension", () => {
       const { signature } = await requestPromise
 
       // rebuild the signing input and verify the (type-prefixed) sr25519 signature
-      const { callData, extra, additionalSigned } = getPjsTxHelper(metadataHex)(payload)
+      const { callData, extra, additionalSigned } = getPjsTxHelper(
+        metadataHex,
+        CUSTOM_SIGNED_EXTENSIONS
+      )(payload)
       const signingInput = mergeUint8([callData, extra, additionalSigned])
       const sigBytes = Buffer.from(signature.slice(2), "hex")
       expect(sigBytes[0]).toBe(1) // MultiSignature type prefix: sr25519

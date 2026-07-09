@@ -2,9 +2,9 @@ import type { AccountLedgerPolkadot, LedgerPolkadotCurve } from "@core/domains/k
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isAddressEqual } from "@talismn/crypto"
+import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import { hexToNumber, hexToU8a, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { api } from "@ui/api"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
@@ -193,7 +193,10 @@ const signPayload = async (
     const metadataRpc = getMetadataRpcFromDef(metadataDef)
     if (!metadataRpc) throw getTalismanLedgerError(t("Missing metadata"))
 
-    const { callData, extra, additionalSigned } = getPjsTxHelper(metadataRpc)(payload)
+    const { callData, extra, additionalSigned } = getPjsTxHelper(
+      metadataRpc,
+      CUSTOM_SIGNED_EXTENSIONS
+    )(payload)
 
     const blob = Buffer.from(mergeUint8([callData, extra, additionalSigned]))
     const metadata = Buffer.from(hexToU8a(txMetadata))
