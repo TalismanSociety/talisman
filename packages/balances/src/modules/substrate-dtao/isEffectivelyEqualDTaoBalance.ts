@@ -1,3 +1,4 @@
+import log from "../../log"
 import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
 import type { BalanceEquivalence } from "../shared/stabilizeBalances"
 import type { SubDTaoBalanceMeta } from "./types"
@@ -64,24 +65,27 @@ const isWithinDriftTolerance = (previous: string, next: string, toleranceBps: bi
 /** the only labels whose amounts accrue per block (see fetchBalances) */
 const PENDING_ROOT_CLAIM_LABEL = "Pending root claim"
 
+type Classified = { equivalence: BalanceEquivalence; reason?: string }
+
+const changed = (reason: string): Classified => ({ equivalence: "changed", reason })
+
+/** claims accrue and locks decay — their values may appear/disappear as amounts cross zero */
+const isDriftProneValue = (value: AmountWithLabel<string>): boolean =>
+  value.label === PENDING_ROOT_CLAIM_LABEL ||
+  !!(value.meta as SubDTaoBalanceMeta | undefined)?.convictionLock
+
 const classifyValue = (
   previous: AmountWithLabel<string>,
   next: AmountWithLabel<string>
-): BalanceEquivalence => {
-  if (previous.type !== next.type) return "changed"
-  if (previous.label !== next.label) return "changed"
-
+): Classified => {
   // variant flags must match exactly (LockedAmount / ExtraAmount)
   if (
     ("includeInTransferable" in previous ? previous.includeInTransferable : undefined) !==
-    ("includeInTransferable" in next ? next.includeInTransferable : undefined)
-  )
-    return "changed"
-  if (
+      ("includeInTransferable" in next ? next.includeInTransferable : undefined) ||
     ("includeInTotal" in previous ? previous.includeInTotal : undefined) !==
-    ("includeInTotal" in next ? next.includeInTotal : undefined)
+      ("includeInTotal" in next ? next.includeInTotal : undefined)
   )
-    return "changed"
+    return changed("variant flags")
 
   const previousMeta = previous.meta as SubDTaoBalanceMeta | undefined
   const nextMeta = next.meta as SubDTaoBalanceMeta | undefined
@@ -94,7 +98,7 @@ const classifyValue = (
     previousLock?.hotkey !== nextLock?.hotkey ||
     previousLock?.lockType !== nextLock?.lockType
   )
-    return "changed"
+    return changed("conviction lock meta")
 
   // amounts: every dtao amount kind moves continuously in its own way
   let drift = false
@@ -106,14 +110,14 @@ const classifyValue = (
         drift = true
     } else if (previousLock) {
       // decaying conviction locks shrink every block — always drift (a lock disappearing
-      // entirely removes its value and is caught by the value-count check instead)
+      // entirely removes its value and is treated as a drift-prone toggle instead)
       drift = true
     } else {
       // stake: auto-compounding dividend injections are drift, real stake/unstake moves
       // emit immediately
       if (isWithinDriftTolerance(previous.amount, next.amount, STAKE_DRIFT_TOLERANCE_BPS))
         drift = true
-      else return "changed"
+      else return changed(`amount ${previous.amount}→${next.amount}`)
     }
   }
 
@@ -127,29 +131,62 @@ const classifyValue = (
   )
     drift = true
 
-  return drift ? "drift" : "equal"
+  return { equivalence: drift ? "drift" : "equal" }
+}
+
+const keyOf = (value: AmountWithLabel<string>) => `${value.type}|${value.label}`
+
+const classifyBalance = (previous: IBalance, next: IBalance): Classified => {
+  if (previous.address !== next.address) return changed("address")
+  if (previous.tokenId !== next.tokenId) return changed("tokenId")
+  if (previous.networkId !== next.networkId) return changed("networkId")
+  if (previous.source !== next.source) return changed("source")
+  if (previous.status !== next.status) return changed(`status ${previous.status}→${next.status}`)
+
+  const previousValues = ("values" in previous ? previous.values : undefined) ?? []
+  const nextValues = ("values" in next ? next.values : undefined) ?? []
+
+  // match values by (type, label) key, NOT by index: value sets legitimately toggle —
+  // a pending claim or conviction lock value appears/disappears as its amount crosses
+  // zero. Toggles of drift-prone values classify as drift; anything else is structural.
+  const previousByKey = new Map(previousValues.map((value) => [keyOf(value), value]))
+  const nextByKey = new Map(nextValues.map((value) => [keyOf(value), value]))
+  if (previousByKey.size !== previousValues.length || nextByKey.size !== nextValues.length)
+    return changed("duplicate value keys")
+
+  let drift = false
+
+  for (const [key, previousValue] of previousByKey) {
+    const nextValue = nextByKey.get(key)
+    if (!nextValue) {
+      if (!isDriftProneValue(previousValue)) return changed(`value removed: ${key}`)
+      drift = true
+      continue
+    }
+    const result = classifyValue(previousValue, nextValue)
+    if (result.equivalence === "changed") return changed(`${key}: ${result.reason}`)
+    if (result.equivalence === "drift") drift = true
+  }
+
+  for (const [key, nextValue] of nextByKey) {
+    if (previousByKey.has(key)) continue
+    if (!isDriftProneValue(nextValue)) return changed(`value added: ${key}`)
+    drift = true
+  }
+
+  return { equivalence: drift ? "drift" : "equal" }
 }
 
 export const isEffectivelyEqualDTaoBalance = (
   previous: IBalance,
   next: IBalance
 ): BalanceEquivalence => {
-  if (previous.address !== next.address) return "changed"
-  if (previous.tokenId !== next.tokenId) return "changed"
-  if (previous.networkId !== next.networkId) return "changed"
-  if (previous.source !== next.source) return "changed"
-  if (previous.status !== next.status) return "changed"
+  const result = classifyBalance(previous, next)
 
-  const previousValues = ("values" in previous ? previous.values : undefined) ?? []
-  const nextValues = ("values" in next ? next.values : undefined) ?? []
-  if (previousValues.length !== nextValues.length) return "changed"
+  // "changed" forces an immediate full-pipeline emission — log WHY, so recurring
+  // emissions can be attributed to a specific field instead of guessed at
+  if (result.equivalence === "changed")
+    log.debug(`[dtao-classify] changed ${next.tokenId}: ${result.reason}`)
 
-  // values order is deterministic for a given position (see fetchBalances): index compare is safe
-  let drift = false
-  for (let i = 0; i < previousValues.length; i++) {
-    const equivalence = classifyValue(previousValues[i], nextValues[i])
-    if (equivalence === "changed") return "changed"
-    if (equivalence === "drift") drift = true
-  }
-  return drift ? "drift" : "equal"
+  return result.equivalence
 }

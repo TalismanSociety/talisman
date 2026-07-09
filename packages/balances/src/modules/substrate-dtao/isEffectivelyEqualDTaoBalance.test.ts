@@ -109,7 +109,7 @@ describe("isEffectivelyEqualDTaoBalance", () => {
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("changed")
   })
 
-  test("value count changes are never tolerated (e.g. new conviction lock)", () => {
+  test("a conviction lock value appearing classifies as drift (toggle across zero)", () => {
     const previous = makeDTaoBalance()
     const next = makeDTaoBalance({
       extraValues: [
@@ -124,7 +124,22 @@ describe("isEffectivelyEqualDTaoBalance", () => {
         } as AmountWithLabel<string>,
       ],
     })
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).not.toBe("equal")
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
+  })
+
+  test("a non-drift value appearing is a structural change", () => {
+    const previous = makeDTaoBalance()
+    const next = makeDTaoBalance({
+      extraValues: [
+        {
+          type: "reserved",
+          label: "reserved",
+          amount: "77",
+          meta: { scaledAlphaPrice: "250000000" },
+        } as AmountWithLabel<string>,
+      ],
+    })
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("changed")
   })
 
   test("conviction lock hotkey change is never tolerated", () => {
