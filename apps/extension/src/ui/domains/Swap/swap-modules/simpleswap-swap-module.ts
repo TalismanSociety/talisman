@@ -4,7 +4,7 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { parseTokenId } from "@talismn/chaindata-provider"
+import { btcNativeTokenId, parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { accounts$ } from "@ui/state/accounts"
@@ -44,6 +44,16 @@ const getTalismanFee = (route: RouteProps) => getSimpleSwapTalismanFee(route)
 const getApiKey = (route: RouteProps) => getApiKeyFromUtils(route)
 
 const LOGO = simpleswapLogo
+
+// bitcoin is not yet in the server-side swap whitelist — detect native BTC directly
+const isNativeBtcCurrency = (currency: {
+  symbol: string
+  network: string
+  contract_address: string | null
+}) =>
+  currency.symbol?.toLowerCase() === "btc" &&
+  !currency.contract_address &&
+  ["btc", "bitcoin", "mainnet", ""].includes((currency.network ?? "").toLowerCase())
 
 type SimpleSwapCurrency = {
   name: string
@@ -262,6 +272,7 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
 
   const supportedTokens = allCurrencies.filter((currency) => {
     if (currency.isFiat) return false
+    if (isNativeBtcCurrency(currency)) return true
     const networkId = networks[currency.network]
     const isSpecialAsset = !!tokens[currency.symbol]
 
@@ -280,20 +291,23 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
 
         // Resolve the Talisman token ID
         const contractAddress = currency.contract_address || undefined
-        const id = networkId
-          ? getTokenIdForSwappableAsset(
-              knownEvmNetworks[networkId] ? "ethereum" : "solana",
-              networkId,
-              contractAddress
-            )
-          : specialTokenId
+        // bitcoin isn't in the server-side whitelist yet; map native BTC locally
+        const id = isNativeBtcCurrency(currency)
+          ? btcNativeTokenId("bitcoin")
+          : networkId
+            ? getTokenIdForSwappableAsset(
+                knownEvmNetworks[networkId] ? "ethereum" : "solana",
+                networkId,
+                contractAddress
+              )
+            : specialTokenId
         if (!id) return acc
 
         const token = knownTokens[id]
         if (!token) return acc
 
         const parsed = specialTokenId ? parseTokenId(specialTokenId) : undefined
-        const chainId = networkId ?? parsed?.networkId
+        const chainId = isNativeBtcCurrency(currency) ? "bitcoin" : (networkId ?? parsed?.networkId)
         if (!chainId) return acc
 
         const asset: SimpleswapInternalAsset = {
