@@ -7,6 +7,7 @@ const packagesDir = path.resolve(__dirname, "..")
 export default defineConfig({
   resolve: {
     alias: {
+      "@talismn/bitcoin": path.join(packagesDir, "bitcoin/src"),
       "@talismn/chain-connectors": path.join(packagesDir, "chain-connectors/src"),
       "@talismn/chaindata-provider": path.join(packagesDir, "chaindata-provider/src"),
       "@talismn/crypto": path.join(packagesDir, "crypto/src"),

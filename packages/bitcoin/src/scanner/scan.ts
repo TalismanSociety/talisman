@@ -112,6 +112,51 @@ export const getScanCursor = (scan: BitcoinAccountScan): ScanCursor =>
   )
 
 /**
+ * Cheap between-blocks activity probe: re-queries stats for all previously active
+ * addresses plus each chain's first unused address, and reports whether anything moved
+ * (incoming mempool tx, outgoing spend, or a fresh address turning used).
+ */
+export const hasBitcoinAccountActivity = async (
+  api: BtcApi,
+  scan: BitcoinAccountScan,
+  hrp: BitcoinHrp
+): Promise<boolean> => {
+  const checks: Array<() => Promise<boolean>> = []
+
+  for (const tree of scan.trees) {
+    for (const change of [0, 1] as const) {
+      const chain = tree.chains[change]
+
+      for (const active of chain.activeAddresses)
+        checks.push(async () => {
+          const stats = await api.getAddressStats(active.address)
+          const { confirmedSats, mempoolDeltaSats, txCount } = statsToBalances(stats)
+          return (
+            confirmedSats !== active.confirmedSats ||
+            mempoolDeltaSats !== active.mempoolDeltaSats ||
+            txCount !== active.txCount
+          )
+        })
+
+      checks.push(async () => {
+        const address = deriveBitcoinAddressFromXpub(
+          tree.spec.xpub,
+          tree.spec.addressType,
+          change,
+          chain.firstUnusedIndex,
+          hrp
+        )
+        const stats = await api.getAddressStats(address)
+        return statsToBalances(stats).txCount > 0
+      })
+    }
+  }
+
+  const results = await Promise.all(checks.map((check) => check()))
+  return results.some(Boolean)
+}
+
+/**
  * Fetches the spendable UTXO set for a scanned account.
  * Only called at send time — balance polling relies on address stats alone.
  */

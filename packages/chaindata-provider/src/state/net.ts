@@ -2,6 +2,7 @@ import type z from "zod/v4"
 
 import { githubChaindataDistUrl } from "../constants"
 import log from "../log"
+import { enrichWithBuiltinBitcoin } from "./builtinBitcoin"
 import { ChaindataFileSchema } from "./schema"
 
 const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
@@ -65,4 +66,7 @@ const fetchJsonFromGithubUrl = async <T>(
 
 // export because of generate-init-data script
 export const fetchChaindata = (signal?: AbortSignal) =>
-  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, { schema: ChaindataFileSchema, signal })
+  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, {
+    schema: ChaindataFileSchema,
+    signal,
+  }).then(enrichWithBuiltinBitcoin)
