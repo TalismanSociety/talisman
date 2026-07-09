@@ -1,6 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import {
   isAccountOfType,
+  isAccountPlatformBitcoin,
   isAccountPlatformEthereum,
   isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
@@ -43,9 +44,12 @@ export const useAccountExportPrivateKeyModal = () => {
     [innerOpen]
   )
 
+  // keypair accounts only: HD bitcoin accounts export their mnemonic, not per-child keys (WIF exports as... WIF)
   const canExportAccountFunc = (account?: Account | null) =>
     isAccountOfType(account, "keypair") &&
-    (isAccountPlatformEthereum(account) || isAccountPlatformSolana(account))
+    (isAccountPlatformEthereum(account) ||
+      isAccountPlatformSolana(account) ||
+      isAccountPlatformBitcoin(account))
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])

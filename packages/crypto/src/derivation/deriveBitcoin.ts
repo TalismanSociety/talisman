@@ -45,6 +45,19 @@ export const getBitcoinMasterFingerprint = (seed: Uint8Array): `0x${string}` => 
 const WIF_VERSION_MAINNET = 0x80
 const WIF_VERSION_TESTNET = 0xef
 
+/** Encodes a private key as compressed-pubkey WIF */
+export const encodeWif = (
+  secretKey: Uint8Array,
+  network: "mainnet" | "testnet" = "mainnet"
+): string => {
+  if (secretKey.length !== 32) throw new Error("Invalid secret key length")
+  const payload = new Uint8Array(34)
+  payload[0] = network === "mainnet" ? WIF_VERSION_MAINNET : WIF_VERSION_TESTNET
+  payload.set(secretKey, 1)
+  payload[33] = 0x01 // compressed pubkey flag
+  return bs58check.encode(payload)
+}
+
 /**
  * Parses a WIF-encoded private key. Only compressed-pubkey WIFs are accepted:
  * uncompressed keys map to legacy address types this wallet does not track.

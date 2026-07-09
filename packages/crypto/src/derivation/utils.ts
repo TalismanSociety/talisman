@@ -93,6 +93,9 @@ export const parseSecretKey = (secretKey: string, platform: AccountPlatform) => 
 
 // @dev: didn't find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
 export const isValidDerivationPath = async (derivationPath: string, curve: KeypairCurve) => {
+  // HD bitcoin accounts take a plain account index, not a derivation path
+  if (curve === "bitcoin-ecdsa") return /^\d+$/.test(derivationPath)
+
   try {
     deriveKeypair(await getDevSeed(curve), derivationPath, curve)
     return true

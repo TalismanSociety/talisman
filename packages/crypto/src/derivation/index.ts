@@ -1,5 +1,6 @@
 export {
   deriveBitcoin,
+  encodeWif,
   getBitcoinMasterFingerprint,
   getBitcoinOrdinalsBasePath,
   getBitcoinPaymentsBasePath,

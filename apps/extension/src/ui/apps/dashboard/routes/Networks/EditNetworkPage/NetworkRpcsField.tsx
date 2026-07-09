@@ -184,6 +184,16 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
                     return t("RPC doesn't match chain's genesis hash")
                   return undefined
                 }
+                case "bitcoin": {
+                  // esplora REST base: probe the tip height endpoint
+                  const req = await fetch(`${value.replace(/\/$/, "")}/blocks/tip/height`, {
+                    signal,
+                  })
+                  const text = await req.text()
+                  if (!req.ok || !/^\d+$/.test(text.trim()))
+                    return t("RPC is not a valid esplora API base url")
+                  return undefined
+                }
               }
             } catch (err) {
               return err instanceof Error ? err.message : String("Invalid RPC url")

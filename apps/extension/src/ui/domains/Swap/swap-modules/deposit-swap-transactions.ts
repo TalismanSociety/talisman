@@ -38,7 +38,7 @@ export type DepositInfo = {
 
 export type DepositSwapAsset = {
   chainId: number | string
-  platform: "ethereum" | "polkadot" | "solana"
+  platform: "ethereum" | "polkadot" | "solana" | "bitcoin"
   contractAddress?: string
   assetHubAssetId?: string
   decimals: number

@@ -216,7 +216,15 @@ class KeyringStore {
       // create accounts sequentially to prevent adding the same mnemonic multiple times
       const results: Account[] = []
       for (const option of options) {
-        results.push(await keyring.addAccountDerive(option, password))
+        // bitcoin accounts are HD (xpub identity, dual derivation trees): the derivationPath
+        // carries the account index only, expanded by the keyring
+        if (option.curve === "bitcoin-ecdsa") {
+          const accountIndex = Number.parseInt(option.derivationPath || "0", 10)
+          if (Number.isNaN(accountIndex) || accountIndex < 0)
+            throw new Error("Invalid bitcoin account index")
+          const { curve: _curve, derivationPath: _path, ...source } = option
+          results.push(await keyring.addAccountBitcoin({ ...source, accountIndex }, password))
+        } else results.push(await keyring.addAccountDerive(option, password))
       }
       return results
     })

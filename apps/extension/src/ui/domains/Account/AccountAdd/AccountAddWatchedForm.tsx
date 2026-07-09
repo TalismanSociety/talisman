@@ -1,6 +1,6 @@
 import { SUPPORTED_ACCOUNT_PLATFORMS } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { type AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
+import { type AccountPlatform, getAccountPlatformFromAddress, isBitcoinXpub } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -51,6 +51,14 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
               return ctx.createError({
                 path: "address",
                 message: t("Invalid address"),
+              })
+
+            // bitcoin accounts are watched by xpub: a single on-chain address cannot
+            // track an HD wallet's balance
+            if (platform === "bitcoin" && !isBitcoinXpub(address))
+              return ctx.createError({
+                path: "address",
+                message: t("Enter an account xpub, not an address"),
               })
           } catch {
             return ctx.createError({
@@ -113,12 +121,21 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
       try {
         const [addr] = await api.accountAddExternal([
-          {
-            type: "watch-only",
-            name,
-            address,
-            isPortfolio,
-          },
+          isBitcoinXpub(address)
+            ? {
+                type: "watch-only-bitcoin",
+                name,
+                address,
+                isPortfolio,
+                // tree type cannot be inferred from a plain xpub — default to payments/P2WPKH
+                addressType: "p2wpkh",
+              }
+            : {
+                type: "watch-only",
+                name,
+                address,
+                isPortfolio,
+              },
         ])
 
         onSuccess(addr)
@@ -177,6 +194,13 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 "Note that the address will be watch-only and will not be able to sign transactions."
               )}
             </p>
+            {platform === "bitcoin" && (
+              <p className="text-body-disabled text-xs">
+                {t(
+                  "Bitcoin accounts are watched via their account xpub. Native SegWit (bc1q) addresses are tracked; Taproot balances are not."
+                )}
+              </p>
+            )}
           </div>
           <div>
             <FormFieldContainer error={errors.name?.message}>

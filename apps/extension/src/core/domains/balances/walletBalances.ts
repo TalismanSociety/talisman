@@ -1,8 +1,8 @@
 import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
-import type { Address } from "@talismn/balances"
+import type { Address, BtcAccountsMeta } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { isAccountNotContact } from "@talismn/keyring"
+import { type Account, isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { fromPairs, isEqual } from "lodash-es"
 import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap } from "rxjs"
@@ -16,6 +16,26 @@ import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 import { balancesStore$ } from "./store.balances"
 
+// dual-tree metadata for HD bitcoin accounts: the ordinals xpub is not derivable from
+// the account identity (payments xpub), so it must be supplied to the balance module
+const getBtcAccountsMeta = (accounts: Account[]): BtcAccountsMeta => {
+  const meta: BtcAccountsMeta = {}
+  for (const account of accounts) {
+    if (account.type === "hd-bitcoin" || account.type === "ledger-bitcoin")
+      meta[account.address] = {
+        trees: [
+          { tree: "payments", xpub: account.keys.payments.xpub, addressType: "p2wpkh" },
+          { tree: "ordinals", xpub: account.keys.ordinals.xpub, addressType: "p2tr" },
+        ],
+      }
+    else if (account.type === "watch-only-bitcoin")
+      meta[account.address] = {
+        trees: [{ tree: "payments", xpub: account.address, addressType: account.addressType }],
+      }
+  }
+  return meta
+}
+
 const walletAddressesByTokenId$ = combineLatest({
   networks: chaindataProvider.networks$,
   tokens: chaindataProvider.tokens$,
@@ -27,7 +47,7 @@ const walletAddressesByTokenId$ = combineLatest({
     const arNetworks = networks.filter((n) => isNetworkActive(n, activeNetworks))
     const arTokens = tokens.filter((t) => isTokenActive(t, activeTokens))
 
-    return fromPairs(
+    const addressesByTokenId = fromPairs(
       arNetworks.flatMap((network) => {
         const networkTokens = arTokens.filter((t) => t.networkId === network.id)
         const networkAccounts = accounts
@@ -38,8 +58,13 @@ const walletAddressesByTokenId$ = combineLatest({
         )
       })
     )
+
+    return { addressesByTokenId, btcAccounts: getBtcAccountsMeta(accounts) }
   }),
-  distinctUntilChanged<Record<TokenId, Address[]>>(isEqual)
+  distinctUntilChanged<{
+    addressesByTokenId: Record<TokenId, Address[]>
+    btcAccounts: BtcAccountsMeta
+  }>(isEqual)
 )
 
 export const walletBalances$ = settingsStore.observable.pipe(
@@ -58,7 +83,9 @@ export const walletBalances$ = settingsStore.observable.pipe(
     }
 
     return walletAddressesByTokenId$.pipe(
-      switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
+      switchMap(({ addressesByTokenId, btcAccounts }) =>
+        balancesProvider.getBalances$(addressesByTokenId, { btcAccounts })
+      ),
       firstThenDebounce(500),
       tap({
         subscribe: () => log.debug("[balances] starting main subscription"),

@@ -3,11 +3,17 @@ import {
   addressFromMnemonic,
   base58,
   base64,
+  encodeWif,
   encryptPjsKeystore,
+  entropyToSeed,
   getAccountPlatformFromAddress,
+  getBitcoinPaymentsBasePath,
+  getBitcoinXpub,
   getPublicKeySolana,
   hex,
   type KeypairCurve,
+  mnemonicToEntropy,
+  normalizeAddress,
 } from "@talismn/crypto"
 import type { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
 import { assert, stringToU8a } from "@talismn/util"
@@ -210,6 +216,8 @@ export default class AccountsHandler extends ExtensionHandler {
           return hex.encode(secretKey)
         case "solana":
           return base58.encode(new Uint8Array([...secretKey, ...getPublicKeySolana(secretKey)]))
+        case "bitcoin-ecdsa":
+          return encodeWif(secretKey)
         default:
           throw new Error("Unsupported curve")
       }
@@ -275,6 +283,19 @@ export default class AccountsHandler extends ExtensionHandler {
       }
       case "mnemonic": {
         const { mnemonic, derivationPath, curve } = lookup
+
+        // HD bitcoin: derivationPath is the account index, address is the identity xpub
+        if (curve === "bitcoin-ecdsa") {
+          const accountIndex = Number.parseInt(derivationPath || "0", 10)
+          const entropy = mnemonicToEntropy(mnemonic)
+          const seed = await entropyToSeed(entropy, curve)
+          try {
+            return normalizeAddress(getBitcoinXpub(seed, getBitcoinPaymentsBasePath(accountIndex)))
+          } finally {
+            seed.fill(0)
+          }
+        }
+
         return addressFromMnemonic(mnemonic, derivationPath, curve)
       }
     }

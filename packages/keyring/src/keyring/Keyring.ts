@@ -507,6 +507,15 @@ export class Keyring {
 
     const entropy = await decryptData(mnemonic.entropy, password)
     const seed = await entropyToSeed(entropy, curve)
+
+    // HD bitcoin accounts: derivationPath is the account index, address is the identity xpub
+    if (curve === "bitcoin-ecdsa") {
+      const accountIndex = Number.parseInt(derivationPath || "0", 10)
+      if (Number.isNaN(accountIndex) || accountIndex < 0)
+        throw new Error("Invalid bitcoin account index")
+      return normalizeAddress(getBitcoinXpub(seed, getBitcoinPaymentsBasePath(accountIndex)))
+    }
+
     const pair = deriveKeypair(seed, derivationPath, curve)
 
     return pair.address
