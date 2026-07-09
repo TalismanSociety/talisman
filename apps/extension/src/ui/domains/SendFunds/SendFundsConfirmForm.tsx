@@ -249,6 +249,7 @@ const SendButton = () => {
               address: from,
               payload: transaction.psbtBase64,
               maxFeeSats: transaction.estimatedFee,
+              tree: transaction.usesOrdinalsUtxos ? "ordinals" : "payments",
               txInfo,
             }
           : null

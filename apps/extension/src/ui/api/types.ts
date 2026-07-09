@@ -25,10 +25,12 @@ import type {
   RequestBalance,
 } from "@core/domains/balances/types"
 import type {
+  RequestBitcoinAccountPreview,
   RequestBitcoinFeeEstimates,
   RequestBitcoinGetUnusedAddress,
   RequestBitcoinGetUtxos,
   RequestBitcoinSubmit,
+  ResponseBitcoinAccountPreview,
   ResponseBitcoinGetUnusedAddress,
   ResponseBitcoinGetUtxos,
   ResponseBitcoinSubmit,
@@ -310,6 +312,7 @@ export default interface MessageTypes {
   btcGetUtxos: (req: RequestBitcoinGetUtxos) => Promise<ResponseBitcoinGetUtxos>
   btcGetFeeEstimates: (req: RequestBitcoinFeeEstimates) => Promise<BtcFeeEstimates>
   btcSubmit: (req: RequestBitcoinSubmit) => Promise<ResponseBitcoinSubmit>
+  btcAccountPreview: (req: RequestBitcoinAccountPreview) => Promise<ResponseBitcoinAccountPreview>
 
   // substrate chain metadata
   subChainMetadata: (

@@ -34,6 +34,8 @@ export type TxSubmitButtonTransactionBtc = {
   payload: string
   /** fee ceiling enforced by the background before broadcast */
   maxFeeSats: string
+  /** which tree the PSBT spends — drives the ledger wallet policy */
+  tree: "payments" | "ordinals"
   txInfo?: WalletTransactionInfo
 }
 

@@ -9,7 +9,7 @@ import {
   scanBitcoinAccount,
   signPsbtWithKeys,
 } from "@talismn/bitcoin"
-import { base64, deriveBitcoinAddressFromXpub } from "@talismn/crypto"
+import { base64, deriveBitcoinAddressFromXpub, normalizeXpub } from "@talismn/crypto"
 import { isAccountPlatformBitcoin } from "@talismn/keyring"
 
 import { ExtensionHandler } from "../../libs/Handler"
@@ -116,6 +116,28 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
         const { networkId } = request as RequestTypes["pri(bitcoin.feeEstimates.get)"]
         const api = await chainConnectorBtc.getApi(networkId)
         return await api.getFeeEstimates()
+      }
+
+      case "pri(bitcoin.account.preview)": {
+        const { networkId, paymentsXpub } = request as RequestTypes["pri(bitcoin.account.preview)"]
+        const api = await chainConnectorBtc.getApi(networkId)
+        const hrp = getBtcNetworkHrp(networkId)
+
+        const scan = await scanBitcoinAccount(api, {
+          trees: [{ tree: "payments", xpub: normalizeXpub(paymentsXpub), addressType: "p2wpkh" }],
+          hrp,
+        })
+        const tree = scan.trees[0]
+        const txCount = tree.chains.reduce(
+          (acc, chain) => acc + chain.activeAddresses.reduce((n, a) => n + a.txCount, 0),
+          0
+        )
+
+        return {
+          firstAddress: deriveBitcoinAddressFromXpub(paymentsXpub, "p2wpkh", 0, 0, hrp),
+          totalSats: (tree.confirmedSats + tree.mempoolDeltaSats).toString(),
+          txCount,
+        }
       }
 
       case "pri(bitcoin.tx.submit)": {

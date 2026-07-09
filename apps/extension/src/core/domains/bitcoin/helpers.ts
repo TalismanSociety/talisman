@@ -8,6 +8,12 @@ import type { SerializedBitcoinUtxo } from "./types"
 export const getBtcNetworkHrp = (networkId: BtcNetworkId): BitcoinHrp =>
   networkId === "bitcoin" ? "bc" : "tb"
 
+// dual-tree account-level derivation paths for a bitcoin account index (BIP84 + BIP86)
+export const getBtcLedgerPaths = (accountIndex: number) => ({
+  payments: `m/84'/0'/${accountIndex}'`,
+  ordinals: `m/86'/0'/${accountIndex}'`,
+})
+
 /** derivation trees of a bitcoin account, or null if the account is not tree-based (WIF) */
 export const getBitcoinAccountTrees = (account: Account): BitcoinTreeSpec[] | null => {
   switch (account.type) {

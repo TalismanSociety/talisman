@@ -63,6 +63,20 @@ export type ResponseBitcoinSubmit = {
   txid: string
 }
 
+export type RequestBitcoinAccountPreview = {
+  networkId: BtcNetworkId
+  /** account-level payments xpub to preview */
+  paymentsXpub: string
+}
+
+export type ResponseBitcoinAccountPreview = {
+  /** first payments (bc1q) receive address */
+  firstAddress: string
+  /** total confirmed + mempool sats across the payments tree (capped scan) */
+  totalSats: string
+  txCount: number
+}
+
 export type BitcoinMessages = {
   "pri(bitcoin.address.getUnused)": [
     RequestBitcoinGetUnusedAddress,
@@ -71,4 +85,5 @@ export type BitcoinMessages = {
   "pri(bitcoin.utxos.get)": [RequestBitcoinGetUtxos, ResponseBitcoinGetUtxos]
   "pri(bitcoin.feeEstimates.get)": [RequestBitcoinFeeEstimates, BtcFeeEstimates]
   "pri(bitcoin.tx.submit)": [RequestBitcoinSubmit, ResponseBitcoinSubmit]
+  "pri(bitcoin.account.preview)": [RequestBitcoinAccountPreview, ResponseBitcoinAccountPreview]
 }
