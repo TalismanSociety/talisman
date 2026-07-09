@@ -710,6 +710,31 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/bitcoin:
+    dependencies:
+      '@scure/base':
+        specifier: 2.2.0
+        version: 2.2.0
+      '@scure/bip32':
+        specifier: 2.2.0
+        version: 2.2.0
+      '@scure/btc-signer':
+        specifier: 2.2.0
+        version: 2.2.0
+      '@talismn/crypto':
+        specifier: workspace:*
+        version: link:../crypto
+    devDependencies:
+      '@talismn/tsconfig':
+        specifier: workspace:*
+        version: link:../../config/tsconfig
+      '@types/node':
+        specifier: ^24.5.1
+        version: 24.12.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   packages/chain-connectors:
     dependencies:
       '@polkadot-api/substrate-client':
@@ -2765,6 +2790,9 @@ packages:
 
   '@scure/bip39@2.2.0':
     resolution: {integrity: sha512-T/Bj/YvYMNkIPq6EENO6/rcs2e7qTNuyoUXf0KBFDmp0ZDu0H2X4Lq6yC3i0c8PcWkov5EbW+yQZZbdMmk154A==}
+
+  '@scure/btc-signer@2.2.0':
+    resolution: {integrity: sha512-ZXZ08sZqSZKEcOuEQnxTF66ouHtl6+UA6U/QfQM06K9WiOlEkXF4LviZCaSgkdiFh9cyMt9+xdup7JtEv3p0fw==}
 
   '@scure/sr25519@2.2.0':
     resolution: {integrity: sha512-UTOZb6Hzw44REQdl2SWNBhBFIoqOIhMLNIz3zYyVQLbqdshhuyuuxYoibKHlDg9oqdwdCHQe5LkTsevugPpUbw==}
@@ -6082,6 +6110,10 @@ packages:
 
   micro-ftch@0.3.1:
     resolution: {integrity: sha512-/0LLxhzP0tfiR5hcQebtudP56gUurs2CLkGarnCiB/OqEyUFQ6U3paQi/tgLv0hBJYt2rnr9MNpxz4fiiugstg==}
+
+  micro-packed@0.9.0:
+    resolution: {integrity: sha512-gFdaWTxEXOwtSOcpxulO4AuXVtp3HWIRmB8eq8+3m1Zku0ubgva0UGpi03YhcvsTJasHngG9gTIUK5kHNKdesg==}
+    engines: {node: '>= 20.19.0'}
 
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
@@ -10722,6 +10754,13 @@ snapshots:
       '@noble/hashes': 2.2.0
       '@scure/base': 2.2.0
 
+  '@scure/btc-signer@2.2.0':
+    dependencies:
+      '@noble/curves': 2.2.0
+      '@noble/hashes': 2.2.0
+      '@scure/base': 2.2.0
+      micro-packed: 0.9.0
+
   '@scure/sr25519@2.2.0':
     dependencies:
       '@noble/curves': 2.2.0
@@ -14197,6 +14236,10 @@ snapshots:
   merge2@1.4.1: {}
 
   micro-ftch@0.3.1: {}
+
+  micro-packed@0.9.0:
+    dependencies:
+      '@scure/base': 2.2.0
 
   micromatch@4.0.8:
     dependencies:
