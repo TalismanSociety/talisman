@@ -6,6 +6,10 @@ import {
   deriveKeypair,
   entropyToMnemonic,
   entropyToSeed,
+  getBitcoinMasterFingerprint,
+  getBitcoinOrdinalsBasePath,
+  getBitcoinPaymentsBasePath,
+  getBitcoinXpub,
   getPublicKeyFromSecret,
   isAddressEqual,
   isValidMnemonic,
@@ -15,13 +19,15 @@ import {
   utf8,
 } from "@talismn/crypto"
 
-import type { Account, Mnemonic } from "../types"
+import type { Account, BitcoinKeyPath, Mnemonic } from "../types"
 import { isAccountExternal } from "../types"
 import type {
+  AddAccountBitcoinOptions,
   AddAccountDeriveOptions,
   AddAccountExternalOptions,
   AddAccountKeypairOptions,
   AddMnemonicOptions,
+  MnemonicSource,
   UpdateAccountOptions,
   UpdateMnemonicOptions,
 } from "../types/keyring"
@@ -232,7 +238,10 @@ export class Keyring {
       if (typeof name !== "string" || !name) throw new Error("name is required")
       account.name = name
     }
-    if (account.type === "watch-only" && isPortfolio !== undefined) {
+    if (
+      (account.type === "watch-only" || account.type === "watch-only-bitcoin") &&
+      isPortfolio !== undefined
+    ) {
       if (typeof isPortfolio !== "boolean") throw new Error("isPortfolio must be a boolean")
       account.isPortfolio = isPortfolio
     }
@@ -280,7 +289,7 @@ export class Keyring {
    * @param password
    * @returns the id of the mnemonic
    */
-  private async ensureMnemonic(options: AddAccountDeriveOptions, password: string) {
+  private async ensureMnemonic(options: MnemonicSource, password: string) {
     await this.checkPassword(password)
 
     switch (options.type) {
@@ -372,6 +381,105 @@ export class Keyring {
     this.#data.accounts.push(account)
 
     return accountFromStorage(account)
+  }
+
+  /** next unused BIP44 account index among this mnemonic's bitcoin accounts */
+  private getNextBitcoinAccountIndex(mnemonicId: string): number {
+    const indexes = this.#data.accounts
+      .filter((a) => a.type === "hd-bitcoin" && a.mnemonicId === mnemonicId)
+      .map((a) => (a.type === "hd-bitcoin" ? a.accountIndex : 0))
+    return indexes.length ? Math.max(...indexes) + 1 : 0
+  }
+
+  public async addAccountBitcoin(
+    options: AddAccountBitcoinOptions,
+    password: string
+  ): Promise<Account> {
+    await this.checkPassword(password)
+
+    const { name } = options
+    if (typeof name !== "string" || !name) throw new Error("name is required")
+
+    const mnemonicId = await this.ensureMnemonic(options, password)
+
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === mnemonicId)
+    if (!mnemonic) throw new Error("Mnemonic not found")
+
+    const accountIndex = options.accountIndex ?? this.getNextBitcoinAccountIndex(mnemonicId)
+
+    const entropy = await decryptData(mnemonic.entropy, password)
+    const seed = await entropyToSeed(entropy, "bitcoin-ecdsa")
+
+    try {
+      const paymentsPath = getBitcoinPaymentsBasePath(accountIndex)
+      const ordinalsPath = getBitcoinOrdinalsBasePath(accountIndex)
+      const paymentsXpub = getBitcoinXpub(seed, paymentsPath)
+
+      const address = normalizeAddress(paymentsXpub)
+      if (this.getAccount(address)) throw new Error("Account already exists")
+
+      const account: AccountStorage = {
+        type: "hd-bitcoin",
+        name,
+        address,
+        mnemonicId,
+        accountIndex,
+        masterFingerprint: getBitcoinMasterFingerprint(seed),
+        keys: {
+          payments: { derivationPath: paymentsPath, xpub: paymentsXpub },
+          ordinals: { derivationPath: ordinalsPath, xpub: getBitcoinXpub(seed, ordinalsPath) },
+        },
+        createdAt: Date.now(),
+      }
+
+      this.#data.accounts.push(account)
+
+      return accountFromStorage(account)
+    } finally {
+      seed.fill(0)
+      entropy.fill(0)
+    }
+  }
+
+  /**
+   * Derives child private keys for an HD bitcoin account at sign time and hands them
+   * to the callback. All key material is zeroed before returning.
+   */
+  public async withBitcoinAccountKeys<T>(
+    address: string,
+    paths: BitcoinKeyPath[],
+    password: string,
+    cb: (
+      keys: Array<{ path: BitcoinKeyPath; secretKey: Uint8Array; publicKey: Uint8Array }>
+    ) => T | Promise<T>
+  ): Promise<T> {
+    const account = this.getAccount(address)
+    if (!account) throw new Error("Account not found")
+    if (account.type !== "hd-bitcoin") throw new Error("Not an HD bitcoin account")
+
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === account.mnemonicId)
+    if (!mnemonic) throw new Error("Mnemonic not found")
+
+    const entropy = await decryptData(mnemonic.entropy, password)
+    const seed = await entropyToSeed(entropy, "bitcoin-ecdsa")
+
+    const keys: Array<{ path: BitcoinKeyPath; secretKey: Uint8Array; publicKey: Uint8Array }> = []
+    try {
+      for (const path of paths) {
+        const basePath = account.keys[path.tree].derivationPath
+        const pair = deriveKeypair(
+          seed,
+          `${basePath}/${path.change}/${path.index}`,
+          "bitcoin-ecdsa"
+        )
+        keys.push({ path, secretKey: pair.secretKey, publicKey: pair.publicKey })
+      }
+      return await cb(keys)
+    } finally {
+      for (const key of keys) key.secretKey.fill(0)
+      seed.fill(0)
+      entropy.fill(0)
+    }
   }
 
   public getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
