@@ -43,4 +43,4 @@ All pull requests will be reviewed by one or more maintainers. We aim to respond
 
 ### License
 
-By contributing to the Talisman Wallet, you agree to license your contributions under the [GPL License](https://github.com/TalismanSociety/talisman/tree/dev/apps/extension/LICENSE).
+By contributing to the Talisman Wallet, you agree to license your contributions under the [Talisman License](https://github.com/TalismanSociety/talisman/tree/dev/apps/extension/LICENSE). As set out in that license, you grant the Paraverse Foundation a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, copy, modify, distribute, sublicense, and otherwise exploit your contributions under any license terms it may choose.

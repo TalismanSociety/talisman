@@ -2,7 +2,7 @@
   "name": "extension",
   "version": "3.7.1",
   "private": true,
-  "license": "GPL-3.0-or-later",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@blockaid/client": "1.4.0",
     "@dnd-kit/core": "6.3.1",
