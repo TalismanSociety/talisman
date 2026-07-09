@@ -1,6 +1,8 @@
 import type { DotNetwork, Network, NetworkPlatform } from "./networks"
 import {
+  BtcNativeTokenSchema,
   EvmNativeTokenSchema,
+  parseBtcNativeTokenId,
   parseEvmErc20TokenId,
   parseEvmNativeTokenId,
   parseEvmUniswapV2TokenId,
@@ -49,6 +51,10 @@ export const isNetworkSol = (network: Network | null | undefined) => {
   return isNetworkOfPlatform(network, "solana")
 }
 
+export const isNetworkBtc = (network: Network | null | undefined) => {
+  return isNetworkOfPlatform(network, "bitcoin")
+}
+
 export const getNetworkGenesisHash = <
   Net extends Network,
   Res = Net extends DotNetwork ? DotNetwork["genesisHash"] : undefined,
@@ -63,6 +69,7 @@ export type TokenOfPlatform<P extends NetworkPlatform> = Extract<Token, { platfo
 export type DotToken = TokenOfPlatform<"polkadot">
 export type EthToken = TokenOfPlatform<"ethereum">
 export type SolToken = TokenOfPlatform<"solana">
+export type BtcToken = TokenOfPlatform<"bitcoin">
 
 export const isTokenOfPlatform = <P extends NetworkPlatform>(
   token: Token | null | undefined,
@@ -81,6 +88,10 @@ export const isTokenDot = (token: Token | null | undefined) => {
 
 export const isTokenSol = (token: Token | null | undefined) => {
   return isTokenOfPlatform(token, "solana")
+}
+
+export const isTokenBtc = (token: Token | null | undefined) => {
+  return isTokenOfPlatform(token, "bitcoin")
 }
 
 export const isTokenNeedExistentialDeposit = (token: Token) => "existentialDeposit" in token
@@ -180,6 +191,8 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
       return parseSolSplTokenId(tokenId) as TokenIdSpecs<T>
     case "sol-token2022":
       return parseSolToken2022TokenId(tokenId) as TokenIdSpecs<T>
+    case "btc-native":
+      return parseBtcNativeTokenId(tokenId) as TokenIdSpecs<T>
   }
 }
 
@@ -190,6 +203,7 @@ const PLATFORM_NATIVE_TOKENS = {
   polkadot: SubNativeTokenSchema.shape.type.value,
   ethereum: EvmNativeTokenSchema.shape.type.value,
   solana: SolNativeTokenSchema.shape.type.value,
+  bitcoin: BtcNativeTokenSchema.shape.type.value,
 }
 
 export type NativeTokenType<P extends NetworkPlatform = NetworkPlatform> =
