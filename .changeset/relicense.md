@@ -2,7 +2,6 @@
 "@talismn/balances": major
 "@talismn/chain-connectors": major
 "@talismn/chaindata-provider": major
-"@talismn/connection-meta": major
 "@talismn/crypto": major
 "@talismn/icons": major
 "@talismn/keyring": major
