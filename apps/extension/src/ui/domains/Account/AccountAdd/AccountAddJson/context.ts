@@ -1,20 +1,29 @@
 import { log } from "@common/log"
 import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Account } from "@core/domains/keyring/exports"
-import { createPair } from "@polkadot/keyring"
-import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
-import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
-import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
-import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
-import type { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
+import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "@core/types/pjsInterop"
 import { type Address, Balances } from "@talismn/balances"
-import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
+import {
+  encodeAnyAddress,
+  isAddressEqual,
+  type KeypairCurve,
+  normalizeAddress,
+} from "@talismn/crypto"
+import { assert } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
+import {
+  createPairFromJson,
+  type JsonImportPair,
+  toUnencryptedPjsJson,
+  unlockMultiAccountsJson,
+  unlockPair,
+} from "./pjsImportPairs"
 
 export type JsonImportAccount = {
   id: string
@@ -30,33 +39,23 @@ export type JsonImportAccount = {
   isLoading: boolean
 }
 
-type SingleAccountJsonFile = { type: "single"; content: KeyringPair$Json }
+type SingleAccountJsonFile = { type: "single"; content: PjsKeyringPairJson }
 type MultiAccountJsonFile = {
   type: "multi"
-  content: KeyringPairs$Json
+  content: PjsKeyringPairsJson
 }
 type UnknownAccountJsonFile = SingleAccountJsonFile | MultiAccountJsonFile
 
-const isMultiAccountJson = (json: EncryptedJson): json is KeyringPairs$Json => {
-  return (json as KeyringPairs$Json).accounts !== undefined
+type UnknownJson = { address?: string; accounts?: unknown[] }
+
+const isMultiAccountJson = (json: UnknownJson): json is UnknownJson & PjsKeyringPairsJson => {
+  return json.accounts !== undefined
 }
-const isSingleAccountJson = (json: EncryptedJson): json is KeyringPair$Json => {
-  return (json as KeyringPair$Json).address !== undefined
+const isSingleAccountJson = (json: UnknownJson): json is UnknownJson & PjsKeyringPairJson => {
+  return json.address !== undefined
 }
 
-const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Json) => {
-  const cryptoType = Array.isArray(encoding.content) ? encoding.content[1] : "ed25519"
-  const encType = Array.isArray(encoding.type) ? encoding.type : [encoding.type]
-  return createPair(
-    { toSS58: encodeAddress, type: cryptoType as KeypairType },
-    { publicKey: decodeAddress(address, true) },
-    meta,
-    isHex(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
-    encType
-  )
-}
-
-const useAccountsBalances = (pairs: KeyringPair[] = []) => {
+const useAccountsBalances = (pairs: JsonImportPair[] = []) => {
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const accounts = useMemo<Account[]>(
     () =>
@@ -64,8 +63,8 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
         (p): Account => ({
           type: "keypair",
           address: p.address,
-          curve: p.type,
-          name: p.meta.name ?? "",
+          curve: p.type as KeypairCurve,
+          name: (p.meta.name as string) ?? "",
           createdAt: Date.now(),
         })
       ),
@@ -100,7 +99,7 @@ const useJsonAccountImportProvider = () => {
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
 
   // warning : array of mutable objects
-  const [pairs, setPairs] = useState<KeyringPair[]>()
+  const [pairs, setPairs] = useState<JsonImportPair[]>()
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
@@ -112,7 +111,7 @@ const useJsonAccountImportProvider = () => {
     if (!json) return undefined
 
     try {
-      const content = JSON.parse(json) as EncryptedJson
+      const content = JSON.parse(json) as UnknownJson
 
       if (isSingleAccountJson(content)) return { type: "single", content }
       if (isMultiAccountJson(content)) return { type: "multi", content }
@@ -135,7 +134,7 @@ const useJsonAccountImportProvider = () => {
           try {
             if (file.type === "single") {
               const pair = createPairFromJson(file.content)
-              pair.decodePkcs8(password)
+              unlockPair(pair, password)
 
               setPairs([pair])
 
@@ -146,8 +145,7 @@ const useJsonAccountImportProvider = () => {
               )
                 setSelectedAccounts([pair.address])
             } else if (file.type === "multi") {
-              const data = jsonDecrypt(file.content, password)
-              const accounts = JSON.parse(u8aToString(data)) as KeyringPair$Json[]
+              const accounts = unlockMultiAccountsJson(file.content, password)
               const pairs = accounts.map(createPairFromJson)
 
               setPairs(pairs)
@@ -169,31 +167,39 @@ const useJsonAccountImportProvider = () => {
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {
     if (!pairs) return undefined
 
-    const result = pairs.map((pair) => {
-      const chain = pair.meta.genesisHash
-        ? chains.find((c) => c.genesisHash === pair.meta.genesisHash)
-        : undefined
+    const result = pairs.flatMap((pair): JsonImportAccount[] => {
+      try {
+        const chain = pair.meta.genesisHash
+          ? chains.find((c) => c.genesisHash === pair.meta.genesisHash)
+          : undefined
 
-      const address = normalizeAddress(pair.address)
-      const isExisting = existingAccounts.some((a) => isAddressEqual(a.address, address))
+        const address = normalizeAddress(pair.address)
+        const isExisting = existingAccounts.some((a) => isAddressEqual(a.address, address))
 
-      const { balances, isLoading } = accountBalances[address] ?? {
-        balances: new Balances([]),
-        isLoading: true,
-      }
+        const { balances, isLoading } = accountBalances[address] ?? {
+          balances: new Balances([]),
+          isLoading: true,
+        }
 
-      return {
-        id: pair.address,
-        address: encodeAnyAddress(pair.address, { ss58Format: chain?.prefix }),
-        name: pair.meta.name as string,
-        genesisHash: pair.meta.genesisHash as `0x${string}` | undefined,
-        origin: pair.meta.origin as LegacyAccountOrigin,
-        isExisting,
-        selected: !isExisting && selectedAccounts.includes(pair.address),
-        isLocked: pair.isLocked,
-        isPrivateKeyAvailable: !pair.meta.isExternal && !pair.meta.isHardware,
-        balances,
-        isLoading,
+        return [
+          {
+            id: pair.address,
+            address: encodeAnyAddress(pair.address, { ss58Format: chain?.prefix }),
+            name: pair.meta.name as string,
+            genesisHash: pair.meta.genesisHash as `0x${string}` | undefined,
+            origin: pair.meta.origin as LegacyAccountOrigin,
+            isExisting,
+            selected: !isExisting && selectedAccounts.includes(pair.address),
+            isLocked: pair.isLocked,
+            isPrivateKeyAvailable: !pair.meta.isExternal && !pair.meta.isHardware,
+            balances,
+            isLoading,
+          },
+        ]
+      } catch (err) {
+        // exclude accounts whose address can't be displayed instead of failing the whole list
+        log.error("Failed to display account from json file", { err, address: pair.address })
+        return []
       }
     })
 
@@ -247,7 +253,7 @@ const useJsonAccountImportProvider = () => {
             let success = false
 
             try {
-              pair.unlock(password)
+              unlockPair(pair, password)
               success = true
             } catch {
               // ignore
@@ -281,7 +287,7 @@ const useJsonAccountImportProvider = () => {
     assert(pairs, "Pairs unavailable")
 
     const pairsToImport = selectedAccounts.map(
-      (address) => pairs.find((p) => p.address === address) as KeyringPair
+      (address) => pairs.find((p) => p.address === address) as JsonImportPair
     )
     for (const pair of pairsToImport) {
       assert(pair, "Pair not found")
@@ -289,7 +295,7 @@ const useJsonAccountImportProvider = () => {
       assert(!pair.isLocked, "Account is locked")
     }
 
-    const unlockedPairs = pairsToImport.map((p) => p.toJson())
+    const unlockedPairs = pairsToImport.map(toUnencryptedPjsJson)
 
     return api.accountCreateFromJson(unlockedPairs)
   }, [pairs, selectedAccounts])

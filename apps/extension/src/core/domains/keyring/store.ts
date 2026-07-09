@@ -1,5 +1,4 @@
 import { log } from "@common/log"
-import { assert } from "@polkadot/util"
 import type { KeypairCurve } from "@talismn/crypto"
 import {
   type Account,
@@ -13,6 +12,7 @@ import {
   type UpdateAccountOptions,
   type UpdateMnemonicOptions,
 } from "@talismn/keyring"
+import { assert } from "@talismn/util"
 import { isEqual } from "lodash-es"
 import {
   distinctUntilChanged,

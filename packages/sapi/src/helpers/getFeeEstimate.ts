@@ -1,37 +1,36 @@
-import type {
-  IRuntimeVersionBase,
-  SignatureOptions,
-  SignerPayloadJSON,
-} from "@polkadot/types/types"
-
+import { createV4Tx } from "@polkadot-api/signers-common"
+import { CUSTOM_SIGNED_EXTENSIONS } from "../customSignedExtensions"
 import log from "../log"
+import type { SignerPayloadJSON } from "../pjsInterop"
+import { getPjsTxHelper } from "../vendor/tx-utils"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
-import { getTypeRegistry } from "./getTypeRegistry"
-import type { Chain, ChainInfo } from "./types"
+import { getAddressBytes, isEthereumAddress } from "./papi"
+import type { Chain } from "./types"
 
-export const getFeeEstimate = async (
-  chain: Chain,
-  payload: SignerPayloadJSON,
-  chainInfo: ChainInfo
-) => {
-  // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
-  const registry = getTypeRegistry(chain, payload)
-  const extrinsic = registry.createType("Extrinsic", payload)
+/** strips the leading compact length prefix from an encoded extrinsic */
+const stripLengthPrefix = (tx: Uint8Array): Uint8Array => {
+  const mode = tx[0] & 3
+  const prefixLen = mode === 0 ? 1 : mode === 1 ? 2 : mode === 2 ? 4 : 1 + (tx[0] >> 2) + 4
+  return tx.subarray(prefixLen)
+}
 
-  extrinsic.signFake(payload.address, {
-    appId: 0,
-    nonce: payload.nonce,
-    blockHash: payload.blockHash,
-    genesisHash: payload.genesisHash,
-    runtimeVersion: {
-      specVersion: chainInfo.specVersion,
-      transactionVersion: chainInfo.transactionVersion,
-      // other fields aren't necessary for signing
-    } as IRuntimeVersionBase,
-  } as SignatureOptions)
+export const getFeeEstimate = async (chain: Chain, payload: SignerPayloadJSON) => {
+  // build a fake-signed extrinsic - fees depend on the encoded length, not the signature content
+  const { callData, extra } = getPjsTxHelper(chain.hexMetadata, CUSTOM_SIGNED_EXTENSIONS)(payload)
+  const fakeSignature = isEthereumAddress(payload.address)
+    ? new Uint8Array(65) // AccountId20 chains: raw 65-byte signature, no MultiSignature prefix
+    : new Uint8Array(66).fill(2, 0, 1) // MultiSignature ecdsa variant, the longest (type byte + 65) so the length fee is never underestimated
 
-  const bytes = extrinsic.toU8a(true)
+  const signedTx = createV4Tx(
+    chain.metadata,
+    getAddressBytes(payload.address),
+    fakeSignature,
+    [extra],
+    callData
+  )
+
+  const bytes = stripLengthPrefix(signedTx)
 
   try {
     const result = await getRuntimeCallResult<{ partial_fee: bigint }>(
@@ -51,7 +50,7 @@ export const getFeeEstimate = async (
 
   // fallback to pjs encoded state call, in case the above fails (extracting runtime calls codecs might require metadata V15)
   // Note: PAPI will consider TransactionPaymentApi as first class api so it should work even without V15, but this is not the case yet.
-  const { partialFee } = await getExtrinsicDispatchInfo(chain, extrinsic)
+  const { partialFee } = await getExtrinsicDispatchInfo(chain, signedTx)
 
   return BigInt(partialFee)
 }

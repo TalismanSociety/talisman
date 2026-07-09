@@ -1,10 +1,9 @@
 import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
-import { assert, isHex } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata, MAX_SUPPORTED_METADATA_VERSION } from "@talismn/sapi"
 import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale"
+import { assert, type HexString, isHexString } from "@talismn/util"
 import { withRetry } from "viem"
 
 import { sentry } from "../config/sentry"
@@ -138,8 +137,8 @@ const getMetadataDefInner = async (
 }
 
 export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: string) => {
-  const chainId = !isHex(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
-  const hash = isHex(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
+  const chainId = !isHexString(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
+  const hash = isHexString(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
 
   const chain = chainId
     ? await chaindataProvider.getNetworkById(chainId, "polkadot")

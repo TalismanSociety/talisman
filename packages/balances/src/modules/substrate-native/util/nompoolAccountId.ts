@@ -1,5 +1,5 @@
+import { AccountId, type SS58String } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
-import { AccountId, type SS58String } from "polkadot-api"
 import { u32 } from "scale-ts"
 
 /**

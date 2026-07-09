@@ -3,7 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname } from "node:path"
 import { BALANCE_MODULES, type MiniMetadata } from "@talismn/balances"
-import { ChainConnectorDotStub, type IChainConnectorDot } from "@talismn/chain-connectors"
+import { ChainConnectorDotStub } from "@talismn/chain-connectors"
 import type { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import {
@@ -44,7 +44,7 @@ const DEFAULT_OPTIONS: TestOptions = {
 export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOptions) => {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
-  const connector: IChainConnectorDot = new ChainConnectorDotStub(network as unknown as DotNetwork)
+  const connector = new ChainConnectorDotStub(network as unknown as DotNetwork)
 
   const stopAll = log.timer(`testDotNetwork ${network.id}`)
 
@@ -236,7 +236,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
     return { tokens, miniMetadatas, dryRun }
   } catch (err) {
     log.error(err)
-    connector.asProvider(network.id).disconnect()
+    connector.destroy()
     return { tokens: null, miniMetadatas: [], dryRun: null }
   }
 }

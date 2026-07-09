@@ -1,12 +1,10 @@
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { describe, expect, vi } from "vitest"
-
 import { signSubstrate } from "../../../domains/signing/requests"
 import { requestStore } from "../../../libs/requests/store"
 import { windowManager } from "../../../libs/WindowManager"
+import type { SignerPayloadJSON } from "../../../types/pjsInterop"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
@@ -64,12 +62,7 @@ describe("Signing requests store", () => {
     }
 
     expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
-    signSubstrate(
-      "http://test.com",
-      new RequestExtrinsicSign(payload),
-      account,
-      {} as chrome.runtime.Port
-    )
+    signSubstrate("http://test.com", { payload }, account, {} as chrome.runtime.Port)
 
     await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
     expect(windowManager.popupOpen).toBeCalled()

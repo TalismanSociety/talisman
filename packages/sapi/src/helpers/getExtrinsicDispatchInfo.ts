@@ -1,52 +1,36 @@
-import type { GenericExtrinsic } from "@polkadot/types"
-import type { RuntimeDispatchInfo } from "@polkadot/types/interfaces"
-import type { Codec } from "@polkadot/types-codec/types"
-import { mergeUint8 } from "@polkadot-api/utils"
-import type { JsonRpcRequestSend } from "../types"
+import { u32, u128 } from "@polkadot-api/substrate-bindings"
+import { fromHex, mergeUint8, toHex } from "@polkadot-api/utils"
+
 import type { Chain } from "./types"
 
 type ExtrinsicDispatchInfo = {
   partialFee: string
 }
 
-// used for chains that dont have metadata v15 yet
+// fee estimation fallback for chains that dont have metadata v15 yet
+// (the runtime-call codecs needed to decode this with the dynamic builder require metadata v15)
 export const getExtrinsicDispatchInfo = async (
   chain: Chain,
-  signedExtrinsic: GenericExtrinsic
+  // the full encoded extrinsic, INCLUDING its compact length prefix: the runtime
+  // decodes the uxt argument as an opaque length-prefixed UncheckedExtrinsic
+  signedTxBytes: Uint8Array
 ): Promise<ExtrinsicDispatchInfo> => {
-  if (!signedExtrinsic.isSigned)
-    throw new Error("Extrinsic must be signed (or fakeSigned) in order to query fee")
+  const args = mergeUint8([signedTxBytes, u32.enc(signedTxBytes.length)])
 
-  const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
-
-  const dispatchInfo = (await stateCall(
-    chain.connector.send,
-    "TransactionPaymentApi_query_info",
-    "RuntimeDispatchInfo",
-    [signedExtrinsic, len],
-    undefined,
+  const result = (await chain.connector.send(
+    "state_call",
+    ["TransactionPaymentApi_query_info", toHex(args)],
     true
-  )) as RuntimeDispatchInfo
+  )) as `0x${string}`
+
+  // RuntimeDispatchInfo = { weight: WeightV1 (u64) | WeightV2 (2x compact), class: enum (1 byte), partial_fee: u128 }
+  // the weight shape varies across old runtimes, but partial_fee is always the trailing fixed-size field
+  const bytes = fromHex(result)
+  if (bytes.length < 16) throw new Error("Invalid RuntimeDispatchInfo")
+  // .slice (copy), NOT .subarray: papi codecs read offset views from the buffer start
+  const partialFee = u128.dec(bytes.slice(bytes.length - 16))
 
   return {
-    partialFee: dispatchInfo.partialFee.toString(),
+    partialFee: partialFee.toString(),
   }
-}
-
-const stateCall = async <K extends string = string>(
-  request: JsonRpcRequestSend,
-  method: string,
-  resultType: K,
-  args: Codec[],
-  blockHash?: `0x${string}`,
-  isCacheable?: boolean
-) => {
-  // on a state call there are always arguments
-  const registry = args[0].registry
-
-  const bytes = registry.createType("Raw", mergeUint8(args.map((arg) => arg.toU8a())))
-
-  const result = await request("state_call", [method, bytes.toHex(), blockHash], isCacheable)
-
-  return registry.createType(resultType, result)
 }

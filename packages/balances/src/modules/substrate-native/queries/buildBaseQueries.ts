@@ -1,6 +1,6 @@
+import { Binary, type Enum } from "@polkadot-api/substrate-bindings"
 import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
-import { Binary, type Enum } from "polkadot-api"
 
 import type { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
 import { type BalanceDef, buildNetworkStorageCoders } from "../../shared"

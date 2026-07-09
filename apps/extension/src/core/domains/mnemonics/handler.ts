@@ -1,5 +1,5 @@
-import { assert } from "@polkadot/util"
 import { isValidMnemonic } from "@talismn/crypto"
+import { assert } from "@talismn/util"
 
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"

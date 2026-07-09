@@ -1,6 +1,6 @@
 import { log } from "@common/log"
-import type { HexString } from "@polkadot/util/types"
 import { parseMetadataRpc } from "@talismn/scale"
+import type { HexString } from "@talismn/util"
 
 export type ProxyTypeInfo = {
   /** The variant name exactly as defined in the runtime (e.g. "Any", "Governance"). */

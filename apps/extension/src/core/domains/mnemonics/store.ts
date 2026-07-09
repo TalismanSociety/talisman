@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
-import { assert } from "@polkadot/util"
-import { mnemonicValidate } from "@polkadot/util-crypto"
+import { isValidMnemonic } from "@talismn/crypto"
+import { assert } from "@talismn/util"
 import md5 from "blueimp-md5"
 import { Err, Ok, type Result } from "ts-results"
 
@@ -95,7 +95,7 @@ class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
     source: MnemonicSource = MnemonicSource.Imported,
     confirmed = false
   ): Promise<Result<MnemonicId, MnemonicErrors.AlreadyExists | MnemonicErrors.InvalidMnemonic>> {
-    if (!mnemonicValidate(mnemonic)) return Err(MnemonicErrors.InvalidMnemonic)
+    if (!isValidMnemonic(mnemonic)) return Err(MnemonicErrors.InvalidMnemonic)
 
     const cleanMnemonic = cleanupMnemonic(mnemonic)
     const id = md5(cleanMnemonic)

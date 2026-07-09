@@ -9,6 +9,10 @@ import type {
 } from "./types"
 import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "./types"
 
+/**
+ * @deprecated sr25519 message encryption — SUMI-chain experiment, not part of the injected-web3
+ * spec, scheduled for removal.
+ */
 export const requestEncrypt = (
   url: string,
   payload: EncryptPayload,
@@ -26,6 +30,10 @@ export const requestEncrypt = (
   ) as Promise<ResponseEncryptEncrypt>
 }
 
+/**
+ * @deprecated sr25519 message decryption — SUMI-chain experiment, not part of the injected-web3
+ * spec, scheduled for removal.
+ */
 export const requestDecrypt = (
   url: string,
   payload: DecryptPayload,

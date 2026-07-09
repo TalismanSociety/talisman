@@ -1,6 +1,6 @@
 import { blake2b } from "@noble/hashes/blake2.js"
+import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { cn } from "@ui/util/cn"
-import { getSs58AddressInfo } from "polkadot-api"
 import { type FC, memo, useMemo } from "react"
 
 const S = 64

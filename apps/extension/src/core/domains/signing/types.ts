@@ -1,22 +1,13 @@
-import type {
-  RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
-  RequestSign,
-} from "@polkadot/extension-base/background/types"
-import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
 import type { RpcTransactionRequest } from "viem"
-
 import type { BaseRequest, BaseRequestId } from "../../types/base"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "../../types/pjsInterop"
 import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
 
-export type {
-  RequestSign,
-  RequestSigningApprovePassword,
-  RequestSigningCancel,
-  RequestSigningIsLocked,
-  ResponseSigningIsLocked,
-} from "@polkadot/extension-base/background/types"
+// structural equivalents of the legacy @polkadot/extension-base signing request types
+export type RequestSign = { payload: SignerPayloadJSON | SignerPayloadRaw }
+
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
 export type SigningRequestID<T extends keyof SigningRequests> = BaseRequestId<T>
@@ -30,8 +21,9 @@ export type KnownSigningRequestApprove<T extends keyof SigningRequests> = {
   payload?: SignerPayloadJSON
 }
 
-export type RequestSigningApproveSignature = Omit<PolkadotRequestSigningApproveSignature, "id"> & {
+export type RequestSigningApproveSignature = {
   id: SigningRequestID<SUBSTRATE_SIGN>
+  signature: `0x${string}`
   payload?: SignerPayloadJSON
 }
 

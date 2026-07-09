@@ -1,5 +1,4 @@
 import { log } from "@common/log"
-import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import type { DotNetwork, Network } from "@talismn/chaindata-provider"
 import {
   type AccountPlatform,
@@ -18,6 +17,7 @@ import {
   isAccountPlatformSolana,
 } from "@talismn/keyring"
 
+import type { InjectedAccount } from "../../types/pjsInterop"
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
 import type { AccountsCatalogStore } from "./store.catalog"

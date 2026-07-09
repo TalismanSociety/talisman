@@ -1,9 +1,9 @@
-import keyring from "@polkadot/ui-keyring"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 import md5 from "blueimp-md5"
 
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
+import { getLegacyPjsAccountEntries, saveLegacyPjsAccount } from "../../keyring/legacyPjsAccounts"
 import { decryptMnemonic } from "../legacy/helpers"
 import {
   createLegacySeedPhraseStore,
@@ -60,25 +60,29 @@ export const migrateSeedStoreToMultiple: Migration = {
     })
 
     // get all accounts which have been derived from this recovery phrase, and add derivedMnemonicId to the metadata
+    // operates on the legacy pjs keyring storage: this migration predates (and runs before) migrateFromPjsKeyring
 
-    const allAccounts = keyring.getAccounts()
-    const parentAccount = allAccounts.find(
-      ({ meta: { origin } }) => origin && mnemonicAccountTypes.includes(origin as AccountType)
+    const allAccountEntries = await getLegacyPjsAccountEntries()
+    const parentEntry = allAccountEntries.find(
+      ([, account]) =>
+        account.meta.origin && mnemonicAccountTypes.includes(account.meta.origin as AccountType)
     )
-    const derivedAccounts = allAccounts.filter(
-      ({ meta: { parent, origin } }) =>
-        parent === parentAccount?.address && origin === AccountTypes.DERIVED
+    const derivedEntries = allAccountEntries.filter(
+      ([, account]) =>
+        account.meta.parent === parentEntry?.[1].address &&
+        account.meta.origin === AccountTypes.DERIVED
     )
-    const migrationAccounts = [...derivedAccounts, parentAccount]
+    const migrationEntries = [...derivedEntries, parentEntry]
 
-    migrationAccounts.forEach((account) => {
-      if (account) {
-        keyring.saveAccountMeta(keyring.getPair(account.address), {
-          ...account.meta,
-          derivedMnemonicId: id,
+    for (const entry of migrationEntries) {
+      if (entry) {
+        const [key, account] = entry
+        await saveLegacyPjsAccount(key, {
+          ...account,
+          meta: { ...account.meta, derivedMnemonicId: id },
         })
       }
-    })
+    }
 
     // if a verifier certificate exists, add it to the new seed store
     const legacyVerifierCertificateStore = createLegacyVerifierCertificateMnemonicStore()

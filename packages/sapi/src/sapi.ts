@@ -1,7 +1,4 @@
-import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { parseMetadataRpc } from "@talismn/scale"
-
 import { getCallDocs } from "./helpers/getCallDocs"
 import { getChainInfo } from "./helpers/getChainInfo"
 import { getConstantValue } from "./helpers/getConstantValue"
@@ -13,11 +10,11 @@ import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
 import { getSapiConnector } from "./helpers/getSapiConnector"
 import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
-import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { hasEvent } from "./helpers/hasEvent"
 import { isApiAvailable } from "./helpers/isApiAvailable"
 import { submit } from "./helpers/submit"
 import type { Chain } from "./helpers/types"
+import type { ExtDef, SignerPayloadJSON } from "./pjsInterop"
 import type {
   DecodedCall,
   PayloadSignerConfig,
@@ -89,12 +86,10 @@ export const getScaleApi = (
       config: PayloadSignerConfig
     ) => getSignerPayloadJSON(chain, pallet, method, args, config, chainInfo),
 
-    getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload, chainInfo),
+    getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload),
 
     getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[]) =>
       getRuntimeCallResult<T>(chain, apiName, method, args),
-
-    getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(chain, payload),
 
     submit: (
       payload: SignerPayloadJSON,

@@ -1,5 +1,5 @@
-import { hexToString } from "@polkadot/util"
 import { ParsedMessage } from "@spruceid/siwe-parser"
+import { type Hex, hexToString } from "viem"
 
 /**
  * EIP-4361: a Sign-In With Ethereum message must declare a `domain` matching the requesting site.
@@ -14,7 +14,7 @@ export const isSiweDomainMismatch = (
 ): boolean => {
   if (method !== "personal_sign" || !messageHex || !url) return false
   try {
-    const siwe = new ParsedMessage(hexToString(messageHex))
+    const siwe = new ParsedMessage(hexToString(messageHex as Hex))
     return siwe.domain !== new URL(url).hostname
   } catch {
     // not a SIWE message (or unparseable) => nothing to flag

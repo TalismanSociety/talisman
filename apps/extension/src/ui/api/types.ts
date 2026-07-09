@@ -69,15 +69,13 @@ import type {
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
-import type { HexString } from "@polkadot/util/types"
+import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "@core/types/pjsInterop"
 import type { IBalance } from "@talismn/balances"
 import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import type { KeypairCurve } from "@talismn/crypto"
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { TokenRatesStorage } from "@talismn/token-rates"
-import type { Loadable } from "@talismn/util"
+import type { HexString, Loadable } from "@talismn/util"
 import type { MetadataDef } from "inject/substrate/types"
 import type { TransactionRequest } from "viem"
 
@@ -149,7 +147,7 @@ export default interface MessageTypes {
   accountAddExternal: (options: RequestAddAccountExternal) => Promise<string[]>
   accountAddDerive: (options: RequestAddAccountDerive) => Promise<string[]>
   accountAddKeypair: (options: RequestAddAccountKeypair) => Promise<string[]>
-  accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
+  accountCreateFromJson: (unlockedPairs: PjsKeyringPairJson[]) => Promise<string[]>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
@@ -163,11 +161,11 @@ export default interface MessageTypes {
     address: string,
     password: string,
     exportPw: string
-  ) => Promise<{ exportedJson: KeyringPair$Json }>
+  ) => Promise<{ exportedJson: PjsKeyringPairJson }>
   accountExportAll: (
     password: string,
     exportPw: string
-  ) => Promise<{ exportedJson: KeyringPairs$Json }>
+  ) => Promise<{ exportedJson: PjsKeyringPairsJson }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountUpdateContact: (options: RequestAccountContactUpdate) => Promise<boolean>

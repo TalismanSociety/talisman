@@ -1,4 +1,4 @@
-import { stringToHex } from "@polkadot/util"
+import { stringToHex } from "viem"
 import { describe, expect, it } from "vitest"
 
 import { isSiweDomainMismatch } from "./siwe"

@@ -1,5 +1,4 @@
-import { DEBUG } from "@common/constants"
-import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
+import { DEBUG, PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { api } from "@ui/api"
 import { FullScreenLocked } from "@ui/components/FullScreenLocked"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"

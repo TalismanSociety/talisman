@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { isSiweDomainMismatch } from "@core/domains/ethereum/siwe"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

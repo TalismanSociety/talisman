@@ -8,7 +8,6 @@ export default defineConfig({
       "packages/scale",
       "packages/on-chain-id",
       "packages/token-rates",
-      "packages/connection-meta",
       "packages/sapi",
       "packages/solana",
       "packages/icons",

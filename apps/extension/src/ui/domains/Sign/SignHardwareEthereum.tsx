@@ -1,7 +1,7 @@
 import type { Account, AccountOfType } from "@core/domains/keyring/exports"
 import type { EthSignMessageMethod } from "@core/domains/signing/types"
-import type { HexString } from "@polkadot/util/types"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
+import type { HexString } from "@talismn/util"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { type FC, Suspense } from "react"
 

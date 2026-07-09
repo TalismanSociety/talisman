@@ -1,4 +1,4 @@
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 import { BehaviorSubject } from "rxjs"
 
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"

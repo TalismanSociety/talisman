@@ -1,4 +1,4 @@
-import { u8aConcat } from "@polkadot/util"
+import { u8aConcat } from "@talismn/util"
 
 import { FRAME_SIZE } from "../constants"
 

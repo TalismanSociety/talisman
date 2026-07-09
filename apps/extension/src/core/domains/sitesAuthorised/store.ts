@@ -1,6 +1,6 @@
 import { isTalismanHostname } from "@core/util/isTalismanHostname"
-import { assert } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
+import { assert } from "@talismn/util"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
 import { urlToDomain } from "../../util/urlToDomain"

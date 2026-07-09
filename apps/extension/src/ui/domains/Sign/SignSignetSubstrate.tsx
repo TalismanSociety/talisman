@@ -1,6 +1,6 @@
 import type { AccountSignet } from "@core/domains/keyring/exports"
 import type { SignerPayloadRaw } from "@core/domains/signing/types"
-import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "@core/types/pjsInterop"
 import { XCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { useMemo } from "react"

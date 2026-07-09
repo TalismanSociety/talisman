@@ -1,7 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
-import type { TypeRegistry } from "@polkadot/types"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import type { HexString } from "@polkadot/util/types"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/pjsInterop"
+import type { HexString } from "@talismn/util"
 import type { ButtonProps } from "@ui/components/Button"
 import { useAccountByAddress } from "@ui/state/accounts"
 import type { FC } from "react"
@@ -18,7 +17,6 @@ export type SignHardwareSubstrateProps = {
   onSentToDevice?: (sent: boolean) => void
   onSigned: (result: { signature: HexString; payload?: SignerPayloadJSON }) => Promise<void> | void
   shortMetadata?: string
-  registry?: TypeRegistry
   color?: ButtonProps["color"]
 }
 

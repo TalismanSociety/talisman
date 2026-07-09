@@ -1,7 +1,6 @@
 import { log } from "@common/log"
-import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
-import type { Keypair } from "@polkadot/util-crypto/types"
 import { getPublicKeyFromSecret } from "@talismn/crypto"
+import { assert, u8aToHex, u8aToU8a } from "@talismn/util"
 import { sentry } from "../../config/sentry"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -9,10 +8,14 @@ import { requestStore } from "../../libs/requests/store"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { sr25519Decrypt } from "../../util/sr25519decrypt"
-import { sr25519Encrypt } from "../../util/sr25519encrypt"
+import { type Keypair, sr25519Encrypt } from "../../util/sr25519encrypt"
 import { withSecretKey } from "../keyring/withSecretKey"
 import type { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
 
+/**
+ * @deprecated sr25519 message encrypt/decrypt was an experiment for the now-defunct SUMI chain,
+ * is not part of the injected-web3 spec, and is scheduled for removal.
+ */
 export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: EncryptRequestIdOnly) {
     const queued = requestStore.getRequest(id)

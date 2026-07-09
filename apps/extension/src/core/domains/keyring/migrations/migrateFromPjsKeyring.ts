@@ -1,17 +1,16 @@
 import { log } from "@common/log"
-import legacyKeyring from "@polkadot/ui-keyring"
 import { isValidDerivationPath } from "@talismn/crypto"
 import type { AddAccountExternalOptions } from "@talismn/keyring"
 import type { HexString } from "@talismn/util"
 import { capitalize } from "lodash-es"
 
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
-import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
 import { LegacyAccountOrigin, SubstrateLedgerAppType } from "../../accounts/types"
 import { addressBookStore } from "../../app/store.addressBook"
 import { appStore } from "../../app/store.app"
 import { mnemonicsStore } from "../../mnemonics/store"
 import { getSecretKeyFromPjsJson } from "../getSecretKeyFromPjsJson"
+import { getLegacyPjsAccounts, getLegacyPjsAccountType } from "../legacyPjsAccounts"
 import { pjsKeypairTypeToCurve } from "../migration-utils"
 import { keyringStore } from "../store"
 
@@ -32,13 +31,11 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
   try {
     await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0 } })
 
-    await awaitKeyringLoaded()
-
     if (reset) await keyringStore.reset()
 
     // fetch legacy data to migrate
     const oldMnemonics = Object.values(await mnemonicsStore.get())
-    const oldPairs = legacyKeyring.getPairs()
+    const oldPairs = await getLegacyPjsAccounts()
     const oldContacts = Object.values(await addressBookStore.get())
     const oldCertMnemonicId = await appStore.get("vaultVerifierCertificateMnemonicId")
 
@@ -106,8 +103,10 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
           case "DERIVED":
           case "JSON":
           case LegacyAccountOrigin.Talisman: {
-            const curve = pjsKeypairTypeToCurve(oldPair.type)
-            const name = oldPair.meta.name ?? `Keypair ${oldPair.address}`
+            const curve = pjsKeypairTypeToCurve(
+              getLegacyPjsAccountType(oldPair) as Parameters<typeof pjsKeypairTypeToCurve>[0]
+            )
+            const name = (oldPair.meta.name as string) ?? `Keypair ${oldPair.address}`
             const mnemonicId =
               typeof oldPair.meta.derivedMnemonicId === "string"
                 ? oldToNewMnemonicId.get(oldPair.meta.derivedMnemonicId)
@@ -121,7 +120,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             if (
               mnemonicId &&
               typeof derivationPath === "string" && // allow empty string (substrate default)
-              (await isValidDerivationPath(derivationPath, oldPair.type))
+              (await isValidDerivationPath(derivationPath, curve))
             ) {
               // keep the "link" to associated mnemonic by rederiving the account from it
               await keyringStore.addAccountDerive({
@@ -136,7 +135,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
               await keyringStore.addAccountKeypair({
                 name,
                 curve,
-                secretKey: getSecretKeyFromPjsJson(oldPair.toJson(password), password),
+                secretKey: getSecretKeyFromPjsJson(oldPair, password),
               })
             }
 
@@ -147,19 +146,19 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             await keyringStore.addAccountExternal({
               type: "polkadot-vault",
               address: oldPair.address,
-              genesisHash: oldPair.meta.genesisHash ?? null,
-              name: oldPair.meta.name ?? `Polkadot Vault ${oldPair.address}`,
+              genesisHash: (oldPair.meta.genesisHash as HexString) ?? null,
+              name: (oldPair.meta.name as string) ?? `Polkadot Vault ${oldPair.address}`,
             })
             break
           }
 
           case "HARDWARE":
           case LegacyAccountOrigin.Ledger: {
-            if (oldPair.type === "ethereum") {
+            if (getLegacyPjsAccountType(oldPair) === "ethereum") {
               await keyringStore.addAccountExternal({
                 type: "ledger-ethereum",
                 address: oldPair.address,
-                name: oldPair.meta.name ?? `Ledger ${oldPair.address}`,
+                name: (oldPair.meta.name as string) ?? `Ledger ${oldPair.address}`,
                 derivationPath: oldPair.meta.path as string,
               })
             } else {
@@ -173,7 +172,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
               const options: AddAccountExternalOptions = {
                 type: "ledger-polkadot",
                 curve: "ed25519",
-                name: oldPair.meta.name ?? `Ledger ${oldPair.address}`,
+                name: (oldPair.meta.name as string) ?? `Ledger ${oldPair.address}`,
                 address: oldPair.address,
                 app: migrationAppName ?? "Polkadot",
                 accountIndex,
@@ -192,7 +191,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             await keyringStore.addAccountExternal({
               type: "signet",
               address: oldPair.address,
-              name: oldPair.meta.name ?? `Signet ${oldPair.address}`,
+              name: (oldPair.meta.name as string) ?? `Signet ${oldPair.address}`,
               url: oldPair.meta.signetUrl as string,
               genesisHash: oldPair.meta.genesisHash as HexString,
             })
@@ -205,7 +204,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             await keyringStore.addAccountExternal({
               type: "watch-only",
               address: oldPair.address,
-              name: oldPair.meta.name ?? `${capitalize(origin)} ${oldPair.address}`,
+              name: (oldPair.meta.name as string) ?? `${capitalize(origin)} ${oldPair.address}`,
               isPortfolio: !!oldPair.meta.isPortfolio || origin === LegacyAccountOrigin.Dcent,
             })
             break

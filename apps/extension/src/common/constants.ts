@@ -42,3 +42,6 @@ export const CONNECT_LEDGER_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/import
 // Images
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
 export const UNKNOWN_NETWORK_URL = "/images/unknown-network.svg"
+
+// Routes
+export const PHISHING_PAGE_REDIRECT = "/phishing-page-detected"

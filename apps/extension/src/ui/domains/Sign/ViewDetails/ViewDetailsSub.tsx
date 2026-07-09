@@ -1,11 +1,8 @@
-import type {
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-  TransactionMethod,
-} from "@core/domains/signing/types"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { TypeRegistry } from "@polkadot/types"
 import { BalanceFormatter } from "@talismn/balances"
+import { CUSTOM_SIGNED_EXTENSIONS, getTxHelper } from "@talismn/sapi"
+import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -37,12 +34,34 @@ export const ViewDetailsSub: FC = () => {
   )
 }
 
+/** decodes the payload's transaction fields (nonce, tip, mortality, ...) in human readable form */
+const useDecodedTxInput = () => {
+  const { payload, metadataRpc } = usePolkadotSigningRequest()
+
+  return useMemo(() => {
+    try {
+      if (!metadataRpc || !isJsonPayload(payload)) return null
+
+      const { fromPjsToInputRaw, getTxInputDecoded } = getTxHelper(
+        metadataRpc,
+        undefined,
+        CUSTOM_SIGNED_EXTENSIONS
+      )
+      const { input, blockNumber } = fromPjsToInputRaw(payload)
+
+      return getTxInputDecoded(input, blockNumber)
+    } catch {
+      return null
+    }
+  }, [metadataRpc, payload])
+}
+
 const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
-  const { chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
+  const { chain, payload, decodedCall, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
   const nativeToken = useToken(chain?.nativeTokenId)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
@@ -71,25 +90,21 @@ const ViewDetailsContent: FC<{
     [fee, errorFee, nativeToken?.decimals, nativeTokenRates, t]
   )
 
-  const decodedPayload = useMemo(() => {
-    try {
-      const typeRegistry = new TypeRegistry()
-      return typeRegistry.createType("ExtrinsicPayload", payload)
-    } catch {
-      return null
-    }
-  }, [payload])
+  const decodedTxInput = useDecodedTxInput()
 
   const { methodName, args } = useMemo(() => {
-    if (!extrinsic) return { methodName: t("Unknown") }
+    if (!decodedCall) return { methodName: t("Unknown") }
 
-    const methodName = `${extrinsic.method.section} : ${extrinsic.method.method}`
+    const methodName = `${decodedCall.pallet} : ${decodedCall.method}`
 
-    const decoded = extrinsic.method.toHuman() as TransactionMethod
-    const args = decoded?.args
-
-    return { methodName, args }
-  }, [extrinsic, t])
+    try {
+      // convert to a JSON-safe object (bigint, Uint8Array, ...) for display
+      const args = JSON.parse(papiStringify(decodedCall.args))
+      return { methodName, args }
+    } catch {
+      return { methodName }
+    }
+  }, [decodedCall, t])
 
   const { data: lifetimeRows } = useLifetimeRows()
 
@@ -113,9 +128,7 @@ const ViewDetailsContent: FC<{
               token={nativeToken}
             />
             <ViewDetailsAmount label={t("Tip")} amount={tip} token={nativeToken} />
-            <ViewDetailsField label={t("Nonce")}>
-              {decodedPayload?.nonce.toNumber()}
-            </ViewDetailsField>
+            <ViewDetailsField label={t("Nonce")}>{decodedTxInput?.nonce}</ViewDetailsField>
             <ViewDetailsField label={t("Lifetime")}>
               {lifetimeRows?.map((str, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: legacy
@@ -130,7 +143,7 @@ const ViewDetailsContent: FC<{
             />
             <ViewDetailsField label={t("Method")}>{methodName}</ViewDetailsField>
             <ViewDetailsTxObject label={t("Arguments")} obj={args} />
-            <ViewDetailsTxObject label={t("Payload")} obj={decodedPayload?.toHuman()} />
+            <ViewDetailsTxObject label={t("Payload")} obj={payload} />
           </>
         ) : (
           <>
@@ -157,22 +170,17 @@ const ViewDetailsContent: FC<{
 const useLifetimeRows = () => {
   const { t } = useTranslation()
   const { sapi, payload } = usePolkadotSigningRequest()
+  const decodedTxInput = useDecodedTxInput()
 
   const period = useMemo(() => {
-    try {
-      if (!isJsonPayload(payload)) return null
+    if (!isJsonPayload(payload)) return null
 
-      // if blockhash is equal to genesis hash then transaction is immortal
-      if (payload.genesisHash === payload.blockHash) return null
+    // if blockhash is equal to genesis hash then transaction is immortal
+    if (payload.genesisHash === payload.blockHash) return null
 
-      const registry = new TypeRegistry()
-      const ep = registry.createType("ExtrinsicPayload", payload)
-
-      return ep.era.isMortalEra ? ep.era.asMortalEra.period.toNumber() : null
-    } catch {
-      return null
-    }
-  }, [payload])
+    const mortality = decodedTxInput?.mortality
+    return mortality ? mortality.to - mortality.from.height : null
+  }, [payload, decodedTxInput])
 
   const mortality = useMemo(() => {
     if (!isJsonPayload(payload)) return ""

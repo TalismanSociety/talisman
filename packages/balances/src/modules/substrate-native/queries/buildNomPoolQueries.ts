@@ -1,5 +1,5 @@
+import { Binary } from "@polkadot-api/substrate-bindings"
 import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
-import { Binary } from "polkadot-api"
 
 import type { IBalance, MiniMetadata } from "../../../types"
 import { buildNetworkStorageCoders } from "../../shared"

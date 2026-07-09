@@ -1,22 +1,16 @@
 import { log } from "@common/log"
 import type { SubstrateSigningRequest } from "@core/domains/signing/types"
 import type { Address } from "@core/types/base"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/pjsInterop"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import type { GenericExtrinsic } from "@polkadot/types"
-import type {
-  IRuntimeVersionBase,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-} from "@polkadot/types/types"
-import type { HexString } from "@polkadot/util/types"
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
 import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
+import type { HexString } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
-import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo } from "react"
 
@@ -25,35 +19,14 @@ import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  extrinsic: GenericExtrinsic | null | undefined
+  sapi: ScaleApi | null | undefined
 ) => {
-  const chain = useNetworkByGenesisHash(
-    payload && isJsonPayload(payload) ? payload.genesisHash : undefined
-  )
-
   return useQuery({
-    queryKey: ["usePartialFee", payload, chain, extrinsic?.toHex()],
+    queryKey: ["usePartialFee", payload, sapi?.id],
     queryFn: async () => {
-      if (!payload || !chain || !extrinsic) return null
+      if (!payload || !sapi || !isJsonPayload(payload)) return null
 
-      // fake sign it so fees can be queried
-      const { blockHash, address, nonce, genesisHash, specVersion, transactionVersion } =
-        payload as SignerPayloadJSON
-
-      extrinsic.signFake(address, {
-        nonce,
-        blockHash,
-        genesisHash,
-        runtimeVersion: {
-          specVersion,
-          transactionVersion,
-          // other fields aren't necessary for signing
-        } as IRuntimeVersionBase,
-      })
-
-      const { partialFee } = await getExtrinsicDispatchInfo(chain.id, extrinsic)
-
-      return BigInt(partialFee)
+      return sapi.getFeeEstimate(payload)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -101,14 +74,14 @@ const usePolkadotSigningRequestProvider = ({
   const { data: payloadMetadata } = useSubstratePayloadMetadataSuspense(jsonPayload)
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
-  const [modifiedPayload, registry, shortMetadata, sapi] = useMemo(() => {
+  const [modifiedPayload, shortMetadata, sapi, metadataRpc] = useMemo(() => {
     return !jsonPayload || !payloadMetadata
       ? [undefined, undefined, undefined, undefined]
       : [
           payloadMetadata.payloadWithMetadataHash,
-          payloadMetadata.registry,
           payloadMetadata.txMetadata,
           payloadMetadata.sapi,
+          payloadMetadata.metadataRpc,
         ]
   }, [payloadMetadata, jsonPayload])
 
@@ -117,14 +90,16 @@ const usePolkadotSigningRequestProvider = ({
     [modifiedPayload, signingRequest.request.payload]
   )
 
-  const decodedCall = useMemo(() => {
-    if (!sapi || !isJsonPayload(payload)) return null
+  const [decodedCall, errorDecodingExtrinsic] = useMemo<
+    [DecodedCall<unknown> | null, unknown]
+  >(() => {
+    if (!sapi || !isJsonPayload(payload)) return [null, null]
 
     try {
-      return sapi.getDecodedCallFromPayload(payload)
+      return [sapi.getDecodedCallFromPayload(payload), null]
     } catch (err) {
       log.error("failed to decode call", { err })
-      return null
+      return [null, err]
     }
   }, [payload, sapi])
 
@@ -147,17 +122,6 @@ const usePolkadotSigningRequestProvider = ({
     log.log("DRY RUN", { dryRun, dryRunIsLoading, dryRunError, decodedCall, payload })
   }, [dryRun, dryRunIsLoading, dryRunError, decodedCall, payload])
 
-  const [extrinsic, errorDecodingExtrinsic] = useMemo(() => {
-    try {
-      return [
-        isJsonPayload(payload) && registry ? registry.createType("Extrinsic", payload) : null,
-        null,
-      ]
-    } catch (err) {
-      return [null, err]
-    }
-  }, [payload, registry])
-
   const baseRequest = useAnySigningRequest({
     currentRequest: signingRequest,
     approveSignFn: api.approveSign,
@@ -166,7 +130,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const chain = useNetworkByGenesisHash(jsonPayload?.genesisHash)
 
-  const { data: fee, isLoading: isLoadingFee, error: errorFee } = usePartialFee(payload, extrinsic)
+  const { data: fee, isLoading: isLoadingFee, error: errorFee } = usePartialFee(payload, sapi)
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -231,14 +195,13 @@ const usePolkadotSigningRequestProvider = ({
     approveSignet,
     approveHardware,
     approveQr,
-    extrinsic,
     errorDecodingExtrinsic,
     fee,
     isLoadingFee,
     errorFee,
-    registry,
     shortMetadata,
     sapi,
+    metadataRpc,
     decodedCall,
     isDryRunAvailable,
     dryRun,

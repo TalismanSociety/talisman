@@ -1,6 +1,5 @@
-import type { HexString } from "@polkadot/util/types"
 import { ChevronDownIcon } from "@talismn/icons"
-import { isHexString } from "@talismn/util"
+import { type HexString, isHexString } from "@talismn/util"
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/components/Popover"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state/chaindata"

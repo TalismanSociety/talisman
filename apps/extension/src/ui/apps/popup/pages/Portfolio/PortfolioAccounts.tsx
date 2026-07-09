@@ -9,9 +9,8 @@ import {
   getAccountSignetUrl,
   isAccountPortfolio,
 } from "@core/domains/keyring/exports"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
-import { isSs58Address, normalizeAddress } from "@talismn/crypto"
+import { isEthereumAddress, isSs58Address, normalizeAddress } from "@talismn/crypto"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

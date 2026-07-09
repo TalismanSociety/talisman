@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
-import { WsProvider } from "@polkadot/rpc-provider"
+import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
+import { getWsProvider } from "@polkadot-api/ws-provider"
 import { createSolanaRpc } from "@solana/kit"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"
 import {
@@ -13,6 +14,19 @@ import {
 import { throwAfter } from "@talismn/util"
 import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"
+
+/** Opens a short-lived connection to an rpc, runs `fn` against it, then tears the connection down */
+const withOneShotClient = async <T>(
+  rpcUrl: string,
+  fn: (client: SubstrateClient) => Promise<T>
+): Promise<T> => {
+  const client = createClient(getWsProvider(rpcUrl, { timeout: 3_000 }))
+  try {
+    return await fn(client)
+  } finally {
+    client.destroy()
+  }
+}
 
 // because of validation the same query is done 3 times minimum per url, make all await same promise
 const rpcInfoCache = new Map<string, Promise<SubstrateRpcInfo | null>>()
@@ -29,15 +43,16 @@ export const getDotGenesisHashFromRpc = (rpcUrl: string): Promise<`0x${string}` 
   if (cached) return cached as Promise<`0x${string}` | null>
 
   const request = (async () => {
-    const ws = new WsProvider(rpcUrl, 3000, undefined, 3000)
     try {
-      await Promise.race([ws.isReady, throwAfter(3000, "timeout")])
-
-      return await ws.send<`0x${string}`>("chain_getBlockHash", [0])
+      return await withOneShotClient(rpcUrl, (client) =>
+        Promise.race([
+          client.request<`0x${string}`>("chain_getBlockHash", [0]),
+          throwAfter(5_000, "timeout"),
+        ])
+      )
     } catch {
       return null
     } finally {
-      ws.disconnect()
       genesisHashCache.delete(rpcUrl)
     }
   })()
@@ -89,52 +104,62 @@ export const getDotChainInfoFromRpc = (rpcUrl: string): Promise<SubstrateRpcInfo
   if (cached) return cached
 
   const request = (async () => {
-    const ws = new WsProvider(rpcUrl, 3000, undefined, 10000)
     try {
-      await Promise.race([ws.isReady, throwAfter(5000, "timeout")])
+      return await withOneShotClient(rpcUrl, async (client) => {
+        const send = <T = unknown>(method: string, params?: unknown[]) =>
+          client.request<T>(method, params ?? [])
 
-      const [genesisHash, systemProperties, name, { specName, specVersion }] = await Promise.all([
-        ws.send<SignerPayloadGenesisHash>("chain_getBlockHash", [0]),
-        ws.send("system_properties", []),
-        ws.send("system_name", []),
-        ws.send("state_getRuntimeVersion", []),
-      ])
-      const { tokenSymbol, tokenDecimals } = systemProperties ?? {}
-      const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
-      const decimals: number =
-        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
+        const [genesisHash, systemProperties, name, { specName, specVersion }] =
+          (await Promise.race([
+            Promise.all([
+              client.request<SignerPayloadGenesisHash>("chain_getBlockHash", [0]),
+              send("system_properties"),
+              send("system_name"),
+              send("state_getRuntimeVersion"),
+            ]),
+            throwAfter(10_000, "timeout"),
+          ])) as [
+            SignerPayloadGenesisHash,
+            { tokenSymbol?: string | string[]; tokenDecimals?: number | number[] },
+            string,
+            { specName: string; specVersion: number },
+          ]
+        const { tokenSymbol, tokenDecimals } = systemProperties ?? {}
+        const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
+        const decimals: number =
+          (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
 
-      const rawMetadata = await fetchBestMetadata((...args) => ws.send(...args), true)
-      const sapi = getScaleApi({ chainId: genesisHash, send: ws.send }, rawMetadata, {
-        symbol,
-        decimals,
+        const rawMetadata = await fetchBestMetadata(send, true)
+        const sapi = getScaleApi({ chainId: genesisHash, send }, rawMetadata, {
+          symbol,
+          decimals,
+        })
+        const existentialDeposit = sapi.getConstant<bigint>("Balances", "ExistentialDeposit")
+
+        const metadata = unifyMetadata(decAnyMetadata(rawMetadata))
+
+        const ss58Prefix = getSs58Prefix(metadata)
+        const account = getAccountType(metadata)
+        const hasCheckMetadataHash = metadata.extrinsic.signedExtensions[0]?.some(
+          ({ identifier }) => identifier === "CheckMetadataHash"
+        )
+
+        const result: SubstrateRpcInfo = {
+          genesisHash,
+          token: { symbol, decimals, existentialDeposit: String(existentialDeposit) },
+          name,
+          specName,
+          specVersion,
+          ss58Prefix,
+          hasCheckMetadataHash,
+          account,
+        }
+
+        return result
       })
-      const existentialDeposit = sapi.getConstant<bigint>("Balances", "ExistentialDeposit")
-
-      const metadata = unifyMetadata(decAnyMetadata(rawMetadata))
-
-      const ss58Prefix = getSs58Prefix(metadata)
-      const account = getAccountType(metadata)
-      const hasCheckMetadataHash = metadata.extrinsic.signedExtensions[0]?.some(
-        ({ identifier }) => identifier === "CheckMetadataHash"
-      )
-
-      const result: SubstrateRpcInfo = {
-        genesisHash,
-        token: { symbol, decimals, existentialDeposit: String(existentialDeposit) },
-        name,
-        specName,
-        specVersion,
-        ss58Prefix,
-        hasCheckMetadataHash,
-        account,
-      }
-
-      return result
     } catch {
       return null
     } finally {
-      ws.disconnect()
       rpcInfoCache.delete(rpcUrl)
     }
   })()
