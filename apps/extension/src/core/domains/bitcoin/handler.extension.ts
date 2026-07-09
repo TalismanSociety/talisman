@@ -18,6 +18,7 @@ import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
 import { withBitcoinSigningKeys } from "../keyring/withBitcoinSigningKeys"
 import { withSecretKey } from "../keyring/withSecretKey"
+import { watchBitcoinTransaction } from "../transactions/watchBitcoinTransaction"
 import { getBitcoinAccountTrees, getBtcNetworkHrp, serializeBitcoinUtxo } from "./helpers"
 import { bitcoinAddressIndexStore } from "./store.addressIndex"
 import type { RequestBitcoinSubmit } from "./types"
@@ -125,7 +126,13 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
     throw new Error(`Unable to handle message of type ${type}`)
   }
 
-  private async submit({ networkId, address, psbtBase64, maxFeeSats }: RequestBitcoinSubmit) {
+  private async submit({
+    networkId,
+    address,
+    psbtBase64,
+    maxFeeSats,
+    txInfo,
+  }: RequestBitcoinSubmit) {
     const account = await keyringStore.getAccount(address)
     if (!account || !isAccountPlatformBitcoin(account)) throw new Error("Account not found")
     if (account.type === "watch-only-bitcoin") throw new Error("Cannot send from a watched account")
@@ -180,6 +187,11 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
     const final = finalizeAndExtract(signed)
     const api = await chainConnectorBtc.getApi(networkId)
     const txid = await api.broadcastTx(final.txHex)
+
+    watchBitcoinTransaction(networkId, txid, final.txHex, account.address, {
+      txInfo,
+      notifications: false,
+    })
 
     return { txid }
   }

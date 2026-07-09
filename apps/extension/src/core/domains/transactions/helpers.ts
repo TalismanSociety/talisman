@@ -185,6 +185,8 @@ export const updateTransactionStatus = async (
             (row) =>
               row.platform !== "solana" &&
               tx.platform !== "solana" &&
+              row.platform !== "bitcoin" &&
+              tx.platform !== "bitcoin" &&
               row.nonce === tx.nonce &&
               ["pending", "unknown"].includes(row.status)
           )
@@ -197,6 +199,8 @@ export const updateTransactionStatus = async (
             (row) =>
               row.platform !== "solana" &&
               tx.platform !== "solana" &&
+              row.platform !== "bitcoin" &&
+              tx.platform !== "bitcoin" &&
               typeof row.nonce === "number" &&
               typeof tx.nonce === "number" &&
               row.nonce < tx.nonce &&
@@ -230,8 +234,11 @@ export const updateTransactionsRestart = async () => {
         .filter(filterIsSameNetworkAndAddressTx(successfulTx))
         .filter(
           (row) =>
+            // solana and bitcoin have no nonce: same-nonce replacement doesn't apply
             row.platform !== "solana" &&
             successfulTx.platform !== "solana" &&
+            row.platform !== "bitcoin" &&
+            successfulTx.platform !== "bitcoin" &&
             row.nonce === successfulTx.nonce &&
             ["pending", "unknown"].includes(row.status)
         )

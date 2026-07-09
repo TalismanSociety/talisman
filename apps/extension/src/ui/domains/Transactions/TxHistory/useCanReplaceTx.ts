@@ -10,11 +10,11 @@ const _useCanReplaceTx = (tx: WalletTransaction) => {
 
   return useMemo(() => {
     if (!["pending", "unknown"].includes(tx.status)) return false
-    if (tx.platform === "solana") return false
+    if (tx.platform === "solana" || tx.platform === "bitcoin") return false
     if (typeof tx.nonce !== "number") return false
 
     const matchingNonces = transactions
-      .filter((tx) => tx.platform !== "solana")
+      .filter((tx) => tx.platform !== "solana" && tx.platform !== "bitcoin")
       .filter(filterIsSameNetworkAndAddressTx(tx))
       .map((t) => t.nonce)
       .filter(isNotNil)

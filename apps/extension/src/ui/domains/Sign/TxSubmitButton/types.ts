@@ -1,6 +1,6 @@
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type { BtcNetworkId, EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import type { SolTransaction } from "@talismn/solana"
 import type { TransactionRequest } from "viem"
 
@@ -25,10 +25,23 @@ export type TxSubmitButtonTransactionSol = {
   txInfo?: WalletTransactionInfo
 }
 
+export type TxSubmitButtonTransactionBtc = {
+  platform: "bitcoin"
+  networkId: BtcNetworkId
+  /** sender account identity (payments xpub, or bc1q address for WIF accounts) */
+  address: string
+  /** unsigned PSBT, base64 */
+  payload: string
+  /** fee ceiling enforced by the background before broadcast */
+  maxFeeSats: string
+  txInfo?: WalletTransactionInfo
+}
+
 export type TxSubmitButtonTransaction =
   | TxSubmitButtonTransactionDot
   | TxSubmitButtonTransactionEth
   | TxSubmitButtonTransactionSol
+  | TxSubmitButtonTransactionBtc
 
 type TransactionPlatform = TxSubmitButtonTransaction["platform"]
 
@@ -40,7 +53,9 @@ export type TxSubmitButtonProps<
       ? TxSubmitButtonTransactionEth
       : P extends "solana"
         ? TxSubmitButtonTransactionSol
-        : TxSubmitButtonTransaction | null | undefined,
+        : P extends "bitcoin"
+          ? TxSubmitButtonTransactionBtc
+          : TxSubmitButtonTransaction | null | undefined,
 > = {
   tx: Tx
   containerId?: string

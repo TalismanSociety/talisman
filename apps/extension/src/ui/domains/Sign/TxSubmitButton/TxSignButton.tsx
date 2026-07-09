@@ -3,6 +3,7 @@ import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
+import { TxSubmitButtonBtc } from "./TxSubmitButtonBtc"
 import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
 import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
 import { TxSubmitButtonSol } from "./TxSubmitButtonSol"
@@ -53,6 +54,16 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
     case "solana":
       return (
         <TxSubmitButtonSol
+          containerId={containerId}
+          label={label}
+          tx={tx}
+          onSubmit={onSubmit}
+          className={className}
+        />
+      )
+    case "bitcoin":
+      return (
+        <TxSubmitButtonBtc
           containerId={containerId}
           label={label}
           tx={tx}
