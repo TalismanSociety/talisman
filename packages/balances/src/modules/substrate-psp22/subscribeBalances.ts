@@ -1,5 +1,7 @@
 import { distinctUntilChanged, Observable, of } from "rxjs"
 
+import { reportJsActivity } from "@talismn/util"
+
 import log from "../../log"
 import { isEqualModuleResults } from "../../types/fingerprint"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
@@ -33,6 +35,10 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         })
 
         if (abortController.signal.aborted) return
+
+        // poll-completion marker: fires even when the dedup gate below suppresses the
+        // emission, so stall watchdogs can attribute the poll's fetch/decode compute
+        reportJsActivity(`poll ${MODULE_TYPE} ${networkId} (${balances.success.length})`)
 
         subscriber.next(balances)
 
