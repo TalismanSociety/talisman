@@ -98,7 +98,8 @@ export const AuthorizedSite: FC<{
             <button type="button" className="hover:text-body" onClick={() => toggleAll(false)}>
               {t("Disconnect All")}
             </button>
-            {provider !== "ethereum" && (
+            {/* solana injection is single-account, connecting all accounts is meaningless */}
+            {provider !== "solana" && (
               <>
                 <Rule />
                 <button type="button" className="hover:text-body" onClick={() => toggleAll(true)}>

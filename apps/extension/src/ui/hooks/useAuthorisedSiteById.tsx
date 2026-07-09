@@ -68,12 +68,10 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       const isConnectedAddress = isAddressIn(connected)
       switch (type) {
         case "polkadot":
+        case "ethereum":
           newAddresses = isConnectedAddress(address)
             ? connected.filter((a) => !isAddressEqual(a, address))
             : [...connected, address]
-          break
-        case "ethereum":
-          newAddresses = isConnectedAddress(address) ? [] : [address]
           break
         case "solana":
           newAddresses = isConnectedAddress(address) ? [] : [address]

@@ -75,7 +75,8 @@ export const EthSignMessageRequest = () => {
                 {isAccountOfType(account, "ledger-ethereum") ? (
                   <SignHardwareEthereum
                     method={request.method}
-                    payload={request.request}
+                    // hide the hardware signer until the request is valid (ex: unacknowledged SIWE domain mismatch)
+                    payload={isValid ? request.request : undefined}
                     account={account}
                     onSigned={approveHardware}
                     onCancel={reject}

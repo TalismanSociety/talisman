@@ -1,11 +1,12 @@
-import { log } from "@common/log"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
 import type { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
 import { hexToString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
+import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
@@ -69,16 +70,8 @@ export const EthSignBodyMessageSIWE: FC<{
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
-  const isValidUrl = useMemo(() => {
-    try {
-      // current webapp's domain must be the same as the siwe's domain
-      const currUrl = new URL(request.url)
-      return siwe.domain === currUrl.hostname
-    } catch (err) {
-      log.error(err)
-      return false
-    }
-  }, [siwe, request])
+  const { siweDomainMismatch, isSiweMismatchAcknowledged, setIsSiweMismatchAcknowledged } =
+    useEthSignMessageRequest()
 
   return (
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
@@ -105,9 +98,17 @@ export const EthSignBodyMessageSIWE: FC<{
         )}
       </div>
       <div className="grow"></div>
-      {!isValidUrl && (
+      {siweDomainMismatch && (
         <SignAlertMessage type="error" className="mt-8">
-          {t("Sign in domain is different from website domain.")}
+          <div className="flex flex-col gap-4">
+            <div>{t("Sign in domain is different from website domain.")}</div>
+            <Checkbox
+              checked={isSiweMismatchAcknowledged}
+              onChange={(e) => setIsSiweMismatchAcknowledged(e.target.checked)}
+            >
+              {t("I understand the risk, sign in anyway")}
+            </Checkbox>
+          </div>
         </SignAlertMessage>
       )}
       <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>

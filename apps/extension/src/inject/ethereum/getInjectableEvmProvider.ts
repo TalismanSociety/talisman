@@ -3,8 +3,8 @@ import type { SendRequest } from "@core/types"
 import { EventEmitter } from "inject/shared/EventEmitter"
 
 import {
+  ETH_ERROR_EIP1193_USER_REJECTED,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
   type WrappedEthProviderRpcError,
 } from "./EthProviderRpcError"
@@ -147,7 +147,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
       } else {
         // popup closed case, untyped because thrown by window manager
         if (message === "Cancelled")
-          throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
+          throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
 
         // RPC node error, wrap it
         throw new EthProviderRpcError(

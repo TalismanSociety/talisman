@@ -18,7 +18,8 @@ test("Access Metamask e2e DApp and connect wallet", async ({ importAccount, cont
   await popup.waitForTimeout(5000)
   await popup.bringToFront()
   await popup.setViewportSize({ width: 400, height: 600 })
-  await popup.getByRole("button", { name: ACCOUNT_NAME }).click()
+  // the first account is preselected on a fresh connect, clicking it would deselect it
+  await expect(popup.getByRole("button", { name: ACCOUNT_NAME })).toBeVisible()
   await popup.getByTestId("connection-connect-button").click()
   // verify that the account is connected on metamask test dapp
   await expect(ethAccount.locator("#accounts")).toContainText("0x")
