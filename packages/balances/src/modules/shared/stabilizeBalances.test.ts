@@ -225,3 +225,43 @@ describe("classifySmallAmountDrift", () => {
     expect(classify(makeBalance({ address: "a", tokenId: "t" }), withExtra)).toBe("changed")
   })
 })
+
+describe("batch-aligned drift release", () => {
+  test("a real change releases drift-held balances in the same emission", () => {
+    let clock = 0
+    const stabilize = createBalanceStabilizer(
+      (previous, next) => {
+        const amountOf = (b: IBalance) =>
+          ("values" in b ? (b.values ?? []) : [])[0]?.amount as string | undefined
+        return amountOf(previous) === amountOf(next) ? "equal" : "drift"
+      },
+      { driftRefreshMs: 30_000, now: () => clock }
+    )
+
+    const make = (address: string, amount: string) =>
+      makeBalance({
+        address,
+        tokenId: "t",
+        values: [{ type: "free", label: "free", amount }],
+      })
+
+    const a1 = make("a", "100")
+    const b1 = make("b", "100")
+    stabilize([a1, b1])
+
+    // a drifts within its window → held
+    clock = 10_000
+    expect(stabilize([make("a", "101"), b1])[0]).toBe(a1)
+
+    // b structurally changes (status flip → classified changed by the fallback path is
+    // not used here; the custom comparator returns drift for amount-only, so change b's
+    // amount beyond drift by making it a NEW balance id instead): use a fresh balance c
+    clock = 20_000
+    const a3 = make("a", "102")
+    const c1 = make("c", "50")
+    const [emittedA, , emittedC] = stabilize([a3, b1, c1])
+    // the new balance c forces an emission → a's held drift is released alongside it
+    expect(emittedC).toBe(c1)
+    expect(emittedA).toBe(a3)
+  })
+})

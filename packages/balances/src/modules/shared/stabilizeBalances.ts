@@ -90,20 +90,38 @@ export const createBalanceStabilizer = (
   return (balances: IBalance[]): IBalance[] => {
     const nextById = new Map<string, Entry>()
 
-    const stabilized = balances.map((balance): IBalance => {
+    // pass 1: classify everything against the last emitted objects
+    const classified = balances.map((balance) => {
       const id = getBalanceId(balance)
       const previousEntry = previousById.get(id)
+      const equivalence: BalanceEquivalence = previousEntry
+        ? classify(previousEntry.balance, balance)
+        : "changed"
+      return { id, balance, previousEntry, equivalence }
+    })
 
-      if (previousEntry) {
-        const equivalence = classify(previousEntry.balance, balance)
-        const reusePrevious =
-          equivalence === "equal" ||
-          (equivalence === "drift" && now() - previousEntry.emittedAt < driftRefreshMs)
+    // batch-aligned drift release: when any drift window has expired — or a real change
+    // forces an emission anyway — refresh EVERY drift-classified balance in the same
+    // pass. Per-balance windows start at different times, so without alignment many
+    // drifting positions dribble out as frequent small emissions; with it they coalesce
+    // into one batched emission per refresh interval (and piggyback on real changes).
+    const releaseDrift = classified.some(
+      ({ previousEntry, equivalence }) =>
+        equivalence === "changed" ||
+        (equivalence === "drift" &&
+          previousEntry !== undefined &&
+          now() - previousEntry.emittedAt >= driftRefreshMs)
+    )
 
-        if (reusePrevious) {
-          nextById.set(id, previousEntry)
-          return previousEntry.balance
-        }
+    // pass 2: reuse or release
+    const stabilized = classified.map(({ id, balance, previousEntry, equivalence }): IBalance => {
+      const reusePrevious =
+        previousEntry !== undefined &&
+        (equivalence === "equal" || (equivalence === "drift" && !releaseDrift))
+
+      if (reusePrevious) {
+        nextById.set(id, previousEntry)
+        return previousEntry.balance
       }
 
       nextById.set(id, { balance, emittedAt: now() })
