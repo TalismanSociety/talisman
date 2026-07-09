@@ -1,10 +1,20 @@
-import { encodeAnyAddress } from "@talismn/crypto"
+import { deriveBitcoinAddressFromXpub, encodeAnyAddress, isBitcoinXpub } from "@talismn/crypto"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
+
+// bitcoin account identities are xpubs, which must never be shown as a payable
+// address — display the first payments (P2WPKH) address instead
+const getBitcoinDisplayAddress = (xpub: string) => {
+  try {
+    return deriveBitcoinAddressFromXpub(xpub, "p2wpkh", 0, 0)
+  } catch {
+    return xpub
+  }
+}
 
 type AddressProps = {
   address?: string
@@ -39,7 +49,11 @@ export const Address: FC<AddressProps> = ({
   const formatted = useMemo(() => {
     if (!noOnChainId && onChainId) return onChainId
     const addressWithPrefix =
-      address && chain ? encodeAnyAddress(address, { ss58Format: chain.prefix }) : address
+      address && isBitcoinXpub(address)
+        ? getBitcoinDisplayAddress(address)
+        : address && chain
+          ? encodeAnyAddress(address, { ss58Format: chain.prefix })
+          : address
     if (noShorten) return addressWithPrefix
     if (!addressWithPrefix) return addressWithPrefix
     return shortenAddress(addressWithPrefix, startCharCount, endCharCount)

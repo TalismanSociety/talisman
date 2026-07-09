@@ -10,6 +10,7 @@ import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
+import { BitcoinExtensionHandler } from "../domains/bitcoin/handler.extension"
 import { BittensorHandler } from "../domains/bittensor/handler"
 import { ChaindataHandler } from "../domains/chaindata/handler"
 import { ChainsHandler } from "../domains/chains"
@@ -67,6 +68,7 @@ export default class Extension extends ExtensionHandler {
       tokenRates: new TokenRatesHandler(stores),
       substrate: new SubHandler(stores),
       solana: new SolanaExtensionHandler(stores),
+      bitcoin: new BitcoinExtensionHandler(stores),
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),
       bittensor: new BittensorHandler(stores),

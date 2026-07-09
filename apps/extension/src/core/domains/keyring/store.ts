@@ -164,6 +164,13 @@ class KeyringStore {
     return keyring.getMnemonicText(id, password)
   }
 
+  public async withBitcoinAccountKeys<T>(
+    ...args: Parameters<Keyring["withBitcoinAccountKeys"]>
+  ): Promise<T> {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return (await keyring.withBitcoinAccountKeys(...args)) as T
+  }
+
   public async getExistingMnemonicId(mnemonic: string) {
     const keyring = await firstValueFrom(this.#keyring$)
     return keyring.getExistingMnemonicId(mnemonic)

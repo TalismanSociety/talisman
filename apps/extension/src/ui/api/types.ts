@@ -24,6 +24,15 @@ import type {
   BalanceSubscriptionResponse,
   RequestBalance,
 } from "@core/domains/balances/types"
+import type {
+  RequestBitcoinFeeEstimates,
+  RequestBitcoinGetUnusedAddress,
+  RequestBitcoinGetUtxos,
+  RequestBitcoinSubmit,
+  ResponseBitcoinGetUnusedAddress,
+  ResponseBitcoinGetUtxos,
+  ResponseBitcoinSubmit,
+} from "@core/domains/bitcoin/exports"
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
 import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
 import type { DefiPosition } from "@core/domains/defi/exports"
@@ -71,6 +80,7 @@ import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
 import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "@core/types/pjsInterop"
 import type { IBalance } from "@talismn/balances"
+import type { BtcFeeEstimates } from "@talismn/bitcoin"
 import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import type { KeypairCurve } from "@talismn/crypto"
 import type { NsLookupType } from "@talismn/on-chain-id"
@@ -293,6 +303,13 @@ export default interface MessageTypes {
     txInfo?: WalletTransactionInfo
   ) => Promise<ResponseSolanaSubmit>
   solSignApprove: (req: RequestSolanaSignApprove) => Promise<void>
+
+  btcGetUnusedAddress: (
+    req: RequestBitcoinGetUnusedAddress
+  ) => Promise<ResponseBitcoinGetUnusedAddress>
+  btcGetUtxos: (req: RequestBitcoinGetUtxos) => Promise<ResponseBitcoinGetUtxos>
+  btcGetFeeEstimates: (req: RequestBitcoinFeeEstimates) => Promise<BtcFeeEstimates>
+  btcSubmit: (req: RequestBitcoinSubmit) => Promise<ResponseBitcoinSubmit>
 
   // substrate chain metadata
   subChainMetadata: (

@@ -53,6 +53,7 @@ const Content = () => {
   const { t } = useTranslation()
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const [hideDust, setHideDust] = useSetting("hideDust")
+  const [btcFreshReceiveAddress, setBtcFreshReceiveAddress] = useSetting("btcFreshReceiveAddress")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
@@ -96,6 +97,18 @@ const Content = () => {
           subtitle={t("Hide tokens with a balance below US$1")}
         >
           <Toggle checked={hideDust} onChange={(e) => setHideDust(e.target.checked)} />
+        </Setting>
+        <Setting
+          iconLeft={CoinsIcon}
+          title={t("Rotate Bitcoin receive address")}
+          subtitle={t(
+            "Issue a fresh address each time you receive. Improves privacy; previous addresses always remain valid"
+          )}
+        >
+          <Toggle
+            checked={!!btcFreshReceiveAddress}
+            onChange={(e) => setBtcFreshReceiveAddress(e.target.checked)}
+          />
         </Setting>
         <CtaButton
           iconLeft={FlagIcon}
