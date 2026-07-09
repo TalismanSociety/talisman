@@ -4,10 +4,12 @@ import {
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
+  isAccountPlatformBitcoin,
 } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { type Balance, Balances } from "@talismn/balances"
 import {
+  btcNativeTokenId,
   evmNativeTokenId,
   getNetworkGenesisHash,
   type Network,
@@ -31,6 +33,8 @@ const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
 ]
 
 const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
+
+const DEFAULT_PORTFOLIO_TOKENS_BITCOIN = [btcNativeTokenId("bitcoin")]
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (
@@ -67,6 +71,10 @@ const shouldDisplayBalance = (
       const isEthereumAccount = !account || isAccountAddressEthereum(account)
       const isEthereumToken = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)
       if (isEthereumAccount && isEthereumToken) return true
+
+      const isBitcoinAccount = isAccountPlatformBitcoin(account)
+      const isBitcoinToken = DEFAULT_PORTFOLIO_TOKENS_BITCOIN.includes(balance.tokenId)
+      if (isBitcoinAccount && isBitcoinToken) return true
     }
 
     const genesisHash = getAccountGenesisHash(account)
