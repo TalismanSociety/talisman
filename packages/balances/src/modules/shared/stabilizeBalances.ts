@@ -100,17 +100,19 @@ export const createBalanceStabilizer = (
       return { id, balance, previousEntry, equivalence }
     })
 
-    // batch-aligned drift release: when any drift window has expired — or a real change
-    // forces an emission anyway — refresh EVERY drift-classified balance in the same
-    // pass. Per-balance windows start at different times, so without alignment many
-    // drifting positions dribble out as frequent small emissions; with it they coalesce
-    // into one batched emission per refresh interval (and piggyback on real changes).
+    // batch-aligned drift release: when any drift window has expired, refresh EVERY
+    // drift-classified balance in the same pass. Per-balance windows start at different
+    // times, so without alignment many drifting positions dribble out as frequent small
+    // emissions; with it they coalesce into one batched emission per refresh interval.
+    //
+    // Deliberately NOT triggered by "changed" balances: ids toggling in/out of the
+    // result set classify as "changed" (no previous entry), and piggybacking on those
+    // released the whole drift pool on nearly every poll — defeating the interval.
     const releaseDrift = classified.some(
       ({ previousEntry, equivalence }) =>
-        equivalence === "changed" ||
-        (equivalence === "drift" &&
-          previousEntry !== undefined &&
-          now() - previousEntry.emittedAt >= driftRefreshMs)
+        equivalence === "drift" &&
+        previousEntry !== undefined &&
+        now() - previousEntry.emittedAt >= driftRefreshMs
     )
 
     // pass 2: reuse or release

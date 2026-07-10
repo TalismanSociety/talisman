@@ -227,7 +227,7 @@ describe("classifySmallAmountDrift", () => {
 })
 
 describe("batch-aligned drift release", () => {
-  test("a real change releases drift-held balances in the same emission", () => {
+  test("changed balances do NOT release drift-held balances (only expiry does)", () => {
     let clock = 0
     const stabilize = createBalanceStabilizer(
       (previous, next) => {
@@ -253,15 +253,19 @@ describe("batch-aligned drift release", () => {
     clock = 10_000
     expect(stabilize([make("a", "101"), b1])[0]).toBe(a1)
 
-    // b structurally changes (status flip → classified changed by the fallback path is
-    // not used here; the custom comparator returns drift for amount-only, so change b's
-    // amount beyond drift by making it a NEW balance id instead): use a fresh balance c
+    // a new balance id appears (classified "changed" — no previous entry). It must emit
+    // itself, but must NOT release a's held drift: ids toggling in/out of the result set
+    // would otherwise defeat the refresh interval on every poll.
     clock = 20_000
     const a3 = make("a", "102")
     const c1 = make("c", "50")
     const [emittedA, , emittedC] = stabilize([a3, b1, c1])
-    // the new balance c forces an emission → a's held drift is released alongside it
     expect(emittedC).toBe(c1)
-    expect(emittedA).toBe(a3)
+    expect(emittedA).toBe(a1)
+
+    // a's drift window expires → released (aligned with any other held drift)
+    clock = 31_000
+    const a4 = make("a", "103")
+    expect(stabilize([a4, b1, c1])[0]).toBe(a4)
   })
 })
