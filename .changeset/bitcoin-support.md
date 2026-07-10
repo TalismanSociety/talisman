@@ -5,6 +5,7 @@
 "@talismn/chaindata-provider": minor
 "@talismn/chain-connectors": minor
 "@talismn/balances": minor
+"@talismn/orb": patch
 ---
 
 Add Bitcoin as a fourth chain family (Polkadot / EVM / Solana / Bitcoin)
@@ -15,3 +16,4 @@ Add Bitcoin as a fourth chain family (Polkadot / EVM / Solana / Bitcoin)
 - `@talismn/chaindata-provider`: `BtcNetwork` / `BtcNativeToken` schemas, network/token union members, and bitcoin platform guards
 - `@talismn/chain-connectors`: `IChainConnectorBtc` + `ChainConnectorBtc`
 - `@talismn/balances`: `btc-native` balance module (block-aware poll, dual-tree aggregate row); `PlatformConnector` gains bitcoin, non-polkadot fetch/subscribe args accept optional `BtcAccountsMeta`, and `getBalances$` accepts a `btcAccounts` option
+- `@talismn/orb`: bitcoin account-type overlay (₿) on the identicon

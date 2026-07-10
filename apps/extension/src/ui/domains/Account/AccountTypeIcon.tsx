@@ -31,10 +31,10 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({
     if (!type) return [undefined, undefined]
 
     if (showLinked && type === "keypair") return [LinkIcon, t("Local account")]
-    if (["ledger-ethereum", "ledger-polkadot", "ledger-solana"].includes(type))
+    if (["ledger-ethereum", "ledger-polkadot", "ledger-solana", "ledger-bitcoin"].includes(type))
       return [UsbIcon, t("Ledger account")]
     if (type === "polkadot-vault") return [PolkadotVaultIcon, t("Polkadot Vault account")]
-    if (type === "watch-only") return [EyeIcon, t("Watched account")]
+    if (["watch-only", "watch-only-bitcoin"].includes(type)) return [EyeIcon, t("Watched account")]
     if (type === "contact") return [UsersIcon, t("Contact")]
     if (type === "signet")
       return [SignetIcon, t(`Signet Vault${signetUrl !== undefined ? `: ${signetUrl}` : ""}`)]
