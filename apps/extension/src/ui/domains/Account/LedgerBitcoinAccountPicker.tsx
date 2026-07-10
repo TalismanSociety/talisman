@@ -62,10 +62,9 @@ const useLedgerBitcoinAccounts = (
 
           if (!account) {
             const paths = getBtcLedgerPaths(accountIndex)
-            const [paymentsXpub, ordinalsXpub] = await Promise.all([
-              getExtendedPubkey(paths.payments),
-              getExtendedPubkey(paths.ordinals),
-            ])
+            // a single Ledger transport can't handle concurrent APDU exchanges — derive sequentially
+            const paymentsXpub = await getExtendedPubkey(paths.payments)
+            const ordinalsXpub = await getExtendedPubkey(paths.ordinals)
             if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
 
             const identity = normalizeXpub(paymentsXpub)
