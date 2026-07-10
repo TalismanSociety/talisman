@@ -112,48 +112,104 @@ export const getScanCursor = (scan: BitcoinAccountScan): ScanCursor =>
   )
 
 /**
- * Cheap between-blocks activity probe: re-queries stats for all previously active
- * addresses plus each chain's first unused address, and reports whether anything moved
- * (incoming mempool tx, outgoing spend, or a fresh address turning used).
+ * Between-block incremental update of a single chain. Re-queries the previously-active
+ * addresses (to pick up confirmations, spends and mempool changes) and probes the
+ * first-unused frontier. Addresses beyond the frontier are trusted to remain unused —
+ * that invariant was established by the initial full gap scan — so the frontier is only
+ * extended (via a forward gap scan) if it has itself become used. Steady-state cost is
+ * ~1 request per chain instead of a full gap sweep.
  */
-export const hasBitcoinAccountActivity = async (
+const refreshChain = async (
   api: BtcApi,
-  scan: BitcoinAccountScan,
-  hrp: BitcoinHrp
-): Promise<boolean> => {
-  const checks: Array<() => Promise<boolean>> = []
+  spec: BitcoinTreeSpec,
+  change: 0 | 1,
+  hrp: BitcoinHrp,
+  gapLimit: number,
+  prior: TreeChainScan
+): Promise<TreeChainScan> => {
+  const activeAddresses: TreeChainScan["activeAddresses"] = []
+  let lastUsedIndex = -1
 
-  for (const tree of scan.trees) {
-    for (const change of [0, 1] as const) {
-      const chain = tree.chains[change]
-
-      for (const active of chain.activeAddresses)
-        checks.push(async () => {
-          const stats = await api.getAddressStats(active.address)
-          const { confirmedSats, mempoolDeltaSats, txCount } = statsToBalances(stats)
-          return (
-            confirmedSats !== active.confirmedSats ||
-            mempoolDeltaSats !== active.mempoolDeltaSats ||
-            txCount !== active.txCount
-          )
-        })
-
-      checks.push(async () => {
-        const address = deriveBitcoinAddressFromXpub(
-          tree.spec.xpub,
-          tree.spec.addressType,
-          change,
-          chain.firstUnusedIndex,
-          hrp
-        )
-        const stats = await api.getAddressStats(address)
-        return statsToBalances(stats).txCount > 0
-      })
-    }
+  const record = (result: TreeChainScan["activeAddresses"][number]) => {
+    if (result.txCount > 0) lastUsedIndex = Math.max(lastUsedIndex, result.index)
+    if (result.txCount > 0 || result.confirmedSats !== 0n || result.mempoolDeltaSats !== 0n)
+      activeAddresses.push(result)
   }
 
-  const results = await Promise.all(checks.map((check) => check()))
-  return results.some(Boolean)
+  // re-check the addresses already known to be active
+  const refreshed = await Promise.all(
+    prior.activeAddresses.map(async ({ index, address }) => {
+      const stats = await api.getAddressStats(address)
+      return { index, address, ...statsToBalances(stats) }
+    })
+  )
+  for (const result of refreshed) record(result)
+
+  // probe the frontier; only walk forward (extending the gap) if it has become used
+  let index = prior.firstUnusedIndex
+  let upper = prior.firstUnusedIndex + 1
+  while (index < upper) {
+    const batchIndices: number[] = []
+    for (let i = index; i < Math.min(index + SCAN_BATCH_SIZE, upper); i++) batchIndices.push(i)
+
+    const results = await Promise.all(
+      batchIndices.map(async (i) => {
+        const address = deriveBitcoinAddressFromXpub(spec.xpub, spec.addressType, change, i, hrp)
+        const stats = await api.getAddressStats(address)
+        return { index: i, address, ...statsToBalances(stats) }
+      })
+    )
+
+    for (const result of results) {
+      // extend the horizon: gap counts from the last used address
+      if (result.txCount > 0) upper = Math.max(upper, result.index + 1 + gapLimit)
+      record(result)
+    }
+
+    index += batchIndices.length
+  }
+
+  return {
+    usedCount: lastUsedIndex + 1,
+    firstUnusedIndex: lastUsedIndex + 1,
+    activeAddresses: activeAddresses.sort((a, b) => a.index - b.index),
+  }
+}
+
+/**
+ * Cheap incremental refresh of a previously-scanned account, for between-block balance
+ * polling. Confirmed balances only change on a new block and new receives normally land
+ * on the next unused address, so re-checking active addresses plus each chain's frontier
+ * is enough — a full gap sweep (`scanBitcoinAccount`) is only needed for cold discovery.
+ */
+export const refreshBitcoinAccountScan = async (
+  api: BtcApi,
+  prior: BitcoinAccountScan,
+  hrp: BitcoinHrp,
+  gapLimit: number = BITCOIN_GAP_LIMIT
+): Promise<BitcoinAccountScan> => {
+  const [tipHeight, ...trees] = await Promise.all([
+    api.getTipHeight(),
+    ...prior.trees.map(async (tree): Promise<BitcoinTreeScan> => {
+      const [external, internal] = await Promise.all([
+        refreshChain(api, tree.spec, 0, hrp, gapLimit, tree.chains[0]),
+        refreshChain(api, tree.spec, 1, hrp, gapLimit, tree.chains[1]),
+      ])
+      const sum = (fn: (a: TreeChainScan["activeAddresses"][number]) => bigint) =>
+        [...external.activeAddresses, ...internal.activeAddresses].reduce(
+          (acc, a) => acc + fn(a),
+          0n
+        )
+      return {
+        spec: tree.spec,
+        chains: [external, internal],
+        confirmedSats: sum((a) => a.confirmedSats),
+        mempoolDeltaSats: sum((a) => a.mempoolDeltaSats),
+      }
+    }),
+  ])
+
+  return { trees, tipHeight }
 }
 
 /**

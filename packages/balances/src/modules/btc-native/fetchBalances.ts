@@ -3,8 +3,7 @@ import {
   type BitcoinHrp,
   type BitcoinTreeSpec,
   type BtcApi,
-  getScanCursor,
-  type ScanCursor,
+  refreshBitcoinAccountScan,
   scanBitcoinAccount,
 } from "@talismn/bitcoin"
 import type { BtcNetworkId } from "@talismn/chaindata-provider"
@@ -21,7 +20,7 @@ import { BalanceFetchError } from "../shared/errors"
 import { getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
 
-export const getBtcNetworkHrp = (networkId: BtcNetworkId): BitcoinHrp =>
+const getBtcNetworkHrp = (networkId: BtcNetworkId): BitcoinHrp =>
   networkId === "bitcoin" ? "bc" : "tb"
 
 const max0 = (value: bigint) => (value > 0n ? value : 0n)
@@ -89,13 +88,14 @@ export const fetchBtcBalancesWithState = async ({
   tokensWithAddresses,
   api,
   meta,
-  warmStart,
+  priorState,
 }: {
   networkId: BtcNetworkId
   tokensWithAddresses: TokensWithAddresses
   api: BtcApi
   meta?: BtcAccountsMeta
-  warmStart?: Record<Address, ScanCursor>
+  /** state from a previous fetch: enables a cheap incremental refresh instead of a full gap scan */
+  priorState?: BtcFetchState
 }): Promise<{ results: FetchBalanceResults; state: BtcFetchState }> => {
   const hrp = getBtcNetworkHrp(networkId)
 
@@ -121,12 +121,11 @@ export const fetchBtcBalancesWithState = async ({
         let values: Array<AmountWithLabel<string>>
 
         if (isBitcoinXpub(address)) {
-          const trees = getAccountTrees(address, meta)
-          const scan = await scanBitcoinAccount(api, {
-            trees,
-            hrp,
-            warmStart: warmStart?.[address],
-          })
+          const priorScan = priorState?.scans[address]
+          // incremental refresh once we have a prior scan; full gap scan for cold discovery
+          const scan = priorScan
+            ? await refreshBitcoinAccountScan(api, priorScan, hrp)
+            : await scanBitcoinAccount(api, { trees: getAccountTrees(address, meta), hrp })
           state.scans[address] = scan
           values = buildValues(
             scan.trees.map((tree) => ({
@@ -181,11 +180,6 @@ export const fetchBtcBalancesWithState = async ({
 
   return { results, state }
 }
-
-export const getWarmStartCursors = (state: BtcFetchState): Record<Address, ScanCursor> =>
-  Object.fromEntries(
-    Object.entries(state.scans).map(([address, scan]) => [address, getScanCursor(scan)])
-  )
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,

@@ -3,7 +3,12 @@ import { describe, expect, it, vi } from "vitest"
 
 import type { BtcApi, EsploraAddressStats } from "../esplora/types"
 import type { BitcoinTreeSpec } from "../types"
-import { getScanCursor, getSpendableUtxos, scanBitcoinAccount } from "./scan"
+import {
+  getScanCursor,
+  getSpendableUtxos,
+  refreshBitcoinAccountScan,
+  scanBitcoinAccount,
+} from "./scan"
 
 // BIP84 account 0 zpub for the standard test mnemonic
 const ZPUB =
@@ -138,6 +143,50 @@ describe("scanBitcoinAccount", () => {
     const scan = await scanBitcoinAccount(api, { trees: [TREE], hrp: "bc" })
     expect(scan.trees[0].confirmedSats).toEqual(10_000n)
     expect(scan.trees[0].mempoolDeltaSats).toEqual(4_000n)
+  })
+})
+
+describe("refreshBitcoinAccountScan", () => {
+  it("only re-checks active addresses + the frontier (no full gap sweep)", async () => {
+    const api = buildMockApi({ 0: { confirmed: 10_000 } })
+    const cold = await scanBitcoinAccount(api, { trees: [TREE], hrp: "bc" })
+    const coldCalls = api.statsCalls.length // full gap sweep: external 0..20 + internal 0..19
+
+    api.statsCalls.length = 0
+    const refreshed = await refreshBitcoinAccountScan(api, cold, "bc")
+
+    // external: active [0] + frontier [1]; internal: frontier [0] → 3 requests, not ~41
+    expect(api.statsCalls.length).toEqual(3)
+    expect(coldCalls).toBeGreaterThan(20)
+    expect(refreshed.trees[0].confirmedSats).toEqual(10_000n)
+    expect(refreshed.trees[0].chains[0].firstUnusedIndex).toEqual(1)
+  })
+
+  it("detects a new payment to the frontier and extends", async () => {
+    const cold = await scanBitcoinAccount(buildMockApi({ 0: { confirmed: 10_000 } }), {
+      trees: [TREE],
+      hrp: "bc",
+    })
+    // a payment lands on the next unused address (index 1)
+    const api = buildMockApi({ 0: { confirmed: 10_000 }, 1: { confirmed: 5_000 } })
+    const refreshed = await refreshBitcoinAccountScan(api, cold, "bc")
+
+    const external = refreshed.trees[0].chains[0]
+    expect(external.activeAddresses.map((a) => a.index)).toEqual([0, 1])
+    expect(external.firstUnusedIndex).toEqual(2)
+    expect(refreshed.trees[0].confirmedSats).toEqual(15_000n)
+  })
+
+  it("picks up incoming mempool on a known active address", async () => {
+    const cold = await scanBitcoinAccount(buildMockApi({ 0: { confirmed: 10_000 } }), {
+      trees: [TREE],
+      hrp: "bc",
+    })
+    const api = buildMockApi({ 0: { confirmed: 10_000, mempool: 3_000 } })
+    const refreshed = await refreshBitcoinAccountScan(api, cold, "bc")
+
+    expect(refreshed.trees[0].confirmedSats).toEqual(10_000n)
+    expect(refreshed.trees[0].mempoolDeltaSats).toEqual(3_000n)
   })
 })
 

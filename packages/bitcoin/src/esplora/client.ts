@@ -15,6 +15,8 @@ class EsploraRequestError extends Error {
   }
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 /**
  * Esplora REST client with multi-url failover.
  * `urls` are esplora API bases including the /api segment,
@@ -41,6 +43,8 @@ export const createEsploraClient = (urls: string[]): BtcApi => {
           // 4xx (except 429) are deterministic — the other servers would answer the same
           if (response.status < 500 && response.status !== 429) throw error
           lastError = error
+          // back off before hitting the next endpoint so a rate-limit doesn't tight-loop
+          if (attempt < urls.length - 1) await sleep(500 * (attempt + 1))
           continue
         }
         currentUrlIndex = (currentUrlIndex + attempt) % urls.length
@@ -48,6 +52,7 @@ export const createEsploraClient = (urls: string[]): BtcApi => {
       } catch (err) {
         if (err instanceof EsploraRequestError && err.status < 500 && err.status !== 429) throw err
         lastError = err
+        if (attempt < urls.length - 1) await sleep(500 * (attempt + 1))
       }
     }
     throw lastError instanceof Error ? lastError : new Error("All esplora endpoints failed")
