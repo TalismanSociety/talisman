@@ -318,88 +318,102 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       { slicer }
     )
 
-    const success: IBalance[] = await mapWithYield(
-      balanceDefs,
-      (def): IBalance => {
-        // balancesRaw is keyed `${address}:${tokenId}` — direct lookup instead of O(n) find
-        const stake = balancesRaw[`${def.address}:${def.token.id}`]
-        const meta: SubDTaoBalanceMeta = {
-          scaledAlphaPrice: stake?.scaledAlphaPrice.toString() ?? "0",
-        }
+    const success: IBalance[] = (
+      await mapWithYield(
+        balanceDefs,
+        (def): IBalance | null => {
+          // balancesRaw is keyed `${address}:${tokenId}` — direct lookup instead of O(n) find
+          const stake = balancesRaw[`${def.address}:${def.token.id}`]
 
-        const stakeAmount = BigInt(stake?.stake?.toString() ?? "0")
-        const pendingRootClaimAmount = BigInt(stake?.pendingRootClaim?.toString() ?? "0")
-        const convictionLockAmount = BigInt(stake?.convictionLock?.amount?.toString() ?? "0")
-        const convictionLockConviction = BigInt(stake?.convictionLock?.convictionRaw ?? "0")
-        const hasZeroStake = stakeAmount === 0n
-        const hasPendingRootClaim = pendingRootClaimAmount > 0n
+          // do NOT fabricate zero balances for defs with no on-chain record: with the
+          // full token list (all subnets × hotkeys × addresses) that meant building —
+          // and running change-detection over — thousands of objects on every 6s poll
+          // for downstream to discard. Absent balances are handled by the provider's
+          // storage update (expected-but-missing ids are deleted), so a position
+          // dropping to zero still disappears from the portfolio.
+          if (!stake) return null
 
-        const balanceValue: AmountWithLabel<string> = {
-          type: "free",
-          label: stake?.netuid === 0 ? "Root Staking" : `Subnet Staking`,
-          amount: stakeAmount.toString(),
-          meta,
-        }
-
-        const pendingRootClaimValue: AmountWithLabel<string> = {
-          type: "locked",
-          label: "Pending root claim",
-          amount: pendingRootClaimAmount.toString(),
-          // The pending claim is not part of the stake (free amount): on-chain it only becomes
-          // stake once claimed (root_claim_on_subnet). Since it was never included in `free`,
-          // it must not be subtracted from it either: flag it so it does not reduce the staked
-          // position's transferable amount.
-          includeInTransferable: true,
-          meta,
-        }
-
-        const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
-        // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
-        // future lock_stake calls to their hotkey, so the lock wizard must know they exist
-        if (stake?.convictionLock && (convictionLockAmount > 0n || convictionLockConviction > 0n)) {
-          const convictionLockMeta: SubDTaoBalanceMeta = {
-            ...meta,
-            convictionLock: {
-              type: "conviction-lock",
-              hotkey: stake.convictionLock.hotkey,
-              lockType: stake.convictionLock.lockType,
-            },
+          const meta: SubDTaoBalanceMeta = {
+            scaledAlphaPrice: stake.scaledAlphaPrice.toString(),
           }
 
-          values.push({
-            type: "locked",
-            label: getConvictionLockLabel(stake.convictionLock.lockType),
-            amount: convictionLockAmount.toString(),
-            meta: convictionLockMeta,
-          })
-        }
+          const stakeAmount = BigInt(stake.stake?.toString() ?? "0")
+          const pendingRootClaimAmount = BigInt(stake.pendingRootClaim?.toString() ?? "0")
+          const convictionLockAmount = BigInt(stake.convictionLock?.amount?.toString() ?? "0")
+          const convictionLockConviction = BigInt(stake.convictionLock?.convictionRaw ?? "0")
+          const hasZeroStake = stakeAmount === 0n
+          const hasPendingRootClaim = pendingRootClaimAmount > 0n
 
-        // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
-        // with includeInTotal: true so it counts toward the total balance.
-        // This ensures the balance isn't filtered out when stake is 0n.
-        // The total.planck calculation is: free + reserved + extra (with includeInTotal: true)
-        // So by adding pendingRootClaim as extra, it will be included in total.planck.
-        if (hasZeroStake && hasPendingRootClaim) {
-          values.push({
-            type: "extra",
+          const balanceValue: AmountWithLabel<string> = {
+            type: "free",
+            label: stake.netuid === 0 ? "Root Staking" : `Subnet Staking`,
+            amount: stakeAmount.toString(),
+            meta,
+          }
+
+          const pendingRootClaimValue: AmountWithLabel<string> = {
+            type: "locked",
             label: "Pending root claim",
             amount: pendingRootClaimAmount.toString(),
-            includeInTotal: true,
+            // The pending claim is not part of the stake (free amount): on-chain it only becomes
+            // stake once claimed (root_claim_on_subnet). Since it was never included in `free`,
+            // it must not be subtracted from it either: flag it so it does not reduce the staked
+            // position's transferable amount.
+            includeInTransferable: true,
             meta,
-          })
-        }
+          }
 
-        return {
-          address: def.address,
-          networkId,
-          tokenId: def.token.id,
-          source: MODULE_TYPE,
-          status: "live",
-          values,
-        }
-      },
-      { slicer }
-    )
+          const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
+          // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
+          // future lock_stake calls to their hotkey, so the lock wizard must know they exist
+          if (
+            stake.convictionLock &&
+            (convictionLockAmount > 0n || convictionLockConviction > 0n)
+          ) {
+            const convictionLockMeta: SubDTaoBalanceMeta = {
+              ...meta,
+              convictionLock: {
+                type: "conviction-lock",
+                hotkey: stake.convictionLock.hotkey,
+                lockType: stake.convictionLock.lockType,
+              },
+            }
+
+            values.push({
+              type: "locked",
+              label: getConvictionLockLabel(stake.convictionLock.lockType),
+              amount: convictionLockAmount.toString(),
+              meta: convictionLockMeta,
+            })
+          }
+
+          // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
+          // with includeInTotal: true so it counts toward the total balance.
+          // This ensures the balance isn't filtered out when stake is 0n.
+          // The total.planck calculation is: free + reserved + extra (with includeInTotal: true)
+          // So by adding pendingRootClaim as extra, it will be included in total.planck.
+          if (hasZeroStake && hasPendingRootClaim) {
+            values.push({
+              type: "extra",
+              label: "Pending root claim",
+              amount: pendingRootClaimAmount.toString(),
+              includeInTotal: true,
+              meta,
+            })
+          }
+
+          return {
+            address: def.address,
+            networkId,
+            tokenId: def.token.id,
+            source: MODULE_TYPE,
+            status: "live",
+            values,
+          }
+        },
+        { slicer }
+      )
+    ).filter(isNotNil)
 
     return {
       success,
