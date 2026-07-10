@@ -8,7 +8,6 @@ export {
   isAccountAddressSs58,
   /** @knipignore */
   isAccountBitcoin,
-  isAccountBitcoinHd,
   isAccountInTypes,
   isAccountLedgerPolkadotGeneric,
   isAccountLedgerPolkadotLegacy,

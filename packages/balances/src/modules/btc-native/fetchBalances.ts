@@ -36,12 +36,12 @@ export type BtcFetchState = {
   plain: Record<Address, PlainAddressSnapshot>
 }
 
-export const getDefaultTrees = (address: Address): BitcoinTreeSpec[] => [
+const getDefaultTrees = (address: Address): BitcoinTreeSpec[] => [
   // bare xpub without account metadata (plain watch-only): single payments tree
   { tree: "payments", xpub: address, addressType: "p2wpkh" },
 ]
 
-export const getAccountTrees = (address: Address, meta?: BtcAccountsMeta): BitcoinTreeSpec[] =>
+const getAccountTrees = (address: Address, meta?: BtcAccountsMeta): BitcoinTreeSpec[] =>
   meta?.[address]?.trees?.length ? meta[address].trees : getDefaultTrees(address)
 
 /**
