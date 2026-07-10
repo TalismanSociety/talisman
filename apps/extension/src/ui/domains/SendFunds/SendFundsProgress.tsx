@@ -1,5 +1,6 @@
 import type {
   WalletTransaction,
+  WalletTransactionBtc,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
@@ -258,6 +259,31 @@ const SendFundsProgressSolana: FC<SendFundsProgressSolanaProps> = ({ tx, onClose
   return <SendFundsProgressBase tx={tx} className={className} onClose={onClose} href={href} />
 }
 
+type SendFundsProgressBitcoinProps = {
+  tx: WalletTransactionBtc
+  onClose?: () => void
+  className?: string
+}
+
+const SendFundsProgressBitcoin: FC<SendFundsProgressBitcoinProps> = ({
+  tx,
+  onClose,
+  className,
+}) => {
+  const network = useNetworkById(tx.networkId, "bitcoin")
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
+
+  return (
+    <SendFundsProgressBase
+      tx={tx}
+      className={className}
+      onClose={onClose}
+      blockNumber={tx.blockNumber}
+      href={href}
+    />
+  )
+}
+
 type SendFundsProgressEvmProps = {
   tx: WalletTransactionEth
   onClose?: () => void
@@ -312,6 +338,8 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
       return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
     case "solana":
       return <SendFundsProgressSolana tx={tx} onClose={onClose} className={className} />
+    case "bitcoin":
+      return <SendFundsProgressBitcoin tx={tx} onClose={onClose} className={className} />
   }
 
   return null
