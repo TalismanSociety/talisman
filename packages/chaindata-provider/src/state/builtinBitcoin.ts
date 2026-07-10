@@ -25,12 +25,11 @@ const BUILTIN_BITCOIN_NETWORKS: BtcNetwork[] = [
     themeColor: "#f7931a",
     blockExplorerUrls: ["https://mempool.space"],
     platform: "bitcoin",
-    // DEV: local blockstream-api worker (gandalf-secured Blockstream Enterprise proxy;
-    // holds the OAuth secret out of the bundle, authenticated with the gandalf token via
-    // gandalfFetch — see chain-connector-btc.ts). SWAP THIS to the hosted worker URL before
-    // pushing — never ship localhost. mempool.space can't be used directly (no CORS for our
-    // origin + no host_permissions).
-    rpcs: ["http://localhost:8899/api"],
+    // Talisman's gandalf-secured Blockstream Enterprise proxy (blockstream-api worker).
+    // Holds the OAuth secret server-side; the extension authenticates with the gandalf token
+    // via gandalfFetch (see chain-connector-btc.ts). mempool.space can't be used directly
+    // (no CORS for our origin + no host_permissions).
+    rpcs: ["https://esplora-api.talisman.xyz/api"],
     addressPrefix: "bc",
   },
   {
