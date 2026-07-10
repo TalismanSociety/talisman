@@ -1,5 +1,6 @@
 import type {
   WalletTransaction,
+  WalletTransactionBtc,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
@@ -291,6 +292,27 @@ const TxProgressSol: FC<TxProgressSolProps> = ({ tx, className, onClose }) => {
   return <TxProgressBase tx={tx} className={className} onClose={onClose} href={href} />
 }
 
+type TxProgressBtcProps = {
+  tx: WalletTransactionBtc
+  onClose?: () => void
+  className?: string
+}
+
+const TxProgressBtc: FC<TxProgressBtcProps> = ({ tx, className, onClose }) => {
+  const network = useNetworkById(tx.networkId, "bitcoin")
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
+
+  return (
+    <TxProgressBase
+      tx={tx}
+      className={className}
+      onClose={onClose}
+      blockNumber={tx.blockNumber}
+      href={href}
+    />
+  )
+}
+
 type TxProgressProps = {
   hash: string // hash or signature (for solana)
   networkIdOrHash: string
@@ -343,6 +365,8 @@ export const TxProgress: FC<TxProgressProps> = ({
       )
     case "solana":
       return <TxProgressSol tx={tx} onClose={onClose} className={className} />
+    case "bitcoin":
+      return <TxProgressBtc tx={tx} onClose={onClose} className={className} />
     default:
       return null
   }
