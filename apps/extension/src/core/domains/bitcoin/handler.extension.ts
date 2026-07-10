@@ -87,7 +87,13 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
         const trees = getBitcoinAccountTrees(account)
 
         if (trees) {
-          const scan = await scanBitcoinAccount(api, { trees, hrp })
+          // send only spends the payments tree — scanning ordinals here doubles the
+          // (rate-limited) esplora request count for no benefit
+          const spendTrees = trees.filter((t) => t.tree === "payments")
+          const scan = await scanBitcoinAccount(api, {
+            trees: spendTrees.length ? spendTrees : trees,
+            hrp,
+          })
           const utxos = await getSpendableUtxos(api, scan)
           return { utxos: utxos.map(serializeBitcoinUtxo) }
         }

@@ -17,6 +17,9 @@ class EsploraRequestError extends Error {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+// abort a stalled request so it fails over / errors instead of hanging a caller forever
+const REQUEST_TIMEOUT_MS = 10_000
+
 /**
  * Esplora REST client with multi-url failover.
  * `urls` are esplora API bases including the /api segment,
@@ -35,8 +38,10 @@ export const createEsploraClient = (urls: string[]): BtcApi => {
     let lastError: unknown
     for (let attempt = 0; attempt < urls.length; attempt++) {
       const base = urls[(currentUrlIndex + attempt) % urls.length]
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
       try {
-        const response = await fetch(`${base}${path}`, init)
+        const response = await fetch(`${base}${path}`, { ...init, signal: controller.signal })
         if (!response.ok) {
           const body = await response.text().catch(() => "")
           const error = new EsploraRequestError(response.status, body || response.statusText)
@@ -53,6 +58,8 @@ export const createEsploraClient = (urls: string[]): BtcApi => {
         if (err instanceof EsploraRequestError && err.status < 500 && err.status !== 429) throw err
         lastError = err
         if (attempt < urls.length - 1) await sleep(500 * (attempt + 1))
+      } finally {
+        clearTimeout(timeout)
       }
     }
     throw lastError instanceof Error ? lastError : new Error("All esplora endpoints failed")

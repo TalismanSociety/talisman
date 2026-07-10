@@ -55,14 +55,19 @@ export const useSendFundsTransactionBtc = ({
     queryKey: ["btcFeeEstimates", networkId],
     queryFn: () => api.btcGetFeeEstimates({ networkId: networkId as string }),
     enabled: isBtc && !!networkId,
-    refetchInterval: isLocked ? false : 30_000,
+    refetchInterval: isLocked ? false : 60_000,
+    retry: 1,
   })
 
   const qUtxos = useQuery({
     queryKey: ["btcUtxos", networkId, from],
     queryFn: () => api.btcGetUtxos({ networkId: networkId as string, address: from as string }),
     enabled: isBtc && !!networkId && !!from,
-    refetchInterval: isLocked ? false : 60_000,
+    // a full UTXO scan is expensive (rate-limited esplora): fetch once and reuse rather
+    // than re-scanning on a timer
+    refetchInterval: false,
+    staleTime: 300_000,
+    retry: 1,
   })
 
   // change always goes to the payments internal chain; WIF accounts (single static
@@ -80,7 +85,8 @@ export const useSendFundsTransactionBtc = ({
       })
     },
     enabled: isBtc && !!networkId && !!from,
-    staleTime: 60_000,
+    staleTime: 300_000,
+    retry: 1,
   })
 
   // sending to one of our own bitcoin accounts: resolve its xpub identity to a receive address
@@ -98,7 +104,8 @@ export const useSendFundsTransactionBtc = ({
       return res.address
     },
     enabled: isBtc && !!networkId && !!to,
-    staleTime: 60_000,
+    staleTime: 300_000,
+    retry: 1,
   })
 
   const feeRate = qFees.data?.[PRIORITY_TO_ESTIMATE[priority]]

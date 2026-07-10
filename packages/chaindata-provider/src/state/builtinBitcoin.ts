@@ -25,7 +25,10 @@ const BUILTIN_BITCOIN_NETWORKS: BtcNetwork[] = [
     themeColor: "#f7931a",
     blockExplorerUrls: ["https://mempool.space"],
     platform: "bitcoin",
-    rpcs: ["https://mempool.space/api", "https://blockstream.info/api"],
+    // mempool.space fails from the extension (no CORS headers for our origin, and we
+    // declare no host_permissions), so blockstream is the only working endpoint until
+    // the Talisman esplora proxy lands
+    rpcs: ["https://blockstream.info/api"],
     addressPrefix: "bc",
   },
   {
