@@ -19,7 +19,7 @@ import type { SendFundsTransactionProps } from "./types"
 
 export type BtcFeePriority = "economy" | "medium" | "fast"
 
-const PRIORITY_TO_ESTIMATE: Record<BtcFeePriority, keyof BtcFeeEstimates> = {
+export const PRIORITY_TO_ESTIMATE: Record<BtcFeePriority, keyof BtcFeeEstimates> = {
   economy: "economy",
   medium: "halfHour",
   fast: "fastest",

@@ -20,6 +20,7 @@ import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillBu
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
+import { BtcFeeSelect } from "./BtcFeeSelect"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import {
   ExternalAddressWarningProvider,
@@ -374,43 +375,31 @@ const DefaultFeeSummary = () => {
   )
 }
 
-const BTC_PRIORITIES = ["economy", "medium", "fast"] as const
-
 const BtcFeeSummary = () => {
   const { t } = useTranslation()
   const { token, feeToken, transaction } = useSendFunds()
 
   if (!token || transaction?.platform !== "bitcoin") return null
 
-  const { priority, setPriority, feeRate, estimatedFee, isLoading, isRefetching, error } =
+  const { priority, setPriority, estimatedFee, feeEstimates, isLoading, isRefetching, error } =
     transaction
 
   return (
     <>
       <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">{t("Transaction Priority")}</div>
-        <div className="flex items-center gap-2">
-          {BTC_PRIORITIES.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPriority(p)}
-              className={cn(
-                "rounded-xs px-4 py-2 capitalize",
-                p === priority
-                  ? "bg-primary/10 text-primary"
-                  : "text-body-secondary hover:bg-grey-800"
-              )}
-            >
-              {t(p)}
-            </button>
-          ))}
+        <div>
+          <BtcFeeSelect
+            priority={priority}
+            onChange={setPriority}
+            feeEstimates={feeEstimates}
+            drawerContainerId="main"
+          />
         </div>
       </div>
       <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
           {t("Estimated Fee")} <SendFundsFeeTooltip />
-          {!!feeRate && <span className="ml-2 text-body-disabled">({feeRate} sat/vB)</span>}
         </div>
         <div className="text-body">
           <div className={cn("inline-flex h-4.25 items-center", isRefetching && "animate-pulse")}>
