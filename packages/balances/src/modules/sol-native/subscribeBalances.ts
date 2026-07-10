@@ -1,6 +1,5 @@
-import { distinctUntilChanged, Observable, of } from "rxjs"
-
 import { reportJsActivity } from "@talismn/util"
+import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"
 import { isEqualModuleResults } from "../../types/fingerprint"
