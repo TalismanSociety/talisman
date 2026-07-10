@@ -6,17 +6,24 @@ import type { IChainConnectorBtc } from "./IChainConnectorBtc"
 
 export class ChainConnectorBtc implements IChainConnectorBtc {
   #chaindataProvider: IChaindataNetworkProvider
+  #customFetch?: typeof fetch
   #apis = new Map<BtcNetworkId, BtcApi>()
 
-  constructor(chaindataProvider: IChaindataNetworkProvider) {
+  /**
+   * `customFetch` is forwarded to the esplora client, letting the caller inject
+   * a `fetch` wrapper that authenticates against a gated proxy (e.g. the gandalf
+   * token). Omit it to use the global `fetch` — the connector stays auth-agnostic.
+   */
+  constructor(chaindataProvider: IChaindataNetworkProvider, customFetch?: typeof fetch) {
     this.#chaindataProvider = chaindataProvider
+    this.#customFetch = customFetch
   }
 
   async getApi(networkId: BtcNetworkId): Promise<BtcApi> {
     if (!this.#apis.has(networkId)) {
       const network = await this.#chaindataProvider.getNetworkById(networkId, "bitcoin")
       if (!network) throw new Error(`Network not found: ${networkId}`)
-      this.#apis.set(networkId, createEsploraClient(network.rpcs))
+      this.#apis.set(networkId, createEsploraClient(network.rpcs, this.#customFetch))
     }
 
     return this.#apis.get(networkId)!

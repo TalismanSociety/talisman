@@ -25,10 +25,11 @@ const BUILTIN_BITCOIN_NETWORKS: BtcNetwork[] = [
     themeColor: "#f7931a",
     blockExplorerUrls: ["https://mempool.space"],
     platform: "bitcoin",
-    // DEV: local Blockstream Enterprise proxy (holds the OAuth client_secret out of the
-    // bundle). SWAP THIS to the hosted proxy URL before pushing — never ship localhost or
-    // a public rate-limited endpoint. mempool.space can't be used directly (no CORS for
-    // our origin + no host_permissions).
+    // DEV: local blockstream-api worker (gandalf-secured Blockstream Enterprise proxy;
+    // holds the OAuth secret out of the bundle, authenticated with the gandalf token via
+    // gandalfFetch — see chain-connector-btc.ts). SWAP THIS to the hosted worker URL before
+    // pushing — never ship localhost. mempool.space can't be used directly (no CORS for our
+    // origin + no host_permissions).
     rpcs: ["http://localhost:8899/api"],
     addressPrefix: "bc",
   },

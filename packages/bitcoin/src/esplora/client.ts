@@ -24,8 +24,12 @@ const REQUEST_TIMEOUT_MS = 10_000
  * Esplora REST client with multi-url failover.
  * `urls` are esplora API bases including the /api segment,
  * e.g. https://mempool.space/api or https://blockstream.info/api
+ *
+ * `customFetch` lets the caller inject a `fetch` wrapper (e.g. one that attaches
+ * an auth header for a gated proxy). Defaults to the global `fetch`, so the
+ * client stays auth-agnostic for consumers that don't need it.
  */
-export const createEsploraClient = (urls: string[]): BtcApi => {
+export const createEsploraClient = (urls: string[], customFetch: typeof fetch = fetch): BtcApi => {
   if (!urls.length) throw new Error("createEsploraClient requires at least one url")
 
   // sticky index: keep using the url that works, advance on network/server errors
@@ -41,7 +45,10 @@ export const createEsploraClient = (urls: string[]): BtcApi => {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
       try {
-        const response = await fetch(`${base}${path}`, { ...init, signal: controller.signal })
+        const response = await customFetch(`${base}${path}`, {
+          ...init,
+          signal: controller.signal,
+        })
         if (!response.ok) {
           const body = await response.text().catch(() => "")
           const error = new EsploraRequestError(response.status, body || response.statusText)
