@@ -109,6 +109,9 @@ export class Balances {
     balances: Balances | BalanceJsonList | Balance[] | IBalance[] | BalanceJson[] | Balance,
     hydrate?: HydrateDb
   ) {
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
+    if (balances == null) return this
+
     // handle Balances (convert to Balance[])
     // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances instanceof Balances) return new Balances([...balances], hydrate)
