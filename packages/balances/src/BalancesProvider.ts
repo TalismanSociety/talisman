@@ -266,7 +266,10 @@ export class BalancesProvider {
         return combineLatest(
           BALANCE_MODULES.filter((mod) => mod.platform === network?.platform).map((mod) => {
             const tokensWithAddresses = tokensAndAddresses.filter(
-              ([token]) => token.type === mod.type
+              // token is undefined when the request map references a tokenId missing
+              // from chaindata (e.g. a custom or dynamic token this provider doesn't
+              // know) — skip those instead of throwing and killing the whole stream
+              ([token]) => token?.type === mod.type
             )
 
             switch (mod.platform) {
