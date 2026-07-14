@@ -85,8 +85,15 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         for (const address of addresses) {
           const rawBalance = balancesByKey[`${address}:${token.onChainId}`]
 
-          // the endpoint only returns entries for which the address has a non-zero balance
-          // => generate an zero balance object if not found
+          // the endpoint only returns entries for which the address has a non-zero
+          // balance. Do NOT fabricate zero-balance objects for the rest: with the full
+          // token list that meant building (and fingerprinting) tokens×addresses
+          // objects (1000+) on every 6s poll just for downstream to discard them — a
+          // recurring JS-thread stall. Absent balances are already handled: the
+          // provider's storage update deletes ids expected-but-missing from the result
+          // set, so a position dropping to zero still disappears from the portfolio.
+          if (!rawBalance) continue
+
           const balance: IBalance = {
             address,
             networkId,
@@ -97,17 +104,17 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
               {
                 type: "free",
                 label: "free",
-                amount: rawBalance?.free.toString() ?? "0",
+                amount: rawBalance.free.toString(),
               },
               {
                 type: "reserved",
                 label: "reserved",
-                amount: rawBalance?.reserved.toString() ?? "0",
+                amount: rawBalance.reserved.toString(),
               },
               {
                 type: "locked",
                 label: "frozen",
-                amount: rawBalance?.frozen.toString() ?? "0",
+                amount: rawBalance.frozen.toString(),
               },
             ],
           }

@@ -1,4 +1,9 @@
-import { isPromise, replaySubjectFrom } from "@talismn/util"
+import {
+  arrayItemsEqualWithYield,
+  forEachWithYield,
+  isPromise,
+  replaySubjectFrom,
+} from "@talismn/util"
 import { isEqual, keyBy, values } from "lodash-es"
 import {
   distinctUntilKeyChanged,
@@ -102,7 +107,9 @@ export class ChaindataProvider implements IChaindataProvider {
 
   get miniMetadatas$() {
     return this.#chaindata$.pipe(
-      distinctUntilKeyChanged("miniMetadatas", isEqual),
+      // reference compare is sufficient (and free): combinedChaindata's section
+      // stabilizer reuses the previous array reference when the content is deep-equal
+      distinctUntilKeyChanged("miniMetadatas"),
       map(({ miniMetadatas }) => miniMetadatas),
       shareReplay({ bufferSize: 1, refCount: true })
     )
@@ -142,7 +149,9 @@ export class ChaindataProvider implements IChaindataProvider {
 
   get tokens$() {
     return this.#chaindata$.pipe(
-      distinctUntilKeyChanged("tokens", isEqual),
+      // reference compare is sufficient (and free): combinedChaindata's section
+      // stabilizer reuses the previous array reference when the content is deep-equal
+      distinctUntilKeyChanged("tokens"),
       map(({ tokens }) => tokens),
       shareReplay({ bufferSize: 1, refCount: true })
     )
@@ -210,9 +219,8 @@ export class ChaindataProvider implements IChaindataProvider {
   async registerDynamicTokens(tokens: Token[]) {
     if (!tokens.length) return
 
-    // check schema
-    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
-    tokens.forEach((t) => TokenSchema.parse(t))
+    // check schema (chunked — yields the thread between time slices, throws on invalid)
+    await forEachWithYield(tokens, (t) => void TokenSchema.parse(t))
 
     const currentStorage = await firstValueFrom(this.#dynamicTokens$)
     const currentById = keyBy<Token>(currentStorage, (t) => t.id)
@@ -222,7 +230,7 @@ export class ChaindataProvider implements IChaindataProvider {
     )
 
     // update only if necessary
-    if (!isEqual(currentStorage, dynamicTokens)) {
+    if (!(await arrayItemsEqualWithYield(currentStorage, dynamicTokens))) {
       this.#dynamicTokens$.next(dynamicTokens)
     }
   }
@@ -290,7 +298,9 @@ export class ChaindataProvider implements IChaindataProvider {
 
   get networks$() {
     return this.#chaindata$.pipe(
-      distinctUntilKeyChanged("networks", isEqual),
+      // reference compare is sufficient (and free): combinedChaindata's section
+      // stabilizer reuses the previous array reference when the content is deep-equal
+      distinctUntilKeyChanged("networks"),
       map(({ networks }) => networks),
       shareReplay({ bufferSize: 1, refCount: true })
     )
@@ -383,8 +393,16 @@ export class ChaindataProvider implements IChaindataProvider {
 
 const itemsToIds = <T extends { id: string }>(items: T[]): string[] => items.map(({ id }) => id)
 
-const itemsToMapById = <T extends { id: string }>(items: T[]): Record<string, T> =>
-  Object.fromEntries(items.map((item) => [item.id, item]))
+// ref-memo: tokens/networks arrays are reference-stable across emissions and subscriptions
+// (combinedChaindata's stabilizer), so the map is only rebuilt when the data actually changes
+const mapByIdCache = new WeakMap<object, Record<string, unknown>>()
+const itemsToMapById = <T extends { id: string }>(items: T[]): Record<string, T> => {
+  const cached = mapByIdCache.get(items)
+  if (cached) return cached as Record<string, T>
+  const result = Object.fromEntries(items.map((item) => [item.id, item]))
+  mapByIdCache.set(items, result)
+  return result
+}
 
 const itemsToMapByGenesisHash = <T extends { genesisHash: `0x${string}` | null }>(
   items: T[]
@@ -396,7 +414,9 @@ const filterTokensByType =
     type: T
   ) =>
   (tokens: Token[]): R =>
-    tokens.filter((token) => !type || isTokenOfType(token, type)) as R
+    // pass the original array through when unfiltered, to keep it reference-stable
+    // across emissions (itemsToMapById's ref-memo depends on it)
+    (type ? tokens.filter((token) => isTokenOfType(token, type)) : tokens) as R
 
 const filterNetworksByPlatform =
   <
@@ -406,7 +426,10 @@ const filterNetworksByPlatform =
     platform: P
   ) =>
   (networks: Network[]): R =>
-    networks.filter((network) => !platform || isNetworkOfPlatform(network, platform)) as R
+    // pass the original array through when unfiltered (see filterTokensByType)
+    (platform
+      ? networks.filter((network) => isNetworkOfPlatform(network, platform))
+      : networks) as R
 
 //
 // Utils to wrap Observable methods with one-shot Promise methods

@@ -16,6 +16,7 @@ import {
 } from "@talismn/scale"
 import { Enum } from "polkadot-api"
 import { log } from "../log"
+import { startEventLoopMonitor } from "./eventLoopMonitor"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
 const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"
@@ -47,6 +48,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
   const connector = new ChainConnectorDotStub(network as unknown as DotNetwork)
 
   const stopAll = log.timer(`testDotNetwork ${network.id}`)
+  const monitor = startEventLoopMonitor(`eventLoop ${network.id}`)
 
   const miniMetadatas: MiniMetadata[] = []
   let tokens: Token[] | null = null
@@ -232,10 +234,12 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
       log.log(papiStringify(dryRun, 2))
     }
     stopAll()
+    monitor.stop()
 
     return { tokens, miniMetadatas, dryRun }
   } catch (err) {
     log.error(err)
+    monitor.stop()
     connector.destroy()
     return { tokens: null, miniMetadatas: [], dryRun: null }
   }

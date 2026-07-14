@@ -5,6 +5,7 @@ import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
 import type { SolNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "../log"
+import { startEventLoopMonitor } from "./eventLoopMonitor"
 
 export type SolNetworkConfig = Pick<SolNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<SolNetwork["nativeCurrency"]>
@@ -33,6 +34,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   const stopAll = log.timer("Balances testbench")
+  const monitor = startEventLoopMonitor(`eventLoop ${network.id}`)
   const networkId = network.id
 
   const cache = {
@@ -97,5 +99,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
     stopAll()
   } catch (err) {
     log.error(err)
+  } finally {
+    monitor.stop()
   }
 }

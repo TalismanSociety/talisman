@@ -1,4 +1,5 @@
-import { map, of } from "rxjs"
+import { yieldToEventLoop } from "@talismn/util"
+import { defer, map, of, switchMap } from "rxjs"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
@@ -16,9 +17,14 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-  const queries = buildQueries(networkId, balanceDefs, miniMetadata)
-
-  return getRpcQueryPack$(connector, networkId, queries).pipe(
+  return defer(async () => {
+    // on a scale-builder cache miss, query building parses/builds the chain metadata
+    // (expensive, indivisible) — give it its own macrotask so it doesn't stack with
+    // the current tick's other work
+    await yieldToEventLoop()
+    return buildQueries(networkId, balanceDefs, miniMetadata)
+  }).pipe(
+    switchMap((queries) => getRpcQueryPack$(connector, networkId, queries)),
     map((balances) => ({
       success: balances,
       errors: [],

@@ -1,14 +1,8 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import {
-  decAnyMetadata,
-  getDynamicBuilder,
-  getLookupFn,
-  type ScaleStorageCoder,
-  unifyMetadata,
-} from "@talismn/scale"
+import type { ScaleStorageCoder } from "@talismn/scale"
 
-import log from "../../log"
 import type { MiniMetadata } from "../../types"
+import { getCachedScaleBuilder, getCachedStorageCoder } from "./scaleBuilderCache"
 
 type NetworkCoders = { [key: string]: [string, string] }
 
@@ -23,42 +17,20 @@ export const buildNetworkStorageCoders = <TCoders extends { [key: string]: [stri
 ): NetworkStorageCoders<TCoders> | null => {
   if (!miniMetadata.data) return null
 
-  const metadata = unifyMetadata(decAnyMetadata(miniMetadata.data))
+  // metadata parse + builder + per-entry coders are all memoized (see scaleBuilderCache):
+  // the expensive work runs once per (module, chain, specVersion) instead of per rebuild
+  if (getCachedScaleBuilder(miniMetadata) === null) return null
 
-  try {
-    const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
-    const builtCoders = Object.fromEntries(
-      Object.entries(coders).flatMap(
-        ([key, moduleMethodOrFn]: [
-          keyof TCoders,
-          [string, string] | ((params: { chainId: string }) => [string, string]),
-        ]) => {
-          const [module, method] =
-            typeof moduleMethodOrFn === "function"
-              ? moduleMethodOrFn({ chainId })
-              : moduleMethodOrFn
-          try {
-            return [[key, scaleBuilder.buildStorage(module, method)] as const]
-          } catch (cause) {
-            log.trace(
-              `Failed to build SCALE coder for chain ${chainId} (${module}::${method})`,
-              cause
-            )
-            return []
-          }
-        }
-      )
-    ) as {
-      [Property in keyof TCoders]: ReturnType<(typeof scaleBuilder)["buildStorage"]> | undefined
-    }
-
-    return builtCoders
-  } catch (cause) {
-    log.error(
-      `Failed to build SCALE coders for chain ${chainId} (${JSON.stringify(coders)})`,
-      cause
+  return Object.fromEntries(
+    Object.entries(coders).map(
+      ([key, moduleMethodOrFn]: [
+        keyof TCoders,
+        [string, string] | ((params: { chainId: string }) => [string, string]),
+      ]) => {
+        const [module, method] =
+          typeof moduleMethodOrFn === "function" ? moduleMethodOrFn({ chainId }) : moduleMethodOrFn
+        return [key, getCachedStorageCoder(miniMetadata, module, method)] as const
+      }
     )
-  }
-
-  return null
+  ) as NetworkStorageCoders<TCoders>
 }

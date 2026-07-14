@@ -374,6 +374,9 @@ describe("ChaindataProvider", () => {
       const sub = provider.networks$.subscribe((n) => emissions.push(n))
 
       try {
+        // validation is chunked: the first emission arrives asynchronously
+        await firstValueFrom(provider.networks$)
+
         // Initially either empty or stripped data (depending on schema strictness)
         const initialNetworks = emissions[0] as unknown[]
         expect(Array.isArray(initialNetworks)).toBe(true)
@@ -865,6 +868,94 @@ describe("ChaindataProvider", () => {
       expect(map["polkadot-substrate-native"]!.symbol).toBe("DOT")
       expect(map["1-evm-native"]).toBeDefined()
       expect(map["1-evm-native"]!.symbol).toBe("ETH")
+    })
+  })
+
+  // ── Reference stability (chunked pipeline regression tests) ─────
+
+  describe("reference stability", () => {
+    it("does not re-emit tokens$/networks$ when github pushes deep-equal data", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokenEmissions: unknown[] = []
+      const networkEmissions: unknown[] = []
+      const sub1 = provider.tokens$.subscribe((t) => tokenEmissions.push(t))
+      const sub2 = provider.networks$.subscribe((n) => networkEmissions.push(n))
+
+      try {
+        await firstValueFrom(provider.tokens$)
+        expect(tokenEmissions).toHaveLength(1)
+
+        // push deep-equal (but reference-distinct) data — like github re-serving the same file
+        githubSubject.next(makeChaindata())
+        await tick()
+
+        expect(tokenEmissions).toHaveLength(1)
+        expect(networkEmissions).toHaveLength(1)
+      } finally {
+        sub1.unsubscribe()
+        sub2.unsubscribe()
+      }
+    })
+
+    it("keeps per-item references stable for unchanged items when other items change", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const sub = provider.tokens$.subscribe(() => {})
+      try {
+        const tokensBefore = await firstValueFrom(provider.tokens$)
+        const dotBefore = tokensBefore.find((t) => t.id === "polkadot-substrate-native")
+
+        // change ONE token (the eth one) via github — the dot token must keep its reference
+        const updated = makeChaindata()
+        updated.tokens = updated.tokens.map((t) =>
+          t.id === "1-evm-native" ? { ...t, symbol: "WETH" } : t
+        ) as typeof updated.tokens
+        githubSubject.next(updated)
+        await tick()
+
+        const tokensAfter = await firstValueFrom(provider.tokens$)
+        const dotAfter = tokensAfter.find((t) => t.id === "polkadot-substrate-native")
+        const ethAfter = tokensAfter.find((t) => t.id === "1-evm-native")
+
+        expect(tokensAfter).not.toBe(tokensBefore)
+        expect(ethAfter?.symbol).toBe("WETH")
+        expect(dotAfter).toBe(dotBefore)
+      } finally {
+        sub.unsubscribe()
+      }
+    })
+
+    it("getTokensMapById$ returns the same map reference while data is unchanged", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const sub = provider.tokens$.subscribe(() => {})
+      try {
+        const map1 = await firstValueFrom(provider.getTokensMapById$())
+        const map2 = await firstValueFrom(provider.getTokensMapById$())
+        expect(map1).toBe(map2)
+      } finally {
+        sub.unsubscribe()
+      }
+    })
+
+    it("emits output deep-equal to the data it was given", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const tokens = await firstValueFrom(provider.tokens$)
+      const networks = await firstValueFrom(provider.networks$)
+      const miniMetadatas = await firstValueFrom(provider.miniMetadatas$)
+
+      // merged output carries __isCustom/__isKnown/__isTestnet flags; content must match
+      expect(tokens.map((t) => ({ id: t.id, symbol: t.symbol }))).toEqual(
+        data.tokens.map((t) => ({ id: t.id, symbol: t.symbol }))
+      )
+      expect(networks.map((n) => n.id).sort()).toEqual(data.networks.map((n) => n.id).sort())
+      expect(miniMetadatas).toEqual(data.miniMetadatas)
     })
   })
 })

@@ -1,10 +1,9 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import { isNotNil } from "@talismn/util"
-import { toPairs } from "lodash-es"
+import { type ChunkedOptions, isNotNil, mapWithYield, switchMapChunked } from "@talismn/util"
 import { Observable, of } from "rxjs"
 
-import type { QueryStorageChange, QueryStorageResult } from "./types"
+import type { QueryStorageResult } from "./types"
 
 export type MaybeStateKey = `0x${string}` | null
 
@@ -14,6 +13,8 @@ export type RpcQueryPack<T> = {
 }
 
 type QueryStorageResultContent = QueryStorageResult[0]
+
+type ChangesByKey = ReadonlyMap<`0x${string}`, `0x${string}`>
 
 export const fetchRpcQueryPack = async <T>(
   connector: IChainConnectorDot,
@@ -30,8 +31,52 @@ export const fetchRpcQueryPack = async <T>(
     allStateKeys,
   ])
 
-  return decodeRpcQueryPack(queries, result)
+  return decodeRpcQueryPackChunked(queries, result ? new Map(result.changes) : null, {
+    label: `rpcQueryPack decode ${networkId}`,
+  })
 }
+
+/**
+ * Wraps the raw state_subscribeStorage subscription and emits, for every storage change
+ * callback, a SNAPSHOT of the accumulated changes keyed by state key.
+ *
+ * A snapshot (shallow copy of string refs, cheap) is required because decoding is chunked
+ * and asynchronous: a later websocket callback must not mutate the map that an in-flight
+ * decode is reading.
+ */
+const getRawStorageUpdates$ = (
+  connector: IChainConnectorDot,
+  networkId: DotNetworkId,
+  allStateKeys: `0x${string}`[],
+  timeout: number | false
+): Observable<ChangesByKey> =>
+  new Observable<ChangesByKey>((subscriber) => {
+    // first subscription callback includes results for all state keys, but further callbacks will only include the ones that changed
+    // => we need to keep all results in memory and update them after each callback, so we can emit the full result set each time
+    const changesCache = new Map<`0x${string}`, `0x${string}`>()
+
+    const promUnsub = connector.subscribe(
+      networkId,
+      "state_subscribeStorage",
+      "state_storage",
+      [allStateKeys],
+      (error, result: QueryStorageResultContent) => {
+        if (error) subscriber.error(error)
+        else if (result) {
+          // update the cache
+          for (const [stateKey, encodedResult] of result.changes)
+            changesCache.set(stateKey, encodedResult)
+
+          subscriber.next(new Map(changesCache))
+        }
+      },
+      timeout
+    )
+
+    return () => {
+      promUnsub.then((unsub) => unsub("state_unsubscribeStorage"))
+    }
+  })
 
 export const getRpcQueryPack$ = <T>(
   connector: IChainConnectorDot,
@@ -45,55 +90,26 @@ export const getRpcQueryPack$ = <T>(
   if (!allStateKeys.length)
     return of(queries.map(({ stateKeys, decodeResult }) => decodeResult(stateKeys.map(() => null))))
 
-  return new Observable<T[]>((subscriber) => {
-    // first subscription callback includes results for all state keys, but further callbacks will only include the ones that changed
-    // => we need to keep all results in memory and update them after each callback, so we can emit the full result set each time
-    const changesCache: Record<`0x${string}`, `0x${string}`> = {}
-
-    const promUnsub = connector.subscribe(
-      networkId,
-      "state_subscribeStorage",
-      "state_storage",
-      [allStateKeys],
-      (error, result: QueryStorageResultContent) => {
-        if (error) subscriber.error(error)
-        else if (result) {
-          // update the cache
-          for (const [stateKey, encodedResult] of result.changes)
-            changesCache[stateKey] = encodedResult
-
-          // regenerate the full changes array
-          const changes = toPairs(changesCache) as QueryStorageChange[]
-
-          // decode and emit results for all queries
-          subscriber.next(decodeRpcQueryPack(queries, { block: result.block, changes }))
-        }
-      },
-      timeout
+  // decode and emit results for all queries, chunked with latest-wins semantics: the
+  // per-query SCALE decode yields the thread on budget, and when a new block's changes
+  // arrive mid-decode the in-flight decode is aborted (the new snapshot contains the
+  // aborted block's changes too, so nothing is lost — emissions coalesce under load)
+  return getRawStorageUpdates$(connector, networkId, allStateKeys, timeout).pipe(
+    switchMapChunked(
+      (changesByKey, { slicer }) => decodeRpcQueryPackChunked(queries, changesByKey, { slicer }),
+      { label: `decode ${networkId}` }
     )
-
-    return () => {
-      promUnsub.then((unsub) => unsub("state_unsubscribeStorage"))
-    }
-  })
+  )
 }
 
-const decodeRpcQueryPack = <T>(
+const decodeRpcQueryPackChunked = <T>(
   queries: RpcQueryPack<T>[],
-  result: QueryStorageResultContent
-): T[] => {
-  return queries.reduce((acc, { stateKeys, decodeResult }) => {
-    const changes = stateKeys.map((stateKey) => {
-      if (!stateKey || !result) return null
-
-      const change = result.changes.find(([key]) => key === stateKey)
-      if (!change) return null
-
-      return change[1]
-    })
-
-    acc.push(decodeResult(changes))
-
-    return acc
-  }, [] as T[])
-}
+  changesByKey: ChangesByKey | null,
+  options?: ChunkedOptions
+): Promise<T[]> =>
+  mapWithYield(
+    queries,
+    ({ stateKeys, decodeResult }) =>
+      decodeResult(stateKeys.map((stateKey) => (stateKey && changesByKey?.get(stateKey)) ?? null)),
+    options
+  )
