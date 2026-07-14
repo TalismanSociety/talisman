@@ -4,6 +4,8 @@ import { computeTalismanOrb } from "../computeTalismanOrb"
 
 const platformLogoSvg = (platform: AccountPlatform): string => {
   switch (platform) {
+    case "polkadot":
+      return '<g opacity="0.75" transform="scale(1.0323) translate(14 12)" fill="white" class="orb-type"><circle cx="16.9926" cy="2.83173" r="2.83173"/><circle cx="9.91302" cy="7.47004" r="2.83173"/><circle cx="24.0705" cy="7.47004" r="2.83173"/><circle cx="16.9926" cy="10.8874" r="2.83173"/><circle cx="2.83173" cy="11.1316" r="2.83173"/><circle cx="31.1501" cy="11.1316" r="2.83173"/><circle cx="9.91302" cy="15.2815" r="2.83173"/><circle cx="24.0705" cy="15.2815" r="2.83173"/><circle cx="2.83173" cy="18.6993" r="2.83173"/><circle cx="16.9926" cy="18.9433" r="2.83173"/><circle cx="31.1501" cy="18.6993" r="2.83173"/><circle cx="9.91302" cy="23.0931" r="2.83173"/><circle cx="24.0705" cy="23.0931" r="2.83173"/><circle cx="2.83173" cy="26.2667" r="2.83173"/><circle cx="16.9926" cy="26.999" r="2.83173"/><circle cx="31.1501" cy="26.2667" r="2.83173"/><circle cx="9.91302" cy="30.905" r="2.83173"/><circle cx="24.0705" cy="30.905" r="2.83173"/><circle cx="16.9926" cy="35.0548" r="2.83173"/></g>'
     case "ethereum":
       return '<g opacity="0.75" transform="scale(0.7) translate(14 14)" class="orb-type"><path d="M12.8101 32.76L32.0001 44.62L51.1901 32.76L32.0001 -0.0699997L12.8101 32.76Z" fill="white"/><path d="M12.8101 36.48L32.0001 48.43L51.1901 36.48L32.0001 63.93L12.8101 36.48Z" fill="white"/></g>'
     case "solana":
