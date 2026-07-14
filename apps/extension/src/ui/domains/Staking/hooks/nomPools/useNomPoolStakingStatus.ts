@@ -57,8 +57,9 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         })
         .map((b) => b.address)
 
-      const [currentEra, soloStakingByAddress, nomPoolStakingByAddress] = await Promise.all([
-        stakingSapi.getStorage<number>("Staking", "CurrentEra", []),
+      const [activeEraInfo, soloStakingByAddress, nomPoolStakingByAddress] = await Promise.all([
+        // unlock chunks become withdrawable based on the active era, not the planned one (CurrentEra)
+        stakingSapi.getStorage<{ index: number } | null>("Staking", "ActiveEra", []),
 
         Object.fromEntries(
           await Promise.all(
@@ -81,6 +82,9 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         ) as Record<string, NomPoolMember | null>,
       ])
 
+      if (activeEraInfo === null) return null
+      const activeEra = activeEraInfo.index
+
       const transferableByAddress = Object.fromEntries(
         balances.map(({ address, transferable }) => [address, transferable.planck])
       )
@@ -90,7 +94,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
           const unbondingEras =
             nomPoolStakingByAddress[address]?.unbonding_eras.map(([era]) => era) ?? []
           const maxUnbondingEra = Math.max(...unbondingEras)
-          const erasToUnbonding = currentEra <= maxUnbondingEra ? maxUnbondingEra - currentEra : 0
+          const erasToUnbonding = activeEra <= maxUnbondingEra ? maxUnbondingEra - activeEra : 0
 
           return {
             address,
@@ -99,7 +103,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             isNomPoolsStaking: !!nomPoolStakingByAddress[address],
             canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
             canUnstake: nomPoolStakingByAddress[address]?.points,
-            canWithdraw: maxUnbondingEra <= currentEra,
+            canWithdraw: unbondingEras.length > 0 && maxUnbondingEra <= activeEra,
             canWithdrawIn: getWithdrawWaitDuration(stakingSapi, babeSapi, erasToUnbonding),
           }
         })
