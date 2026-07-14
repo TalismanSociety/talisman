@@ -111,6 +111,8 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return `/extrinsics/${query.id}`
         case "taostats.io":
           return `/transaction/${query.id}`
+        case "subscan.io":
+          return `/extrinsic/${query.id}`
         default:
           return `/tx/${query.id}`
       }
@@ -169,7 +171,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
     case "extrinsic-unknown": {
       switch (host) {
         case "subscan.io":
-          return `/tx/${query.hash}`
+          return `/extrinsic/${query.hash}`
         default:
           return null
       }
