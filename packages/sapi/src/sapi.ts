@@ -10,6 +10,7 @@ import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
 import { getSapiConnector } from "./helpers/getSapiConnector"
 import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
+import { hasConstant } from "./helpers/hasConstant"
 import { hasEvent } from "./helpers/hasEvent"
 import { isApiAvailable } from "./helpers/isApiAvailable"
 import { submit } from "./helpers/submit"
@@ -106,5 +107,7 @@ export const getScaleApi = (
     isApiAvailable: (name: string, method: string) => isApiAvailable(chain, name, method),
 
     hasEvent: (pallet: string, event: string) => hasEvent(chain, pallet, event),
+
+    hasConstant: (pallet: string, constant: string) => hasConstant(chain, pallet, constant),
   }
 }

@@ -17,7 +17,7 @@ import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
-import { useCurrentStakingEra } from "../hooks/nomPools/useCurrentStakingEra"
+import { useActiveStakingEra } from "../hooks/nomPools/useActiveStakingEra"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
 
 type WizardStep = "review" | "follow-up"
@@ -76,14 +76,14 @@ export const useNomPoolWithdrawWizard = () => {
     [genericEvent, tokenId]
   )
 
-  const { data: currentEra } = useCurrentStakingEra(token?.networkId)
+  const { data: activeEra } = useActiveStakingEra(token?.networkId)
 
   const pointsToWithdraw = useMemo(() => {
-    if (!currentEra || !pool) return null
+    if (!activeEra || !pool) return null
     return pool.unbonding_eras
-      .filter(([era]) => era <= currentEra)
+      .filter(([era]) => era <= activeEra)
       .reduce((acc, [, points]) => acc + points, 0n)
-  }, [currentEra, pool])
+  }, [activeEra, pool])
 
   const { data: plancksToWithdraw } = useQuery({
     queryKey: ["pointsToBalance", sapi?.id, pool?.pool_id, pointsToWithdraw?.toString()],
