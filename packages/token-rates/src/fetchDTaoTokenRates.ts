@@ -46,7 +46,10 @@ const getAlphaPriceChangesByNetuid = async (
   try {
     const response = await customFetch(`${apiUrl}/pools`)
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
-    const pools: { netuid: number; price_change_1_day: number | string }[] = await response.json()
+    const pools = (await response.json()) as {
+      netuid: number
+      price_change_1_day: number | string
+    }[]
     const changes = new Map(
       pools
         .map((pool): [number, number] => [pool.netuid, Number(pool.price_change_1_day)])
