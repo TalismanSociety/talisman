@@ -1,6 +1,6 @@
 import { COINS_API_URL } from "@common/constants"
 import { log } from "@common/log"
-import type { TokenId, TokenList } from "@talismn/chaindata-provider"
+import type { Network, TokenId, TokenList } from "@talismn/chaindata-provider"
 import {
   fetchTokenRates,
   type TokenRateCurrency,
@@ -23,7 +23,13 @@ import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { Port } from "../../types/base"
 import { settingsStore } from "../app/store.settings"
+import {
+  type ActiveNetworks,
+  activeNetworksStore,
+  isNetworkActive,
+} from "../balances/store.activeNetworks"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
+import { fetchDTaoTokenRatesForWallet } from "./dtaoTokenRates"
 
 const blobStore = getBlobStore<TokenRatesStorage>("tokenRates")
 
@@ -65,6 +71,9 @@ export class TokenRatesStore {
 
   #lastUpdateKey = ""
   #lastUpdateAt = Date.now() // will prevent a first empty call if tokens aren't loaded yet
+  // updates are not serialized: a newer update (network toggle, currency change) can start while
+  // an older one awaits its fetches — stale publishes must not clobber the newer rates
+  #updateGeneration = 0
   #subscriptions = new BehaviorSubject<Record<string, TokenRatesSubscriptionCallback>>({})
   #isWatching = false
 
@@ -102,15 +111,29 @@ export class TokenRatesStore {
 
         // refresh when token list changes : crucial for first popup load after install or db migration
         const obsTokens = chaindataProvider.getTokensMapById$()
+        const obsNetworks = chaindataProvider.networks$
         const obsActiveTokens = activeTokensStore.observable
+        // toggling a network changes the token list (tokens of inactive networks get no rates)
+        const obsActiveNetworks = activeNetworksStore.observable
         const obsCurrencies = settingsStore.observable.pipe(
           map((settings) => settings.selectableCurrencies)
         )
 
-        subTokenList = combineLatest([obsTokens, obsActiveTokens, obsCurrencies]).subscribe(
-          debounce(async ([tokens, activeTokens, currencies]) => {
+        subTokenList = combineLatest([
+          obsTokens,
+          obsNetworks,
+          obsActiveTokens,
+          obsActiveNetworks,
+          obsCurrencies,
+        ]).subscribe(
+          debounce(async ([tokens, networks, activeTokens, activeNetworks, currencies]) => {
             if (this.#subscriptions.observed) {
-              const tokensList = this.getTokensForRates(tokens, activeTokens)
+              const tokensList = this.getTokensForRates(
+                tokens,
+                activeTokens,
+                networks,
+                activeNetworks
+              )
               await this.updateTokenRates(tokensList, currencies)
             }
           }, 500)
@@ -135,13 +158,15 @@ export class TokenRatesStore {
 
   async hydrateStore(): Promise<boolean> {
     try {
-      const [tokens, activeTokens, currencies] = await Promise.all([
+      const [tokens, networks, activeTokens, activeNetworks, currencies] = await Promise.all([
         chaindataProvider.getTokensMapById(),
+        chaindataProvider.getNetworks(),
         activeTokensStore.get(),
+        activeNetworksStore.get(),
         settingsStore.get("selectableCurrencies"),
       ])
 
-      const tokensList = this.getTokensForRates(tokens, activeTokens)
+      const tokensList = this.getTokensForRates(tokens, activeTokens, networks, activeNetworks)
       await this.updateTokenRates(tokensList, currencies)
 
       return true
@@ -166,10 +191,24 @@ export class TokenRatesStore {
     if (changed) this.hydrateStore()
   }
 
-  /** Returns active tokens merged with any additionally registered tokens. */
-  private getTokensForRates(allTokens: TokenList, activeTokens: Record<string, boolean>) {
-    const tokensList = filterActiveTokens(allTokens, activeTokens)
+  /** Returns active tokens of active networks, merged with any additionally registered tokens. */
+  private getTokensForRates(
+    allTokens: TokenList,
+    activeTokens: Record<string, boolean>,
+    networks: Network[],
+    activeNetworks: ActiveNetworks
+  ) {
+    // tokens of inactive networks get no rates, mirroring the balances pipeline
+    const activeNetworkIds = new Set(
+      networks.filter((network) => isNetworkActive(network, activeNetworks)).map(({ id }) => id)
+    )
+    const tokensList = Object.fromEntries(
+      Object.entries(filterActiveTokens(allTokens, activeTokens)).filter(([, token]) =>
+        activeNetworkIds.has(token.networkId)
+      )
+    ) as TokenList
 
+    // additionally registered tokens (e.g. swap tokens) get rates regardless of active states
     for (const tokenId of this.#additionalTokenIds) {
       if (!tokensList[tokenId] && allTokens[tokenId]) tokensList[tokenId] = allTokens[tokenId]
     }
@@ -196,6 +235,8 @@ export class TokenRatesStore {
     this.#lastUpdateAt = now
     this.#lastUpdateKey = updateKey
 
+    const generation = ++this.#updateGeneration
+
     try {
       // force usd to be included, because hide small balances feature requires it
       const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencies, "usd", "tao"])
@@ -203,17 +244,37 @@ export class TokenRatesStore {
       const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, {
         apiUrl: COINS_API_URL,
       })
-      const putTokenRates: TokenRatesStorage = { tokenRates }
 
-      // update external subscriptions
-      Object.values(this.#subscriptions.value).map((cb) => cb(putTokenRates))
+      // publish the fresh rates immediately — the dtao fetch below (bittensor RPC + tao-data
+      // api) must not delay rates for the rest of the wallet. previous dtao entries are
+      // carried over so alpha fiat values don't flicker until the merge lands
+      const previous = await firstValueFrom(this.#storage$)
+      const previousDTaoRates = Object.fromEntries(
+        Object.entries(previous.tokenRates).filter(
+          ([tokenId]) => tokens[tokenId]?.type === "substrate-dtao" && !tokenRates[tokenId]
+        )
+      )
+      if (generation !== this.#updateGeneration) return
+      this.publish({ ...previousDTaoRates, ...tokenRates })
 
-      this.#storage$.next(putTokenRates)
+      // merge bittensor dtao (subnet alpha) token rates, computed from the subnet pool
+      // prices and the TAO rates above (self-contained failure handling: keep-last, never throws)
+      const dtaoRates = await fetchDTaoTokenRatesForWallet(tokens, tokenRates, previous.tokenRates)
+      if (generation !== this.#updateGeneration) return
+      if (Object.keys(dtaoRates).length || Object.keys(previousDTaoRates).length)
+        this.publish({ ...tokenRates, ...dtaoRates })
     } catch (err) {
       // reset lastUpdateTokenIds to retry on next call
       this.#lastUpdateKey = ""
       throw err
     }
+  }
+
+  /** pushes a rates list to subscribers and the persisted store */
+  private publish(tokenRates: TokenRatesStorage["tokenRates"]) {
+    const putTokenRates: TokenRatesStorage = { tokenRates }
+    Object.values(this.#subscriptions.value).map((cb) => cb(putTokenRates))
+    this.#storage$.next(putTokenRates)
   }
 
   public async subscribe(id: string, port: Port, unsubscribeCallback?: () => void) {

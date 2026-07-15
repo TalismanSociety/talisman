@@ -1,12 +1,12 @@
 import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
-import { newTokenRates, type TokenRatesList } from "@talismn/token-rates"
 import { describe, expect, it } from "vitest"
-import { ALPHA_PRICE_SCALE, alphaToTao, TAO_DECIMALS } from "./alphaPrice"
-import { getDTaoTokenRates } from "./getDtaoTokenRates"
+import { getDTaoTokenRates } from "./getDTaoTokenRates"
+import { newTokenRates, type TokenRatesList } from "./types"
 
 const NETWORK_ID = "bittensor-0"
 const TAO_TOKEN_ID = subNativeTokenId(NETWORK_ID)
-const ONE_ALPHA = 10n ** TAO_DECIMALS
+// TAO-per-alpha pool price fixed-point scale (1:1 price)
+const ALPHA_PRICE_SCALE = 1_000_000_000n
 
 const makeToken = (netuid: number): SubDTaoToken => ({
   id: `${NETWORK_ID}:substrate-dtao:${netuid}`,
@@ -54,8 +54,7 @@ describe("getDTaoTokenRates", () => {
 
       const result = getDTaoTokenRates(token, tokenRates, scaledPrice)!
 
-      const taoPrice = alphaToTao(ONE_ALPHA, scaledPrice)
-      const priceRatio = Number(taoPrice) / Number(ALPHA_PRICE_SCALE)
+      const priceRatio = Number(scaledPrice) / Number(ALPHA_PRICE_SCALE)
 
       expect(result.usd).toEqual({
         price: 400 * priceRatio,

@@ -22,56 +22,12 @@ import { fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
-import { getScaledAlphaPrice } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
 import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
-import type {
-  GetDynamicInfosResult,
-  GetStakeInfosResult,
-  SubDTaoBalance,
-  SubDTaoBalanceMeta,
-} from "./types"
+import type { GetStakeInfosResult, SubDTaoBalance, SubDTaoBalanceMeta } from "./types"
 
 const ROOT_NETUID = 0
-
-/**
- * get_all_dynamic_info returns full dynamic info for EVERY subnet (~130 entries) and its
- * SCALE decode is ~150ms of indivisible JS-thread time — too heavy to pay on every 6s
- * poll. It only feeds `scaledAlphaPrice` (and the alpha↔tao conversions derived from
- * it), which downstream only surfaces on the drift-refresh interval anyway, so a short
- * TTL cache loses nothing user-visible. Stake changes are still detected every poll via
- * the (tiny) get_stake_info_for_coldkeys call.
- */
-const DYNAMIC_INFO_TTL_MS = 30_000
-const dynamicInfosCache = new Map<
-  string,
-  { fetchedAt: number; promise: Promise<GetDynamicInfosResult> }
->()
-
-const fetchDynamicInfosCached = (
-  connector: IChainConnectorDot,
-  networkId: string,
-  builder: ReturnType<typeof parseMetadataRpc>["builder"]
-): Promise<GetDynamicInfosResult> => {
-  const cached = dynamicInfosCache.get(networkId)
-  if (cached && performance.now() - cached.fetchedAt < DYNAMIC_INFO_TTL_MS) return cached.promise
-
-  const promise = fetchRuntimeCallResult<GetDynamicInfosResult>(
-    connector,
-    networkId,
-    builder,
-    "SubnetInfoRuntimeApi",
-    "get_all_dynamic_info",
-    []
-  )
-  dynamicInfosCache.set(networkId, { fetchedAt: performance.now(), promise })
-  // a failed fetch must not be cached for the TTL — evict so the next poll retries
-  promise.catch(() => {
-    if (dynamicInfosCache.get(networkId)?.promise === promise) dynamicInfosCache.delete(networkId)
-  })
-  return promise
-}
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -128,19 +84,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     // pre-parse once (memoized) — parsing the raw metadataRpc per call is expensive
     const { builder } = parseMetadataRpcCached(miniMetadata.data!)
 
-    const [stakeInfos, dynamicInfos] = await Promise.all([
-      fetchRuntimeCallResult<GetStakeInfosResult>(
-        connector,
-        networkId,
-        builder,
-        "StakeInfoRuntimeApi",
-        "get_stake_info_for_coldkeys",
-        [addresses]
-      ),
-      fetchDynamicInfosCached(connector, networkId, builder),
-    ])
-
-    const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
+    const stakeInfos = await fetchRuntimeCallResult<GetStakeInfosResult>(
+      connector,
+      networkId,
+      builder,
+      "StakeInfoRuntimeApi",
+      "get_stake_info_for_coldkeys",
+      [addresses]
+    )
 
     const rootHotkeys = uniq(
       stakeInfos.flatMap(([, stakes]) =>
@@ -215,11 +166,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         stakes,
         (stake) => {
           // Regular stake cases
-          const dynamicInfo = dynamicInfoByNetuid[stake.netuid]
-          const scaledAlphaPrice = dynamicInfo
-            ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
-            : 0n
-
           const balance: SubDTaoBalance = {
             address,
             tokenId: subDTaoTokenId(networkId, stake.netuid, stake.hotkey),
@@ -227,7 +173,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             stake: stake.stake,
             hotkey: stake.hotkey,
             netuid: stake.netuid,
-            scaledAlphaPrice,
           }
 
           upsertBalance(balancesRaw, address, balance.tokenId, balance)
@@ -244,7 +189,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
               address,
               networkId,
               validatorRootClaimableRate: claimableRates,
-              dynamicInfoByNetuid,
               alreadyClaimedByNetuid: alreadyClaimedMap,
             })
             pendingRootClaimBalances.forEach((balance) => {
@@ -259,11 +203,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     await forEachWithYield(
       convictionLocks,
       ({ address, netuid, lock }) => {
-        const dynamicInfo = dynamicInfoByNetuid[netuid]
-        const scaledAlphaPrice = dynamicInfo
-          ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
-          : 0n
-
         // A conviction lock constrains the coldkey's TOTAL alpha on the subnet (across all of its
         // hotkeys), not a specific staking position: report it on the subnet's base token (no hotkey).
         // It surfaces in the portfolio's locked column but does NOT reduce available/transferable
@@ -276,7 +215,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           stake: 0n,
           hotkey: lock.hotkey,
           netuid,
-          scaledAlphaPrice,
           convictionLock: lock,
         }
 
@@ -333,10 +271,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           // dropping to zero still disappears from the portfolio.
           if (!stake) return null
 
-          const meta: SubDTaoBalanceMeta = {
-            scaledAlphaPrice: stake.scaledAlphaPrice.toString(),
-          }
-
           const stakeAmount = BigInt(stake.stake?.toString() ?? "0")
           const pendingRootClaimAmount = BigInt(stake.pendingRootClaim?.toString() ?? "0")
           const convictionLockAmount = BigInt(stake.convictionLock?.amount?.toString() ?? "0")
@@ -348,7 +282,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             type: "free",
             label: stake.netuid === 0 ? "Root Staking" : `Subnet Staking`,
             amount: stakeAmount.toString(),
-            meta,
           }
 
           const pendingRootClaimValue: AmountWithLabel<string> = {
@@ -360,7 +293,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             // it must not be subtracted from it either: flag it so it does not reduce the staked
             // position's transferable amount.
             includeInTransferable: true,
-            meta,
           }
 
           const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
@@ -371,7 +303,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             (convictionLockAmount > 0n || convictionLockConviction > 0n)
           ) {
             const convictionLockMeta: SubDTaoBalanceMeta = {
-              ...meta,
               convictionLock: {
                 type: "conviction-lock",
                 hotkey: stake.convictionLock.hotkey,
@@ -398,7 +329,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
               label: "Pending root claim",
               amount: pendingRootClaimAmount.toString(),
               includeInTotal: true,
-              meta,
             })
           }
 
