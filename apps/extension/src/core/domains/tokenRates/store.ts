@@ -71,6 +71,9 @@ export class TokenRatesStore {
 
   #lastUpdateKey = ""
   #lastUpdateAt = Date.now() // will prevent a first empty call if tokens aren't loaded yet
+  // updates are not serialized: a newer update (network toggle, currency change) can start while
+  // an older one awaits its fetches — stale publishes must not clobber the newer rates
+  #updateGeneration = 0
   #subscriptions = new BehaviorSubject<Record<string, TokenRatesSubscriptionCallback>>({})
   #isWatching = false
 
@@ -232,6 +235,8 @@ export class TokenRatesStore {
     this.#lastUpdateAt = now
     this.#lastUpdateKey = updateKey
 
+    const generation = ++this.#updateGeneration
+
     try {
       // force usd to be included, because hide small balances feature requires it
       const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencies, "usd", "tao"])
@@ -249,11 +254,13 @@ export class TokenRatesStore {
           ([tokenId]) => tokens[tokenId]?.type === "substrate-dtao" && !tokenRates[tokenId]
         )
       )
+      if (generation !== this.#updateGeneration) return
       this.publish({ ...previousDTaoRates, ...tokenRates })
 
       // merge bittensor dtao (subnet alpha) token rates, computed from the subnet pool
       // prices and the TAO rates above (self-contained failure handling: keep-last, never throws)
       const dtaoRates = await fetchDTaoTokenRatesForWallet(tokens, tokenRates, previous.tokenRates)
+      if (generation !== this.#updateGeneration) return
       if (Object.keys(dtaoRates).length || Object.keys(previousDTaoRates).length)
         this.publish({ ...tokenRates, ...dtaoRates })
     } catch (err) {
