@@ -1,9 +1,9 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
+import { getPjsTxHelper } from "@polkadot-api/tx-utils"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { CUSTOM_SIGNED_EXTENSIONS } from "../customSignedExtensions"
 import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
-import { getPjsTxHelper } from "../vendor/tx-utils"
 import type { Chain, ChainInfo } from "./types"
 
 export const getPayloadWithMetadataHash = (

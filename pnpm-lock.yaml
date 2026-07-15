@@ -920,6 +920,9 @@ importers:
       '@polkadot-api/substrate-bindings':
         specifier: 0.20.3
         version: 0.20.3
+      '@polkadot-api/tx-utils':
+        specifier: 0.4.0
+        version: 0.4.0
       '@polkadot-api/utils':
         specifier: 0.4.0
         version: 0.4.0
@@ -2497,6 +2500,9 @@ packages:
 
   '@polkadot-api/substrate-client@0.7.0':
     resolution: {integrity: sha512-TWCc4MAMa5SLVQXmomLHknbj+bztQ/Yclgwm8ENBhz8hR7c9rw9FBAkCa02jMBMCAygPhp3ayGRq+UFcF8KIxQ==}
+
+  '@polkadot-api/tx-utils@0.4.0':
+    resolution: {integrity: sha512-JvjLE4ojHoZT5w7PK3KJhGz/pWfwQAi+pe1RBm4LZC3U6YM02rP41CJIfA427sBNtT3Cdpm+cZptfWR8rb6qjA==}
 
   '@polkadot-api/utils@0.4.0':
     resolution: {integrity: sha512-9b/hwRM0UloLWV7SfpNaSD/4k8UQAHoaACAk7Xe+1MlfAm2JtnmPiB1GfGrfTyBlsrJVUIBCZpEmbmxVMaIqBA==}
@@ -10479,6 +10485,14 @@ snapshots:
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.2.0
       '@polkadot-api/raw-client': 0.3.0
+      '@polkadot-api/utils': 0.4.0
+
+  '@polkadot-api/tx-utils@0.4.0':
+    dependencies:
+      '@polkadot-api/merkleize-metadata': 1.2.3
+      '@polkadot-api/metadata-builders': 0.14.3
+      '@polkadot-api/signers-common': 0.2.3
+      '@polkadot-api/substrate-bindings': 0.20.3
       '@polkadot-api/utils': 0.4.0
 
   '@polkadot-api/utils@0.4.0': {}

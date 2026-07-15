@@ -32,6 +32,8 @@ minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   # published by Talisman, no buffer time needed
   - "@talismn/siws"
+  # 0.4.0 verified by diff against the source we previously vendored — can be removed after 2026-07-18
+  - "@polkadot-api/tx-utils"
 
 overrides:
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
