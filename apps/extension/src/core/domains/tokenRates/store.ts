@@ -23,7 +23,7 @@ import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { Port } from "../../types/base"
 import { settingsStore } from "../app/store.settings"
-import { activeNetworksStore } from "../balances/store.activeNetworks"
+import { type ActiveNetworks, activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
 import { fetchDTaoTokenRates } from "./dtaoTokenRates"
 
@@ -117,10 +117,10 @@ export class TokenRatesStore {
           obsActiveNetworks,
           obsCurrencies,
         ]).subscribe(
-          debounce(async ([tokens, activeTokens, , currencies]) => {
+          debounce(async ([tokens, activeTokens, activeNetworks, currencies]) => {
             if (this.#subscriptions.observed) {
               const tokensList = this.getTokensForRates(tokens, activeTokens)
-              await this.updateTokenRates(tokensList, currencies)
+              await this.updateTokenRates(tokensList, currencies, activeNetworks)
             }
           }, 500)
         )
@@ -144,14 +144,15 @@ export class TokenRatesStore {
 
   async hydrateStore(): Promise<boolean> {
     try {
-      const [tokens, activeTokens, currencies] = await Promise.all([
+      const [tokens, activeTokens, activeNetworks, currencies] = await Promise.all([
         chaindataProvider.getTokensMapById(),
         activeTokensStore.get(),
+        activeNetworksStore.get(),
         settingsStore.get("selectableCurrencies"),
       ])
 
       const tokensList = this.getTokensForRates(tokens, activeTokens)
-      await this.updateTokenRates(tokensList, currencies)
+      await this.updateTokenRates(tokensList, currencies, activeNetworks)
 
       return true
     } catch (error) {
@@ -191,14 +192,21 @@ export class TokenRatesStore {
    */
   private async updateTokenRates(
     tokens: TokenList,
-    currencies: TokenRateCurrency[]
+    currencies: TokenRateCurrency[],
+    activeNetworks: ActiveNetworks
   ): Promise<void> {
     const now = Date.now()
 
-    const updateKey = Object.keys(tokens ?? {})
-      .concat(...currencies)
-      .sort()
-      .join(",")
+    // network toggles change computed rates (dtao pricing is gated on the bittensor
+    // network's active state) without changing the token list: include the overrides
+    // in the key so a toggle busts the min-refresh dedupe and refetches immediately
+    const updateKey = [
+      Object.keys(tokens ?? {})
+        .concat(...currencies)
+        .sort()
+        .join(","),
+      JSON.stringify(Object.entries(activeNetworks).sort()),
+    ].join("|")
     if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateKey === updateKey) return
 
     // update lastUpdateAt & lastUpdateTokenIds before fetching to prevent api call bursts
