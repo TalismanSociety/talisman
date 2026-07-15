@@ -27,8 +27,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@talismn/chain-connectors": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
-    "anylogger": "^1.0.11"
+    "anylogger": "^1.0.11",
+    "scale-ts": "^1.6.1"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",

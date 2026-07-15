@@ -25,7 +25,7 @@ import type { Port } from "../../types/base"
 import { settingsStore } from "../app/store.settings"
 import { type ActiveNetworks, activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
-import { fetchDTaoTokenRates } from "./dtaoTokenRates"
+import { fetchDTaoTokenRatesForWallet } from "./dtaoTokenRates"
 
 const blobStore = getBlobStore<TokenRatesStorage>("tokenRates")
 
@@ -224,7 +224,10 @@ export class TokenRatesStore {
       // merge bittensor dtao (subnet alpha) token rates, computed from the subnet pool
       // prices and the TAO rates above (self-contained failure handling: keep-last, never throws)
       const previous = await firstValueFrom(this.#storage$)
-      Object.assign(tokenRates, await fetchDTaoTokenRates(tokens, tokenRates, previous.tokenRates))
+      Object.assign(
+        tokenRates,
+        await fetchDTaoTokenRatesForWallet(tokens, tokenRates, previous.tokenRates)
+      )
 
       const putTokenRates: TokenRatesStorage = { tokenRates }
 

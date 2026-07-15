@@ -986,12 +986,18 @@ importers:
 
   packages/token-rates:
     dependencies:
+      '@talismn/chain-connectors':
+        specifier: workspace:*
+        version: link:../chain-connectors
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider
       anylogger:
         specifier: ^1.0.11
         version: 1.0.11
+      scale-ts:
+        specifier: ^1.6.1
+        version: 1.6.1
     devDependencies:
       '@talismn/tsconfig':
         specifier: workspace:*
