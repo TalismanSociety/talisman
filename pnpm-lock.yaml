@@ -992,6 +992,9 @@ importers:
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider
+      '@talismn/util':
+        specifier: workspace:*
+        version: link:../util
       anylogger:
         specifier: ^1.0.11
         version: 1.0.11

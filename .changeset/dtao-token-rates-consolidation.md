@@ -1,6 +1,6 @@
 ---
 "@talismn/token-rates": minor
-"@talismn/balances": minor
+"@talismn/balances": major
 ---
 
 Consolidate bittensor dtao (subnet alpha) token pricing into the token-rates layer

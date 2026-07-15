@@ -1,6 +1,6 @@
 import { TaoDataApi } from "./TaoDataApi"
 
-const TAO_DATA_API_URL = "https://tda.talisman.xyz"
+export const TAO_DATA_API_URL = "https://tda.talisman.xyz"
 
 export { TaoDataApi }
 

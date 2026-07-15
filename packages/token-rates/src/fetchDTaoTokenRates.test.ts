@@ -128,6 +128,41 @@ describe("fetchDTaoTokenRates", () => {
     expect(result[`${NETWORK_ID}:substrate-dtao:2`]).toBe(previousAlphaRates)
   })
 
+  it("keeps previous rates for a zero pool price instead of fabricating zero-valued rates", async () => {
+    mockSend.mockResolvedValue(encodePrices([{ netuid: 1, price: 0n }]))
+    const previousAlphaRates = newTokenRates()
+    previousAlphaRates.usd = { price: 123 }
+    const previousRates: TokenRatesList = {
+      [`${NETWORK_ID}:substrate-dtao:1`]: previousAlphaRates,
+    }
+
+    const result = await fetchDTaoTokenRates({
+      connector,
+      tokens: makeTokens(1),
+      tokenRates: makeCoingeckoRates(),
+      previousRates,
+      customFetch: mockFetch,
+    })
+
+    expect(result[`${NETWORK_ID}:substrate-dtao:1`]).toBe(previousAlphaRates)
+  })
+
+  it("drops dtao entries (no keep-last) when the native TAO token rates are missing", async () => {
+    const previousAlphaRates = newTokenRates()
+    previousAlphaRates.usd = { price: 123 }
+
+    const result = await fetchDTaoTokenRates({
+      connector,
+      tokens: makeTokens(1),
+      tokenRates: {},
+      previousRates: { [`${NETWORK_ID}:substrate-dtao:1`]: previousAlphaRates },
+      customFetch: mockFetch,
+    })
+
+    expect(result).toEqual({})
+    expect(mockSend).not.toHaveBeenCalled()
+  })
+
   it("omits entries with neither a price nor previous rates", async () => {
     mockSend.mockResolvedValue(encodePrices([]))
 

@@ -1,5 +1,7 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import type { NetworkId, SubDTaoToken, TokenList } from "@talismn/chaindata-provider"
+import { subNativeTokenId } from "@talismn/chaindata-provider"
+import { throwAfter } from "@talismn/util"
 import { Struct, u16, u64, Vector } from "scale-ts"
 
 import { getDTaoTokenRates } from "./getDTaoTokenRates"
@@ -9,21 +11,6 @@ import type { TokenRatesList } from "./types"
 const DEFAULT_BITTENSOR_NETWORK_ID = "bittensor"
 const DEFAULT_TAO_DATA_API_URL = "https://tda.talisman.xyz"
 const DEFAULT_TIMEOUT_MS = 10_000
-
-/** rejects after `ms`: a hung request must not stall the host's whole rates update */
-const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms)
-      }),
-    ])
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
 // decoded shape of the SwapRuntimeApi_current_alpha_price_all result
 const alphaPricesCodec = Vector(Struct({ netuid: u16, price: u64 }))
@@ -89,7 +76,7 @@ export type FetchDTaoTokenRatesOptions = {
   networkId?: NetworkId
   /** token list to price — non-dtao tokens (and dtao tokens with a coingeckoId) are ignored */
   tokens: TokenList
-  /** freshly fetched rates list — must contain the network's native TAO token rates */
+  /** freshly fetched rates list — dtao rates derive from the network's native TAO token rates in it */
   tokenRates: TokenRatesList
   /** previous rates list, used as keep-last fallback when fetching fails */
   previousRates: TokenRatesList
@@ -126,32 +113,37 @@ export const fetchDTaoTokenRates = async ({
   )
   if (!dtaoTokens.length) return {}
 
-  const keepLast = () =>
-    Object.fromEntries(
+  // alpha rates derive from the network's native TAO rates: without them there is nothing to
+  // price against, and keep-last must not apply (stale entries would display as current)
+  if (!tokenRates[subNativeTokenId(networkId)]) return {}
+
+  // the two fetches are independent: run them concurrently
+  const [prices, changes] = await Promise.all([
+    Promise.race([
+      fetchScaledAlphaPricesByNetuid(connector, networkId),
+      throwAfter(timeoutMs, `Timed out after ${timeoutMs}ms`),
+    ]).catch((err) => {
+      log.warn("Failed to fetch alpha prices, keeping previous dtao rates", err)
+      return null
+    }),
+    getAlphaPriceChangesByNetuid(taoDataApiUrl, customFetch, timeoutMs),
+  ])
+
+  if (!prices)
+    return Object.fromEntries(
       dtaoTokens
         .filter((token) => previousRates[token.id])
         .map((token) => [token.id, previousRates[token.id]])
     )
 
-  let prices: Map<number, bigint>
-  try {
-    prices = await withTimeout(fetchScaledAlphaPricesByNetuid(connector, networkId), timeoutMs)
-  } catch (err) {
-    log.warn("Failed to fetch alpha prices, keeping previous dtao rates", err)
-    return keepLast()
-  }
-
-  const changes = await getAlphaPriceChangesByNetuid(taoDataApiUrl, customFetch, timeoutMs)
-
   return Object.fromEntries(
     dtaoTokens
       .map((token) => {
-        // never fabricate a zero price: a netuid missing from the result keeps its last rates
+        // never fabricate a zero price: a missing or zero pool price keeps the last rates
         const price = prices.get(token.netuid)
-        const rates =
-          price !== undefined
-            ? getDTaoTokenRates(token, tokenRates, price, changes?.get(token.netuid))
-            : null
+        const rates = price
+          ? getDTaoTokenRates(token, tokenRates, price, changes?.get(token.netuid))
+          : null
         return [token.id, rates ?? previousRates[token.id]] as const
       })
       .filter(([, rates]) => !!rates)
