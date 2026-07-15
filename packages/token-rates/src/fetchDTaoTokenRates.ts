@@ -8,6 +8,22 @@ import type { TokenRatesList } from "./types"
 
 const DEFAULT_BITTENSOR_NETWORK_ID = "bittensor"
 const DEFAULT_TAO_DATA_API_URL = "https://tda.talisman.xyz"
+const DEFAULT_TIMEOUT_MS = 10_000
+
+/** rejects after `ms`: a hung request must not stall the host's whole rates update */
+const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 // decoded shape of the SwapRuntimeApi_current_alpha_price_all result
 const alphaPricesCodec = Vector(Struct({ netuid: u16, price: u64 }))
@@ -37,14 +53,17 @@ const alphaPriceChangesCache = new Map<
  */
 const getAlphaPriceChangesByNetuid = async (
   apiUrl: string,
-  customFetch: typeof fetch
+  customFetch: typeof fetch,
+  timeoutMs: number
 ): Promise<Map<number, number> | null> => {
   const cached = alphaPriceChangesCache.get(apiUrl)
   if (cached && performance.now() - cached.fetchedAt < ALPHA_PRICE_CHANGES_TTL)
     return cached.changes
 
   try {
-    const response = await customFetch(`${apiUrl}/pools`)
+    const response = await customFetch(`${apiUrl}/pools`, {
+      signal: AbortSignal.timeout(timeoutMs),
+    })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
     const pools = (await response.json()) as {
       netuid: number
@@ -78,6 +97,8 @@ export type FetchDTaoTokenRatesOptions = {
   customFetch?: typeof fetch
   /** tao-data api url, defaults to https://tda.talisman.xyz */
   taoDataApiUrl?: string
+  /** per-request timeout for the chain call and the tao-data api call, defaults to 10s */
+  timeoutMs?: number
 }
 
 /**
@@ -97,6 +118,7 @@ export const fetchDTaoTokenRates = async ({
   previousRates,
   customFetch = fetch,
   taoDataApiUrl = DEFAULT_TAO_DATA_API_URL,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
 }: FetchDTaoTokenRatesOptions): Promise<TokenRatesList> => {
   const dtaoTokens = Object.values(tokens).filter(
     (token): token is SubDTaoToken =>
@@ -113,13 +135,13 @@ export const fetchDTaoTokenRates = async ({
 
   let prices: Map<number, bigint>
   try {
-    prices = await fetchScaledAlphaPricesByNetuid(connector, networkId)
+    prices = await withTimeout(fetchScaledAlphaPricesByNetuid(connector, networkId), timeoutMs)
   } catch (err) {
     log.warn("Failed to fetch alpha prices, keeping previous dtao rates", err)
     return keepLast()
   }
 
-  const changes = await getAlphaPriceChangesByNetuid(taoDataApiUrl, customFetch)
+  const changes = await getAlphaPriceChangesByNetuid(taoDataApiUrl, customFetch, timeoutMs)
 
   return Object.fromEntries(
     dtaoTokens

@@ -162,6 +162,36 @@ describe("fetchDTaoTokenRates", () => {
     expect(result[`${NETWORK_ID}:substrate-dtao:1`]?.usd?.change24h).toBeCloseTo(
       (1.1 * 1.02 - 1) * 100
     )
-    expect(mockFetch).toHaveBeenCalledWith("https://tao-data.test/changes/pools")
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://tao-data.test/changes/pools",
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
+  })
+
+  it("keeps previous rates when the chain call hangs past the timeout", async () => {
+    vi.useFakeTimers()
+    try {
+      mockSend.mockReturnValue(new Promise(() => {})) // never settles
+      const previousAlphaRates = newTokenRates()
+      previousAlphaRates.usd = { price: 123 }
+      const previousRates: TokenRatesList = {
+        [`${NETWORK_ID}:substrate-dtao:1`]: previousAlphaRates,
+      }
+
+      const resultPromise = fetchDTaoTokenRates({
+        connector,
+        tokens: makeTokens(1),
+        tokenRates: makeCoingeckoRates(),
+        previousRates,
+        customFetch: mockFetch,
+        timeoutMs: 5_000,
+      })
+      await vi.advanceTimersByTimeAsync(5_000)
+
+      const result = await resultPromise
+      expect(result[`${NETWORK_ID}:substrate-dtao:1`]).toBe(previousAlphaRates)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

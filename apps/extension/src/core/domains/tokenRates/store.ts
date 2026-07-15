@@ -25,6 +25,7 @@ import type { Port } from "../../types/base"
 import { settingsStore } from "../app/store.settings"
 import { type ActiveNetworks, activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
+import { BITTENSOR_NETWORK_ID } from "../bittensor/constants"
 import { fetchDTaoTokenRatesForWallet } from "./dtaoTokenRates"
 
 const blobStore = getBlobStore<TokenRatesStorage>("tokenRates")
@@ -197,15 +198,15 @@ export class TokenRatesStore {
   ): Promise<void> {
     const now = Date.now()
 
-    // network toggles change computed rates (dtao pricing is gated on the bittensor
-    // network's active state) without changing the token list: include the overrides
-    // in the key so a toggle busts the min-refresh dedupe and refetches immediately
+    // toggling the bittensor network changes computed rates (dtao pricing is gated on its
+    // active state) without changing the token list: include it in the key so a toggle
+    // busts the min-refresh dedupe and refetches immediately
     const updateKey = [
       Object.keys(tokens ?? {})
         .concat(...currencies)
         .sort()
         .join(","),
-      JSON.stringify(Object.entries(activeNetworks).sort()),
+      `dtao:${activeNetworks[BITTENSOR_NETWORK_ID] ?? "default"}`,
     ].join("|")
     if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateKey === updateKey) return
 
@@ -226,7 +227,7 @@ export class TokenRatesStore {
       const previous = await firstValueFrom(this.#storage$)
       Object.assign(
         tokenRates,
-        await fetchDTaoTokenRatesForWallet(tokens, tokenRates, previous.tokenRates)
+        await fetchDTaoTokenRatesForWallet(tokens, tokenRates, previous.tokenRates, activeNetworks)
       )
 
       const putTokenRates: TokenRatesStorage = { tokenRates }
