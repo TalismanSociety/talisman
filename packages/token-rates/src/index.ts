@@ -1,3 +1,4 @@
+export * from "./getDTaoTokenRates"
 export * from "./TalismanTokenRatesDatabase"
 export * from "./TokenRates"
 export * from "./types"

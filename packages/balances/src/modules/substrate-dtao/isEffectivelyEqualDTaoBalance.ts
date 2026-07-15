@@ -3,12 +3,6 @@ import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
 import type { BalanceEquivalence } from "../shared/stabilizeBalances"
 import type { SubDTaoBalanceMeta } from "./types"
 
-/**
- * Volatile subnet AMM pools drift ~0.5%/min in normal trading, so a tighter tolerance
- * re-emits (and re-renders) on nearly every 6s poll. 50 bps keeps the displayed fiat
- * value of alpha positions at most 0.5% stale between refreshes.
- */
-const PRICE_DRIFT_TOLERANCE_BPS = 50n
 /** root dividends accrue continuously; the pending-claim display is informational */
 const CLAIM_DRIFT_TOLERANCE_BPS = 100n
 /**
@@ -20,10 +14,9 @@ const CLAIM_DRIFT_TOLERANCE_BPS = 100n
 const STAKE_DRIFT_TOLERANCE_BPS = 100n
 
 /**
- * dtao balances embed two values that drift on (nearly) every block even when the user's
- * position is untouched:
- * - `meta.scaledAlphaPrice`: the subnet AMM pool price (moves with every trade)
- * - "Pending root claim" amounts: root staking dividends accrue continuously
+ * dtao balances embed values that drift on (nearly) every block even when the user's
+ * position is untouched: "Pending root claim" amounts accrue continuously, staking
+ * positions auto-compound, and conviction locks decay.
  *
  * Without special handling, every 6s poll re-emits the full result set, which defeats
  * every distinctUntilChanged stage downstream and forces the whole pipeline
@@ -120,16 +113,6 @@ const classifyValue = (
       else return changed(`amount ${previous.amount}→${next.amount}`)
     }
   }
-
-  // AMM price may drift
-  if (
-    !isWithinDriftTolerance(
-      previousMeta?.scaledAlphaPrice ?? "0",
-      nextMeta?.scaledAlphaPrice ?? "0",
-      PRICE_DRIFT_TOLERANCE_BPS
-    )
-  )
-    drift = true
 
   return { equivalence: drift ? "drift" : "equal" }
 }

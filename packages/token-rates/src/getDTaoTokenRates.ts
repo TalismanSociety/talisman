@@ -1,15 +1,15 @@
 import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
+
+import log from "./log"
 import {
   newTokenRates,
   type TokenRateCurrency,
   type TokenRateData,
   type TokenRatesList,
-} from "@talismn/token-rates"
+} from "./types"
 
-import log from "../../log"
-import { ALPHA_PRICE_SCALE, alphaToTao, TAO_DECIMALS } from "./alphaPrice"
-
-const ONE_ALPHA = 10n ** TAO_DECIMALS
+/** TAO-per-alpha pool price fixed-point scale: 10^9 (TAO decimals) */
+const SCALED_ALPHA_PRICE_SCALE = 10 ** 9
 
 /**
  * 24h change of an alpha token in a given currency, in percent: the pool price change (alpha vs
@@ -31,13 +31,13 @@ const getAlphaChange24h = (
 }
 
 /**
- * To be used for tokens that don't have a coingecko id
+ * Rates of a bittensor dtao (subnet alpha) token, derived from its network's native TAO rates
+ * scaled by the subnet pool price. To be used for tokens that don't have a coingecko id.
  *
  * @param token
- * @param tokenRates
- * @param scaledAlphaPrice
+ * @param tokenRates must contain the rates of the network's native (TAO) token
+ * @param scaledAlphaPrice current TAO-per-alpha pool price, fixed-point scaled by 10^9 (rao)
  * @param alphaPriceChange24h 24h change of the pool price (alpha vs TAO) in percent, when known
- * @returns
  */
 export const getDTaoTokenRates = (
   token: SubDTaoToken,
@@ -53,6 +53,8 @@ export const getDTaoTokenRates = (
     // for root subnet, same rates as TAO
     if (token.netuid === 0) return structuredClone(taoTokenRates)
 
+    const priceRatio = Number(BigInt(scaledAlphaPrice)) / SCALED_ALPHA_PRICE_SCALE
+
     const alphaRates = newTokenRates()
     for (const [currency, taoRate] of Object.entries(taoTokenRates) as [
       TokenRateCurrency,
@@ -61,8 +63,6 @@ export const getDTaoTokenRates = (
       if (!taoRate) {
         alphaRates[currency] = null
       } else {
-        const taoPrice = alphaToTao(ONE_ALPHA, BigInt(scaledAlphaPrice))
-        const priceRatio = Number(taoPrice) / Number(ALPHA_PRICE_SCALE)
         alphaRates[currency] = {
           price: taoRate.price * priceRatio,
           marketCap: taoRate.marketCap ? taoRate.marketCap * priceRatio : undefined,
@@ -73,7 +73,7 @@ export const getDTaoTokenRates = (
 
     return alphaRates
   } catch (err) {
-    log.error(err)
+    log.error("Failed to compute dtao token rates", err)
     return null
   }
 }

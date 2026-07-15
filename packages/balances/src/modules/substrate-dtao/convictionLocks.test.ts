@@ -34,7 +34,6 @@ describe("getConvictionLockLabel", () => {
 describe("findDTaoConvictionLock", () => {
   const lockHotkey = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
   const convictionLockMeta = {
-    scaledAlphaPrice: "0",
     convictionLock: {
       type: "conviction-lock",
       hotkey: lockHotkey,
@@ -48,7 +47,7 @@ describe("findDTaoConvictionLock", () => {
     expect(findDTaoConvictionLock([])).toBeNull()
     expect(
       findDTaoConvictionLock([
-        { amount: { planck: 10n }, meta: { scaledAlphaPrice: "0" } }, // eg pending root claim
+        { amount: { planck: 10n } }, // eg pending root claim
       ])
     ).toBeNull()
   })
@@ -56,7 +55,7 @@ describe("findDTaoConvictionLock", () => {
   it("finds the conviction lock among other locks", () => {
     expect(
       findDTaoConvictionLock([
-        { amount: { planck: 10n }, meta: { scaledAlphaPrice: "0" } },
+        { amount: { planck: 10n } },
         { amount: { planck: 42n }, meta: convictionLockMeta },
       ])
     ).toEqual({

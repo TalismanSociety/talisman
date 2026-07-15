@@ -2,22 +2,18 @@ import { describe, expect, test } from "vitest"
 
 import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
 import { isEffectivelyEqualDTaoBalance } from "./isEffectivelyEqualDTaoBalance"
-import type { SubDTaoBalanceMeta } from "./types"
 
 const makeDTaoBalance = ({
   stake = "1000000000000",
   pendingRootClaim = "5000000000",
-  scaledAlphaPrice = "250000000",
   status = "live",
   extraValues = [],
 }: {
   stake?: string
   pendingRootClaim?: string
-  scaledAlphaPrice?: string
   status?: string
   extraValues?: AmountWithLabel<string>[]
 } = {}): IBalance => {
-  const meta: SubDTaoBalanceMeta = { scaledAlphaPrice }
   return {
     address: "5Coldkey",
     networkId: "bittensor",
@@ -25,13 +21,12 @@ const makeDTaoBalance = ({
     source: "substrate-dtao",
     status,
     values: [
-      { type: "free", label: "Subnet Staking", amount: stake, meta },
+      { type: "free", label: "Subnet Staking", amount: stake },
       {
         type: "locked",
         label: "Pending root claim",
         amount: pendingRootClaim,
         includeInTransferable: true,
-        meta,
       },
       ...extraValues,
     ],
@@ -41,18 +36,6 @@ const makeDTaoBalance = ({
 describe("isEffectivelyEqualDTaoBalance", () => {
   test("equal when nothing changed", () => {
     expect(isEffectivelyEqualDTaoBalance(makeDTaoBalance(), makeDTaoBalance())).toBe("equal")
-  })
-
-  test("tolerates sub-0.5% alpha price drift", () => {
-    const previous = makeDTaoBalance({ scaledAlphaPrice: "250000000" })
-    const next = makeDTaoBalance({ scaledAlphaPrice: "251000000" }) // +0.4%
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("equal")
-  })
-
-  test(">0.5% alpha price move classifies as drift", () => {
-    const previous = makeDTaoBalance({ scaledAlphaPrice: "250000000" })
-    const next = makeDTaoBalance({ scaledAlphaPrice: "252500000" }) // +1%
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
   })
 
   test("tolerates sub-1% pending root claim accrual", () => {
@@ -94,7 +77,6 @@ describe("isEffectivelyEqualDTaoBalance", () => {
             label: "Decaying lock",
             amount,
             meta: {
-              scaledAlphaPrice: "250000000",
               convictionLock: { type: "conviction-lock", hotkey: "5Hotkey", lockType: "decaying" },
             },
           } as AmountWithLabel<string>,
@@ -118,7 +100,6 @@ describe("isEffectivelyEqualDTaoBalance", () => {
           label: "Decaying lock",
           amount: "77",
           meta: {
-            scaledAlphaPrice: "250000000",
             convictionLock: { type: "conviction-lock", hotkey: "5Hotkey", lockType: "decaying" },
           },
         } as AmountWithLabel<string>,
@@ -135,7 +116,6 @@ describe("isEffectivelyEqualDTaoBalance", () => {
           type: "reserved",
           label: "reserved",
           amount: "77",
-          meta: { scaledAlphaPrice: "250000000" },
         } as AmountWithLabel<string>,
       ],
     })
@@ -151,7 +131,6 @@ describe("isEffectivelyEqualDTaoBalance", () => {
             label: "Decaying lock",
             amount: "77",
             meta: {
-              scaledAlphaPrice: "250000000",
               convictionLock: { type: "conviction-lock", hotkey, lockType: "decaying" },
             },
           } as AmountWithLabel<string>,

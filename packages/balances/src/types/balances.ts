@@ -15,8 +15,6 @@ import {
 import BigNumber from "../configureBigNumber"
 
 import log from "../log"
-import type { SubDTaoBalanceMeta } from "../modules"
-import { getDTaoTokenRates } from "../modules/substrate-dtao"
 import type {
   Amount,
   AmountWithLabel,
@@ -512,19 +510,8 @@ export class Balance {
       return lpTokenRates
     }
 
-    // dTAO balances need to be converted to the native token to compute their rate, unless we have a coingeckoId
-    if (this.token?.type === "substrate-dtao" && !this.token.coingeckoId) {
-      if (!this.#db?.tokenRates) return null
-
-      const balances = this.#valueGetter.get("free")
-      if (!balances.length) return null
-      const balanceMeta = balances[0].meta as SubDTaoBalanceMeta | undefined
-      if (!balanceMeta?.scaledAlphaPrice) return null
-
-      return getDTaoTokenRates(this.token, this.#db.tokenRates, balanceMeta.scaledAlphaPrice)
-    }
-
-    // other tokens can just pick from the tokenRates db using the tokenId
+    // other tokens (including dtao alpha tokens, whose rates the host computes from the
+    // subnet pool price) can just pick from the tokenRates db using the tokenId
     return this.#db?.tokenRates?.[this.tokenId] || null
   }
 
