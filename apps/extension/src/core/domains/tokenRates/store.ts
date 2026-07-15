@@ -23,7 +23,9 @@ import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { Port } from "../../types/base"
 import { settingsStore } from "../app/store.settings"
+import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
+import { fetchDTaoTokenRates } from "./dtaoTokenRates"
 
 const blobStore = getBlobStore<TokenRatesStorage>("tokenRates")
 
@@ -103,12 +105,19 @@ export class TokenRatesStore {
         // refresh when token list changes : crucial for first popup load after install or db migration
         const obsTokens = chaindataProvider.getTokensMapById$()
         const obsActiveTokens = activeTokensStore.observable
+        // dtao rates are gated on the bittensor network's active state: refresh on toggle
+        const obsActiveNetworks = activeNetworksStore.observable
         const obsCurrencies = settingsStore.observable.pipe(
           map((settings) => settings.selectableCurrencies)
         )
 
-        subTokenList = combineLatest([obsTokens, obsActiveTokens, obsCurrencies]).subscribe(
-          debounce(async ([tokens, activeTokens, currencies]) => {
+        subTokenList = combineLatest([
+          obsTokens,
+          obsActiveTokens,
+          obsActiveNetworks,
+          obsCurrencies,
+        ]).subscribe(
+          debounce(async ([tokens, activeTokens, , currencies]) => {
             if (this.#subscriptions.observed) {
               const tokensList = this.getTokensForRates(tokens, activeTokens)
               await this.updateTokenRates(tokensList, currencies)
@@ -203,6 +212,12 @@ export class TokenRatesStore {
       const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, {
         apiUrl: COINS_API_URL,
       })
+
+      // merge bittensor dtao (subnet alpha) token rates, computed from the subnet pool
+      // prices and the TAO rates above (self-contained failure handling: keep-last, never throws)
+      const previous = await firstValueFrom(this.#storage$)
+      Object.assign(tokenRates, await fetchDTaoTokenRates(tokens, tokenRates, previous.tokenRates))
+
       const putTokenRates: TokenRatesStorage = { tokenRates }
 
       // update external subscriptions
