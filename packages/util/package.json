@@ -23,7 +23,7 @@
   "scripts": {
     "test": "vitest run",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup --silent",
+    "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -35,7 +35,7 @@
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
     "@types/node": "^24.5.1",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
   "exports": {

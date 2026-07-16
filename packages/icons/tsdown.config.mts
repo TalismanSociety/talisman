@@ -1,16 +1,16 @@
-import svgr from "esbuild-plugin-svgr"
-import { defineConfig } from "tsup"
+import svgr from "@svgr/rollup"
+import { defineConfig } from "tsdown"
 
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["cjs", "esm"],
   dts: false, // Skip DTS for SVG components - types are inferred from React
   sourcemap: true,
-  clean: true,
   target: "es2022",
-  splitting: false,
   external: ["react", "react-dom"],
-  esbuildPlugins: [
+  outExtensions: ({ format }) =>
+    format === "cjs" ? { js: ".js", dts: ".d.ts" } : { js: ".mjs", dts: ".d.mts" },
+  plugins: [
     svgr({
       exportType: "named",
       namedExport: "ReactComponent",
