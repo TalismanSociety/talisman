@@ -6,7 +6,6 @@
     "declaration": false,
     "declarationMap": false,
     "tsBuildInfoFile": ".tsbuildinfo",
-    "moduleResolution": "bundler",
     "paths": {
       "@common": ["./src/common"],
       "@common/*": ["./src/common/*"],

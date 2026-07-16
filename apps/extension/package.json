@@ -114,7 +114,7 @@
     "semver": "7.8.5",
     "tailwind-merge": "^3.6.0",
     "ts-results": "3.3.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "url-join": "^5.0.0",
     "uuid": "^13.0.0",
     "viem": "2.52.2",

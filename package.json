@@ -67,15 +67,15 @@
     "@changesets/cli": "^2.31.0",
     "@noble/hashes": "1.8.0",
     "@playwright/test": "^1.61.1",
+    "@svgr/rollup": "8.1.0",
     "@types/node": "^24.5.1",
     "@vitest/coverage-v8": "^4.1.9",
     "@vitest/ui": "4.1.9",
     "dotenv": "17.4.2",
-    "esbuild-plugin-svgr": "3.1.1",
     "husky": "^9.1.7",
     "knip": "6.22.0",
-    "tsup": "8.5.1",
-    "typescript": "^6.0.3",
+    "tsdown": "0.22.4",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.9"
   }
 }

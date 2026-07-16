@@ -239,7 +239,8 @@ export class TokenRatesStore {
 
     try {
       // force usd to be included, because hide small balances feature requires it
-      const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencies, "usd", "tao"])
+      const allCurrencyIds: TokenRateCurrency[] = [...currencies, "usd", "tao"]
+      const effectiveCurrencyIds = uniq(allCurrencyIds)
 
       const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, {
         apiUrl: COINS_API_URL,
