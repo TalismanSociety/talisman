@@ -143,6 +143,44 @@ jobs:
         env:
           ANVIL_RPC_URL: http://localhost:8545
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/e2e
+      - name: Notify Discord on flaky e2e tests
+        # runs even if a prior step failed, so flaky tests are surfaced regardless of the run outcome
+        if: ${{ !cancelled() }}
+        run: |
+          REPORT=playwright-report/results.json
+          if [ ! -f "$REPORT" ]; then
+            echo "No JSON report found at $REPORT - skipping flaky check"
+            exit 0
+          fi
+
+          FLAKY=$(jq -r '.stats.flaky // 0' "$REPORT")
+          echo "Flaky test count: $FLAKY"
+          if [ "$FLAKY" -eq 0 ]; then
+            exit 0
+          fi
+
+          # Collect the titles of the flaky specs (a spec is flaky if any of its tests ended up flaky)
+          NAMES=$(jq -r '
+            [.suites[]? | recurse(.suites[]?) | .specs[]?]
+            | map(select(any(.tests[]?; .status == "flaky")) | .title)
+            | .[]
+          ' "$REPORT" | sed 's/^/• /')
+
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          MSG=$(printf '⚠️ **%s flaky e2e test(s) detected** on `%s`\n%s\n\n%s\n\n[View run](%s)' \
+            "$FLAKY" "$REF" "commit $SHA" "$NAMES" "$RUN_URL")
+
+          jq -n --arg content "$MSG" '{content: $content}' \
+            | curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+                -H "Content-Type: application/json" \
+                -d @-
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}
+          # pass context values through env (never interpolate ${{ }} into run: — a
+          # malicious PR branch name would otherwise be executed as shell)
+          REF: ${{ github.head_ref || github.ref_name }}
+          SHA: ${{ github.sha }}
       - name: Checkout visual regression snapshots from base branch
         if: github.event_name == 'pull_request'
         run: |
