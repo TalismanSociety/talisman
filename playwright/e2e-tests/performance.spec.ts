@@ -62,12 +62,15 @@ const MAX_HEAP_BYTES = MAX_HEAP_MB * 1024 * 1024
 // Memory should not grow more than 50% after repeated navigation
 const MAX_MEMORY_GROWTH_RATIO = 1.5
 
+// talismandev.eth, hardcoded so the watched-account form doesn't depend on live ENS resolution
+const DEV_WALLET_ADDRESS = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
+
 test.describe("Performance", () => {
   test("Dashboard initial load - memory and CPU within limits", async ({
     onboardedPage,
     addWatchedAccount,
   }) => {
-    await addWatchedAccount({ type: "ethereum", address: "talismandev.eth", name: "Dev Wallet" })
+    await addWatchedAccount({ type: "ethereum", address: DEV_WALLET_ADDRESS, name: "Dev Wallet" })
     await onboardedPage.waitForTimeout(5000)
 
     const metrics = await collectMetrics(onboardedPage)
@@ -131,7 +134,7 @@ test.describe("Performance", () => {
     onboardedPage,
     addWatchedAccount,
   }) => {
-    await addWatchedAccount({ type: "ethereum", address: "talismandev.eth", name: "Dev Wallet" })
+    await addWatchedAccount({ type: "ethereum", address: DEV_WALLET_ADDRESS, name: "Dev Wallet" })
     await onboardedPage.waitForTimeout(5000)
 
     const metrics = await collectMetrics(onboardedPage)
