@@ -75,7 +75,11 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
  * balances are unchanged from one emission to the next. Rebuilding every wrapper
  * discards each Balance's lazily-computed formatter caches and gives downstream
  * consumers (memos, === compares) a new identity for identical data — so unchanged
- * balances (matched by id + fingerprint, status included) keep their previous instance.
+ * balances (matched by id + deep compare, status included) keep their previous instance.
+ *
+ * Caveat: identity stays stable across rates-only changes (the instance is re-hydrated
+ * in place), so fiat values can change under the same reference — don't memoize fiat
+ * amounts off a Balance's identity alone.
  */
 const stabilizeBalanceInstances = () => {
   let prev = new Map<string, { storage: IBalance; balance: Balance }>()
