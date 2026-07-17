@@ -448,10 +448,10 @@ const discoverSubstrateAssets = async (): Promise<void> => {
 
     // Flush buffered results as soon as the whole queue drains (long queues also
     // flush every PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
-    probeQueue.onIdle().then(
-      () => flushPendingProbeResults(),
-      (err) => log.error("[substrateDiscovery] Failed to flush after queue idle", err)
-    )
+    probeQueue
+      .onIdle()
+      .then(() => flushPendingProbeResults())
+      .catch((err) => log.error("[substrateDiscovery] Failed to flush after queue idle", err))
   } catch (err) {
     log.error("[substrateDiscovery] Failed to enqueue substrate asset discovery", err)
   }

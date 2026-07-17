@@ -623,10 +623,16 @@ class AssetDiscoveryScanner {
       const evmNetworkIds = uniq(tokens.map((token) => token.networkId)).filter(
         (id): id is string => !!id
       )
-      // mark before writing so watchEnabledNetworks can't race us into a redundant scan
-      for (const networkId of evmNetworkIds) this.#selfActivatedNetworkIds.add(networkId)
+      // mark before writing so watchEnabledNetworks can't race us into a redundant scan.
+      // only mark ids that aren't already active: those are the only ones that will show
+      // up as new in watchEnabledNetworks and consume their entry — marking an already
+      // active network would leave a stale entry that would swallow a later manual
+      // re-activation
+      const activeNetworks = await activeNetworksStore.get()
+      const networkIdsToActivate = evmNetworkIds.filter((id) => !activeNetworks[id])
+      for (const networkId of networkIdsToActivate) this.#selfActivatedNetworkIds.add(networkId)
       await activeNetworksStore.set(
-        Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true]))
+        Object.fromEntries(networkIdsToActivate.map((networkId) => [networkId, true]))
       )
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
