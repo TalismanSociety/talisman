@@ -8,10 +8,6 @@ dotenv.config({ path: "apps/extension/.env" })
  */
 export default defineConfig({
   timeout: 60_000, // 60 seconds for all tests
-  // assertions poll until they pass; several forms validate asynchronously through the extension
-  // background (mnemonic validation, watched-address checks, ...), which on slow CI runners
-  // regularly exceeds the 5s default and makes those tests flaky
-  expect: { timeout: 15_000 },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -21,7 +17,11 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  // On CI we also emit a JSON report so a follow-up step can detect flaky tests
+  // (tests that failed then passed on retry) and alert on them.
+  reporter: process.env.CI
+    ? [["html"], ["json", { outputFile: "playwright-report/results.json" }]]
+    : "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
