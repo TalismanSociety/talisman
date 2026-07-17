@@ -8,7 +8,7 @@ import type { RequestAddAccountDerive } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { type AccountPlatform, isValidDerivationPath, type KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
-import { useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import {
   MnemonicCreateModal,
@@ -24,6 +24,7 @@ import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { useDebouncedValue } from "@ui/hooks/useDebouncedValue"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useMnemonics } from "@ui/state/mnemonics"
@@ -50,22 +51,53 @@ const useNextAvailableDerivationPath = (mnemonicId: string | null, curve: Keypai
   })
 }
 
+// The full-form resolver (mode: "onChange") re-runs the derivation-path test on every
+// keystroke of ANY field — including the account name. The result is deterministic per
+// (curve, path), so cache the derive instead of re-running it each time.
+const validDerivationPathCache = new Map<string, Promise<boolean>>()
+const isValidDerivationPathCached = (derivationPath: string, curve: KeypairCurve) => {
+  const key = `${curve}::${derivationPath}`
+  let result = validDerivationPathCache.get(key)
+  if (!result) {
+    result = isValidDerivationPath(derivationPath, curve)
+    validDerivationPathCache.set(key, result)
+    // bound the cache; drops oldest first, a typing session only needs the newest entries
+    if (validDerivationPathCache.size > 500)
+      validDerivationPathCache.delete(validDerivationPathCache.keys().next().value as string)
+  }
+  return result
+}
+
+// shared by the display lookup (useLookupAddress) and the schema's account-already-exists
+// check, so both hit the same react-query cache entry: one background derive per unique
+// (mnemonicId, curve, path) instead of one per resolver run + one per render
+const lookupAddressQueryOptions = (
+  mnemonicId: string | null,
+  curve: KeypairCurve,
+  derivationPath: string | null | undefined
+) =>
+  queryOptions({
+    queryKey: ["useLookupAddress", mnemonicId, curve, derivationPath],
+    queryFn: async () => {
+      // empty string is valid
+      if (!mnemonicId || !curve || typeof derivationPath !== "string") return null
+      if (!(await isValidDerivationPathCached(derivationPath, curve))) return null
+      return api.addressLookup({ type: "mnemonicId", mnemonicId, curve, derivationPath })
+    },
+    // deterministic result for a given key: never refetch
+    staleTime: Infinity,
+    refetchInterval: false,
+    retry: false,
+  })
+
 const useLookupAddress = (
   mnemonicId: string | null,
   curve: KeypairCurve,
   derivationPath: string | null | undefined
 ) => {
   return useQuery({
-    queryKey: ["useLookupAddress", mnemonicId, derivationPath],
-    queryFn: async () => {
-      // empty string is valid
-      if (!mnemonicId || !curve || typeof derivationPath !== "string") return null
-      if (!(await isValidDerivationPath(derivationPath, curve))) return null
-      return api.addressLookup({ type: "mnemonicId", mnemonicId, curve, derivationPath })
-    },
+    ...lookupAddressQueryOptions(mnemonicId, curve, derivationPath),
     enabled: !!mnemonicId && curve && typeof derivationPath === "string",
-    refetchInterval: false,
-    retry: false,
   })
 }
 
@@ -107,6 +139,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const mnemonics = useMnemonics()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
+  const queryClient = useQueryClient()
 
   const schema = useMemo(
     () =>
@@ -125,19 +158,17 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
           const curve = getDefaultCurveForAccountPlatform(platform)
 
-          if (!(await isValidDerivationPath(derivationPath, curve)))
+          if (!(await isValidDerivationPathCached(derivationPath, curve)))
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),
             })
 
           if (mnemonicId) {
-            const address = await api.addressLookup({
-              type: "mnemonicId",
-              mnemonicId,
-              derivationPath,
-              curve,
-            })
+            // shares its cache entry with the display lookup below
+            const address = await queryClient.fetchQuery(
+              lookupAddressQueryOptions(mnemonicId, curve, derivationPath)
+            )
             if (allAccounts.some((a) => a.address === address))
               return ctx.createError({
                 path: "derivationPath",
@@ -146,7 +177,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           }
           return true
         }),
-    [accountNames, t, allAccounts]
+    [accountNames, t, allAccounts, queryClient]
   )
 
   type FormData = yup.InferType<typeof schema>
@@ -245,11 +276,12 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const curve = useMemo(() => getDefaultCurveForAccountPlatform(platform), [platform])
 
   const { data: nextDerivationPath } = useNextAvailableDerivationPath(mnemonicId, curve)
-  const { data: address } = useLookupAddress(
-    mnemonicId,
-    curve,
-    isCustomDerivationPath ? derivationPath : nextDerivationPath
+  // debounced so the address preview doesn't trigger a background derive on every keystroke
+  const lookupDerivationPath = useDebouncedValue(
+    isCustomDerivationPath ? derivationPath : nextDerivationPath,
+    200
   )
+  const { data: address } = useLookupAddress(mnemonicId, curve, lookupDerivationPath)
 
   useEffect(() => {
     // prefill custom derivation path with next available one
