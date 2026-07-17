@@ -1,13 +1,7 @@
 import { bind } from "@react-rxjs/core"
-import { Balance, Balances, type FiatSumBalancesFormatter } from "@talismn/balances"
+import { type Balance, Balances } from "@talismn/balances"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import {
-  getSettingValue$,
-  selectedCurrency$,
-  useSelectedCurrency,
-  useSetting,
-} from "@ui/state/settings"
-import { useMemo } from "react"
+import { getSettingValue$, selectedCurrency$ } from "@ui/state/settings"
 import { combineLatest, map } from "rxjs"
 
 import { portfolioDisplayBalances$ } from "../useDisplayBalances"
@@ -36,74 +30,82 @@ const groupBalancesBySymbol = (balances: Balances) => {
   }, {})
 }
 
-const sortSymbolBalancesBy =
-  (type: "total" | "available" | "locked", currency: TokenRateCurrency) =>
-  ([aSymbol, aBalances]: SymbolBalances, [bSymbol, bBalances]: SymbolBalances): number => {
-    const planckAmount = (b: Balance) =>
-      type === "total"
-        ? b.total.planck
-        : type === "available"
-          ? b.transferable.planck
-          : b.unavailable.planck
+type SymbolSortKey = {
+  fiat: number
+  hasBalance: boolean
+  hasFiatRate: boolean
+  hasCoingeckoId: boolean
+  isTestnet: boolean
+}
 
-    const fiatAmount = (b: FiatSumBalancesFormatter | Balance) => {
-      const getAmount = (b: FiatSumBalancesFormatter | Balance, type: keyof typeof b) => {
-        if (b instanceof Balance) return b[type].fiat(currency)
-        return b[type]
-      }
+const SORT_FIELD = { total: "total", available: "transferable", locked: "unavailable" } as const
 
-      return type === "total"
-        ? getAmount(b, "total")
-        : type === "available"
-          ? getAmount(b, "transferable")
-          : type === "locked"
-            ? getAmount(b, "unavailable") !== null
-              ? // return unavailable if not null
-                (getAmount(b, "unavailable") ?? 0)
-              : // return null if unavailable is null
-                null
-            : null
+/**
+ * Sorts symbol groups by fiat value, then a chain of tie-breakers. The sort key of
+ * each group is computed once in a single pass over its balances — the comparator
+ * itself only reads scalars, where it used to re-reduce fiat sums and re-scan the
+ * group ~8 times per compared pair.
+ */
+const sortSymbolBalancesBy = (
+  entries: SymbolBalances[],
+  type: "total" | "available" | "locked",
+  currency: TokenRateCurrency
+): SymbolBalances[] => {
+  const field = SORT_FIELD[type]
+
+  const keys = new Map<string, SymbolSortKey>()
+  for (const [symbol, balances] of entries) {
+    const each = balances.each
+
+    // fiat sum excludes mirror tokens, matching balances.sum.fiat(currency)
+    const tokenIds = new Set<string>()
+    for (const b of each) if (b.tokenId) tokenIds.add(b.tokenId)
+
+    const key: SymbolSortKey = {
+      fiat: 0,
+      hasBalance: false,
+      hasFiatRate: false,
+      hasCoingeckoId: false,
+      isTestnet: false,
     }
+    for (const b of each) {
+      const formatter = b[field]
+      if (!key.hasBalance && formatter.planck > 0n) key.hasBalance = true
+      const fiat = formatter.fiat(currency)
+      // zero-balance tokens with a coingeckoId (and therefore a non-null fiat amount)
+      // rank above zero-balance tokens without one
+      if (!key.hasFiatRate && fiat !== null) key.hasFiatRate = true
+      // `Preview Only` coingeckoIds have no conversion rate (null fiat) but still rank
+      // above tokens without a coingeckoId — this groups `$0.00` tokens above `-` tokens.
+      // Testnet tokens with a coingeckoId are ignored: they sort last anyway and their
+      // conversion rates are never fetched
+      if (!key.hasCoingeckoId && typeof b.token?.coingeckoId === "string" && !b.network?.isTestnet)
+        key.hasCoingeckoId = true
+      if (!key.isTestnet && b.network?.isTestnet) key.isTestnet = true
+
+      const mirrorOf = b.token?.mirrorOf
+      if (!mirrorOf || !tokenIds.has(mirrorOf)) key.fiat += fiat ?? 0
+    }
+    keys.set(symbol, key)
+  }
+
+  return [...entries].sort(([aSymbol], [bSymbol]) => {
+    const a = keys.get(aSymbol) as SymbolSortKey
+    const b = keys.get(bSymbol) as SymbolSortKey
 
     // sort by fiat balance
-    const aFiat = fiatAmount(aBalances.sum.fiat(currency)) ?? 0
-    const bFiat = fiatAmount(bBalances.sum.fiat(currency)) ?? 0
-    if (aFiat > bFiat) return -1
-    if (aFiat < bFiat) return 1
+    if (a.fiat > b.fiat) return -1
+    if (a.fiat < b.fiat) return 1
 
     // sort by "has a balance or not" (values don't matter)
-    const aHasBalance = !!aBalances.each.find((b) => planckAmount(b) > 0n)
-    const bHasBalance = !!bBalances.each.find((b) => planckAmount(b) > 0n)
-    if (aHasBalance && !bHasBalance) return -1
-    if (!aHasBalance && bHasBalance) return 1
+    if (a.hasBalance !== b.hasBalance) return a.hasBalance ? -1 : 1
 
-    // sort zero-balance tokens with a coingeckoId (and therefore a non-null fiat amount)
-    // above zero-balance tokens without a coingeckoId
-    const aHasFiatRate = !!aBalances.each.find((b) => fiatAmount(b) !== null)
-    const bHasFiatRate = !!bBalances.each.find((b) => fiatAmount(b) !== null)
-    if (aHasFiatRate && !bHasFiatRate) return -1
-    if (!aHasFiatRate && bHasFiatRate) return 1
+    if (a.hasFiatRate !== b.hasFiatRate) return a.hasFiatRate ? -1 : 1
 
-    // sort zero-balance tokens with a `Preview Only` coingeckoId (and therefore no conversion
-    // rate, and so a null fiat amount) above zero-balance tokens without a coingeckoId
-    // (but ignore testnet tokens with a coingeckoId, they get sorted last and we don't fetch
-    // their conversion rates from coingecko anyway)
-    //
-    // this effectively groups the `$0.00` tokens above the `-` tokens
-    const aHasCoingeckoId = !!aBalances.each.find(
-      (b) => typeof b.token?.coingeckoId === "string" && !b.network?.isTestnet
-    )
-    const bHasCoingeckoId = !!bBalances.each.find(
-      (b) => typeof b.token?.coingeckoId === "string" && !b.network?.isTestnet
-    )
-    if (aHasCoingeckoId && !bHasCoingeckoId) return -1
-    if (!aHasCoingeckoId && bHasCoingeckoId) return 1
+    if (a.hasCoingeckoId !== b.hasCoingeckoId) return a.hasCoingeckoId ? -1 : 1
 
     // sort testnets below other tokens
-    const aIsTestnet = !!aBalances.each.find((b) => b.network?.isTestnet)
-    const bIsTestnet = !!bBalances.each.find((b) => b.network?.isTestnet)
-    if (aIsTestnet && !bIsTestnet) return 1
-    if (!aIsTestnet && bIsTestnet) return -1
+    if (a.isTestnet !== b.isTestnet) return a.isTestnet ? 1 : -1
 
     // polkadot and kusama should appear first
     if (aSymbol.toLowerCase() === "dot") return -1
@@ -113,7 +115,8 @@ const sortSymbolBalancesBy =
 
     // sort alphabetically by token symbol
     return aSymbol.localeCompare(bSymbol)
-  }
+  })
+}
 
 const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$] = bind(
   (filter: "all" | "network" | "search") =>
@@ -129,49 +132,58 @@ const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$]
         // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
         const groupedByToken = groupBalancesBySymbol(balances)
 
-        const sortFn =
+        const grouped = Object.entries(groupedByToken).map(
+          ([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)]
+        )
+
+        const symbolBalances = (
           tokensSortBy === "name"
-            ? sortSymbolBalancesByName
-            : sortSymbolBalancesBy(tokensSortBy, currency)
+            ? [...grouped].sort(sortSymbolBalancesByName)
+            : sortSymbolBalancesBy(grouped, tokensSortBy, currency)
+        ).filter(
+          hideDust
+            ? ([, balances]) =>
+                balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
+                balances.sum.fiat("usd").total >= 1
+            : () => true
+        )
 
-        const symbolBalances = Object.entries(groupedByToken)
-          .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])
-          .sort(sortFn)
-          .filter(
-            hideDust
-              ? ([, balances]) =>
-                  balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
-                  balances.sum.fiat("usd").total >= 1
-              : () => true
-          )
-
-        const available = symbolBalances
-          .map(([symbol, balances]): [string, Balances] => [
-            symbol,
-            balances.find((b) => b.transferable.planck > 0n),
-          ])
-          .filter(([, balances]) => balances.count > 0)
-          .sort(sortSymbolBalancesBy("available", currency))
+        const available = sortSymbolBalancesBy(
+          symbolBalances
+            .map(([symbol, balances]): [string, Balances] => [
+              symbol,
+              balances.find((b) => b.transferable.planck > 0n),
+            ])
+            .filter(([, balances]) => balances.count > 0),
+          "available",
+          currency
+        )
 
         // only show zero balances in the popup when the selected account(s) have balances
         const availableSymbolBalances =
           available.length > 0
             ? available
-            : symbolBalances
-                .map(([symbol, balances]): [string, Balances] => [
-                  symbol,
-                  balances.find((b) => b.total.planck === 0n),
-                ])
-                .filter(([, balances]) => balances.count > 0)
-                .sort(sortSymbolBalancesBy("available", currency))
+            : sortSymbolBalancesBy(
+                symbolBalances
+                  .map(([symbol, balances]): [string, Balances] => [
+                    symbol,
+                    balances.find((b) => b.total.planck === 0n),
+                  ])
+                  .filter(([, balances]) => balances.count > 0),
+                "available",
+                currency
+              )
 
-        const lockedSymbolBalances = symbolBalances
-          .map(([symbol, balances]): [string, Balances] => [
-            symbol,
-            balances.find((b) => b.unavailable.planck > 0n),
-          ])
-          .filter(([, balances]) => balances.count > 0)
-          .sort(sortSymbolBalancesBy("locked", currency))
+        const lockedSymbolBalances = sortSymbolBalancesBy(
+          symbolBalances
+            .map(([symbol, balances]): [string, Balances] => [
+              symbol,
+              balances.find((b) => b.unavailable.planck > 0n),
+            ])
+            .filter(([, balances]) => balances.count > 0),
+          "locked",
+          currency
+        )
 
         return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
       })
@@ -184,61 +196,3 @@ const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$]
 )
 
 export { usePortfolioSymbolBalancesByFilter }
-
-const _usePortfolioSymbolBalances = (balances: Balances) => {
-  const currency = useSelectedCurrency()
-  const [hideDust] = useSetting("hideDust")
-
-  // group balances by token symbol
-  // TODO: Move the association between a token on multiple chains into the backend / subsquid.
-  // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-  const symbolBalances: SymbolBalances[] = useMemo(() => {
-    const groupedByToken = groupBalancesBySymbol(balances)
-
-    return Object.entries(groupedByToken)
-      .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])
-      .sort(sortSymbolBalancesBy("total", currency))
-      .filter(
-        hideDust
-          ? ([, balances]) =>
-              balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
-              balances.sum.fiat("usd").total >= 1
-          : () => true
-      )
-  }, [balances, currency, hideDust])
-
-  const availableSymbolBalances = useMemo(() => {
-    const available = symbolBalances
-      .map(([symbol, balances]): [string, Balances] => [
-        symbol,
-        balances.find((b) => b.transferable.planck > 0n),
-      ])
-      .filter(([, balances]) => balances.count > 0)
-      .sort(sortSymbolBalancesBy("available", currency))
-
-    // only show zero balances in the popup when the selected account(s) have balances
-    if (available.length > 0) return available
-
-    return symbolBalances
-      .map(([symbol, balances]): [string, Balances] => [
-        symbol,
-        balances.find((b) => b.total.planck === 0n),
-      ])
-      .filter(([, balances]) => balances.count > 0)
-      .sort(sortSymbolBalancesBy("available", currency))
-  }, [currency, symbolBalances])
-
-  const lockedSymbolBalances = useMemo(
-    () =>
-      symbolBalances
-        .map(([symbol, balances]): [string, Balances] => [
-          symbol,
-          balances.find((b) => b.unavailable.planck > 0n),
-        ])
-        .filter(([, balances]) => balances.count > 0)
-        .sort(sortSymbolBalancesBy("locked", currency)),
-    [currency, symbolBalances]
-  )
-
-  return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
-}
