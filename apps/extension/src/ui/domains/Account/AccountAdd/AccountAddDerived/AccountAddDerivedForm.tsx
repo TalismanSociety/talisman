@@ -38,7 +38,10 @@ import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
-const useNextAvailableDerivationPath = (mnemonicId: string | null, curve: KeypairCurve) => {
+const useNextAvailableDerivationPath = (
+  mnemonicId: string | null,
+  curve: KeypairCurve | undefined
+) => {
   return useQuery({
     queryKey: ["useNextAvailableDerivationPath", mnemonicId, curve],
     queryFn: () => {
@@ -73,7 +76,7 @@ const isValidDerivationPathCached = (derivationPath: string, curve: KeypairCurve
 // (mnemonicId, curve, path) instead of one per resolver run + one per render
 const lookupAddressQueryOptions = (
   mnemonicId: string | null,
-  curve: KeypairCurve,
+  curve: KeypairCurve | undefined,
   derivationPath: string | null | undefined
 ) =>
   queryOptions({
@@ -92,7 +95,7 @@ const lookupAddressQueryOptions = (
 
 const useLookupAddress = (
   mnemonicId: string | null,
-  curve: KeypairCurve,
+  curve: KeypairCurve | undefined,
   derivationPath: string | null | undefined
 ) => {
   return useQuery({
@@ -155,6 +158,8 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         .test("validateDerivationPath", t("Invalid derivation path"), async (val, ctx) => {
           const { isCustomDerivationPath, derivationPath, mnemonicId, platform } = val as FormData
           if (!isCustomDerivationPath) return true
+          // platform is not selected yet (form opened without a ?platform= url param)
+          if (!platform) return true
 
           const curve = getDefaultCurveForAccountPlatform(platform)
 
@@ -273,7 +278,12 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   )
 
   const { platform, mnemonicId, isCustomDerivationPath, derivationPath } = watch()
-  const curve = useMemo(() => getDefaultCurveForAccountPlatform(platform), [platform])
+  // platform is unset until the user picks one (the route can be opened without a
+  // ?platform= url param, e.g. from the breadcrumb) — and the helper throws on undefined
+  const curve = useMemo(
+    () => (platform ? getDefaultCurveForAccountPlatform(platform) : undefined),
+    [platform]
+  )
 
   const { data: nextDerivationPath } = useNextAvailableDerivationPath(mnemonicId, curve)
   // debounced so the address preview doesn't trigger a background derive on every keystroke
