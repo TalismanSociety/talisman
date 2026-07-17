@@ -11,7 +11,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
-import { isTruthy, sleep, throwAfter } from "@talismn/util"
+import { isTruthy, throwAfter } from "@talismn/util"
 import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {
   combineLatest,
@@ -50,6 +50,14 @@ const IGNORED_COINGECKO_IDS = [
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 50
+/**
+ * Scan progress (cursors + percent) is persisted at most once per this interval:
+ * each store write fans out to storage IPC and to every subscriber (including the
+ * UI progress stream), and chunks complete several times per second across
+ * concurrent networks. Worst case on service-worker death, the resume cursor is
+ * one interval stale and a few chunks get re-checked.
+ */
+const SCAN_STATE_FLUSH_INTERVAL_MS = 1_000
 const NETWORK_BALANCES_FETCH_CHUNK_SIZE: Record<string, number> = {
   "1": 200,
 }
@@ -69,7 +77,12 @@ const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenL
 
 class AssetDiscoveryScanner {
   #isBusy = false
-  #preventAutoStart = false
+  /**
+   * Network ids activated by enableDiscoveredTokens itself. watchEnabledNetworks
+   * consumes (and ignores) these so discovery's own writes can't re-trigger a
+   * full scan of the networks it just scanned.
+   */
+  #selfActivatedNetworkIds = new Set<string>()
 
   constructor() {
     this.watchNewAccounts()
@@ -95,7 +108,7 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allAddresses) => {
         try {
-          if (prevAllAddresses && !this.#preventAutoStart) {
+          if (prevAllAddresses) {
             const addresses = allAddresses.filter(
               (k) => !(prevAllAddresses as string[]).includes(k)
             )
@@ -139,10 +152,13 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allActiveNetworkIds) => {
         try {
-          if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
-            const networkIds = allActiveNetworkIds.filter(
-              (k) => !(prevAllActiveNetworkIds as string[]).includes(k)
-            )
+          if (prevAllActiveNetworkIds) {
+            const networkIds = allActiveNetworkIds
+              .filter((k) => !(prevAllActiveNetworkIds as string[]).includes(k))
+              // ignore (and consume) activations written by enableDiscoveredTokens:
+              // those networks were just scanned, re-scanning them would fire
+              // thousands of redundant RPC calls
+              .filter((k) => !this.#selfActivatedNetworkIds.delete(k))
 
             if (networkIds.length) {
               const accounts = await keyringStore.getAccounts()
@@ -413,6 +429,41 @@ class AssetDiscoveryScanner {
 
       const stop = log.timer("[AssetDiscovery] Scan completed")
 
+      // in-memory scan state, flushed to the store at most once per
+      // SCAN_STATE_FLUSH_INTERVAL_MS (see constant for rationale)
+      const localCursors: AssetDiscoveryScanState["currentScanCursors"] = { ...cursors }
+      let lastFlushedAt = 0
+      const flushScanState = async (force = false) => {
+        if (abortController.signal.aborted) return
+        if (!force && Date.now() - lastFlushedAt < SCAN_STATE_FLUSH_INTERVAL_MS) return
+        lastFlushedAt = Date.now()
+
+        await assetDiscoveryStore.mutate((prev) => {
+          if (abortController.signal.aborted) return prev
+
+          // Update progress
+          // in case of full scan it takes longer to scan networks
+          // in case of active scan it takes longer to scan tokens
+          // => use the min of both ratios as current progress
+          const totalScanned = Object.values(localCursors).reduce(
+            (acc, cur) => acc + cur.scanned,
+            0
+          )
+          const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
+          const networksProgress = Math.round(
+            (100 * Object.keys(localCursors).length) / Object.keys(tokensByNetwork).length
+          )
+          const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
+
+          return {
+            ...prev,
+            currentScanCursors: { ...localCursors },
+            currentScanProgressPercent,
+            currentScanTokensCount: totalTokens,
+          }
+        })
+      }
+
       // process multiple networks at a time
       await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
         .for(Object.keys(tokensByNetwork).sort((a, b) => Number(a) - Number(b)))
@@ -478,40 +529,12 @@ class AssetDiscoveryScanner {
                   balance: res,
                 }))
 
-              await assetDiscoveryStore.mutate((prev) => {
-                if (abortController.signal.aborted) return prev
-
-                const currentScanCursors = {
-                  ...prev.currentScanCursors,
-                  [networkId]: {
-                    address: checks[checks.length - 1].address,
-                    tokenId: checks[checks.length - 1].tokenId,
-                    scanned: (prev.currentScanCursors[networkId]?.scanned ?? 0) + checks.length,
-                  },
-                }
-
-                // Update progress
-                // in case of full scan it takes longer to scan networks
-                // in case of active scan it takes longer to scan tokens
-                // => use the min of both ratios as current progress
-                const totalScanned = Object.values(currentScanCursors).reduce(
-                  (acc, cur) => acc + cur.scanned,
-                  0
-                )
-                const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
-                const networksProgress = Math.round(
-                  (100 * Object.keys(currentScanCursors).length) /
-                    Object.keys(tokensByNetwork).length
-                )
-                const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
-
-                return {
-                  ...prev,
-                  currentScanCursors,
-                  currentScanProgressPercent,
-                  currentScanTokensCount: totalTokens,
-                }
-              })
+              localCursors[networkId] = {
+                address: checks[checks.length - 1].address,
+                tokenId: checks[checks.length - 1].tokenId,
+                scanned: (localCursors[networkId]?.scanned ?? 0) + checks.length,
+              }
+              await flushScanState()
 
               if (abortController.signal.aborted) return
 
@@ -523,6 +546,10 @@ class AssetDiscoveryScanner {
             log.warn(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
           }
         })
+
+      // persist the final cursors before closing the scan, so an abort arriving
+      // between the two writes can still resume from up-to-date state
+      await flushScanState(true)
 
       await assetDiscoveryStore.mutate((prev): AssetDiscoveryScanState => {
         if (abortController.signal.aborted) return prev
@@ -584,8 +611,6 @@ class AssetDiscoveryScanner {
   }
 
   private async enableDiscoveredTokens(): Promise<void> {
-    this.#preventAutoStart = true
-
     try {
       const [discoveredBalances] = await Promise.all([db.assetDiscovery.toArray()])
 
@@ -595,19 +620,19 @@ class AssetDiscoveryScanner {
       ).filter(isTokenEth)
       await activeTokensStore.set(Object.fromEntries(tokens.map((t) => [t.id, true])))
 
-      const evmNetworkIds = uniq(tokens.map((token) => token.networkId))
+      const evmNetworkIds = uniq(tokens.map((token) => token.networkId)).filter(
+        (id): id is string => !!id
+      )
+      // mark before writing so watchEnabledNetworks can't race us into a redundant scan
+      for (const networkId of evmNetworkIds) this.#selfActivatedNetworkIds.add(networkId)
       await activeNetworksStore.set(
         Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true]))
       )
-
-      await sleep(100) // pause to ensure local storage observables fires before we exit, to prevent unnecessary scans to be triggered (see watchEnabledNetworks up top)
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
         err,
       })
     }
-
-    this.#preventAutoStart = false
   }
 }
 
