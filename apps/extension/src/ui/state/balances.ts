@@ -2,7 +2,14 @@ import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { bind } from "@react-rxjs/core"
-import { type Address, Balances } from "@talismn/balances"
+import {
+  type Address,
+  Balance,
+  Balances,
+  getBalanceFingerprint,
+  getBalanceId,
+  type IBalance,
+} from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import {
@@ -29,7 +36,14 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
     networks: getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
     tokens: getTokensMap$(BALANCES_CHAINDATA_QUERY),
     tokenRates: tokenRatesMap$,
-  }).pipe(debugObservable("balancesHydrate$"))
+  }).pipe(
+    // a new hydrate object invalidates every Balance's cached formatters downstream:
+    // only emit when one of the source maps actually changed reference
+    distinctUntilChanged(
+      (a, b) => a.networks === b.networks && a.tokens === b.tokens && a.tokenRates === b.tokenRates
+    ),
+    debugObservable("balancesHydrate$")
+  )
 )
 
 // cache balances once fetched so they can be displayed instantly if navigating in and out of portfolio
@@ -60,6 +74,40 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   true
 )
 
+/**
+ * Reuses `Balance` instances across balance emissions.
+ *
+ * Port messages deserialize into all-new IBalance objects on every emission, but most
+ * balances are unchanged from one emission to the next. Rebuilding every wrapper
+ * discards each Balance's lazily-computed formatter caches and gives downstream
+ * consumers (memos, === compares) a new identity for identical data — so unchanged
+ * balances (matched by id + fingerprint, status included) keep their previous instance.
+ */
+const stabilizeBalanceInstances = () => {
+  let prev = new Map<string, { fingerprint: string; balance: Balance }>()
+
+  return (balances: IBalance[]): Balance[] => {
+    const next = new Map<string, { fingerprint: string; balance: Balance }>()
+
+    const result = balances.map((storage) => {
+      const id = getBalanceId(storage)
+      const fingerprint = getBalanceFingerprint(storage)
+      const prevEntry = prev.get(id)
+      const balance =
+        prevEntry && prevEntry.fingerprint === fingerprint
+          ? prevEntry.balance
+          : new Balance(storage)
+      next.set(id, { fingerprint, balance })
+      return balance
+    })
+
+    prev = next
+    return result
+  }
+}
+
+const stabilize = stabilizeBalanceInstances()
+
 const allBalances$ = combineLatest([
   getTokensMap$(BALANCES_CHAINDATA_QUERY),
   getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
@@ -77,7 +125,7 @@ const allBalances$ = combineLatest([
 
       return isAccountCompatibleWithNetwork(network, account)
     })
-    return new Balances(validBalances, hydrate)
+    return new Balances(stabilize(validBalances), hydrate)
   }),
   shareReplay({ bufferSize: 1, refCount: true })
 )
