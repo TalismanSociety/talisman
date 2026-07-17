@@ -208,6 +208,33 @@ describe("ChaindataProvider", () => {
       expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
       expect(tokens.some((t) => t.id === "10-evm-native")).toBe(true)
     })
+
+    it("does not drop tokens when registrations from concurrent module pipelines interleave", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const token1 = makeEvmNativeToken({
+        id: "42161-evm-native",
+        networkId: "42161",
+        symbol: "ETH",
+      })
+      const token2 = makeEvmNativeToken({
+        id: "10-evm-native",
+        networkId: "10",
+        symbol: "ETH",
+      })
+
+      // no await between the calls: both read-merge-write cycles are in flight together
+      // (this is how balance module pipelines call it — fire-and-forget from a tap)
+      await Promise.all([
+        provider.registerDynamicTokens([token1]),
+        provider.registerDynamicTokens([token2]),
+      ])
+
+      const tokens = await firstValueFrom(provider.tokens$)
+      expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
+      expect(tokens.some((t) => t.id === "10-evm-native")).toBe(true)
+    })
   })
 
   describe("syncDynamicTokens", () => {
@@ -283,6 +310,27 @@ describe("ChaindataProvider", () => {
     it("does nothing when there are no dynamic tokens", async () => {
       const provider = new ChaindataProvider({ persistedStorage: makeChaindata() })
       await expect(provider.syncDynamicTokens()).resolves.toBeUndefined()
+    })
+
+    it("does not drop a registration racing with a syncDynamicTokens rewrite", async () => {
+      // a curated duplicate of the dynamic token forces syncDynamicTokens to write
+      const dynamicToken = makeSolSplDynamicToken({ symbol: "DYN" })
+      const curatedToken = makeSolSplDynamicToken({ symbol: "WSOL" })
+      const data = makeChaindata({
+        tokens: [...makeChaindata().tokens, curatedToken],
+      })
+      const provider = new ChaindataProvider({ persistedStorage: data })
+      await provider.registerDynamicTokens([dynamicToken])
+
+      const newToken = makeEvmNativeToken({
+        id: "42161-evm-native",
+        networkId: "42161",
+        symbol: "ETH",
+      })
+      await Promise.all([provider.syncDynamicTokens(), provider.registerDynamicTokens([newToken])])
+
+      const tokens = await firstValueFrom(provider.tokens$)
+      expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
     })
   })
 
