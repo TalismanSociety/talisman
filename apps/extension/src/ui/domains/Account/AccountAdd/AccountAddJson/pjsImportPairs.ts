@@ -4,7 +4,7 @@ import {
   base64,
   checksumEthereumAddress,
   decodeSs58Address,
-  decryptPjsKeystore,
+  decryptPjsKeystoreAsync,
   encodeAddressEthereum,
   encodeAddressSs58,
 } from "@talismn/crypto"
@@ -99,13 +99,15 @@ export const createPairFromJson = (json: PjsKeyringPairJson): JsonImportPair => 
   }
 }
 
-export const unlockPair = (pair: JsonImportPair, password: string) => {
+// async: scrypt derivation yields to the event loop so the UI keeps rendering (a sync
+// derivation freezes the page for the whole run, once per keystore)
+export const unlockPair = async (pair: JsonImportPair, password: string) => {
   const { encoded, encoding } = pair.json
 
   // pjs also supports hex-encoded keystores - normalize to base64 for the decrypt helper
   const encodedB64 = isHexString(encoded) ? base64.encode(hexToU8a(encoded)) : encoded
 
-  const decrypted = decryptPjsKeystore(
+  const decrypted = await decryptPjsKeystoreAsync(
     { encoded: encodedB64, encoding: normalizeEncoding(encoding) },
     password
   )
@@ -117,11 +119,14 @@ export const unlockPair = (pair: JsonImportPair, password: string) => {
 }
 
 /** decrypts a multi-account ("batch-pkcs8") file into its inner account keystores */
-export const unlockMultiAccountsJson = (
+export const unlockMultiAccountsJson = async (
   { encoded, encoding }: PjsKeyringPairsJson,
   password: string
-): PjsKeyringPairJson[] => {
-  const data = decryptPjsKeystore({ encoded, encoding: normalizeEncoding(encoding) }, password)
+): Promise<PjsKeyringPairJson[]> => {
+  const data = await decryptPjsKeystoreAsync(
+    { encoded, encoding: normalizeEncoding(encoding) },
+    password
+  )
   return JSON.parse(u8aToString(data)) as PjsKeyringPairJson[]
 }
 

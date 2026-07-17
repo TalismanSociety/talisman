@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { decryptPjsKeystore, encryptPjsKeystore } from "."
+import { decryptPjsKeystore, decryptPjsKeystoreAsync, encryptPjsKeystore } from "."
 
 // generated with @polkadot/util-crypto 14.0.3 jsonEncrypt:
 //   jsonEncrypt(Uint8Array 0..63, ["pkcs8","sr25519"], "talisman-test-password")
@@ -57,5 +57,34 @@ describe("pjs keystore (polkadot-js parity)", () => {
     const keystore = encryptPjsKeystore(SECRET, ["pkcs8", "sr25519"], PASSWORD)
     expect(keystore.encoding).toEqual(PJS_VECTOR.encoding)
     expect(decryptPjsKeystore(keystore, PASSWORD)).toEqual(SECRET)
+  })
+})
+
+describe("decryptPjsKeystoreAsync (parity with sync variant)", () => {
+  it("decrypts a polkadot-js generated keystore", async () => {
+    expect(await decryptPjsKeystoreAsync(PJS_VECTOR, PASSWORD)).toEqual(SECRET)
+  })
+
+  it("decrypts a keystore using legacy scrypt params", async () => {
+    expect(await decryptPjsKeystoreAsync(PJS_LEGACY_PARAMS_VECTOR, PASSWORD)).toEqual(SECRET)
+  })
+
+  it("rejects a wrong password", async () => {
+    await expect(decryptPjsKeystoreAsync(PJS_VECTOR, "wrong")).rejects.toThrow()
+  })
+
+  it("rejects disallowed scrypt params", async () => {
+    const bytes = Uint8Array.from(atob(PJS_VECTOR.encoded), (c) => c.charCodeAt(0))
+    bytes[32] = 0
+    bytes[33] = 4 // N = 1024
+    const tampered = { ...PJS_VECTOR, encoded: btoa(String.fromCharCode(...bytes)) }
+    await expect(decryptPjsKeystoreAsync(tampered, PASSWORD)).rejects.toThrow(
+      "Invalid injected scrypt params found"
+    )
+  })
+
+  it("round-trips encrypt + decrypt", async () => {
+    const keystore = encryptPjsKeystore(SECRET, ["pkcs8", "sr25519"], PASSWORD)
+    expect(await decryptPjsKeystoreAsync(keystore, PASSWORD)).toEqual(SECRET)
   })
 })

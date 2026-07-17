@@ -128,35 +128,24 @@ const useJsonAccountImportProvider = () => {
     async (password: string) => {
       if (!file) return
 
-      // hangs UI, do asynchronously
-      await new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            if (file.type === "single") {
-              const pair = createPairFromJson(file.content)
-              unlockPair(pair, password)
+      if (file.type === "single") {
+        const pair = createPairFromJson(file.content)
+        await unlockPair(pair, password)
 
-              setPairs([pair])
+        setPairs([pair])
 
-              if (
-                !existingAccounts.some((a) => isAddressEqual(a.address, pair.address)) &&
-                !pair.meta.isHardware &&
-                !pair.meta.isExternal
-              )
-                setSelectedAccounts([pair.address])
-            } else if (file.type === "multi") {
-              const accounts = unlockMultiAccountsJson(file.content, password)
-              const pairs = accounts.map(createPairFromJson)
+        if (
+          !existingAccounts.some((a) => isAddressEqual(a.address, pair.address)) &&
+          !pair.meta.isHardware &&
+          !pair.meta.isExternal
+        )
+          setSelectedAccounts([pair.address])
+      } else if (file.type === "multi") {
+        const accounts = await unlockMultiAccountsJson(file.content, password)
+        const pairs = accounts.map(createPairFromJson)
 
-              setPairs(pairs)
-            } else throw new Error("Invalid file type")
-
-            resolve()
-          } catch (err) {
-            reject(err)
-          }
-        }, 1)
-      })
+        setPairs(pairs)
+      } else throw new Error("Invalid file type")
     },
     [existingAccounts, file]
   )
@@ -248,20 +237,10 @@ const useJsonAccountImportProvider = () => {
         const pair = pairs.find((p) => p.address === account.id)
         if (!pair) continue
 
-        const unlocked = await new Promise((resolve) => {
-          setTimeout(() => {
-            let success = false
-
-            try {
-              unlockPair(pair, password)
-              success = true
-            } catch {
-              // ignore
-            }
-
-            resolve(success)
-          }, 50)
-        })
+        const unlocked = await unlockPair(pair, password).then(
+          () => true,
+          () => false // wrong password for this pair - leave it locked
+        )
 
         if (unlocked) {
           setPairs([...pairs])
