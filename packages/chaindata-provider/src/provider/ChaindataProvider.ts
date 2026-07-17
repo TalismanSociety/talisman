@@ -67,6 +67,7 @@ export class ChaindataProvider implements IChaindataProvider {
   #storage$: ReplaySubject<ChaindataStorage>
   #chaindata$: Observable<Chaindata>
   #dynamicTokens$: ReplaySubject<Token[]>
+  #dynamicTokensWriteQueue: Promise<unknown> = Promise.resolve()
 
   constructor({
     persistedStorage,
@@ -213,6 +214,18 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   /**
+   * Serializes read-merge-write cycles on #dynamicTokens$: registrations come concurrently
+   * from independent balance module pipelines (and syncDynamicTokens), and the cycles span
+   * multiple awaits — interleaved cycles would both read the same snapshot and the later
+   * write would silently drop the earlier one's newly added tokens.
+   */
+  #enqueueDynamicTokensWrite<T>(task: () => Promise<T>): Promise<T> {
+    const result = this.#dynamicTokensWriteQueue.then(task)
+    this.#dynamicTokensWriteQueue = result.catch(() => undefined)
+    return result
+  }
+
+  /**
    * Registers token dynamically a runtime. used for SPL and dTAO tokens.
    * @param tokens
    */
@@ -222,17 +235,19 @@ export class ChaindataProvider implements IChaindataProvider {
     // check schema (chunked — yields the thread between time slices, throws on invalid)
     await forEachWithYield(tokens, (t) => void TokenSchema.parse(t))
 
-    const currentStorage = await firstValueFrom(this.#dynamicTokens$)
-    const currentById = keyBy<Token>(currentStorage, (t) => t.id)
-    const newById = keyBy<Token>(tokens, (t) => t.id)
-    const dynamicTokens = values<Token>({ ...currentById, ...newById }).sort((a, b) =>
-      a.id.localeCompare(b.id)
-    )
+    await this.#enqueueDynamicTokensWrite(async () => {
+      const currentStorage = await firstValueFrom(this.#dynamicTokens$)
+      const currentById = keyBy<Token>(currentStorage, (t) => t.id)
+      const newById = keyBy<Token>(tokens, (t) => t.id)
+      const dynamicTokens = values<Token>({ ...currentById, ...newById }).sort((a, b) =>
+        a.id.localeCompare(b.id)
+      )
 
-    // update only if necessary
-    if (!(await arrayItemsEqualWithYield(currentStorage, dynamicTokens))) {
-      this.#dynamicTokens$.next(dynamicTokens)
-    }
+      // update only if necessary
+      if (!(await arrayItemsEqualWithYield(currentStorage, dynamicTokens))) {
+        this.#dynamicTokens$.next(dynamicTokens)
+      }
+    })
   }
 
   /**
@@ -241,55 +256,57 @@ export class ChaindataProvider implements IChaindataProvider {
    * and removes dynamic entries that have since been curated into the default chaindata.
    */
   async syncDynamicTokens() {
-    const dynamicTokens = await firstValueFrom(this.#dynamicTokens$)
-    if (!dynamicTokens.length) return
+    await this.#enqueueDynamicTokensWrite(async () => {
+      const dynamicTokens = await firstValueFrom(this.#dynamicTokens$)
+      if (!dynamicTokens.length) return
 
-    // ids present in the default (curated) chaindata — used to drop dynamic
-    // duplicates so curated metadata wins (combined chaindata applies last-wins
-    // by id, so leaving a dynamic entry in place would shadow the curated one).
-    const defaultStorage = await firstValueFrom(this.#storage$)
-    const defaultTokenIds = new Set(defaultStorage.tokens.map((t) => t.id))
+      // ids present in the default (curated) chaindata — used to drop dynamic
+      // duplicates so curated metadata wins (combined chaindata applies last-wins
+      // by id, so leaving a dynamic entry in place would shadow the curated one).
+      const defaultStorage = await firstValueFrom(this.#storage$)
+      const defaultTokenIds = new Set(defaultStorage.tokens.map((t) => t.id))
 
-    const next: Token[] = []
-    let changed = false
+      const next: Token[] = []
+      let changed = false
 
-    for (const token of dynamicTokens) {
-      // drop dynamic tokens whose ids are now curated by default chaindata
-      if (
-        (token.type === "sol-spl" || token.type === "sol-token2022") &&
-        defaultTokenIds.has(token.id)
-      ) {
-        changed = true
-        continue
-      }
+      for (const token of dynamicTokens) {
+        // drop dynamic tokens whose ids are now curated by default chaindata
+        if (
+          (token.type === "sol-spl" || token.type === "sol-token2022") &&
+          defaultTokenIds.has(token.id)
+        ) {
+          changed = true
+          continue
+        }
 
-      if (token.type === "substrate-dtao") {
-        const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
-        const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
-        if (templateToken) {
-          const updatedToken: SubDTaoToken = {
-            ...token,
-            symbol: templateToken.symbol,
-            name: templateToken.name,
-            logo: templateToken.logo,
-            subnetName: templateToken.subnetName,
-          }
-          if (!isEqual(token, updatedToken)) {
-            changed = true
-            next.push(updatedToken)
-            continue
+        if (token.type === "substrate-dtao") {
+          const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
+          const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
+          if (templateToken) {
+            const updatedToken: SubDTaoToken = {
+              ...token,
+              symbol: templateToken.symbol,
+              name: templateToken.name,
+              logo: templateToken.logo,
+              subnetName: templateToken.subnetName,
+            }
+            if (!isEqual(token, updatedToken)) {
+              changed = true
+              next.push(updatedToken)
+              continue
+            }
           }
         }
+
+        next.push(token)
       }
 
-      next.push(token)
-    }
-
-    if (changed) {
-      log.debug("[ChaindataProvider] syncDynamicTokens: updating dynamic tokens", next)
-      const sorted = next.slice().sort((a, b) => a.id.localeCompare(b.id))
-      this.#dynamicTokens$.next(sorted)
-    }
+      if (changed) {
+        log.debug("[ChaindataProvider] syncDynamicTokens: updating dynamic tokens", next)
+        const sorted = next.slice().sort((a, b) => a.id.localeCompare(b.id))
+        this.#dynamicTokens$.next(sorted)
+      }
+    })
   }
 
   /**

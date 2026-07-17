@@ -62,13 +62,13 @@ jobs:
           pnpm biome check --error-on-warnings -- "${CHANGED_FILES[@]}"
       - name: Knip (unused code/deps)
         run: pnpm knip
-      - name: Test
-        run: pnpm test
       - name: Typecheck
         run: |
           # All packages and apps use customConditions: ["@talismn/source"] to resolve
           # @talismn/* packages directly from source. This means no package build is needed.
           pnpm typecheck
+      - name: Test
+        run: pnpm test
       - name: Extract short SHA + package version
         id: vars
         run: |

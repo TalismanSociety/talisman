@@ -208,6 +208,33 @@ describe("ChaindataProvider", () => {
       expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
       expect(tokens.some((t) => t.id === "10-evm-native")).toBe(true)
     })
+
+    it("does not drop tokens when registrations from concurrent module pipelines interleave", async () => {
+      const data = makeChaindata()
+      const provider = new ChaindataProvider({ persistedStorage: data })
+
+      const token1 = makeEvmNativeToken({
+        id: "42161-evm-native",
+        networkId: "42161",
+        symbol: "ETH",
+      })
+      const token2 = makeEvmNativeToken({
+        id: "10-evm-native",
+        networkId: "10",
+        symbol: "ETH",
+      })
+
+      // no await between the calls: both read-merge-write cycles are in flight together
+      // (this is how balance module pipelines call it — fire-and-forget from a tap)
+      await Promise.all([
+        provider.registerDynamicTokens([token1]),
+        provider.registerDynamicTokens([token2]),
+      ])
+
+      const tokens = await firstValueFrom(provider.tokens$)
+      expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
+      expect(tokens.some((t) => t.id === "10-evm-native")).toBe(true)
+    })
   })
 
   describe("syncDynamicTokens", () => {
@@ -283,6 +310,34 @@ describe("ChaindataProvider", () => {
     it("does nothing when there are no dynamic tokens", async () => {
       const provider = new ChaindataProvider({ persistedStorage: makeChaindata() })
       await expect(provider.syncDynamicTokens()).resolves.toBeUndefined()
+    })
+
+    it("does not drop a registration racing with a syncDynamicTokens rewrite", async () => {
+      // a curated duplicate of the dynamic token forces syncDynamicTokens to write
+      const dynamicToken = makeSolSplDynamicToken({ symbol: "DYN" })
+      const curatedToken = makeSolSplDynamicToken({ symbol: "WSOL" })
+      const data = makeChaindata({
+        tokens: [...makeChaindata().tokens, curatedToken],
+      })
+      // observe the dynamic tokens list directly: without serialization, whichever
+      // write lands last silently reverts the other one's effect
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([])
+      const provider = new ChaindataProvider({ persistedStorage: data, dynamicTokens$ })
+      await provider.registerDynamicTokens([dynamicToken])
+
+      const newToken = makeEvmNativeToken({
+        id: "42161-evm-native",
+        networkId: "42161",
+        symbol: "ETH",
+      })
+      await Promise.all([provider.syncDynamicTokens(), provider.registerDynamicTokens([newToken])])
+
+      // both effects must hold: the new registration survived the sync rewrite,
+      // and the sync's drop of the curated duplicate survived the registration
+      const dynamicTokens = await firstValueFrom(dynamicTokens$)
+      expect(dynamicTokens.some((t) => t.id === "42161-evm-native")).toBe(true)
+      expect(dynamicTokens.some((t) => t.id === SOL_SPL_DYNAMIC_ID)).toBe(false)
     })
   })
 
