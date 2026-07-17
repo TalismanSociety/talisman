@@ -1,13 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { type Balance, Balances } from "@talismn/balances"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import {
-  getSettingValue$,
-  selectedCurrency$,
-  useSelectedCurrency,
-  useSetting,
-} from "@ui/state/settings"
-import { useMemo } from "react"
+import { getSettingValue$, selectedCurrency$ } from "@ui/state/settings"
 import { combineLatest, map } from "rxjs"
 
 import { portfolioDisplayBalances$ } from "../useDisplayBalances"
@@ -202,73 +196,3 @@ const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$]
 )
 
 export { usePortfolioSymbolBalancesByFilter }
-
-const _usePortfolioSymbolBalances = (balances: Balances) => {
-  const currency = useSelectedCurrency()
-  const [hideDust] = useSetting("hideDust")
-
-  // group balances by token symbol
-  // TODO: Move the association between a token on multiple chains into the backend / subsquid.
-  // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-  const symbolBalances: SymbolBalances[] = useMemo(() => {
-    const groupedByToken = groupBalancesBySymbol(balances)
-
-    return sortSymbolBalancesBy(
-      Object.entries(groupedByToken).map(
-        ([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)]
-      ),
-      "total",
-      currency
-    ).filter(
-      hideDust
-        ? ([, balances]) =>
-            balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
-            balances.sum.fiat("usd").total >= 1
-        : () => true
-    )
-  }, [balances, currency, hideDust])
-
-  const availableSymbolBalances = useMemo(() => {
-    const available = sortSymbolBalancesBy(
-      symbolBalances
-        .map(([symbol, balances]): [string, Balances] => [
-          symbol,
-          balances.find((b) => b.transferable.planck > 0n),
-        ])
-        .filter(([, balances]) => balances.count > 0),
-      "available",
-      currency
-    )
-
-    // only show zero balances in the popup when the selected account(s) have balances
-    if (available.length > 0) return available
-
-    return sortSymbolBalancesBy(
-      symbolBalances
-        .map(([symbol, balances]): [string, Balances] => [
-          symbol,
-          balances.find((b) => b.total.planck === 0n),
-        ])
-        .filter(([, balances]) => balances.count > 0),
-      "available",
-      currency
-    )
-  }, [currency, symbolBalances])
-
-  const lockedSymbolBalances = useMemo(
-    () =>
-      sortSymbolBalancesBy(
-        symbolBalances
-          .map(([symbol, balances]): [string, Balances] => [
-            symbol,
-            balances.find((b) => b.unavailable.planck > 0n),
-          ])
-          .filter(([, balances]) => balances.count > 0),
-        "locked",
-        currency
-      ),
-    [currency, symbolBalances]
-  )
-
-  return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
-}
