@@ -6,15 +6,15 @@ type CustomExtensionMappers = NonNullable<Parameters<typeof getPjsTxHelper>[1]>
 const EMPTY = new Uint8Array()
 
 /**
- * Encoders for chain-specific signed extensions that tx-utils doesn't know about.
- * Pass to `getPjsTxHelper`. NOTE: tx-utils invokes every mapper for every payload
- * (results for extensions absent from the chain's metadata are discarded), so
- * handlers must tolerate payloads that lack their fields.
+ * Encoders for chain-specific signed extensions that `@polkadot-api/tx-utils` doesn't know about.
  */
 export const CUSTOM_SIGNED_EXTENSIONS: CustomExtensionMappers = {
   // Avail app-id; wallet-built payloads default it to 0 (see getSignerPayloadJSON)
-  CheckAppId: ({ pjsPayload }) => ({
-    value: compactNumber.enc(Number((pjsPayload as { appId?: unknown }).appId ?? 0)),
-    additionalSigned: EMPTY,
-  }),
+  CheckAppId: ({ pjsPayload }) => {
+    const appId = Number((pjsPayload as { appId?: unknown }).appId ?? 0)
+    return {
+      value: compactNumber.enc(Number.isFinite(appId) ? appId : 0),
+      additionalSigned: EMPTY,
+    }
+  },
 }
