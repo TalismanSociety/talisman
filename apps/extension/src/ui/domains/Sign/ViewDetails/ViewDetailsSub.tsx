@@ -1,7 +1,7 @@
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { BalanceFormatter } from "@talismn/balances"
-import { getTxHelper } from "@talismn/sapi"
+import { CUSTOM_SIGNED_EXTENSIONS, getTxHelper } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
@@ -42,9 +42,9 @@ const useDecodedTxInput = () => {
     try {
       if (!metadataRpc || !isJsonPayload(payload)) return null
 
-      // NOTE: getTxHelper can't encode chain-specific signed extensions (e.g. Avail's
-      // CheckAppId) — on such chains it throws and the drawer omits the decoded fields
-      const { fromPjsToInputRaw, getTxInputDecoded } = getTxHelper(metadataRpc)
+      const { fromPjsToInputRaw, getTxInputDecoded } = getTxHelper(metadataRpc, {
+        customExtensionMappers: CUSTOM_SIGNED_EXTENSIONS,
+      })
       const { input, blockNumber } = fromPjsToInputRaw(payload)
 
       return getTxInputDecoded(input, blockNumber)
