@@ -1,6 +1,6 @@
 import { address as solAddress } from "@solana/kit"
 import { type SolSplToken, SolSplTokenSchema, solSplTokenId } from "@talismn/chaindata-provider"
-import { isNotNil } from "@talismn/util"
+import { isNotNil, LruMap } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
@@ -15,8 +15,9 @@ const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
 // In-memory metadata cache for unknown mints discovered during balance polling.
 // Keyed by tokenId. Stores both successful metadata and known-invalid mints
-// so we don't re-fetch the same mint on every 6s poll.
-const dynamicTokenMetadataCache = new Map<string, CachedToken>()
+// so we don't re-fetch the same mint on every 6s poll. LRU-bounded: spam airdrops
+// mint new tokens indefinitely, and an evicted entry only costs one re-fetch.
+const dynamicTokenMetadataCache = new LruMap<string, CachedToken>(1024)
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
