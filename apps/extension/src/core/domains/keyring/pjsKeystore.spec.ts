@@ -47,10 +47,10 @@ describe("encodePjsKeyringPairJson (export/import round-trip)", () => {
   )
 
   for (const fixture of byCurve) {
-    it(`round-trips a ${fixture.curve} account`, () => {
+    it(`round-trips a ${fixture.curve} account`, async () => {
       // recover the reference secret key from the polkadot-js generated fixture
       const source = createPairFromJson(fixture.json)
-      unlockPair(source, FIXTURES.password)
+      await unlockPair(source, FIXTURES.password)
 
       const exported = encodePjsKeyringPairJson(
         { address: source.address, name: `roundtrip ${fixture.curve}`, curve: fixture.curve },
@@ -65,14 +65,14 @@ describe("encodePjsKeyringPairJson (export/import round-trip)", () => {
       })
 
       const imported = createPairFromJson(exported)
-      unlockPair(imported, EXPORT_PASSWORD)
+      await unlockPair(imported, EXPORT_PASSWORD)
 
       expect(imported.secretKey).toEqual(source.secretKey)
       expect(imported.publicKey).toEqual(hexToU8a(fixture.expected.publicKey))
       expect(normalizeAddress(imported.address)).toBe(normalizeAddress(fixture.expected.address))
 
       const locked = createPairFromJson(exported)
-      expect(() => unlockPair(locked, "wrong-password")).toThrow()
+      await expect(unlockPair(locked, "wrong-password")).rejects.toThrow()
     })
   }
 })
