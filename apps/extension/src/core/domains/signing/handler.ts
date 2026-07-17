@@ -20,7 +20,20 @@ import type {
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
   SignerPayloadJSON,
+  SignerPayloadRaw,
 } from "./types"
+
+/**
+ * Only return `signedTransaction` to the dapp when the wallet actually altered the payload
+ * (CheckMetadataHash injection). When returned needlessly, older @polkadot/api releases rebuild
+ * the extrinsic from a hardcoded field list that drops chain-specific payload fields (e.g. Avail's
+ * `appId`), attaching our signature to different bytes => "1010: bad signature" on submission.
+ * Without it, the dapp assembles the extrinsic from its own payload with its own registry.
+ */
+const isPayloadModified = (
+  original: SignerPayloadJSON | SignerPayloadRaw,
+  modified: SignerPayloadJSON | undefined
+) => !!modified && JSON.stringify(modified) !== JSON.stringify(original)
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({
@@ -61,7 +74,8 @@ export default class SigningHandler extends ExtensionHandler {
               : undefined,
         })
         signature = signed.signature
-        if (payload.withSignedTransaction) signedTransaction = signed.signedTransaction
+        if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload))
+          signedTransaction = signed.signedTransaction
 
         // notify user about transaction progress
         if (chain) {
@@ -130,7 +144,7 @@ export default class SigningHandler extends ExtensionHandler {
       analyticsProperties.chain = chain?.id ?? payload.genesisHash
 
       if (chain) {
-        if (payload.withSignedTransaction) {
+        if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload)) {
           const assembled = await assembleSubstrateTransaction(payload, signature)
           signedTransaction = assembled.signedTransaction
         }

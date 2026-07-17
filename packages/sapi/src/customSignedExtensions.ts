@@ -1,13 +1,20 @@
 import { compactNumber } from "@polkadot-api/substrate-bindings"
-import { empty, signedExtension } from "./vendor/tx-utils/signed-extensions/utils"
-import type { CustomSignedExtensions } from "./vendor/tx-utils/types"
+import type { getPjsTxHelper } from "@polkadot-api/tx-utils"
+
+type CustomExtensionMappers = NonNullable<Parameters<typeof getPjsTxHelper>[1]>
+
+const EMPTY = new Uint8Array()
 
 /**
- * Encoders for chain-specific signed extensions that tx-utils doesn't know about.
- * Pass to `getPjsTxHelper` / `getTxHelper` — handlers are only invoked for chains whose
- * metadata declares the corresponding identifier.
+ * Encoders for chain-specific signed extensions that `@polkadot-api/tx-utils` doesn't know about.
  */
-export const CUSTOM_SIGNED_EXTENSIONS: CustomSignedExtensions = {
+export const CUSTOM_SIGNED_EXTENSIONS: CustomExtensionMappers = {
   // Avail app-id; wallet-built payloads default it to 0 (see getSignerPayloadJSON)
-  CheckAppId: (payload) => signedExtension(compactNumber.enc(Number(payload.appId ?? 0)), empty),
+  CheckAppId: ({ pjsPayload }) => {
+    const appId = Number((pjsPayload as { appId?: unknown }).appId ?? 0)
+    return {
+      value: compactNumber.enc(Number.isFinite(appId) ? appId : 0),
+      additionalSigned: EMPTY,
+    }
+  },
 }

@@ -42,11 +42,9 @@ const useDecodedTxInput = () => {
     try {
       if (!metadataRpc || !isJsonPayload(payload)) return null
 
-      const { fromPjsToInputRaw, getTxInputDecoded } = getTxHelper(
-        metadataRpc,
-        undefined,
-        CUSTOM_SIGNED_EXTENSIONS
-      )
+      const { fromPjsToInputRaw, getTxInputDecoded } = getTxHelper(metadataRpc, {
+        customExtensionMappers: CUSTOM_SIGNED_EXTENSIONS,
+      })
       const { input, blockNumber } = fromPjsToInputRaw(payload)
 
       return getTxInputDecoded(input, blockNumber)
