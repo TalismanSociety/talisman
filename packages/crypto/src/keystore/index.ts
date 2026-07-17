@@ -1,5 +1,5 @@
 import { xsalsa20poly1305 } from "@noble/ciphers/salsa.js"
-import { scrypt, scryptAsync } from "@noble/hashes/scrypt.js"
+import { scrypt } from "@noble/hashes/scrypt.js"
 import { base64 } from "@scure/base"
 
 /**
@@ -50,43 +50,30 @@ const readU32LE = (bytes: Uint8Array, offset: number) =>
 const writeU32LE = (value: number) =>
   new Uint8Array([value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff])
 
-type ScryptParams = { N: number; p: number; r: number }
-
-const deriveKey = (password: string, salt: Uint8Array, params: ScryptParams): Uint8Array =>
-  scrypt(new TextEncoder().encode(password), salt, { ...params, dkLen: 64 }).subarray(0, 32)
-
-// scryptAsync yields to the event loop between blocks: same result, but callers on a UI
-// thread stay responsive during the derivation
-const deriveKeyAsync = async (
+const deriveKey = (
   password: string,
   salt: Uint8Array,
-  params: ScryptParams
-): Promise<Uint8Array> =>
-  (await scryptAsync(new TextEncoder().encode(password), salt, { ...params, dkLen: 64 })).subarray(
-    0,
-    32
-  )
+  params: { N: number; p: number; r: number }
+): Uint8Array =>
+  scrypt(new TextEncoder().encode(password), salt, { ...params, dkLen: 64 }).subarray(0, 32)
 
-type ParsedKeystore =
-  | { plaintext: Uint8Array }
-  | {
-      nonce: Uint8Array
-      ciphertext: Uint8Array
-      /** null for legacy keystores whose key is the raw password padded to 32 bytes */
-      scryptParams: (ScryptParams & { salt: Uint8Array }) | null
-    }
-
-const parseKeystore = ({ encoded, encoding }: PjsKeystore): ParsedKeystore => {
+/** Decrypts a polkadot-js encrypted keystore (`jsonDecrypt` equivalent) */
+export const decryptPjsKeystore = (
+  { encoded, encoding }: PjsKeystore,
+  password: string
+): Uint8Array => {
   if (!encoded) throw new Error("No encrypted data available to decode")
 
   const bytes = base64.decode(encoded)
 
   // unencrypted keystores (e.g. in-memory transfers) pass their payload through as-is
   if (!encoding.type.includes("xsalsa20-poly1305")) {
-    if (encoding.type.includes("none")) return { plaintext: bytes }
+    if (encoding.type.includes("none")) return bytes
     throw new Error(`Unsupported keystore encoding: ${encoding.type.join("/")}`)
   }
 
+  let offset = 0
+  let key: Uint8Array
   if (encoding.type.includes("scrypt")) {
     const salt = bytes.subarray(0, SALT_LENGTH)
     const N = readU32LE(bytes, SALT_LENGTH)
@@ -95,57 +82,19 @@ const parseKeystore = ({ encoded, encoding }: PjsKeystore): ParsedKeystore => {
     // just a safeguard against DoS by malicious params, same as polkadot-js
     if (!ALLOWED_SCRYPT_PARAMS.some((preset) => preset.N === N && preset.p === p && preset.r === r))
       throw new Error("Invalid injected scrypt params found")
-
-    const offset = SALT_LENGTH + SCRYPT_PARAMS_LENGTH
-    return {
-      scryptParams: { salt, N, p, r },
-      nonce: bytes.subarray(offset, offset + NONCE_LENGTH),
-      ciphertext: bytes.subarray(offset + NONCE_LENGTH),
-    }
+    key = deriveKey(password, salt, { N, p, r })
+    offset = SALT_LENGTH + SCRYPT_PARAMS_LENGTH
+  } else {
+    // legacy non-scrypt keystores use the raw password padded to 32 bytes
+    const padded = new Uint8Array(32)
+    padded.set(new TextEncoder().encode(password).subarray(0, 32))
+    key = padded
   }
 
-  return {
-    scryptParams: null,
-    nonce: bytes.subarray(0, NONCE_LENGTH),
-    ciphertext: bytes.subarray(NONCE_LENGTH),
-  }
-}
+  const nonce = bytes.subarray(offset, offset + NONCE_LENGTH)
+  const ciphertext = bytes.subarray(offset + NONCE_LENGTH)
 
-// legacy non-scrypt keystores use the raw password padded to 32 bytes
-const legacyPaddedKey = (password: string): Uint8Array => {
-  const padded = new Uint8Array(32)
-  padded.set(new TextEncoder().encode(password).subarray(0, 32))
-  return padded
-}
-
-/** Decrypts a polkadot-js encrypted keystore (`jsonDecrypt` equivalent) */
-export const decryptPjsKeystore = (keystore: PjsKeystore, password: string): Uint8Array => {
-  const parsed = parseKeystore(keystore)
-  if ("plaintext" in parsed) return parsed.plaintext
-
-  const key = parsed.scryptParams
-    ? deriveKey(password, parsed.scryptParams.salt, parsed.scryptParams)
-    : legacyPaddedKey(password)
-
-  return xsalsa20poly1305(key, parsed.nonce).decrypt(parsed.ciphertext)
-}
-
-/**
- * Same as `decryptPjsKeystore` but with a non-blocking scrypt derivation — use from UI
- * threads, where the sync variant freezes rendering for the whole derivation
- */
-export const decryptPjsKeystoreAsync = async (
-  keystore: PjsKeystore,
-  password: string
-): Promise<Uint8Array> => {
-  const parsed = parseKeystore(keystore)
-  if ("plaintext" in parsed) return parsed.plaintext
-
-  const key = parsed.scryptParams
-    ? await deriveKeyAsync(password, parsed.scryptParams.salt, parsed.scryptParams)
-    : legacyPaddedKey(password)
-
-  return xsalsa20poly1305(key, parsed.nonce).decrypt(parsed.ciphertext)
+  return xsalsa20poly1305(key, nonce).decrypt(ciphertext)
 }
 
 /** Encrypts data as a polkadot-js keystore (`jsonEncrypt` equivalent, always scrypt + v3) */
