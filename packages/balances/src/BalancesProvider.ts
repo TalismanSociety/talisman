@@ -105,6 +105,11 @@ export class BalancesProvider {
   #storage: ReplaySubject<ProviderBalancesStorage>
   #storageValue: ProviderBalancesStorage
   #storage$: Observable<BalancesStorage>
+  // balance ids whose most recent module emission was live. Stored content always
+  // mirrors the last live emission (see updateStorage$), so on a pipeline restart the
+  // seed can re-emit these with their "live" status intact instead of downgrading the
+  // whole snapshot to "cache" and flipping it back once modules reconnect
+  #liveBalanceIds = new Set<string>()
 
   constructor(
     chaindataProvider: ChaindataProvider,
@@ -604,6 +609,15 @@ export class BalancesProvider {
       balancesResult.balances.map((b) => [getBalanceIdCached(b), b] as const)
     )
 
+    // live-status bookkeeping runs before (and regardless of) the no-op detection: a
+    // content-identical emission still confirms these balances as live
+    for (const balanceId of incomingById.keys()) this.#liveBalanceIds.add(balanceId)
+    for (const balanceId of balanceIds) {
+      if (!incomingById.has(balanceId) && !failedIds.has(balanceId))
+        this.#liveBalanceIds.delete(balanceId)
+    }
+    for (const balanceId of failedIds) this.#liveBalanceIds.delete(balanceId)
+
     // no-op detection: on quiet blocks nothing changed — skip the merge, the storage$
     // re-projection/sort and the host's downstream persistence entirely.
     // fingerprints are status-agnostic (stored entries carry "cache", results "live"),
@@ -791,7 +805,14 @@ export class BalancesProvider {
     )
 
     return balanceDefs
-      .map(([tokenId, address]) => this.#storageValue.balances[getBalanceId({ address, tokenId })])
+      .map(([tokenId, address]) => {
+        const balanceId = getBalanceId({ address, tokenId })
+        const stored = this.#storageValue.balances[balanceId]
+        if (!stored) return stored
+        // balances that were live before a restart seed with their exact last live
+        // result — downstream fingerprints match and the UI keeps its Balance instances
+        return this.#liveBalanceIds.has(balanceId) ? getLiveVariant(stored) : stored
+      })
       .filter(isNotNil)
       .sort(sortByBalanceId) as IBalance[]
   }
@@ -886,6 +907,20 @@ const getStaleVariant = (balance: IBalance): IBalance => {
   if (variant === undefined) {
     variant = { ...balance, status: "stale" } as IBalance
     staleVariants.set(balance, variant)
+  }
+  return variant
+}
+
+// memoized `{ ...b, status: "live" }`: seeds re-emit on every pipeline restart, and a
+// reference-stable variant lets downstream fingerprint caches and === compares treat
+// repeated seeds of the same stored entry as unchanged
+const liveVariants = new WeakMap<IBalance, IBalance>()
+const getLiveVariant = (balance: IBalance): IBalance => {
+  if (balance.status === "live") return balance
+  let variant = liveVariants.get(balance)
+  if (variant === undefined) {
+    variant = { ...balance, status: "live" } as IBalance
+    liveVariants.set(balance, variant)
   }
   return variant
 }
