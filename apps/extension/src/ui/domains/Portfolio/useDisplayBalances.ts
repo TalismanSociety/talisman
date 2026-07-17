@@ -48,12 +48,12 @@ const shouldDisplayBalance = (
   balances: Balances
 ) => {
   const accountByNormalized = accounts
-    ? new Map(
-        accounts.flatMap((account) => {
-          const normalized = safeNormalizeAddress(account.address)
-          return normalized ? ([[normalized, account]] as const) : []
-        })
-      )
+    ? accounts.reduce((map, account) => {
+        const normalized = safeNormalizeAddress(account.address)
+        // keep the first account when two addresses normalize identically
+        if (normalized && !map.has(normalized)) map.set(normalized, account)
+        return map
+      }, new Map<string, Account>())
     : null
   const findAccount = (address: string): Account | undefined => {
     if (!accountByNormalized) return undefined
