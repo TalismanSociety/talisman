@@ -2,7 +2,8 @@ import { bind } from "@react-rxjs/core"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { TokenRatesStorage } from "@talismn/token-rates"
 import { api } from "@ui/api"
-import { map, Observable, shareReplay } from "rxjs"
+import { isEqual } from "lodash-es"
+import { distinctUntilChanged, map, Observable, shareReplay, throttleTime } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -14,7 +15,17 @@ export const tokenRates$ = new Observable<TokenRatesStorage>((subscriber) => {
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("tokenRates$"), shareReplay(1))
+}).pipe(
+  debugObservable("tokenRates$"),
+  // each port message deserializes to a brand-new object; downstream, a new
+  // tokenRates ref invalidates the balances hydrate and with it every cached
+  // Balance formatter. The background re-publishes rates on token/network
+  // activation changes (asset-discovery storms) with mostly identical content,
+  // so collapse bursts and drop content-identical emissions here.
+  throttleTime(2_000, undefined, { leading: true, trailing: true }),
+  distinctUntilChanged<TokenRatesStorage>(isEqual),
+  shareReplay(1)
+)
 
 export const [useTokenRatesMap, tokenRatesMap$] = bind(
   tokenRates$.pipe(map((tokenRates) => tokenRates.tokenRates))

@@ -14,7 +14,7 @@ import {
   type NetworkId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { normalizeAddress } from "@talismn/crypto"
 import { getNetworksMapById$, useNetworksMapById } from "@ui/state/chaindata"
 import {
   portfolioBalances$,
@@ -32,18 +32,58 @@ const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
 
 const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 
+// address normalization ss58-decodes: far too expensive to run per (balance × account)
+// on every filter pass. Addresses are a small bounded set (wallet accounts + contacts),
+// so cache normalizations across calls.
+const normalizeCache = new Map<string, string | null>()
+const safeNormalizeAddress = (address: string): string | null => {
+  let normalized = normalizeCache.get(address)
+  if (normalized === undefined) {
+    try {
+      normalized = normalizeAddress(address)
+    } catch {
+      normalized = null
+    }
+    if (normalizeCache.size > 10_000) normalizeCache.clear()
+    normalizeCache.set(address, normalized)
+  }
+  return normalized
+}
+
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (
   accounts: Account[] | undefined,
   networksById: Record<NetworkId, Network>,
   balances: Balances
 ) => {
-  const accountHasSomeBalance =
-    balances.find((b) => !accounts || accounts.some((a) => isAddressEqual(a.address, b.address)))
-      .sum.planck.total > 0n
+  const accountByNormalized = accounts
+    ? new Map(
+        accounts.flatMap((account) => {
+          const normalized = safeNormalizeAddress(account.address)
+          return normalized ? ([[normalized, account]] as const) : []
+        })
+      )
+    : null
+  const findAccount = (address: string): Account | undefined => {
+    if (!accountByNormalized) return undefined
+    const normalized = safeNormalizeAddress(address)
+    return normalized ? accountByNormalized.get(normalized) : undefined
+  }
+
+  // single pass, mirror-filtered to match
+  // balances.find(<matches accounts>).sum.planck.total > 0n
+  const matched = accountByNormalized
+    ? balances.each.filter((b) => !!findAccount(b.address))
+    : balances.each
+  const matchedTokenIds = new Set(matched.map((b) => b.tokenId))
+  const accountHasSomeBalance = matched.some((b) => {
+    const mirrorOf = b.token?.mirrorOf
+    if (mirrorOf && matchedTokenIds.has(mirrorOf)) return false
+    return b.total.planck > 0n
+  })
 
   return (balance: Balance): boolean => {
-    const account = accounts?.find((a) => isAddressEqual(a.address, balance.address))
+    const account = findAccount(balance.address)
     if (!account) return false
 
     const network = networksById[balance.networkId]
