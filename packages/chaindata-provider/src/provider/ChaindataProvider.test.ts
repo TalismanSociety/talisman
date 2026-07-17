@@ -319,7 +319,11 @@ describe("ChaindataProvider", () => {
       const data = makeChaindata({
         tokens: [...makeChaindata().tokens, curatedToken],
       })
-      const provider = new ChaindataProvider({ persistedStorage: data })
+      // observe the dynamic tokens list directly: without serialization, whichever
+      // write lands last silently reverts the other one's effect
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([])
+      const provider = new ChaindataProvider({ persistedStorage: data, dynamicTokens$ })
       await provider.registerDynamicTokens([dynamicToken])
 
       const newToken = makeEvmNativeToken({
@@ -329,8 +333,11 @@ describe("ChaindataProvider", () => {
       })
       await Promise.all([provider.syncDynamicTokens(), provider.registerDynamicTokens([newToken])])
 
-      const tokens = await firstValueFrom(provider.tokens$)
-      expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
+      // both effects must hold: the new registration survived the sync rewrite,
+      // and the sync's drop of the curated duplicate survived the registration
+      const dynamicTokens = await firstValueFrom(dynamicTokens$)
+      expect(dynamicTokens.some((t) => t.id === "42161-evm-native")).toBe(true)
+      expect(dynamicTokens.some((t) => t.id === SOL_SPL_DYNAMIC_ID)).toBe(false)
     })
   })
 
