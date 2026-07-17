@@ -2,16 +2,10 @@ import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { bind } from "@react-rxjs/core"
-import {
-  type Address,
-  Balance,
-  Balances,
-  getBalanceFingerprint,
-  getBalanceId,
-  type IBalance,
-} from "@talismn/balances"
+import { type Address, Balance, Balances, getBalanceId, type IBalance } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import isEqual from "lodash-es/isEqual"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -84,21 +78,23 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
  * balances (matched by id + fingerprint, status included) keep their previous instance.
  */
 const stabilizeBalanceInstances = () => {
-  let prev = new Map<string, { fingerprint: string; balance: Balance }>()
+  let prev = new Map<string, { storage: IBalance; balance: Balance }>()
 
   return (balances: IBalance[]): Balance[] => {
-    const next = new Map<string, { fingerprint: string; balance: Balance }>()
+    const next = new Map<string, { storage: IBalance; balance: Balance }>()
 
     const result = balances.map((storage) => {
       const id = getBalanceId(storage)
-      const fingerprint = getBalanceFingerprint(storage)
       const prevEntry = prev.get(id)
-      const balance =
-        prevEntry && prevEntry.fingerprint === fingerprint
-          ? prevEntry.balance
-          : new Balance(storage)
-      next.set(id, { fingerprint, balance })
-      return balance
+      // allocation-free deep compare (NOT the fingerprint helpers: those JSON.stringify,
+      // and since port deserialization makes every object new on every emission, the
+      // strings could never be amortized here — they'd just be garbage)
+      const entry =
+        prevEntry && isEqual(prevEntry.storage, storage)
+          ? prevEntry
+          : { storage, balance: new Balance(storage) }
+      next.set(id, entry)
+      return entry.balance
     })
 
     prev = next
