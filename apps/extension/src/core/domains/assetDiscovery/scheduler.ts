@@ -33,6 +33,3 @@ export const runDiscoveryTask = <T>(fn: () => Promise<T>): Promise<T> =>
     },
     { throwOnTimeout: true }
   )
-
-/** Resolves when all currently enqueued discovery work has completed */
-export const onDiscoveryQueueIdle = () => discoveryQueue.onIdle()
