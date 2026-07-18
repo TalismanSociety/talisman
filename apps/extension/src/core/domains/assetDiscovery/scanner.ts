@@ -49,7 +49,7 @@ const IGNORED_COINGECKO_IDS = [
   "peri-finance", // Mainnet - PERI (timeouts on balance reads)
 ]
 
-const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
+const SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 50
 /**
  * Scan cursors are persisted at most once per this interval: each store write
@@ -61,7 +61,7 @@ const NETWORK_BALANCES_FETCH_CHUNK_SIZE: Record<string, number> = {
   "1": 200,
 }
 
-// native tokens should be processed and displayed first
+// native tokens should be processed first; determines cursor ordering, must stay stable across scans
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
   const token = tokens[tokenId]
   if (!token?.networkId) {
@@ -400,7 +400,7 @@ class AssetDiscoveryScanner {
       }
 
       // process multiple networks at a time
-      await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
+      await PromisePool.withConcurrency(SCAN_MAX_CONCURRENT_NETWORK)
         .for(Object.keys(tokensByNetwork).sort((a, b) => Number(a) - Number(b)))
         .process(async (networkId) => {
           // stop if scan was cancelled
