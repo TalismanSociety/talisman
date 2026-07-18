@@ -14,7 +14,7 @@ export type AssetDiscoveryScanState = {
     NetworkId, // account for the future when we will support other chains
     { tokenId: TokenId; address: Address }
   >
-  queue?: AssetDiscoveryScanScope[] // may be undefined for older installs : TODO migration ?
+  queue: AssetDiscoveryScanScope[] // guaranteed by migrateAssetDiscoveryV3
 }
 
 const DEFAULT_STATE: AssetDiscoveryScanState = {

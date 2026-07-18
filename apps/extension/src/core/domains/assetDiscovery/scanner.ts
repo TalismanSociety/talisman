@@ -223,7 +223,7 @@ class AssetDiscoveryScanner {
     // add to queue
     await assetDiscoveryStore.mutate((state) => ({
       ...state,
-      queue: [...(state.queue ?? []), { ...scope, addresses, networkIds }],
+      queue: [...state.queue, { ...scope, addresses, networkIds }],
     }))
 
     this.executeNextScan()
@@ -236,14 +236,14 @@ class AssetDiscoveryScanner {
 
     if (!scope) {
       const queue = await assetDiscoveryStore.get("queue")
-      if (queue?.length) {
+      if (queue.length) {
         await this.enableDiscoveredTokens() // enable pending discovered tokens before flushing the table
 
         await db.assetDiscovery.clear()
 
         await assetDiscoveryStore.mutate((prev): AssetDiscoveryScanState => {
           // merge queue
-          const queue = prev.queue ?? []
+          const queue = prev.queue
           const mergedScope: AssetDiscoveryScanScope = {
             addresses: uniq(queue.flatMap((s) => s.addresses)),
             networkIds: uniq(queue.flatMap((s) => s.networkIds)),

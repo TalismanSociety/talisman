@@ -31,10 +31,9 @@ export const migrateAssetDiscoveryV3: Migration = {
     await assetDiscoveryStore.mutate((state) => ({
       currentScanScope: state.currentScanScope ?? null,
       currentScanCursors: Object.fromEntries(
-        Object.entries(state.currentScanCursors ?? {}).map(([networkId, { tokenId, address }]) => [
-          networkId,
-          { tokenId, address },
-        ])
+        Object.entries(state.currentScanCursors ?? {})
+          .filter(([, cursor]) => !!cursor)
+          .map(([networkId, { tokenId, address }]) => [networkId, { tokenId, address }])
       ),
       queue: state.queue ?? [],
     }))

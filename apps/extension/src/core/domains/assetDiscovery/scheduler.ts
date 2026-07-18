@@ -31,5 +31,7 @@ export const runDiscoveryTask = <T>(fn: () => Promise<T>): Promise<T> =>
       await sleep(isUiOpen() ? TASK_GAP_UI_OPEN_MS : TASK_GAP_UI_CLOSED_MS)
       return fn()
     },
+    // no timeout is set on the queue: throwOnTimeout only narrows the return
+    // type from Promise<T | void> to Promise<T>
     { throwOnTimeout: true }
   )

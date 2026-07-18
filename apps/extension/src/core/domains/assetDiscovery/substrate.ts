@@ -27,8 +27,16 @@ const RESCAN_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 /** How long (ms) we skip re-probing a network whose last probe failed. */
 const FAILURE_TTL_MS = 24 * 60 * 60 * 1000 // 24h — avoids hammering dead RPCs
 
-/** Per-probe WebSocket timeout. */
+/** Per-RPC WebSocket timeout. */
 const PROBE_TIMEOUT_MS = 15_000
+
+/**
+ * Max total duration of a network probe, across all its RPCs. A probe holds a
+ * slot of the shared discovery queue: without this cap, a network with many
+ * dead RPCs could hold it for RPC count × PROBE_TIMEOUT_MS and stall all
+ * discovery types.
+ */
+const PROBE_TOTAL_TIMEOUT_MS = 30_000
 
 /** Debounce for the "wallet is ready" trigger. */
 const WALLET_READY_DEBOUNCE_MS = 10_000
@@ -390,7 +398,14 @@ const probeAndActivate = async (
   const abortController = new AbortController()
 
   try {
-    const result = await probeNetworkRpcs(network.rpcs, storageKeys, abortController.signal)
+    const probePromise = probeNetworkRpcs(network.rpcs, storageKeys, abortController.signal)
+    // if the total timeout wins the race, the probe is aborted (see finally) and
+    // its late rejection must be observed to avoid an unhandled rejection
+    probePromise.catch(() => {})
+    const result = await Promise.race([
+      probePromise,
+      throwAfter(PROBE_TOTAL_TIMEOUT_MS, "Probe timeout"),
+    ])
 
     const alive = result.changes.some(([, value]) => value !== null && value !== undefined)
     log.debug(
