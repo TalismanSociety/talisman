@@ -105,6 +105,12 @@ export class BalancesProvider {
   #storage: ReplaySubject<ProviderBalancesStorage>
   #storageValue: ProviderBalancesStorage
   #storage$: Observable<BalancesStorage>
+  // balance ids whose most recent module emission was live, by confirmation time. Stored
+  // content always mirrors the last live emission (see updateStorage$), so on a pipeline
+  // restart the seed can re-emit recently-confirmed entries with their "live" status
+  // intact instead of downgrading the whole snapshot to "cache" and flipping it back
+  // once modules reconnect
+  #lastLiveAt = new Map<string, number>()
 
   constructor(
     chaindataProvider: ChaindataProvider,
@@ -198,12 +204,7 @@ export class BalancesProvider {
         async ({ isStale, results }, { slicer }): Promise<BalancesResult> => {
           const balanceArrays = await mapWithYield(
             results,
-            (result) =>
-              isStale
-                ? result.balances.map(
-                    (b): IBalance => (b.status !== "live" ? getStaleVariant(b) : b)
-                  )
-                : result.balances,
+            (result) => (isStale ? result.balances.map(getSweepStaleVariant) : result.balances),
             { slicer }
           )
 
@@ -604,6 +605,16 @@ export class BalancesProvider {
       balancesResult.balances.map((b) => [getBalanceIdCached(b), b] as const)
     )
 
+    // live-status bookkeeping runs before (and regardless of) the no-op detection: a
+    // content-identical emission still confirms these balances as live
+    const now = Date.now()
+    for (const balanceId of incomingById.keys()) this.#lastLiveAt.set(balanceId, now)
+    for (const balanceId of balanceIds) {
+      if (!incomingById.has(balanceId) && !failedIds.has(balanceId))
+        this.#lastLiveAt.delete(balanceId)
+    }
+    for (const balanceId of failedIds) this.#lastLiveAt.delete(balanceId)
+
     // no-op detection: on quiet blocks nothing changed — skip the merge, the storage$
     // re-projection/sort and the host's downstream persistence entirely.
     // fingerprints are status-agnostic (stored entries carry "cache", results "live"),
@@ -790,8 +801,22 @@ export class BalancesProvider {
       addresses.map((address) => [tokenId, address] as [TokenId, Address])
     )
 
+    const now = Date.now()
     return balanceDefs
-      .map(([tokenId, address]) => this.#storageValue.balances[getBalanceId({ address, tokenId })])
+      .map(([tokenId, address]) => {
+        const balanceId = getBalanceId({ address, tokenId })
+        const stored = this.#storageValue.balances[balanceId]
+        if (!stored) return stored
+        // balances confirmed live recently enough seed with their exact last live result
+        // — downstream fingerprints match and the UI keeps its Balance instances. Older
+        // confirmations mean the balance's scope left the subscription for a while
+        // (network/token deactivated, account removed, machine slept): that data is
+        // genuinely old, and the cache status with its loading state is the honest signal
+        const lastLiveAt = this.#lastLiveAt.get(balanceId)
+        return lastLiveAt !== undefined && now - lastLiveAt < LIVE_SEED_MAX_AGE_MS
+          ? getLiveVariant(stored)
+          : stored
+      })
       .filter(isNotNil)
       .sort(sortByBalanceId) as IBalance[]
   }
@@ -889,6 +914,35 @@ const getStaleVariant = (balance: IBalance): IBalance => {
   }
   return variant
 }
+
+// seeds only re-emit "live" for balances confirmed live this recently. Connected module
+// subscriptions refresh their timestamps on every emission (~6s polls, per-block
+// substrate), so the window only expires when a balance's scope left the subscription
+// (network/token deactivated, account removed) or the machine slept
+const LIVE_SEED_MAX_AGE_MS = 5 * 60_000
+
+// memoized `{ ...b, status: "live" }`: seeds re-emit on every pipeline restart, and a
+// reference-stable variant lets downstream fingerprint caches and === compares treat
+// repeated seeds of the same stored entry as unchanged
+const liveVariants = new WeakMap<IBalance, IBalance>()
+const seededLiveVariants = new WeakSet<IBalance>()
+const getLiveVariant = (balance: IBalance): IBalance => {
+  if (balance.status === "live") return balance
+  let variant = liveVariants.get(balance)
+  if (variant === undefined) {
+    variant = { ...balance, status: "live" } as IBalance
+    liveVariants.set(balance, variant)
+    seededLiveVariants.add(variant)
+  }
+  return variant
+}
+
+// the periodic stale sweep must also downgrade seeded live variants: their status is
+// inherited from before a restart, not confirmed by a module emission on the current
+// subscription — a module that never re-emits (dead RPC) would otherwise leave seed
+// content labelled live forever. Exported for tests
+export const getSweepStaleVariant = (balance: IBalance): IBalance =>
+  balance.status !== "live" || seededLiveVariants.has(balance) ? getStaleVariant(balance) : balance
 
 const mergeTwoSortedBalanceArrays = async (
   a: IBalance[],
