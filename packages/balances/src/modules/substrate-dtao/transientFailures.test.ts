@@ -88,6 +88,39 @@ describe("fetchConvictionLocks transient failures", () => {
     ).rejects.toThrow("bad key")
   })
 
+  it("rejects when the DecayingLock key encode fails", async () => {
+    // an unencodable DecayingLock key would silently default the pair to "decaying",
+    // mislabeling a perpetual lock — the poll must fail instead
+    const decayingCoder = {
+      keys: {
+        enc: vi.fn(() => {
+          throw new Error("bad decaying key")
+        }),
+        dec: vi.fn(),
+      },
+      value: { dec: vi.fn() },
+    }
+    vi.mocked(parseMetadataRpcCached).mockReturnValue({
+      builder: {
+        buildStorage: vi.fn((_pallet: string, entry: string) =>
+          entry === "DecayingLock" ? decayingCoder : makeCoder()
+        ),
+      },
+      unifiedMetadata: {},
+    } as unknown as ReturnType<typeof parseMetadataRpcCached>)
+    const connector = { send: vi.fn().mockResolvedValue(["0xstatekey1"]) }
+    vi.mocked(fetchRuntimeCallResult).mockResolvedValue(null)
+
+    await expect(
+      fetchConvictionLocks(
+        connector as unknown as Parameters<typeof fetchConvictionLocks>[0],
+        "bittensor",
+        "0x00",
+        ["address-1"]
+      )
+    ).rejects.toThrow("bad decaying key")
+  })
+
   it("rejects when get_coldkey_lock fails", async () => {
     mockMetadata()
     const connector = { send: vi.fn().mockResolvedValue(["0xstatekey1"]) }

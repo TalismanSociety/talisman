@@ -191,24 +191,9 @@ const fetchConvictionLockStorageKeys = async (
         return []
       }
 
+      let stateKeys: `0x${string}`[]
       try {
-        const stateKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [
-          keyPrefix,
-        ])
-
-        return stateKeys.flatMap((stateKey) => {
-          try {
-            const [, netuid, hotkey] = storageCoder.keys.dec(stateKey) as [string, number, string]
-            // report the lock under the requested address (the prefix guarantees it is the
-            // coldkey) to keep the address format consistent with the rest of the pipeline
-            return [{ address, netuid, hotkey }]
-          } catch (cause) {
-            // a returned state key that fails decode is a bad response (or metadata drift),
-            // not an absent lock — fail the poll (stale) instead of silently dropping it
-            log.warn(`Failed to decode conviction Lock key ${stateKey} on ${networkId}`, { cause })
-            throw cause
-          }
-        })
+        stateKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [keyPrefix])
       } catch (cause) {
         // transient RPC failure: swallowing it would make every lock of this address read
         // as removed for one poll (delete + re-add flap downstream) — fail the poll instead
@@ -217,6 +202,20 @@ const fetchConvictionLockStorageKeys = async (
         })
         throw cause
       }
+
+      return stateKeys.flatMap((stateKey) => {
+        try {
+          const [, netuid, hotkey] = storageCoder.keys.dec(stateKey) as [string, number, string]
+          // report the lock under the requested address (the prefix guarantees it is the
+          // coldkey) to keep the address format consistent with the rest of the pipeline
+          return [{ address, netuid, hotkey }]
+        } catch (cause) {
+          // a returned state key that fails decode is a bad response (or metadata drift),
+          // not an absent lock — fail the poll (stale) instead of silently dropping it
+          log.warn(`Failed to decode conviction Lock key ${stateKey} on ${networkId}`, { cause })
+          throw cause
+        }
+      })
     })
   )
 
@@ -231,14 +230,17 @@ const fetchConvictionLockModes = async (
 ): Promise<Map<string, SubDTaoConvictionLockType>> => {
   const queries = pairs.map(
     ({ address, netuid }): RpcQueryPack<[string, SubDTaoConvictionLockType]> => {
-      let stateKey: MaybeStateKey = null
+      let stateKey: MaybeStateKey
       try {
         stateKey = storageCoder.keys.enc(address, netuid) as MaybeStateKey
       } catch (cause) {
+        // an unencodable key (metadata drift) would silently default the pair to "decaying"
+        // below, mislabeling a perpetual lock — fail the poll instead, like decode failures
         log.warn(
           `Failed to encode conviction DecayingLock key (netuid=${netuid}, address=${address}) on ${networkId}`,
           { cause }
         )
+        throw cause
       }
 
       const key = convictionLockKey(address, netuid)
