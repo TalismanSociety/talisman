@@ -291,11 +291,6 @@ export const api: MessageTypes = {
   solSignApprove: (req) =>
     messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
 
-  // asset discovery
-  assetDiscoveryStartScan: (scope) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", scope),
-  assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
-
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),
   nftsSetHidden: (id, isHidden) =>

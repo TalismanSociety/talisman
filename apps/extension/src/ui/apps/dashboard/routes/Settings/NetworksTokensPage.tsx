@@ -1,10 +1,4 @@
-import {
-  ChevronRightIcon,
-  DiamondIcon,
-  GlobeIcon,
-  ListIcon,
-  PolkadotVaultIcon,
-} from "@talismn/icons"
+import { ChevronRightIcon, GlobeIcon, ListIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { CtaButton } from "@ui/components/CtaButton"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -22,14 +16,6 @@ const Content = () => {
       />
       <Spacer large />
       <div className="flex flex-col gap-4">
-        <CtaButton
-          iconLeft={DiamondIcon}
-          iconRight={ChevronRightIcon}
-          title={t("Asset discovery")}
-          subtitle={t("Scan for well-known tokens in your accounts and add them to Talisman")}
-          to={`/settings/networks-tokens/asset-discovery`}
-        />
-        <div className="my-4 h-0.5 bg-linear-to-r from-transparent via-primary/10 to-transparent"></div>
         <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}

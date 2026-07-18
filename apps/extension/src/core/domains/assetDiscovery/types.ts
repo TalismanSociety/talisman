@@ -14,8 +14,3 @@ export type AssetDiscoveryScanScope = {
   /** indicates whether aad api should be called at the begining of the scan */
   withApi: boolean
 }
-
-export interface AssetDiscoveryMessages {
-  "pri(assetDiscovery.scan.start)": [AssetDiscoveryScanScope, boolean]
-  "pri(assetDiscovery.scan.stop)": [null, boolean]
-}
