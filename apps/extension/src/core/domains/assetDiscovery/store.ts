@@ -29,7 +29,8 @@ class AssetDiscoveryStore extends StorageProvider<AssetDiscoveryScanState> {
   }
 
   reset() {
-    return this.set(DEFAULT_STATE)
+    // replace, not set: wipes any key not part of the current state shape
+    return this.replace(DEFAULT_STATE)
   }
 }
 

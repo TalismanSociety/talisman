@@ -1,4 +1,5 @@
 import { db as talismanDb } from "@core/db"
+import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useState } from "react"
 
@@ -13,6 +14,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
 
     // these do not contain any user data, they will be safely recreated on next startup
     await Promise.allSettled([
+      assetDiscoveryStore.reset(), // cancels current/pending scans
       talismanDb.metadata.clear(),
       talismanDb.blobs.clear(), // chaindata, balances, nfts etc
       tryDeleteDatabase("TalismanChaindata"), // old chaindata db
