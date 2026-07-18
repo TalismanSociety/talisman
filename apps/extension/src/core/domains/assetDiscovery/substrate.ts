@@ -30,11 +30,8 @@ const FAILURE_TTL_MS = 24 * 60 * 60 * 1000 // 24h — avoids hammering dead RPCs
 /** Per-probe WebSocket timeout. */
 const PROBE_TIMEOUT_MS = 15_000
 
-/**
- * Debounce for the "wallet is ready" trigger — waits out the post-unlock storm
- * (balances resubscribe + rates hydration) before probing.
- */
-const WALLET_READY_DEBOUNCE_MS = 60_000
+/** Debounce for the "wallet is ready" trigger. */
+const WALLET_READY_DEBOUNCE_MS = 10_000
 
 /**
  * Max time a probe result may sit in the pending buffer before being flushed.

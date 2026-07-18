@@ -184,8 +184,7 @@ class AssetDiscoveryScanner {
 
   private scanOnUnlock = () => {
     isWalletReady$ // true means user has logged in and migrations are complete (it doesnt mean that they succeded though)
-      // wait out the post-unlock storm (balances resubscribe + rates hydration) before scanning
-      .pipe(filter(isTruthy), debounceTime(60_000))
+      .pipe(filter(isTruthy), debounceTime(10_000))
       .subscribe(async () => {
         try {
           const accounts = await keyringStore.getAccounts()
