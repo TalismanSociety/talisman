@@ -9,6 +9,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
+import { throwAfter } from "@talismn/util"
 import { isEqual, uniq } from "lodash-es"
 import {
   combineLatest,
@@ -32,11 +33,14 @@ import { runDiscoveryTask } from "./scheduler"
 
 const MAINNET_NETWORK_ID = "solana-mainnet"
 
+/** Delay for the initial wallet-ready scan, to not interfere with startup routines. */
+const WALLET_READY_DELAY_MS = 10_000
+
 /**
- * Delay for the initial wallet-ready scan — waits out the post-unlock storm
- * (balances resubscribe + rates hydration) before scanning.
+ * Max duration of a single RPC lookup — a hung request would otherwise hold a
+ * slot of the shared discovery queue and stall all discovery types.
  */
-const WALLET_READY_DELAY_MS = 60_000
+const RPC_TIMEOUT_MS = 10_000
 const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 
@@ -86,13 +90,16 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
 const getSplTokenIdsForOwner = async (rpc: SolRpc, address: string) => {
   try {
     // fetch SPL balances for the address
-    const tokenAccounts = await rpc
-      .getTokenAccountsByOwner(
-        solAddress(address),
-        { programId: solAddress(SPL_PROGRAM_ID) }, // SPL Token Program ID
-        { commitment: "confirmed", encoding: "jsonParsed" }
-      )
-      .send()
+    const tokenAccounts = await Promise.race([
+      rpc
+        .getTokenAccountsByOwner(
+          solAddress(address),
+          { programId: solAddress(SPL_PROGRAM_ID) }, // SPL Token Program ID
+          { commitment: "confirmed", encoding: "jsonParsed" }
+        )
+        .send(),
+      throwAfter(RPC_TIMEOUT_MS, "Timeout"),
+    ])
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solSplTokenId(MAINNET_NETWORK_ID, mintAddress))
@@ -103,13 +110,16 @@ const getSplTokenIdsForOwner = async (rpc: SolRpc, address: string) => {
 
 const getToken2022IdsForOwner = async (rpc: SolRpc, address: string) => {
   try {
-    const tokenAccounts = await rpc
-      .getTokenAccountsByOwner(
-        solAddress(address),
-        { programId: solAddress(TOKEN_2022_PROGRAM_ID) },
-        { commitment: "confirmed", encoding: "jsonParsed" }
-      )
-      .send()
+    const tokenAccounts = await Promise.race([
+      rpc
+        .getTokenAccountsByOwner(
+          solAddress(address),
+          { programId: solAddress(TOKEN_2022_PROGRAM_ID) },
+          { commitment: "confirmed", encoding: "jsonParsed" }
+        )
+        .send(),
+      throwAfter(RPC_TIMEOUT_MS, "Timeout"),
+    ])
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solToken2022TokenId(MAINNET_NETWORK_ID, mintAddress))
