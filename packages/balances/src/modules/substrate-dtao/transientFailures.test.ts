@@ -62,6 +62,32 @@ describe("fetchConvictionLocks transient failures", () => {
     ).rejects.toThrow("rpc down")
   })
 
+  it("rejects when a returned Lock storage key fails to decode", async () => {
+    const coder = {
+      keys: {
+        enc: vi.fn(() => "0xkeyprefix"),
+        dec: vi.fn(() => {
+          throw new Error("bad key")
+        }),
+      },
+      value: { dec: vi.fn() },
+    }
+    vi.mocked(parseMetadataRpcCached).mockReturnValue({
+      builder: { buildStorage: vi.fn(() => coder) },
+      unifiedMetadata: {},
+    } as unknown as ReturnType<typeof parseMetadataRpcCached>)
+    const connector = { send: vi.fn().mockResolvedValue(["0xstatekey1"]) }
+
+    await expect(
+      fetchConvictionLocks(
+        connector as unknown as Parameters<typeof fetchConvictionLocks>[0],
+        "bittensor",
+        "0x00",
+        ["address-1"]
+      )
+    ).rejects.toThrow("bad key")
+  })
+
   it("rejects when get_coldkey_lock fails", async () => {
     mockMetadata()
     const connector = { send: vi.fn().mockResolvedValue(["0xstatekey1"]) }

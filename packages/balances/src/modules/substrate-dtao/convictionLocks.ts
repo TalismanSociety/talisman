@@ -203,8 +203,10 @@ const fetchConvictionLockStorageKeys = async (
             // coldkey) to keep the address format consistent with the rest of the pipeline
             return [{ address, netuid, hotkey }]
           } catch (cause) {
+            // a returned state key that fails decode is a bad response (or metadata drift),
+            // not an absent lock — fail the poll (stale) instead of silently dropping it
             log.warn(`Failed to decode conviction Lock key ${stateKey} on ${networkId}`, { cause })
-            return []
+            throw cause
           }
         })
       } catch (cause) {
@@ -252,6 +254,11 @@ const fetchConvictionLockModes = async (
             hexValue,
             `Failed to decode DecayingLock for (netuid=${netuid}, address=${address}) on ${networkId}`
           )
+          // present-but-undecodable: defaulting to "decaying" would mislabel a perpetual lock
+          if (decoded === null)
+            throw new Error(
+              `Failed to decode DecayingLock for (netuid=${netuid}, address=${address}) on ${networkId}`
+            )
 
           return [key, decoded === false ? "perpetual" : "decaying"]
         },
