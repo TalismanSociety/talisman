@@ -1,6 +1,11 @@
 import { COINS_API_URL } from "@common/constants"
 import { log } from "@common/log"
-import type { Network, TokenId, TokenList } from "@talismn/chaindata-provider"
+import {
+  type Network,
+  parseTokenId,
+  type TokenId,
+  type TokenList,
+} from "@talismn/chaindata-provider"
 import {
   fetchTokenRates,
   type TokenRateCurrency,
@@ -248,11 +253,16 @@ export class TokenRatesStore {
 
       // publish the fresh rates immediately — the dtao fetch below (bittensor RPC + tao-data
       // api) must not delay rates for the rest of the wallet. previous dtao entries are
-      // carried over so alpha fiat values don't flicker until the merge lands
+      // carried over so alpha fiat values don't flicker until the merge lands.
+      // carry is keyed on the token ID shape, NOT on membership in `tokens`: during startup
+      // the active token list re-emits repeatedly (dynamic token registration, chaindata
+      // hydration) and a dtao id transiently missing from it must not lose its rate — a
+      // published rates set without it zeroes the row's fiat and the row falls out of the
+      // portfolio's rendered range for a beat (visible flap)
       const previous = await firstValueFrom(this.#storage$)
       const previousDTaoRates = Object.fromEntries(
         Object.entries(previous.tokenRates).filter(
-          ([tokenId]) => tokens[tokenId]?.type === "substrate-dtao" && !tokenRates[tokenId]
+          ([tokenId]) => parseTokenId(tokenId).type === "substrate-dtao" && !tokenRates[tokenId]
         )
       )
       if (generation !== this.#updateGeneration) return
@@ -262,8 +272,11 @@ export class TokenRatesStore {
       // prices and the TAO rates above (self-contained failure handling: keep-last, never throws)
       const dtaoRates = await fetchDTaoTokenRatesForWallet(tokens, tokenRates, previous.tokenRates)
       if (generation !== this.#updateGeneration) return
-      if (Object.keys(dtaoRates).length || Object.keys(previousDTaoRates).length)
-        this.publish({ ...tokenRates, ...dtaoRates })
+      // previousDTaoRates stays in the merge: the fetch only re-prices dtao tokens present in
+      // the current list, and entries it did not cover must survive this publish too (an empty
+      // fetch result must never regress the carried entries published above)
+      if (Object.keys(dtaoRates).length)
+        this.publish({ ...previousDTaoRates, ...tokenRates, ...dtaoRates })
     } catch (err) {
       // reset lastUpdateTokenIds to retry on next call
       this.#lastUpdateKey = ""
