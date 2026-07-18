@@ -306,6 +306,9 @@ const isFresh = (timestamp: number | undefined): boolean => {
 const pendingProbeResults = new Map<string, { alive: boolean; enqueueGen: number }>()
 let pendingFlushTimer: ReturnType<typeof setTimeout> | null = null
 
+/** Probes not yet settled, across all overlapping discovery runs. */
+let inFlightProbeCount = 0
+
 const schedulePendingFlush = () => {
   if (pendingFlushTimer) return
   pendingFlushTimer = setTimeout(() => {
@@ -431,19 +434,25 @@ const discoverSubstrateAssets = async (): Promise<void> => {
 
     // Fire-and-forget: the shared discovery queue caps concurrent RPC work across
     // all discovery types (evm/substrate/solana) and spaces it out while a UI is open.
-    const probes = candidates.map((candidate) => {
+    // The counter is bumped for the whole batch before any probe settles, so
+    // overlapping discovery runs coalesce into a single flush when the last
+    // outstanding probe completes (long queues also flush every
+    // PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
+    inFlightProbeCount += candidates.length
+    for (const candidate of candidates) {
       // Capture generation at enqueue time so stale jobs are skipped at dequeue.
       const gen = probeGeneration.get(candidate.network.id) ?? 0
-      return runDiscoveryTask(() => probeAndActivate(candidate, gen)).catch((err) => {
-        log.warn(`[substrateDiscovery] queued probe failed for ${candidate.network.id}`, err)
-      })
-    })
-
-    // Flush buffered results as soon as this batch of probes settles (long queues
-    // also flush every PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
-    Promise.allSettled(probes)
-      .then(() => flushPendingProbeResults())
-      .catch((err) => log.error("[substrateDiscovery] Failed to flush after probes settled", err))
+      runDiscoveryTask(() => probeAndActivate(candidate, gen))
+        .catch((err) => {
+          log.warn(`[substrateDiscovery] queued probe failed for ${candidate.network.id}`, err)
+        })
+        .finally(() => {
+          if (--inFlightProbeCount > 0) return
+          flushPendingProbeResults().catch((err) =>
+            log.error("[substrateDiscovery] Failed to flush after probes settled", err)
+          )
+        })
+    }
   } catch (err) {
     log.error("[substrateDiscovery] Failed to enqueue substrate asset discovery", err)
   }
