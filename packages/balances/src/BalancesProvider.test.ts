@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
-import { BalancesProvider, type BalancesResult } from "./BalancesProvider"
+import { BalancesProvider, type BalancesResult, getSweepStaleVariant } from "./BalancesProvider"
 import { getBalanceId, type IBalance } from "./types"
 
 const makeBalance = (partial: Partial<IBalance> & Record<string, unknown> = {}): IBalance =>
@@ -122,5 +122,47 @@ describe("BalancesProvider restart seeds", () => {
     const seed = internals(restored).getStoredBalances({ [balance.tokenId]: [balance.address] })
     expect(seed).toHaveLength(1)
     expect(seed[0].status).toBe("live")
+  })
+
+  it("expires live status for balances not confirmed recently", () => {
+    vi.useFakeTimers()
+    try {
+      const provider = makeProvider()
+      const balance = makeBalance()
+      const balanceId = getBalanceId(balance)
+      const scope = { [balance.tokenId]: [balance.address] }
+
+      internals(provider).updateStorage$([balanceId], makeResult({ balances: [balance] }))
+
+      vi.advanceTimersByTime(4 * 60_000)
+      expect(internals(provider).getStoredBalances(scope)[0].status).toBe("live")
+
+      // a content-identical emission refreshes the confirmation
+      internals(provider).updateStorage$([balanceId], makeResult({ balances: [balance] }))
+      vi.advanceTimersByTime(4 * 60_000)
+      expect(internals(provider).getStoredBalances(scope)[0].status).toBe("live")
+
+      // no emission for longer than the window: the scope left the subscription
+      vi.advanceTimersByTime(2 * 60_000)
+      expect(internals(provider).getStoredBalances(scope)[0].status).toBe("cache")
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("stale sweep downgrades seeded live variants but not module-confirmed ones", () => {
+    const provider = makeProvider()
+    const balance = makeBalance()
+    const balanceId = getBalanceId(balance)
+
+    internals(provider).updateStorage$([balanceId], makeResult({ balances: [balance] }))
+    const [seed] = internals(provider).getStoredBalances({ [balance.tokenId]: [balance.address] })
+
+    // seeded live status is inherited, not confirmed on the current subscription
+    expect(seed.status).toBe("live")
+    expect(getSweepStaleVariant(seed).status).toBe("stale")
+
+    // a balance emitted live by a module passes through untouched
+    expect(getSweepStaleVariant(balance)).toBe(balance)
   })
 })
