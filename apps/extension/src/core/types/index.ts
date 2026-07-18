@@ -1,7 +1,6 @@
 import type { AccountProxiesMessages } from "../domains/accountProxies/types"
 import type { AccountsMessages } from "../domains/accounts/types"
 import type { AppMessages } from "../domains/app/types"
-import type { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
 import type { BalancesMessages } from "../domains/balances/types"
 import type { BittensorMessages } from "../domains/bittensor/types"
 import type { ChaindataMessages } from "../domains/chaindata/types"
@@ -72,7 +71,6 @@ type AllMessages = PolkadotRequestSignatures &
   SubstrateMessages &
   SolanaExtensionMessages &
   SolanaTabsMessages &
-  AssetDiscoveryMessages &
   NftsMessages &
   DefiMessages &
   EarnMessages &

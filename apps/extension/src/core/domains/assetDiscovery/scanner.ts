@@ -211,7 +211,7 @@ class AssetDiscoveryScanner {
     }, 5_000)
   }
 
-  public async startScan(scope: AssetDiscoveryScanScope, dequeue?: boolean): Promise<boolean> {
+  public async startScan(scope: AssetDiscoveryScanScope): Promise<boolean> {
     const evmNetworksMap = await chaindataProvider.getNetworksMapById("ethereum")
 
     // for now we only support ethereum addresses and networks
@@ -219,7 +219,7 @@ class AssetDiscoveryScanner {
     const networkIds = scope.networkIds.filter((id) => evmNetworksMap[id])
     if (!addresses.length || !networkIds.length) return false
 
-    log.debug("[AssetDiscovery] Enqueue scan", { addresses, networkIds, dequeue })
+    log.debug("[AssetDiscovery] Enqueue scan", { addresses, networkIds })
 
     // add to queue
     await assetDiscoveryStore.mutate((state) => ({
@@ -227,31 +227,7 @@ class AssetDiscoveryScanner {
       queue: [...(state.queue ?? []), { ...scope, addresses, networkIds }],
     }))
 
-    // for front end calls, dequeue as part of this promise to keep UI in sync
-    if (dequeue && !this.#isBusy) {
-      this.#isBusy = true
-      try {
-        await this.dequeue()
-      } finally {
-        this.#isBusy = false
-      }
-    }
-
     this.executeNextScan()
-
-    return true
-  }
-
-  public async stopScan(): Promise<boolean> {
-    await assetDiscoveryStore.set({
-      currentScanScope: null,
-      currentScanProgressPercent: undefined,
-      currentScanCursors: undefined,
-      currentScanTokensCount: undefined,
-      queue: [],
-    })
-
-    await db.assetDiscovery.clear()
 
     return true
   }
@@ -280,8 +256,6 @@ class AssetDiscoveryScanner {
           return {
             ...prev,
             currentScanScope,
-            currentScanProgressPercent: 0,
-            currentScanTokensCount: 0,
             currentScanCursors: {},
             queue: [],
           }
@@ -299,9 +273,8 @@ class AssetDiscoveryScanner {
 
     const foundTokenIds = await fetchMissingTokens(scope.addresses)
 
-    const [allTokens, evmNetworks, activeTokens, activeNetworks] = await Promise.all([
+    const [allTokens, activeTokens, activeNetworks] = await Promise.all([
       chaindataProvider.getTokens(),
-      chaindataProvider.getNetworksMapById("ethereum"),
       activeTokensStore.get(),
       activeNetworksStore.get(),
     ])
@@ -333,19 +306,6 @@ class AssetDiscoveryScanner {
 
     const networkIdsToScan = [...new Set([...scope.networkIds, ...additionalNetworkIds])]
 
-    const tokensToScan = allTokens
-      .filter(isTokenEth)
-      .filter((t) => networkIdsToScan.includes(t.networkId ?? ""))
-      .filter((token) => {
-        const evmNetwork = evmNetworks[token.networkId ?? ""]
-        if (!evmNetwork) return false
-        if (!evmNetwork.forceScan && evmNetwork.isTestnet) return false
-        if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
-        if (token.noDiscovery) return false
-        // scan only if token has never been enabled or disabled
-        return activeTokens[token.id] === undefined
-      })
-
     await assetDiscoveryStore.mutate((prev) => ({
       ...prev,
       currentScanScope: {
@@ -353,7 +313,6 @@ class AssetDiscoveryScanner {
         networkIds: networkIdsToScan,
         withApi: false, // dot not call api again if scan is stopped then resumed
       },
-      currentScanTokensCount: tokensToScan.length,
     }))
 
     // refresh scope and return
@@ -380,7 +339,6 @@ class AssetDiscoveryScanner {
         chaindataProvider.getTokens(),
         chaindataProvider.getNetworksMapById("ethereum"),
         activeTokensStore.get(),
-        activeNetworksStore.get(),
       ])
 
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
@@ -403,15 +361,9 @@ class AssetDiscoveryScanner {
         (t) => t.networkId
       )
 
-      const totalChecks = tokensToScan.length * scope.addresses.length
-      const totalTokens = tokensToScan.length
-
-      log.debug(
-        "[AssetDiscovery] Starting scan: %d tokens, %d total checks",
-        totalTokens,
-        totalChecks,
-        { networkIds: scope.networkIds }
-      )
+      log.debug("[AssetDiscovery] Starting scan: %d tokens", tokensToScan.length, {
+        networkIds: scope.networkIds,
+      })
 
       const subScopeChange = assetDiscoveryStore.observable
         .pipe(distinctUntilKeyChanged("currentScanScope", isEqual), skip(1))
@@ -441,25 +393,9 @@ class AssetDiscoveryScanner {
         await assetDiscoveryStore.mutate((prev) => {
           if (abortController.signal.aborted) return prev
 
-          // Update progress
-          // in case of full scan it takes longer to scan networks
-          // in case of active scan it takes longer to scan tokens
-          // => use the min of both ratios as current progress
-          const totalScanned = Object.values(localCursors).reduce(
-            (acc, cur) => acc + cur.scanned,
-            0
-          )
-          const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
-          const networksProgress = Math.round(
-            (100 * Object.keys(localCursors).length) / Object.keys(tokensByNetwork).length
-          )
-          const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
-
           return {
             ...prev,
             currentScanCursors: { ...localCursors },
-            currentScanProgressPercent,
-            currentScanTokensCount: totalTokens,
           }
         })
       }
@@ -532,7 +468,6 @@ class AssetDiscoveryScanner {
               localCursors[networkId] = {
                 address: checks[checks.length - 1].address,
                 tokenId: checks[checks.length - 1].tokenId,
-                scanned: (localCursors[networkId]?.scanned ?? 0) + checks.length,
               }
               await flushScanState()
 
@@ -555,12 +490,7 @@ class AssetDiscoveryScanner {
         if (abortController.signal.aborted) return prev
         return {
           ...prev,
-          currentScanProgressPercent: 100,
           currentScanScope: null,
-          lastScanTimestamp: Date.now(),
-          lastScanAccounts: prev.currentScanScope?.addresses ?? [],
-          lastScanNetworks: prev.currentScanScope?.networkIds ?? [],
-          lastScanTokensCount: prev.currentScanTokensCount,
         }
       })
 
