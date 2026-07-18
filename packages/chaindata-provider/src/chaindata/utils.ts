@@ -183,6 +183,32 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
   }
 }
 
+/**
+ * Throw-safe check of a token id's type: accepts any value and returns false for
+ * non-strings, malformed ids and unknown token types (eg ids persisted by another
+ * wallet version) instead of throwing like parseTokenId does.
+ */
+export const isTokenIdOfType = <T extends TokenType>(
+  tokenId: unknown,
+  type: T
+): tokenId is TokenId => {
+  if (typeof tokenId !== "string") return false
+  try {
+    // parseTokenId returns undefined (despite its declared type) for unknown token types
+    return parseTokenId(tokenId)?.type === type
+  } catch {
+    return false
+  }
+}
+
+/** Throw-safe: see isTokenIdOfType */
+export const isTokenIdInTypes = <T extends TokenType[]>(
+  tokenId: unknown,
+  types: T
+): tokenId is TokenId => {
+  return types.some((type) => isTokenIdOfType(tokenId, type))
+}
+
 export const networkIdFromTokenId = (tokenId: TokenId): Network["id"] =>
   parseTokenId(tokenId).networkId
 

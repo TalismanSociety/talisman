@@ -1,8 +1,8 @@
 import { COINS_API_URL } from "@common/constants"
 import { log } from "@common/log"
 import {
+  isTokenIdOfType,
   type Network,
-  parseTokenId,
   type TokenId,
   type TokenList,
 } from "@talismn/chaindata-provider"
@@ -262,7 +262,7 @@ export class TokenRatesStore {
       const previous = await firstValueFrom(this.#storage$)
       const previousDTaoRates = Object.fromEntries(
         Object.entries(previous.tokenRates).filter(
-          ([tokenId]) => parseTokenId(tokenId).type === "substrate-dtao" && !tokenRates[tokenId]
+          ([tokenId]) => isTokenIdOfType(tokenId, "substrate-dtao") && !tokenRates[tokenId]
         )
       )
       if (generation !== this.#updateGeneration) return

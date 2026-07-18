@@ -89,7 +89,7 @@ describe("fetchBalances transient failures", () => {
     vi.mocked(fetchRpcQueryPack).mockRejectedValue(new Error("rpc down"))
 
     const token = {
-      id: "bittensor-substrate-dtao-0",
+      id: "bittensor:substrate-dtao:0",
       type: "substrate-dtao",
       platform: "polkadot",
       networkId: "bittensor",
