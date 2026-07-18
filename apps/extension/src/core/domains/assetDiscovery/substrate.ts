@@ -7,7 +7,6 @@ import type { Account } from "@talismn/keyring"
 import { isAccountNotContact } from "@talismn/keyring"
 import { throwAfter } from "@talismn/util"
 import { isEqual } from "lodash-es"
-import PQueue from "p-queue"
 import { combineLatest, delay, filter, first, pairwise } from "rxjs"
 
 import { isWalletReady$ } from "../../libs/isWalletReady"
@@ -15,6 +14,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { keyringStore } from "../keyring/store"
+import { runDiscoveryTask } from "./scheduler"
 import { substrateAssetDiscoveryStore } from "./substrateStore"
 
 // ---------------------------------------------------------------------------
@@ -27,8 +27,16 @@ const RESCAN_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 /** How long (ms) we skip re-probing a network whose last probe failed. */
 const FAILURE_TTL_MS = 24 * 60 * 60 * 1000 // 24h — avoids hammering dead RPCs
 
-/** Per-probe WebSocket timeout. */
+/** Per-RPC WebSocket timeout. */
 const PROBE_TIMEOUT_MS = 15_000
+
+/**
+ * Max total duration of a network probe, across all its RPCs. A probe holds a
+ * slot of the shared discovery queue: without this cap, a network with many
+ * dead RPCs could hold it for RPC count × PROBE_TIMEOUT_MS and stall all
+ * discovery types.
+ */
+const PROBE_TOTAL_TIMEOUT_MS = 30_000
 
 /** Debounce for the "wallet is ready" trigger. */
 const WALLET_READY_DEBOUNCE_MS = 10_000
@@ -236,12 +244,6 @@ type NetworkProbeCandidate = {
 }
 
 /**
- * Enforces concurrency: exactly ONE substrate network is probed at a time,
- * across the entire background page.
- */
-const probeQueue = new PQueue({ concurrency: 1 })
-
-/**
  * Per-network generation counter. Bumped by `clearEntriesForAccounts` when
  * new accounts invalidate cached probe results. `probeAndActivate` captures
  * the generation before probing and only writes the result timestamp if the
@@ -311,6 +313,9 @@ const isFresh = (timestamp: number | undefined): boolean => {
  */
 const pendingProbeResults = new Map<string, { alive: boolean; enqueueGen: number }>()
 let pendingFlushTimer: ReturnType<typeof setTimeout> | null = null
+
+/** Probes not yet settled, across all overlapping discovery runs. */
+let inFlightProbeCount = 0
 
 const schedulePendingFlush = () => {
   if (pendingFlushTimer) return
@@ -393,7 +398,14 @@ const probeAndActivate = async (
   const abortController = new AbortController()
 
   try {
-    const result = await probeNetworkRpcs(network.rpcs, storageKeys, abortController.signal)
+    const probePromise = probeNetworkRpcs(network.rpcs, storageKeys, abortController.signal)
+    // if the total timeout wins the race, the probe is aborted (see finally) and
+    // its late rejection must be observed to avoid an unhandled rejection
+    probePromise.catch(() => {})
+    const result = await Promise.race([
+      probePromise,
+      throwAfter(PROBE_TOTAL_TIMEOUT_MS, "Probe timeout"),
+    ])
 
     const alive = result.changes.some(([, value]) => value !== null && value !== undefined)
     log.debug(
@@ -435,23 +447,27 @@ const discoverSubstrateAssets = async (): Promise<void> => {
       candidates.map((c) => c.network.id)
     )
 
+    // Fire-and-forget: the shared discovery queue caps concurrent RPC work across
+    // all discovery types (evm/substrate/solana) and spaces it out while a UI is open.
+    // The counter is bumped for the whole batch before any probe settles, so
+    // overlapping discovery runs coalesce into a single flush when the last
+    // outstanding probe completes (long queues also flush every
+    // PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
+    inFlightProbeCount += candidates.length
     for (const candidate of candidates) {
       // Capture generation at enqueue time so stale jobs are skipped at dequeue.
       const gen = probeGeneration.get(candidate.network.id) ?? 0
-      // Fire-and-forget: the queue ensures they run one at a time.
-      probeQueue
-        .add(() => probeAndActivate(candidate, gen))
+      runDiscoveryTask(() => probeAndActivate(candidate, gen))
         .catch((err) => {
           log.warn(`[substrateDiscovery] queued probe failed for ${candidate.network.id}`, err)
         })
+        .finally(() => {
+          if (--inFlightProbeCount > 0) return
+          flushPendingProbeResults().catch((err) =>
+            log.error("[substrateDiscovery] Failed to flush after probes settled", err)
+          )
+        })
     }
-
-    // Flush buffered results as soon as the whole queue drains (long queues also
-    // flush every PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
-    probeQueue
-      .onIdle()
-      .then(() => flushPendingProbeResults())
-      .catch((err) => log.error("[substrateDiscovery] Failed to flush after queue idle", err))
   } catch (err) {
     log.error("[substrateDiscovery] Failed to enqueue substrate asset discovery", err)
   }
@@ -555,7 +571,6 @@ export const __internal = {
   getProbeCandidates,
   isFresh,
   probeAndActivate,
-  probeQueue,
   clearEntriesForAccounts,
   pendingProbeResults,
   flushPendingProbeResults,

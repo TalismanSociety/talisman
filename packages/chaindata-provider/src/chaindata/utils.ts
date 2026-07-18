@@ -181,6 +181,27 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
     case "sol-token2022":
       return parseSolToken2022TokenId(tokenId) as TokenIdSpecs<T>
   }
+
+  throw new Error(`Invalid TokenId: ${tokenId}`)
+}
+
+export const isTokenIdOfType = <T extends TokenType>(
+  tokenId: unknown,
+  type: T
+): tokenId is TokenId => {
+  if (typeof tokenId !== "string") return false
+  try {
+    return parseTokenId(tokenId).type === type
+  } catch {
+    return false
+  }
+}
+
+export const isTokenIdInTypes = <T extends TokenType[]>(
+  tokenId: unknown,
+  types: T
+): tokenId is TokenId => {
+  return types.some((type) => isTokenIdOfType(tokenId, type))
 }
 
 export const networkIdFromTokenId = (tokenId: TokenId): Network["id"] =>

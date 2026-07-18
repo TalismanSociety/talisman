@@ -2,7 +2,14 @@ import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { bind } from "@react-rxjs/core"
-import { type Address, Balance, Balances, getBalanceId, type IBalance } from "@talismn/balances"
+import {
+  type Address,
+  Balance,
+  Balances,
+  getBalanceId,
+  type HydrateDb,
+  type IBalance,
+} from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import isEqual from "lodash-es/isEqual"
@@ -108,6 +115,33 @@ const stabilizeBalanceInstances = () => {
 
 const stabilize = stabilizeBalanceInstances()
 
+/**
+ * Reuses the previous `Balances` wrapper when an emission leaves every stabilized
+ * instance and the hydrate untouched — e.g. the background pipeline restarting after an
+ * account add re-streams a content-identical snapshot. Combined with the reference
+ * `distinctUntilChanged` below, such emissions are dropped before they can trigger a
+ * portfolio recompute.
+ */
+const reuseUnchangedBalances = () => {
+  let prev: { balances: Balance[]; hydrate: HydrateDb; wrapper: Balances } | undefined
+
+  return (balances: Balance[], hydrate: HydrateDb): Balances => {
+    if (
+      prev &&
+      prev.hydrate === hydrate &&
+      prev.balances.length === balances.length &&
+      prev.balances.every((b, i) => b === balances[i])
+    )
+      return prev.wrapper
+
+    const wrapper = new Balances(balances, hydrate)
+    prev = { balances, hydrate, wrapper }
+    return wrapper
+  }
+}
+
+const reuseUnchanged = reuseUnchangedBalances()
+
 const allBalances$ = combineLatest([
   getTokensMap$(BALANCES_CHAINDATA_QUERY),
   getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
@@ -125,8 +159,9 @@ const allBalances$ = combineLatest([
 
       return isAccountCompatibleWithNetwork(network, account)
     })
-    return new Balances(stabilize(validBalances), hydrate)
+    return reuseUnchanged(stabilize(validBalances), hydrate)
   }),
+  distinctUntilChanged(),
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
