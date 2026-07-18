@@ -421,11 +421,14 @@ const buildRootClaimableQueries = (
   storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
 ): Array<RpcQueryPack<[string, Map<number, bigint>]>> => {
   return hotkeys.map((hotkey) => {
-    let stateKey: MaybeStateKey = null
+    let stateKey: MaybeStateKey
     try {
       stateKey = storageCoder.keys.enc(hotkey) as MaybeStateKey
     } catch (cause) {
+      // an unencodable key (metadata drift) would make the hotkey's RootClaimable read as an
+      // empty map, erasing its claim-only balances — fail the poll (stale) instead
       log.warn(`Failed to encode storage key for hotkey ${hotkey} on ${networkId}`, { cause })
+      throw cause
     }
 
     const decodeResult = (changes: MaybeStateKey[]): [string, Map<number, bigint>] => {
@@ -487,15 +490,18 @@ const buildRootClaimedQueries = (
   storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
 ): Array<RpcQueryPack<[string, string, number, bigint]>> => {
   return addressHotkeyNetuidPairs.map(([address, hotkey, netuid]) => {
-    let stateKey: MaybeStateKey = null
+    let stateKey: MaybeStateKey
     try {
       // RootClaimed storage takes params: [netuid, hotkey, coldkey_ss58]
       stateKey = storageCoder.keys.enc(netuid, hotkey, address) as MaybeStateKey
     } catch (cause) {
+      // an unencodable key (metadata drift) would read as claimed=0, overstating the pending
+      // claim — fail the poll (stale) instead
       log.warn(
         `Failed to encode storage key for RootClaimed (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
         { cause }
       )
+      throw cause
     }
 
     const decodeResult = (changes: MaybeStateKey[]): [string, string, number, bigint] => {

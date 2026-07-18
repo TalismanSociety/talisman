@@ -184,11 +184,13 @@ const fetchConvictionLockStorageKeys = async (
       try {
         keyPrefix = storageCoder.keys.enc(address)
       } catch (cause) {
+        // an unencodable key prefix (metadata drift) would make the address read as lock-free
+        // and delete its lock-only balances — fail the poll (stale) instead, like decode failures
         log.warn(
           `Failed to encode conviction Lock key prefix (address=${address}) on ${networkId}`,
           { cause }
         )
-        return []
+        throw cause
       }
 
       let stateKeys: `0x${string}`[]
