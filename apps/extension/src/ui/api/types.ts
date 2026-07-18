@@ -106,7 +106,7 @@ export default interface MessageTypes {
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  cancelSignRequest: (id: SigningRequestID<"substrate-sign" | "vrf-sign">) => Promise<boolean>
   approveSign: (
     id: SigningRequestID<"substrate-sign">,
     payload?: SignerPayloadJSON
@@ -122,6 +122,7 @@ export default interface MessageTypes {
     payload?: SignerPayloadJSON
   ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>

@@ -2,15 +2,17 @@ import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { verify as sr25519Verify } from "@scure/sr25519"
+import { vrfVerifySubstrate } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
+import { u8aToHex } from "@talismn/util"
 import { waitFor } from "@testing-library/dom"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
-import { signSubstrate } from "../domains/signing/requests"
+import { signSubstrate, signVrf } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
 import Extension from "./Extension"
@@ -211,6 +213,52 @@ describe("Extension", () => {
       const addressInfo = getSs58AddressInfo(account.address)
       if (!addressInfo.isValid) throw new Error("Invalid address")
       expect(sr25519Verify(signingInput, sigBytes.subarray(1), addressInfo.publicKey)).toBe(true)
+    })
+  })
+
+  describe("vrf signing", () => {
+    beforeEach(async () => {
+      requestStore.clearRequests()
+    })
+
+    const signVrfOnce = async (account: Account, data: `0x${string}`) => {
+      const requestPromise = signVrf(
+        "http://test.com",
+        { payload: { address: account.address, data } },
+        account,
+        {} as chrome.runtime.Port
+      )
+
+      await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
+
+      const request = requestStore.allRequests("vrf-sign")[0]
+      const approveMessage = await messageSender("pri(signing.approveSign.vrf)", {
+        id: request.id,
+      })
+      expect(approveMessage).toEqual(true)
+
+      const { signature } = await requestPromise
+      requestStore.clearRequests()
+      return signature
+    }
+
+    test("signs with a deterministic, verifiable VRF output", async () => {
+      const account = await getAccount()
+      const data = u8aToHex(new TextEncoder().encode("talisman vrf test"))
+
+      const sig1 = await signVrfOnce(account, data)
+      const sig2 = await signVrfOnce(account, data)
+
+      // output(32) || proof(64)
+      expect(sig1.length).toBe(2 + 96 * 2)
+      // the VRF output is deterministic across signatures, the proof is not
+      expect(sig1.slice(0, 66)).toBe(sig2.slice(0, 66))
+
+      const addressInfo = getSs58AddressInfo(account.address)
+      if (!addressInfo.isValid) throw new Error("Invalid address")
+      const sigBytes = Buffer.from(sig1.slice(2), "hex")
+      const msgBytes = Buffer.from(data.slice(2), "hex")
+      expect(vrfVerifySubstrate(addressInfo.publicKey, msgBytes, sigBytes)).toBe(true)
     })
   })
 

@@ -2,7 +2,7 @@ import { verify as sr25519Verify } from "@scure/sr25519"
 import { describe, expect, it } from "vitest"
 
 import { hex } from "../utils"
-import { signSubstrate } from "."
+import { signSubstrate, vrfSignSubstrate, vrfVerifySubstrate } from "."
 
 // polkadot-js KeyringPair.sign parity vectors, generated with @polkadot/keyring 14.0.3.
 // Secret keys are the //Alice (substrate) / hardhat #0 (ethereum) dev keys.
@@ -59,5 +59,47 @@ describe("signSubstrate (polkadot-js parity)", () => {
     const sig = signSubstrate("sr25519", secretKey, MSG_SHORT)
     expect(sig.length).toBe(64)
     expect(sr25519Verify(MSG_SHORT, sig, publicKey)).toBe(true)
+  })
+})
+
+describe("vrfSignSubstrate (schnorrkel parity)", () => {
+  // //Alice substrate dev key
+  const secretKey = hex.decode(
+    "98319d4ff8a9508c4bb0cf0b5a78d760a0b2082c02775e6e82370816fedfff48925a225d97aa00682d6a59b95b18780c10d7032336e88f3442b42361f4a66011"
+  )
+  const publicKey = hex.decode("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d")
+
+  // generated with @polkadot/util-crypto 14.0.3 (wasm schnorrkel) sr25519VrfSign, empty
+  // context/extra. The 32-byte output is deterministic, the 64-byte proof is randomized.
+  const WASM_OUTPUT = "5ebd74106216d6fe7d3f56b52d5bd8a755e2af12bcb2ff7786600856d4ca9d55"
+  const WASM_SIGNATURE =
+    "5ebd74106216d6fe7d3f56b52d5bd8a755e2af12bcb2ff7786600856d4ca9d5519a7ffebfe360361a2183dda7f75638cea8d29cdaeaa4a8650600b8fab4e650eccf24b53c0b17e51c2891eff23e37f5af855ada7dbfe42f601f57149fa572704"
+
+  it("produces the wasm-schnorrkel deterministic output", () => {
+    const sig1 = vrfSignSubstrate(secretKey, MSG_SHORT)
+    const sig2 = vrfSignSubstrate(secretKey, MSG_SHORT)
+    expect(sig1.length).toBe(96)
+    expect(hex.encode(sig1.subarray(0, 32))).toBe(WASM_OUTPUT)
+    // deterministic output, randomized proof
+    expect(hex.encode(sig2.subarray(0, 32))).toBe(WASM_OUTPUT)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig1)).toBe(true)
+  })
+
+  it("verifies a wasm-schnorrkel signature", () => {
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, hex.decode(WASM_SIGNATURE))).toBe(true)
+  })
+
+  it("rejects a signature over a different message", () => {
+    const sig = vrfSignSubstrate(secretKey, MSG_SHORT)
+    expect(vrfVerifySubstrate(publicKey, MSG_LONG, sig)).toBe(false)
+  })
+
+  it("domain-separates by context", () => {
+    const sig = vrfSignSubstrate(secretKey, MSG_SHORT, new TextEncoder().encode("ctx"))
+    expect(hex.encode(sig.subarray(0, 32))).not.toBe(WASM_OUTPUT)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig)).toBe(false)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, new TextEncoder().encode("ctx"))).toBe(
+      true
+    )
   })
 })

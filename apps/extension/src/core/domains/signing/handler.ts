@@ -1,7 +1,7 @@
 import { TEST } from "@common/constants"
-import { encodeAnyAddress, signSubstrate } from "@talismn/crypto"
+import { encodeAnyAddress, signSubstrate, vrfSignSubstrate } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
-import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes } from "@talismn/util"
+import { addTrailingSlash, assert, hexToU8a, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -118,6 +118,44 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
+  private async signingApproveVrf({ id }: KnownSigningRequestIdOnly<"vrf-sign">) {
+    const queued = requestStore.getRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    const { reject, request, resolve, url } = queued
+    const address = encodeAnyAddress(queued.account.address)
+
+    const result = await withSecretKey(address, async (secretKey, curve) => {
+      assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
+
+      const { payload } = request
+      const signature = u8aToHex(
+        vrfSignSubstrate(
+          secretKey,
+          hexToU8a(validateHexString(payload.data)),
+          payload.context ? hexToU8a(validateHexString(payload.context)) : undefined,
+          payload.extra ? hexToU8a(validateHexString(payload.extra)) : undefined
+        )
+      )
+
+      const { ok, val: hostName } = getHostName(url)
+      talismanAnalytics.captureDelayed("vrf sign approve", {
+        dapp: url,
+        hostName: ok ? hostName : undefined,
+        networkType: "substrate",
+      })
+
+      resolve({ id, signature })
+    })
+    if (!result.ok) {
+      if (result.val === "Unauthorised") reject(new Error(result.val))
+      else if (typeof result.val === "string") throw new Error(result.val)
+      else throw result.val
+    }
+    return true
+  }
+
   private async signingApproveExternal({
     id,
     signature,
@@ -183,7 +221,7 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async signingCancel({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
+  private async signingCancel({ id }: KnownSigningRequestIdOnly<"substrate-sign" | "vrf-sign">) {
     /*
      * This method used for both Eth and Polkadot requests
      */
@@ -248,6 +286,9 @@ export default class SigningHandler extends ExtensionHandler {
 
       case "pri(signing.approveSign.signet)":
         return this.signingApproveSignet(request as RequestType<"pri(signing.approveSign.signet)">)
+
+      case "pri(signing.approveSign.vrf)":
+        return await this.signingApproveVrf(request as RequestType<"pri(signing.approveSign.vrf)">)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

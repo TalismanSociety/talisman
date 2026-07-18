@@ -1,7 +1,7 @@
 import { ed25519 } from "@noble/curves/ed25519.js"
 import { secp256k1 } from "@noble/curves/secp256k1.js"
 import { keccak_256 } from "@noble/hashes/sha3.js"
-import { sign as sr25519Sign } from "@scure/sr25519"
+import { sign as sr25519Sign, vrf as sr25519Vrf } from "@scure/sr25519"
 
 import { blake2b256 } from "../hashing"
 import type { KeypairCurve } from "../types"
@@ -49,6 +49,38 @@ export const signSubstrate = (
       throw new Error(`Unsupported curve for substrate signing: ${curve}`)
   }
 }
+
+const EMPTY_BYTES = new Uint8Array()
+
+/**
+ * sr25519 VRF signature, byte-compatible with schnorrkel's `vrf_sign_extra` as exposed by
+ * polkadot-js `sr25519VrfSign` (with an explicit empty default context, where polkadot-js
+ * defaults to `"substrate"`).
+ *
+ * Returns 96 bytes: `output(32) || proof(64)`.
+ *
+ * Unlike regular sr25519 signatures (randomized nonce), the 32-byte VRF *output* is
+ * deterministic for a given (secretKey, context, message, extra) — only the proof embeds
+ * randomness. This is what makes it usable for signature-based key derivation.
+ */
+export const vrfSignSubstrate = (
+  secretKey: Uint8Array,
+  message: Uint8Array,
+  context: Uint8Array = EMPTY_BYTES,
+  extra: Uint8Array = EMPTY_BYTES
+): Uint8Array => sr25519Vrf.sign(message, secretKey, context, extra)
+
+/**
+ * Verifies an sr25519 VRF signature produced by `vrfSignSubstrate` (or any schnorrkel
+ * `vrf_sign_extra` implementation using the same context).
+ */
+export const vrfVerifySubstrate = (
+  publicKey: Uint8Array,
+  message: Uint8Array,
+  signature: Uint8Array,
+  context: Uint8Array = EMPTY_BYTES,
+  extra: Uint8Array = EMPTY_BYTES
+): boolean => sr25519Vrf.verify(message, signature, publicKey, context, extra)
 
 /** MultiSignature enum variant index per signature scheme, used to type-prefix signatures */
 export const SIGNATURE_TYPE_PREFIX: Partial<Record<KeypairCurve, number>> = {

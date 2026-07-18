@@ -9,6 +9,7 @@ import type {
   SolSignRequest,
   SolSignResult,
   SubstrateSigningRequest,
+  VrfSigningRequest,
 } from "./types"
 
 export const signAndSendEth = (
@@ -68,6 +69,23 @@ export const signSubstrate = (
   return requestStore.createRequest(
     {
       type: "substrate-sign",
+      url,
+      request,
+      account,
+    },
+    port
+  )
+}
+
+export const signVrf = (
+  url: string,
+  request: VrfSigningRequest["request"],
+  account: Account,
+  port: Port
+) => {
+  return requestStore.createRequest(
+    {
+      type: "vrf-sign",
       url,
       request,
       account,

@@ -4,6 +4,7 @@ import type {
   EncryptPayload,
   EncryptResult,
 } from "@core/domains/encrypt/types"
+import type { VrfSignPayload, VrfSignResult } from "@core/domains/signing/types"
 import type { SendRequest } from "@core/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@core/types/pjsInterop"
 
@@ -98,6 +99,26 @@ export class TalismanSigner {
   public signRaw = async (payload: SignerPayloadRaw): Promise<SignerResult> => {
     const id = ++nextSignerId
     const result = await this.#sendRequest("pub(bytes.sign)", payload)
+
+    return { ...result, id }
+  }
+
+  /**
+   * Talisman-specific extension to the injected-web3 spec: sr25519 VRF signing
+   * (schnorrkel `vrf_sign_extra`, byte-compatible with polkadot-js `sr25519VrfSign` with an
+   * empty context).
+   *
+   * Returns 96 hex-encoded bytes: `output(32) || proof(64)`. The 32-byte output is
+   * deterministic for a given (account, context, data, extra) — unlike `signRaw`, whose
+   * sr25519 signatures are randomized — which makes it suitable for signature-based key
+   * derivation. The proof is randomized and verifiable against the account's public key.
+   *
+   * Only local sr25519 accounts can VRF-sign; requests for hardware or watch-only accounts
+   * are rejected. Feature-detect with `typeof signer.signVrf === "function"`.
+   */
+  public signVrf = async (payload: VrfSignPayload): Promise<VrfSignResult> => {
+    const id = ++nextSignerId
+    const result = await this.#sendRequest("pub(vrf.sign)", payload)
 
     return { ...result, id }
   }

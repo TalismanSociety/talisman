@@ -21,8 +21,12 @@ import type {
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { requestInjectMetadata } from "../domains/metadata/requests"
-import { signSubstrate } from "../domains/signing/requests"
-import type { SubstrateSignResponse } from "../domains/signing/types"
+import { signSubstrate, signVrf } from "../domains/signing/requests"
+import type {
+  SubstrateSignResponse,
+  VrfSignPayload,
+  VrfSignResponse,
+} from "../domains/signing/types"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
 import type {
   AuthorizedSite,
@@ -168,6 +172,23 @@ export default class Tabs extends TabsHandler {
     if (!account) throw new Error("Account not found")
 
     return signSubstrate(url, { payload: request }, account, port)
+  }
+
+  private async vrfSign(
+    url: string,
+    request: VrfSignPayload,
+    port: Port
+  ): Promise<VrfSignResponse> {
+    const account = await keyringStore.getAccount(request.address)
+    if (!account) throw new Error("Account not found")
+
+    // VRF signing needs the raw sr25519 secret key: hardware/vault/watch-only accounts can't do it
+    assert(
+      account.type === "keypair" && account.curve === "sr25519",
+      "VRF signing requires a local sr25519 account"
+    )
+
+    return signVrf(url, { payload: request }, account, port)
   }
 
   /**
@@ -381,6 +402,10 @@ export default class Tabs extends TabsHandler {
           (request as SignerPayloadJSON).address
         )
         return this.extrinsicSign(url, request as SignerPayloadJSON, port)
+
+      case "pub(vrf.sign)":
+        await this.stores.sites.ensureUrlAuthorized(url, false, (request as VrfSignPayload).address)
+        return this.vrfSign(url, request as VrfSignPayload, port)
 
       case "pub(metadata.list)":
         return this.metadataList()
