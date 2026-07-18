@@ -31,7 +31,12 @@ export const fetchRpcQueryPack = async <T>(
     allStateKeys,
   ])
 
-  return decodeRpcQueryPackChunked(queries, result ? new Map(result.changes) : null, {
+  // a valid state_queryStorageAt response carries one entry per queried block — an empty
+  // response is a bad response, not absent values: decoding it would fabricate "no value"
+  // for every queried key (eg empty RootClaimable maps deleting claim-only balances)
+  if (!result) throw new Error(`Empty state_queryStorageAt response on ${networkId}`)
+
+  return decodeRpcQueryPackChunked(queries, new Map(result.changes), {
     label: `rpcQueryPack decode ${networkId}`,
   })
 }
@@ -104,12 +109,12 @@ export const getRpcQueryPack$ = <T>(
 
 const decodeRpcQueryPackChunked = <T>(
   queries: RpcQueryPack<T>[],
-  changesByKey: ChangesByKey | null,
+  changesByKey: ChangesByKey,
   options?: ChunkedOptions
 ): Promise<T[]> =>
   mapWithYield(
     queries,
     ({ stateKeys, decodeResult }) =>
-      decodeResult(stateKeys.map((stateKey) => (stateKey && changesByKey?.get(stateKey)) ?? null)),
+      decodeResult(stateKeys.map((stateKey) => (stateKey && changesByKey.get(stateKey)) ?? null)),
     options
   )

@@ -173,4 +173,22 @@ describe("fetchRpcQueryPack", () => {
     expect(await fetchRpcQueryPack(connector, "polkadot", queries)).toEqual([","])
     expect(connector.send).not.toHaveBeenCalled()
   })
+
+  it("rejects on an empty state_queryStorageAt response instead of decoding all-null", async () => {
+    // an empty response is a bad response, not absent values: decoding it would fabricate
+    // "no value" for every queried key and downstream deletes the matching balances
+    const { connector } = makeFakeConnector()
+    ;(connector.send as ReturnType<typeof vi.fn>).mockResolvedValueOnce([])
+
+    let decodes = 0
+    const queries = makeQueries(2, (i, value) => {
+      decodes++
+      return `${i}:${value}`
+    })
+
+    await expect(fetchRpcQueryPack(connector, "polkadot", queries)).rejects.toThrow(
+      "Empty state_queryStorageAt response"
+    )
+    expect(decodes).toBe(0)
+  })
 })
