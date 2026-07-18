@@ -110,11 +110,6 @@ const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> =>
         { label: t("Change Password"), to: "/settings/security-privacy-settings/change-password" },
       ],
       "/settings/networks-tokens": [settings, networksAndTokens],
-      "/settings/networks-tokens/asset-discovery": [
-        settings,
-        networksAndTokens,
-        { label: t("Asset Discovery"), to: "/settings/networks-tokens/asset-discovery" },
-      ],
       "/settings/networks-tokens/networks": [
         settings,
         networksAndTokens,
