@@ -159,8 +159,11 @@ export const fetchConvictionLocks = async (
       ]
     })
   } catch (cause) {
+    // propagate instead of returning []: an empty result reads as "no locks", the provider
+    // deletes the stored lock-only balances, and the rows flap back in on the next
+    // successful poll. Throwing fails the whole poll so those balances go stale instead
     log.warn(`Failed to fetch Bittensor conviction locks on ${networkId}`, { cause })
-    return []
+    throw cause
   }
 }
 
@@ -205,10 +208,12 @@ const fetchConvictionLockStorageKeys = async (
           }
         })
       } catch (cause) {
+        // transient RPC failure: swallowing it would make every lock of this address read
+        // as removed for one poll (delete + re-add flap downstream) — fail the poll instead
         log.warn(`Failed to fetch conviction Lock keys (address=${address}) on ${networkId}`, {
           cause,
         })
-        return []
+        throw cause
       }
     })
   )
@@ -276,11 +281,13 @@ const fetchColdkeyLockStates = async (
         )
         return { address, netuid, lockState }
       } catch (cause) {
+        // a null lockState decodes as zero mass + zero conviction and the lock is silently
+        // dropped — transient RPC failures must fail the poll, not erase the lock
         log.warn(
           `Failed to fetch get_coldkey_lock for (netuid=${netuid}, address=${address}) on ${networkId}`,
           { cause }
         )
-        return { address, netuid, lockState: null }
+        throw cause
       }
     })
   )
