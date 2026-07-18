@@ -22,3 +22,21 @@ export const migrateAssetDiscoveryV2: Migration = {
     await appStore.set({ isAssetDiscoveryScanPending: true })
   }),
 }
+
+// purpose of this migration is to strip persisted properties that were removed
+// along with the asset discovery UI (progress + last scan tracking), while
+// preserving scan state (scope, cursors, queue) so pending scans resume
+export const migrateAssetDiscoveryV3: Migration = {
+  forward: new MigrationFunction(async () => {
+    await assetDiscoveryStore.mutate((state) => ({
+      currentScanScope: state.currentScanScope ?? null,
+      currentScanCursors: Object.fromEntries(
+        Object.entries(state.currentScanCursors ?? {}).map(([networkId, { tokenId, address }]) => [
+          networkId,
+          { tokenId, address },
+        ])
+      ),
+      queue: state.queue ?? [],
+    }))
+  }),
+}
