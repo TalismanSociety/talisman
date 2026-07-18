@@ -46,7 +46,7 @@ type TokenRatesStoreData = TokenRatesStorage & {
 
 const blobStore = getBlobStore<TokenRatesStoreData>("tokenRates")
 
-const DEFAULT_TOKEN_RATES: TokenRatesStoreData = { tokenRates: {} }
+const DEFAULT_TOKEN_RATES: TokenRatesStoreData = { tokenRates: {}, dtaoCarriedSince: {} }
 const tokenRates$ = new ReplaySubject<TokenRatesStoreData>(1)
 // persist changes to disk
 tokenRates$
@@ -61,7 +61,13 @@ tokenRates$
 blobStore.get().then(
   (storage) => {
     if (!storage) return tokenRates$.next(DEFAULT_TOKEN_RATES)
-    tokenRates$.next({ ...DEFAULT_TOKEN_RATES, ...storage })
+    // dtaoCarriedSince ?? {}: a blob persisted with the key explicitly undefined must not
+    // clobber the default (see publish for why the key is always materialized)
+    tokenRates$.next({
+      ...DEFAULT_TOKEN_RATES,
+      ...storage,
+      dtaoCarriedSince: storage.dtaoCarriedSince ?? {},
+    })
   },
   (error) => {
     log.error("[tokenRates] failed to load tokenRates store on startup", error)
@@ -308,7 +314,9 @@ export class TokenRatesStore {
     dtaoCarriedSince?: Record<TokenId, number>
   ) {
     Object.values(this.#subscriptions.value).map((cb) => cb({ tokenRates }))
-    this.#storage$.next({ tokenRates, dtaoCarriedSince })
+    // always materialize the stamps key: an undefined-valued key is not isEqual to a missing
+    // one, which would defeat the persistence pipe's dedup right after hydration
+    this.#storage$.next({ tokenRates, dtaoCarriedSince: dtaoCarriedSince ?? {} })
   }
 
   public async subscribe(id: string, port: Port, unsubscribeCallback?: () => void) {
