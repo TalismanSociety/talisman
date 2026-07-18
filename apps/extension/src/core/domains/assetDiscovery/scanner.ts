@@ -35,6 +35,7 @@ import { activeTokensStore } from "../balances/store.activeTokens"
 import type { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
 import { fetchMissingTokens } from "./fetchMissingTokens"
+import { runDiscoveryTask } from "./scheduler"
 import { type AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import type { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
 
@@ -51,13 +52,11 @@ const IGNORED_COINGECKO_IDS = [
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 50
 /**
- * Scan progress (cursors + percent) is persisted at most once per this interval:
- * each store write fans out to storage IPC and to every subscriber (including the
- * UI progress stream), and chunks complete several times per second across
- * concurrent networks. Worst case on service-worker death, the resume cursor is
- * one interval stale and a few chunks get re-checked.
+ * Scan cursors are persisted at most once per this interval: each store write
+ * fans out to storage IPC and to every subscriber. Worst case on service-worker
+ * death, the resume cursor is one interval stale and a few chunks get re-checked.
  */
-const SCAN_STATE_FLUSH_INTERVAL_MS = 1_000
+const SCAN_STATE_FLUSH_INTERVAL_MS = 3_000
 const NETWORK_BALANCES_FETCH_CHUNK_SIZE: Record<string, number> = {
   "1": 200,
 }
@@ -185,7 +184,8 @@ class AssetDiscoveryScanner {
 
   private scanOnUnlock = () => {
     isWalletReady$ // true means user has logged in and migrations are complete (it doesnt mean that they succeded though)
-      .pipe(filter(isTruthy), debounceTime(10_000))
+      // wait out the post-unlock storm (balances resubscribe + rates hydration) before scanning
+      .pipe(filter(isTruthy), debounceTime(60_000))
       .subscribe(async () => {
         try {
           const accounts = await keyringStore.getAccounts()
@@ -440,17 +440,21 @@ class AssetDiscoveryScanner {
               // stop if scan was cancelled
               if (abortController.signal.aborted) return
 
-              const res = await Promise.race([
-                getEvmTokenBalances(
-                  client,
-                  checks.map((c) => ({
-                    token: tokensMap[c.tokenId],
-                    address: c.address as EvmAddress,
-                  })),
-                  erc20aggregators[networkId]
-                ),
-                throwAfter(10_000, "Timeout"),
-              ])
+              // shared discovery queue caps concurrent RPC work across all discovery
+              // types (evm/substrate/solana) and spaces it out while a UI is open
+              const res = await runDiscoveryTask(() =>
+                Promise.race([
+                  getEvmTokenBalances(
+                    client,
+                    checks.map((c) => ({
+                      token: tokensMap[c.tokenId],
+                      address: c.address as EvmAddress,
+                    })),
+                    erc20aggregators[networkId]
+                  ),
+                  throwAfter(10_000, "Timeout"),
+                ])
+              )
 
               // stop if scan was cancelled
               if (abortController.signal.aborted) return

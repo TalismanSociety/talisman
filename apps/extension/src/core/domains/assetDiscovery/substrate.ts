@@ -7,7 +7,6 @@ import type { Account } from "@talismn/keyring"
 import { isAccountNotContact } from "@talismn/keyring"
 import { throwAfter } from "@talismn/util"
 import { isEqual } from "lodash-es"
-import PQueue from "p-queue"
 import { combineLatest, delay, filter, first, pairwise } from "rxjs"
 
 import { isWalletReady$ } from "../../libs/isWalletReady"
@@ -15,6 +14,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { keyringStore } from "../keyring/store"
+import { runDiscoveryTask } from "./scheduler"
 import { substrateAssetDiscoveryStore } from "./substrateStore"
 
 // ---------------------------------------------------------------------------
@@ -30,8 +30,11 @@ const FAILURE_TTL_MS = 24 * 60 * 60 * 1000 // 24h — avoids hammering dead RPCs
 /** Per-probe WebSocket timeout. */
 const PROBE_TIMEOUT_MS = 15_000
 
-/** Debounce for the "wallet is ready" trigger. */
-const WALLET_READY_DEBOUNCE_MS = 10_000
+/**
+ * Debounce for the "wallet is ready" trigger — waits out the post-unlock storm
+ * (balances resubscribe + rates hydration) before probing.
+ */
+const WALLET_READY_DEBOUNCE_MS = 60_000
 
 /**
  * Max time a probe result may sit in the pending buffer before being flushed.
@@ -236,12 +239,6 @@ type NetworkProbeCandidate = {
 }
 
 /**
- * Enforces concurrency: exactly ONE substrate network is probed at a time,
- * across the entire background page.
- */
-const probeQueue = new PQueue({ concurrency: 1 })
-
-/**
  * Per-network generation counter. Bumped by `clearEntriesForAccounts` when
  * new accounts invalidate cached probe results. `probeAndActivate` captures
  * the generation before probing and only writes the result timestamp if the
@@ -435,23 +432,21 @@ const discoverSubstrateAssets = async (): Promise<void> => {
       candidates.map((c) => c.network.id)
     )
 
-    for (const candidate of candidates) {
+    // Fire-and-forget: the shared discovery queue caps concurrent RPC work across
+    // all discovery types (evm/substrate/solana) and spaces it out while a UI is open.
+    const probes = candidates.map((candidate) => {
       // Capture generation at enqueue time so stale jobs are skipped at dequeue.
       const gen = probeGeneration.get(candidate.network.id) ?? 0
-      // Fire-and-forget: the queue ensures they run one at a time.
-      probeQueue
-        .add(() => probeAndActivate(candidate, gen))
-        .catch((err) => {
-          log.warn(`[substrateDiscovery] queued probe failed for ${candidate.network.id}`, err)
-        })
-    }
+      return runDiscoveryTask(() => probeAndActivate(candidate, gen)).catch((err) => {
+        log.warn(`[substrateDiscovery] queued probe failed for ${candidate.network.id}`, err)
+      })
+    })
 
-    // Flush buffered results as soon as the whole queue drains (long queues also
-    // flush every PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
-    probeQueue
-      .onIdle()
+    // Flush buffered results as soon as this batch of probes settles (long queues
+    // also flush every PENDING_FLUSH_MAX_DELAY_MS, see schedulePendingFlush).
+    Promise.allSettled(probes)
       .then(() => flushPendingProbeResults())
-      .catch((err) => log.error("[substrateDiscovery] Failed to flush after queue idle", err))
+      .catch((err) => log.error("[substrateDiscovery] Failed to flush after probes settled", err))
   } catch (err) {
     log.error("[substrateDiscovery] Failed to enqueue substrate asset discovery", err)
   }
@@ -555,7 +550,6 @@ export const __internal = {
   getProbeCandidates,
   isFresh,
   probeAndActivate,
-  probeQueue,
   clearEntriesForAccounts,
   pendingProbeResults,
   flushPendingProbeResults,

@@ -10,7 +10,16 @@ import {
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
 import { isEqual, uniq } from "lodash-es"
-import { combineLatest, distinctUntilChanged, filter, first, map, pairwise, switchMap } from "rxjs"
+import {
+  combineLatest,
+  delay,
+  distinctUntilChanged,
+  filter,
+  first,
+  map,
+  pairwise,
+  switchMap,
+} from "rxjs"
 
 import { isWalletReady$ } from "../../libs/isWalletReady"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
@@ -19,8 +28,15 @@ import { balancesProvider } from "../balances/balancesProvider"
 import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
+import { runDiscoveryTask } from "./scheduler"
 
 const MAINNET_NETWORK_ID = "solana-mainnet"
+
+/**
+ * Delay for the initial wallet-ready scan — waits out the post-unlock storm
+ * (balances resubscribe + rates hydration) before scanning.
+ */
+const WALLET_READY_DELAY_MS = 60_000
 const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 
@@ -41,10 +57,12 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
   const knownSplTokenIds = await chaindataProvider.getTokenIds("sol-spl")
   const knownToken2022Ids = await chaindataProvider.getTokenIds("sol-token2022")
 
+  // shared discovery queue caps concurrent RPC work across all discovery
+  // types (evm/substrate/solana) and spaces it out while a UI is open
   const results = await Promise.all(
     addresses.flatMap((address) => [
-      getSplTokenIdsForOwner(rpc, address),
-      getToken2022IdsForOwner(rpc, address),
+      runDiscoveryTask(() => getSplTokenIdsForOwner(rpc, address)),
+      runDiscoveryTask(() => getToken2022IdsForOwner(rpc, address)),
     ])
   )
 
@@ -105,7 +123,8 @@ export const initialiseSolanaAssetDiscovery = () => {
   isWalletReady$
     .pipe(
       filter((ready) => ready),
-      first()
+      first(),
+      delay(WALLET_READY_DELAY_MS)
     )
     .subscribe(() => {
       log.debug("[discoverSolanaAssets] wallet is ready, launching scan")
