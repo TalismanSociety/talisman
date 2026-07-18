@@ -421,11 +421,14 @@ const buildRootClaimableQueries = (
   storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
 ): Array<RpcQueryPack<[string, Map<number, bigint>]>> => {
   return hotkeys.map((hotkey) => {
-    let stateKey: MaybeStateKey = null
+    let stateKey: MaybeStateKey
     try {
       stateKey = storageCoder.keys.enc(hotkey) as MaybeStateKey
     } catch (cause) {
+      // an unencodable key (metadata drift) would make the hotkey's RootClaimable read as an
+      // empty map, erasing its claim-only balances — fail the poll (stale) instead
       log.warn(`Failed to encode storage key for hotkey ${hotkey} on ${networkId}`, { cause })
+      throw cause
     }
 
     const decodeResult = (changes: MaybeStateKey[]): [string, Map<number, bigint>] => {
@@ -439,7 +442,11 @@ const buildRootClaimableQueries = (
         hexValue,
         `Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`
       )
-      return [hotkey, decoded ? new Map(decoded) : new Map<number, bigint>()]
+      // a present-but-undecodable value is a bad response, not an absent entry: an empty
+      // map here would erase the hotkey's claim-only balances for this poll
+      if (decoded === null)
+        throw new Error(`Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`)
+      return [hotkey, new Map(decoded)]
     }
 
     return {
@@ -469,9 +476,11 @@ const fetchRootClaimableRates = async (
     const results = await fetchRpcQueryPack(connector, networkId, queries)
     return new Map(results)
   } catch (cause) {
+    // empty rates would make claim-only balances (zero direct stake) read as non-existent
+    // for this poll — the provider would delete them and they'd flap back in on the next
+    // one. Transient fetch failures must fail the poll (balances go stale) instead
     log.warn(`Failed to fetch RootClaimable for hotkeys on ${networkId}`, { cause })
-    // Fallback: return empty map for all hotkeys
-    return new Map(hotkeys.map((hotkey) => [hotkey, new Map<number, bigint>()]))
+    throw cause
   }
 }
 
@@ -481,15 +490,18 @@ const buildRootClaimedQueries = (
   storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
 ): Array<RpcQueryPack<[string, string, number, bigint]>> => {
   return addressHotkeyNetuidPairs.map(([address, hotkey, netuid]) => {
-    let stateKey: MaybeStateKey = null
+    let stateKey: MaybeStateKey
     try {
       // RootClaimed storage takes params: [netuid, hotkey, coldkey_ss58]
       stateKey = storageCoder.keys.enc(netuid, hotkey, address) as MaybeStateKey
     } catch (cause) {
+      // an unencodable key (metadata drift) would read as claimed=0, overstating the pending
+      // claim — fail the poll (stale) instead
       log.warn(
         `Failed to encode storage key for RootClaimed (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
         { cause }
       )
+      throw cause
     }
 
     const decodeResult = (changes: MaybeStateKey[]): [string, string, number, bigint] => {
@@ -503,7 +515,12 @@ const buildRootClaimedQueries = (
         hexValue,
         `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`
       )
-      return [address, hotkey, netuid, decoded ?? 0n]
+      // present-but-undecodable: claimed=0 would overstate the pending claim — fail the poll
+      if (decoded === null)
+        throw new Error(
+          `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`
+        )
+      return [address, hotkey, netuid, decoded]
     }
 
     return {
@@ -550,17 +567,11 @@ const fetchRootClaimedAmounts = async (
     }
     return result
   } catch (cause) {
+    // claimed=0 fallback overstates every pending root claim for this poll (claimable
+    // minus claimed) — transient fetch failures must fail the poll, not fabricate values
     log.warn(`Failed to fetch RootClaimed for address-hotkey-netuid pairs on ${networkId}`, {
       cause,
     })
-    // Fallback: return empty map for all pairs
-    const result = new Map<string, Map<string, Map<number, bigint>>>()
-    for (const [address, hotkey, netuid] of addressHotkeyNetuidPairs) {
-      if (!result.has(address)) result.set(address, new Map())
-      const addressMap = result.get(address)!
-      if (!addressMap.has(hotkey)) addressMap.set(hotkey, new Map())
-      addressMap.get(hotkey)!.set(netuid, 0n)
-    }
-    return result
+    throw cause
   }
 }
