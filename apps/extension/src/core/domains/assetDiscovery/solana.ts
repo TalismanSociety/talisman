@@ -62,11 +62,13 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
   const knownToken2022Ids = await chaindataProvider.getTokenIds("sol-token2022")
 
   // shared discovery queue caps concurrent RPC work across all discovery
-  // types (evm/substrate/solana) and spaces it out while a UI is open
+  // types (evm/substrate/solana) and spaces it out while a UI is open.
+  // high priority: this scan must run first on startup, ahead of the
+  // (potentially numerous, slow) substrate probes sharing the queue
   const results = await Promise.all(
     addresses.flatMap((address) => [
-      runDiscoveryTask(() => getSplTokenIdsForOwner(rpc, address)),
-      runDiscoveryTask(() => getToken2022IdsForOwner(rpc, address)),
+      runDiscoveryTask(() => getSplTokenIdsForOwner(rpc, address), { priority: 1 }),
+      runDiscoveryTask(() => getToken2022IdsForOwner(rpc, address), { priority: 1 }),
     ])
   )
 

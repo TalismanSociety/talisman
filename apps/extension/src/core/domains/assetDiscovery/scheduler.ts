@@ -22,8 +22,18 @@ isUiOpen$.subscribe((isOpen) => {
   discoveryQueue.concurrency = isOpen ? CONCURRENCY_UI_OPEN : CONCURRENCY_UI_CLOSED
 })
 
-/** Runs a unit of discovery work through the shared queue, with an adaptive breathing gap */
-export const runDiscoveryTask = <T>(fn: () => Promise<T>): Promise<T> =>
+/**
+ * Runs a unit of discovery work through the shared queue, with an adaptive breathing gap.
+ *
+ * Tasks with a higher `priority` jump ahead of pending lower-priority ones,
+ * regardless of enqueue order (running tasks are never preempted). Used by the
+ * solana lookups, which must run as soon as possible on startup while the
+ * (potentially numerous) substrate probes can wait.
+ */
+export const runDiscoveryTask = <T>(
+  fn: () => Promise<T>,
+  { priority = 0 }: { priority?: number } = {}
+): Promise<T> =>
   discoveryQueue.add(
     async () => {
       // gap mode is read at execution time, not enqueue time, so an in-flight
@@ -33,5 +43,5 @@ export const runDiscoveryTask = <T>(fn: () => Promise<T>): Promise<T> =>
     },
     // no timeout is set on the queue: throwOnTimeout only narrows the return
     // type from Promise<T | void> to Promise<T>
-    { throwOnTimeout: true }
+    { throwOnTimeout: true, priority }
   )
