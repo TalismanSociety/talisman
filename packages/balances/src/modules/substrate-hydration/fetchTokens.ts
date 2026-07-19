@@ -1,15 +1,16 @@
+import { Binary } from "@polkadot-api/substrate-bindings"
 import {
   type AnyMiniMetadata,
   type SubHydrationToken,
   SubHydrationTokenSchema,
   subHydrationTokenId,
 } from "@talismn/chaindata-provider"
-import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
+import { getStorageKeyPrefix } from "@talismn/scale"
 import { assign, keyBy } from "lodash-es"
-import { Binary } from "polkadot-api"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import type { QueryStorageResult } from "../shared"
+import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { MODULE_TYPE, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -21,7 +22,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 
-  const { builder } = parseMetadataRpc(anyMiniMetadata.data)
+  const { builder } = parseMetadataRpcCached(anyMiniMetadata.data)
   const assetsCodec = builder.buildStorage("AssetRegistry", "Assets")
 
   const allAssetStorageKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [

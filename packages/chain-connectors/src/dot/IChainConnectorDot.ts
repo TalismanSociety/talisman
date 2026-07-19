@@ -1,9 +1,10 @@
-import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 
-export interface IChainConnectorDot {
-  asProvider(chainId: DotNetworkId): ProviderInterface
+/** Callback signature for RPC subscriptions (error-first, matches the legacy polkadot-js ProviderInterfaceCallback) */
+// biome-ignore lint/suspicious/noExplicitAny: legacy
+export type SubscriptionCallback = (error: Error | null, result: any) => void
 
+export interface IChainConnectorDot {
   send<T = unknown>(
     chainId: DotNetworkId,
     method: string,
@@ -19,7 +20,7 @@ export interface IChainConnectorDot {
     subscribeMethod: string,
     responseMethod: string,
     params: unknown[],
-    callback: ProviderInterfaceCallback,
+    callback: SubscriptionCallback,
     timeout?: number | false
   ): Promise<(unsubscribeMethod: string) => void>
 

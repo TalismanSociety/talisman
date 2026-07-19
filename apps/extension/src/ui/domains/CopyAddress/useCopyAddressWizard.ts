@@ -3,7 +3,6 @@ import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   type DotNetwork,
   type DotNetworkId,
@@ -13,7 +12,13 @@ import {
   type NetworkList,
   type Token,
 } from "@talismn/chaindata-provider"
-import { encodeAddressSs58, isAddressEqual, isSs58Address, normalizeAddress } from "@talismn/crypto"
+import {
+  encodeAddressSs58,
+  isAddressEqual,
+  isEthereumAddress,
+  isSs58Address,
+  normalizeAddress,
+} from "@talismn/crypto"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import {
   useNetworkByGenesisHash,

@@ -1,8 +1,6 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import { assert } from "@polkadot/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   type EthNetwork,
   type EvmErc20Token,
@@ -10,8 +8,8 @@ import {
   evmErc20TokenId,
   evmNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { normalizeAddress } from "@talismn/crypto"
-import { throwAfter } from "@talismn/util"
+import { isEthereumAddress, normalizeAddress } from "@talismn/crypto"
+import { assert, throwAfter } from "@talismn/util"
 import i18next from "i18next"
 import {
   createClient,
@@ -48,14 +46,15 @@ import type {
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
 import {
+  ETH_ERROR_EIP1193_CHAIN_DISCONNECTED,
+  ETH_ERROR_EIP1193_DISCONNECTED,
+  ETH_ERROR_EIP1193_UNAUTHORIZED,
+  ETH_ERROR_EIP1193_UNSUPPORTED_METHOD,
+  ETH_ERROR_EIP1193_USER_REJECTED,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
-  ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
-  ETH_ERROR_EIP1993_DISCONNECTED,
-  ETH_ERROR_EIP1993_UNAUTHORIZED,
-  ETH_ERROR_EIP1993_USER_REJECTED,
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
 } from "./EthProviderRpcError"
@@ -63,6 +62,7 @@ import { getEvmErrorCause } from "./errors"
 import {
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
+  isValidRevokedPermissions,
   isValidWatchAssetRequestParam,
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
@@ -84,15 +84,31 @@ interface EthAuthorizedSite extends AuthorizedSite {
   ethAddresses: AuthorizedSiteAddresses
 }
 
-export class EthTabsHandler extends TabsHandler {
-  private async checkAccountAuthorised(url: string, address?: string) {
-    try {
-      await this.stores.sites.ensureUrlAuthorized(url, true, address)
-    } catch {
-      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
-    }
-  }
+// methods that a wallet could handle but that Talisman deliberately does not support.
+// must be rejected with EIP-1193 error 4200 (Unsupported Method) instead of being proxied to an RPC node
+const UNSUPPORTED_METHOD_MESSAGES: Record<string, string> = {
+  // signs arbitrary hashes (blind signing), unsafe - removed by most wallets
+  eth_sign:
+    "eth_sign is disabled for security reasons, use personal_sign or eth_signTypedData_v4 instead",
+  // EIP-1024 encryption, abandoned proposal
+  eth_decrypt: "The method eth_decrypt is not supported",
+  eth_getEncryptionPublicKey: "The method eth_getEncryptionPublicKey is not supported",
+  eth_signTransaction: "The method eth_signTransaction is not supported",
+  // EIP-5792
+  wallet_sendCalls: "The method wallet_sendCalls is not supported",
+  wallet_getCallsStatus: "The method wallet_getCallsStatus is not supported",
+  wallet_showCallsStatus: "The method wallet_showCallsStatus is not supported",
+  wallet_getCapabilities: "The method wallet_getCapabilities is not supported",
+  // ERC-7715
+  wallet_grantPermissions: "The method wallet_grantPermissions is not supported",
+  // ERC-7811
+  wallet_getAssets: "The method wallet_getAssets is not supported",
+  // subscriptions require a persistent connection to a node
+  eth_subscribe: "The method eth_subscribe is not supported",
+  eth_unsubscribe: "The method eth_unsubscribe is not supported",
+}
 
+export class EthTabsHandler extends TabsHandler {
   private async getSiteDetails(
     url: string,
     authorisedAddress?: string
@@ -109,7 +125,7 @@ export class EthTabsHandler extends TabsHandler {
       !site?.ethChainId ||
       (authorisedAddress && !site.ethAddresses?.includes(normalizeAddress(authorisedAddress)))
     )
-      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
+      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1193_UNAUTHORIZED)
     return site as EthAuthorizedSite
   }
 
@@ -121,13 +137,13 @@ export class EthTabsHandler extends TabsHandler {
       "ethereum"
     )
     if (!ethereumNetwork)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
 
     const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(ethereumNetwork.id)
     if (!provider)
       throw new EthProviderRpcError(
         `No provider for network ${ethereumNetwork.id} (${ethereumNetwork.name})`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+        ETH_ERROR_EIP1193_CHAIN_DISCONNECTED
       )
 
     return provider
@@ -136,7 +152,8 @@ export class EthTabsHandler extends TabsHandler {
   private async authoriseEth(
     url: string,
     request: RequestAuthorizeTab,
-    port: Port
+    port: Port,
+    force = false
   ): Promise<boolean> {
     // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let siteFromUrl
@@ -145,11 +162,10 @@ export class EthTabsHandler extends TabsHandler {
     } catch {
       return false
     }
-    if (siteFromUrl?.ethAddresses) {
-      if (siteFromUrl.ethAddresses.length)
-        return true //already authorized
-      else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected : 4100	Unauthorized
-    }
+
+    // already authorized => no prompt, unless the dapp explicitly asks for the account selection view
+    // note: an empty ethAddresses array (disconnected/revoked site) must re-prompt, as dapps have no other way to reconnect
+    if (!force && siteFromUrl?.ethAddresses?.length) return true
 
     try {
       await requestAuthoriseSite(url, request, port)
@@ -161,7 +177,7 @@ export class EthTabsHandler extends TabsHandler {
         throw new EthProviderRpcError(error.message, ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE)
 
       // 4001	User Rejected Request	The user rejected the request.
-      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
+      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
     }
   }
 
@@ -178,6 +194,8 @@ export class EthTabsHandler extends TabsHandler {
     // case is used for checksum when validating user input addresses : https://eips.ethereum.org/EIPS/eip-55
     // signature checks methods return lowercase addresses too and are compared to addresses returned by provider
     // => we have to return addresses as lowercase too
+    const connectedAddresses = (site.ethAddresses ?? []).map((address) => address.toLowerCase())
+
     return (
       getPublicAccounts(
         await keyringStore.getAccounts(),
@@ -190,6 +208,8 @@ export class EthTabsHandler extends TabsHandler {
         .filter(({ type }) => type === "ethereum")
         // send as
         .map(({ address }) => getAddress(address).toLowerCase())
+        // preserve the user-defined order, first entry is the site's primary (active) account
+        .sort((a, b) => connectedAddresses.indexOf(a) - connectedAddresses.indexOf(b))
     )
   }
 
@@ -215,8 +235,6 @@ export class EthTabsHandler extends TabsHandler {
       }
     }
 
-    // TODO use same behavior as in the accountsList method above (observe keyring and settings too, to check accounts still exist, and filter watched accounts based on developerMode setting)
-
     const init = () =>
       this.stores.sites
         .getSiteFromUrl(url)
@@ -226,7 +244,8 @@ export class EthTabsHandler extends TabsHandler {
             siteId = site.id
             if (site.ethChainId && site.ethAddresses?.length) {
               chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
-              accounts = site.ethAddresses ?? []
+              // use accountsList to get the same filtering, casing and ordering as eth_accounts
+              accounts = await this.accountsList(url)
 
               // check that the network is still registered before broadcasting
               connected = !!accounts.length
@@ -261,8 +280,8 @@ export class EthTabsHandler extends TabsHandler {
       try {
         // new state for this dapp
         chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
-        //TODO check eth addresses still exist
-        accounts = site?.ethAddresses ?? []
+        // use accountsList to get the same filtering, casing and ordering as eth_accounts
+        accounts = site?.ethAddresses?.length ? await this.accountsList(url) : []
         connected = !!accounts.length
 
         if (typeof siteId === "undefined") {
@@ -271,13 +290,16 @@ export class EthTabsHandler extends TabsHandler {
         }
 
         // compare old and new state and emit corresponding events
-        if (prevConnected && !connected)
+        if (prevConnected && !connected) {
+          // dapp libraries typically watch accountsChanged (with an empty array) to detect disconnection
+          sendToClient({ type: "accountsChanged", data: [] })
           sendToClient({
             type: "disconnect",
             data: {
-              code: chainId ? ETH_ERROR_EIP1993_CHAIN_DISCONNECTED : ETH_ERROR_EIP1993_DISCONNECTED,
+              code: chainId ? ETH_ERROR_EIP1193_CHAIN_DISCONNECTED : ETH_ERROR_EIP1193_DISCONNECTED,
             },
           })
+        }
 
         if (!prevConnected && connected) {
           sendToClient({ type: "connect", data: { chainId } })
@@ -286,10 +308,7 @@ export class EthTabsHandler extends TabsHandler {
         }
 
         if (connected && chainId && prevAccounts?.join() !== accounts.join()) {
-          sendToClient({
-            type: "accountsChanged",
-            data: accounts.map((ac) => getAddress(ac).toLowerCase()),
-          })
+          sendToClient({ type: "accountsChanged", data: accounts })
         }
       } catch (err) {
         // biome-ignore lint/suspicious/noConsole: legacy
@@ -442,7 +461,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError(
         `Failed to connect to network ${ethChainId}`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+        ETH_ERROR_EIP1193_CHAIN_DISCONNECTED
       )
 
     const { err, val } = urlToDomain(url)
@@ -514,15 +533,15 @@ export class EthTabsHandler extends TabsHandler {
     const message =
       typeof uncheckedMessage === "string" ? uncheckedMessage : JSON.stringify(uncheckedMessage)
 
+    // throws if `from` is not one of the accounts connected to the site
     const site = await this.getSiteDetails(url, from)
 
-    const address = site.ethAddresses[0]
-    const account = await keyringStore.getAccount(address)
+    const account = await keyringStore.getAccount(from)
 
-    if (!address || !account || getAddress(address) !== getAddress(from)) {
+    if (!account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
-        ETH_ERROR_EIP1993_UNAUTHORIZED
+        ETH_ERROR_EIP1193_UNAUTHORIZED
       )
     }
 
@@ -537,85 +556,84 @@ export class EthTabsHandler extends TabsHandler {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const processRequest = async () => {
-      try {
-        const {
-          options: { symbol, address, decimals, image },
-        } = await sanitizeWatchAssetRequestParam(request.params)
+    const {
+      options: { symbol, address, decimals, image },
+    } = await sanitizeWatchAssetRequestParam(request.params)
 
-        const ethChainId = await this.getChainId(url)
-        if (typeof ethChainId !== "number")
-          throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+    const ethChainId = await this.getChainId(url)
+    if (typeof ethChainId !== "number")
+      throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
 
-        const tokenId = evmErc20TokenId(ethChainId.toString(), address as `0x${string}`)
-        const existing = await chaindataProvider.getTokenById(tokenId)
-        if (existing && isTokenActive(existing, await activeTokensStore.get()))
-          throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    const tokenId = evmErc20TokenId(ethChainId.toString(), address as `0x${string}`)
+    const existing = await chaindataProvider.getTokenById(tokenId)
+    // consider the request successful if the token is already tracked, aligns with other wallets
+    if (existing && isTokenActive(existing, await activeTokensStore.get())) return true
 
-        const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId.toString())
-        if (!client)
-          throw new EthProviderRpcError(
-            "Network not supported",
-            ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
-          )
+    const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId.toString())
+    if (!client)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
 
-        try {
-          // biome-ignore lint/correctness/noInnerDeclarations: legacy
-          var tokenInfo = await getErc20TokenInfo(client, ethChainId.toString(), address as Hex)
-        } catch {
-          throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
-        }
-
-        const allTokens = await chaindataProvider.getTokens()
-        const symbolFound = allTokens.some(
-          (token) =>
-            token.type === "evm-erc20" &&
-            token.networkId === ethChainId.toString() &&
-            token.symbol === symbol &&
-            token.contractAddress.toLowerCase() !== address.toLowerCase()
-        )
-
-        const warnings: string[] = []
-        if (!tokenInfo) {
-          warnings.push(i18next.t("Failed to verify the contract information"))
-        } else {
-          if (tokenInfo.symbol !== symbol)
-            warnings.push(
-              i18next.t(
-                "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
-                { symbol, contractSymbol: tokenInfo.symbol }
-              )
-            )
-          if (!tokenInfo.coingeckoId)
-            warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
-        }
-        if (symbolFound)
-          warnings.push(
-            i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
-          )
-
-        const token: EvmErc20Token = {
-          id: tokenId,
-          type: "evm-erc20",
-          platform: "ethereum",
-          symbol: symbol ?? tokenInfo.symbol,
-          decimals: decimals ?? tokenInfo.decimals,
-          name: tokenInfo.name ?? symbol ?? tokenInfo.symbol,
-          logo: image ?? tokenInfo.logo,
-          coingeckoId: tokenInfo.coingeckoId,
-          contractAddress: address as `0x${string}`,
-          networkId: tokenInfo.networkId,
-        }
-
-        await requestWatchAsset(url, request.params, token, warnings, port)
-      } catch (err) {
-        log.error("Failed to add watch asset", { err })
-      }
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
+    let tokenInfo
+    try {
+      tokenInfo = await getErc20TokenInfo(client, ethChainId.toString(), address as Hex)
+    } catch {
+      throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
     }
 
-    // process request asynchronously to prevent dapp from knowing if user accepts or rejects
-    // see https://eips.ethereum.org/EIPS/eip-747
-    processRequest()
+    const allTokens = await chaindataProvider.getTokens()
+    const symbolFound = allTokens.some(
+      (token) =>
+        token.type === "evm-erc20" &&
+        token.networkId === ethChainId.toString() &&
+        token.symbol === symbol &&
+        token.contractAddress.toLowerCase() !== address.toLowerCase()
+    )
+
+    const warnings: string[] = []
+    if (!tokenInfo) {
+      warnings.push(i18next.t("Failed to verify the contract information"))
+    } else {
+      if (tokenInfo.symbol !== symbol)
+        warnings.push(
+          i18next.t(
+            "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
+            { symbol, contractSymbol: tokenInfo.symbol }
+          )
+        )
+      if (!tokenInfo.coingeckoId)
+        warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
+    }
+    if (symbolFound)
+      warnings.push(
+        i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
+      )
+
+    const token: EvmErc20Token = {
+      id: tokenId,
+      type: "evm-erc20",
+      platform: "ethereum",
+      symbol: symbol ?? tokenInfo.symbol,
+      decimals: decimals ?? tokenInfo.decimals,
+      name: tokenInfo.name ?? symbol ?? tokenInfo.symbol,
+      logo: image ?? tokenInfo.logo,
+      coingeckoId: tokenInfo.coingeckoId,
+      contractAddress: address as `0x${string}`,
+      networkId: tokenInfo.networkId,
+    }
+
+    // per EIP-747, resolve true once the user approved the request, throw 4001 otherwise
+    try {
+      await requestWatchAsset(url, request.params, token, warnings, port)
+    } catch (err) {
+      if (err instanceof EthProviderRpcError) throw err // 4001, thrown by the cancel handler
+      const message = (err as Error)?.message
+      if (message?.includes("already exists"))
+        throw new EthProviderRpcError(message, ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE)
+      log.error("Failed to add watch asset", { err })
+      // popup closed or port disconnected
+      throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
+    }
 
     return true
   }
@@ -626,6 +644,32 @@ export class EthTabsHandler extends TabsHandler {
     port: Port
   ) {
     const site = await this.getSiteDetails(url, txRequest.from)
+
+    {
+      // reject unsupported transaction types & fields instead of silently dropping them,
+      // signing a rewritten transaction would not match the dapp's intent
+      const { type, authorizationList, blobs, blobVersionedHashes, maxFeePerBlobGas } =
+        txRequest as unknown as Record<string, unknown>
+      if (authorizationList !== undefined)
+        throw new EthProviderRpcError(
+          "EIP-7702 transactions are not supported",
+          ETH_ERROR_EIP1474_INVALID_PARAMS
+        )
+      if (
+        blobs !== undefined ||
+        blobVersionedHashes !== undefined ||
+        maxFeePerBlobGas !== undefined
+      )
+        throw new EthProviderRpcError(
+          "EIP-4844 blob transactions are not supported",
+          ETH_ERROR_EIP1474_INVALID_PARAMS
+        )
+      if (isHex(type) && hexToNumber(type) >= 3)
+        throw new EthProviderRpcError(
+          `Unsupported transaction type ${type}`,
+          ETH_ERROR_EIP1474_INVALID_PARAMS
+        )
+    }
 
     {
       // eventhough not standard, some transactions specify a chainId in the request
@@ -644,21 +688,19 @@ export class EthTabsHandler extends TabsHandler {
       // ensure that we have a valid provider for the current network
       await this.getPublicClient(url, txRequest.from)
     } catch {
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1193_CHAIN_DISCONNECTED)
     }
 
-    const address = site.ethAddresses[0]
-
-    // allow only the currently selected account in "from" field
-    if (txRequest.from?.toLowerCase() !== address.toLowerCase())
+    // "from" account must be one of the accounts connected to the site (validated by getSiteDetails above)
+    if (!txRequest.from)
       throw new EthProviderRpcError("Invalid from account", ETH_ERROR_EIP1474_INVALID_INPUT)
 
-    const account = await keyringStore.getAccount(address)
+    const account = await keyringStore.getAccount(txRequest.from)
 
-    if (!address || !account) {
+    if (!account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
-        ETH_ERROR_EIP1993_UNAUTHORIZED
+        ETH_ERROR_EIP1193_UNAUTHORIZED
       )
     }
 
@@ -675,19 +717,49 @@ export class EthTabsHandler extends TabsHandler {
       // no-op
     }
 
-    return site?.ethPermissions
-      ? Object.entries(site.ethPermissions).reduce<Web3WalletPermission[]>(
-          (permissions, [parentCapability, otherProps]) =>
-            permissions.concat({ parentCapability, ...otherProps } as Web3WalletPermission),
-          []
-        )
-      : []
+    if (!site) return []
+
+    const permissions: Web3WalletPermission[] = []
+
+    // derive eth_accounts permission from the site's connected accounts rather than from the stored permissions,
+    // as accounts may be connected/disconnected from the wallet UI without any dapp interaction.
+    // the stored record only provides the grant metadata (id & date), it may be missing for sites connected via the wallet UI.
+    const accounts = await this.accountsList(url)
+    if (accounts.length) {
+      let grant = site.ethPermissions?.eth_accounts
+      if (!grant?.id || !grant.date) {
+        // self-heal sites connected via the wallet UI so id & date remain stable across calls
+        grant = { id: grant?.id ?? crypto.randomUUID(), date: grant?.date ?? Date.now() }
+        await this.stores.sites.updateSite(site.id, {
+          ethPermissions: { ...(site.ethPermissions ?? {}), eth_accounts: grant },
+        })
+      }
+      // guard against a legacy/corrupt stored url : eth_requestAccounts ends in getPermissions,
+      // an unhandled throw here would break connect for that site
+      let invoker = site.url
+      try {
+        invoker = new URL(site.url).origin
+      } catch {
+        // keep the raw stored url as fallback
+      }
+      permissions.push({
+        id: grant.id,
+        parentCapability: "eth_accounts",
+        invoker,
+        date: grant.date,
+        // some dapps read the list of permitted accounts from this caveat
+        caveats: [{ type: "restrictReturnedAccounts", value: accounts }],
+      })
+    }
+
+    return permissions
   }
 
   private async requestPermissions(
     url: string,
     request: EthRequestArguments<"wallet_requestPermissions">,
-    port: Port
+    port: Port,
+    force = false
   ): Promise<EthRequestResult<"wallet_requestPermissions">> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
@@ -710,17 +782,23 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     const existingPerms = site?.ethPermissions ?? ({} as EthWalletPermissions)
-    const missingPerms = Object.keys(requestedPerms)
-      .map((perm) => perm as Web3WalletPermissionTarget)
-      .filter((perm) => !existingPerms[perm])
+    const requestedTargets = Object.keys(requestedPerms).map(
+      (perm) => perm as Web3WalletPermissionTarget
+    )
+    const missingPerms = requestedTargets.filter((perm) => !existingPerms[perm])
 
     // request all missing permissions to the user
     // for now we only support eth_accounts, which we consider granted when user authenticates
+    // when force is set, always prompt : dapps call wallet_requestPermissions to display the account selection view
     // @dev: cannot proceed with a loop here as order may have some importance, and we may want to group multiple permissions in a single request
     const grantedPermissions: Partial<EthWalletPermissions> = {}
-    if (missingPerms.includes("eth_accounts")) {
-      await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port)
-      grantedPermissions.eth_accounts = { date: Date.now() }
+    if (
+      requestedTargets.includes("eth_accounts") &&
+      (force || missingPerms.includes("eth_accounts"))
+    ) {
+      await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port, force)
+      if (missingPerms.includes("eth_accounts"))
+        grantedPermissions.eth_accounts = { id: crypto.randomUUID(), date: Date.now() }
     }
 
     // if any, store missing permissions
@@ -728,7 +806,7 @@ export class EthTabsHandler extends TabsHandler {
       // fetch site again as it might have been created/updated while authenticating (eth_accounts permission)
       // no need to handle URL invalid error this time as we know the URL is ok
       const siteAgain = await this.stores.sites.getSiteFromUrl(url)
-      if (!siteAgain) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1993_UNAUTHORIZED)
+      if (!siteAgain) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1193_UNAUTHORIZED)
 
       const ethPermissions = {
         ...(siteAgain.ethPermissions ?? {}),
@@ -741,26 +819,63 @@ export class EthTabsHandler extends TabsHandler {
     return this.getPermissions(url)
   }
 
+  private async revokePermissions(
+    url: string,
+    request: EthRequestArguments<"wallet_revokePermissions">
+  ): Promise<EthRequestResult<"wallet_revokePermissions">> {
+    if (request.params.length !== 1)
+      throw new EthProviderRpcError(
+        "This method expects an array with only 1 entry",
+        ETH_ERROR_EIP1474_INVALID_PARAMS
+      )
+
+    const [requestedPerms] = request.params
+    if (!isValidRevokedPermissions(requestedPerms))
+      throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
+    let site
+    try {
+      // url validation carried out inside stores.sites.getSiteFromUrl
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch {
+      return null
+    }
+    if (!site) return null
+
+    if (
+      Object.keys(requestedPerms).includes("eth_accounts") &&
+      (site.ethAddresses?.length || site.ethPermissions?.eth_accounts)
+    ) {
+      const ethPermissions = { ...(site.ethPermissions ?? {}) }
+      delete ethPermissions.eth_accounts
+
+      // sites observable will emit disconnect & accountsChanged events to the dapp
+      await this.stores.sites.updateSite(site.id, {
+        ethAddresses: [],
+        ethPermissions: ethPermissions as EthWalletPermissions,
+      })
+    }
+
+    return null
+  }
+
   private async ethRequest(
     _id: string,
     url: string,
     request: EthRequestArgs,
     port: Port
   ): Promise<unknown> {
-    if (
-      ![
-        "eth_requestAccounts",
-        "eth_accounts",
-        "eth_chainId", // TODO check if necessary ?
-        "eth_blockNumber", // TODO check if necessary ?
-        "net_version", // TODO check if necessary ?
-        "wallet_switchEthereumChain",
-        "wallet_addEthereumChain",
-        "wallet_watchAsset",
-        "wallet_requestPermissions",
-      ].includes(request.method)
-    )
-      await this.checkAccountAuthorised(url)
+    // methods that could exist on a wallet but that Talisman doesn't support => EIP-1193 4200
+    if (request.method in UNSUPPORTED_METHOD_MESSAGES)
+      throw new EthProviderRpcError(
+        UNSUPPORTED_METHOD_MESSAGES[request.method],
+        ETH_ERROR_EIP1193_UNSUPPORTED_METHOD
+      )
+
+    // no blanket authorization check here : account-bound methods (signing, transactions) validate
+    // that the "from" account is connected to the site, everything else is either public wallet state
+    // (eth_accounts returns [] when not connected) or read-only calls proxied to the RPC node
 
     // TODO typecheck return types against rpc schema
     switch (request.method) {
@@ -828,10 +943,27 @@ export class EthTabsHandler extends TabsHandler {
         return this.getPermissions(url)
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
+      // always prompt : dapps rely on this method to display the account selection view
       case "wallet_requestPermissions":
-        return this.requestPermissions(url, request, port)
+        return this.requestPermissions(url, request, port, true)
+
+      // https://docs.metamask.io/wallet/reference/json-rpc-methods/wallet_revokepermissions/
+      // dapps use this method to implement their disconnect button
+      case "wallet_revokePermissions":
+        return this.revokePermissions(url, request)
+
+      case "web3_clientVersion":
+        return `Talisman/v${process.env.VERSION}`
 
       default:
+        // unknown wallet-namespace methods can't be served by a node => EIP-1193 4200
+        if (request.method.startsWith("wallet_"))
+          throw new EthProviderRpcError(
+            `The method ${request.method} is not supported`,
+            ETH_ERROR_EIP1193_UNSUPPORTED_METHOD
+          )
+
+        // proxy anything else to the RPC node (read-only calls, no connection required)
         return this.getFallbackRequest(url, request)
     }
   }
@@ -851,7 +983,7 @@ export class EthTabsHandler extends TabsHandler {
       await this.stores.app.ensureOnboarded()
     } catch (err) {
       if (err instanceof TalismanNotOnboardedError)
-        throw new EthProviderRpcError(err.message, ETH_ERROR_EIP1993_UNAUTHORIZED)
+        throw new EthProviderRpcError(err.message, ETH_ERROR_EIP1193_UNAUTHORIZED)
     }
 
     switch (type) {

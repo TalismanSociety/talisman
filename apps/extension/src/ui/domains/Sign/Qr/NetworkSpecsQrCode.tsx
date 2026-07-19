@@ -1,6 +1,6 @@
 import { IS_FIREFOX } from "@common/constants"
 import type { SignerPayloadGenesisHash } from "@core/domains/signing/types"
-import { hexToU8a } from "@polkadot/util"
+import { hexToU8a } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"

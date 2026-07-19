@@ -1,8 +1,7 @@
-import { Enum } from "@polkadot-api/substrate-bindings"
+import { Binary, Enum } from "@polkadot-api/substrate-bindings"
 import type { ScaleApi } from "@talismn/sapi"
 import { isNotNil } from "@talismn/util"
 import { range } from "lodash-es"
-import { Binary } from "polkadot-api"
 
 const getStakingErasPerYear = (stakingSapi: ScaleApi, babeSapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
@@ -29,10 +28,28 @@ export const getStakingEraDurationMs = (stakingSapi: ScaleApi, babeSapi: ScaleAp
   return blockTime * BigInt(sessionsPerEra) * epochDuration
 }
 
-export const getStakingBondingDurationMs = (stakingSapi: ScaleApi, babeSapi: ScaleApi) => {
+const getNominatorBondingDurationEras = async (stakingSapi: ScaleApi) => {
+  // since Polkadot referendum 1910, when nominators are not slashable they unbond in
+  // NominatorFastUnbondDuration eras (2 on Polkadot Asset Hub) instead of BondingDuration.
+  // pool bonded accounts are pure nominators, so this applies to nomination pools too
+  if (stakingSapi.hasConstant("Staking", "NominatorFastUnbondDuration")) {
+    const areNominatorsSlashable = await stakingSapi.getStorage<boolean | null>(
+      "Staking",
+      "AreNominatorsSlashable",
+      []
+    )
+    // null = storage unset, defaults to true (slashable)
+    if (areNominatorsSlashable === false)
+      return stakingSapi.getConstant<number>("Staking", "NominatorFastUnbondDuration")
+  }
+
   // returns a number of eras
   // on Polkadot, 28
-  const bondingDuration = stakingSapi.getConstant<number>("Staking", "BondingDuration")
+  return stakingSapi.getConstant<number>("Staking", "BondingDuration")
+}
+
+export const getStakingBondingDurationMs = async (stakingSapi: ScaleApi, babeSapi: ScaleApi) => {
+  const bondingDuration = await getNominatorBondingDurationEras(stakingSapi)
 
   const eraDuration = getStakingEraDurationMs(stakingSapi, babeSapi)
 

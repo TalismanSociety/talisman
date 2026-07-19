@@ -1,6 +1,6 @@
 import type { AddAccountExternalOptions } from "@core/domains/keyring/exports"
-import { assert } from "@polkadot/util"
 import type { AccountPlatform } from "@talismn/crypto"
+import { assert } from "@talismn/util"
 import { api } from "@ui/api"
 import { useNetworkById } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"

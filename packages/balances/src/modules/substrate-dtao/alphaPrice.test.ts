@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import {
   ALPHA_PRICE_SCALE,
   alphaToTao,
-  getScaledAlphaPrice,
   TAO_DECIMALS,
   taoToAlpha,
   taoToAlphaCeil,
@@ -20,38 +19,9 @@ describe("ALPHA_PRICE_SCALE", () => {
   })
 })
 
-describe("getScaledAlphaPrice", () => {
-  it("computes (taoIn * SCALE) / alphaIn for normal values", () => {
-    // taoIn=1000, alphaIn=2000 → (1000 * 1e9) / 2000 = 500_000_000
-    expect(getScaledAlphaPrice(2000n, 1000n)).toBe(500_000_000n)
-  })
-
-  it("returns 0n when alphaIn is 0n", () => {
-    expect(getScaledAlphaPrice(0n, 1000n)).toBe(0n)
-  })
-
-  it("returns 0n when taoIn is 0n", () => {
-    expect(getScaledAlphaPrice(2000n, 0n)).toBe(0n)
-  })
-
-  it("returns ALPHA_PRICE_SCALE when alphaIn equals taoIn", () => {
-    expect(getScaledAlphaPrice(500n, 500n)).toBe(ALPHA_PRICE_SCALE)
-  })
-
-  it("returns ALPHA_PRICE_SCALE for 1:1 ratio with large values", () => {
-    const amount = 10n ** 18n
-    expect(getScaledAlphaPrice(amount, amount)).toBe(ALPHA_PRICE_SCALE)
-  })
-
-  it("handles alpha worth more than tao (alphaIn < taoIn)", () => {
-    // taoIn=3000, alphaIn=1000 → (3000 * 1e9) / 1000 = 3_000_000_000
-    expect(getScaledAlphaPrice(1000n, 3000n)).toBe(3_000_000_000n)
-  })
-})
-
 describe("alphaToTao", () => {
   it("converts alpha to tao using scaled price", () => {
-    const scaledPrice = getScaledAlphaPrice(2000n, 1000n) // 500_000_000
+    const scaledPrice = 500_000_000n // 0.5 tao per alpha
     // 100 alpha at 0.5 tao/alpha → 50 tao
     // (100 * 500_000_000) / 1_000_000_000 = 50
     expect(alphaToTao(100n, scaledPrice)).toBe(50n)
@@ -72,7 +42,7 @@ describe("alphaToTao", () => {
 
 describe("taoToAlpha", () => {
   it("converts tao to alpha using scaled price", () => {
-    const scaledPrice = getScaledAlphaPrice(2000n, 1000n) // 500_000_000
+    const scaledPrice = 500_000_000n // 0.5 tao per alpha
     // 50 tao at 0.5 tao/alpha → 100 alpha
     // (50 * 1_000_000_000) / 500_000_000 = 100
     expect(taoToAlpha(50n, scaledPrice)).toBe(100n)
@@ -100,7 +70,7 @@ describe("taoToAlphaCeil", () => {
   })
 
   it("equals taoToAlpha when the division is exact", () => {
-    const scaledPrice = getScaledAlphaPrice(2000n, 1000n) // 0.5 tao per alpha
+    const scaledPrice = 500_000_000n // 0.5 tao per alpha
     expect(taoToAlphaCeil(50n, scaledPrice)).toBe(taoToAlpha(50n, scaledPrice))
   })
 
@@ -110,7 +80,7 @@ describe("taoToAlphaCeil", () => {
   })
 
   it("always converts back to at least the requested tao, where the floored variant can fall short", () => {
-    const scaledPrice = getScaledAlphaPrice(1000n, 3000n) // 3 tao per alpha
+    const scaledPrice = 3_000_000_000n // 3 tao per alpha
     for (const tao of [1n, 7n, 100n, 12_345n]) {
       expect(alphaToTao(taoToAlphaCeil(tao, scaledPrice), scaledPrice)).toBeGreaterThanOrEqual(tao)
     }
@@ -121,7 +91,7 @@ describe("taoToAlphaCeil", () => {
 
 describe("round-trip consistency", () => {
   it("alphaToTao then taoToAlpha recovers original (exact when divisible)", () => {
-    const scaledPrice = getScaledAlphaPrice(2000n, 1000n) // 0.5 ratio
+    const scaledPrice = 500_000_000n // 0.5 ratio
     const alpha = 200n
     const tao = alphaToTao(alpha, scaledPrice)
     const recovered = taoToAlpha(tao, scaledPrice)
@@ -129,7 +99,7 @@ describe("round-trip consistency", () => {
   })
 
   it("taoToAlpha then alphaToTao recovers original (exact when divisible)", () => {
-    const scaledPrice = getScaledAlphaPrice(2000n, 1000n)
+    const scaledPrice = 500_000_000n
     const tao = 100n
     const alpha = taoToAlpha(tao, scaledPrice)
     const recovered = alphaToTao(alpha, scaledPrice)
@@ -137,7 +107,7 @@ describe("round-trip consistency", () => {
   })
 
   it("round-trip is within ±1 for arbitrary values due to integer rounding", () => {
-    const scaledPrice = getScaledAlphaPrice(3000n, 1000n) // 1/3 ratio
+    const scaledPrice = 333_333_333n // 1/3 ratio
     const alpha = 100n
     const tao = alphaToTao(alpha, scaledPrice)
     const recovered = taoToAlpha(tao, scaledPrice)

@@ -1,5 +1,0 @@
-{
-  "extends": "@talismn/tsconfig/es6-node.json",
-  "include": ["src"],
-  "exclude": ["**/node_modules", "**/.*/"]
-}

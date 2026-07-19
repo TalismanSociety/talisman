@@ -2,7 +2,7 @@
   "name": "@talismn/orb",
   "version": "0.4.3",
   "author": "Talisman",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
@@ -16,7 +16,7 @@
   "module": "./dist/index.mjs",
   "scripts": {
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup --silent",
+    "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,10 +28,10 @@
     "@talismn/tsconfig": "workspace:*",
     "@types/react": "18.3.12",
     "react": "18.3.1",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "peerDependencies": {
-    "react": "*"
+    "react": ">=18.2.0"
   },
   "types": "./dist/index.d.ts",
   "exports": {

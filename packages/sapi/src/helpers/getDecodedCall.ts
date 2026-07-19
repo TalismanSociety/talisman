@@ -1,4 +1,4 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "../pjsInterop"
 
 import type { DecodedCall } from "../types"
 import type { Chain } from "./types"

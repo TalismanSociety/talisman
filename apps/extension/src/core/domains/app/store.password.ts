@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from "@metamask/browser-passworder"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 import { compare, genSalt, hash } from "bcryptjs"
 import { BehaviorSubject } from "rxjs"
 import { Err, Ok, type Result } from "ts-results"

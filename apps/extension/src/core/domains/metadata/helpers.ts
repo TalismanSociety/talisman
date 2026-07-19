@@ -1,32 +1,16 @@
-import { hexToU8a, u8aToHex } from "@polkadot/util"
-import { base64Decode, base64Encode } from "@polkadot/util-crypto"
+import { base64 } from "@talismn/crypto"
+import { hexToU8a, u8aToHex } from "@talismn/util"
 
 import type { TalismanMetadataDef } from "../substrate/types"
 
 // these are stored as base64 for lower storage size
-const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
 
 // these are stored as base64 for lower storage size
-export const decodeMetadataRpc = (encoded: string) => u8aToHex(base64Decode(encoded))
+export const decodeMetadataRpc = (encoded: string) => u8aToHex(base64.decode(encoded))
 
 // these are stored as base64 for lower storage size
-export const encodeMetadataRpc = (metadataRpc: `0x${string}`) => base64Encode(hexToU8a(metadataRpc))
-
-/**
- *
- * @param metadata
- * @returns a value that can be used to initialize a TypeRegistry
- */
-export const getMetadataFromDef = (metadata: TalismanMetadataDef) => {
-  try {
-    if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
-    if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
-  } catch {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.warn("Could not decode metadata from store", { metadata })
-  }
-  return undefined
-}
+export const encodeMetadataRpc = (metadataRpc: `0x${string}`) =>
+  base64.encode(hexToU8a(metadataRpc))
 
 export const getMetadataRpcFromDef = (metadataDef?: TalismanMetadataDef) => {
   if (metadataDef?.metadataRpc) return decodeMetadataRpc(metadataDef.metadataRpc)

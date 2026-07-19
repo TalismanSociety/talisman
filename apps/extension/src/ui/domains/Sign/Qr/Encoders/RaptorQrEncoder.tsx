@@ -1,4 +1,4 @@
-import { hexToNumber, numberToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
+import { hexToNumber, numberToU8a, u8aConcat, u8aToU8a } from "@talismn/util"
 import initRaptorq, { Encoder } from "raptorq"
 import raptorqWasmUrl from "raptorq/raptorq_bg.wasm?url"
 

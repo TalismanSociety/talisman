@@ -1,5 +1,4 @@
-import { Abi } from "@polkadot/api-contract"
-import { TypeRegistry } from "@polkadot/types"
+import { toHex } from "@polkadot-api/utils"
 import {
   type SubPsp22Token,
   SubPsp22TokenSchema,
@@ -9,12 +8,8 @@ import { values } from "lodash-es"
 
 import log from "../../log"
 import type { IBalanceModule } from "../../types/IBalanceModule"
-import psp22Abi from "../abis/psp22.json"
 import type { MODULE_TYPE, TokenConfig } from "./config"
-import { makeContractCaller } from "./util"
-
-const hexToNumber = (hex: string): number => Number(hex)
-const u8aToString = (value: Uint8Array): string => new TextDecoder().decode(value)
+import { encodePsp22Message, makeContractCaller } from "./util"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -23,14 +18,9 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 }) => {
   if (!tokens.length) return []
 
-  const registry = new TypeRegistry()
-  const Psp22Abi = new Abi(psp22Abi)
-
-  // TODO: Use `decodeOutput` from `./util/decodeOutput`
   const contractCall = makeContractCaller({
     chainConnector: connector,
     chainId: networkId,
-    registry,
   })
 
   const tokenList: Record<string, SubPsp22Token> = {}
@@ -43,40 +33,23 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
       if (contractAddress === undefined) continue
 
-      await (async () => {
-        const [symbolResult, decimalsResult] = await Promise.all([
-          contractCall(
-            contractAddress,
-            contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
-          ),
-          contractCall(
-            contractAddress,
-            contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
-          ),
-        ])
+      const [symbolResult, decimalsResult] = await Promise.all([
+        contractCall(contractAddress, contractAddress, encodePsp22Message.tokenSymbol()),
+        contractCall(contractAddress, contractAddress, encodePsp22Message.tokenDecimals()),
+      ])
 
-        // biome-ignore lint/suspicious/noExplicitAny: legacy
-        const symbolData = (symbolResult.toJSON()?.result as any)?.ok?.data
-        symbol =
-          typeof symbolData === "string" && symbolData.startsWith("0x")
-            ? u8aToString(
-                registry.createType(
-                  "Option<Vec<u8>>",
-                  // biome-ignore lint/suspicious/noExplicitAny: legacy
-                  (symbolResult.toJSON()?.result as any)?.ok?.data
-                )?.value
-              )?.replace(/\p{C}/gu, "")
-            : symbol
+      if (symbolResult.result.success) {
+        const data = symbolResult.result.value.data
+        if (!data.length) throw new Error("Empty token_symbol response")
+        // utf8-decode the raw return data, then strip non-printable characters
+        // (drops the SCALE framing bytes: Ok tag, Option tag and compact length prefix)
+        symbol = new TextDecoder().decode(data).replace(/\p{C}/gu, "")
+      }
 
-        // biome-ignore lint/suspicious/noExplicitAny: legacy
-        const decimalsData = (decimalsResult.toJSON()?.result as any)?.ok?.data
-        decimals =
-          typeof decimalsData === "string" && decimalsData.startsWith("0x")
-            ? hexToNumber(decimalsData)
-            : decimals
-      })()
+      if (decimalsResult.result.success) {
+        // interpret the whole return data (Ok tag included) as a big-endian number
+        decimals = Number(toHex(decimalsResult.result.value.data))
+      }
 
       const id = subPsp22TokenId(networkId, contractAddress)
       const token: SubPsp22Token = {

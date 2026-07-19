@@ -1,9 +1,9 @@
-import type { RequestAuthorizeTab as PolkadotRequestAuthorizeTab } from "@polkadot/extension-base/background/types"
 import type { SolanaSignInInput } from "@solana/wallet-standard-features"
 import type { Account } from "@talismn/keyring"
 
 import type { KnownRequestId } from "../../libs/requests/types"
 import type { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
+import type { RequestAuthorizeTab as PolkadotRequestAuthorizeTab } from "../../types/pjsInterop"
 import type { Web3WalletPermission, Web3WalletPermissionTarget } from "../ethereum/types"
 
 export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
@@ -70,7 +70,7 @@ export declare type AuthUrls = AuthorizedSites
 
 export type EthWalletPermissions = Record<
   Web3WalletPermissionTarget,
-  Pick<Web3WalletPermission, "date">
+  Pick<Web3WalletPermission, "date" | "id">
 >
 
 export type AuthorizedSite = {

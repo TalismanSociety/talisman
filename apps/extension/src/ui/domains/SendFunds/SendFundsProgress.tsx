@@ -4,9 +4,9 @@ import type {
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
-import type { HexString } from "@polkadot/util/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
+import type { HexString } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"

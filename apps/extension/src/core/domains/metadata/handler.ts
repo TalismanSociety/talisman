@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 import { db } from "../../db"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"

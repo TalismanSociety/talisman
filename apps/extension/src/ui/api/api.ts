@@ -6,7 +6,7 @@ import type {
   SolRpcRequest,
 } from "@core/domains/solana/exports"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 
 import type MessageTypes from "./types"
 
@@ -303,11 +303,6 @@ export const api: MessageTypes = {
     }) as Promise<ResponseSolanaSubmit>,
   solSignApprove: (req) =>
     messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
-
-  // asset discovery
-  assetDiscoveryStartScan: (scope) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", scope),
-  assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
 
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),

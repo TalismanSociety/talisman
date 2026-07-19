@@ -1,8 +1,6 @@
-import type { KeyringPair$Meta } from "@polkadot/keyring/types"
-import keyring from "@polkadot/ui-keyring"
-
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
+import { getLegacyPjsAccountEntries, saveLegacyPjsAccount } from "../../keyring/legacyPjsAccounts"
 import { LegacyAccountOrigin, SubstrateLedgerAppType } from "../types"
 
 const POLKADOT_GENESIS_HASH = "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
@@ -32,7 +30,7 @@ const NewAccountTypes = {
   WATCHED: "WATCHED",
 }
 
-const accountOriginSwitch = (origin: LegacyAccountType): KeyringPair$Meta => {
+const accountOriginSwitch = (origin: LegacyAccountType): Record<string, unknown> => {
   switch (origin) {
     case LegacyAccountTypes.TALISMAN:
     case LegacyAccountTypes.LEGACY_ROOT:
@@ -49,44 +47,51 @@ const accountOriginSwitch = (origin: LegacyAccountType): KeyringPair$Meta => {
   }
 }
 
+// operates on the legacy pjs keyring storage: this migration predates (and runs before) migrateFromPjsKeyring
 export const migrateToNewAccountTypes: Migration = {
   forward: new MigrationFunction(async () => {
-    keyring.getAccounts().forEach((account) => {
+    for (const [key, account] of await getLegacyPjsAccountEntries()) {
       const { origin } = account.meta as {
         origin: LegacyAccountType
       }
       const newMeta = accountOriginSwitch(origin)
-      const pair = keyring.getPair(account.address)
 
       // delete genesisHash for old json-imported accounts
       if (origin === LegacyAccountTypes.JSON && account.meta.genesisHash)
         delete account.meta.genesisHash
 
-      keyring.saveAccountMeta(pair, { ...account.meta, ...newMeta })
-    })
+      await saveLegacyPjsAccount(key, { ...account, meta: { ...account.meta, ...newMeta } })
+    }
   }),
 }
 
 // Migrates Polkadot ledger accounts from legacy to generic app
+// operates on the legacy pjs keyring storage: this migration predates (and runs before) migrateFromPjsKeyring
 export const migratePolkadotLedgerAccounts: Migration = {
   forward: new MigrationFunction(async () => {
-    for (const account of keyring.getAccounts()) {
+    for (const [key, account] of await getLegacyPjsAccountEntries()) {
       if (
         account.meta.hardwareType === "ledger" &&
         account.meta.genesisHash === POLKADOT_GENESIS_HASH
       ) {
-        const { name, accountIndex, addressOffset } = account.meta
+        const { name, accountIndex, addressOffset, whenCreated } = account.meta
 
-        const newMeta: KeyringPair$Meta = {
+        // same meta as the previous `keyring.addHardware` based implementation (replaces
+        // the whole meta object, dropping genesisHash so the account maps to the generic app)
+        const newMeta: Record<string, unknown> = {
           name,
           accountIndex,
           addressOffset,
           origin: LegacyAccountOrigin.Ledger,
           ledgerApp: SubstrateLedgerAppType.Generic,
           type: "ed25519",
+          hardwareType: "ledger",
+          isHardware: true,
+          isExternal: true,
+          whenCreated: whenCreated ?? Date.now(),
         }
 
-        keyring.addHardware(account.address, "ledger", newMeta)
+        await saveLegacyPjsAccount(key, { ...account, meta: newMeta })
 
         appStore.set({ showLedgerPolkadotGenericMigrationAlert: true })
       }

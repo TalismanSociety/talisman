@@ -58,6 +58,11 @@ export const walletBalances$ = settingsStore.observable.pipe(
     }
 
     return walletAddressesByTokenId$.pipe(
+      // coalesce bursts of scope changes (asset-discovery activations, dynamic-token
+      // sync, chaindata updates): every emission below restarts the whole balances
+      // aggregation, so a burst must collapse into a single restart. First emission
+      // passes through untouched to keep startup instant.
+      firstThenDebounce(1_000),
       switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
       firstThenDebounce(500),
       tap({

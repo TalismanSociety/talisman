@@ -3,7 +3,7 @@
   "version": "3.0.23",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
-  "license": "GPL-3.0-or-later",
+  "license": "SEE LICENSE IN LICENSE",
   "publishConfig": {
     "access": "public"
   },
@@ -23,15 +23,19 @@
   "scripts": {
     "test": "vitest run",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup --silent",
+    "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/chain-connectors": "workspace:*",
+    "@talismn/chaindata-provider": "workspace:*",
+    "@talismn/util": "workspace:*",
+    "anylogger": "^1.0.11",
+    "scale-ts": "^1.6.1"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
   "exports": {

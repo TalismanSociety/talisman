@@ -1,10 +1,10 @@
-import type { HexString } from "@polkadot/util/types"
 import type {
   EthNetwork,
   EthNetworkId,
   EvmErc20Token,
   EvmNativeToken,
 } from "@talismn/chaindata-provider"
+import type { HexString } from "@talismn/util"
 import type {
   EIP1193Parameters,
   Address as EvmAddress,
@@ -137,13 +137,27 @@ export type EthNonceRequest = {
 
 export type Web3WalletPermissionTarget = "eth_accounts" // add more options as needed using |
 
-// from https://docs.metamask.io/guide/rpc-api.html#restricted-methods
+export interface Web3WalletPermissionCaveat {
+  type: string
+  value: unknown
+}
+
+// https://eips.ethereum.org/EIPS/eip-2255
 export interface Web3WalletPermission {
+  // The permission identifier, assigned when the permission is granted
+  id?: string
+
   // The name of the method corresponding to the permission
   parentCapability: Web3WalletPermissionTarget
 
+  // The URI of the dapp the permission is granted to
+  invoker?: string
+
   // The date the permission was granted, in UNIX epoch time
   date?: number
+
+  // restrictions applied to the permitted method (ex: restrictReturnedAccounts)
+  caveats?: Web3WalletPermissionCaveat[]
 
   // more to come...
 }
@@ -152,7 +166,6 @@ export interface EthMessages {
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, unknown]
   "pub(eth.subscribe)": [null, boolean, EthProviderMessage]
-  "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, unknown]
   "pri(eth.transactions.count)": [EthNonceRequest, number]

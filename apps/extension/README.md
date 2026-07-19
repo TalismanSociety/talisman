@@ -209,4 +209,4 @@ pnpm test:e2e
 
 ## License
 
-GPL-3.0-or-later - See [LICENSE](./LICENSE)
+The Talisman License (source-available, non-commercial) - See [LICENSE](./LICENSE)

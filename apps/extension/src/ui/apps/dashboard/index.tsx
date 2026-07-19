@@ -1,5 +1,4 @@
-import { DEBUG } from "@common/constants"
-import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
+import { DEBUG, PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { api } from "@ui/api"
 import { FullScreenLocked } from "@ui/components/FullScreenLocked"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
@@ -31,7 +30,6 @@ import { AboutPage } from "./routes/Settings/AboutPage"
 import { AccountsPage } from "./routes/Settings/Accounts"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
-import { AssetDiscoveryPage } from "./routes/Settings/AssetsDiscovery/AssetDiscoveryPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
@@ -93,7 +91,6 @@ const DashboardInner = () => {
           </Route>
           <Route path="networks-tokens">
             <Route path="" element={<NetworksTokensPage />} />
-            <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
             <Route path="tokens">
               <Route path="" element={<TokensPage />} />
               <Route path="add" element={<AddTokenPage />} />

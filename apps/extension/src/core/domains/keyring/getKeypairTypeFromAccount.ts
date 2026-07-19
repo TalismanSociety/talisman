@@ -1,13 +1,14 @@
-import type { KeypairType } from "@polkadot/util-crypto/types"
 import { isEthereumAddress } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
 
+import type { PjsKeypairType } from "./migration-utils"
+
 // unsafe, use only when injecting accounts into Polkadot dapps
-export const getAccountKeypairType = (account: Account): KeypairType => {
+export const getAccountKeypairType = (account: Account): PjsKeypairType => {
   switch (account.type) {
     case "keypair":
       if (["ed25519", "sr25519", "ecdsa", "ethereum"].includes(account.curve))
-        return account.curve as KeypairType
+        return account.curve as PjsKeypairType
       throw new Error(`Unsupported account curve '${account.curve}'`)
     case "ledger-ethereum":
       return "ethereum"

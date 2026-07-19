@@ -1,9 +1,12 @@
 import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
+import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import type { TypeRegistry } from "@polkadot/types"
-import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
+import { mergeUint8 } from "@polkadot-api/utils"
 import { isAddressEqual } from "@talismn/crypto"
+import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
+import { hexToNumber, u8aToHex, u8aWrapBytes } from "@talismn/util"
+import { api } from "@ui/api"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
@@ -64,17 +67,12 @@ export const useLedgerSubstrateLegacy = (genesis?: `0x${string}` | null) => {
   )
 
   const sign = useCallback(
-    (
-      payload: SignerPayloadJSON | SignerPayloadRaw,
-      account: AccountLedgerPolkadot,
-      registry?: TypeRegistry
-    ) => {
+    (payload: SignerPayloadJSON | SignerPayloadRaw, account: AccountLedgerPolkadot) => {
       if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
-      if (isJsonPayload(payload) && !registry) throw getTalismanLedgerError("Missing registry.")
 
       return withLedger((ledger) =>
         isJsonPayload(payload)
-          ? signJsonPayload(ledger, app, payload, account, registry!)
+          ? signJsonPayload(ledger, app, payload, account)
           : signRawPayload(ledger, app, payload, account)
       )
     },
@@ -115,8 +113,7 @@ const signJsonPayload = async (
   ledger: SubstrateApp,
   app: SubstrateAppParams,
   payload: SignerPayloadJSON,
-  account: AccountLedgerPolkadot,
-  registry: TypeRegistry
+  account: AccountLedgerPolkadot
 ) => {
   // Legacy dapps don't support the CheckMetadataHash signed extension
   if (payload.signedExtensions.includes("CheckMetadataHash"))
@@ -127,11 +124,19 @@ const signJsonPayload = async (
 
   await checkAppAndDevice(account, ledger, app)
 
-  const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-    version: payload.version,
-  })
+  const metadataDef = await api.subChainMetadata(
+    payload.genesisHash,
+    hexToNumber(payload.specVersion)
+  )
+  const metadataRpc = getMetadataRpcFromDef(metadataDef)
+  if (!metadataRpc) throw getTalismanLedgerError(t("Missing metadata"))
 
-  const unsigned = extrinsicPayload.toU8a(true)
+  const { callData, extra, additionalSigned } = getPjsTxHelper(
+    metadataRpc,
+    CUSTOM_SIGNED_EXTENSIONS
+  )(payload)
+
+  const unsigned = mergeUint8([callData, extra, additionalSigned])
 
   const { accountIndex, change, addressOffset } = getAccountSpecs(account)
   const {

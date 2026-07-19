@@ -1,11 +1,14 @@
 import { log } from "@common/log"
-import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { type FC, Suspense, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
+
+// same implementation as @polkadot/react-qr/util decodeString
+const decodeString = (value: Uint8Array): string =>
+  value.reduce((str, code) => str + String.fromCharCode(code), "")
 
 type Props = {
   data?: Uint8Array

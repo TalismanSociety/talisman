@@ -129,7 +129,7 @@ describe("SapiSendButton", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockUseScaleApi.mockReturnValue({
-      data: { submit: mockSubmit, getTypeRegistry: vi.fn() },
+      data: { submit: mockSubmit },
     })
   })
 

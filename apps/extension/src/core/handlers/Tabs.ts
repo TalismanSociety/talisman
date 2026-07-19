@@ -1,22 +1,7 @@
+import { PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import type {
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
-} from "@polkadot/extension-base/background/types"
-import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-import type {
-  InjectedAccount,
-  InjectedMetadataKnown,
-  MetadataDef,
-  ProviderMeta,
-} from "@polkadot/extension-inject/types"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { assert, isNumber } from "@polkadot/util"
+import { assert } from "@talismn/util"
 import { combineLatest } from "rxjs"
 import { sentry } from "../config/sentry"
 import { db } from "../db"
@@ -52,6 +37,18 @@ import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
 import type { Port } from "../types/base"
+import type {
+  InjectedAccount,
+  InjectedMetadataKnown,
+  MetadataDef,
+  ProviderMeta,
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "../types/pjsInterop"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
 import type { TabStore } from "./stores"
@@ -157,7 +154,7 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
-    return signSubstrate(url, new RequestBytesSign(request), account, port)
+    return signSubstrate(url, { payload: request }, account, port)
   }
 
   private async extrinsicSign(
@@ -170,9 +167,13 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
-    return signSubstrate(url, new RequestExtrinsicSign(request), account, port)
+    return signSubstrate(url, { payload: request }, account, port)
   }
 
+  /**
+   * @deprecated sr25519 message encryption — SUMI-chain experiment, not part of the injected-web3
+   * spec, scheduled for removal.
+   */
   private async messageEncrypt(
     url: string,
     request: EncryptPayload,
@@ -184,6 +185,10 @@ export default class Tabs extends TabsHandler {
     return requestEncrypt(url, request, account, port)
   }
 
+  /**
+   * @deprecated sr25519 message decryption — SUMI-chain experiment, not part of the injected-web3
+   * spec, scheduled for removal.
+   */
   private async messageDecrypt(
     url: string,
     request: DecryptPayload,
@@ -283,7 +288,7 @@ export default class Tabs extends TabsHandler {
     chrome.tabs.query({ url: nonFragment }).then((tabs) => {
       tabs
         .map(({ id }) => id)
-        .filter((id): id is number => isNumber(id))
+        .filter((id): id is number => typeof id === "number")
         // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         .forEach((id) =>
           chrome.tabs.update(id, { url }).catch((err: Error) => {

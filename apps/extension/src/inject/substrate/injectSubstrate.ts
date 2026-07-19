@@ -1,7 +1,10 @@
 import type { ResponseType, SendRequest } from "@core/types"
-import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"
+import type { HexString } from "@talismn/util"
+
+// structural equivalent of the legacy polkadot-js ProviderInterfaceCallback type
+// biome-ignore lint/suspicious/noExplicitAny: legacy
+type ProviderInterfaceCallback = (error: Error | null, result: any) => void
 
 type TalismanWindow = typeof globalThis & {
   talismanSub?: ReturnType<typeof rpcProvider> &

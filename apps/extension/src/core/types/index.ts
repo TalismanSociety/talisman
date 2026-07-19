@@ -1,8 +1,6 @@
-import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 import type { AccountProxiesMessages } from "../domains/accountProxies/types"
 import type { AccountsMessages } from "../domains/accounts/types"
 import type { AppMessages } from "../domains/app/types"
-import type { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
 import type { BalancesMessages } from "../domains/balances/types"
 import type { BittensorMessages } from "../domains/bittensor/types"
 import type { ChaindataMessages } from "../domains/chaindata/types"
@@ -25,6 +23,7 @@ import type { SubstrateMessages } from "../domains/substrate/types"
 import type { TalismanMessages } from "../domains/talisman/types"
 import type { TokenRatesMessages } from "../domains/tokenRates/types"
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
+import type { RequestSignatures as PolkadotRequestSignatures } from "./pjsInterop"
 
 export declare type RequestTypes = {
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
@@ -52,32 +51,10 @@ export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
 }>
 
-type RemovedMessages =
-  | "pri(ping)"
-  | "pri(signing.approve.password)"
-  | "pri(signing.approve.signature)"
-  | "pri(authorize.list)"
-  | "pri(authorize.requests)"
-  | "pri(accounts.create.suri)"
-  | "pri(accounts.create.ledger)"
-  | "pri(accounts.export)"
-  | "pri(accounts.forget)"
-  | "pri(accounts.subscribe)"
-  | "pri(metadata.requests)"
-  | "pri(metadata.approve)"
-  | "pri(metadata.get)"
-  | "pri(metadata.reject)"
-  | "pri(metadata.list)"
-  | "pri(signing.cancel)"
-  | "pri(signing.requests)"
-  | "pri(derivation.create)"
-  | "pri(derivation.validate)"
-  | "pri(accounts.changePassword)"
-  | "pri(seed.validate)"
-  | "pub(authorize.tab)"
-
 // lists all the messages (public and private) supported by the extension
-type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
+// PolkadotRequestSignatures only carries the legacy polkadot-js pub() dapp protocol,
+// the messages it overlapped with are defined in the Talisman domain maps below
+type AllMessages = PolkadotRequestSignatures &
   AccountsMessages &
   AccountProxiesMessages &
   AppMessages &
@@ -94,7 +71,6 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   SubstrateMessages &
   SolanaExtensionMessages &
   SolanaTabsMessages &
-  AssetDiscoveryMessages &
   NftsMessages &
   DefiMessages &
   EarnMessages &

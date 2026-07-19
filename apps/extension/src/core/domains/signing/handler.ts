@@ -1,11 +1,7 @@
 import { TEST } from "@common/constants"
-import { TypeRegistry } from "@polkadot/types"
-import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
-import { assert, u8aToHex } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
-import { encodeAnyAddress } from "@talismn/crypto"
-import { addTrailingSlash } from "@talismn/util"
-import { sentry } from "../../config/sentry"
+import { encodeAnyAddress, signSubstrate } from "@talismn/crypto"
+import type { HexString } from "@talismn/util"
+import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -13,18 +9,31 @@ import { windowManager } from "../../libs/WindowManager"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
-import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { validateHexString } from "../../util/validateHexString"
 import { getHostName } from "../app/helpers"
-import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { watchSubstrateTransaction } from "../transactions"
+import { assembleSubstrateTransaction, signSubstratePayload } from "./signSubstratePayload"
 import type {
   KnownSigningRequestApprove,
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
   SignerPayloadJSON,
+  SignerPayloadRaw,
 } from "./types"
+
+/**
+ * Only return `signedTransaction` to the dapp when the wallet actually altered the payload
+ * (CheckMetadataHash injection). When returned needlessly, older @polkadot/api releases rebuild
+ * the extrinsic from a hardcoded field list that drops chain-specific payload fields (e.g. Avail's
+ * `appId`), attaching our signature to different bytes => "1010: bad signature" on submission.
+ * Without it, the dapp assembles the extrinsic from its own payload with its own registry.
+ */
+const isPayloadModified = (
+  original: SignerPayloadJSON | SignerPayloadRaw,
+  modified: SignerPayloadJSON | undefined
+) => !!modified && JSON.stringify(modified) !== JSON.stringify(original)
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({
@@ -39,7 +48,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const address = encodeAnyAddress(queued.account.address)
 
-    const result = await withPjsKeyringPair(address, async (pair) => {
+    const result = await withSecretKey(address, async (secretKey, curve) => {
       const { payload: originalPayload } = request
       const payload = modifiedPayload || originalPayload
       const { ok, val: hostName } = getHostName(url)
@@ -48,72 +57,29 @@ export default class SigningHandler extends ExtensionHandler {
         hostName: ok ? hostName : undefined,
       }
 
-      let registry = new TypeRegistry()
-
-      if (isJsonPayload(payload)) {
-        const { signedExtensions, specVersion } = payload
-        const genesisHash = validateHexString(payload.genesisHash)
-
-        const { registry: fullRegistry } = await getTypeRegistry(
-          genesisHash,
-          specVersion,
-          signedExtensions
-        )
-
-        registry = fullRegistry
-
-        const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
-        analyticsProperties.chain = chain?.id ?? genesisHash
-      }
-
       let signature: HexString | undefined
       let signedTransaction: HexString | Uint8Array | undefined
 
-      // notify user about transaction progress
       if (isJsonPayload(payload)) {
-        const chain = await chaindataProvider.getNetworkByGenesisHash(payload.genesisHash)
+        const genesisHash = validateHexString(payload.genesisHash)
+        const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
+        analyticsProperties.chain = chain?.id ?? genesisHash
 
-        // create signable extrinsic payload
-        const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-          version: payload.version,
+        const signed = await signSubstratePayload(payload, secretKey, curve, {
+          // chaindata override of the signature type prefix (LAOS signing quirk),
+          // auto-detected from the chain metadata when not set
+          hasExtrinsicSignatureTypePrefix:
+            typeof chain?.hasExtrinsicSignatureTypePrefix === "boolean"
+              ? chain.hasExtrinsicSignatureTypePrefix
+              : undefined,
         })
+        signature = signed.signature
+        if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload))
+          signedTransaction = signed.signedTransaction
 
-        signature =
-          typeof chain?.hasExtrinsicSignatureTypePrefix !== "boolean"
-            ? // use default value of `withType`
-              // (auto-detected by whether `ExtrinsicSignature` is an `Enum` or not in the chain metadata)
-              extrinsicPayload.sign(pair).signature
-            : // use override value of `withType` from chaindata
-              u8aToHex(
-                signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
-                  // use chaindata override value of `withType`
-                  withType: chain.hasExtrinsicSignatureTypePrefix,
-                })
-              )
-
-        if (payload.withSignedTransaction) {
-          try {
-            const tx = registry.createType(
-              "Extrinsic",
-              { method: payload.method },
-              { version: payload.version }
-            )
-
-            // apply signature to the modified payload
-            tx.addSignature(payload.address, signature, payload)
-
-            signedTransaction = tx.toHex()
-          } catch (cause) {
-            const error = new Error(`Failed to create signedTransaction`, { cause })
-            sentry.captureException(error, {
-              extra: { chainId: chain?.id, chainName: chain?.name },
-            })
-            throw error
-          }
-        }
-
+        // notify user about transaction progress
         if (chain) {
-          await watchSubstrateTransaction(chain, registry, payload, signature, {
+          await watchSubstrateTransaction(chain, payload, signature, {
             siteUrl: queued.url,
             notifications: true,
           })
@@ -125,7 +91,9 @@ export default class SigningHandler extends ExtensionHandler {
           )
         }
       } else {
-        signature = request.sign(registry, pair).signature
+        // raw bytes request: wrap with <Bytes>...</Bytes> unless already wrapped, no signature type prefix
+        // (matches polkadot-js RequestBytesSign.sign)
+        signature = u8aToHex(signSubstrate(curve, secretKey, u8aWrapBytes(payload.data)))
       }
 
       talismanAnalytics.captureDelayed(
@@ -176,24 +144,12 @@ export default class SigningHandler extends ExtensionHandler {
       analyticsProperties.chain = chain?.id ?? payload.genesisHash
 
       if (chain) {
-        const { signedExtensions, specVersion } = payload
-        const genesisHash = validateHexString(payload.genesisHash)
-        const { registry } = await getTypeRegistry(genesisHash, specVersion, signedExtensions)
-
-        if (payload.withSignedTransaction) {
-          const tx = registry.createType(
-            "Extrinsic",
-            { method: payload.method },
-            { version: payload.version }
-          )
-
-          // apply signature to the modified payload
-          tx.addSignature(payload.address, signature, payload)
-
-          signedTransaction = tx.toHex()
+        if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload)) {
+          const assembled = await assembleSubstrateTransaction(payload, signature)
+          signedTransaction = assembled.signedTransaction
         }
 
-        await watchSubstrateTransaction(chain, registry, payload, signature, {
+        await watchSubstrateTransaction(chain, payload, signature, {
           siteUrl: url,
           notifications: true,
         })

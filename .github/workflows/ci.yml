@@ -62,13 +62,13 @@ jobs:
           pnpm biome check --error-on-warnings -- "${CHANGED_FILES[@]}"
       - name: Knip (unused code/deps)
         run: pnpm knip
-      - name: Test
-        run: pnpm test
       - name: Typecheck
         run: |
           # All packages and apps use customConditions: ["@talismn/source"] to resolve
           # @talismn/* packages directly from source. This means no package build is needed.
           pnpm typecheck
+      - name: Test
+        run: pnpm test
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -195,6 +195,28 @@ jobs:
         run: pnpm build:packages
       - name: Publish snapshot packages
         run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag pr${{ github.event.pull_request.number }}
+      - name: Report published snapshot versions
+        if: always()
+        run: |
+          TAG="pr${{ github.event.pull_request.number }}"
+          echo "### 📦 Snapshot packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Install with \`@${TAG}\` dist-tag:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          VERSIONS=""
+          for pkg in packages/*/; do
+            VERSION=$(jq -r '.version // empty' "${pkg}package.json")
+            NAME=$(jq -r '.name // empty' "${pkg}package.json")
+            if [ -n "$VERSION" ] && [ -n "$NAME" ]; then
+              echo "${NAME}@${VERSION}" >> $GITHUB_STEP_SUMMARY
+              VERSIONS="${VERSIONS}${NAME}@${VERSION}, "
+            fi
+          done
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -n "$VERSIONS" ]; then
+            echo "::notice::Snapshot published: ${VERSIONS%, }"
+          fi
 
   # This job will check for changed packages in this PR, and will comment on the PR if any changed packages do not yet have changesets
   ensure_pr_has_changeset:

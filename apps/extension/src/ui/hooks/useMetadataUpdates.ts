@@ -1,5 +1,5 @@
 import { db } from "@core/db"
-import type { HexString } from "@polkadot/util/types"
+import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useLiveQuery } from "dexie-react-hooks"

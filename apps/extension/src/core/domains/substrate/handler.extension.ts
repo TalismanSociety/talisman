@@ -1,19 +1,19 @@
 import { log } from "@common/log"
-import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
-import { u8aToHex } from "@polkadot/util"
 import { Twox128 } from "@polkadot-api/substrate-bindings"
-import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { encryptKemAead } from "@talismn/crypto"
+import { mortal, toPjsHex } from "@talismn/sapi"
 import { Binary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
-
+import { u8aToHex } from "@talismn/util"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
+import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import { getMetadataDef } from "../../util/getMetadataDef"
-import { getTypeRegistry } from "../../util/getTypeRegistry"
-import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
+import { getMetadataRpcFromDef } from "../metadata/helpers"
+import { assembleSubstrateTransaction, signSubstratePayload } from "../signing/signSubstratePayload"
 import { dismissTransaction, watchSubstrateTransaction } from "../transactions"
 
 export class SubHandler extends ExtensionHandler {
@@ -25,50 +25,27 @@ export class SubHandler extends ExtensionHandler {
     const chain = await chaindataProvider.getNetworkByGenesisHash(payload.genesisHash)
     if (!chain) throw new Error(`Chain not found for genesis hash ${payload.genesisHash}`)
 
-    const { registry } = await getTypeRegistry(
-      payload.genesisHash,
-      payload.specVersion,
-      payload.signedExtensions
-    )
-
     if (!signature) {
-      const result = await withPjsKeyringPair(payload.address, async (pair) => {
-        const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-          version: payload.version,
-        })
-
-        // LAOS signing bug workaround
-        return typeof chain?.hasExtrinsicSignatureTypePrefix !== "boolean"
-          ? // use default value of `withType`
-            // (auto-detected by whether `ExtrinsicSignature` is an `Enum` or not in the chain metadata)
-            extrinsicPayload.sign(pair).signature
-          : // use override value of `withType` from chaindata
-            u8aToHex(
-              signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
-                // use chaindata override value of `withType`
-                withType: chain.hasExtrinsicSignatureTypePrefix,
-              })
-            )
-      })
+      const result = await withSecretKey(payload.address, (secretKey, curve) =>
+        signSubstratePayload(payload, secretKey, curve, {
+          // LAOS signing bug workaround: chaindata override of the signature type prefix,
+          // auto-detected from the chain metadata when not set
+          hasExtrinsicSignatureTypePrefix:
+            typeof chain?.hasExtrinsicSignatureTypePrefix === "boolean"
+              ? chain.hasExtrinsicSignatureTypePrefix
+              : undefined,
+        }).then((signed) => signed.signature)
+      )
 
       signature = result.unwrap()
     }
 
-    await watchSubstrateTransaction(chain, registry, payload, signature, { txInfo })
+    await watchSubstrateTransaction(chain, payload, signature, { txInfo })
 
-    const tx = registry.createType(
-      "Extrinsic",
-      { method: payload.method },
-      { version: payload.version }
-    )
-
-    // apply signature to the modified payload
-    tx.addSignature(payload.address, signature, payload)
-
-    const hash = tx.hash.toHex()
+    const { signedTransaction, hash } = await assembleSubstrateTransaction(payload, signature)
 
     try {
-      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+      await chainConnector.send(chain.id, "author_submitExtrinsic", [signedTransaction])
     } catch (err) {
       if (hash) dismissTransaction(hash)
       throw err
@@ -82,11 +59,11 @@ export class SubHandler extends ExtensionHandler {
       const chain = await chaindataProvider.getNetworkByGenesisHash(payload.genesisHash)
       if (!chain) throw new Error(`Chain not found for genesis hash ${payload.genesisHash}`)
 
-      const { registry, metadataRpc } = await getTypeRegistry(
+      const metadataDef = await getMetadataDef(
         payload.genesisHash,
-        payload.specVersion,
-        payload.signedExtensions
+        parseInt(payload.specVersion, 16)
       )
+      const metadataRpc = getMetadataRpcFromDef(metadataDef)
       if (!metadataRpc) throw new Error("Metadata RPC not found")
 
       // fetch MevShield next key from chain storage
@@ -120,26 +97,22 @@ export class SubHandler extends ExtensionHandler {
         nonce: toPjsHex(BigInt(payload.nonce) + 1n),
       }
 
-      const innerTxSignature = await withPjsKeyringPair(payload.address, async (pair) => {
-        const extrinsicPayload = registry.createType("ExtrinsicPayload", innerPayload)
-        return extrinsicPayload.sign(pair).signature
-      })
+      const innerTxSignature = await withSecretKey(payload.address, (secretKey, curve) =>
+        signSubstratePayload(innerPayload, secretKey, curve).then((signed) => signed.signature)
+      )
 
       const signatureInner = innerTxSignature.unwrap()
 
-      const innerTx = registry.createType(
-        "Extrinsic",
-        { method: innerPayload.method },
-        { version: innerPayload.version }
-      )
+      const innerTx = await assembleSubstrateTransaction(innerPayload, signatureInner)
 
-      // apply signature to the modified payload
-      innerTx.addSignature(payload.address, signatureInner, innerPayload)
-
-      const signedInnerHash = innerTx.hash.toHex()
+      const signedInnerHash = innerTx.hash
 
       // encrypt the inner tx with next mev shield key (v2 wire format includes keyHash prefix)
-      const ciphertextBytes = await encryptKemAead(keyHash, nextKeyBytes, innerTx.toU8a())
+      const ciphertextBytes = await encryptKemAead(
+        keyHash,
+        nextKeyBytes,
+        innerTx.signedTransactionBytes
+      )
 
       // craft the encrypted call (v2: commitment parameter removed)
       const { codec, location } = builder.buildCall("MevShield", "submit_encrypted")
@@ -168,10 +141,12 @@ export class SubHandler extends ExtensionHandler {
       if (!Number.isFinite(freshBlockNumber)) throw new Error("Invalid fresh block number")
 
       // outer payload uses short mortal era (≤8 blocks) as required by CheckMortality
-      const outerEra = mortalEra({
-        period: MEV_SHIELD_ERA_PERIOD,
-        phase: freshBlockNumber % MEV_SHIELD_ERA_PERIOD,
-      })
+      const outerEra = u8aToHex(
+        mortal({
+          period: MEV_SHIELD_ERA_PERIOD,
+          phase: freshBlockNumber % MEV_SHIELD_ERA_PERIOD,
+        })
+      )
       const outerPayload: SignerPayloadJSON = {
         ...payload,
         method: Binary.toHex(method),
@@ -183,31 +158,23 @@ export class SubHandler extends ExtensionHandler {
       }
 
       // sign the outer tx payload
-      const outerTxSignature = await withPjsKeyringPair(payload.address, async (pair) => {
-        const extrinsicPayload = registry.createType("ExtrinsicPayload", outerPayload)
-        return extrinsicPayload.sign(pair).signature
-      })
+      const outerTxSignature = await withSecretKey(payload.address, (secretKey, curve) =>
+        signSubstratePayload(outerPayload, secretKey, curve).then((signed) => signed.signature)
+      )
 
       const signatureOuter = outerTxSignature.unwrap()
 
-      const outerTx = registry.createType(
-        "Extrinsic",
-        { method: outerPayload.method },
-        { version: outerPayload.version }
-      )
+      const outerTx = await assembleSubstrateTransaction(outerPayload, signatureOuter)
 
-      // apply signature to the modified payload
-      outerTx.addSignature(payload.address, signatureOuter, outerPayload)
-
-      const signedOuterHash = outerTx.hash.toHex()
+      const signedOuterHash = outerTx.hash
 
       // watch execution of both transactions (both should appear in tx history)
-      await watchSubstrateTransaction(chain, registry, outerPayload, signatureOuter)
-      await watchSubstrateTransaction(chain, registry, innerPayload, signatureInner, { txInfo })
+      await watchSubstrateTransaction(chain, outerPayload, signatureOuter)
+      await watchSubstrateTransaction(chain, innerPayload, signatureInner, { txInfo })
 
       try {
         // submit only outer tx
-        await chainConnector.send(chain.id, "author_submitExtrinsic", [outerTx.toHex()])
+        await chainConnector.send(chain.id, "author_submitExtrinsic", [outerTx.signedTransaction])
       } catch (err) {
         if (signedInnerHash) dismissTransaction(signedInnerHash)
         if (signedOuterHash) dismissTransaction(signedOuterHash)
@@ -264,33 +231,5 @@ export class SubHandler extends ExtensionHandler {
   }
 }
 
-const toPjsHex = (value: number | bigint, minByteLen?: number) => {
-  let inner = value.toString(16)
-  inner = (inner.length % 2 ? "0" : "") + inner
-  const nPaddedBytes = Math.max(0, (minByteLen || 0) - inner.length / 2)
-  return `0x${"00".repeat(nPaddedBytes)}${inner}` as `0x${string}`
-}
-
 /** Maximum era period for MEV Shield transactions (≤8 blocks enforced by CheckMortality on subtensor) */
 const MEV_SHIELD_ERA_PERIOD = 8
-
-/** Encode a mortal era as a hex string for SignerPayloadJSON */
-const mortalEra = (value: { period: number; phase: number }): `0x${string}` => {
-  const factor = Math.max(value.period >> 12, 1)
-  const left = Math.min(Math.max(trailingZeroes(value.period) - 1, 1), 15)
-  const right = (value.phase / factor) << 4
-  const encoded = left | right
-  // era is encoded as a u16 LE
-  const byte0 = encoded & 0xff
-  const byte1 = (encoded >> 8) & 0xff
-  return `0x${byte0.toString(16).padStart(2, "0")}${byte1.toString(16).padStart(2, "0")}`
-}
-
-function trailingZeroes(n: number) {
-  let i = 0
-  while (!(n & 1)) {
-    i++
-    n >>= 1
-  }
-  return i
-}

@@ -1,10 +1,16 @@
+import { secp256k1 } from "@noble/curves/secp256k1.js"
 import { keccak_256 } from "@noble/hashes/sha3.js"
 import { bytesToHex } from "@noble/hashes/utils.js"
 
 /**
  * Encodes a public key using H160 encoding with Ethereum checksum.
+ * Accepts both uncompressed (65 bytes) and compressed (33 bytes) public keys -
+ * polkadot-js keystores store the compressed form as the account address.
  */
 export const encodeAddressEthereum = (publicKey: Uint8Array): `0x${string}` => {
+  if (publicKey.length === 33 && (publicKey[0] === 0x02 || publicKey[0] === 0x03))
+    publicKey = secp256k1.Point.fromBytes(publicKey).toBytes(false)
+
   // Ensure the public key is in uncompressed format (starts with 0x04)
   if (publicKey[0] !== 0x04) throw new Error("Invalid public key format")
 

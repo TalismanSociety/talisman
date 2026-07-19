@@ -1,7 +1,7 @@
 import type { WalletTransaction } from "@core/domains/transactions/types"
-import type { HexString } from "@polkadot/util/types"
 import type { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
+import type { HexString } from "@talismn/util"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
 import { useTransactions } from "@ui/state/transactions"

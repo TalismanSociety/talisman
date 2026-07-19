@@ -84,12 +84,6 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
   const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
-  const registry = useMemo(() => {
-    if (!sapi) return undefined
-    if (!lockedInputs.payload) return undefined
-    return sapi.getTypeRegistry(lockedInputs.payload)
-  }, [lockedInputs.payload, sapi])
-
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
       const { payload, txInfo, txMode } = lockedInputs
@@ -119,7 +113,6 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
       onSigned={handleSigned}
       onSentToDevice={setIsLocked}
       color={color}
-      registry={registry}
       {...lockedInputs}
     />
   )

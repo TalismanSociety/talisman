@@ -1,5 +1,5 @@
-import type { HexString } from "@polkadot/util/types"
 import { detectAddressEncoding } from "@talismn/crypto"
+import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"

@@ -32,54 +32,16 @@ minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   # published by Talisman, no buffer time needed
   - "@talismn/siws"
+  # 0.5.0 verified by diff against 0.4.0 (itself diffed against the source we previously vendored) — can be removed after 2026-07-19
+  - "@polkadot-api/tx-utils"
 
 overrides:
-  "@polkadot/api": "16.5.6"
-  "@polkadot/api-augment": "16.5.6"
-  "@polkadot/api-base": "16.5.6"
-  "@polkadot/api-contract": "16.5.6"
-  "@polkadot/api-derive": "16.5.6"
-  "@polkadot/extension-base": "0.63.1"
-  "@polkadot/extension-chains": "0.63.1"
-  "@polkadot/extension-dapp": "0.63.1"
-  "@polkadot/extension-inject": "0.63.1"
-  "@polkadot/keyring": "14.0.3"
-  "@polkadot/networks": "14.0.3"
-  "@polkadot/phishing": "0.25.25"
-  "@polkadot/react-qr": "3.16.7"
-  "@polkadot/rpc-augment": "16.5.6"
-  "@polkadot/rpc-core": "16.5.6"
-  "@polkadot/rpc-provider": "16.5.6"
-  "@polkadot/types": "16.5.6"
-  "@polkadot/types-augment": "16.5.6"
-  "@polkadot/types-codec": "16.5.6"
-  "@polkadot/types-create": "16.5.6"
-  "@polkadot/types-known": "16.5.6"
-  "@polkadot/types-support": "16.5.6"
-  "@polkadot/ui-keyring": "3.16.7"
-  "@polkadot/ui-settings": "3.16.7"
-  "@polkadot/util": "14.0.3"
-  "@polkadot/util-crypto": "14.0.3"
-  "@polkadot/wasm-bridge": "7.5.4"
-  "@polkadot/wasm-crypto": "7.5.4"
-  "@polkadot/wasm-crypto-asmjs": "7.5.4"
-  "@polkadot/wasm-crypto-init": "7.5.4"
-  "@polkadot/wasm-crypto-wasm": "7.5.4"
-  "@polkadot/wasm-util": "7.5.4"
-  "@polkadot/x-bigint": "14.0.3"
-  "@polkadot/x-fetch": "14.0.3"
-  "@polkadot/x-global": "14.0.3"
-  "@polkadot/x-randomvalues": "14.0.3"
-  "@polkadot/x-textdecoder": "14.0.3"
-  "@polkadot/x-textencoder": "14.0.3"
-  "@polkadot/x-ws": "14.0.3"
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
   # pins 6.35.3 while hw-app-eth/solana 7.x and our transports use 6.35.4, which
   # otherwise produces two incompatible Transport types. The Transport API is
   # stable across 6.x. devices follows transport.
   "@ledgerhq/devices": "8.15.1"
   "@ledgerhq/hw-transport": "6.35.4"
-  "@substrate/txwrapper-core": "7.5.3"
   "braces@<3.0.3": ">=3.0.3"
   "cookie@<0.7.0": ">=0.7.0"
   "decode-uri-component": "0.2.2"
@@ -108,6 +70,10 @@ overrides:
   "undici@>=6.0.0 <6.21.1": ">=6.21.1"
   "esbuild@<0.28.1": ">=0.28.1"
   "vite@>=5.0.0 <=5.4.11": ">=5.4.12"
+  "bn.js@<4.12.3": ">=4.12.3"
+  "bn.js@>=5.0.0 <5.2.3": ">=5.2.3"
+  # <12 cap: uuid 11.x is the last line with a CJS entrypoint, some consumers still require()
+  "uuid@<11.1.1": ">=11.1.1 <12.0.0"
   "vite@>=5.0.0 <5.4.15": ">=5.4.15"
   "vite@>=5.0.0 <5.4.16": ">=5.4.16"
   "vite@>=5.0.0 <5.4.18": ">=5.4.18"
@@ -130,8 +96,6 @@ overrides:
   "js-yaml@>=4.0.0 <4.1.2": ">=4.1.2"
   "valibot@>=0.31.0 <1.2.0": ">=1.2.0"
   "devalue@<5.8.1": ">=5.8.1"
-  "bn.js@<4.12.3": ">=4.12.3"
-  "bn.js@>=5.0.0 <5.2.3": ">=5.2.3"
   # --- 2026-06 security sweep: dev/build-chain transitive advisories ---
   "shell-quote@<1.8.4": ">=1.8.4 <2.0.0"
   "undici@>=7.0.0 <7.24.0": ">=7.24.0 <8.0.0"
@@ -152,14 +116,16 @@ overrides:
   "flatted@<3.4.2": ">=3.4.2 <4.0.0"
   "defu@<=6.1.4": ">=6.1.5 <7.0.0"
   "@babel/core@<7.29.1": ">=7.29.1 <8.0.0"
-  # single resolution for ws's optional native peer — a 5.x/6.x split duplicates the whole
-  # @polkadot/api graph (peer-hash fork) and breaks types augmentation
+  # single resolution for ws's optional native peer, avoids peer-hash graph forks
   "utf-8-validate": "6.0.4"
   # dedupe to react 19 — transitive react-18 consumers (@ledgerhq/domain-service, react-icons,
   # icons/orb devDeps) otherwise load a second copy and break rendering ("React Element from an
   # older version of React"). All of them work on 19.
   "react": "19.2.7"
   "react-dom": "19.2.7"
+  # dedupe @types/react too — icons/orb pin 18.3.12, extension 19.x; whichever hoists wins, and a
+  # split makes react-icons' ReactNode (no bigint) clash with react 19's, breaking extension tsc.
+  "@types/react": "19.2.17"
 peerDependencyRules:
   ignoreMissing:
     - "react-native"

@@ -1,11 +1,9 @@
 import { log } from "@common/log"
 import type { AccountLedgerPolkadot } from "@core/domains/keyring/exports"
-import { isJsonPayload } from "@core/util/isJsonPayload"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { type FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
 
 import type { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 import { SignLedgerBase } from "./SignLedgerBase"
@@ -19,9 +17,7 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   onCancel,
   payload,
   containerId,
-  registry,
 }) => {
-  const { t } = useTranslation()
   const account = useAccountByAddress(payload?.address) as AccountLedgerPolkadot | null
   const { sign } = useLedgerSubstrateLegacy(account?.genesisHash)
 
@@ -29,14 +25,12 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
-    if (isJsonPayload(payload) && !registry)
-      return setError(getTalismanLedgerError(t("Missing registry.")))
 
     onSentToDevice?.(true)
     setIsSigning(true)
 
     try {
-      const signature = await sign(payload, account, registry)
+      const signature = await sign(payload, account)
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })
@@ -47,7 +41,7 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     } finally {
       onSentToDevice?.(false)
     }
-  }, [payload, onSigned, account, registry, setError, t, onSentToDevice, setIsSigning, sign])
+  }, [payload, onSigned, account, setError, onSentToDevice, setIsSigning, sign])
 
   return (
     <SignLedgerBase

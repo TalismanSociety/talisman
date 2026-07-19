@@ -1,7 +1,7 @@
+import { Binary } from "@polkadot-api/substrate-bindings"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { Binary } from "polkadot-api"
 
 import { cleanupNomPoolName } from "../../helpers"
 

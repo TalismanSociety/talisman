@@ -1,4 +1,5 @@
 import type { bittensor } from "@polkadot-api/descriptors"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   type AnyMiniMetadata,
@@ -7,13 +8,13 @@ import {
   SubDTaoTokenSchema,
   subDTaoTokenId,
 } from "@talismn/chaindata-provider"
-import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
+import { getStorageKeyPrefix } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { Binary } from "polkadot-api"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult, type QueryStorageResult } from "../shared"
+import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 type GetDynamicInfosResult =
@@ -93,7 +94,7 @@ const fetchTransferableTokensMap = async (
   metadata: `0x${string}`,
   networkId: DotNetworkId
 ) => {
-  const { builder } = parseMetadataRpc(metadata)
+  const { builder } = parseMetadataRpcCached(metadata)
   const transferToggleCodec = builder.buildStorage("SubtensorModule", "TransferToggle")
 
   const transferToggleKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [

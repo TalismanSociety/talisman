@@ -1,6 +1,5 @@
 import { log } from "@common/log"
 import { decrypt } from "@metamask/browser-passworder"
-import { isObject } from "@polkadot/util"
 import { Err, Ok, type Result } from "ts-results"
 
 type LEGACY_SEED_PREFIX = "----"
@@ -42,7 +41,7 @@ export const decryptMnemonic = async (
   }
 
   try {
-    if (isObject(mnemonic)) {
+    if (mnemonic && typeof mnemonic === "object") {
       const unpackResult = decryptLegacyMnemonicObject(mnemonic)
       if (unpackResult.err) throw new Error(unpackResult.val)
       mnemonic = unpackResult.val

@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { assert } from "@polkadot/util"
+import { assert } from "@talismn/util"
 import { BehaviorSubject } from "rxjs"
 
 import { sentry } from "../../config/sentry"

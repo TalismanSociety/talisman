@@ -1,7 +1,7 @@
 import type { EvmAddress } from "@core/domains/ethereum/types"
-import { hexToU8a } from "@polkadot/util"
 import type { Address } from "@talismn/balances"
 import { encodeAddressSs58, encodeAnyAddress } from "@talismn/crypto"
+import { hexToU8a } from "@talismn/util"
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useNetworkById, useNetworks, useToken, useTokens } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"

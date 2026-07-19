@@ -2,7 +2,7 @@
 // Handles communication between injected page script and extension background
 
 import { PORT_CONTENT } from "@common/constants"
-import type { Message } from "@polkadot/extension-base/types"
+import type { PjsWindowMessage as Message } from "@core/types/pjsInterop"
 import { browser } from "wxt/browser"
 import { defineContentScript } from "wxt/utils/define-content-script"
 

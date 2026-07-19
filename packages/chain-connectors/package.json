@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
-  "license": "GPL-3.0-or-later",
+  "license": "SEE LICENSE IN LICENSE",
   "publishConfig": {
     "access": "public"
   },
@@ -23,30 +23,22 @@
   "scripts": {
     "test": "vitest run",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup --silent",
+    "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@polkadot-api/substrate-client": "0.7.0",
+    "@polkadot-api/ws-provider": "0.9.0",
     "@solana/kit": "6.10.0",
     "@talismn/chaindata-provider": "workspace:*",
-    "@talismn/connection-meta": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "eventemitter3": "^5.0.4",
     "lodash-es": "4.18.1",
     "viem": "2.52.2"
   },
   "devDependencies": {
-    "@polkadot/rpc-provider": "16.1.2",
-    "@polkadot/x-global": "13.5.3",
-    "@polkadot/x-ws": "13.5.3",
     "@talismn/tsconfig": "workspace:*",
-    "typescript": "^6.0.3"
-  },
-  "peerDependencies": {
-    "@polkadot/rpc-provider": "*",
-    "@polkadot/x-global": "*",
-    "@polkadot/x-ws": "*"
+    "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
   "exports": {

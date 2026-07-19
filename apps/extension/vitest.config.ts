@@ -19,7 +19,6 @@ export default defineConfig({
       "@talismn/keyring": path.join(packagesDir, "keyring/src"),
       "@talismn/sapi": path.join(packagesDir, "sapi/src"),
       "@talismn/scale": path.join(packagesDir, "scale/src"),
-      "@talismn/connection-meta": path.join(packagesDir, "connection-meta/src"),
       "@talismn/chain-connectors": path.join(packagesDir, "chain-connectors/src"),
       "@talismn/solana": path.join(packagesDir, "solana/src"),
       "@talismn/token-rates": path.join(packagesDir, "token-rates/src"),

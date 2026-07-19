@@ -119,9 +119,24 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://polkadot.subscan.io/tx/0x45028400dd2c7e96aa307edf9f583f814d6665ed80306e3c9a0055daa18b6dd35873d62600df46b792d582c94581f30b10065174fa51e2ed2098b7446e3063314ea30515bf2daa336d3e3244b2d74d67b3079a4fc0f9a9494ca6388c6d9c54b1b89d2ac00366060400000500003d0f887e609fbfc84f3eba39b873844a42ed0ef99c9f460d9a829d4e2ef5fe7b0784a0e7b027"
+      "https://polkadot.subscan.io/extrinsic/0x45028400dd2c7e96aa307edf9f583f814d6665ed80306e3c9a0055daa18b6dd35873d62600df46b792d582c94581f30b10065174fa51e2ed2098b7446e3063314ea30515bf2daa336d3e3244b2d74d67b3079a4fc0f9a9494ca6388c6d9c54b1b89d2ac00366060400000500003d0f887e609fbfc84f3eba39b873844a42ed0ef99c9f460d9a829d4e2ef5fe7b0784a0e7b027"
     )
     expect(urls.length).toBe(1) // subscan only
+  })
+
+  it("polkadot transaction", () => {
+    const urls = getBlockExplorerUrls(POLKADOT, {
+      type: "transaction",
+      id: "0x8d69d9c2b6b1b1f4e1e01bdd4b132a4a1c00e4e08e0e11e8d8c631aa1a677a41",
+    })
+
+    expect(urls).toContain(
+      "https://polkadot.subscan.io/extrinsic/0x8d69d9c2b6b1b1f4e1e01bdd4b132a4a1c00e4e08e0e11e8d8c631aa1a677a41"
+    )
+    expect(urls).toContain(
+      "https://polkadot.statescan.io/#/extrinsics/0x8d69d9c2b6b1b1f4e1e01bdd4b132a4a1c00e4e08e0e11e8d8c631aa1a677a41"
+    )
+    expect(urls.length).toBe(2) // polkadot.js does not support tx hash
   })
 
   it("bittensor blocks", () => {

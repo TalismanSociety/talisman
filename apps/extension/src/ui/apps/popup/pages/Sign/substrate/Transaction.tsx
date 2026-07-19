@@ -1,6 +1,5 @@
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { hexToNumber } from "@polkadot/util"
-import { validateHexString } from "@talismn/util"
+import { hexToNumber, validateHexString } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,

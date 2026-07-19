@@ -1,7 +1,7 @@
 import type { SignerPayloadRaw } from "@core/domains/signing/types"
-import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
 import { normalizeAddress } from "@talismn/crypto"
 import { type SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
+import { isAsciiPrintable, u8aToString, u8aUnwrapBytes } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -37,7 +37,7 @@ export const PolkadotSignMessageRequest = () => {
 
   const bytes = (request?.payload as SignerPayloadRaw).data
   const messageText = useMemo(
-    () => (isAscii(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
+    () => (isAsciiPrintable(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
     [bytes]
   )
 

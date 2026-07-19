@@ -17,7 +17,34 @@ export const TalismanOrbLogo: FC<{ platform: AccountPlatform }> = ({ platform })
         </g>
       )
     case "polkadot":
-      return null
+      return (
+        <g
+          opacity="0.75"
+          transform="scale(1.0323) translate(14 12)"
+          fill="white"
+          className="orb-type"
+        >
+          <circle cx="16.9926" cy="2.83173" r="2.83173" />
+          <circle cx="9.91302" cy="7.47004" r="2.83173" />
+          <circle cx="24.0705" cy="7.47004" r="2.83173" />
+          <circle cx="16.9926" cy="10.8874" r="2.83173" />
+          <circle cx="2.83173" cy="11.1316" r="2.83173" />
+          <circle cx="31.1501" cy="11.1316" r="2.83173" />
+          <circle cx="9.91302" cy="15.2815" r="2.83173" />
+          <circle cx="24.0705" cy="15.2815" r="2.83173" />
+          <circle cx="2.83173" cy="18.6993" r="2.83173" />
+          <circle cx="16.9926" cy="18.9433" r="2.83173" />
+          <circle cx="31.1501" cy="18.6993" r="2.83173" />
+          <circle cx="9.91302" cy="23.0931" r="2.83173" />
+          <circle cx="24.0705" cy="23.0931" r="2.83173" />
+          <circle cx="2.83173" cy="26.2667" r="2.83173" />
+          <circle cx="16.9926" cy="26.999" r="2.83173" />
+          <circle cx="31.1501" cy="26.2667" r="2.83173" />
+          <circle cx="9.91302" cy="30.905" r="2.83173" />
+          <circle cx="24.0705" cy="30.905" r="2.83173" />
+          <circle cx="16.9926" cy="35.0548" r="2.83173" />
+        </g>
+      )
     case "solana":
       return (
         <g opacity="0.75" className="orb-type" transform="scale(0.45) translate(37.5, 37.5)">
