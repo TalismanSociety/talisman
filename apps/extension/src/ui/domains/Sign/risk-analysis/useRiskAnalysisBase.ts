@@ -172,7 +172,7 @@ export const useRiskAnalysisBase = <
     }
     if (platform === "solana" && networkId) {
       const r = result as RiskAnalysisResponse<"solana"> | undefined
-      if (r?.result?.simulation?.account_summary.account_assets_diff) {
+      if (r?.result?.simulation?.account_summary?.account_assets_diff) {
         return r.result.simulation.account_summary.account_assets_diff
           .map((token) => {
             if (token.asset.type === "SOL") return solNativeTokenId(networkId)
