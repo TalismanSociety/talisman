@@ -11,10 +11,11 @@ import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
 import type { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (
-  accountSummary: MessageScanResponse.Result.Simulation.AccountSummary
+  // required in the type but may be missing from a partial/degraded Blockaid response
+  accountSummary: MessageScanResponse.Result.Simulation.AccountSummary | undefined
 ) => {
   return (
-    accountSummary.account_assets_diff?.map((diff) => {
+    accountSummary?.account_assets_diff?.map((diff) => {
       if (!diff.in && !diff.out) {
         log.warn("[getAccountStateChanges] assetDiff with no changes", { accountSummary, diff })
       }
