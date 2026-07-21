@@ -143,6 +143,8 @@ jobs:
         env:
           ANVIL_RPC_URL: http://localhost:8545
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/e2e
+          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
+          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: Notify Discord on flaky e2e tests
         # runs even if a prior step failed, so flaky tests are surfaced regardless of the run outcome
         if: ${{ !cancelled() }}
@@ -181,8 +183,6 @@ jobs:
           # malicious PR branch name would otherwise be executed as shell)
           REF: ${{ github.head_ref || github.ref_name }}
           SHA: ${{ github.sha }}
-          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
-          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: Checkout visual regression snapshots from base branch
         if: github.event_name == 'pull_request'
         run: |
