@@ -7,6 +7,8 @@ import { getUniswapV2TokenInfo } from "@core/util/getUniswapV2TokenInfo"
 import {
   EthereumAddressSchema,
   type EthNetwork,
+  evmErc20TokenId,
+  evmUniswapV2TokenId,
   getGithubTokenLogoUrlByCoingeckoId,
   type Token,
   TokenBaseSchema,
@@ -29,7 +31,7 @@ import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
 import { range } from "lodash-es"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
@@ -130,6 +132,14 @@ const AddCustomTokenForm = () => {
   const fldNetworkId = useField({ form, name: "networkId" })
   const fldContractAddress = useField({ form, name: "contractAddress" })
 
+  // Fields populated from the token info fetch. They must all be cleared whenever the contract
+  // address stops resolving to a new token, else they keep displaying the previous token's info.
+  // `defaultValues` is `{} as FormData`, hence `undefined` being the pristine value here.
+  const clearTokenFields = useCallback(() => {
+    for (const name of ["token", "symbol", "decimals", "logo", "coingeckoId", "name"] as const)
+      form.setFieldValue(name as never, undefined as never)
+  }, [form])
+
   return (
     <form
       className="my-20"
@@ -198,11 +208,24 @@ const AddCustomTokenForm = () => {
               if (!value) throw new Error("Contract address is required")
               if (!isEthereumAddress(value)) throw new Error("Invalid address")
 
-              const token = await getEthereumTokenInfo(network, value as `0x${string}`, signal)
+              // Token ids are deterministic from the network and contract address, so we can detect
+              // an already-added token up-front without fetching its info from the network. Doing this
+              // first ensures the "Token already exists" message is shown reliably, even if fetching
+              // the token info would be slow or fail (e.g. RPC or CoinGecko issues).
+              // We check both supported types, as we don't know yet which one the contract implements.
+              const existingTokens = await Promise.all(
+                [evmErc20TokenId(networkId, value), evmUniswapV2TokenId(networkId, value)].map(
+                  (tokenId) => firstValueFrom(getToken$(tokenId))
+                )
+              )
+              if (existingTokens.some(Boolean)) {
+                clearTokenFields()
+                return t("Token already exists")
+              }
+
+              const token = await getEthereumTokenInfo(network, value, signal)
 
               if (token) {
-                if (await firstValueFrom(getToken$(token.id))) return "Token already exists"
-
                 const logo = token.coingeckoId?.trim()
                   ? getGithubTokenLogoUrlByCoingeckoId(token.coingeckoId)
                   : undefined
@@ -217,7 +240,7 @@ const AddCustomTokenForm = () => {
               }
             } catch (err) {
               log.error("Failed to fetch token info", { value, err })
-              fieldApi.form.setFieldValue("token", undefined)
+              clearTokenFields()
               return (err as Error)?.message ?? t("Invalid contract address")
             }
 
