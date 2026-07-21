@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs"
 
 import { bytesToHex, randomBytes } from "@noble/hashes/utils"
-import type { BrowserContext, Locator, Page } from "@playwright/test"
+import type { BrowserContext, Locator, Page, Worker } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
 
 type AccountType = "ethereum" | "substrate" | "solana"
@@ -21,6 +21,26 @@ export const ethDevChain = "http://localhost:8545"
 
 const isExternalDappError = (url: string | undefined) =>
   !!url && !url.startsWith("chrome-extension://")
+
+// Seeds pre-registered Gandalf credentials (from CI secrets) into extension storage so
+// test runs skip the registration proof-of-work, which starves the background service
+// worker on slow CI runners and makes background-dependent assertions time out.
+// Without the env vars (e.g. fork PRs, local runs) the extension registers as usual.
+const seedGandalfCredentials = async (background: Worker) => {
+  const installId = process.env.E2E_GANDALF_INSTALL_ID
+  const privateKeyHex = process.env.E2E_GANDALF_PRIVATE_KEY
+  if (!installId || !privateKeyHex) return
+
+  await background.evaluate(
+    (gandalf) => {
+      const { chrome } = globalThis as unknown as {
+        chrome: { storage: { local: { set: (items: Record<string, unknown>) => Promise<void> } } }
+      }
+      return chrome.storage.local.set({ gandalf })
+    },
+    { installId, privateKeyHex }
+  )
+}
 
 export const test = base.extend<{
   context: BrowserContext
@@ -70,6 +90,8 @@ export const test = base.extend<{
   extensionId: async ({ context }, utilize) => {
     let [background] = context.serviceWorkers()
     if (!background) background = await context.waitForEvent("serviceworker")
+
+    await seedGandalfCredentials(background)
 
     const extensionId = background.url().split("/")[2]
     await utilize(extensionId)

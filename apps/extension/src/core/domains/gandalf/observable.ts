@@ -37,6 +37,12 @@ async function ensureRegistered(
   log.debug("Gandalf: no install credentials found, registering…")
   const credentials = await registerInstall(signal)
 
+  // credentials may have appeared while the proof-of-work was solving (e.g. e2e fixtures
+  // seeding pre-registered ones) - keep them, ours were never used to sign anything
+  const existing = await gandalfStore.get()
+  if (existing.installId && existing.privateKeyHex)
+    return { installId: existing.installId, privateKeyHex: existing.privateKeyHex }
+
   await gandalfStore.set({
     installId: credentials.installId,
     privateKeyHex: credentials.privateKeyHex,

@@ -85,8 +85,15 @@ describe("isFresh (timestamp-only TTL)", () => {
   })
 
   it("is fresh at exact boundary minus 1ms", () => {
-    const justInsideTTL = Date.now() - (7 * 24 * 60 * 60 * 1000 - 1)
-    expect(isFresh(justInsideTTL)).toBe(true)
+    // freeze the clock: isFresh calls Date.now() again, and a ≥1ms drift between the
+    // two reads pushes the timestamp past the boundary (flaky on slow CI runners)
+    vi.useFakeTimers()
+    try {
+      const justInsideTTL = Date.now() - (7 * 24 * 60 * 60 * 1000 - 1)
+      expect(isFresh(justInsideTTL)).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 
