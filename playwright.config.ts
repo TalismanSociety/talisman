@@ -33,10 +33,6 @@ if (
  */
 export default defineConfig({
   timeout: 60_000, // 60 seconds for all tests
-  // assertions poll until they pass; several forms validate asynchronously through the extension
-  // background (mnemonic validation, watched-address checks, ...), which on slow CI runners
-  // regularly exceeds the 5s default and makes those tests flaky
-  expect: { timeout: 15_000 },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
