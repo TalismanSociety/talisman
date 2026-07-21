@@ -181,6 +181,8 @@ jobs:
           # malicious PR branch name would otherwise be executed as shell)
           REF: ${{ github.head_ref || github.ref_name }}
           SHA: ${{ github.sha }}
+          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
+          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: Checkout visual regression snapshots from base branch
         if: github.event_name == 'pull_request'
         run: |
@@ -193,6 +195,8 @@ jobs:
         env:
           ANVIL_RPC_URL: http://localhost:8545
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/visual-regression
+          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
+          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

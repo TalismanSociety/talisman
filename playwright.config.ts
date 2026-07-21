@@ -7,6 +7,7 @@ dotenv.config({ path: "apps/extension/.env" })
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: "./playwright/global-setup.ts",
   timeout: 60_000, // 60 seconds for all tests
   /* Run tests in files in parallel */
   fullyParallel: true,
