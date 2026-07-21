@@ -1,0 +1,12 @@
+{
+  "extends": "@talismn/tsconfig/es6-node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["**/node_modules"]
+}
