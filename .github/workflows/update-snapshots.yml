@@ -56,6 +56,9 @@ jobs:
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
           pnpm exec playwright test visual-regression --project=chromium --update-snapshots
+        env:
+          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
+          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
 
       - name: Commit updated snapshots and create PR
         run: |

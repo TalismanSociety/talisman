@@ -171,6 +171,7 @@
     "chore:generate-clients:tda:local": "pnpm dlx swagger-typescript-api@13.6.2 generate -p http://localhost:8787/openapi.json -o ./src/core/domains/bittensor/tao-data -n TaoDataApi --api-class-name TaoDataApi",
     "chore:generate-clients": "pnpm chore:generate-clients:sn45 && pnpm chore:generate-clients:tda && pnpm chore:generate-clients:wrc",
     "chore:generate-init-data": "tsx scripts/generateRemoteConfigInitData.ts",
+    "chore:register-gandalf-e2e": "pnpm --silent tsx scripts/register-gandalf-e2e.ts",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "dev:kill": "lsof -ti:8254 | xargs kill -9 2>/dev/null || true",
