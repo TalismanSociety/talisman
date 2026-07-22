@@ -1,5 +1,28 @@
 # @talismn/chaindata-provider
 
+## 2.0.0
+
+### Major Changes
+
+- f0abc19: Relicense: packages move from GPL-3.0-or-later to the Talisman Licence, except `@talismn/orb`, which moves to MIT.
+
+### Patch Changes
+
+- c714f08: Bump patch/minor dependencies (eventemitter3, dexie, react-icons)
+- bd1581b: Serialize dynamic-token writes: concurrent `registerDynamicTokens`/`syncDynamicTokens` calls interleaved their read-merge-write cycles, so a later write could silently drop tokens the earlier one just added — visible as dTAO (and SPL) balances flickering in and out of the portfolio while balance modules register tokens concurrently (e.g. during the post-restore discovery storm).
+- 4f1ba49: feat: balances chunking
+- dccbbf8: Fix subscan transaction links (use `/extrinsic/` instead of `/tx/`)
+- 82ba63a: generate init data
+- ffc679c: Add throw-safe isTokenIdOfType / isTokenIdInTypes token id type checks
+- 24fee4e: Upgrade to typescript 7, switch build tool from tsup to tsdown
+- Updated dependencies [253ca85]
+- Updated dependencies [4f1ba49]
+- Updated dependencies [187a064]
+- Updated dependencies [4f1ba49]
+- Updated dependencies [f0abc19]
+- Updated dependencies [24fee4e]
+  - @talismn/util@2.0.0
+
 ## 1.5.1
 
 ### Patch Changes

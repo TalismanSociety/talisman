@@ -1,5 +1,20 @@
 # @talismn/keyring
 
+## 2.0.0
+
+### Major Changes
+
+- f0abc19: Relicense: packages move from GPL-3.0-or-later to the Talisman Licence, except `@talismn/orb`, which moves to MIT.
+
+### Patch Changes
+
+- 24fee4e: Upgrade to typescript 7, switch build tool from tsup to tsdown
+- Updated dependencies [921aee5]
+- Updated dependencies [187a064]
+- Updated dependencies [f0abc19]
+- Updated dependencies [24fee4e]
+  - @talismn/crypto@1.0.0
+
 ## 1.0.12
 
 ### Patch Changes
