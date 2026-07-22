@@ -1,4 +1,5 @@
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { AccountCopyXpubModal } from "@ui/domains/Account/AccountCopyXpubModal"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -54,6 +55,7 @@ export const DashboardNotificationsAndModals = () => {
       {/* this actually needs renders in place at the bottom of the page */}
       <DashboardNotifications />
       {/* below components can be rendered from anywhere */}
+      <AccountCopyXpubModal />
       <AccountExportModal />
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />

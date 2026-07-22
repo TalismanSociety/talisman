@@ -9,9 +9,9 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@ui/components/ContextMenu"
-import { notify } from "@ui/components/Notifications"
 import type { PopoverOptions } from "@ui/components/Popover"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useAccountCopyXpubModal } from "@ui/domains/Account/AccountCopyXpubModal"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -25,7 +25,6 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountCanWriteProxies, useAccountProxiesCount } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkByGenesisHash, useNetworks } from "@ui/state/chaindata"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -102,29 +101,14 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   }, [account, analyticsFrom, chain?.id, genericEvent, openCopyAddressModal])
 
   // bitcoin power users need the xpub for watch-only imports and portfolio
-  // trackers — this is the only place in the UI where it can be copied
+  // trackers — this is the only place in the UI where it is exposed
+  const { open: openCopyXpubModal } = useAccountCopyXpubModal()
   const canCopyXpub = !!account && isBitcoinXpub(account.address)
-  const copyXpub = useCallback(async () => {
+  const copyXpub = useCallback(() => {
     if (!account) return
-    genericEvent("copy xpub", { from: analyticsFrom })
-    const toastId = `copy_${account.address}`
-    try {
-      await navigator.clipboard.writeText(account.address)
-      notify(
-        {
-          type: "success",
-          title: t("Xpub copied"),
-          subtitle: shortenAddress(account.address, 6, 6),
-        },
-        { toastId }
-      )
-    } catch {
-      notify(
-        { type: "error", title: t("Copy failed"), subtitle: shortenAddress(account.address, 6, 6) },
-        { toastId }
-      )
-    }
-  }, [account, analyticsFrom, genericEvent, t])
+    genericEvent("open copy xpub", { from: analyticsFrom })
+    openCopyXpubModal(account)
+  }, [account, analyticsFrom, genericEvent, openCopyXpubModal])
 
   const { open: _openAccountRenameModal } = useAccountRenameModal()
   const canRename = !!account
