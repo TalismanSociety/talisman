@@ -88,7 +88,6 @@ type ExplorerHost =
   | "blockscout.com"
   | "moonscan.io"
   | "bittensor.ai"
-  | "trezor.io"
   | (string & {})
 
 const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
@@ -105,17 +104,6 @@ const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
 // good enough for URL routing without pulling in a base58 decoder
 const isBitcoinXpubLike = (address: string) =>
   /^[xyztuv]pub[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(address)
-
-// most explorers (including mempool.space) only support on-chain addresses:
-// looking up an xpub needs an explorer that derives and aggregates the wallet
-const getXpubPath = (xpub: string, host: ExplorerHost): string | null => {
-  switch (host) {
-    case "trezor.io": // blockbook instances (e.g. btc1.trezor.io)
-      return `/xpub/${xpub}`
-    default:
-      return null
-  }
-}
 
 const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | null => {
   switch (query.type) {
@@ -134,7 +122,9 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return `/tx/${query.id}`
       }
     case "address":
-      if (isBitcoinXpubLike(query.address)) return getXpubPath(query.address, host)
+      // xpubs are wallet identities, not on-chain addresses: explorers can't
+      // resolve them, and they must never leak into a third-party URL anyway
+      if (isBitcoinXpubLike(query.address)) return null
       switch (host) {
         case "avail.so":
         case "polkadot.js":
@@ -149,7 +139,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return `/address/${query.address}`
       }
     case "account": {
-      if (isBitcoinXpubLike(query.address)) return getXpubPath(query.address, host)
+      if (isBitcoinXpubLike(query.address)) return null
       switch (host) {
         case "avail.so":
         case "polkadot.js":

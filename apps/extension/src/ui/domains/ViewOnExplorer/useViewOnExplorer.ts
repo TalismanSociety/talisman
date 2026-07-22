@@ -1,4 +1,5 @@
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import { isBitcoinXpub } from "@talismn/crypto"
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"
 
@@ -15,6 +16,10 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
   const { open: openNetworkPickerModal } = useExplorerNetworkPickerModal()
   const network = useChainByIdOrGenesisHash(networkIdOrHash)
 
+  // bitcoin account identities are xpubs, which must never be sent to a third
+  // party: an explorer operator could track the whole wallet forever
+  const isXpub = useMemo(() => !!address && isBitcoinXpub(address), [address])
+
   const blockExplorerUrl = useMemo(
     () =>
       network ? (getBlockExplorerUrls(network, { type: "address", address })[0] ?? null) : null,
@@ -22,18 +27,19 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
   )
 
   const canOpen = useMemo(
-    () => !networkIdOrHash || blockExplorerUrl,
-    [blockExplorerUrl, networkIdOrHash]
+    () => !isXpub && (!networkIdOrHash || blockExplorerUrl),
+    [blockExplorerUrl, isXpub, networkIdOrHash]
   )
 
   const open = useCallback(() => {
+    if (isXpub) return
     if (blockExplorerUrl) {
       // only happens if account has a genesisHash
       window.open(blockExplorerUrl, "_blank")
     } else {
       openNetworkPickerModal({ address })
     }
-  }, [address, blockExplorerUrl, openNetworkPickerModal])
+  }, [address, blockExplorerUrl, isXpub, openNetworkPickerModal])
 
   return {
     open,

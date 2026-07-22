@@ -56,7 +56,7 @@ const BITTENSOR_BOTH_EXPLORERS = {
 
 const BITCOIN = {
   id: "bitcoin",
-  blockExplorerUrls: ["https://mempool.space", "https://btc1.trezor.io"],
+  blockExplorerUrls: ["https://mempool.space"],
 } as unknown as Network
 
 const BIP84_ZPUB =
@@ -341,20 +341,18 @@ describe("getExplorerUrls", () => {
 
     expect(urls).toEqual([
       "https://mempool.space/address/bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
-      "https://btc1.trezor.io/address/bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
     ])
   })
 
-  it("bitcoin xpub is only linked on explorers that support it", () => {
-    const urls = getBlockExplorerUrls(BITCOIN, { type: "address", address: BIP84_ZPUB })
-
-    expect(urls).toEqual([`https://btc1.trezor.io/xpub/${BIP84_ZPUB}`])
+  it("bitcoin xpub never produces an explorer link", () => {
+    expect(getBlockExplorerUrls(BITCOIN, { type: "address", address: BIP84_ZPUB })).toEqual([])
+    expect(getBlockExplorerUrls(BITCOIN, { type: "account", address: BIP84_ZPUB })).toEqual([])
   })
 
-  it("bitcoin xpub as account query", () => {
-    const urls = getBlockExplorerUrls(BITCOIN, { type: "account", address: BIP84_ZPUB })
-
-    expect(urls).toEqual([`https://btc1.trezor.io/xpub/${BIP84_ZPUB}`])
+  it("bitcoin canonical xpub never produces an explorer link", () => {
+    const CANONICAL_XPUB =
+      "xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V"
+    expect(getBlockExplorerUrls(BITCOIN, { type: "address", address: CANONICAL_XPUB })).toEqual([])
   })
 
   it("bitcoin transaction", () => {
