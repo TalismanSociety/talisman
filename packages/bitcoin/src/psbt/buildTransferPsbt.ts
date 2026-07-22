@@ -35,7 +35,8 @@ const xOnly = (publicKey: Uint8Array) => (publicKey.length === 33 ? publicKey.sl
 
 const utxoKey = (txid: string, vout: number) => `${txid.toLowerCase()}:${vout}`
 
-const buildSelectionInput = (
+/** PSBT input record for one of our utxos, with RBF sequence and hardware derivation fields */
+export const buildPsbtInput = (
   utxo: BitcoinUtxo,
   account: PsbtAccountMeta | undefined,
   network: ReturnType<typeof getBtcSignerNetwork>
@@ -86,7 +87,7 @@ const buildSelectionInput = (
 
 // TS6 disallows passing OutScript.decode's return (script: ArrayBufferLike) straight to
 // Address.encode (script: ArrayBuffer) — the runtime values are compatible
-const scriptToAddress = (script: Uint8Array, coder: ReturnType<typeof Address>): string =>
+export const scriptToAddress = (script: Uint8Array, coder: ReturnType<typeof Address>): string =>
   coder.encode(OutScript.decode(script) as Parameters<(typeof coder)["encode"]>[0])
 
 export const buildTransferPsbt = (params: {
@@ -125,7 +126,7 @@ export const buildTransferPsbt = (params: {
   const select = (utxos: BitcoinUtxo[]) => {
     if (!utxos.length) return undefined
     const inputsByKey = new Map(utxos.map((u) => [utxoKey(u.txid, u.vout), u]))
-    const selectionInputs = utxos.map((u) => buildSelectionInput(u, params.account, network))
+    const selectionInputs = utxos.map((u) => buildPsbtInput(u, params.account, network))
 
     const isMax = params.amountSats === "max"
     const selection = selectUTXO(

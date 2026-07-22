@@ -31,6 +31,7 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
         address: tx.address,
         psbtBase64,
         maxFeeSats: tx.maxFeeSats,
+        replacesTxid: tx.replacesTxid,
         txInfo: tx.txInfo,
       })
       onSubmit(txid)

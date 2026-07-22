@@ -28,10 +28,12 @@ import type {
   RequestBitcoinFeeEstimates,
   RequestBitcoinGetUnusedAddress,
   RequestBitcoinGetUtxos,
+  RequestBitcoinReplacePreview,
   RequestBitcoinSubmit,
   ResponseBitcoinAccountPreview,
   ResponseBitcoinGetUnusedAddress,
   ResponseBitcoinGetUtxos,
+  ResponseBitcoinReplacePreview,
   ResponseBitcoinSubmit,
 } from "@core/domains/bitcoin/exports"
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
@@ -311,6 +313,7 @@ export default interface MessageTypes {
   btcGetUtxos: (req: RequestBitcoinGetUtxos) => Promise<ResponseBitcoinGetUtxos>
   btcGetFeeEstimates: (req: RequestBitcoinFeeEstimates) => Promise<BtcFeeEstimates>
   btcSubmit: (req: RequestBitcoinSubmit) => Promise<ResponseBitcoinSubmit>
+  btcReplacePreview: (req: RequestBitcoinReplacePreview) => Promise<ResponseBitcoinReplacePreview>
   btcAccountPreview: (req: RequestBitcoinAccountPreview) => Promise<ResponseBitcoinAccountPreview>
 
   // substrate chain metadata

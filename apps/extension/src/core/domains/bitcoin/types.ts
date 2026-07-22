@@ -58,11 +58,30 @@ export type RequestBitcoinSubmit = {
   psbtBase64: string
   /** hard ceiling for the transaction fee, guards against fee computation bugs */
   maxFeeSats: string
+  /** BIP125 replacement: txid of the pending transaction this one replaces */
+  replacesTxid?: string
   txInfo?: WalletTransactionInfo
 }
 
 export type ResponseBitcoinSubmit = {
   txid: string
+}
+
+export type RequestBitcoinReplacePreview = {
+  networkId: BtcNetworkId
+  /** txid of the pending transaction to replace */
+  txid: string
+  type: "speed-up" | "cancel"
+  feeRateSatVb: number
+}
+
+export type ResponseBitcoinReplacePreview = {
+  /** unsigned replacement PSBT */
+  psbtBase64: string
+  feeSats: string
+  sentSats: string
+  /** tree the replacement spends — drives the ledger wallet policy */
+  tree: BitcoinTreeName
 }
 
 export type RequestBitcoinAccountPreview = {
@@ -87,5 +106,6 @@ export type BitcoinMessages = {
   "pri(bitcoin.utxos.get)": [RequestBitcoinGetUtxos, ResponseBitcoinGetUtxos]
   "pri(bitcoin.feeEstimates.get)": [RequestBitcoinFeeEstimates, BtcFeeEstimates]
   "pri(bitcoin.tx.submit)": [RequestBitcoinSubmit, ResponseBitcoinSubmit]
+  "pri(bitcoin.tx.replace.preview)": [RequestBitcoinReplacePreview, ResponseBitcoinReplacePreview]
   "pri(bitcoin.account.preview)": [RequestBitcoinAccountPreview, ResponseBitcoinAccountPreview]
 }

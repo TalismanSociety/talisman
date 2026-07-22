@@ -295,6 +295,7 @@ export const api: MessageTypes = {
   btcGetUtxos: (req) => messageService.sendMessage("pri(bitcoin.utxos.get)", req),
   btcGetFeeEstimates: (req) => messageService.sendMessage("pri(bitcoin.feeEstimates.get)", req),
   btcSubmit: (req) => messageService.sendMessage("pri(bitcoin.tx.submit)", req),
+  btcReplacePreview: (req) => messageService.sendMessage("pri(bitcoin.tx.replace.preview)", req),
   btcAccountPreview: (req) => messageService.sendMessage("pri(bitcoin.account.preview)", req),
 
   // nfts

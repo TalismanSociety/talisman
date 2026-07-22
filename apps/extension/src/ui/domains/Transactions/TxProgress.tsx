@@ -7,7 +7,6 @@ import type {
 } from "@core/domains/transactions/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import type { HexString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import {
@@ -26,7 +25,7 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   if (!network) return null
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
-export type ReplacementCallbackArgs = { txId: `0x${string}`; networkId: string }
+export type ReplacementCallbackArgs = { txId: string; networkId: string }
 
 type TxReplaceActionsProps = {
   tx: WalletTransaction
@@ -40,7 +39,7 @@ const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
   const handleClose = useCallback(
-    (newHash?: HexString) => {
+    (newHash?: string) => {
       setReplaceType(undefined)
       if (newHash) {
         onReplacementComplete?.({ txId: newHash, networkId: tx.networkId })
@@ -51,8 +50,9 @@ const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete
 
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
-  if (evmNetwork?.preserveGasEstimate) return null
-  if (tx.status !== "pending" || tx.platform !== "ethereum") return null
+  if (tx.platform === "ethereum" && evmNetwork?.preserveGasEstimate) return null
+  if (tx.status !== "pending" || (tx.platform !== "ethereum" && tx.platform !== "bitcoin"))
+    return null
 
   return (
     <>
@@ -296,9 +296,15 @@ type TxProgressBtcProps = {
   tx: WalletTransactionBtc
   onClose?: () => void
   className?: string
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-const TxProgressBtc: FC<TxProgressBtcProps> = ({ tx, className, onClose }) => {
+const TxProgressBtc: FC<TxProgressBtcProps> = ({
+  tx,
+  className,
+  onClose,
+  onReplacementComplete,
+}) => {
   const network = useNetworkById(tx.networkId, "bitcoin")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
@@ -309,6 +315,7 @@ const TxProgressBtc: FC<TxProgressBtcProps> = ({ tx, className, onClose }) => {
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
+      onReplacementComplete={onReplacementComplete}
     />
   )
 }
@@ -366,7 +373,14 @@ export const TxProgress: FC<TxProgressProps> = ({
     case "solana":
       return <TxProgressSol tx={tx} onClose={onClose} className={className} />
     case "bitcoin":
-      return <TxProgressBtc tx={tx} onClose={onClose} className={className} />
+      return (
+        <TxProgressBtc
+          tx={tx}
+          onClose={onClose}
+          className={className}
+          onReplacementComplete={onReplacementComplete}
+        />
+      )
     default:
       return null
   }

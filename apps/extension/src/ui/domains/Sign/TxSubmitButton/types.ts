@@ -36,6 +36,8 @@ export type TxSubmitButtonTransactionBtc = {
   maxFeeSats: string
   /** which tree the PSBT spends — drives the ledger wallet policy */
   tree: "payments" | "ordinals"
+  /** BIP125 replacement: txid of the pending transaction this one replaces */
+  replacesTxid?: string
   txInfo?: WalletTransactionInfo
 }
 
