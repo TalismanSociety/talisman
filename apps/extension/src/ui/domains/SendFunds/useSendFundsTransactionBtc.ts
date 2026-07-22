@@ -129,6 +129,7 @@ export const useSendFundsTransactionBtc = ({
           changeAddress,
           network: networkId as BitcoinNetworkName,
           account: accountMeta,
+          lockTimeHeight: qUtxos.data.tipHeight,
         }),
       }
     } catch (error) {

@@ -42,6 +42,8 @@ export type SerializedBitcoinUtxo = {
 
 export type ResponseBitcoinGetUtxos = {
   utxos: SerializedBitcoinUtxo[]
+  /** chain tip at scan time — used as anti-fee-sniping nLockTime by the PSBT builder */
+  tipHeight: number
 }
 
 export type RequestBitcoinFeeEstimates = {

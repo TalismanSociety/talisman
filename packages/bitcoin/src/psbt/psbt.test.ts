@@ -1,4 +1,4 @@
-import { p2tr } from "@scure/btc-signer"
+import { p2tr, Transaction } from "@scure/btc-signer"
 import {
   deriveKeypair,
   encodeP2trAddress,
@@ -206,6 +206,34 @@ describe("buildTransferPsbt", () => {
     expect(isPsbtFullySigned(signed)).toBe(true)
     const final = finalizeAndExtract(signed)
     expect(final.txid).toMatch(/^[0-9a-f]{64}$/)
+  })
+
+  it("signals BIP125 replace-by-fee and sets the anti-fee-sniping locktime", async () => {
+    const { utxos, account, changeAddress, keysByUtxo, recipient } = await getFixtures()
+    const tipHeight = 899_999
+
+    const built = buildTransferPsbt({
+      utxos,
+      recipient,
+      amountSats: 50_000n,
+      feeRateSatVb: 5,
+      changeAddress,
+      network: "bitcoin",
+      account,
+      lockTimeHeight: tipHeight,
+    })
+
+    const tx = Transaction.fromPSBT(built.psbt)
+    expect(tx.lockTime).toEqual(tipHeight)
+    for (let i = 0; i < tx.inputsLength; i++) expect(tx.getInput(i).sequence).toEqual(0xfffffffd)
+
+    // a locktimed, RBF-signalling transaction must still sign and finalize
+    const signed = signPsbtWithKeys(built.psbt, keysByUtxo(built.selectedUtxos))
+    const final = finalizeAndExtract(signed)
+    expect(final.txid).toMatch(/^[0-9a-f]{64}$/)
+
+    const finalTx = Transaction.fromRaw(Buffer.from(final.txHex, "hex"))
+    expect(finalTx.lockTime).toEqual(tipHeight)
   })
 
   it("rejects a recipient on the wrong network", async () => {

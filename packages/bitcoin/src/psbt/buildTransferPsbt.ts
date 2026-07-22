@@ -9,7 +9,7 @@ import {
   type Transaction,
 } from "@scure/btc-signer"
 
-import { DUST_LIMIT_MAX_SATS } from "../constants"
+import { DUST_LIMIT_MAX_SATS, RBF_SEQUENCE } from "../constants"
 import { getBtcSignerNetwork } from "../networks"
 import type { BitcoinNetworkName, BitcoinTree, BitcoinUtxo } from "../types"
 
@@ -51,6 +51,7 @@ const buildSelectionInput = (
     return {
       txid: utxo.txid,
       index: utxo.vout,
+      sequence: RBF_SEQUENCE,
       witnessUtxo: { script: spend.script, amount: utxo.valueSats },
       tapInternalKey: internalKey,
       ...(fingerprint !== undefined && fullPath
@@ -70,6 +71,7 @@ const buildSelectionInput = (
   return {
     txid: utxo.txid,
     index: utxo.vout,
+    sequence: RBF_SEQUENCE,
     witnessUtxo: { script: spend.script, amount: utxo.valueSats },
     ...(fingerprint !== undefined && fullPath
       ? {
@@ -99,6 +101,11 @@ export const buildTransferPsbt = (params: {
   allowOrdinalsUtxos?: boolean
   /** populates PSBT bip32 derivation fields (required for hardware signing) */
   account?: PsbtAccountMeta
+  /**
+   * anti-fee-sniping: current tip height, set as nLockTime so the transaction is
+   * only valid in the next block (the practice of Bitcoin Core and most wallets)
+   */
+  lockTimeHeight?: number
 }): BuildTransferPsbtResult => {
   const network = getBtcSignerNetwork(params.network)
 
@@ -132,6 +139,7 @@ export const buildTransferPsbt = (params: {
         bip69: true,
         createTx: true,
         network,
+        ...(params.lockTimeHeight ? { lockTime: params.lockTimeHeight } : {}),
       }
     )
     if (!selection?.tx) return undefined

@@ -14,3 +14,9 @@ export const DUST_LIMIT_MAX_SATS = 546n
 
 /** how many addresses are queried concurrently during a gap scan */
 export const SCAN_BATCH_SIZE = 10
+
+/**
+ * Input sequence signalling BIP125 replace-by-fee. Also below 0xfffffffe, which
+ * makes nLockTime enforceable — required for the anti-fee-sniping locktime.
+ */
+export const RBF_SEQUENCE = 0xfffffffd

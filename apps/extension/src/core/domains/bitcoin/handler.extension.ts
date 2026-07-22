@@ -95,7 +95,7 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
             hrp,
           })
           const utxos = await getSpendableUtxos(api, scan)
-          return { utxos: utxos.map(serializeBitcoinUtxo) }
+          return { utxos: utxos.map(serializeBitcoinUtxo), tipHeight: scan.tipHeight }
         }
 
         // WIF (single static P2WPKH address) account: query the address directly.
@@ -103,6 +103,7 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
         const tip = await api.getTipHeight()
         const addressUtxos = await api.getAddressUtxos(account.address)
         return {
+          tipHeight: tip,
           utxos: addressUtxos.map((utxo) => ({
             txid: utxo.txid,
             vout: utxo.vout,
