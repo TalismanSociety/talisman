@@ -4,6 +4,7 @@ import {
   type AccountPlatform,
   getAccountPlatformFromAddress,
   isAddressEqual,
+  isBitcoinOnChainAddress,
   type KeypairCurve,
 } from "@talismn/crypto"
 import {
@@ -202,7 +203,11 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
     case "solana":
       return isAccountPlatformSolana(account)
     case "bitcoin":
-      return isAccountPlatformBitcoin(account)
+      // contacts can't hold balances but are valid recipients, on-chain addresses only (not xpubs)
+      return (
+        isAccountPlatformBitcoin(account) ||
+        (account.type === "contact" && isBitcoinOnChainAddress(account.address))
+      )
     default:
       log.warn("Unsupported network platform", network)
       throw new Error("Unsupported network platform")
