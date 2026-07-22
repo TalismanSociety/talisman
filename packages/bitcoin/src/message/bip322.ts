@@ -165,8 +165,10 @@ export const verifyBip322Simple = (params: {
       if (witness.length !== 1) return false
       const signature = witness[0]
       // 64 bytes = SIGHASH_DEFAULT; 65 bytes = explicit sighash byte appended
-      const hashType = signature.length === 65 ? signature[64] : SigHash.DEFAULT
+      // (BIP341: a 65th byte of 0x00 is invalid — DEFAULT must be expressed by omission)
       if (signature.length !== 64 && signature.length !== 65) return false
+      if (signature.length === 65 && signature[64] === 0x00) return false
+      const hashType = signature.length === 65 ? signature[64] : SigHash.DEFAULT
       if (hashType !== SigHash.DEFAULT && hashType !== SigHash.ALL) return false
       // output key is the witness program of the p2tr script (OP_1 PUSH32 <key>)
       const outputKey = scriptPubKey.subarray(2)

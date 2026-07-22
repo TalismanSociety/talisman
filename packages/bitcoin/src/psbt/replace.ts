@@ -57,7 +57,11 @@ export const reconstructReplaceContext = async (
       throw new Error(`Original transaction input ${i} is malformed`)
 
     const prevTxid = hex.encode(input.txid)
-    const prevTx = Transaction.fromRaw(hex.decode(await getTxHex(prevTxid)), TX_PARSE_OPTS)
+    const prevRaw = hex.decode(await getTxHex(prevTxid))
+    // the prev tx comes from a remote esplora — verify it actually hashes to the
+    // requested txid before trusting its output values
+    const prevTx = Transaction.fromRaw(prevRaw, TX_PARSE_OPTS)
+    if (prevTx.id !== prevTxid) throw new Error(`Previous transaction ${prevTxid} hash mismatch`)
     const prevOut = prevTx.getOutput(input.index)
     if (prevOut.script === undefined || prevOut.amount === undefined)
       throw new Error(`Missing previous output for input ${i}`)
@@ -117,7 +121,7 @@ export const reconstructReplaceContext = async (
 
 // conservative per-element virtual sizes (vB)
 const INPUT_VSIZE = { p2wpkh: 68, p2tr: 58 } as const
-const OUTPUT_VSIZE = { p2wpkh: 31, p2tr: 43 } as const
+const OUTPUT_VSIZE = { p2wpkh: 31, p2wsh: 43, p2tr: 43 } as const
 const OUTPUT_VSIZE_OTHER = 34
 const TX_OVERHEAD_VSIZE = 11
 
@@ -125,11 +129,17 @@ const estimateVsize = (inputs: BitcoinUtxo[], outputAddresses: string[]): number
   const inputVb = inputs.reduce((acc, u) => acc + INPUT_VSIZE[u.addressType], 0)
   const outputVb = outputAddresses.reduce((acc, address) => {
     if (address.startsWith("bc1p") || address.startsWith("tb1p")) return acc + OUTPUT_VSIZE.p2tr
-    if (address.startsWith("bc1q") || address.startsWith("tb1q")) return acc + OUTPUT_VSIZE.p2wpkh
+    if (address.startsWith("bc1q") || address.startsWith("tb1q"))
+      // segwit v0: a 20-byte program (42-char address) is p2wpkh, a 32-byte one (62-char) p2wsh
+      return acc + (address.length > 50 ? OUTPUT_VSIZE.p2wsh : OUTPUT_VSIZE.p2wpkh)
     return acc + OUTPUT_VSIZE_OTHER
   }, 0)
   return TX_OVERHEAD_VSIZE + inputVb + outputVb
 }
+
+// slack added to the BIP125 minimum-fee floor: the estimate must never undershoot the
+// actual replacement vsize or the network would reject the transaction at the floor
+const MIN_FEE_VSIZE_MARGIN = 4
 
 const bigMax = (a: bigint, b: bigint) => (a > b ? a : b)
 
@@ -148,8 +158,9 @@ export type BuildReplacementResult = {
  * Builds a BIP125 replacement for a pending transaction.
  * - `speed-up` re-sends the same outputs with a higher fee, paid out of change
  * - `cancel` redirects everything to `selfAddress` minus the new fee
- * The fee respects both the requested rate and the BIP125 minimum
- * (old fee + 1 sat/vB of the replacement's size).
+ * The fee respects both the requested rate and the BIP125 minimum: the summed fees of
+ * every evicted transaction (original + `conflictFeeSats` for its unconfirmed
+ * descendants) plus 1 sat/vB of the replacement's size.
  */
 export const buildReplacementPsbt = (params: {
   context: ReplaceContext
@@ -158,6 +169,8 @@ export const buildReplacementPsbt = (params: {
   network: BitcoinNetworkName
   /** fresh internal-chain address: cancel target, or change target if the original had no change */
   selfAddress: string
+  /** summed fees of unconfirmed descendants the replacement also evicts (BIP125 rule 3) */
+  conflictFeeSats?: bigint
   account?: PsbtAccountMeta
   lockTimeHeight?: number
 }): BuildReplacementResult => {
@@ -197,9 +210,11 @@ export const buildReplacementPsbt = (params: {
     }
   }
 
+  const evictedFeeSats = context.oldFeeSats + (params.conflictFeeSats ?? 0n)
+
   if (type === "cancel") {
     const estVsize = estimateVsize(context.inputs, [selfAddress])
-    const minFee = context.oldFeeSats + BigInt(estVsize)
+    const minFee = evictedFeeSats + BigInt(estVsize + MIN_FEE_VSIZE_MARGIN)
     const feeSats = bigMax(feeRate * BigInt(estVsize), minFee)
     const amount = totalInSats - feeSats
     const dustLimit = selfAddress.startsWith("bc1p") || selfAddress.startsWith("tb1p") ? 330n : 294n
@@ -213,7 +228,7 @@ export const buildReplacementPsbt = (params: {
   const changeAddress = context.changeOutput?.address ?? selfAddress
   const outputAddresses = [...context.externalOutputs.map((o) => o.address), changeAddress]
   const estVsize = estimateVsize(context.inputs, outputAddresses)
-  const minFee = context.oldFeeSats + BigInt(estVsize)
+  const minFee = evictedFeeSats + BigInt(estVsize + MIN_FEE_VSIZE_MARGIN)
   let feeSats = bigMax(feeRate * BigInt(estVsize), minFee)
 
   let changeSats: bigint | null = totalInSats - externalSum - feeSats

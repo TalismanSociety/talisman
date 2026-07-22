@@ -23,13 +23,14 @@ import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -230,19 +231,35 @@ export const SendFundsRecipientPicker = () => {
   }, [newAddress, set])
 
   // bitcoin payment URIs (BIP21) fill in both the recipient and, if present, the amount
+  const lastBip21Ref = useRef<string | null>(null)
   const handleSearchChange = useCallback(
     (value: string) => {
       if (isNetworkBtc(network)) {
         const bip21 = parseBip21Uri(value)
         if (bip21) {
-          if (bip21.amountSats !== undefined) set("amount", String(bip21.amountSats))
+          // the uncontrolled input re-emits the raw uri on re-renders — process once
+          if (lastBip21Ref.current !== value) {
+            lastBip21Ref.current = value
+            // never apply an amount from a uri whose address doesn't belong on this
+            // network — the address error must not leave a stale amount behind
+            if (
+              bip21.amountSats !== undefined &&
+              isAddressCompatibleWithNetwork(network, bip21.address)
+            ) {
+              set("amount", String(bip21.amountSats))
+              notify(
+                { type: "success", title: t("Amount set from payment link") },
+                { toastId: "bip21-amount" }
+              )
+            }
+          }
           setSearch(bip21.address)
           return
         }
       }
       setSearch(value)
     },
-    [network, set]
+    [network, set, t]
   )
 
   return (

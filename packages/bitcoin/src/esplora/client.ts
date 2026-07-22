@@ -1,7 +1,10 @@
+import { MAX_SANE_FEE_RATE_SAT_VB } from "../constants"
 import type {
   BtcApi,
   BtcFeeEstimates,
   EsploraAddressStats,
+  EsploraOutspend,
+  EsploraTx,
   EsploraTxStatus,
   EsploraUtxo,
 } from "./types"
@@ -72,6 +75,10 @@ export const createEsploraClient = (urls: string[], customFetch: typeof fetch = 
     throw lastError instanceof Error ? lastError : new Error("All esplora endpoints failed")
   }
 
+  // fee sources are remote and could be compromised — never surface an estimate that
+  // would let a poisoned response push an absurd fee into a transaction
+  const clampRate = (rate: number) => Math.min(Math.max(rate, 1), MAX_SANE_FEE_RATE_SAT_VB)
+
   const getFeeEstimates = async (): Promise<BtcFeeEstimates> => {
     const base = urls[currentUrlIndex]
 
@@ -87,11 +94,11 @@ export const createEsploraClient = (urls: string[], customFetch: typeof fetch = 
         }>("/v1/fees/recommended")
         hasMempoolFees.set(base, true)
         return {
-          fastest: fees.fastestFee,
-          halfHour: fees.halfHourFee,
-          hour: fees.hourFee,
-          economy: fees.economyFee,
-          minimum: fees.minimumFee,
+          fastest: clampRate(fees.fastestFee),
+          halfHour: clampRate(fees.halfHourFee),
+          hour: clampRate(fees.hourFee),
+          economy: clampRate(fees.economyFee),
+          minimum: clampRate(fees.minimumFee),
         }
       } catch {
         hasMempoolFees.set(base, false)
@@ -100,7 +107,7 @@ export const createEsploraClient = (urls: string[], customFetch: typeof fetch = 
 
     // vanilla esplora fallback: confirmation-target → sat/vB map
     const estimates = await request<Record<string, number>>("/fee-estimates")
-    const target = (blocks: number) => Math.max(estimates[String(blocks)] ?? 1, 1)
+    const target = (blocks: number) => clampRate(estimates[String(blocks)] ?? 1)
     return {
       fastest: target(1),
       halfHour: target(3),
@@ -116,6 +123,8 @@ export const createEsploraClient = (urls: string[], customFetch: typeof fetch = 
     getAddressUtxos: (address) => request<EsploraUtxo[]>(`/address/${address}/utxo`),
     getTxStatus: (txid) => request<EsploraTxStatus>(`/tx/${txid}/status`),
     getTxHex: (txid) => request<string>(`/tx/${txid}/hex`, undefined, "text"),
+    getTx: (txid) => request<EsploraTx>(`/tx/${txid}`),
+    getTxOutspends: (txid) => request<EsploraOutspend[]>(`/tx/${txid}/outspends`),
     getFeeEstimates,
     broadcastTx: (txHex) => request<string>("/tx", { method: "POST", body: txHex }, "text"),
   }

@@ -128,11 +128,13 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     [platform, watchedAddress]
   )
 
-  // user's script-type choice for ambiguous (plain xpub) keys, reset when the key changes
+  // user's script-type choice for ambiguous (plain xpub) keys, reset when the key
+  // changes — the "previous value in state" adjust-during-render pattern, which stays
+  // correct if a concurrent render is discarded (a ref mutation would not)
   const [btcAddressType, setBtcAddressType] = useState<BitcoinAddressType>("p2wpkh")
-  const prevAddressRef = useRef(watchedAddress)
-  if (prevAddressRef.current !== watchedAddress) {
-    prevAddressRef.current = watchedAddress
+  const [prevAddress, setPrevAddress] = useState(watchedAddress)
+  if (prevAddress !== watchedAddress) {
+    setPrevAddress(watchedAddress)
     if (btcAddressType !== "p2wpkh") setBtcAddressType("p2wpkh")
   }
 

@@ -41,8 +41,21 @@ describe("parseBip21Uri", () => {
   it("rejects invalid amounts", () => {
     expect(parseBip21Uri(`bitcoin:${ADDRESS}?amount=abc`)).toBeNull()
     expect(parseBip21Uri(`bitcoin:${ADDRESS}?amount=0.000000001`)).toBeNull() // > 8 decimals
-    expect(parseBip21Uri(`bitcoin:${ADDRESS}?amount=0`)).toBeNull()
     expect(parseBip21Uri(`bitcoin:${ADDRESS}?amount=-1`)).toBeNull()
+  })
+
+  it("treats a zero amount as no amount", () => {
+    expect(parseBip21Uri(`bitcoin:${ADDRESS}?amount=0`)).toEqual({ address: ADDRESS })
+  })
+
+  it("keeps literal plus signs (rfc 3986, not form-encoding)", () => {
+    expect(parseBip21Uri(`bitcoin:${ADDRESS}?label=a%2Bb+c`)).toEqual({
+      address: ADDRESS,
+      label: "a+b+c",
+    })
+    const uri = encodeBip21Uri({ address: ADDRESS, label: "a+b c" })
+    expect(uri).toEqual(`bitcoin:${ADDRESS}?label=a%2Bb%20c`)
+    expect(parseBip21Uri(uri)).toEqual({ address: ADDRESS, label: "a+b c" })
   })
 
   it("rejects unknown required parameters per BIP21", () => {

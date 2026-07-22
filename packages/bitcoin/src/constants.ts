@@ -20,3 +20,10 @@ export const SCAN_BATCH_SIZE = 10
  * makes nLockTime enforceable — required for the anti-fee-sniping locktime.
  */
 export const RBF_SEQUENCE = 0xfffffffd
+
+/**
+ * Hard ceiling on accepted fee rates. Fee estimates come from remote services; this
+ * bounds the damage of a compromised or broken source. Historic mempool peaks stayed
+ * well below this.
+ */
+export const MAX_SANE_FEE_RATE_SAT_VB = 2_000

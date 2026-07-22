@@ -9,7 +9,7 @@ import { notify } from "@ui/components/Notifications"
 import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { isEqual } from "lodash-es"
-import { type FC, useCallback, useState } from "react"
+import { type FC, useCallback, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 
@@ -66,7 +66,11 @@ export const AccountSignMessageModal = () => {
   const [isSigning, setIsSigning] = useState(false)
   const [result, setResult] = useState<{ address: string; signature: string } | null>(null)
 
+  // a signature resolving after close/reopen must not render under another account
+  const signRequestRef = useRef(0)
+
   const handleClose = useCallback(() => {
+    signRequestRef.current++
     setMessage("")
     setResult(null)
     close()
@@ -74,18 +78,20 @@ export const AccountSignMessageModal = () => {
 
   const handleSign = useCallback(async () => {
     if (!account) return
+    const requestId = ++signRequestRef.current
     setIsSigning(true)
     try {
       const signed = await api.btcSignMessage({ address: account.address, message })
-      setResult(signed)
+      if (signRequestRef.current === requestId) setResult(signed)
     } catch (err) {
-      notify({
-        type: "error",
-        title: t("Failed to sign"),
-        subtitle: (err as Error)?.message,
-      })
+      if (signRequestRef.current === requestId)
+        notify({
+          type: "error",
+          title: t("Failed to sign"),
+          subtitle: (err as Error)?.message,
+        })
     } finally {
-      setIsSigning(false)
+      if (signRequestRef.current === requestId) setIsSigning(false)
     }
   }, [account, message, t])
 

@@ -256,6 +256,28 @@ describe("buildReplacementPsbt", () => {
     expect(bumped.feeSats).toBeGreaterThanOrEqual(context.oldFeeSats + BigInt(context.vsize))
   })
 
+  it("outbids evicted descendant fees (bip125 rule 3)", async () => {
+    const fx = await getFixtures()
+    const context = await reconstructReplaceContext(
+      fx.getTxHex,
+      fx.original.txHex,
+      fx.ourAddresses,
+      "bitcoin"
+    )
+
+    const conflictFeeSats = 5_000n
+    const bumped = buildReplacementPsbt({
+      context,
+      type: "speed-up",
+      feeRateSatVb: 1,
+      network: "bitcoin",
+      selfAddress: fx.freshChangeAddress,
+      conflictFeeSats,
+      account: fx.account,
+    })
+    expect(bumped.feeSats).toBeGreaterThan(context.oldFeeSats + conflictFeeSats)
+  })
+
   it("cancel sweeps everything to our own address", async () => {
     const fx = await getFixtures()
     const context = await reconstructReplaceContext(

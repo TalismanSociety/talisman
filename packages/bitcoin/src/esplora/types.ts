@@ -28,6 +28,21 @@ export type EsploraUtxo = {
 
 export type EsploraTxStatus = EsploraUtxoStatus
 
+/** spend status of one output, from /tx/:txid/outspends */
+export type EsploraOutspend = {
+  spent: boolean
+  txid?: string
+  vin?: number
+  status?: EsploraTxStatus
+}
+
+/** subset of /tx/:txid used for descendant fee accounting */
+export type EsploraTx = {
+  txid: string
+  fee: number
+  status: EsploraTxStatus
+}
+
 /** normalized fee estimates, sat/vB */
 export type BtcFeeEstimates = {
   fastest: number
@@ -43,6 +58,8 @@ export interface BtcApi {
   getAddressUtxos(address: string): Promise<EsploraUtxo[]>
   getTxStatus(txid: string): Promise<EsploraTxStatus>
   getTxHex(txid: string): Promise<string>
+  getTx(txid: string): Promise<EsploraTx>
+  getTxOutspends(txid: string): Promise<EsploraOutspend[]>
   getFeeEstimates(): Promise<BtcFeeEstimates>
   broadcastTx(txHex: string): Promise<string>
 }

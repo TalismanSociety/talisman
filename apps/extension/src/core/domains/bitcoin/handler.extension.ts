@@ -1,8 +1,10 @@
 import { HDKey } from "@scure/bip32"
+import { Transaction } from "@scure/btc-signer"
 import type {
   BitcoinAccountScan,
   BitcoinKeyPath,
   BitcoinNetworkName,
+  BtcApi,
   PsbtAccountMeta,
   ReplaceAddressInfo,
 } from "@talismn/bitcoin"
@@ -14,12 +16,13 @@ import {
   inspectPsbt,
   isPsbtFullySigned,
   keyPathFromDerivation,
+  MAX_SANE_FEE_RATE_SAT_VB,
   reconstructReplaceContext,
   scanBitcoinAccount,
   signBip322Simple,
   signPsbtWithKeys,
 } from "@talismn/bitcoin"
-import { base64, deriveBitcoinAddressFromXpub, normalizeXpub } from "@talismn/crypto"
+import { base64, deriveBitcoinAddressFromXpub, hex, normalizeXpub } from "@talismn/crypto"
 import { type Account, isAccountPlatformBitcoin } from "@talismn/keyring"
 
 import { db } from "../../db"
@@ -49,6 +52,33 @@ const getPsbtAccountMeta = (account: Account): PsbtAccountMeta | undefined =>
         ],
       }
     : undefined
+
+/**
+ * Sums the fees of unconfirmed descendants of a transaction — replacing it also evicts
+ * them, and BIP125 rule 3 requires the replacement to outbid their fees too.
+ * Breadth-first over esplora outspends, capped to keep the request count bounded.
+ */
+const getDescendantFeeSats = async (api: BtcApi, txid: string): Promise<bigint> => {
+  const MAX_DESCENDANTS = 25
+  const seen = new Set<string>([txid])
+  const queue = [txid]
+  let feeSats = 0n
+
+  while (queue.length && seen.size <= MAX_DESCENDANTS) {
+    const current = queue.shift() as string
+    const outspends = await api.getTxOutspends(current)
+    for (const outspend of outspends) {
+      if (!outspend.spent || !outspend.txid || outspend.status?.confirmed) continue
+      if (seen.has(outspend.txid)) continue
+      seen.add(outspend.txid)
+      const tx = await api.getTx(outspend.txid)
+      feeSats += BigInt(tx.fee)
+      queue.push(outspend.txid)
+    }
+  }
+
+  return feeSats
+}
 
 /** all known (used) addresses of a scanned account, keyed by on-chain address */
 const getScanAddressBook = (scan: BitcoinAccountScan): Map<string, ReplaceAddressInfo> => {
@@ -221,7 +251,16 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
   }: RequestBitcoinReplacePreview) {
     const row = await db.transactionsV2.get(txid)
     if (row?.platform !== "bitcoin") throw new Error("Transaction not found")
+    if (row.networkId !== networkId) throw new Error("Transaction network mismatch")
     if (row.status !== "pending") throw new Error("Transaction is no longer pending")
+
+    // the fee rate is UI-supplied — bound it independently of any client-side clamp
+    if (
+      !Number.isFinite(feeRateSatVb) ||
+      feeRateSatVb < 1 ||
+      feeRateSatVb > MAX_SANE_FEE_RATE_SAT_VB
+    )
+      throw new Error("Invalid fee rate")
 
     const account = await keyringStore.getAccount(row.account)
     if (!account || !isAccountPlatformBitcoin(account)) throw new Error("Account not found")
@@ -238,24 +277,15 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
       const scan = await scanBitcoinAccount(api, { trees, hrp })
       ourAddresses = getScanAddressBook(scan)
 
-      // fresh internal-chain address: cancel target, or change target when needed
+      // cancel/change target: the first-unused internal address, same as the send
+      // flow's change. Previews are read-only — never rotate the issuance cursor here,
+      // repeated previews must not march addresses toward the recovery gap limit.
       const payments = scan.trees.find((t) => t.spec.tree === "payments") ?? scan.trees[0]
-      const firstUnused = payments.chains[1].firstUnusedIndex
-      const lastIssued = await bitcoinAddressIndexStore.getLastIssued(
-        payments.spec.xpub,
-        payments.spec.tree,
-        1
-      )
-      const index = Math.min(
-        Math.max(firstUnused, (lastIssued ?? -1) + 1),
-        firstUnused + BITCOIN_GAP_LIMIT - 1
-      )
-      await bitcoinAddressIndexStore.setLastIssued(payments.spec.xpub, payments.spec.tree, 1, index)
       selfAddress = deriveBitcoinAddressFromXpub(
         payments.spec.xpub,
         payments.spec.addressType,
         1,
-        index,
+        payments.chains[1].firstUnusedIndex,
         hrp
       )
     } else {
@@ -276,7 +306,7 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
       selfAddress = account.address
     }
 
-    const [context, tipHeight] = await Promise.all([
+    const [context, tipHeight, conflictFeeSats] = await Promise.all([
       reconstructReplaceContext(
         (id) => api.getTxHex(id),
         row.payload,
@@ -284,6 +314,7 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
         networkId as BitcoinNetworkName
       ),
       api.getTipHeight(),
+      getDescendantFeeSats(api, txid),
     ])
 
     const result = buildReplacementPsbt({
@@ -292,6 +323,7 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
       feeRateSatVb,
       network: networkId as BitcoinNetworkName,
       selfAddress,
+      conflictFeeSats,
       account: getPsbtAccountMeta(account),
       lockTimeHeight: tipHeight,
     })
@@ -310,9 +342,13 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
     if (!account || !isAccountPlatformBitcoin(account)) throw new Error("Account not found")
 
     if (account.type === "keypair") {
-      // WIF: the single static address is the signing identity
+      // WIF: the single static address is the signing identity; the address encodes
+      // its network (tb1… decodes with testnet parameters)
+      const network: BitcoinNetworkName = account.address.startsWith("tb1")
+        ? "bitcoin-signet"
+        : "bitcoin"
       const result = await withSecretKey(account.address, (secretKey) =>
-        signBip322Simple({ address: account.address, message, secretKey })
+        signBip322Simple({ address: account.address, message, secretKey, network })
       )
       return { address: account.address, signature: result.unwrap() }
     }
@@ -347,6 +383,32 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
     // guard against fee computation bugs: the frontend states the fee it displayed
     if (info.feeSats > BigInt(maxFeeSats))
       throw new Error(`Transaction fee ${info.feeSats} exceeds maximum ${maxFeeSats}`)
+
+    // a claimed replacement must belong to this account/network and actually conflict
+    // with the original (share an input) — otherwise a wrong txid would silently stop
+    // the monitoring of a payment that can still confirm
+    if (replacesTxid) {
+      const prev = await db.transactionsV2.get(replacesTxid)
+      if (
+        prev?.platform !== "bitcoin" ||
+        prev.networkId !== networkId ||
+        prev.account !== account.address
+      )
+        throw new Error("Invalid replacement target")
+      const prevTx = Transaction.fromRaw(hex.decode(prev.payload), {
+        allowUnknownOutputs: true,
+        allowUnknownInputs: true,
+        disableScriptCheck: true,
+      })
+      const prevOutpoints = new Set<string>()
+      for (let i = 0; i < prevTx.inputsLength; i++) {
+        const input = prevTx.getInput(i)
+        if (input.txid && input.index !== undefined)
+          prevOutpoints.add(`${hex.encode(input.txid)}:${input.index}`)
+      }
+      if (!info.inputs.some((input) => prevOutpoints.has(`${input.txid}:${input.vout}`)))
+        throw new Error("Replacement does not conflict with the original transaction")
+    }
 
     let signed = psbt
     if (!isPsbtFullySigned(psbt)) {
@@ -392,8 +454,12 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
     const api = await chainConnectorBtc.getApi(networkId)
     const txid = await api.broadcastTx(final.txHex)
 
-    // the replacement is in the mempool: the conflicting original can no longer confirm
-    if (replacesTxid) await updateTransactionStatus(replacesTxid, "replaced")
+    if (replacesTxid) {
+      // the replacement is in the mempool: the conflicting original can no longer
+      // confirm, and neither can any of our pending transactions spending its outputs
+      await updateTransactionStatus(replacesTxid, "replaced")
+      await this.markEvictedDescendants(replacesTxid, networkId, txid)
+    }
 
     watchBitcoinTransaction(networkId, txid, final.txHex, account.address, {
       txInfo,
@@ -401,5 +467,47 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
     })
 
     return { txid }
+  }
+
+  /** marks our pending transactions that spent outputs of a replaced tx as replaced too */
+  private async markEvictedDescendants(
+    replacedTxid: string,
+    networkId: string,
+    newTxid: string
+  ): Promise<void> {
+    try {
+      const pending = await db.transactionsV2
+        .filter(
+          (row) =>
+            row.platform === "bitcoin" &&
+            row.networkId === networkId &&
+            row.status === "pending" &&
+            row.hash !== replacedTxid &&
+            row.hash !== newTxid
+        )
+        .toArray()
+
+      for (const row of pending) {
+        if (row.platform !== "bitcoin") continue
+        try {
+          const tx = Transaction.fromRaw(hex.decode(row.payload), {
+            allowUnknownOutputs: true,
+            allowUnknownInputs: true,
+            disableScriptCheck: true,
+          })
+          for (let i = 0; i < tx.inputsLength; i++) {
+            const input = tx.getInput(i)
+            if (input.txid && hex.encode(input.txid) === replacedTxid) {
+              await updateTransactionStatus(row.id, "replaced")
+              break
+            }
+          }
+        } catch {
+          // unparseable payload: leave the row for the watcher to resolve
+        }
+      }
+    } catch {
+      // best-effort: the watcher's mempool 404 handling is the fallback
+    }
   }
 }

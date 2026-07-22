@@ -36,19 +36,26 @@ export const parseBip21Uri = (uri: string): Bip21Payment | null => {
   const payment: Bip21Payment = { address }
   if (!query) return payment
 
-  let params: URLSearchParams
-  try {
-    params = new URLSearchParams(query.slice(1))
-  } catch {
-    return null
-  }
+  // BIP21 mandates RFC 3986 percent-encoding — URLSearchParams' form-encoding would
+  // corrupt literal "+" characters, so split and decode manually
+  for (const pair of query.slice(1).split("&")) {
+    if (!pair) continue
+    const eq = pair.indexOf("=")
+    let key: string
+    let value: string
+    try {
+      key = decodeURIComponent(eq === -1 ? pair : pair.slice(0, eq))
+      value = eq === -1 ? "" : decodeURIComponent(pair.slice(eq + 1))
+    } catch {
+      return null
+    }
 
-  for (const [key, value] of params) {
     const lowerKey = key.toLowerCase()
     if (lowerKey === "amount") {
       const sats = btcToSats(value)
-      if (sats === null || sats <= 0n) return null
-      payment.amountSats = sats
+      if (sats === null) return null
+      // a zero amount is conventionally "no amount", not an invalid uri
+      if (sats > 0n) payment.amountSats = sats
     } else if (lowerKey === "label") payment.label = value
     else if (lowerKey === "message") payment.message = value
     // BIP21: an unknown required parameter means the URI must be rejected
@@ -61,10 +68,10 @@ export const parseBip21Uri = (uri: string): Bip21Payment | null => {
 
 /** Encodes a BIP21 payment URI. Amounts are rendered as exact BTC decimals. */
 export const encodeBip21Uri = ({ address, amountSats, label, message }: Bip21Payment): string => {
-  const params = new URLSearchParams()
-  if (amountSats !== undefined && amountSats > 0n) params.set("amount", satsToBtc(amountSats))
-  if (label) params.set("label", label)
-  if (message) params.set("message", message)
-  const query = params.toString()
-  return query ? `bitcoin:${address}?${query}` : `bitcoin:${address}`
+  // RFC 3986 percent-encoding per BIP21 (never form-encoding: "+" must stay literal)
+  const parts: string[] = []
+  if (amountSats !== undefined && amountSats > 0n) parts.push(`amount=${satsToBtc(amountSats)}`)
+  if (label) parts.push(`label=${encodeURIComponent(label)}`)
+  if (message) parts.push(`message=${encodeURIComponent(message)}`)
+  return parts.length ? `bitcoin:${address}?${parts.join("&")}` : `bitcoin:${address}`
 }

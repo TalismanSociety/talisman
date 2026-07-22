@@ -76,10 +76,18 @@ export const Tokens: FC<TokensProps> = ({
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
 
-  // sats display mode: bitcoiners think in sats, not decimals of BTC
+  // sats display mode: bitcoiners think in sats, not decimals of BTC. A known
+  // non-8-decimals token (e.g. an 18-decimals EVM lookalike named "BTC") is excluded;
+  // callers that omit decimals (portfolio rows) rely on the symbol alone.
   const btcDisplaySats = useSettingValue("btcDisplaySats")
   const { amount, symbol, decimals } = useMemo(() => {
-    if (!btcDisplaySats || btcSymbol !== "BTC" || btcAmount === null || btcAmount === undefined)
+    if (
+      !btcDisplaySats ||
+      btcSymbol !== "BTC" ||
+      (btcDecimals != null && btcDecimals !== 8) ||
+      btcAmount === null ||
+      btcAmount === undefined
+    )
       return { amount: btcAmount, symbol: btcSymbol, decimals: btcDecimals }
     return {
       amount: new BigNumber(btcAmount).multipliedBy(SATS_PER_BTC),

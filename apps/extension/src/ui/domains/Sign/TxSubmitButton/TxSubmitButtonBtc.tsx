@@ -1,5 +1,6 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformBitcoin } from "@core/domains/keyring/exports"
+import { useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -21,6 +22,7 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(tx.address)
+  const queryClient = useQueryClient()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -34,9 +36,14 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
         replacesTxid: tx.replacesTxid,
         txInfo: tx.txInfo,
       })
+      // the broadcast spent utxos and consumed addresses: anything built from the old
+      // scan would double-spend, drop it all
+      queryClient.invalidateQueries({ queryKey: ["btcUtxos"] })
+      queryClient.invalidateQueries({ queryKey: ["btcChangeAddress"] })
+      queryClient.invalidateQueries({ queryKey: ["btcReplacePreview"] })
       onSubmit(txid)
     },
-    [onSubmit, tx]
+    [onSubmit, queryClient, tx]
   )
 
   const handleSubmitClick = useCallback(async () => {

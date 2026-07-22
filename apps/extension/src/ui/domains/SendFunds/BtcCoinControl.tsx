@@ -96,10 +96,13 @@ export const BtcCoinControl: FC<BtcCoinControlProps> = ({
 
   const handleApply = useCallback(() => {
     if (!draft) return
-    // selecting everything = automatic
-    onChange(draft.length === paymentUtxos.length ? null : draft)
+    // the utxo set may have refreshed while the drawer was open: only keys that still
+    // exist count, and selecting everything = automatic
+    const validKeys = new Set(paymentUtxos.map(getBtcUtxoKey))
+    const selection = draft.filter((key) => validKeys.has(key))
+    onChange(selection.length === paymentUtxos.length ? null : selection)
     close()
-  }, [draft, onChange, paymentUtxos.length, close])
+  }, [draft, onChange, paymentUtxos, close])
 
   const handleAuto = useCallback(() => {
     onChange(null)
@@ -107,7 +110,10 @@ export const BtcCoinControl: FC<BtcCoinControlProps> = ({
   }, [onChange, close])
 
   const draftKeys = draft ?? paymentUtxos.map(getBtcUtxoKey)
-  const selectedCount = selectedUtxoKeys?.length
+  // count only keys that still exist — a refresh may have dropped some
+  const selectedCount = selectedUtxoKeys?.filter((key) =>
+    paymentUtxos.some((u) => getBtcUtxoKey(u) === key)
+  ).length
 
   return (
     <>

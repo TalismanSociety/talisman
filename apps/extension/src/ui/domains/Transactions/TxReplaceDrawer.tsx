@@ -332,10 +332,14 @@ const BtcDrawerContent: FC<{
   const [priority, setPriority] = useState<BtcFeePriority>("fast")
   const [customRate, setCustomRate] = useState<number | null>(null)
 
+  // estimates are frozen for the drawer session: a background refresh would change the
+  // preview query key and rip the signing UI out from under the user (ledger especially)
   const qFees = useQuery({
     queryKey: ["btcFeeEstimates", tx.networkId],
     queryFn: () => api.btcGetFeeEstimates({ networkId: tx.networkId }),
-    refetchInterval: 60_000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: Number.POSITIVE_INFINITY,
     retry: 1,
   })
 
@@ -404,9 +408,11 @@ const BtcDrawerContent: FC<{
     }
   }, [tx.status, type, t])
 
+  // a preview error (e.g. "no longer pending") must disable submission even when a
+  // previously cached preview is still around
   const submitTx = useMemo(
     () =>
-      qPreview.data
+      qPreview.data && !qPreview.isError
         ? ({
             platform: "bitcoin",
             networkId: tx.networkId,
@@ -418,7 +424,7 @@ const BtcDrawerContent: FC<{
             txInfo: tx.txInfo,
           } as const)
         : null,
-    [qPreview.data, tx]
+    [qPreview.data, qPreview.isError, tx]
   )
 
   return (
@@ -439,10 +445,10 @@ const BtcDrawerContent: FC<{
         </div>
         <div className="flex h-12 w-full items-center justify-between">
           <div>
-            {qPreview.data && network ? (
-              <TokensAndFiat planck={qPreview.data.feeSats} tokenId={network.nativeTokenId} />
-            ) : qPreview.error ? (
+            {qPreview.error ? (
               <span className="text-alert-error">{(qPreview.error as Error).message}</span>
+            ) : qPreview.data && network ? (
+              <TokensAndFiat planck={qPreview.data.feeSats} tokenId={network.nativeTokenId} />
             ) : null}
           </div>
           <div>
