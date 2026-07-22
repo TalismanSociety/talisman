@@ -1,10 +1,13 @@
 import { formatDecimals, MAX_DECIMALS_FORMAT } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { useSettingValue } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import BigNumber from "bignumber.js"
 import React, { type FC, useMemo } from "react"
 import CountUp from "react-countup"
+
+const SATS_PER_BTC = 100_000_000
 
 type TokensProps = {
   amount?: string | number | null | BigNumber
@@ -61,9 +64,9 @@ const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCoun
 DisplayValue.displayName = "DisplayValue"
 
 export const Tokens: FC<TokensProps> = ({
-  amount,
-  symbol,
-  decimals,
+  amount: btcAmount,
+  symbol: btcSymbol,
+  decimals: btcDecimals,
   className,
   as: Component = "span",
   noTooltip,
@@ -72,6 +75,18 @@ export const Tokens: FC<TokensProps> = ({
 }) => {
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
+
+  // sats display mode: bitcoiners think in sats, not decimals of BTC
+  const btcDisplaySats = useSettingValue("btcDisplaySats")
+  const { amount, symbol, decimals } = useMemo(() => {
+    if (!btcDisplaySats || btcSymbol !== "BTC" || btcAmount === null || btcAmount === undefined)
+      return { amount: btcAmount, symbol: btcSymbol, decimals: btcDecimals }
+    return {
+      amount: new BigNumber(btcAmount).multipliedBy(SATS_PER_BTC),
+      symbol: "sats",
+      decimals: 0,
+    }
+  }, [btcDisplaySats, btcAmount, btcSymbol, btcDecimals])
 
   // Append LRM after symbol to anchor RTL characters in LTR context
   const symbolWithLrm = symbol ? `${symbol}${LRM}` : ""

@@ -54,6 +54,7 @@ const Content = () => {
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const [hideDust, setHideDust] = useSetting("hideDust")
   const [btcFreshReceiveAddress, setBtcFreshReceiveAddress] = useSetting("btcFreshReceiveAddress")
+  const [btcDisplaySats, setBtcDisplaySats] = useSetting("btcDisplaySats")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
@@ -108,6 +109,16 @@ const Content = () => {
           <Toggle
             checked={!!btcFreshReceiveAddress}
             onChange={(e) => setBtcFreshReceiveAddress(e.target.checked)}
+          />
+        </Setting>
+        <Setting
+          iconLeft={CoinsIcon}
+          title={t("Display Bitcoin in sats")}
+          subtitle={t("Show bitcoin amounts in satoshis (1 BTC = 100,000,000 sats)")}
+        >
+          <Toggle
+            checked={!!btcDisplaySats}
+            onChange={(e) => setBtcDisplaySats(e.target.checked)}
           />
         </Setting>
         <CtaButton
