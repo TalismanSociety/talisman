@@ -4,8 +4,8 @@ import {
 } from "@core/domains/accounts/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import {
-  type DotNetwork,
   getNetworkGenesisHash,
+  isNetworkBtc,
   isNetworkDot,
   isNetworkEth,
   type Network,
@@ -15,6 +15,7 @@ import {
   getAccountPlatformFromAddress,
   isAddressEqual,
   isAddressValid,
+  isBitcoinAddress,
   isSs58Address,
 } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
@@ -33,7 +34,7 @@ import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { useSendFunds } from "./useSendFunds"
 
-const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
+const AddressFormatError = ({ chain }: { chain?: Network }) => {
   const { t } = useTranslation()
   return (
     <div className="flex h-min-h-full w-full flex-col items-center gap-4 px-12 py-7 align-center">
@@ -186,6 +187,17 @@ export const SendFundsRecipientPicker = () => {
     return null
   }, [isNsLookup, matchingAccounts.length, network, nsLookup, search])
 
+  // bitcoin addresses embed their network: surface a mismatch (e.g. signet address
+  // on mainnet) as an error instead of silently showing no result
+  const isBtcAddressNetworkMismatch = useMemo(
+    () =>
+      isNetworkBtc(network) &&
+      !!search &&
+      isBitcoinAddress(search) &&
+      !isAddressCompatibleWithNetwork(network, search),
+    [network, search]
+  )
+
   const handleSelect = useCallback(
     (address: string) => {
       set("to", address, true)
@@ -235,7 +247,7 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
-        {isNetworkDot(network) && newAddress?.ss58FormatError ? (
+        {(isNetworkDot(network) && newAddress?.ss58FormatError) || isBtcAddressNetworkMismatch ? (
           <AddressFormatError chain={network ?? undefined} />
         ) : (
           <>

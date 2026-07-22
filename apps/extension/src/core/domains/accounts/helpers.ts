@@ -1,10 +1,10 @@
 import { log } from "@common/log"
+import { type BitcoinNetworkName, isBitcoinAddressValidForNetwork } from "@talismn/bitcoin"
 import type { DotNetwork, Network } from "@talismn/chaindata-provider"
 import {
   type AccountPlatform,
   getAccountPlatformFromAddress,
   isAddressEqual,
-  isBitcoinOnChainAddress,
   type KeypairCurve,
 } from "@talismn/crypto"
 import {
@@ -206,7 +206,8 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
       // contacts can't hold balances but are valid recipients, on-chain addresses only (not xpubs)
       return (
         isAccountPlatformBitcoin(account) ||
-        (account.type === "contact" && isBitcoinOnChainAddress(account.address))
+        (account.type === "contact" &&
+          isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName))
       )
     default:
       log.warn("Unsupported network platform", network)
@@ -250,5 +251,9 @@ export const isAccountPlatformCompatibleWithNetwork = (
  */
 export const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
   const accountPlatform = getAccountPlatformFromAddress(address)
-  return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
+  if (!isAccountPlatformCompatibleWithNetwork(network, accountPlatform)) return false
+  // bitcoin addresses embed their network: reject e.g. a signet address on mainnet (also rejects xpubs)
+  if (network.platform === "bitcoin")
+    return isBitcoinAddressValidForNetwork(address, network.id as BitcoinNetworkName)
+  return true
 }
