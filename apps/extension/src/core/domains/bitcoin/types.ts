@@ -84,6 +84,19 @@ export type ResponseBitcoinReplacePreview = {
   tree: BitcoinTreeName
 }
 
+export type RequestBitcoinSignMessage = {
+  /** account identity (payments xpub) or plain on-chain address for WIF accounts */
+  address: string
+  message: string
+}
+
+export type ResponseBitcoinSignMessage = {
+  /** on-chain address the message was signed with (first payments receive address) */
+  address: string
+  /** BIP322 "simple" signature, base64 */
+  signature: string
+}
+
 export type RequestBitcoinAccountPreview = {
   networkId: BtcNetworkId
   /** account-level payments xpub to preview */
@@ -107,5 +120,6 @@ export type BitcoinMessages = {
   "pri(bitcoin.feeEstimates.get)": [RequestBitcoinFeeEstimates, BtcFeeEstimates]
   "pri(bitcoin.tx.submit)": [RequestBitcoinSubmit, ResponseBitcoinSubmit]
   "pri(bitcoin.tx.replace.preview)": [RequestBitcoinReplacePreview, ResponseBitcoinReplacePreview]
+  "pri(bitcoin.message.sign)": [RequestBitcoinSignMessage, ResponseBitcoinSignMessage]
   "pri(bitcoin.account.preview)": [RequestBitcoinAccountPreview, ResponseBitcoinAccountPreview]
 }

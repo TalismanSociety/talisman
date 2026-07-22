@@ -16,6 +16,7 @@ import {
   keyPathFromDerivation,
   reconstructReplaceContext,
   scanBitcoinAccount,
+  signBip322Simple,
   signPsbtWithKeys,
 } from "@talismn/bitcoin"
 import { base64, deriveBitcoinAddressFromXpub, normalizeXpub } from "@talismn/crypto"
@@ -32,7 +33,11 @@ import { updateTransactionStatus } from "../transactions/helpers"
 import { watchBitcoinTransaction } from "../transactions/watchBitcoinTransaction"
 import { getBitcoinAccountTrees, getBtcNetworkHrp, serializeBitcoinUtxo } from "./helpers"
 import { bitcoinAddressIndexStore } from "./store.addressIndex"
-import type { RequestBitcoinReplacePreview, RequestBitcoinSubmit } from "./types"
+import type {
+  RequestBitcoinReplacePreview,
+  RequestBitcoinSignMessage,
+  RequestBitcoinSubmit,
+} from "./types"
 
 const getPsbtAccountMeta = (account: Account): PsbtAccountMeta | undefined =>
   account.type === "hd-bitcoin" || account.type === "ledger-bitcoin"
@@ -198,6 +203,10 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
       case "pri(bitcoin.tx.replace.preview)": {
         return await this.replacePreview(request as RequestBitcoinReplacePreview)
       }
+
+      case "pri(bitcoin.message.sign)": {
+        return await this.signMessage(request as RequestBitcoinSignMessage)
+      }
     }
 
     throw new Error(`Unable to handle message of type ${type}`)
@@ -293,6 +302,31 @@ export class BitcoinExtensionHandler extends ExtensionHandler {
       sentSats: String(result.sentSats),
       tree: result.usesOrdinalsUtxos ? ("ordinals" as const) : ("payments" as const),
     }
+  }
+
+  /** BIP322 "simple" message signature with the account's first payments receive address */
+  private async signMessage({ address, message }: RequestBitcoinSignMessage) {
+    const account = await keyringStore.getAccount(address)
+    if (!account || !isAccountPlatformBitcoin(account)) throw new Error("Account not found")
+
+    if (account.type === "keypair") {
+      // WIF: the single static address is the signing identity
+      const result = await withSecretKey(account.address, (secretKey) =>
+        signBip322Simple({ address: account.address, message, secretKey })
+      )
+      return { address: account.address, signature: result.unwrap() }
+    }
+
+    if (account.type !== "hd-bitcoin")
+      throw new Error("Message signing is not supported for this account type")
+
+    const signingAddress = deriveBitcoinAddressFromXpub(account.keys.payments.xpub, "p2wpkh", 0, 0)
+    const result = await withBitcoinSigningKeys(
+      account.address,
+      [{ tree: "payments", change: 0, index: 0 }],
+      ([key]) => signBip322Simple({ address: signingAddress, message, secretKey: key.secretKey })
+    )
+    return { address: signingAddress, signature: result.unwrap() }
   }
 
   private async submit({

@@ -1,6 +1,6 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
-import { getAccountGenesisHash } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountPlatformBitcoin } from "@core/domains/keyring/exports"
 import { isBitcoinXpub } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import {
@@ -16,6 +16,7 @@ import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { useAccountSignMessageModal } from "@ui/domains/Account/AccountSignMessageModal"
 import { useAddProxyModal } from "@ui/domains/AccountProxies/AddProxy/useAddProxyModal"
 import { useManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/useManageProxyModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -110,6 +111,18 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     openCopyXpubModal(account)
   }, [account, analyticsFrom, genericEvent, openCopyXpubModal])
 
+  // BIP322 message signing — hot bitcoin accounts only (ledger needs a device flow)
+  const { open: openSignMessageModal } = useAccountSignMessageModal()
+  const canSignMessage =
+    !!account &&
+    (account.type === "hd-bitcoin" ||
+      (isAccountPlatformBitcoin(account) && account.type === "keypair"))
+  const signMessage = useCallback(() => {
+    if (!account) return
+    genericEvent("open btc sign message", { from: analyticsFrom })
+    openSignMessageModal(account)
+  }, [account, analyticsFrom, genericEvent, openSignMessageModal])
+
   const { open: _openAccountRenameModal } = useAccountRenameModal()
   const canRename = !!account
   const openAccountRenameModal = useCallback(
@@ -189,6 +202,9 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
               )}
               {canCopyXpub && (
                 <ContextMenuItem onClick={copyXpub}>{t("Copy xpub")}</ContextMenuItem>
+              )}
+              {canSignMessage && (
+                <ContextMenuItem onClick={signMessage}>{t("Sign message")}</ContextMenuItem>
               )}
               <ViewOnExplorerMenuItem account={account} />
               {canRename && (
