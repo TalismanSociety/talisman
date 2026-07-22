@@ -3,6 +3,7 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
+import { parseBip21Uri } from "@talismn/bitcoin"
 import {
   getNetworkGenesisHash,
   isNetworkBtc,
@@ -228,6 +229,22 @@ export const SendFundsRecipientPicker = () => {
     if (newAddress && !newAddress.ss58FormatError) set("to", newAddress.address, true)
   }, [newAddress, set])
 
+  // bitcoin payment URIs (BIP21) fill in both the recipient and, if present, the amount
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (isNetworkBtc(network)) {
+        const bip21 = parseBip21Uri(value)
+        if (bip21) {
+          if (bip21.amountSats !== undefined) set("amount", String(bip21.amountSats))
+          setSearch(bip21.address)
+          return
+        }
+      }
+      setSearch(value)
+    },
+    [network, set]
+  )
+
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
@@ -236,7 +253,7 @@ export const SendFundsRecipientPicker = () => {
           <SearchInput
             onSubmit={handleSubmitSearch}
             autoFocus
-            onChange={setSearch}
+            onChange={handleSearchChange}
             placeholder={t("Enter address")}
             after={
               isNsLookup && isNsFetching ? (

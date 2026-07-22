@@ -1,3 +1,4 @@
+export * from "./bip21"
 export * from "./constants"
 export * from "./esplora/client"
 export * from "./esplora/types"
