@@ -6,7 +6,7 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "pnpm@11.15.0",
+  "packageManager": "pnpm@11.15.1",
   "scripts": {
     "postinstall": "pnpm papi:once",
     "prepare": "husky",
