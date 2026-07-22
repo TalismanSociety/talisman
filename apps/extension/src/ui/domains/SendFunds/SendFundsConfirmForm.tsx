@@ -20,6 +20,7 @@ import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillBu
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
+import { BtcCoinControl } from "./BtcCoinControl"
 import { BtcFeeSelect } from "./BtcFeeSelect"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import {
@@ -391,10 +392,26 @@ const BtcFeeSummary = () => {
     isLoading,
     isRefetching,
     error,
+    utxos,
+    selectedUtxoKeys,
+    setSelectedUtxoKeys,
   } = transaction
 
   return (
     <>
+      {utxos.length > 1 && (
+        <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
+          <div className="text-body-secondary">{t("Coin Control")}</div>
+          <div>
+            <BtcCoinControl
+              utxos={utxos}
+              selectedUtxoKeys={selectedUtxoKeys}
+              onChange={setSelectedUtxoKeys}
+              drawerContainerId="main"
+            />
+          </div>
+        </div>
+      )}
       <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">{t("Transaction Priority")}</div>
         <div>

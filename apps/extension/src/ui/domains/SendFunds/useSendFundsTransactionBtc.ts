@@ -19,6 +19,8 @@ import type { SendFundsTransactionProps } from "./types"
 
 export type BtcFeePriority = "economy" | "medium" | "fast" | "custom"
 
+export const getBtcUtxoKey = (utxo: { txid: string; vout: number }) => `${utxo.txid}:${utxo.vout}`
+
 export const PRIORITY_TO_ESTIMATE: Record<
   Exclude<BtcFeePriority, "custom">,
   keyof BtcFeeEstimates
@@ -49,6 +51,8 @@ export const useSendFundsTransactionBtc = ({
   const [isLocked, setIsLocked] = useState(false)
   const [priority, setPriority] = useState<BtcFeePriority>("medium")
   const [customRate, setCustomRate] = useState<number | null>(null)
+  // coin control: null = automatic selection over all spendable utxos
+  const [selectedUtxoKeys, setSelectedUtxoKeys] = useState<string[] | null>(null)
 
   const token = useToken(tokenId)
   const isBtc = isTokenBtc(token)
@@ -118,16 +122,27 @@ export const useSendFundsTransactionBtc = ({
   const changeAddress = qChange.data?.address
   const accountMeta = useMemo(() => getAccountMeta(account), [account])
 
+  const allUtxos = useMemo(
+    () => qUtxos.data?.utxos.map(deserializeBitcoinUtxo) ?? [],
+    [qUtxos.data]
+  )
+  const spendableUtxos = useMemo(
+    () =>
+      selectedUtxoKeys
+        ? allUtxos.filter((u) => selectedUtxoKeys.includes(getBtcUtxoKey(u)))
+        : allUtxos,
+    [allUtxos, selectedUtxoKeys]
+  )
+
   const build = useMemo((): { data?: BuildTransferPsbtResult; error?: Error } => {
     if (!isBtc || !networkId || !from || !recipient || !qUtxos.data || !feeRate || !changeAddress)
       return {}
     if (!sendMax && (!value || BigInt(value) <= 0n)) return {}
 
     try {
-      const utxos = qUtxos.data.utxos.map(deserializeBitcoinUtxo)
       return {
         data: buildTransferPsbt({
-          utxos,
+          utxos: spendableUtxos,
           recipient,
           amountSats: sendMax ? "max" : BigInt(value),
           feeRateSatVb: feeRate,
@@ -146,6 +161,7 @@ export const useSendFundsTransactionBtc = ({
     from,
     recipient,
     qUtxos.data,
+    spendableUtxos,
     feeRate,
     changeAddress,
     sendMax,
@@ -158,9 +174,8 @@ export const useSendFundsTransactionBtc = ({
     if (!isBtc || !networkId || !recipient || !qUtxos.data || !feeRate || !changeAddress)
       return null
     try {
-      const utxos = qUtxos.data.utxos.map(deserializeBitcoinUtxo)
       const sweep = buildTransferPsbt({
-        utxos,
+        utxos: spendableUtxos,
         recipient,
         amountSats: "max",
         feeRateSatVb: feeRate,
@@ -172,7 +187,16 @@ export const useSendFundsTransactionBtc = ({
     } catch {
       return null
     }
-  }, [isBtc, networkId, recipient, qUtxos.data, feeRate, changeAddress, accountMeta])
+  }, [
+    isBtc,
+    networkId,
+    recipient,
+    qUtxos.data,
+    spendableUtxos,
+    feeRate,
+    changeAddress,
+    accountMeta,
+  ])
 
   if (!isBtc) return null
 
@@ -202,6 +226,11 @@ export const useSendFundsTransactionBtc = ({
     setPriority,
     customRate,
     setCustomRate,
+
+    // coin control
+    utxos: allUtxos,
+    selectedUtxoKeys,
+    setSelectedUtxoKeys,
 
     setIsLocked,
   }
