@@ -177,6 +177,9 @@ export const useSendFundsTransactionBtc = ({
     psbtBase64: build.data?.psbtBase64 ?? null,
     sentSats: build.data ? String(build.data.sentSats) : null,
     usesOrdinalsUtxos: !!build.data?.usesOrdinalsUtxos,
+    // actual on-chain output address (recipient xpub identities are resolved to
+    // a receive address) — this is what tx history must record, never the xpub
+    recipientAddress: recipient ?? null,
 
     isLoading: qFees.isLoading || qUtxos.isLoading || qChange.isLoading || qRecipient.isLoading,
     isRefetching: qFees.isRefetching || qUtxos.isRefetching,

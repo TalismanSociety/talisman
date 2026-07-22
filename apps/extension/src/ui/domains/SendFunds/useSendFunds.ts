@@ -497,13 +497,18 @@ const useSendFundsProvider = () => {
   const txInfo = useMemo<WalletTransactionInfo | null>(() => {
     if (!tokenId || !from || !to || !transfer) return null
 
+    // bitcoin recipients picked from own accounts are xpub identities: record
+    // the resolved on-chain output address, never the xpub
+    const recordedTo = transaction?.platform === "bitcoin" ? transaction.recipientAddress : to
+    if (!recordedTo) return null
+
     return {
       type: "transfer",
-      to,
+      to: recordedTo,
       tokenId,
       value: transfer.planck.toString(),
     }
-  }, [from, to, tokenId, transfer])
+  }, [from, to, tokenId, transfer, transaction])
 
   return {
     from,
