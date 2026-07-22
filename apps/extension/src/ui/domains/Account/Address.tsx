@@ -8,11 +8,11 @@ import { type FC, useMemo } from "react"
 
 // bitcoin account identities are xpubs, which must never be shown as a payable
 // address — display the first payments (P2WPKH) address instead
-const getBitcoinDisplayAddress = (xpub: string) => {
+export const getBitcoinDisplayAddress = (xpub: string) => {
   try {
     return deriveBitcoinAddressFromXpub(xpub, "p2wpkh", 0, 0)
   } catch {
-    return xpub
+    return null
   }
 }
 
@@ -46,17 +46,18 @@ export const Address: FC<AddressProps> = ({
 
   // if address has an onChainId, show that instead of the shortenedAddress
   const [onChainId] = useOnChainId(address)
-  const formatted = useMemo(() => {
-    if (!noOnChainId && onChainId) return onChainId
-    const addressWithPrefix =
+  const [formatted, tooltip] = useMemo(() => {
+    const fullAddress =
       address && isBitcoinXpub(address)
         ? getBitcoinDisplayAddress(address)
         : address && chain
           ? encodeAnyAddress(address, { ss58Format: chain.prefix })
           : address
-    if (noShorten) return addressWithPrefix
-    if (!addressWithPrefix) return addressWithPrefix
-    return shortenAddress(addressWithPrefix, startCharCount, endCharCount)
+    // never leak the xpub, even in a tooltip
+    const tooltip = address && isBitcoinXpub(address) ? fullAddress : address
+    if (!noOnChainId && onChainId) return [onChainId, tooltip]
+    if (noShorten || !fullAddress) return [fullAddress, tooltip]
+    return [shortenAddress(fullAddress, startCharCount, endCharCount), tooltip]
   }, [noOnChainId, onChainId, address, chain, noShorten, startCharCount, endCharCount])
   if (!formatted) return null
 
@@ -74,7 +75,7 @@ export const Address: FC<AddressProps> = ({
 
   if (noTooltip) return <Component className={className}>{display}</Component>
   return (
-    <WithTooltip as={Component} className={className} tooltip={address} noWrap={noWrap}>
+    <WithTooltip as={Component} className={className} tooltip={tooltip} noWrap={noWrap}>
       {display}
     </WithTooltip>
   )

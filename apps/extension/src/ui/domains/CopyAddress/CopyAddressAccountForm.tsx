@@ -1,7 +1,7 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, isAccountAddressSs58 } from "@core/domains/keyring/exports"
-import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
+import { encodeAnyAddress, isBitcoinXpub, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { getBitcoinDisplayAddress } from "../Account/Address"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
@@ -61,8 +62,13 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const { setAddress, copySpecific, network } = useCopyAddressWizard()
   const accountChain = useNetworkByGenesisHash(getAccountGenesisHash(account))
 
+  // bitcoin account identities are xpubs and must never be shown: display a
+  // derived payments address instead
   const formatted = useMemo(
-    () => encodeAnyAddress(account.address, { ss58Format: accountChain?.prefix }),
+    () =>
+      isBitcoinXpub(account.address)
+        ? getBitcoinDisplayAddress(account.address)
+        : encodeAnyAddress(account.address, { ss58Format: accountChain?.prefix }),
     [account.address, accountChain?.prefix]
   )
 
@@ -71,8 +77,11 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   }, [account])
 
   const handleCopyClick = useCallback(() => {
-    copySpecific(formatted, network?.id)
-  }, [copySpecific, formatted, network?.id])
+    // pass the xpub for bitcoin accounts: copySpecific resolves it to an
+    // unused receive address, and must never copy the xpub itself
+    if (isBitcoinXpub(account.address)) copySpecific(account.address, network?.id)
+    else if (formatted) copySpecific(formatted, network?.id)
+  }, [account.address, copySpecific, formatted, network?.id])
 
   const handleSelectClick = useCallback(() => {
     setAddress(account.address)
@@ -88,19 +97,21 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
       <div className="mr-2 flex grow flex-col items-start gap-2 overflow-hidden">
         <div className="flex w-full items-center gap-3 overflow-hidden text-body">
           <div className="truncate text-body">
-            {account.name ?? shortenAddress(formatted, 6, 6)}
+            {account.name ?? (formatted ? shortenAddress(formatted, 6, 6) : null)}
           </div>
           <AccountTypeIcon className="inline-block text-primary" type={account.type} />
           {selected && <CheckCircleIcon />}
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="text-left text-body-secondary text-xs">
-              {shortenAddress(formatted, 10, 10)}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{formatted}</TooltipContent>
-        </Tooltip>
+        {!!formatted && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-left text-body-secondary text-xs">
+                {shortenAddress(formatted, 10, 10)}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>{formatted}</TooltipContent>
+          </Tooltip>
+        )}
       </div>
       <div className="flex gap-6">
         {isCopiable ? (

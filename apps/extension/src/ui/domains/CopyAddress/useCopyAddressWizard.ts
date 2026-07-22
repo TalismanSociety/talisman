@@ -272,17 +272,36 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
   const copySpecific = useCallback(
     async (address: string, chainId?: string | null, legacyFormat?: boolean) => {
       const chain = chainId ? networksMap[chainId] : null
-      const formattedAddress =
-        chain?.platform === "polkadot" && chain.account === "*25519"
-          ? encodeAddressSs58(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
-          : address
+
+      let formattedAddress: string
+      if (isBitcoinXpub(address)) {
+        // never copy the xpub: resolve it to an unused receive address
+        try {
+          const { address: btcAddress } = await api.btcGetUnusedAddress({
+            networkId: chain?.platform === "bitcoin" ? chain.id : "bitcoin",
+            address,
+            tree: "payments",
+            chain: 0,
+            fresh: !!btcFreshReceiveAddress,
+          })
+          formattedAddress = btcAddress
+        } catch (err) {
+          log.error("Failed to fetch bitcoin receive address", { err })
+          return
+        }
+      } else
+        formattedAddress =
+          chain?.platform === "polkadot" && chain.account === "*25519"
+            ? encodeAddressSs58(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
+            : address
+
       const onQrClick = () => {
         open({ address, networkId: chainId, qr: true, legacyFormat })
       }
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
     },
-    [close, networksMap, open]
+    [btcFreshReceiveAddress, close, networksMap, open]
   )
 
   const ctx = {
