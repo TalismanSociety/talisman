@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest"
 import { normalizeAddress } from "../normalizeAddress"
 import { isBitcoinAddress, isBitcoinOnChainAddress } from "./bitcoin"
-import { deriveBitcoinAddressFromXpub, isBitcoinXpub, normalizeXpub } from "./bitcoinXpub"
+import {
+  deriveBitcoinAddressFromXpub,
+  encodeXpubForDisplay,
+  getXpubPrefix,
+  isBitcoinXpub,
+  normalizeXpub,
+} from "./bitcoinXpub"
 import { detectAddressEncoding } from "./detectAddressEncoding"
 
 // BIP84 / BIP86 account-level keys for the standard test mnemonic
@@ -34,6 +40,31 @@ describe("isBitcoinXpub / normalizeXpub", () => {
 
   it("is idempotent on plain xpubs", () => {
     expect(normalizeXpub(BIP86_XPUB)).toEqual(BIP86_XPUB)
+  })
+})
+
+describe("getXpubPrefix / encodeXpubForDisplay", () => {
+  it("detects the SLIP-132 prefix", () => {
+    expect(getXpubPrefix(BIP84_ZPUB)).toEqual("zpub")
+    expect(getXpubPrefix(BIP86_XPUB)).toEqual("xpub")
+  })
+
+  it("round-trips a zpub through the canonical form", () => {
+    expect(encodeXpubForDisplay(normalizeXpub(BIP84_ZPUB), "p2wpkh")).toEqual(BIP84_ZPUB)
+  })
+
+  it("keeps taproot keys as plain xpub", () => {
+    expect(encodeXpubForDisplay(BIP86_XPUB, "p2tr")).toEqual(BIP86_XPUB)
+  })
+
+  it("uses testnet prefixes for signet", () => {
+    expect(encodeXpubForDisplay(BIP84_ZPUB, "p2wpkh", "tb").startsWith("vpub")).toBe(true)
+    expect(encodeXpubForDisplay(BIP86_XPUB, "p2tr", "tb").startsWith("tpub")).toBe(true)
+  })
+
+  it("display encoding derives the same addresses as the canonical form", () => {
+    const zpub = encodeXpubForDisplay(normalizeXpub(BIP84_ZPUB), "p2wpkh")
+    expect(deriveBitcoinAddressFromXpub(zpub, "p2wpkh", 0, 0)).toEqual(P2WPKH)
   })
 })
 
