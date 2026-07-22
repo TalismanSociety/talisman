@@ -23,7 +23,9 @@ const BUILTIN_BITCOIN_NETWORKS: BtcNetwork[] = [
       logo: BTC_LOGO,
     },
     themeColor: "#f7931a",
-    blockExplorerUrls: ["https://mempool.space"],
+    // mempool.space can't look up xpubs: the trezor blockbook instance serves
+    // as fallback explorer for account-level (xpub) queries
+    blockExplorerUrls: ["https://mempool.space", "https://btc1.trezor.io"],
     platform: "bitcoin",
     // Talisman's gandalf-secured Blockstream Enterprise proxy (blockstream-api worker).
     // Holds the OAuth secret server-side; the extension authenticates with the gandalf token
