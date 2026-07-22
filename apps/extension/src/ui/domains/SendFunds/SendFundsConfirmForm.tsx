@@ -381,8 +381,17 @@ const BtcFeeSummary = () => {
 
   if (!token || transaction?.platform !== "bitcoin") return null
 
-  const { priority, setPriority, estimatedFee, feeEstimates, isLoading, isRefetching, error } =
-    transaction
+  const {
+    priority,
+    setPriority,
+    customRate,
+    setCustomRate,
+    estimatedFee,
+    feeEstimates,
+    isLoading,
+    isRefetching,
+    error,
+  } = transaction
 
   return (
     <>
@@ -393,6 +402,8 @@ const BtcFeeSummary = () => {
             priority={priority}
             onChange={setPriority}
             feeEstimates={feeEstimates}
+            customRate={customRate}
+            onCustomRateChange={setCustomRate}
             drawerContainerId="main"
           />
         </div>

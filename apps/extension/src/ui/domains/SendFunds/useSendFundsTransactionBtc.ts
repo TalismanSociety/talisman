@@ -17,9 +17,12 @@ import { useMemo, useState } from "react"
 
 import type { SendFundsTransactionProps } from "./types"
 
-export type BtcFeePriority = "economy" | "medium" | "fast"
+export type BtcFeePriority = "economy" | "medium" | "fast" | "custom"
 
-export const PRIORITY_TO_ESTIMATE: Record<BtcFeePriority, keyof BtcFeeEstimates> = {
+export const PRIORITY_TO_ESTIMATE: Record<
+  Exclude<BtcFeePriority, "custom">,
+  keyof BtcFeeEstimates
+> = {
   economy: "economy",
   medium: "halfHour",
   fast: "fastest",
@@ -45,6 +48,7 @@ export const useSendFundsTransactionBtc = ({
 }: SendFundsTransactionProps) => {
   const [isLocked, setIsLocked] = useState(false)
   const [priority, setPriority] = useState<BtcFeePriority>("medium")
+  const [customRate, setCustomRate] = useState<number | null>(null)
 
   const token = useToken(tokenId)
   const isBtc = isTokenBtc(token)
@@ -108,7 +112,8 @@ export const useSendFundsTransactionBtc = ({
     retry: 1,
   })
 
-  const feeRate = qFees.data?.[PRIORITY_TO_ESTIMATE[priority]]
+  const feeRate =
+    priority === "custom" ? (customRate ?? undefined) : qFees.data?.[PRIORITY_TO_ESTIMATE[priority]]
   const recipient = qRecipient.data
   const changeAddress = qChange.data?.address
   const accountMeta = useMemo(() => getAccountMeta(account), [account])
@@ -195,6 +200,8 @@ export const useSendFundsTransactionBtc = ({
     feeRate: feeRate ?? null,
     priority,
     setPriority,
+    customRate,
+    setCustomRate,
 
     setIsLocked,
   }
