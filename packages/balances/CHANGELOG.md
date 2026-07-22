@@ -1,5 +1,89 @@
 # @talismn/balances
 
+## 3.0.0
+
+### Major Changes
+
+- 5c5aa09: Consolidate bittensor dtao (subnet alpha) token pricing into the token-rates layer
+
+  - `@talismn/token-rates`: new `fetchDTaoTokenRates` — fetches subnet pool prices (chain state_call via an injected connector) and 24h changes (tao-data api via an injected fetch) and computes per-tokenId rates for subnet alpha tokens, with keep-last-on-failure semantics; new `getDTaoTokenRates` — the underlying rate math (moved from `@talismn/balances`). Hosts stay responsible for when to call and how to merge/persist
+  - `@talismn/balances`: dtao pricing removed from the balances layer — `Balance.rates` resolves dtao tokens from the hydrated tokenRates list like any other token; `scaledAlphaPrice` is no longer fetched per poll nor stamped on balance meta (balances stay reference-stable across pool price moves); `SubDTaoBalanceMeta` narrowed to `{ convictionLock? }`; `getDTaoTokenRates` and `getScaledAlphaPrice` exports removed; `calculatePendingRootClaimable` loses its price param
+
+- f0abc19: Relicense: packages move from GPL-3.0-or-later to the Talisman Licence, except `@talismn/orb`, which moves to MIT.
+- 921aee5: Migrate the Solana stack from @solana/web3.js v1 + @solana/spl-token to @solana/kit + @solana-program clients
+
+  - `@talismn/chain-connectors`: `IChainConnectorSol` now exposes `getRpc`/`getTransport` (kit `Rpc`/`RpcTransport`) instead of `getConnection`; `ChainConnectorSolStub` takes a network object only
+  - `@talismn/balances`: `SolTransferCallData` is now kit `Instruction[]`; solana modules fetch via kit rpc; token-2022 transfer-hook extra-account resolution ported in (with tests)
+  - `@talismn/solana`: rewritten on kit's transaction model (`messageBytes` + signatures map) — `parseTransactionInfo`, `serializeTransaction`/`deserializeTransaction` (legacy + v0), `buildUnsignedTransaction`, `setTransactionBlockhash`, `attachTransactionSignature`, `signTransactionWithSecretKey` (@noble ed25519, no Keypair/WebCrypto); adds `serializeOffchainMessage` (CLI/Ledger off-chain message envelope) and `getVerifiedTransactionSignature` (per-signer slot check, works on co-signed transactions); `parseTransactionInfo` now reports the fee payer's canonical signature
+
+### Minor Changes
+
+- 4f1ba49: Steady-state emission suppression and JS-thread friendliness for balance pipelines:
+
+  - Stabilize IBalance object references across emissions (`stabilizeModuleResults`): unchanged balances keep their previous object identity, so fingerprint caches, `distinctUntilChanged` item compares and host-side memoization hit instead of re-serializing/re-rendering the full result set every block/poll.
+  - substrate-dtao: tolerate sub-0.1% per-block drift of `meta.scaledAlphaPrice` (AMM price) and pending-root-claim accrual, which previously defeated every dedup stage and forced a full downstream re-emission every 6s poll.
+  - BalancesProvider: coalesce near-simultaneous multi-network emissions (auditTime) and time-slice the aggregation (chunked stale-marking + k-way merge of pre-sorted per-network arrays instead of a full re-sort), yielding the JS thread on budget.
+  - Balance: cache computed accessors (total/free/reserved/locked/transferable/unavailable/feePayable/rates) per instance, invalidated on hydrate — these run in hot sorting/summing loops and previously re-derived values and allocated several BalanceFormatters per access.
+
+- 187a064: Migrate the substrate stack from @polkadot/\* to the polkadot-api ecosystem
+
+  - `@talismn/chain-connectors`: `ChainConnectorDot` rebuilt on `@polkadot-api/ws-provider` + `substrate-client` (native endpoint failover, auto-resubscribe on reconnect, keep-alive, `StaleRpcError`); `asProvider()` removed; `@talismn/connection-meta` retired
+  - `@talismn/sapi`: fee estimation and `CheckMetadataHash` payloads built with `@polkadot-api/tx-utils`/`signers-common`; pjs `TypeRegistry` helpers removed; `SignerPayloadJSON` type vendored
+  - `@talismn/balances`: substrate-psp22 module ported off `@polkadot/api-contract` (hand-rolled selectors + scale codecs, byte-parity tested)
+  - `@talismn/crypto`: adds `signSubstrate` (sr25519/ed25519/ecdsa/ethereum, pjs byte-parity), pjs keystore JSON encrypt/decrypt (scrypt + xsalsa20poly1305), sr25519 shared-secret helpers
+  - `@talismn/util`: adds pjs-parity byte/hex helpers (`hexToU8a`, `u8aToHex`, `u8aWrapBytes`, …) and `assert`
+
+### Patch Changes
+
+- 64ba301: Preserve live status across balance pipeline restarts: seeds re-emit previously-live balances with their exact last live result instead of downgrading the snapshot to cache and back. Seeded live status expires after 5 minutes without a confirming module emission, and the periodic stale sweep downgrades seeded balances whose module never reconnects.
+- 253ca85: bound in-memory caches: getSharedObservable entries are dropped when unused, sol-spl dynamic token metadata cache is LRU-bounded
+- ffc679c: Fail dtao polls on transient RPC errors instead of resolving empty: conviction-lock and root-claim fetch failures previously read as "balance no longer exists", deleting the stored balance and making lock-only/claim-only rows (e.g. SN128) flap in and out of the portfolio on every other poll. Failed polls now mark balances stale, keeping rows rendered. Storage key encode failures (metadata drift) fail the poll the same way instead of reading as absent values.
+- 4f1ba49: Fix a recurring ~1s JS-thread stall: `fetchRuntimeCallResult` ran the UNCACHED full
+  metadata parse (~200ms, indivisible) whenever it was passed a raw metadata hex string —
+  substrate-hydration does this once per address on every 6s poll. Now routed through
+  `parseMetadataRpcCached` (as are the assets/foreignassets/hydration `fetchTokens` paths,
+  which use the read-only builder). `getMiniMetadata` paths intentionally stay uncached:
+  they pass the parsed metadata to `compactMetadata`, which mutates it in place.
+
+  Also: balance drift (AMM price movement, root-claim accrual beyond tolerance) now
+  re-emits at most once per 30s per balance instead of on every poll — a fast-accruing
+  pending claim could previously defeat any relative tolerance and force a full pipeline
+  pass every 6s.
+
+- 4f1ba49: JS-thread stall attribution hooks:
+
+  - `@talismn/util`: new `reportJsActivity(label, durMs?)` — reports to an optional host-installed `globalThis.__recordJsActivity` hook (no-op otherwise), so host apps running a JS-thread stall watchdog can attribute blocked time to library work. `createTimeSlicer`/`switchMapChunked`/`concatMapChunked` accept a `label` and report slices that ran ≥3× past their budget (a single indivisible work item blocked the thread).
+  - `@talismn/balances`: labeled the chunked decode/aggregation pipelines, and reports full-metadata parses (`parseMetadataRpcCached` cache misses, with duration and cache pressure) and miniMetadata builds.
+
+- 1502463: Coerce string-encoded `tokenDecimals` in substrate-native `system_properties` (fixes native token/balance fetch on chains like the reset Paseo relay whose node serializes numbers as strings)
+- 4f1ba49: feat: balances chunking
+- ffc679c: Fail storage query packs on an empty state_queryStorageAt response instead of decoding every key as absent
+- 24fee4e: Upgrade to typescript 7, switch build tool from tsup to tsdown
+- Updated dependencies [253ca85]
+- Updated dependencies [921aee5]
+- Updated dependencies [c714f08]
+- Updated dependencies [5c5aa09]
+- Updated dependencies [bd1581b]
+- Updated dependencies [4f1ba49]
+- Updated dependencies [7a68097]
+- Updated dependencies [8939669]
+- Updated dependencies [187a064]
+- Updated dependencies [4f1ba49]
+- Updated dependencies [f0abc19]
+- Updated dependencies [921aee5]
+- Updated dependencies [dccbbf8]
+- Updated dependencies [82ba63a]
+- Updated dependencies [ffc679c]
+- Updated dependencies [24fee4e]
+- Updated dependencies [793ec8a]
+  - @talismn/util@2.0.0
+  - @talismn/crypto@1.0.0
+  - @talismn/chain-connectors@1.0.0
+  - @talismn/chaindata-provider@2.0.0
+  - @talismn/token-rates@4.0.0
+  - @talismn/sapi@2.0.0
+  - @talismn/scale@2.0.0
+
 ## 2.0.0
 
 ### Major Changes

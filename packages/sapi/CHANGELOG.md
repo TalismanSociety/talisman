@@ -1,5 +1,31 @@
 # @talismn/sapi
 
+## 2.0.0
+
+### Major Changes
+
+- 187a064: Migrate the substrate stack from @polkadot/\* to the polkadot-api ecosystem
+
+  - `@talismn/chain-connectors`: `ChainConnectorDot` rebuilt on `@polkadot-api/ws-provider` + `substrate-client` (native endpoint failover, auto-resubscribe on reconnect, keep-alive, `StaleRpcError`); `asProvider()` removed; `@talismn/connection-meta` retired
+  - `@talismn/sapi`: fee estimation and `CheckMetadataHash` payloads built with `@polkadot-api/tx-utils`/`signers-common`; pjs `TypeRegistry` helpers removed; `SignerPayloadJSON` type vendored
+  - `@talismn/balances`: substrate-psp22 module ported off `@polkadot/api-contract` (hand-rolled selectors + scale codecs, byte-parity tested)
+  - `@talismn/crypto`: adds `signSubstrate` (sr25519/ed25519/ecdsa/ethereum, pjs byte-parity), pjs keystore JSON encrypt/decrypt (scrypt + xsalsa20poly1305), sr25519 shared-secret helpers
+  - `@talismn/util`: adds pjs-parity byte/hex helpers (`hexToU8a`, `u8aToHex`, `u8aWrapBytes`, …) and `assert`
+
+- f0abc19: Relicense: packages move from GPL-3.0-or-later to the Talisman Licence, except `@talismn/orb`, which moves to MIT.
+
+### Minor Changes
+
+- 7a68097: Add `hasConstant` (checks pallet constant existence in metadata)
+
+### Patch Changes
+
+- 24fee4e: Upgrade to typescript 7, switch build tool from tsup to tsdown
+- 793ec8a: Replace the vendored tx-utils fork with the published `@polkadot-api/tx-utils@0.5.0`, which now supports custom signed-extension mappers natively on both `getPjsTxHelper` and `getTxHelper`. `CUSTOM_SIGNED_EXTENSIONS` (Avail `CheckAppId`) rewritten to the upstream mapper signature — no regression: the sign-request details drawer keeps decoding nonce/mortality on chains with custom signed extensions (Avail)
+- Updated dependencies [f0abc19]
+- Updated dependencies [24fee4e]
+  - @talismn/scale@2.0.0
+
 ## 1.0.0
 
 ### Major Changes
