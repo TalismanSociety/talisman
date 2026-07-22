@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chain-connectors",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
@@ -23,12 +23,12 @@
   "scripts": {
     "test": "vitest run",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup --silent",
+    "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@polkadot-api/substrate-client": "0.7.0",
-    "@polkadot-api/ws-provider": "0.9.0",
+    "@polkadot-api/ws-provider": "0.9.1",
     "@solana/kit": "6.10.0",
     "@talismn/bitcoin": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
   "exports": {

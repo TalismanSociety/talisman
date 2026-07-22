@@ -14,6 +14,7 @@ import { IconManager } from "./libs/IconManager"
 import { setWalletReady } from "./libs/isWalletReady"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
+import { trackUiPort } from "./libs/uiOpenState"
 
 sentry.init("background")
 
@@ -108,6 +109,9 @@ chrome.runtime.onConnect.addListener((_port): void => {
     `Unknown connection from ${_port.name}`
   )
   let port: chrome.runtime.Port | undefined = _port
+
+  // discovery scans slow down while a UI is open, to keep it responsive
+  if (_port.name === PORT_EXTENSION) trackUiPort(_port)
 
   // biome-ignore lint/suspicious/noExplicitAny: it is literally anything
   const messageHandler = (data: any) => {

@@ -102,11 +102,11 @@ describe("getTalismanOrbDataUrl", () => {
     expect(svg).toContain("M16.28 10.52") // bitcoin ₿ path
   })
 
-  it("includes polkadot logo for substrate address", () => {
+  it("includes polkadot logo for polkadot address", () => {
     const url = getTalismanOrbDataUrl(SUBSTRATE_ADDRESS)
     const svg = atob(url.replace("data:image/svg+xml;base64,", ""))
     expect(svg).toContain('class="orb-type"')
-    expect(svg).toContain("M47.8145 76.6299") // polkadot dots path
+    expect(svg).toContain('cx="16.9926" cy="2.83173"') // polkadot dot grid
   })
 
   it("includes correct gradient colors from computation", () => {

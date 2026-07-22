@@ -1,4 +1,5 @@
-import { map, of, switchMap } from "rxjs"
+import { yieldToEventLoop } from "@talismn/util"
+import { defer, map, of, switchMap } from "rxjs"
 
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
@@ -18,9 +19,14 @@ export const subscribeBalances: IBalanceModule<
   // could be use as shared observable key if we decide to cache the sub
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-  const baseQueries = buildBaseQueries(networkId, balanceDefs, miniMetadata)
-
-  return getRpcQueryPack$(connector, networkId, baseQueries).pipe(
+  return defer(async () => {
+    // on a scale-builder cache miss, query building parses/builds the chain metadata
+    // (expensive, indivisible) — give it its own macrotask so it doesn't stack with
+    // the current tick's other work
+    await yieldToEventLoop()
+    return buildBaseQueries(networkId, balanceDefs, miniMetadata)
+  }).pipe(
+    switchMap((baseQueries) => getRpcQueryPack$(connector, networkId, baseQueries)),
     switchMap((partialBalances) => {
       // now for each balance that includes nomPoolStaking, we need to fetch the metadata for the pool
       const nomPoolQueries = buildNomPoolQueries(networkId, partialBalances, miniMetadata)

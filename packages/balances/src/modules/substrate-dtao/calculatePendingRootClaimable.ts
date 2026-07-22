@@ -1,9 +1,6 @@
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 
-import { getScaledAlphaPrice } from "./alphaPrice"
-import type { GetDynamicInfosResult, SubDTaoBalance } from "./types"
-
-type DynamicInfo = NonNullable<GetDynamicInfosResult[number]>
+import type { SubDTaoBalance } from "./types"
 
 export const calculatePendingRootClaimable = ({
   stake,
@@ -11,7 +8,6 @@ export const calculatePendingRootClaimable = ({
   address,
   networkId,
   validatorRootClaimableRate,
-  dynamicInfoByNetuid,
   alreadyClaimedByNetuid,
 }: {
   stake: bigint
@@ -19,7 +15,6 @@ export const calculatePendingRootClaimable = ({
   address: string
   networkId: string
   validatorRootClaimableRate: Map<number, bigint>
-  dynamicInfoByNetuid: Record<number, DynamicInfo | undefined>
   alreadyClaimedByNetuid: Map<number, bigint>
 }): SubDTaoBalance[] => {
   const pendingRootClaimBalances: SubDTaoBalance[] = []
@@ -28,10 +23,6 @@ export const calculatePendingRootClaimable = ({
     if (claimableRate === 0n) {
       continue
     }
-    const dynamicInfo = dynamicInfoByNetuid[netuid]
-    const scaledAlphaPrice = dynamicInfo
-      ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
-      : 0n
     // Calculate claimable = claimable_rate * root_stake
     // Note: claimableRate is a I96F32, a fixed-point number format
 
@@ -49,7 +40,6 @@ export const calculatePendingRootClaimable = ({
       baseTokenId: subDTaoTokenId(networkId, netuid),
       hotkey: hotkey,
       netuid: netuid,
-      scaledAlphaPrice,
       pendingRootClaim,
       stake: 0n,
     })

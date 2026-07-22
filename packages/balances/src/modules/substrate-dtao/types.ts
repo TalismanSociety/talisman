@@ -13,7 +13,6 @@ export const SubDTaoTokenConfigSchema = z.strictObject({
 export type SubDTaoTokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
 
 export type SubDTaoBalanceMeta = {
-  scaledAlphaPrice: string
   convictionLock?: SubDTaoConvictionLockMeta
 }
 
@@ -34,7 +33,6 @@ export type SubDTaoBalance = {
   convictionLock?: SubDTaoConvictionLock
   hotkey: string
   netuid: number
-  scaledAlphaPrice: bigint
 }
 
 export type SubDTaoConvictionLock = {
@@ -43,9 +41,6 @@ export type SubDTaoConvictionLock = {
   lockType: SubDTaoConvictionLockType
   convictionRaw: string
 }
-
-export type GetDynamicInfosResult =
-  (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
 
 export type GetStakeInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]

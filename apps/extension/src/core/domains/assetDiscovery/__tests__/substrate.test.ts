@@ -1,6 +1,8 @@
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { activeNetworksStore } from "../../balances/store.activeNetworks"
 import { __internal, addressToAccountId, getSystemAccountStorageKey } from "../substrate"
+import { substrateAssetDiscoveryStore } from "../substrateStore"
 
 // Alice's public key (Polkadot/Substrate dev account).
 const ALICE_SS58 = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
@@ -83,7 +85,81 @@ describe("isFresh (timestamp-only TTL)", () => {
   })
 
   it("is fresh at exact boundary minus 1ms", () => {
-    const justInsideTTL = Date.now() - (7 * 24 * 60 * 60 * 1000 - 1)
-    expect(isFresh(justInsideTTL)).toBe(true)
+    // freeze the clock: isFresh calls Date.now() again, and a ≥1ms drift between the
+    // two reads pushes the timestamp past the boundary (flaky on slow CI runners)
+    vi.useFakeTimers()
+    try {
+      const justInsideTTL = Date.now() - (7 * 24 * 60 * 60 * 1000 - 1)
+      expect(isFresh(justInsideTTL)).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe("flushPendingProbeResults (batched activations)", () => {
+  const { pendingProbeResults, flushPendingProbeResults } = __internal
+
+  beforeEach(() => {
+    pendingProbeResults.clear()
+    vi.restoreAllMocks()
+  })
+
+  it("activates all live networks in a single activeNetworks write, then stamps all probed networks", async () => {
+    pendingProbeResults.set("batch-alive-1", { alive: true, enqueueGen: 0 })
+    pendingProbeResults.set("batch-alive-2", { alive: true, enqueueGen: 0 })
+    pendingProbeResults.set("batch-dead-1", { alive: false, enqueueGen: 0 })
+
+    const setActiveNetworks = vi.spyOn(activeNetworksStore, "set")
+
+    await flushPendingProbeResults()
+
+    expect(setActiveNetworks).toHaveBeenCalledTimes(1)
+    expect(setActiveNetworks).toHaveBeenCalledWith({
+      "batch-alive-1": true,
+      "batch-alive-2": true,
+    })
+
+    // all three probed networks are stamped, dead one included
+    const timestamps = await substrateAssetDiscoveryStore.get()
+    expect(timestamps["batch-alive-1"]).toBeTypeOf("number")
+    expect(timestamps["batch-alive-2"]).toBeTypeOf("number")
+    expect(timestamps["batch-dead-1"]).toBeTypeOf("number")
+
+    // buffer is drained
+    expect(pendingProbeResults.size).toBe(0)
+  })
+
+  it("drops buffered results whose generation was bumped (new accounts arrived)", async () => {
+    pendingProbeResults.set("batch-stale-gen", { alive: true, enqueueGen: 5 }) // current gen is 0
+
+    const setActiveNetworks = vi.spyOn(activeNetworksStore, "set")
+
+    await flushPendingProbeResults()
+
+    expect(setActiveNetworks).not.toHaveBeenCalled()
+    // no timestamp either: the network must be re-probed by the newer job
+    const timestamps = await substrateAssetDiscoveryStore.get()
+    expect(timestamps["batch-stale-gen"]).toBeUndefined()
+  })
+
+  it("respects a user override written while the result was buffered", async () => {
+    await activeNetworksStore.set({ "batch-user-off": false })
+    pendingProbeResults.set("batch-user-off", { alive: true, enqueueGen: 0 })
+
+    const setActiveNetworks = vi.spyOn(activeNetworksStore, "set")
+
+    await flushPendingProbeResults()
+
+    expect(setActiveNetworks).not.toHaveBeenCalled()
+    const timestamps = await substrateAssetDiscoveryStore.get()
+    expect(timestamps["batch-user-off"]).toBeUndefined()
+    expect((await activeNetworksStore.get())["batch-user-off"]).toBe(false)
+  })
+
+  it("is a no-op when the buffer is empty", async () => {
+    const setActiveNetworks = vi.spyOn(activeNetworksStore, "set")
+    await flushPendingProbeResults()
+    expect(setActiveNetworks).not.toHaveBeenCalled()
   })
 })

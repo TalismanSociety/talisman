@@ -1,9 +1,8 @@
-import type z from "zod/v4"
-
 import { githubChaindataDistUrl } from "../constants"
 import log from "../log"
 import { enrichWithBuiltinBitcoin } from "./builtinBitcoin"
-import { ChaindataFileSchema } from "./schema"
+import { type ChunkedParseResult, parseChaindataFileChunked } from "./chunkedValidation"
+import { markChaindataValidated } from "./validatedCache"
 
 const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
@@ -27,13 +26,14 @@ export const getFallbackUrl = (url: string) => {
 }
 
 type FetchJsonFromGitHubOptions<T> = {
-  schema?: z.ZodType<T>
+  /** chunked validator (e.g. parseChaindataFileChunked) — runs in time slices, yielding the thread between them */
+  validate?: (data: unknown, signal?: AbortSignal) => Promise<ChunkedParseResult<T>>
   signal?: AbortSignal
 }
 
 const fetchJsonFromGithubUrl = async <T>(
   url: string,
-  { signal, schema }: FetchJsonFromGitHubOptions<T> = {}
+  { signal, validate }: FetchJsonFromGitHubOptions<T> = {}
 ): Promise<T> => {
   const req = await fetch(url, { signal })
 
@@ -42,15 +42,15 @@ const fetchJsonFromGithubUrl = async <T>(
 
   if (!req.ok) {
     const fallbackUrl = getFallbackUrl(url)
-    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, { schema, signal })
+    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, { validate, signal })
     throw new Error(`Failed to fetch from ${url}: ${req.status} ${req.statusText}`)
   }
 
   const data = await req.json()
 
-  if (schema) {
+  if (validate) {
     const start = performance.now()
-    const result = schema.safeParse(data)
+    const result = await validate(data, signal)
     log.debug(
       `[ChaindataProvider] Validating downloaded ${url?.split("/").pop()} took ${performance.now() - start} ms`
     )
@@ -67,6 +67,8 @@ const fetchJsonFromGithubUrl = async <T>(
 // export because of generate-init-data script
 export const fetchChaindata = (signal?: AbortSignal) =>
   fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, {
-    schema: ChaindataFileSchema,
+    validate: (data, signal) => parseChaindataFileChunked(data, { signal }),
     signal,
-  }).then(enrichWithBuiltinBitcoin)
+    // mark the enriched object (the one that flows through the pipeline) so
+    // storageValidated$ doesn't re-validate it on every emission
+  }).then((data) => markChaindataValidated(enrichWithBuiltinBitcoin(data)))

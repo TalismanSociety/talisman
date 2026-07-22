@@ -2,9 +2,17 @@ import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import { bind } from "@react-rxjs/core"
-import { type Address, Balances } from "@talismn/balances"
+import {
+  type Address,
+  Balance,
+  Balances,
+  getBalanceId,
+  type HydrateDb,
+  type IBalance,
+} from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import isEqual from "lodash-es/isEqual"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -29,7 +37,14 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
     networks: getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
     tokens: getTokensMap$(BALANCES_CHAINDATA_QUERY),
     tokenRates: tokenRatesMap$,
-  }).pipe(debugObservable("balancesHydrate$"))
+  }).pipe(
+    // a new hydrate object invalidates every Balance's cached formatters downstream:
+    // only emit when one of the source maps actually changed reference
+    distinctUntilChanged(
+      (a, b) => a.networks === b.networks && a.tokens === b.tokens && a.tokenRates === b.tokenRates
+    ),
+    debugObservable("balancesHydrate$")
+  )
 )
 
 // cache balances once fetched so they can be displayed instantly if navigating in and out of portfolio
@@ -60,6 +75,73 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   true
 )
 
+/**
+ * Reuses `Balance` instances across balance emissions.
+ *
+ * Port messages deserialize into all-new IBalance objects on every emission, but most
+ * balances are unchanged from one emission to the next. Rebuilding every wrapper
+ * discards each Balance's lazily-computed formatter caches and gives downstream
+ * consumers (memos, === compares) a new identity for identical data — so unchanged
+ * balances (matched by id + deep compare, status included) keep their previous instance.
+ *
+ * Caveat: identity stays stable across rates-only changes (the instance is re-hydrated
+ * in place), so fiat values can change under the same reference — don't memoize fiat
+ * amounts off a Balance's identity alone.
+ */
+const stabilizeBalanceInstances = () => {
+  let prev = new Map<string, { storage: IBalance; balance: Balance }>()
+
+  return (balances: IBalance[]): Balance[] => {
+    const next = new Map<string, { storage: IBalance; balance: Balance }>()
+
+    const result = balances.map((storage) => {
+      const id = getBalanceId(storage)
+      const prevEntry = prev.get(id)
+      // allocation-free deep compare (NOT the fingerprint helpers: those JSON.stringify,
+      // and since port deserialization makes every object new on every emission, the
+      // strings could never be amortized here — they'd just be garbage)
+      const entry =
+        prevEntry && isEqual(prevEntry.storage, storage)
+          ? prevEntry
+          : { storage, balance: new Balance(storage) }
+      next.set(id, entry)
+      return entry.balance
+    })
+
+    prev = next
+    return result
+  }
+}
+
+const stabilize = stabilizeBalanceInstances()
+
+/**
+ * Reuses the previous `Balances` wrapper when an emission leaves every stabilized
+ * instance and the hydrate untouched — e.g. the background pipeline restarting after an
+ * account add re-streams a content-identical snapshot. Combined with the reference
+ * `distinctUntilChanged` below, such emissions are dropped before they can trigger a
+ * portfolio recompute.
+ */
+const reuseUnchangedBalances = () => {
+  let prev: { balances: Balance[]; hydrate: HydrateDb; wrapper: Balances } | undefined
+
+  return (balances: Balance[], hydrate: HydrateDb): Balances => {
+    if (
+      prev &&
+      prev.hydrate === hydrate &&
+      prev.balances.length === balances.length &&
+      prev.balances.every((b, i) => b === balances[i])
+    )
+      return prev.wrapper
+
+    const wrapper = new Balances(balances, hydrate)
+    prev = { balances, hydrate, wrapper }
+    return wrapper
+  }
+}
+
+const reuseUnchanged = reuseUnchangedBalances()
+
 const allBalances$ = combineLatest([
   getTokensMap$(BALANCES_CHAINDATA_QUERY),
   getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
@@ -77,8 +159,9 @@ const allBalances$ = combineLatest([
 
       return isAccountCompatibleWithNetwork(network, account)
     })
-    return new Balances(validBalances, hydrate)
+    return reuseUnchanged(stabilize(validBalances), hydrate)
   }),
+  distinctUntilChanged(),
   shareReplay({ bufferSize: 1, refCount: true })
 )
 

@@ -1,6 +1,5 @@
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
-import { ALPHA_PRICE_SCALE } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 
 const NETWORK_ID = "bittensor-0"
@@ -14,7 +13,6 @@ const makeArgs = (overrides: Record<string, unknown> = {}) =>
     address: ADDRESS,
     networkId: NETWORK_ID,
     validatorRootClaimableRate: new Map<number, bigint>(),
-    dynamicInfoByNetuid: {},
     alreadyClaimedByNetuid: new Map<number, bigint>(),
     ...overrides,
   }) as unknown as Parameters<typeof calculatePendingRootClaimable>[0]
@@ -113,41 +111,6 @@ describe("calculatePendingRootClaimable", () => {
     expect(netuids).toEqual(expect.arrayContaining([1, 2, 3]))
   })
 
-  it("sets scaledAlphaPrice to 0n when dynamicInfo is missing", () => {
-    const rates = new Map<number, bigint>([[7, 1n << 32n]])
-
-    const result = calculatePendingRootClaimable(makeArgs({ validatorRootClaimableRate: rates }))
-
-    expect(result[0]!.scaledAlphaPrice).toBe(0n)
-  })
-
-  it("computes scaledAlphaPrice from dynamicInfo when present", () => {
-    const rates = new Map<number, bigint>([[1, 1n << 32n]])
-    const dynamicInfoByNetuid = {
-      1: { alpha_in: 2000n, tao_in: 1000n },
-    }
-
-    const result = calculatePendingRootClaimable(
-      makeArgs({ validatorRootClaimableRate: rates, dynamicInfoByNetuid })
-    )
-
-    // getScaledAlphaPrice(2000, 1000) = (1000 * 1e9) / 2000 = 500_000_000
-    expect(result[0]!.scaledAlphaPrice).toBe(500_000_000n)
-  })
-
-  it("computes scaledAlphaPrice = ALPHA_PRICE_SCALE for equal pool values", () => {
-    const rates = new Map<number, bigint>([[1, 1n << 32n]])
-    const dynamicInfoByNetuid = {
-      1: { alpha_in: 1000n, tao_in: 1000n },
-    }
-
-    const result = calculatePendingRootClaimable(
-      makeArgs({ validatorRootClaimableRate: rates, dynamicInfoByNetuid })
-    )
-
-    expect(result[0]!.scaledAlphaPrice).toBe(ALPHA_PRICE_SCALE)
-  })
-
   it("returns objects with correct shape and tokenId fields", () => {
     const netuid = 4
     const rates = new Map<number, bigint>([[netuid, 1n << 32n]])
@@ -166,6 +129,5 @@ describe("calculatePendingRootClaimable", () => {
       })
     )
     expect(typeof balance.pendingRootClaim).toBe("bigint")
-    expect(typeof balance.scaledAlphaPrice).toBe("bigint")
   })
 })

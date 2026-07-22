@@ -16,7 +16,7 @@ import {
   type NetworkId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { normalizeAddress } from "@talismn/crypto"
 import { getNetworksMapById$, useNetworksMapById } from "@ui/state/chaindata"
 import {
   portfolioBalances$,
@@ -36,18 +36,43 @@ const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 
 const DEFAULT_PORTFOLIO_TOKENS_BITCOIN = [btcNativeTokenId("bitcoin")]
 
+// normalizeAddress memoizes internally, this wrapper only adds throw-safety
+const safeNormalizeAddress = (address: string): string | null => {
+  try {
+    return normalizeAddress(address)
+  } catch {
+    return null
+  }
+}
+
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (
   accounts: Account[] | undefined,
   networksById: Record<NetworkId, Network>,
   balances: Balances
 ) => {
-  const accountHasSomeBalance =
-    balances.find((b) => !accounts || accounts.some((a) => isAddressEqual(a.address, b.address)))
-      .sum.planck.total > 0n
+  const accountByNormalized = accounts
+    ? accounts.reduce((map, account) => {
+        const normalized = safeNormalizeAddress(account.address)
+        // keep the first account when two addresses normalize identically
+        if (normalized && !map.has(normalized)) map.set(normalized, account)
+        return map
+      }, new Map<string, Account>())
+    : null
+  const findAccount = (address: string): Account | undefined => {
+    if (!accountByNormalized) return undefined
+    const normalized = safeNormalizeAddress(address)
+    return normalized ? accountByNormalized.get(normalized) : undefined
+  }
+
+  // single filter pass instead of the old O(accounts × balances) predicate scan
+  const matchedBalances = accountByNormalized
+    ? new Balances(balances.each.filter((b) => !!findAccount(b.address)))
+    : balances
+  const accountHasSomeBalance = matchedBalances.sum.planck.total > 0n
 
   return (balance: Balance): boolean => {
-    const account = accounts?.find((a) => isAddressEqual(a.address, balance.address))
+    const account = findAccount(balance.address)
     if (!account) return false
 
     const network = networksById[balance.networkId]

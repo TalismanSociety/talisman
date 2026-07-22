@@ -73,14 +73,14 @@ const expectSignatureParity = (
 
 describe("pjs json import (polkadot-js parity fixtures)", () => {
   for (const fixture of FIXTURES.singles) {
-    it(fixture.name, () => {
+    it(fixture.name, async () => {
       const pair = createPairFromJson(fixture.json)
 
       // address must resolve identically to the polkadot-js pair address
       expect(normalizeAddress(pair.address)).toBe(normalizeAddress(fixture.expected.address))
       expect(pair.type).toBe(fixture.curve)
 
-      unlockPair(pair, FIXTURES.password)
+      await unlockPair(pair, FIXTURES.password)
       expect(pair.isLocked).toBe(false)
       expect(pair.publicKey).toEqual(hexToU8a(fixture.expected.publicKey))
 
@@ -93,21 +93,21 @@ describe("pjs json import (polkadot-js parity fixtures)", () => {
 
       // the re-encoded unencrypted keystore sent to the backend must decode back to the same keys
       const roundtrip = createPairFromJson(toUnencryptedPjsJson(pair))
-      unlockPair(roundtrip, "")
+      await unlockPair(roundtrip, "")
       expect(roundtrip.secretKey).toEqual(pair.secretKey)
       expect(roundtrip.publicKey).toEqual(pair.publicKey)
       expect(normalizeAddress(roundtrip.address)).toBe(normalizeAddress(fixture.expected.address))
     })
 
-    it(`${fixture.name} - rejects a wrong password`, () => {
+    it(`${fixture.name} - rejects a wrong password`, async () => {
       const pair = createPairFromJson(fixture.json)
-      expect(() => unlockPair(pair, "wrong-password")).toThrow()
+      await expect(unlockPair(pair, "wrong-password")).rejects.toThrow()
       expect(pair.isLocked).toBe(true)
     })
   }
 
-  it("batch file with all curves", () => {
-    const inner = unlockMultiAccountsJson(FIXTURES.batch.json, FIXTURES.password)
+  it("batch file with all curves", async () => {
+    const inner = await unlockMultiAccountsJson(FIXTURES.batch.json, FIXTURES.password)
     expect(inner).toHaveLength(FIXTURES.batch.accounts.length)
 
     for (const [i, expected] of FIXTURES.batch.accounts.entries()) {
@@ -115,13 +115,13 @@ describe("pjs json import (polkadot-js parity fixtures)", () => {
       expect(normalizeAddress(pair.address)).toBe(normalizeAddress(expected.address))
       expect(pair.type).toBe(expected.curve)
 
-      unlockPair(pair, FIXTURES.password)
+      await unlockPair(pair, FIXTURES.password)
       expect(pair.publicKey).toEqual(hexToU8a(expected.publicKey))
       expectSignatureParity(expected.curve, pair.secretKey!, pair.publicKey!, expected.signature)
     }
   })
 
-  it("batch file rejects a wrong password", () => {
-    expect(() => unlockMultiAccountsJson(FIXTURES.batch.json, "wrong-password")).toThrow()
+  it("batch file rejects a wrong password", async () => {
+    await expect(unlockMultiAccountsJson(FIXTURES.batch.json, "wrong-password")).rejects.toThrow()
   })
 })

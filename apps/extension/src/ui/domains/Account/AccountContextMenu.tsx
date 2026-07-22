@@ -1,9 +1,7 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { api } from "@ui/api"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -21,12 +19,10 @@ import { useManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/useM
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
-import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountCanWriteProxies, useAccountProxiesCount } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkByGenesisHash, useNetworks } from "@ui/state/chaindata"
-import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 import type React from "react"
 import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -133,17 +129,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     [_openAccountRemoveModal, account]
   )
 
-  const networkIds = useActiveAssetDiscoveryNetworkIds()
-  const canScanTokens = useMemo(() => account && isEthereumAddress(account.address), [account])
-  const scanTokensClick = useCallback(() => {
-    if (!account) return
-    api.assetDiscoveryStartScan({ networkIds, addresses: [account.address], withApi: true })
-    if (IS_POPUP) {
-      api.dashboardOpen("/settings/networks-tokens/asset-discovery")
-      if (IS_EMBEDDED_POPUP) window.close()
-    }
-  }, [account, networkIds])
-
   const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
 
   // proxy management entry — surfaced for accounts compatible with at least one
@@ -193,11 +178,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
               <ViewOnExplorerMenuItem account={account} />
               {canRename && (
                 <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
-              )}
-              {canScanTokens && (
-                <ContextMenuItem onClick={scanTokensClick}>
-                  {t("Scan missing tokens")}
-                </ContextMenuItem>
               )}
               {canExport && (
                 <ContextMenuItem onClick={openAccountExportModal}>

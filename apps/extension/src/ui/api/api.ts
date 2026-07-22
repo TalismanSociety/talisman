@@ -297,11 +297,6 @@ export const api: MessageTypes = {
   btcSubmit: (req) => messageService.sendMessage("pri(bitcoin.tx.submit)", req),
   btcAccountPreview: (req) => messageService.sendMessage("pri(bitcoin.account.preview)", req),
 
-  // asset discovery
-  assetDiscoveryStartScan: (scope) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", scope),
-  assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
-
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),
   nftsSetHidden: (id, isHidden) =>

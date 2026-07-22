@@ -3,6 +3,7 @@ import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEthStub } from "@talismn/chain-connectors"
 import type { EthNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "../log"
+import { startEventLoopMonitor } from "./eventLoopMonitor"
 
 export type EthNetworkConfig = Pick<EthNetwork, "id" | "rpcs" | "contracts"> & {
   nativeCurrency?: Partial<EthNetwork["nativeCurrency"]>
@@ -31,6 +32,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   const stopAll = log.timer("Balances testbench")
+  const monitor = startEventLoopMonitor(`eventLoop ${network.id}`)
   const networkId = network.id
 
   const cache = {
@@ -99,5 +101,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
     writeFileSync(`./cache/evm-uniswapv2.json`, JSON.stringify(cache["evm-uniswapv2"], null, 2))
   } catch (err) {
     log.error(err)
+  } finally {
+    monitor.stop()
   }
 }

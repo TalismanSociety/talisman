@@ -8,7 +8,6 @@ import { AccountProxiesHandler } from "../domains/accountProxies"
 import { AccountsHandler } from "../domains/accounts"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
-import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
 import { BitcoinExtensionHandler } from "../domains/bitcoin/handler.extension"
 import { BittensorHandler } from "../domains/bittensor/handler"
@@ -70,7 +69,6 @@ export default class Extension extends ExtensionHandler {
       substrate: new SubHandler(stores),
       solana: new SolanaExtensionHandler(stores),
       bitcoin: new BitcoinExtensionHandler(stores),
-      assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),
       bittensor: new BittensorHandler(stores),
       gandalf: new GandalfHandler(stores),

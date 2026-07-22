@@ -12,7 +12,6 @@ export type AnalyticsFeature =
   | "Send Funds"
   | "Settings"
   | "Transactions"
-  | "Asset Discovery"
   | "Quick Settings"
   | "Earn"
 

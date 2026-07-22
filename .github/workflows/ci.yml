@@ -62,13 +62,13 @@ jobs:
           pnpm biome check --error-on-warnings -- "${CHANGED_FILES[@]}"
       - name: Knip (unused code/deps)
         run: pnpm knip
-      - name: Test
-        run: pnpm test
       - name: Typecheck
         run: |
           # All packages and apps use customConditions: ["@talismn/source"] to resolve
           # @talismn/* packages directly from source. This means no package build is needed.
           pnpm typecheck
+      - name: Test
+        run: pnpm test
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -143,6 +143,46 @@ jobs:
         env:
           ANVIL_RPC_URL: http://localhost:8545
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/e2e
+          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
+          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
+      - name: Notify Discord on flaky e2e tests
+        # runs even if a prior step failed, so flaky tests are surfaced regardless of the run outcome
+        if: ${{ !cancelled() }}
+        run: |
+          REPORT=playwright-report/results.json
+          if [ ! -f "$REPORT" ]; then
+            echo "No JSON report found at $REPORT - skipping flaky check"
+            exit 0
+          fi
+
+          FLAKY=$(jq -r '.stats.flaky // 0' "$REPORT")
+          echo "Flaky test count: $FLAKY"
+          if [ "$FLAKY" -eq 0 ]; then
+            exit 0
+          fi
+
+          # Collect the titles of the flaky specs (a spec is flaky if any of its tests ended up flaky)
+          NAMES=$(jq -r '
+            [.suites[]? | recurse(.suites[]?) | .specs[]?]
+            | map(select(any(.tests[]?; .status == "flaky")) | .title)
+            | .[]
+          ' "$REPORT" | sed 's/^/• /')
+
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          MSG=$(printf '⚠️ **%s flaky e2e test(s) detected** on `%s`\n%s\n\n%s\n\n[View run](%s)' \
+            "$FLAKY" "$REF" "commit $SHA" "$NAMES" "$RUN_URL")
+
+          jq -n --arg content "$MSG" '{content: $content}' \
+            | curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+                -H "Content-Type: application/json" \
+                -d @-
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.PLAYWRIGHT_DISCORD_API_HOOK }}
+          # pass context values through env (never interpolate ${{ }} into run: — a
+          # malicious PR branch name would otherwise be executed as shell)
+          REF: ${{ github.head_ref || github.ref_name }}
+          SHA: ${{ github.sha }}
       - name: Checkout visual regression snapshots from base branch
         if: github.event_name == 'pull_request'
         run: |
@@ -155,6 +195,8 @@ jobs:
         env:
           ANVIL_RPC_URL: http://localhost:8545
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/visual-regression
+          E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
+          E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -195,6 +237,28 @@ jobs:
         run: pnpm build:packages
       - name: Publish snapshot packages
         run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag pr${{ github.event.pull_request.number }}
+      - name: Report published snapshot versions
+        if: always()
+        run: |
+          TAG="pr${{ github.event.pull_request.number }}"
+          echo "### 📦 Snapshot packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Install with \`@${TAG}\` dist-tag:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          VERSIONS=""
+          for pkg in packages/*/; do
+            VERSION=$(jq -r '.version // empty' "${pkg}package.json")
+            NAME=$(jq -r '.name // empty' "${pkg}package.json")
+            if [ -n "$VERSION" ] && [ -n "$NAME" ]; then
+              echo "${NAME}@${VERSION}" >> $GITHUB_STEP_SUMMARY
+              VERSIONS="${VERSIONS}${NAME}@${VERSION}, "
+            fi
+          done
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -n "$VERSIONS" ]; then
+            echo "::notice::Snapshot published: ${VERSIONS%, }"
+          fi
 
   # This job will check for changed packages in this PR, and will comment on the PR if any changed packages do not yet have changesets
   ensure_pr_has_changeset:

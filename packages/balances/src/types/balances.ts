@@ -15,8 +15,6 @@ import {
 import BigNumber from "../configureBigNumber"
 
 import log from "../log"
-import type { SubDTaoBalanceMeta } from "../modules"
-import { getDTaoTokenRates } from "../modules/substrate-dtao"
 import type {
   Amount,
   AmountWithLabel,
@@ -109,6 +107,9 @@ export class Balances {
     balances: Balances | BalanceJsonList | Balance[] | IBalance[] | BalanceJson[] | Balance,
     hydrate?: HydrateDb
   ) {
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
+    if (balances == null) return this
+
     // handle Balances (convert to Balance[])
     // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances instanceof Balances) return new Balances([...balances], hydrate)
@@ -342,6 +343,31 @@ export class Balance {
 
   #db: HydrateDb | null = null
 
+  // lazily-computed caches for the hot accessors: sorting/summing/filtering loops read
+  // these repeatedly, and each uncached access re-derives values and allocates several
+  // BalanceFormatters. `undefined` = not yet computed. #storage is immutable in practice
+  // (the only mutator, addValue, is unused legacy), so caches only invalidate when the
+  // hydrate db changes (rates/tokens affect every derived value).
+  #cachedRates: TokenRates | null | undefined = undefined
+  #cachedTotal: BalanceFormatter | undefined = undefined
+  #cachedFree: BalanceFormatter | undefined = undefined
+  #cachedReserved: BalanceFormatter | undefined = undefined
+  #cachedLocked: BalanceFormatter | undefined = undefined
+  #cachedTransferable: BalanceFormatter | undefined = undefined
+  #cachedUnavailable: BalanceFormatter | undefined = undefined
+  #cachedFeePayable: BalanceFormatter | undefined = undefined
+
+  #invalidateComputed = () => {
+    this.#cachedRates = undefined
+    this.#cachedTotal = undefined
+    this.#cachedFree = undefined
+    this.#cachedReserved = undefined
+    this.#cachedLocked = undefined
+    this.#cachedTransferable = undefined
+    this.#cachedUnavailable = undefined
+    this.#cachedFeePayable = undefined
+  }
+
   //
   // Methods
   //
@@ -370,7 +396,10 @@ export class Balance {
   // }
 
   hydrate = (hydrate?: HydrateDb) => {
-    if (hydrate !== undefined) this.#db = hydrate
+    if (hydrate !== undefined && hydrate !== this.#db) {
+      this.#db = hydrate
+      this.#invalidateComputed()
+    }
   }
 
   #format = (balance: bigint | string) =>
@@ -418,6 +447,11 @@ export class Balance {
     return this.token?.decimals || null
   }
   get rates(): TokenRates | null {
+    if (this.#cachedRates === undefined) this.#cachedRates = this.#computeRates()
+    return this.#cachedRates
+  }
+
+  #computeRates = (): TokenRates | null => {
     // uniswap v2 lp tokens need the rates from the underlying pool assets
     //
     // To note: `@talismn/token-rates` knows to fetch the `coingeckoId0` and `coingeckoId1` rates for evm-uniswapv2 tokens.
@@ -476,19 +510,8 @@ export class Balance {
       return lpTokenRates
     }
 
-    // dTAO balances need to be converted to the native token to compute their rate, unless we have a coingeckoId
-    if (this.token?.type === "substrate-dtao" && !this.token.coingeckoId) {
-      if (!this.#db?.tokenRates) return null
-
-      const balances = this.#valueGetter.get("free")
-      if (!balances.length) return null
-      const balanceMeta = balances[0].meta as SubDTaoBalanceMeta | undefined
-      if (!balanceMeta?.scaledAlphaPrice) return null
-
-      return getDTaoTokenRates(this.token, this.#db.tokenRates, balanceMeta.scaledAlphaPrice)
-    }
-
-    // other tokens can just pick from the tokenRates db using the tokenId
+    // other tokens (including dtao alpha tokens, whose rates the host computes from the
+    // subnet pool price) can just pick from the tokenRates db using the tokenId
     return this.#db?.tokenRates?.[this.tokenId] || null
   }
 
@@ -531,6 +554,11 @@ export class Balance {
    * The balance will be reaped if this goes below the existential deposit.
    */
   get total() {
+    if (this.#cachedTotal === undefined) this.#cachedTotal = this.#computeTotal()
+    return this.#cachedTotal
+  }
+
+  #computeTotal = () => {
     const extra = this.getValue("extra") as FormattedAmount<ExtraAmount<string>, string>[]
 
     // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
@@ -550,6 +578,11 @@ export class Balance {
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
+    if (this.#cachedFree === undefined) this.#cachedFree = this.#computeFree()
+    return this.#cachedFree
+  }
+
+  #computeFree = () => {
     // for simple balances
     if ("value" in this.#storage && this.#storage.value) return this.#format(this.#storage.value)
 
@@ -560,6 +593,11 @@ export class Balance {
   }
   /** The reserved balance of this token. Is included in the total. */
   get reserved() {
+    if (this.#cachedReserved === undefined) this.#cachedReserved = this.#computeReserved()
+    return this.#cachedReserved
+  }
+
+  #computeReserved = () => {
     const reservedValues = this.getValue("reserved")
     if (reservedValues.length === 0) return this.#format(0n)
 
@@ -572,9 +610,11 @@ export class Balance {
   }
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
-    return this.#format(
-      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
-    )
+    if (this.#cachedLocked === undefined)
+      this.#cachedLocked = this.#format(
+        this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
+      )
+    return this.#cachedLocked
   }
 
   get locks() {
@@ -598,6 +638,12 @@ export class Balance {
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
+    if (this.#cachedTransferable === undefined)
+      this.#cachedTransferable = this.#computeTransferable()
+    return this.#cachedTransferable
+  }
+
+  #computeTransferable = () => {
     /**
      * As you can see here, `locked` is subtracted from `free` in order to derive `transferable`.
      *
@@ -651,6 +697,11 @@ export class Balance {
    * Now, it is the bigger of the locked amount and the reserved amounts, i.e. `max(locked, reserved)`.
    */
   get unavailable() {
+    if (this.#cachedUnavailable === undefined) this.#cachedUnavailable = this.#computeUnavailable()
+    return this.#cachedUnavailable
+  }
+
+  #computeUnavailable = () => {
     const oldCalculation = () => this.locked.planck + this.reserved.planck
     const newCalculation = () => BigMath.max(this.locked.planck, this.reserved.planck)
     const baseUnavailable = this.#storage.useLegacyTransferableCalculation
@@ -670,6 +721,11 @@ export class Balance {
 
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
+    if (this.#cachedFeePayable === undefined) this.#cachedFeePayable = this.#computeFeePayable()
+    return this.#cachedFeePayable
+  }
+
+  #computeFeePayable = () => {
     // if no locks exist, feePayable is equal to the free amount
     if (this.locks.length === 0) return this.free
 
@@ -681,6 +737,50 @@ export class Balance {
     // subtract the lock from the free amount (but don't go below 0)
     return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
   }
+}
+
+/** raw values of a given type, straight from the IBalance JSON (no Balance/formatter allocation) */
+const getRawValues = (
+  balance: IBalance,
+  valueType: BalanceStatusTypes
+): AmountWithLabel<string>[] =>
+  "values" in balance && balance.values
+    ? balance.values.filter(({ type }) => type === valueType)
+    : []
+
+/** raw "locked" values, straight from the IBalance JSON (see getRawTotalPlanck) */
+export const getRawLocks = (balance: IBalance): AmountWithLabel<string>[] =>
+  getRawValues(balance, "locked")
+
+const sumPlancks = (values: AmountWithLabel<string>[]): bigint =>
+  values.reduce((sum, { amount }) => sum + BigInt(amount), 0n)
+
+/**
+ * Computes `new Balance(b).total.planck` without constructing a Balance (which allocates
+ * several BalanceFormatters per access) — used for high-frequency zero-balance filtering.
+ * MUST mirror Balance.total exactly, including the DelegatedStaking-hold/nompool rule
+ * (guarded by a parity test in balance-raw-helpers.test.ts).
+ */
+export const getRawTotalPlanck = (balance: IBalance): bigint => {
+  const free =
+    "value" in balance && balance.value
+      ? BigInt(balance.value)
+      : sumPlancks(getRawValues(balance, "free"))
+  const reserved = sumPlancks(getRawValues(balance, "reserved"))
+
+  // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
+  // if not (old model: vara, avail, cere), staked amount is not in the account and it needs to be added to the total
+  const nomPoolStakedPlancks = getRawLocks(balance).some(
+    (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking"
+  )
+    ? 0n
+    : sumPlancks(getRawValues(balance, "nompool"))
+
+  const extra = (getRawValues(balance, "extra") as ExtraAmount<string>[])
+    .filter((extra) => extra.includeInTotal)
+    .reduce((sum, { amount }) => sum + BigInt(amount), 0n)
+
+  return free + reserved + nomPoolStakedPlancks + extra
 }
 
 export class BalanceValueGetter {

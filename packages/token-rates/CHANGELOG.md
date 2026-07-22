@@ -1,5 +1,38 @@
 # @talismn/token-rates
 
+## 4.0.0
+
+### Major Changes
+
+- f0abc19: Relicense: packages move from GPL-3.0-or-later to the Talisman Licence, except `@talismn/orb`, which moves to MIT.
+
+### Minor Changes
+
+- 5c5aa09: Consolidate bittensor dtao (subnet alpha) token pricing into the token-rates layer
+
+  - `@talismn/token-rates`: new `fetchDTaoTokenRates` — fetches subnet pool prices (chain state_call via an injected connector) and 24h changes (tao-data api via an injected fetch) and computes per-tokenId rates for subnet alpha tokens, with keep-last-on-failure semantics; new `getDTaoTokenRates` — the underlying rate math (moved from `@talismn/balances`). Hosts stay responsible for when to call and how to merge/persist
+  - `@talismn/balances`: dtao pricing removed from the balances layer — `Balance.rates` resolves dtao tokens from the hydrated tokenRates list like any other token; `scaledAlphaPrice` is no longer fetched per poll nor stamped on balance meta (balances stay reference-stable across pool price moves); `SubDTaoBalanceMeta` narrowed to `{ convictionLock? }`; `getDTaoTokenRates` and `getScaledAlphaPrice` exports removed; `calculatePendingRootClaimable` loses its price param
+
+### Patch Changes
+
+- 24fee4e: Upgrade to typescript 7, switch build tool from tsup to tsdown
+- Updated dependencies [253ca85]
+- Updated dependencies [c714f08]
+- Updated dependencies [bd1581b]
+- Updated dependencies [4f1ba49]
+- Updated dependencies [8939669]
+- Updated dependencies [187a064]
+- Updated dependencies [4f1ba49]
+- Updated dependencies [f0abc19]
+- Updated dependencies [921aee5]
+- Updated dependencies [dccbbf8]
+- Updated dependencies [82ba63a]
+- Updated dependencies [ffc679c]
+- Updated dependencies [24fee4e]
+  - @talismn/util@2.0.0
+  - @talismn/chain-connectors@1.0.0
+  - @talismn/chaindata-provider@2.0.0
+
 ## 3.0.23
 
 ### Patch Changes

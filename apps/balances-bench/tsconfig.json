@@ -4,8 +4,7 @@
     "lib": ["ESNext"],
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": ["node"],
-    "skipLibCheck": true
+    "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["**/node_modules", "dist", "test", "tests"]

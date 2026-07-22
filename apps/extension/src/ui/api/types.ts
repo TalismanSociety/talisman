@@ -18,7 +18,6 @@ import type {
   LoggedinType,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
-import type { AssetDiscoveryScanScope } from "@core/domains/assetDiscovery/types"
 import type {
   AddressesAndTokens,
   BalanceSubscriptionResponse,
@@ -319,9 +318,6 @@ export default interface MessageTypes {
     genesisHash: HexString,
     specVersion?: number
   ) => Promise<MetadataDef | undefined>
-
-  assetDiscoveryStartScan: (scope: AssetDiscoveryScanScope) => Promise<boolean>
-  assetDiscoveryStopScan: () => Promise<boolean>
 
   nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
   nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
