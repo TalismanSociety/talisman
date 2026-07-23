@@ -1,5 +1,6 @@
 import { base64ToBytes, base64UrlToBytes, bytesToBase64, bytesToBase64Url } from "@common/base64"
 import { IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 
 /**
  * Drives the WebAuthn PRF ceremony. Only ever handles the PRF output, which is useless without the
@@ -9,8 +10,6 @@ import { IS_FIREFOX } from "@common/constants"
 export type BiometricCredential = {
   /** Base64url-encoded WebAuthn credential ID */
   credentialId: string
-  /** Base64url-encoded WebAuthn user ID (needed for credential deletion) */
-  userId: string
   /** Base64-encoded salt passed to the PRF extension */
   prfSalt: string
   /** Base64-encoded PRF output, used by the background to derive the encryption key */
@@ -38,6 +37,7 @@ export async function createBiometricCredential(
 ): Promise<BiometricCredential> {
   const prfSaltBytes = crypto.getRandomValues(new Uint8Array(32))
   const prfSalt = bytesToBase64(prfSaltBytes)
+  // the user handle is required by the spec but never used, credentials are addressed by their id
   const userId = crypto.getRandomValues(new Uint8Array(32))
 
   const credential = (await navigator.credentials.create({
@@ -82,11 +82,25 @@ export async function createBiometricCredential(
     ? bytesToBase64(prf.results.first)
     : await getBiometricPrfOutput(credentialId, prfSalt, signal)
 
-  return {
-    credentialId,
-    userId: bytesToBase64Url(userId),
-    prfSalt,
-    prfOutput,
+  return { credentialId, prfSalt, prfOutput }
+}
+
+/**
+ * Tells the authenticator that we no longer know about this credential, so it can offer to delete
+ * the passkey. Best-effort: not all browsers implement the signal API.
+ */
+export async function signalCredentialRemoved(credentialId: string): Promise<void> {
+  // biome-ignore lint/suspicious/noExplicitAny: signal API not in TS types yet
+  const signalUnknownCredential = (PublicKeyCredential as any)?.signalUnknownCredential
+  if (typeof signalUnknownCredential !== "function") return
+
+  try {
+    await signalUnknownCredential.call(PublicKeyCredential, {
+      rpId: chrome.runtime.id,
+      credentialId,
+    })
+  } catch (err) {
+    log.warn("Failed to signal biometric credential removal", { err })
   }
 }
 

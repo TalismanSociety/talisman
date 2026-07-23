@@ -13,7 +13,7 @@ import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
-import { getBiometricPrfOutput } from "@ui/util/webauthnPrf"
+import { getBiometricPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -141,8 +141,10 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
       // the background clears the enrollment when it can't be used to unlock anymore
       const result = await api.biometricAuthenticate(prfOutput)
-      if (!result)
+      if (!result) {
+        await signalCredentialRemoved(credentialInfo.credentialId)
         return setError(t("Biometric unlock was reset, please enable it again from settings."))
+      }
 
       const qs = new URLSearchParams(window.location.search)
       if (qs.get("closeAfterLogin") === "true") window.close()

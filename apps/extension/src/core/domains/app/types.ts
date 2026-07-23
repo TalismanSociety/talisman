@@ -10,8 +10,6 @@ export type RemoteConfigStoreData = RemoteConfigData
 export interface BiometricStoreData {
   /** Base64url-encoded WebAuthn credential ID */
   credentialId?: string
-  /** Base64url-encoded WebAuthn user ID (needed for credential deletion) */
-  userId?: string
   /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
   encryptedPassword?: string
   /** AES-GCM initialization vector (Base64) */
@@ -88,7 +86,6 @@ export interface RequestAllowPhishingSite {
 
 export interface BiometricEnrollRequest {
   credentialId: string
-  userId: string
   prfSalt: string
   /** Base64-encoded PRF output, used by the background to derive the encryption key */
   prfOutput: string

@@ -2,7 +2,11 @@ import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
-import { createBiometricCredential, isBiometricAvailable } from "@ui/util/webauthnPrf"
+import {
+  createBiometricCredential,
+  isBiometricAvailable,
+  signalCredentialRemoved,
+} from "@ui/util/webauthnPrf"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -38,7 +42,10 @@ export const BiometricSetting = () => {
       if (checked) {
         await api.biometricEnroll(await createBiometricCredential(abort.signal))
       } else {
+        // read the credential before dropping it, so we can ask the authenticator to forget it too
+        const credentialInfo = await api.biometricGetCredentialInfo()
         await api.biometricUnenroll()
+        if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
         setShowRemoveHint(true)
       }
     } catch (err) {

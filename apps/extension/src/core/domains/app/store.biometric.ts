@@ -3,8 +3,8 @@ import type { BiometricStoreData } from "./types"
 
 class BiometricStore extends StorageProvider<BiometricStoreData> {
   async isEnrolled(): Promise<boolean> {
-    const { credentialId, userId, encryptedPassword, iv, prfSalt } = await this.get()
-    return !!(credentialId && userId && encryptedPassword && iv && prfSalt)
+    const { credentialId, encryptedPassword, iv, prfSalt } = await this.get()
+    return !!(credentialId && encryptedPassword && iv && prfSalt)
   }
 
   async enroll(data: Required<BiometricStoreData>): Promise<void> {

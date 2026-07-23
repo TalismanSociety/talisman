@@ -265,7 +265,6 @@ export default class AppHandler extends ExtensionHandler {
 
     await this.stores.biometric.enroll({
       credentialId: request.credentialId,
-      userId: request.userId,
       prfSalt: request.prfSalt,
       encryptedPassword,
       iv,
@@ -412,13 +411,7 @@ export default class AppHandler extends ExtensionHandler {
           port,
           this.stores.biometric.observable.pipe(
             map((data) => ({
-              enrolled: !!(
-                data.credentialId &&
-                data.userId &&
-                data.encryptedPassword &&
-                data.iv &&
-                data.prfSalt
-              ),
+              enrolled: !!(data.credentialId && data.encryptedPassword && data.iv && data.prfSalt),
             }))
           )
         )
