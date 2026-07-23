@@ -1,5 +1,4 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/constants"
-import { decrypt } from "@metamask/browser-passworder"
 import { assert, sleep } from "@talismn/util"
 import { BehaviorSubject, map } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
@@ -287,14 +286,7 @@ export default class AppHandler extends ExtensionHandler {
   }: BiometricAuthenticateRequest): Promise<boolean> {
     if (!(DEBUG || TEST)) await sleep(1000)
     try {
-      const { secret, check } = await this.stores.password.get()
-      assert(secret && check, "Unable to authenticate")
-
-      // verify the hashed password by decrypting the check value
-      const result = (await decrypt(hashedPassword, check)) as { secret: string }
-      assert(result.secret && result.secret === secret, "Biometric authentication failed")
-
-      this.stores.password.setPassword(hashedPassword)
+      await this.stores.password.authenticateHashed(hashedPassword)
       talismanAnalytics.capture("authenticate", { method: "biometric" })
 
       this.stores.settings

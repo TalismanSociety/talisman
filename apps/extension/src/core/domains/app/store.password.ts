@@ -140,13 +140,23 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     if (this.isLoggedIn.value === TRUE) return
 
     const pw = await this.transformPassword(password)
+    await this.authenticateHashed(pw)
+  }
+
+  /**
+   * Authenticates using an already transformed (hashed) password, as recovered by biometric unlock.
+   * Throws if it doesn't match the stored auth secret.
+   */
+  async authenticateHashed(hashedPw: string) {
+    if (this.isLoggedIn.value === TRUE) return
+
     const { secret, check } = await this.get()
     assert(secret && check, "Unable to authenticate")
 
-    const result = (await decrypt(pw, check)) as { secret: string }
+    const result = (await decrypt(hashedPw, check)) as { secret: string }
     assert(result.secret && result.secret === secret, "Incorrect Password")
 
-    this.setPassword(pw)
+    this.setPassword(hashedPw)
   }
 
   setPassword(password: string | undefined) {
