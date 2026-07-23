@@ -251,6 +251,11 @@ export default class AppHandler extends ExtensionHandler {
       "Must be logged in to enroll biometric"
     )
 
+    // biometric unlock authenticates against the auth secret, which accounts that last logged in
+    // through the legacy method may not have yet - enrolling them would never be able to unlock
+    const { secret, check } = await this.stores.password.get()
+    assert(secret && check, "Please log in again before enabling biometric unlock")
+
     const password = await this.stores.password.getPassword()
     assert(password, "No password in session")
 
