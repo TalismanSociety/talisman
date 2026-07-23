@@ -275,6 +275,11 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async biometricUnenroll(): Promise<boolean> {
+    assert(
+      this.stores.password.isLoggedIn.value === "TRUE",
+      "Must be logged in to disable biometric unlock"
+    )
+
     await this.stores.biometric.unenroll()
     talismanAnalytics.capture("biometric unenrolled")
     return true

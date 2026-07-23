@@ -161,4 +161,14 @@ describe("App handler biometric unlock", () => {
     expect(await messageSender("pri(app.biometric.unenroll)", null)).toBe(true)
     expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
   })
+
+  test("cannot unenroll while logged out", async () => {
+    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+    await messageSender("pri(app.lock)", null)
+
+    await expect(messageSender("pri(app.biometric.unenroll)", null)).rejects.toThrow(
+      "Must be logged in to disable biometric unlock"
+    )
+    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
+  })
 })
