@@ -294,12 +294,26 @@ export default class AppHandler extends ExtensionHandler {
   }: BiometricAuthenticateRequest): Promise<boolean> {
     if (!(DEBUG || TEST)) await sleep(1000)
 
-    // read outside of the try block, a storage failure here must not clear a valid enrollment
+    // read outside of the try blocks, a storage failure here must not clear a valid enrollment
     const enrollment = await this.stores.biometric.get()
     if (!isCompleteEnrollment(enrollment)) return false
 
+    const { secret, check } = await this.stores.password.get()
+    if (!secret || !check) return false
+
+    let password: string
     try {
-      const password = await decryptPassword(enrollment.encryptedPassword, enrollment.iv, prfOutput)
+      password = await decryptPassword(enrollment.encryptedPassword, enrollment.iv, prfOutput)
+    } catch (cause) {
+      // decryption is a pure computation over stored data, so a failure here means the prf output
+      // doesn't match the enrollment and never will - drop it instead of prompting for it on every
+      // login
+      log.error("Biometric decryption failed, clearing enrollment", { cause })
+      await this.stores.biometric.unenroll()
+      return false
+    }
+
+    try {
       await this.stores.password.authenticateHashed(password)
       talismanAnalytics.capture("authenticate", { method: "biometric" })
 
@@ -311,9 +325,8 @@ export default class AppHandler extends ExtensionHandler {
     } catch (cause) {
       this.stores.password.clearPassword()
 
-      // decryption and the auth secret check are pure computations over stored data, so a failure
-      // here means the enrollment can never unlock the wallet again - drop it instead of prompting
-      // the user for it on every login
+      // the auth secret was read above, so the recovered password simply doesn't match it anymore
+      // and this enrollment can never unlock the wallet again
       log.error("Biometric authentication failed, clearing enrollment", { cause })
       await this.stores.biometric.unenroll()
 
