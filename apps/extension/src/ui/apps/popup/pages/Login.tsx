@@ -12,7 +12,7 @@ import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
-import { unlockWithBiometric } from "@ui/util/webauthnPrf"
+import { getBiometricPrfOutput } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -116,23 +116,15 @@ const BiometricUnlockButton = () => {
     if (processing) return
     setProcessing(true)
     try {
-      const enrollmentData = await api.biometricGetEnrollmentData()
-      if (
-        !enrollmentData.credentialId ||
-        !enrollmentData.prfSalt ||
-        !enrollmentData.encryptedPassword ||
-        !enrollmentData.iv
-      )
-        return
+      const credentialInfo = await api.biometricGetCredentialInfo()
+      if (!credentialInfo) return
 
-      const hashedPassword = await unlockWithBiometric(
-        enrollmentData.credentialId,
-        enrollmentData.prfSalt,
-        enrollmentData.encryptedPassword,
-        enrollmentData.iv
+      const prfOutput = await getBiometricPrfOutput(
+        credentialInfo.credentialId,
+        credentialInfo.prfSalt
       )
 
-      const result = await api.biometricAuthenticateHashed(hashedPassword)
+      const result = await api.biometricAuthenticate(prfOutput)
       if (!result) return
 
       const qs = new URLSearchParams(window.location.search)

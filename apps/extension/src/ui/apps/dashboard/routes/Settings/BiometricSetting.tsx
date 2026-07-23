@@ -2,7 +2,7 @@ import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
-import { enrollBiometric, isBiometricAvailable } from "@ui/util/webauthnPrf"
+import { createBiometricCredential, isBiometricAvailable } from "@ui/util/webauthnPrf"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -27,9 +27,7 @@ export const BiometricSetting = () => {
     setShowRemoveHint(false)
     try {
       if (checked) {
-        const hashedPw = await api.biometricGetHashedPassword()
-        const result = await enrollBiometric(hashedPw)
-        await api.biometricEnroll(result)
+        await api.biometricEnroll(await createBiometricCredential())
       } else {
         await api.biometricUnenroll()
         setShowRemoveHint(true)

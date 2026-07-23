@@ -52,12 +52,10 @@ export const api: MessageTypes = {
   biometricIsEnrolled: () => messageService.sendMessage("pri(app.biometric.isEnrolled)"),
   biometricIsEnrolledSubscribe: (cb) =>
     messageService.subscribe("pri(app.biometric.isEnrolled.subscribe)", null, cb),
-  biometricGetEnrollmentData: () =>
-    messageService.sendMessage("pri(app.biometric.getEnrollmentData)"),
-  biometricAuthenticateHashed: (hashedPassword) =>
-    messageService.sendMessage("pri(app.biometric.authenticateHashed)", { hashedPassword }),
-  biometricGetHashedPassword: () =>
-    messageService.sendMessage("pri(app.biometric.getHashedPassword)"),
+  biometricGetCredentialInfo: () =>
+    messageService.sendMessage("pri(app.biometric.getCredentialInfo)"),
+  biometricAuthenticate: (prfOutput) =>
+    messageService.sendMessage("pri(app.biometric.authenticate)", { prfOutput }),
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),

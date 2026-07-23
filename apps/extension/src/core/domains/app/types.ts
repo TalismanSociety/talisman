@@ -89,13 +89,20 @@ export interface RequestAllowPhishingSite {
 export interface BiometricEnrollRequest {
   credentialId: string
   userId: string
-  encryptedPassword: string
-  iv: string
   prfSalt: string
+  /** Base64-encoded PRF output, used by the background to derive the encryption key */
+  prfOutput: string
 }
 
 export interface BiometricAuthenticateRequest {
-  hashedPassword: string
+  /** Base64-encoded PRF output, used by the background to derive the decryption key */
+  prfOutput: string
+}
+
+/** The non-sensitive part of the enrollment, needed by the UI to run the WebAuthn ceremony */
+export interface BiometricCredentialInfo {
+  credentialId: string
+  prfSalt: string
 }
 
 export interface AppMessages {
@@ -122,7 +129,6 @@ export interface AppMessages {
   "pri(app.biometric.unenroll)": [null, boolean]
   "pri(app.biometric.isEnrolled)": [null, boolean]
   "pri(app.biometric.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
-  "pri(app.biometric.getEnrollmentData)": [null, BiometricStoreData]
-  "pri(app.biometric.authenticateHashed)": [BiometricAuthenticateRequest, boolean]
-  "pri(app.biometric.getHashedPassword)": [null, string]
+  "pri(app.biometric.getCredentialInfo)": [null, BiometricCredentialInfo | null]
+  "pri(app.biometric.authenticate)": [BiometricAuthenticateRequest, boolean]
 }

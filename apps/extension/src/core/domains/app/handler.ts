@@ -10,13 +10,14 @@ import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
 import { keyringStore } from "../keyring/store"
+import { decryptPassword, encryptPassword } from "./biometricCrypto"
 import { addException } from "./protector"
 import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
   BiometricAuthenticateRequest,
+  BiometricCredentialInfo,
   BiometricEnrollRequest,
-  BiometricStoreData,
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,
@@ -249,12 +250,19 @@ export default class AppHandler extends ExtensionHandler {
       this.stores.password.isLoggedIn.value === "TRUE",
       "Must be logged in to enroll biometric"
     )
+
+    const password = await this.stores.password.getPassword()
+    assert(password, "No password in session")
+
+    // the transformed password is encrypted here and never leaves the background
+    const { encryptedPassword, iv } = await encryptPassword(password, request.prfOutput)
+
     await this.stores.biometric.enroll({
       credentialId: request.credentialId,
       userId: request.userId,
-      encryptedPassword: request.encryptedPassword,
-      iv: request.iv,
       prfSalt: request.prfSalt,
+      encryptedPassword,
+      iv,
     })
     talismanAnalytics.capture("biometric enrolled")
     return true
@@ -270,23 +278,23 @@ export default class AppHandler extends ExtensionHandler {
     return this.stores.biometric.isEnrolled()
   }
 
-  private async biometricGetEnrollmentData(): Promise<BiometricStoreData> {
-    return this.stores.biometric.get()
+  /** Only the public part of the enrollment - the ciphertext never leaves the background */
+  private async biometricGetCredentialInfo(): Promise<BiometricCredentialInfo | null> {
+    const { credentialId, prfSalt } = await this.stores.biometric.get()
+    if (!credentialId || !prfSalt) return null
+    return { credentialId, prfSalt }
   }
 
-  private async biometricGetHashedPassword(): Promise<string> {
-    assert(this.stores.password.isLoggedIn.value === "TRUE", "Must be logged in")
-    const pw = await this.stores.password.getPassword()
-    assert(pw, "No password in session")
-    return pw
-  }
-
-  private async biometricAuthenticateHashed({
-    hashedPassword,
+  private async biometricAuthenticate({
+    prfOutput,
   }: BiometricAuthenticateRequest): Promise<boolean> {
     if (!(DEBUG || TEST)) await sleep(1000)
     try {
-      await this.stores.password.authenticateHashed(hashedPassword)
+      const { encryptedPassword, iv } = await this.stores.biometric.get()
+      assert(encryptedPassword && iv, "Biometric unlock is not enabled")
+
+      const password = await decryptPassword(encryptedPassword, iv, prfOutput)
+      await this.stores.password.authenticateHashed(password)
       talismanAnalytics.capture("authenticate", { method: "biometric" })
 
       this.stores.settings
@@ -400,14 +408,11 @@ export default class AppHandler extends ExtensionHandler {
           )
         )
 
-      case "pri(app.biometric.getEnrollmentData)":
-        return this.biometricGetEnrollmentData()
+      case "pri(app.biometric.getCredentialInfo)":
+        return this.biometricGetCredentialInfo()
 
-      case "pri(app.biometric.authenticateHashed)":
-        return this.biometricAuthenticateHashed(request as BiometricAuthenticateRequest)
-
-      case "pri(app.biometric.getHashedPassword)":
-        return this.biometricGetHashedPassword()
+      case "pri(app.biometric.authenticate)":
+        return this.biometricAuthenticate(request as BiometricAuthenticateRequest)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
