@@ -11,7 +11,7 @@ import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
 import { keyringStore } from "../keyring/store"
-import { decryptPassword, encryptPassword } from "./biometricCrypto"
+import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./biometricCrypto"
 import { addException } from "./protector"
 import { isCompleteEnrollment } from "./store.biometric"
 import type { PasswordStoreData } from "./store.password"
@@ -304,6 +304,10 @@ export default class AppHandler extends ExtensionHandler {
     // no throttle here, unlike the password paths: a mismatching prf output unenrolls on the first
     // attempt, so there is no second guess to slow down
 
+    // a prf output that doesn't even decode never came off an authenticator, so it says nothing
+    // about the enrollment - fail the attempt instead of destroying it
+    if (!isUsablePrfOutput(prfOutput)) return "failed"
+
     // read outside of the try blocks, a storage failure here must not clear a valid enrollment
     const enrollment = await this.stores.biometric.get()
     // nothing usable is stored, whatever credential the caller holds is orphaned
@@ -317,23 +321,17 @@ export default class AppHandler extends ExtensionHandler {
     try {
       password = await decryptPassword(enrollment.encryptedPassword, enrollment.iv, prfOutput)
     } catch (cause) {
-      // decryption is a pure computation over stored data, so a failure here means the prf output
-      // doesn't match the enrollment and never will - drop it instead of prompting for it on every
-      // login
+      // the prf output decodes, so decryption is now a pure computation over stored data and a
+      // failure means the output doesn't match the enrollment and never will - drop it instead of
+      // prompting for it on every login
       log.error("Biometric decryption failed, clearing enrollment", { cause })
       await this.stores.biometric.unenroll()
       return "unenrolled"
     }
 
     try {
-      await this.stores.password.authenticateHashed(password)
-      talismanAnalytics.capture("authenticate", { method: "biometric" })
-
-      this.stores.settings
-        .get()
-        .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
-
-      return "success"
+      // check before starting the session, so that only a proven mismatch reaches the unenroll below
+      await this.stores.password.checkHashedPassword(password)
     } catch (cause) {
       await this.stores.password.clearPassword()
 
@@ -344,6 +342,24 @@ export default class AppHandler extends ExtensionHandler {
 
       return "unenrolled"
     }
+
+    try {
+      await this.stores.password.setPassword(password)
+    } catch (cause) {
+      // the password is proven good, so this is the session write failing - the enrollment is still
+      // valid and the next attempt can succeed, keep it
+      await this.stores.password.clearPassword()
+      log.error("Biometric unlock could not start the session", { cause })
+      return "failed"
+    }
+
+    talismanAnalytics.capture("authenticate", { method: "biometric" })
+
+    this.stores.settings
+      .get()
+      .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
+
+    return "success"
   }
 
   public async handle<TMessageType extends MessageTypes>(

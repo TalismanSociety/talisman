@@ -1,7 +1,7 @@
 import { base64 } from "@talismn/crypto"
 import { describe, expect, test } from "vitest"
 
-import { decryptPassword, encryptPassword } from "../biometricCrypto"
+import { decryptPassword, encryptPassword, isUsablePrfOutput } from "../biometricCrypto"
 
 const randomPrfOutput = () => base64.encode(crypto.getRandomValues(new Uint8Array(32)))
 
@@ -39,5 +39,18 @@ describe("biometricCrypto", () => {
 
     expect(first.iv).not.toBe(second.iv)
     expect(first.encryptedPassword).not.toBe(second.encryptedPassword)
+  })
+
+  describe("isUsablePrfOutput", () => {
+    test("accepts an authenticator sized output", () => {
+      expect(isUsablePrfOutput(randomPrfOutput())).toBe(true)
+      expect(isUsablePrfOutput(base64.encode(new Uint8Array(64)))).toBe(true)
+    })
+
+    test("rejects output that can't have come off an authenticator", () => {
+      expect(isUsablePrfOutput("")).toBe(false)
+      expect(isUsablePrfOutput("not base64 at all!")).toBe(false)
+      expect(isUsablePrfOutput(base64.encode(new Uint8Array(16)))).toBe(false)
+    })
   })
 })

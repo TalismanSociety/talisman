@@ -10,6 +10,23 @@ so they don't linger in the heap until the garbage collector gets to them.
 
 const HKDF_INFO = "talisman-biometric-v1"
 
+/** WebAuthn PRF outputs are 32 bytes, accept longer in case a platform ever deviates upwards */
+const MIN_PRF_OUTPUT_BYTES = 32
+
+/**
+ * Tells a PRF output the caller mangled apart from one the authenticator actually produced.
+ *
+ * Both make `decryptPassword` throw, but only the latter proves the enrollment can never unlock the
+ * wallet again - a decoding failure must not cost the user their enrollment.
+ */
+export const isUsablePrfOutput = (prfOutput: string): boolean => {
+  try {
+    return base64.decode(prfOutput).length >= MIN_PRF_OUTPUT_BYTES
+  } catch {
+    return false
+  }
+}
+
 /** Derives the AES-GCM key protecting the stored password from a WebAuthn PRF output */
 const deriveAesKey = async (prfOutput: string): Promise<CryptoKey> => {
   const prfBytes = base64.decode(prfOutput) as Uint8Array<ArrayBuffer>
