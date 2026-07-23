@@ -49,7 +49,6 @@ export const api: MessageTypes = {
   // biometric messages -------------------------------------------------------
   biometricEnroll: (data) => messageService.sendMessage("pri(app.biometric.enroll)", data),
   biometricUnenroll: () => messageService.sendMessage("pri(app.biometric.unenroll)"),
-  biometricIsEnrolled: () => messageService.sendMessage("pri(app.biometric.isEnrolled)"),
   biometricIsEnrolledSubscribe: (cb) =>
     messageService.subscribe("pri(app.biometric.isEnrolled.subscribe)", null, cb),
   biometricGetCredentialInfo: () =>

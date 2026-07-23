@@ -10,6 +10,7 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useIsBiometricEnrolled } from "@ui/state/biometric"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
@@ -106,20 +107,15 @@ const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.
 
 const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const { t } = useTranslation()
-  const [enrolled, setEnrolled] = useState(false)
+  const enrolled = useIsBiometricEnrolled()
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
   useEffect(() => {
-    api.biometricIsEnrolled().then(setEnrolled)
-    const unsubscribe = api.biometricIsEnrolledSubscribe(({ enrolled }) => setEnrolled(enrolled))
-    return () => {
-      unsubscribe()
-      // abandon any ceremony still waiting on the user
-      abortRef.current?.abort()
-    }
+    // abandon any ceremony still waiting on the user
+    return () => abortRef.current?.abort()
   }, [])
 
   const handleBiometricUnlock = useCallback(async () => {

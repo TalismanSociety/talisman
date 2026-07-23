@@ -13,6 +13,7 @@ import { authenticateLegacyMethod } from "../accounts/legacy"
 import { keyringStore } from "../keyring/store"
 import { decryptPassword, encryptPassword } from "./biometricCrypto"
 import { addException } from "./protector"
+import { isCompleteEnrollment } from "./store.biometric"
 import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
@@ -279,14 +280,12 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private async biometricIsEnrolled(): Promise<boolean> {
-    return this.stores.biometric.isEnrolled()
-  }
-
   /** Only the public part of the enrollment - the ciphertext never leaves the background */
   private async biometricGetCredentialInfo(): Promise<BiometricCredentialInfo | null> {
-    const { credentialId, prfSalt } = await this.stores.biometric.get()
-    if (!credentialId || !prfSalt) return null
+    const enrollment = await this.stores.biometric.get()
+    if (!isCompleteEnrollment(enrollment)) return null
+
+    const { credentialId, prfSalt } = enrollment
     return { credentialId, prfSalt }
   }
 
@@ -296,11 +295,11 @@ export default class AppHandler extends ExtensionHandler {
     if (!(DEBUG || TEST)) await sleep(1000)
 
     // read outside of the try block, a storage failure here must not clear a valid enrollment
-    const { encryptedPassword, iv } = await this.stores.biometric.get()
-    if (!encryptedPassword || !iv) return false
+    const enrollment = await this.stores.biometric.get()
+    if (!isCompleteEnrollment(enrollment)) return false
 
     try {
-      const password = await decryptPassword(encryptedPassword, iv, prfOutput)
+      const password = await decryptPassword(enrollment.encryptedPassword, enrollment.iv, prfOutput)
       await this.stores.password.authenticateHashed(password)
       talismanAnalytics.capture("authenticate", { method: "biometric" })
 
@@ -402,17 +401,12 @@ export default class AppHandler extends ExtensionHandler {
       case "pri(app.biometric.unenroll)":
         return this.biometricUnenroll()
 
-      case "pri(app.biometric.isEnrolled)":
-        return this.biometricIsEnrolled()
-
       case "pri(app.biometric.isEnrolled.subscribe)":
         return genericSubscription<"pri(app.biometric.isEnrolled.subscribe)">(
           id,
           port,
           this.stores.biometric.observable.pipe(
-            map((data) => ({
-              enrolled: !!(data.credentialId && data.encryptedPassword && data.iv && data.prfSalt),
-            }))
+            map((data) => ({ enrolled: isCompleteEnrollment(data) }))
           )
         )
 

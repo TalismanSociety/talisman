@@ -109,7 +109,6 @@ export default interface MessageTypes {
   // biometric messages -------------------------------------------------------
   biometricEnroll: (data: BiometricEnrollRequest) => Promise<boolean>
   biometricUnenroll: () => Promise<boolean>
-  biometricIsEnrolled: () => Promise<boolean>
   biometricIsEnrolledSubscribe: (cb: (data: { enrolled: boolean }) => void) => UnsubscribeFn
   biometricGetCredentialInfo: () => Promise<BiometricCredentialInfo | null>
   biometricAuthenticate: (prfOutput: string) => Promise<boolean>

@@ -124,7 +124,6 @@ export interface AppMessages {
   // biometric unlock
   "pri(app.biometric.enroll)": [BiometricEnrollRequest, boolean]
   "pri(app.biometric.unenroll)": [null, boolean]
-  "pri(app.biometric.isEnrolled)": [null, boolean]
   "pri(app.biometric.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
   "pri(app.biometric.getCredentialInfo)": [null, BiometricCredentialInfo | null]
   "pri(app.biometric.authenticate)": [BiometricAuthenticateRequest, boolean]
