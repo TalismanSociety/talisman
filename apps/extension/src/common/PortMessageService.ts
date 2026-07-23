@@ -180,7 +180,13 @@ export default class PortMessageService {
     )
 
     return () => {
-      this.sendMessage("pri(unsubscribe)", { id }).then(() => delete this.handlers[id])
+      // the subscription is dead either way, and a dead port must not turn an unmount into an
+      // unhandled rejection
+      this.sendMessage("pri(unsubscribe)", { id })
+        .catch((cause) => log.debug("failed to unsubscribe", { message, cause }))
+        .finally(() => {
+          delete this.handlers[id]
+        })
     }
   }
 
