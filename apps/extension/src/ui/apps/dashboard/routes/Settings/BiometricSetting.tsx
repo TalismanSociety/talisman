@@ -2,6 +2,7 @@ import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
+import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
 import { useIsBiometricEnrolled } from "@ui/state/biometric"
 import {
   createBiometricCredential,
@@ -18,6 +19,7 @@ export const BiometricSetting = () => {
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
   const [showRemoveHint, setShowRemoveHint] = useState(false)
+  const getErrorMessage = useBiometricErrorMessage()
 
   const abortRef = useRef<AbortController>(null)
 
@@ -27,31 +29,33 @@ export const BiometricSetting = () => {
     return () => abortRef.current?.abort()
   }, [])
 
-  const handleToggle = useCallback(async (checked: boolean) => {
-    setProcessing(true)
-    setError(undefined)
-    setShowRemoveHint(false)
-    abortRef.current?.abort()
-    const abort = new AbortController()
-    abortRef.current = abort
-    try {
-      if (checked) {
-        await api.biometricEnroll(await createBiometricCredential(abort.signal))
-      } else {
-        // read the credential before dropping it, so we can ask the authenticator to forget it too
-        const credentialInfo = await api.biometricGetCredentialInfo()
-        await api.biometricUnenroll()
-        if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
-        setShowRemoveHint(true)
+  const handleToggle = useCallback(
+    async (checked: boolean) => {
+      setProcessing(true)
+      setError(undefined)
+      setShowRemoveHint(false)
+      abortRef.current?.abort()
+      const abort = new AbortController()
+      abortRef.current = abort
+      try {
+        if (checked) {
+          await api.biometricEnroll(await createBiometricCredential(abort.signal))
+        } else {
+          // read the credential before dropping it, so we can ask the authenticator to forget it too
+          const credentialInfo = await api.biometricGetCredentialInfo()
+          await api.biometricUnenroll()
+          if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
+          setShowRemoveHint(true)
+        }
+      } catch (err) {
+        // resolves to null if the user cancelled the biometric prompt, or if we abandoned it
+        setError(getErrorMessage(err) ?? undefined)
+      } finally {
+        setProcessing(false)
       }
-    } catch (err) {
-      // don't show an error if the user cancelled the biometric prompt, or if we abandoned it
-      const { name } = err as DOMException
-      if (name !== "NotAllowedError" && name !== "AbortError") setError((err as Error).message)
-    } finally {
-      setProcessing(false)
-    }
-  }, [])
+    },
+    [getErrorMessage]
+  )
 
   // keep the setting visible while enrolled even if the authenticator became unavailable,
   // it's the only place where the enrollment can be cleared

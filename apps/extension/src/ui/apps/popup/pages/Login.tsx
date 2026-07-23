@@ -9,6 +9,7 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useIsBiometricEnrolled } from "@ui/state/biometric"
 import { useSetting } from "@ui/state/settings"
@@ -110,6 +111,7 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const enrolled = useIsBiometricEnrolled()
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
+  const getErrorMessage = useBiometricErrorMessage()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
@@ -146,16 +148,16 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
       if (qs.get("closeAfterLogin") === "true") window.close()
     } catch (err) {
       // the user cancelled the prompt, or we abandoned it - they can still use their password
-      const { name } = err as DOMException
-      if (name === "NotAllowedError" || name === "AbortError") return
+      const message = getErrorMessage(err)
+      if (!message) return
 
       // log the error category only, it must never carry credential or password data
-      log.error("Biometric unlock failed", { name })
-      setError(t("Biometric unlock failed, please use your password."))
+      log.error("Biometric unlock failed", { name: (err as DOMException)?.name })
+      setError(message)
     } finally {
       setProcessing(false)
     }
-  }, [processing, t])
+  }, [getErrorMessage, processing, t])
 
   // auto-trigger biometric on first render, unless the user is already typing their password
   useEffect(() => {

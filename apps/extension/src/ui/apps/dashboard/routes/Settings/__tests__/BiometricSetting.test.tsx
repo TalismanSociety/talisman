@@ -73,6 +73,17 @@ describe("BiometricSetting", () => {
     expect(mockEnroll).not.toHaveBeenCalled()
   })
 
+  test("explains browser exceptions instead of showing their name", async () => {
+    mockCreateCredential.mockRejectedValue(new DOMException("rp id not allowed", "SecurityError"))
+
+    render(<BiometricSetting />)
+
+    fireEvent.click(await screen.findByRole("checkbox"))
+
+    expect(await screen.findByText(/doesn't allow biometric unlock/i)).toBeDefined()
+    expect(screen.queryByText(/SecurityError/)).toBeNull()
+  })
+
   test("stays silent when the user cancels the prompt", async () => {
     mockCreateCredential.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
