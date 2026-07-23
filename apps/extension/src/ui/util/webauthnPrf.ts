@@ -1,11 +1,19 @@
 import { IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
+import { base64, base64urlnopad } from "@talismn/crypto"
 
-export interface EnrollmentResult {
+/**
+ * Drives the WebAuthn PRF ceremony. Only ever handles the PRF output, which is useless without the
+ * ciphertext the background worker keeps to itself - the wallet password never reaches the UI.
+ */
+
+export type BiometricCredential = {
+  /** Base64url-encoded WebAuthn credential ID */
   credentialId: string
-  userId: string
-  encryptedPassword: string
-  iv: string
+  /** Base64-encoded salt passed to the PRF extension */
   prfSalt: string
+  /** Base64-encoded PRF output, used by the background to derive the encryption key */
+  prfOutput: string
 }
 
 // --- Feature Detection ---
@@ -24,11 +32,16 @@ export async function isBiometricAvailable(): Promise<boolean> {
 
 // --- Enrollment ---
 
-export async function enrollBiometric(hashedPassword: string): Promise<EnrollmentResult> {
-  const prfSalt = crypto.getRandomValues(new Uint8Array(32))
+export async function createBiometricCredential(
+  signal?: AbortSignal
+): Promise<BiometricCredential> {
+  const prfSaltBytes = crypto.getRandomValues(new Uint8Array(32))
+  const prfSalt = base64.encode(prfSaltBytes)
+  // the user handle is required by the spec but never used, credentials are addressed by their id
   const userId = crypto.getRandomValues(new Uint8Array(32))
 
   const credential = (await navigator.credentials.create({
+    signal,
     publicKey: {
       rp: { name: "Talisman Wallet", id: chrome.runtime.id },
       user: {
@@ -47,118 +60,94 @@ export async function enrollBiometric(hashedPassword: string): Promise<Enrollmen
         residentKey: "discouraged",
       },
       extensions: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- PRF extension not in TS types yet
-        prf: { eval: { first: prfSalt } },
+        prf: { eval: { first: prfSaltBytes } },
       } as AuthenticationExtensionsClientInputs,
     },
   })) as PublicKeyCredential | null
 
   if (!credential) throw new Error("Credential creation was cancelled")
 
-  // biome-ignore lint/suspicious/noExplicitAny: PRF extension results not in TS types yet
-  const prfResults = (credential.getClientExtensionResults() as any).prf
-  if (!prfResults?.results?.first) {
-    throw new Error(
-      "This authenticator does not support biometric unlock. Please use your device's built-in authenticator (Touch ID, Windows Hello) instead of a browser profile or security key."
-    )
+  const credentialId = base64urlnopad.encode(new Uint8Array(credential.rawId))
+
+  // the passkey exists from here on, don't leave it behind if we end up unable to use it
+  try {
+    const prf = getPrfExtensionResults(credential)
+
+    // an authenticator that supports PRF may still be unable to evaluate it while creating the
+    // credential, in which case the spec only guarantees `enabled` and requires an assertion to
+    // obtain the output
+    if (!prf?.enabled && !prf?.results?.first)
+      throw new Error(
+        "This authenticator does not support biometric unlock. Please use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
+      )
+
+    const prfOutput = prf.results?.first
+      ? base64.encode(new Uint8Array(prf.results.first))
+      : await getBiometricPrfOutput(credentialId, prfSalt, signal)
+
+    return { credentialId, prfSalt, prfOutput }
+  } catch (err) {
+    await signalCredentialRemoved(credentialId)
+    throw err
   }
+}
 
-  const aesKey = await deriveAesKey(prfResults.results.first as ArrayBuffer)
+/**
+ * Tells the authenticator that we no longer know about this credential, so it can offer to delete
+ * the passkey. Best-effort: not all browsers implement the signal API.
+ */
+export async function signalCredentialRemoved(credentialId: string): Promise<void> {
+  // biome-ignore lint/suspicious/noExplicitAny: signal API not in TS types yet
+  const publicKeyCredential = (globalThis as any).PublicKeyCredential
+  const signalUnknownCredential = publicKeyCredential?.signalUnknownCredential
+  if (typeof signalUnknownCredential !== "function") return
 
-  const iv = crypto.getRandomValues(new Uint8Array(12))
-  const encoded = new TextEncoder().encode(hashedPassword)
-  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, aesKey, encoded)
-
-  return {
-    credentialId: bufferToBase64Url(credential.rawId),
-    userId: bufferToBase64Url(userId.buffer as ArrayBuffer),
-    encryptedPassword: bufferToBase64(encrypted),
-    iv: bufferToBase64(iv.buffer as ArrayBuffer),
-    prfSalt: bufferToBase64(prfSalt.buffer as ArrayBuffer),
+  try {
+    await signalUnknownCredential.call(publicKeyCredential, {
+      rpId: chrome.runtime.id,
+      credentialId,
+    })
+  } catch (err) {
+    log.warn("Failed to signal biometric credential removal", { err })
   }
 }
 
 // --- Unlock ---
 
-export async function unlockWithBiometric(
+/** Re-evaluates the PRF for an existing credential, returning the base64-encoded output */
+export async function getBiometricPrfOutput(
   credentialId: string,
   prfSalt: string,
-  encryptedPassword: string,
-  iv: string
+  signal?: AbortSignal
 ): Promise<string> {
   const assertion = (await navigator.credentials.get({
+    signal,
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
       rpId: chrome.runtime.id,
       allowCredentials: [
         {
           type: "public-key",
-          id: base64UrlToBuffer(credentialId),
+          id: base64urlnopad.decode(credentialId) as Uint8Array<ArrayBuffer>,
         },
       ],
       userVerification: "required",
       extensions: {
-        prf: { eval: { first: base64ToBuffer(prfSalt) } },
+        prf: { eval: { first: base64.decode(prfSalt) } },
       } as AuthenticationExtensionsClientInputs,
     },
   })) as PublicKeyCredential | null
 
   if (!assertion) throw new Error("Biometric authentication was cancelled")
 
+  const prfOutput = getPrfExtensionResults(assertion)?.results?.first
+  if (!prfOutput) throw new Error("PRF evaluation failed")
+
+  return base64.encode(new Uint8Array(prfOutput))
+}
+
+type PrfExtensionResults = { enabled?: boolean; results?: { first?: ArrayBuffer } }
+
+const getPrfExtensionResults = (credential: PublicKeyCredential): PrfExtensionResults | undefined =>
   // biome-ignore lint/suspicious/noExplicitAny: PRF extension results not in TS types yet
-  const prfResults = (assertion.getClientExtensionResults() as any).prf
-  if (!prfResults?.results?.first) {
-    throw new Error("PRF evaluation failed")
-  }
-
-  const aesKey = await deriveAesKey(prfResults.results.first as ArrayBuffer)
-
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: base64ToBuffer(iv) },
-    aesKey,
-    base64ToBuffer(encryptedPassword)
-  )
-
-  return new TextDecoder().decode(decrypted)
-}
-
-// --- Key Derivation ---
-
-async function deriveAesKey(prfOutput: ArrayBuffer): Promise<CryptoKey> {
-  const keyMaterial = await crypto.subtle.importKey("raw", prfOutput, "HKDF", false, ["deriveKey"])
-  return crypto.subtle.deriveKey(
-    {
-      name: "HKDF",
-      hash: "SHA-256",
-      salt: new TextEncoder().encode("talisman-biometric-v1"),
-      info: new Uint8Array(0),
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  )
-}
-
-// --- Encoding Helpers ---
-
-function bufferToBase64(buffer: ArrayBuffer): string {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-}
-
-function base64ToBuffer(b64: string): ArrayBuffer {
-  const binary = atob(b64)
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  return bytes.buffer
-}
-
-function bufferToBase64Url(buffer: ArrayBuffer): string {
-  return bufferToBase64(buffer).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
-}
-
-function base64UrlToBuffer(b64url: string): ArrayBuffer {
-  const b64 = b64url.replace(/-/g, "+").replace(/_/g, "/")
-  const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4)
-  return base64ToBuffer(padded)
-}
+  (credential.getClientExtensionResults() as any).prf

@@ -2,53 +2,75 @@ import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
-import { enrollBiometric, isBiometricAvailable } from "@ui/util/webauthnPrf"
-import { useCallback, useEffect, useState } from "react"
+import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
+import { useIsBiometricEnrolled } from "@ui/state/biometric"
+import {
+  createBiometricCredential,
+  isBiometricAvailable,
+  signalCredentialRemoved,
+} from "@ui/util/webauthnPrf"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export const BiometricSetting = () => {
   const { t } = useTranslation()
-  const [enrolled, setEnrolled] = useState(false)
+  const enrolled = useIsBiometricEnrolled()
   const [available, setAvailable] = useState<boolean | null>(null)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const [showRemoveHint, setShowRemoveHint] = useState(false)
+  const getErrorMessage = useBiometricErrorMessage()
+
+  const abortRef = useRef<AbortController>(null)
 
   useEffect(() => {
     isBiometricAvailable().then(setAvailable)
-    api.biometricIsEnrolled().then(setEnrolled)
-    const unsubscribe = api.biometricIsEnrolledSubscribe(({ enrolled }) => setEnrolled(enrolled))
-    return () => unsubscribe()
+    // abandon any ceremony still waiting on the user
+    return () => abortRef.current?.abort()
   }, [])
 
-  const handleToggle = useCallback(async (checked: boolean) => {
-    setProcessing(true)
-    setError(undefined)
-    setShowRemoveHint(false)
-    try {
-      if (checked) {
-        const hashedPw = await api.biometricGetHashedPassword()
-        const result = await enrollBiometric(hashedPw)
-        await api.biometricEnroll(result)
-      } else {
-        await api.biometricUnenroll()
-        setShowRemoveHint(true)
+  const handleToggle = useCallback(
+    async (checked: boolean) => {
+      setProcessing(true)
+      setError(undefined)
+      abortRef.current?.abort()
+      const abort = new AbortController()
+      abortRef.current = abort
+      try {
+        if (checked) {
+          const credential = await createBiometricCredential(abort.signal)
+          try {
+            await api.biometricEnroll(credential)
+          } catch (err) {
+            // the passkey exists but we can't use it, don't leave it behind. removal is best-effort
+            // though, so tell the user where to find it if the authenticator keeps it
+            await signalCredentialRemoved(credential.credentialId)
+            setError(
+              t(
+                "{{reason}} A passkey may have been created, you can remove it from your system settings.",
+                { reason: getErrorMessage(err) ?? t("Biometric unlock could not be enabled.") }
+              )
+            )
+            return
+          }
+        } else {
+          // read the credential before dropping it, so we can ask the authenticator to forget it too
+          const credentialInfo = await api.biometricGetCredentialInfo()
+          await api.biometricUnenroll()
+          if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
+        }
+      } catch (err) {
+        // resolves to null if the user cancelled the biometric prompt, or if we abandoned it
+        setError(getErrorMessage(err) ?? undefined)
+      } finally {
+        setProcessing(false)
       }
-    } catch (err) {
-      const message = (err as Error).message
-      // don't show error if user canceled the biometric prompt
-      if ((err as DOMException).name !== "NotAllowedError") {
-        setError(message)
-      }
-    } finally {
-      // read back actual state from backend — subscription may be delayed
-      const isEnrolled = await api.biometricIsEnrolled()
-      setEnrolled(isEnrolled)
-      setProcessing(false)
-    }
-  }, [])
+    },
+    [getErrorMessage, t]
+  )
 
-  if (available === null || !available) return null
+  // keep the setting visible while enrolled even if the authenticator became unavailable,
+  // it's the only place where the enrollment can be cleared
+  if (!available && !enrolled) return null
 
   return (
     <Setting
@@ -57,10 +79,10 @@ export const BiometricSetting = () => {
       subtitle={
         error ? (
           <span className="text-alert-warn">{error}</span>
-        ) : showRemoveHint ? (
-          t("You may also remove the passkey from your system keychain manually.")
+        ) : available ? (
+          t("Use Touch ID, Windows Hello or your device's screen lock to unlock your wallet")
         ) : (
-          t("Use Touch ID or Windows Hello to unlock your wallet")
+          t("The enrolled authenticator is unavailable, turn this off to stop using it.")
         )
       }
     >

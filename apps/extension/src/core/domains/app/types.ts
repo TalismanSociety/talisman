@@ -10,8 +10,6 @@ export type RemoteConfigStoreData = RemoteConfigData
 export interface BiometricStoreData {
   /** Base64url-encoded WebAuthn credential ID */
   credentialId?: string
-  /** Base64url-encoded WebAuthn user ID (needed for credential deletion) */
-  userId?: string
   /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
   encryptedPassword?: string
   /** AES-GCM initialization vector (Base64) */
@@ -88,14 +86,29 @@ export interface RequestAllowPhishingSite {
 
 export interface BiometricEnrollRequest {
   credentialId: string
-  userId: string
-  encryptedPassword: string
-  iv: string
   prfSalt: string
+  /** Base64-encoded PRF output, used by the background to derive the encryption key */
+  prfOutput: string
 }
 
 export interface BiometricAuthenticateRequest {
-  hashedPassword: string
+  /** Base64-encoded PRF output, used by the background to derive the decryption key */
+  prfOutput: string
+}
+
+/**
+ * The outcome of a biometric unlock attempt:
+ * - `success` - the wallet is unlocked
+ * - `failed` - the attempt didn't unlock the wallet, but the enrollment may still work later
+ * - `unenrolled` - the enrollment can never unlock the wallet again and has been dropped, so the
+ *   passkey is now useless and the UI may tell the authenticator about it
+ */
+export type BiometricAuthenticateResult = "success" | "failed" | "unenrolled"
+
+/** The non-sensitive part of the enrollment, needed by the UI to run the WebAuthn ceremony */
+export interface BiometricCredentialInfo {
+  credentialId: string
+  prfSalt: string
 }
 
 export interface AppMessages {
@@ -120,9 +133,7 @@ export interface AppMessages {
   // biometric unlock
   "pri(app.biometric.enroll)": [BiometricEnrollRequest, boolean]
   "pri(app.biometric.unenroll)": [null, boolean]
-  "pri(app.biometric.isEnrolled)": [null, boolean]
   "pri(app.biometric.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
-  "pri(app.biometric.getEnrollmentData)": [null, BiometricStoreData]
-  "pri(app.biometric.authenticateHashed)": [BiometricAuthenticateRequest, boolean]
-  "pri(app.biometric.getHashedPassword)": [null, string]
+  "pri(app.biometric.getCredentialInfo)": [null, BiometricCredentialInfo | null]
+  "pri(app.biometric.authenticate)": [BiometricAuthenticateRequest, BiometricAuthenticateResult]
 }

@@ -208,9 +208,7 @@ describe("PasswordStore autolock timer", () => {
       store.isLoggedIn.next("TRUE")
 
       // simulate alarm firing
-      for (const listener of alarmListeners) {
-        listener({ name: ALARM_NAME })
-      }
+      await Promise.all(alarmListeners.map((listener) => listener({ name: ALARM_NAME })))
 
       // password should be cleared (isLoggedIn → FALSE)
       expect(store.isLoggedIn.value).toBe("FALSE")
@@ -244,15 +242,10 @@ describe("PasswordStore autolock timer", () => {
       store.isLoggedIn.next("TRUE")
       activeAlarms.set(ALARM_NAME, { name: ALARM_NAME, scheduledTime: Date.now() + 60_000 })
 
-      store.clearPassword()
+      await store.clearPassword()
 
       expect(store.isLoggedIn.value).toBe("FALSE")
-
-      // clearPassword calls resetAutolockTimer fire-and-forget (async),
-      // so flush microtasks before asserting alarm state
-      await vi.waitFor(() => {
-        expect(chromeMock.alarms.clear).toHaveBeenCalledWith(ALARM_NAME)
-      })
+      expect(chromeMock.alarms.clear).toHaveBeenCalledWith(ALARM_NAME)
       expect(activeAlarms.has(ALARM_NAME)).toBe(false)
     })
   })

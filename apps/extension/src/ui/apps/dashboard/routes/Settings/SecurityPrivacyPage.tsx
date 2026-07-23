@@ -62,7 +62,7 @@ const Content = () => {
           subtitle={t("Set a timer to automatically lock your Talisman wallet")}
           to={`/settings/security-privacy-settings/autolock`}
         />
-        {!IS_FIREFOX && <BiometricSetting />}
+        <BiometricSetting />
         {withRiskAnalysis && (
           <Setting
             iconLeft={ShieldZapIcon}

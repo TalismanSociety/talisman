@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { EyeIcon, EyeOffIcon, UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -8,11 +9,13 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useIsBiometricEnrolled } from "@ui/state/biometric"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
-import { unlockWithBiometric } from "@ui/util/webauthnPrf"
+import { getBiometricPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -100,73 +103,110 @@ const Background = () => {
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
 }
 
-const BiometricUnlockButton = () => {
+/** autologin (below) drives the password field itself, it must not race the biometric prompt */
+const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
+
+const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const { t } = useTranslation()
-  const [enrolled, setEnrolled] = useState(false)
+  const enrolled = useIsBiometricEnrolled()
   const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string>()
+  const getErrorMessage = useBiometricErrorMessage()
   const triggeredRef = useRef(false)
+  const abortRef = useRef<AbortController>(null)
 
   useEffect(() => {
-    api.biometricIsEnrolled().then(setEnrolled)
-    const unsubscribe = api.biometricIsEnrolledSubscribe(({ enrolled }) => setEnrolled(enrolled))
-    return () => unsubscribe()
+    // abandon any ceremony still waiting on the user
+    return () => abortRef.current?.abort()
   }, [])
 
-  const handleBiometricUnlock = useCallback(async () => {
-    if (processing) return
-    setProcessing(true)
-    try {
-      const enrollmentData = await api.biometricGetEnrollmentData()
-      if (
-        !enrollmentData.credentialId ||
-        !enrollmentData.prfSalt ||
-        !enrollmentData.encryptedPassword ||
-        !enrollmentData.iv
-      )
-        return
+  const handleBiometricUnlock = useCallback(
+    async (explicit: boolean) => {
+      if (processing) return
+      setProcessing(true)
+      setError(undefined)
+      abortRef.current?.abort()
+      const abort = new AbortController()
+      abortRef.current = abort
+      try {
+        const credentialInfo = await api.biometricGetCredentialInfo()
+        if (!credentialInfo)
+          return setError(t("Biometric unlock was reset, please enable it again from settings."))
 
-      const hashedPassword = await unlockWithBiometric(
-        enrollmentData.credentialId,
-        enrollmentData.prfSalt,
-        enrollmentData.encryptedPassword,
-        enrollmentData.iv
-      )
+        const prfOutput = await getBiometricPrfOutput(
+          credentialInfo.credentialId,
+          credentialInfo.prfSalt,
+          abort.signal
+        )
 
-      const result = await api.biometricAuthenticateHashed(hashedPassword)
-      if (!result) return
+        const result = await api.biometricAuthenticate(prfOutput)
 
-      const qs = new URLSearchParams(window.location.search)
-      if (qs.get("closeAfterLogin") === "true") window.close()
-    } catch {
-      // silently handle cancellation and errors — user can fall back to password
-    } finally {
-      setProcessing(false)
-    }
-  }, [processing])
+        // the passkey outlives the enrollment, only tell the authenticator about it once the
+        // background has confirmed the enrollment is gone for good
+        if (result === "unenrolled") {
+          await signalCredentialRemoved(credentialInfo.credentialId)
+          return setError(t("Biometric unlock was reset, please enable it again from settings."))
+        }
 
-  // auto-trigger biometric on first render
+        if (result === "failed")
+          return setError(
+            t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+          )
+
+        const qs = new URLSearchParams(window.location.search)
+        if (qs.get("closeAfterLogin") === "true") window.close()
+      } catch (err) {
+        const name = (err as DOMException)?.name
+
+        // we abandoned the ceremony ourselves, or the user dismissed a prompt they didn't ask for
+        if (name === "AbortError" || (name === "NotAllowedError" && !explicit)) return
+
+        // NotAllowedError also covers a timeout and a credential the authenticator no longer has,
+        // the spec doesn't let us tell those apart - point at the way out instead of guessing
+        const message =
+          name === "NotAllowedError"
+            ? t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+            : getErrorMessage(err)
+        if (!message) return
+
+        // log the error category only, it must never carry credential or password data
+        log.error("Biometric unlock failed", { name })
+        setError(message)
+      } finally {
+        setProcessing(false)
+      }
+    },
+    [getErrorMessage, processing, t]
+  )
+
+  const handleClick = useCallback(() => handleBiometricUnlock(true), [handleBiometricUnlock])
+
+  // auto-trigger biometric on first render, unless the user is already typing their password
   useEffect(() => {
-    if (!enrolled || triggeredRef.current) return
+    if (!autoTrigger || !enrolled || triggeredRef.current) return
     triggeredRef.current = true
-    handleBiometricUnlock()
-  }, [enrolled, handleBiometricUnlock])
+    handleBiometricUnlock(false)
+  }, [autoTrigger, enrolled, handleBiometricUnlock])
 
-  if (!enrolled) return null
+  if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
 
   return (
-    <button
-      type="button"
-      onClick={handleBiometricUnlock}
-      disabled={processing}
-      className={cn(
-        "flex cursor-pointer items-center justify-center gap-4",
-        "text-body-disabled text-sm transition-colors hover:text-white",
-        processing && "animate-pulse"
-      )}
-    >
-      <UserCheckIcon className="text-lg" />
-      {t("Unlock with biometrics")}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={processing}
+        className={cn(
+          "flex cursor-pointer items-center justify-center gap-4",
+          "text-body-disabled text-sm transition-colors hover:text-white",
+          processing && "animate-pulse"
+        )}
+      >
+        <UserCheckIcon className="text-lg" />
+        {t("Unlock with biometrics")}
+      </button>
+      {error && <span className="text-alert-warn text-sm">{error}</span>}
+    </>
   )
 }
 
@@ -185,7 +225,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     setError,
     setValue,
     setFocus,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isDirty, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -260,7 +300,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             {t("Unlock")}
           </Button>
-          <BiometricUnlockButton />
+          <BiometricUnlockButton autoTrigger={!isDirty && !IS_DEV_AUTOLOGIN} />
           <button
             type="button"
             className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
