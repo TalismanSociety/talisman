@@ -5,7 +5,9 @@ import { createBiometricCredential, getBiometricPrfOutput } from "./webauthnPrf"
 
 const create = vi.fn()
 const get = vi.fn()
+const signalUnknownCredential = vi.fn()
 vi.stubGlobal("navigator", { credentials: { create, get } })
+vi.stubGlobal("PublicKeyCredential", { signalUnknownCredential })
 
 const RAW_ID = new Uint8Array([1, 2, 3, 250, 251, 252])
 const CREATION_PRF_OUTPUT = new Uint8Array(32).fill(1)
@@ -25,6 +27,7 @@ describe("createBiometricCredential", () => {
   beforeEach(() => {
     create.mockReset()
     get.mockReset()
+    signalUnknownCredential.mockReset()
   })
 
   test("uses the PRF output returned at creation time", async () => {
@@ -55,11 +58,34 @@ describe("createBiometricCredential", () => {
     expect(prfSaltOf(get.mock.calls[0])).toEqual(prfSaltOf(create.mock.calls[0]))
   })
 
-  test("rejects an authenticator that does not support PRF", async () => {
+  test("rejects an authenticator that does not support PRF, and drops its credential", async () => {
     create.mockResolvedValue(credential(undefined))
 
     await expect(createBiometricCredential()).rejects.toThrow(/does not support biometric unlock/)
     expect(get).not.toHaveBeenCalled()
+    expect(signalUnknownCredential).toHaveBeenCalledWith(
+      expect.objectContaining({ credentialId: base64urlnopad.encode(RAW_ID) })
+    )
+  })
+
+  test("drops the credential when the fallback assertion fails", async () => {
+    create.mockResolvedValue(credential({ enabled: true }))
+    get.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
+
+    await expect(createBiometricCredential()).rejects.toThrow(
+      expect.objectContaining({ name: "NotAllowedError" })
+    )
+    expect(signalUnknownCredential).toHaveBeenCalledWith(
+      expect.objectContaining({ credentialId: base64urlnopad.encode(RAW_ID) })
+    )
+  })
+
+  test("keeps the credential when the ceremony succeeds", async () => {
+    create.mockResolvedValue(credential({ enabled: true, results: { first: CREATION_PRF_OUTPUT } }))
+
+    await createBiometricCredential()
+
+    expect(signalUnknownCredential).not.toHaveBeenCalled()
   })
 
   test("rejects when the ceremony is cancelled", async () => {
@@ -68,6 +94,8 @@ describe("createBiometricCredential", () => {
     await expect(createBiometricCredential()).rejects.toThrow(
       expect.objectContaining({ name: "NotAllowedError" })
     )
+    // no credential was created, there is nothing to clean up
+    expect(signalUnknownCredential).not.toHaveBeenCalled()
   })
 
   test("forwards the abort signal", async () => {

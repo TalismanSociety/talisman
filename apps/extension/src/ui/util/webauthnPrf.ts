@@ -68,21 +68,28 @@ export async function createBiometricCredential(
   if (!credential) throw new Error("Credential creation was cancelled")
 
   const credentialId = base64urlnopad.encode(new Uint8Array(credential.rawId))
-  const prf = getPrfExtensionResults(credential)
 
-  // an authenticator that supports PRF may still be unable to evaluate it while creating the
-  // credential, in which case the spec only guarantees `enabled` and requires an assertion to
-  // obtain the output
-  if (!prf?.enabled && !prf?.results?.first)
-    throw new Error(
-      "This authenticator does not support biometric unlock. Please use your device's built-in authenticator (Touch ID, Windows Hello) instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
-    )
+  // the passkey exists from here on, don't leave it behind if we end up unable to use it
+  try {
+    const prf = getPrfExtensionResults(credential)
 
-  const prfOutput = prf.results?.first
-    ? base64.encode(new Uint8Array(prf.results.first))
-    : await getBiometricPrfOutput(credentialId, prfSalt, signal)
+    // an authenticator that supports PRF may still be unable to evaluate it while creating the
+    // credential, in which case the spec only guarantees `enabled` and requires an assertion to
+    // obtain the output
+    if (!prf?.enabled && !prf?.results?.first)
+      throw new Error(
+        "This authenticator does not support biometric unlock. Please use your device's built-in authenticator (Touch ID, Windows Hello) instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
+      )
 
-  return { credentialId, prfSalt, prfOutput }
+    const prfOutput = prf.results?.first
+      ? base64.encode(new Uint8Array(prf.results.first))
+      : await getBiometricPrfOutput(credentialId, prfSalt, signal)
+
+    return { credentialId, prfSalt, prfOutput }
+  } catch (err) {
+    await signalCredentialRemoved(credentialId)
+    throw err
+  }
 }
 
 /**
@@ -91,11 +98,12 @@ export async function createBiometricCredential(
  */
 export async function signalCredentialRemoved(credentialId: string): Promise<void> {
   // biome-ignore lint/suspicious/noExplicitAny: signal API not in TS types yet
-  const signalUnknownCredential = (PublicKeyCredential as any)?.signalUnknownCredential
+  const publicKeyCredential = (globalThis as any).PublicKeyCredential
+  const signalUnknownCredential = publicKeyCredential?.signalUnknownCredential
   if (typeof signalUnknownCredential !== "function") return
 
   try {
-    await signalUnknownCredential.call(PublicKeyCredential, {
+    await signalUnknownCredential.call(publicKeyCredential, {
       rpId: chrome.runtime.id,
       credentialId,
     })
