@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { EyeIcon, EyeOffIcon, UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -104,6 +105,7 @@ const BiometricUnlockButton = () => {
   const { t } = useTranslation()
   const [enrolled, setEnrolled] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string>()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
@@ -120,6 +122,7 @@ const BiometricUnlockButton = () => {
   const handleBiometricUnlock = useCallback(async () => {
     if (processing) return
     setProcessing(true)
+    setError(undefined)
     abortRef.current?.abort()
     const abort = new AbortController()
     abortRef.current = abort
@@ -133,17 +136,25 @@ const BiometricUnlockButton = () => {
         abort.signal
       )
 
+      // the background clears the enrollment when it can't be used to unlock anymore
       const result = await api.biometricAuthenticate(prfOutput)
-      if (!result) return
+      if (!result)
+        return setError(t("Biometric unlock was reset, please enable it again from settings."))
 
       const qs = new URLSearchParams(window.location.search)
       if (qs.get("closeAfterLogin") === "true") window.close()
-    } catch {
-      // silently handle cancellation and errors — user can fall back to password
+    } catch (err) {
+      // the user cancelled the prompt, or we abandoned it - they can still use their password
+      const { name } = err as DOMException
+      if (name === "NotAllowedError" || name === "AbortError") return
+
+      // log the error category only, it must never carry credential or password data
+      log.error("Biometric unlock failed", { name })
+      setError(t("Biometric unlock failed, please use your password."))
     } finally {
       setProcessing(false)
     }
-  }, [processing])
+  }, [processing, t])
 
   // auto-trigger biometric on first render
   useEffect(() => {
@@ -152,22 +163,25 @@ const BiometricUnlockButton = () => {
     handleBiometricUnlock()
   }, [enrolled, handleBiometricUnlock])
 
-  if (!enrolled) return null
+  if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
 
   return (
-    <button
-      type="button"
-      onClick={handleBiometricUnlock}
-      disabled={processing}
-      className={cn(
-        "flex cursor-pointer items-center justify-center gap-4",
-        "text-body-disabled text-sm transition-colors hover:text-white",
-        processing && "animate-pulse"
-      )}
-    >
-      <UserCheckIcon className="text-lg" />
-      {t("Unlock with biometrics")}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={handleBiometricUnlock}
+        disabled={processing}
+        className={cn(
+          "flex cursor-pointer items-center justify-center gap-4",
+          "text-body-disabled text-sm transition-colors hover:text-white",
+          processing && "animate-pulse"
+        )}
+      >
+        <UserCheckIcon className="text-lg" />
+        {t("Unlock with biometrics")}
+      </button>
+      {error && <span className="text-alert-warn text-sm">{error}</span>}
+    </>
   )
 }
 

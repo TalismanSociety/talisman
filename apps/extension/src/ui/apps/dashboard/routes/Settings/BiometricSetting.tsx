@@ -42,11 +42,9 @@ export const BiometricSetting = () => {
         setShowRemoveHint(true)
       }
     } catch (err) {
-      const message = (err as Error).message
-      // don't show error if user canceled the biometric prompt
-      if ((err as DOMException).name !== "NotAllowedError") {
-        setError(message)
-      }
+      // don't show an error if the user cancelled the biometric prompt, or if we abandoned it
+      const { name } = err as DOMException
+      if (name !== "NotAllowedError" && name !== "AbortError") setError((err as Error).message)
     } finally {
       // read back actual state from backend — subscription may be delayed
       const isEnrolled = await api.biometricIsEnrolled()
@@ -55,7 +53,9 @@ export const BiometricSetting = () => {
     }
   }, [])
 
-  if (available === null || !available) return null
+  // keep the setting visible while enrolled even if the authenticator became unavailable,
+  // it's the only place where the enrollment can be cleared
+  if (!available && !enrolled) return null
 
   return (
     <Setting
@@ -66,8 +66,10 @@ export const BiometricSetting = () => {
           <span className="text-alert-warn">{error}</span>
         ) : showRemoveHint ? (
           t("You may also remove the passkey from your system keychain manually.")
-        ) : (
+        ) : available ? (
           t("Use Touch ID or Windows Hello to unlock your wallet")
+        ) : (
+          t("The enrolled authenticator is unavailable, turn this off to stop using it.")
         )
       }
     >

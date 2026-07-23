@@ -1,4 +1,5 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/constants"
+import { log } from "@common/log"
 import { assert, sleep } from "@talismn/util"
 import { BehaviorSubject, map } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
@@ -294,10 +295,12 @@ export default class AppHandler extends ExtensionHandler {
     prfOutput,
   }: BiometricAuthenticateRequest): Promise<boolean> {
     if (!(DEBUG || TEST)) await sleep(1000)
-    try {
-      const { encryptedPassword, iv } = await this.stores.biometric.get()
-      assert(encryptedPassword && iv, "Biometric unlock is not enabled")
 
+    // read outside of the try block, a storage failure here must not clear a valid enrollment
+    const { encryptedPassword, iv } = await this.stores.biometric.get()
+    if (!encryptedPassword || !iv) return false
+
+    try {
       const password = await decryptPassword(encryptedPassword, iv, prfOutput)
       await this.stores.password.authenticateHashed(password)
       talismanAnalytics.capture("authenticate", { method: "biometric" })
@@ -307,8 +310,15 @@ export default class AppHandler extends ExtensionHandler {
         .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
 
       return true
-    } catch {
+    } catch (cause) {
       this.stores.password.clearPassword()
+
+      // decryption and the auth secret check are pure computations over stored data, so a failure
+      // here means the enrollment can never unlock the wallet again - drop it instead of prompting
+      // the user for it on every login
+      log.error("Biometric authentication failed, clearing enrollment", { cause })
+      await this.stores.biometric.unenroll()
+
       return false
     }
   }
