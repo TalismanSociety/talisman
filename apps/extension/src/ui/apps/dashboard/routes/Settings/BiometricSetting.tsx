@@ -3,7 +3,7 @@ import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
 import { createBiometricCredential, isBiometricAvailable } from "@ui/util/webauthnPrf"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export const BiometricSetting = () => {
@@ -14,20 +14,29 @@ export const BiometricSetting = () => {
   const [error, setError] = useState<string>()
   const [showRemoveHint, setShowRemoveHint] = useState(false)
 
+  const abortRef = useRef<AbortController>(null)
+
   useEffect(() => {
     isBiometricAvailable().then(setAvailable)
     api.biometricIsEnrolled().then(setEnrolled)
     const unsubscribe = api.biometricIsEnrolledSubscribe(({ enrolled }) => setEnrolled(enrolled))
-    return () => unsubscribe()
+    return () => {
+      unsubscribe()
+      // abandon any ceremony still waiting on the user
+      abortRef.current?.abort()
+    }
   }, [])
 
   const handleToggle = useCallback(async (checked: boolean) => {
     setProcessing(true)
     setError(undefined)
     setShowRemoveHint(false)
+    abortRef.current?.abort()
+    const abort = new AbortController()
+    abortRef.current = abort
     try {
       if (checked) {
-        await api.biometricEnroll(await createBiometricCredential())
+        await api.biometricEnroll(await createBiometricCredential(abort.signal))
       } else {
         await api.biometricUnenroll()
         setShowRemoveHint(true)

@@ -105,23 +105,32 @@ const BiometricUnlockButton = () => {
   const [enrolled, setEnrolled] = useState(false)
   const [processing, setProcessing] = useState(false)
   const triggeredRef = useRef(false)
+  const abortRef = useRef<AbortController>(null)
 
   useEffect(() => {
     api.biometricIsEnrolled().then(setEnrolled)
     const unsubscribe = api.biometricIsEnrolledSubscribe(({ enrolled }) => setEnrolled(enrolled))
-    return () => unsubscribe()
+    return () => {
+      unsubscribe()
+      // abandon any ceremony still waiting on the user
+      abortRef.current?.abort()
+    }
   }, [])
 
   const handleBiometricUnlock = useCallback(async () => {
     if (processing) return
     setProcessing(true)
+    abortRef.current?.abort()
+    const abort = new AbortController()
+    abortRef.current = abort
     try {
       const credentialInfo = await api.biometricGetCredentialInfo()
       if (!credentialInfo) return
 
       const prfOutput = await getBiometricPrfOutput(
         credentialInfo.credentialId,
-        credentialInfo.prfSalt
+        credentialInfo.prfSalt,
+        abort.signal
       )
 
       const result = await api.biometricAuthenticate(prfOutput)

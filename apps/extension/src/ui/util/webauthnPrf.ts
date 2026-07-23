@@ -33,11 +33,15 @@ export async function isBiometricAvailable(): Promise<boolean> {
 
 // --- Enrollment ---
 
-export async function createBiometricCredential(): Promise<BiometricCredential> {
-  const prfSalt = crypto.getRandomValues(new Uint8Array(32))
+export async function createBiometricCredential(
+  signal?: AbortSignal
+): Promise<BiometricCredential> {
+  const prfSaltBytes = crypto.getRandomValues(new Uint8Array(32))
+  const prfSalt = bytesToBase64(prfSaltBytes)
   const userId = crypto.getRandomValues(new Uint8Array(32))
 
   const credential = (await navigator.credentials.create({
+    signal,
     publicKey: {
       rp: { name: "Talisman Wallet", id: chrome.runtime.id },
       user: {
@@ -56,24 +60,33 @@ export async function createBiometricCredential(): Promise<BiometricCredential> 
         residentKey: "discouraged",
       },
       extensions: {
-        prf: { eval: { first: prfSalt } },
+        prf: { eval: { first: prfSaltBytes } },
       } as AuthenticationExtensionsClientInputs,
     },
   })) as PublicKeyCredential | null
 
   if (!credential) throw new Error("Credential creation was cancelled")
 
-  const prfOutput = getPrfResult(credential)
-  if (!prfOutput)
+  const credentialId = bytesToBase64Url(credential.rawId)
+  const prf = getPrfExtensionResults(credential)
+
+  // an authenticator that supports PRF may still be unable to evaluate it while creating the
+  // credential, in which case the spec only guarantees `enabled` and requires an assertion to
+  // obtain the output
+  if (!prf?.enabled && !prf?.results?.first)
     throw new Error(
-      "This authenticator does not support biometric unlock. Please use your device's built-in authenticator (Touch ID, Windows Hello) instead of a browser profile or security key."
+      "This authenticator does not support biometric unlock. Please use your device's built-in authenticator (Touch ID, Windows Hello) instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
     )
 
+  const prfOutput = prf.results?.first
+    ? bytesToBase64(prf.results.first)
+    : await getBiometricPrfOutput(credentialId, prfSalt, signal)
+
   return {
-    credentialId: bytesToBase64Url(credential.rawId),
+    credentialId,
     userId: bytesToBase64Url(userId),
-    prfSalt: bytesToBase64(prfSalt),
-    prfOutput: bytesToBase64(prfOutput),
+    prfSalt,
+    prfOutput,
   }
 }
 
@@ -82,9 +95,11 @@ export async function createBiometricCredential(): Promise<BiometricCredential> 
 /** Re-evaluates the PRF for an existing credential, returning the base64-encoded output */
 export async function getBiometricPrfOutput(
   credentialId: string,
-  prfSalt: string
+  prfSalt: string,
+  signal?: AbortSignal
 ): Promise<string> {
   const assertion = (await navigator.credentials.get({
+    signal,
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
       rpId: chrome.runtime.id,
@@ -103,14 +118,14 @@ export async function getBiometricPrfOutput(
 
   if (!assertion) throw new Error("Biometric authentication was cancelled")
 
-  const prfOutput = getPrfResult(assertion)
+  const prfOutput = getPrfExtensionResults(assertion)?.results?.first
   if (!prfOutput) throw new Error("PRF evaluation failed")
 
   return bytesToBase64(prfOutput)
 }
 
-const getPrfResult = (credential: PublicKeyCredential): ArrayBuffer | undefined => {
+type PrfExtensionResults = { enabled?: boolean; results?: { first?: ArrayBuffer } }
+
+const getPrfExtensionResults = (credential: PublicKeyCredential): PrfExtensionResults | undefined =>
   // biome-ignore lint/suspicious/noExplicitAny: PRF extension results not in TS types yet
-  const prf = (credential.getClientExtensionResults() as any).prf
-  return prf?.results?.first as ArrayBuffer | undefined
-}
+  (credential.getClientExtensionResults() as any).prf
