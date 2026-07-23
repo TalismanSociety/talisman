@@ -101,7 +101,10 @@ const Background = () => {
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
 }
 
-const BiometricUnlockButton = () => {
+/** autologin (below) drives the password field itself, it must not race the biometric prompt */
+const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
+
+const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const { t } = useTranslation()
   const [enrolled, setEnrolled] = useState(false)
   const [processing, setProcessing] = useState(false)
@@ -156,12 +159,12 @@ const BiometricUnlockButton = () => {
     }
   }, [processing, t])
 
-  // auto-trigger biometric on first render
+  // auto-trigger biometric on first render, unless the user is already typing their password
   useEffect(() => {
-    if (!enrolled || triggeredRef.current) return
+    if (!autoTrigger || !enrolled || triggeredRef.current) return
     triggeredRef.current = true
     handleBiometricUnlock()
-  }, [enrolled, handleBiometricUnlock])
+  }, [autoTrigger, enrolled, handleBiometricUnlock])
 
   if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
 
@@ -200,7 +203,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     setError,
     setValue,
     setFocus,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isDirty, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -275,7 +278,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             {t("Unlock")}
           </Button>
-          <BiometricUnlockButton />
+          <BiometricUnlockButton autoTrigger={!isDirty && !IS_DEV_AUTOLOGIN} />
           <button
             type="button"
             className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
