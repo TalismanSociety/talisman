@@ -73,6 +73,22 @@ describe("BiometricSetting", () => {
     expect(mockEnroll).not.toHaveBeenCalled()
   })
 
+  test("removes the credential when enrollment is refused", async () => {
+    mockCreateCredential.mockResolvedValue({
+      credentialId: "credId",
+      prfSalt: "salt",
+      prfOutput: "prf",
+    })
+    mockEnroll.mockRejectedValue(new Error("Please log in again"))
+
+    render(<BiometricSetting />)
+
+    fireEvent.click(await screen.findByRole("checkbox"))
+
+    await waitFor(() => expect(mockSignalRemoved).toHaveBeenCalledWith("credId"))
+    expect(await screen.findByText(/A passkey may have been created/i)).toBeDefined()
+  })
+
   test("explains browser exceptions instead of showing their name", async () => {
     mockCreateCredential.mockRejectedValue(new DOMException("rp id not allowed", "SecurityError"))
 

@@ -37,7 +37,21 @@ export const BiometricSetting = () => {
       abortRef.current = abort
       try {
         if (checked) {
-          await api.biometricEnroll(await createBiometricCredential(abort.signal))
+          const credential = await createBiometricCredential(abort.signal)
+          try {
+            await api.biometricEnroll(credential)
+          } catch (err) {
+            // the passkey exists but we can't use it, don't leave it behind. removal is best-effort
+            // though, so tell the user where to find it if the authenticator keeps it
+            await signalCredentialRemoved(credential.credentialId)
+            setError(
+              t(
+                "{{reason}} A passkey may have been created, you can remove it from your system settings.",
+                { reason: getErrorMessage(err) ?? t("Biometric unlock could not be enabled.") }
+              )
+            )
+            return
+          }
         } else {
           // read the credential before dropping it, so we can ask the authenticator to forget it too
           const credentialInfo = await api.biometricGetCredentialInfo()
@@ -51,7 +65,7 @@ export const BiometricSetting = () => {
         setProcessing(false)
       }
     },
-    [getErrorMessage]
+    [getErrorMessage, t]
   )
 
   // keep the setting visible while enrolled even if the authenticator became unavailable,
