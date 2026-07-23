@@ -14,6 +14,8 @@ import type {
 } from "@core/domains/accounts/types"
 import type {
   AnalyticsCaptureRequest,
+  BiometricEnrollRequest,
+  BiometricStoreData,
   ChangePasswordStatusUpdate,
   LoggedinType,
   SendFundsOpenRequest,
@@ -103,6 +105,15 @@ export default interface MessageTypes {
   approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
+
+  // biometric messages -------------------------------------------------------
+  biometricEnroll: (data: BiometricEnrollRequest) => Promise<boolean>
+  biometricUnenroll: () => Promise<boolean>
+  biometricIsEnrolled: () => Promise<boolean>
+  biometricIsEnrolledSubscribe: (cb: (data: { enrolled: boolean }) => void) => UnsubscribeFn
+  biometricGetEnrollmentData: () => Promise<BiometricStoreData>
+  biometricAuthenticateHashed: (hashedPassword: string) => Promise<boolean>
+  biometricGetHashedPassword: () => Promise<string>
 
   // signing messages -------------------------------------------------------
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>

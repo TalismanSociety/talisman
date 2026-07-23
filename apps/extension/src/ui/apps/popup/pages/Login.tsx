@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EyeIcon, EyeOffIcon } from "@talismn/icons"
+import { EyeIcon, EyeOffIcon, UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
@@ -12,6 +12,7 @@ import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
+import { unlockWithBiometric } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -97,6 +98,76 @@ const Background = () => {
   const colors = useFirstAccountColors()
 
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
+}
+
+const BiometricUnlockButton = () => {
+  const { t } = useTranslation()
+  const [enrolled, setEnrolled] = useState(false)
+  const [processing, setProcessing] = useState(false)
+  const triggeredRef = useRef(false)
+
+  useEffect(() => {
+    api.biometricIsEnrolled().then(setEnrolled)
+    const unsubscribe = api.biometricIsEnrolledSubscribe(({ enrolled }) => setEnrolled(enrolled))
+    return () => unsubscribe()
+  }, [])
+
+  const handleBiometricUnlock = useCallback(async () => {
+    if (processing) return
+    setProcessing(true)
+    try {
+      const enrollmentData = await api.biometricGetEnrollmentData()
+      if (
+        !enrollmentData.credentialId ||
+        !enrollmentData.prfSalt ||
+        !enrollmentData.encryptedPassword ||
+        !enrollmentData.iv
+      )
+        return
+
+      const hashedPassword = await unlockWithBiometric(
+        enrollmentData.credentialId,
+        enrollmentData.prfSalt,
+        enrollmentData.encryptedPassword,
+        enrollmentData.iv
+      )
+
+      const result = await api.biometricAuthenticateHashed(hashedPassword)
+      if (!result) return
+
+      const qs = new URLSearchParams(window.location.search)
+      if (qs.get("closeAfterLogin") === "true") window.close()
+    } catch {
+      // silently handle cancellation and errors — user can fall back to password
+    } finally {
+      setProcessing(false)
+    }
+  }, [processing])
+
+  // auto-trigger biometric on first render
+  useEffect(() => {
+    if (!enrolled || triggeredRef.current) return
+    triggeredRef.current = true
+    handleBiometricUnlock()
+  }, [enrolled, handleBiometricUnlock])
+
+  if (!enrolled) return null
+
+  return (
+    <button
+      type="button"
+      onClick={handleBiometricUnlock}
+      disabled={processing}
+      className={cn(
+        "flex cursor-pointer items-center justify-center gap-4",
+        "text-body-disabled text-sm transition-colors hover:text-white",
+        processing && "animate-pulse"
+      )}
+    >
+      <UserCheckIcon className="text-lg" />
+      {t("Unlock with biometrics")}
+    </button>
+  )
 }
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
@@ -189,6 +260,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             {t("Unlock")}
           </Button>
+          <BiometricUnlockButton />
           <button
             type="button"
             className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"

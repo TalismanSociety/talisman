@@ -1,6 +1,7 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/constants"
+import { decrypt } from "@metamask/browser-passworder"
 import { assert, sleep } from "@talismn/util"
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, map } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -14,6 +15,9 @@ import { addException } from "./protector"
 import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
+  BiometricAuthenticateRequest,
+  BiometricEnrollRequest,
+  BiometricStoreData,
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,
@@ -167,6 +171,10 @@ export default class AppHandler extends ExtensionHandler {
       }
       await this.stores.password.set(pwStoreData)
       await this.stores.password.setPlaintextPassword(newPw)
+
+      // invalidate biometric enrollment since password changed
+      await this.stores.biometric.unenroll()
+
       updateProgress(ChangePasswordStatusUpdateStatus.DONE)
 
       return true
@@ -185,6 +193,7 @@ export default class AppHandler extends ExtensionHandler {
     this.stores.app.set({ onboarded: "FALSE" })
 
     await this.stores.password.reset()
+    await this.stores.biometric.unenroll()
 
     await keyringStore.reset()
 
@@ -232,6 +241,71 @@ export default class AppHandler extends ExtensionHandler {
 
   private promptLogin(): Promise<boolean> {
     return windowManager.promptLogin()
+  }
+
+  // --- biometric unlock ---
+
+  private async biometricEnroll(request: BiometricEnrollRequest): Promise<boolean> {
+    assert(
+      this.stores.password.isLoggedIn.value === "TRUE",
+      "Must be logged in to enroll biometric"
+    )
+    await this.stores.biometric.enroll({
+      credentialId: request.credentialId,
+      userId: request.userId,
+      encryptedPassword: request.encryptedPassword,
+      iv: request.iv,
+      prfSalt: request.prfSalt,
+    })
+    talismanAnalytics.capture("biometric enrolled")
+    return true
+  }
+
+  private async biometricUnenroll(): Promise<boolean> {
+    await this.stores.biometric.unenroll()
+    talismanAnalytics.capture("biometric unenrolled")
+    return true
+  }
+
+  private async biometricIsEnrolled(): Promise<boolean> {
+    return this.stores.biometric.isEnrolled()
+  }
+
+  private async biometricGetEnrollmentData(): Promise<BiometricStoreData> {
+    return this.stores.biometric.get()
+  }
+
+  private async biometricGetHashedPassword(): Promise<string> {
+    assert(this.stores.password.isLoggedIn.value === "TRUE", "Must be logged in")
+    const pw = await this.stores.password.getPassword()
+    assert(pw, "No password in session")
+    return pw
+  }
+
+  private async biometricAuthenticateHashed({
+    hashedPassword,
+  }: BiometricAuthenticateRequest): Promise<boolean> {
+    if (!(DEBUG || TEST)) await sleep(1000)
+    try {
+      const { secret, check } = await this.stores.password.get()
+      assert(secret && check, "Unable to authenticate")
+
+      // verify the hashed password by decrypting the check value
+      const result = (await decrypt(hashedPassword, check)) as { secret: string }
+      assert(result.secret && result.secret === secret, "Biometric authentication failed")
+
+      this.stores.password.setPassword(hashedPassword)
+      talismanAnalytics.capture("authenticate", { method: "biometric" })
+
+      this.stores.settings
+        .get()
+        .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
+
+      return true
+    } catch {
+      this.stores.password.clearPassword()
+      return false
+    }
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -304,6 +378,44 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.requests)":
         return requestStore.subscribe(id, port)
+
+      // --------------------------------------------------------------------
+      // biometric handlers -------------------------------------------------
+      // --------------------------------------------------------------------
+      case "pri(app.biometric.enroll)":
+        return this.biometricEnroll(request as BiometricEnrollRequest)
+
+      case "pri(app.biometric.unenroll)":
+        return this.biometricUnenroll()
+
+      case "pri(app.biometric.isEnrolled)":
+        return this.biometricIsEnrolled()
+
+      case "pri(app.biometric.isEnrolled.subscribe)":
+        return genericSubscription<"pri(app.biometric.isEnrolled.subscribe)">(
+          id,
+          port,
+          this.stores.biometric.observable.pipe(
+            map((data) => ({
+              enrolled: !!(
+                data.credentialId &&
+                data.userId &&
+                data.encryptedPassword &&
+                data.iv &&
+                data.prfSalt
+              ),
+            }))
+          )
+        )
+
+      case "pri(app.biometric.getEnrollmentData)":
+        return this.biometricGetEnrollmentData()
+
+      case "pri(app.biometric.authenticateHashed)":
+        return this.biometricAuthenticateHashed(request as BiometricAuthenticateRequest)
+
+      case "pri(app.biometric.getHashedPassword)":
+        return this.biometricGetHashedPassword()
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

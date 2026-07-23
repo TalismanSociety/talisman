@@ -46,6 +46,19 @@ export const api: MessageTypes = {
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
+  // biometric messages -------------------------------------------------------
+  biometricEnroll: (data) => messageService.sendMessage("pri(app.biometric.enroll)", data),
+  biometricUnenroll: () => messageService.sendMessage("pri(app.biometric.unenroll)"),
+  biometricIsEnrolled: () => messageService.sendMessage("pri(app.biometric.isEnrolled)"),
+  biometricIsEnrolledSubscribe: (cb) =>
+    messageService.subscribe("pri(app.biometric.isEnrolled.subscribe)", null, cb),
+  biometricGetEnrollmentData: () =>
+    messageService.sendMessage("pri(app.biometric.getEnrollmentData)"),
+  biometricAuthenticateHashed: (hashedPassword) =>
+    messageService.sendMessage("pri(app.biometric.authenticateHashed)", { hashedPassword }),
+  biometricGetHashedPassword: () =>
+    messageService.sendMessage("pri(app.biometric.getHashedPassword)"),
+
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   approveSign: (id, payload) =>

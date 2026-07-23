@@ -7,6 +7,19 @@ import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
 export type RemoteConfigStoreData = RemoteConfigData
 
+export interface BiometricStoreData {
+  /** Base64url-encoded WebAuthn credential ID */
+  credentialId?: string
+  /** Base64url-encoded WebAuthn user ID (needed for credential deletion) */
+  userId?: string
+  /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
+  encryptedPassword?: string
+  /** AES-GCM initialization vector (Base64) */
+  iv?: string
+  /** Salt passed to the WebAuthn PRF extension (Base64) */
+  prfSalt?: string
+}
+
 export interface RequestOnboardCreatePassword {
   pass: string
   passConfirm: string
@@ -73,6 +86,18 @@ export interface RequestAllowPhishingSite {
   url: string
 }
 
+export interface BiometricEnrollRequest {
+  credentialId: string
+  userId: string
+  encryptedPassword: string
+  iv: string
+  prfSalt: string
+}
+
+export interface BiometricAuthenticateRequest {
+  hashedPassword: string
+}
+
 export interface AppMessages {
   "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]
   "pri(app.authenticate)": [RequestLogin, boolean]
@@ -91,4 +116,13 @@ export interface AppMessages {
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
+
+  // biometric unlock
+  "pri(app.biometric.enroll)": [BiometricEnrollRequest, boolean]
+  "pri(app.biometric.unenroll)": [null, boolean]
+  "pri(app.biometric.isEnrolled)": [null, boolean]
+  "pri(app.biometric.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
+  "pri(app.biometric.getEnrollmentData)": [null, BiometricStoreData]
+  "pri(app.biometric.authenticateHashed)": [BiometricAuthenticateRequest, boolean]
+  "pri(app.biometric.getHashedPassword)": [null, string]
 }

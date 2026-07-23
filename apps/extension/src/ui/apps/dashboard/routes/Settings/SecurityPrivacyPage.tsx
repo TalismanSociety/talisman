@@ -21,6 +21,8 @@ import { useSetting } from "@ui/state/settings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
+import { BiometricSetting } from "./BiometricSetting"
+
 const Content = () => {
   const { t } = useTranslation()
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
@@ -60,6 +62,7 @@ const Content = () => {
           subtitle={t("Set a timer to automatically lock your Talisman wallet")}
           to={`/settings/security-privacy-settings/autolock`}
         />
+        {!IS_FIREFOX && <BiometricSetting />}
         {withRiskAnalysis && (
           <Setting
             iconLeft={ShieldZapIcon}
