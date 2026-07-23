@@ -1,4 +1,4 @@
-import { bytesToBase64 } from "@common/base64"
+import { base64 } from "@talismn/crypto"
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../../../../tests/core/util"
@@ -8,11 +8,11 @@ import { keyringStore } from "../../keyring/store"
 
 vi.setConfig({ testTimeout: 20_000 })
 
-const randomPrfOutput = () => bytesToBase64(crypto.getRandomValues(new Uint8Array(32)))
+const randomPrfOutput = () => base64.encode(crypto.getRandomValues(new Uint8Array(32)))
 
 const enrollRequest = (prfOutput: string) => ({
   credentialId: "Y3JlZGVudGlhbElk",
-  prfSalt: bytesToBase64(new Uint8Array(32).fill(7)),
+  prfSalt: base64.encode(new Uint8Array(32).fill(7)),
   prfOutput,
 })
 

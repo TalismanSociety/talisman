@@ -1,4 +1,4 @@
-import { base64ToBytes, bytesToBase64 } from "@common/base64"
+import { base64 } from "@talismn/crypto"
 
 /* ----------------------------------------------------------------
 Encrypts the transformed password with a key derived from the WebAuthn PRF output.
@@ -11,7 +11,7 @@ const HKDF_INFO = "talisman-biometric-v1"
 const deriveAesKey = async (prfOutput: string): Promise<CryptoKey> => {
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
-    base64ToBytes(prfOutput),
+    base64.decode(prfOutput) as Uint8Array<ArrayBuffer>,
     "HKDF",
     false,
     ["deriveKey"]
@@ -41,7 +41,7 @@ export const encryptPassword = async (password: string, prfOutput: string) => {
     new TextEncoder().encode(password)
   )
 
-  return { encryptedPassword: bytesToBase64(encrypted), iv: bytesToBase64(iv) }
+  return { encryptedPassword: base64.encode(new Uint8Array(encrypted)), iv: base64.encode(iv) }
 }
 
 export const decryptPassword = async (
@@ -51,9 +51,9 @@ export const decryptPassword = async (
 ): Promise<string> => {
   const key = await deriveAesKey(prfOutput)
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: base64ToBytes(iv) },
+    { name: "AES-GCM", iv: base64.decode(iv) as Uint8Array<ArrayBuffer> },
     key,
-    base64ToBytes(encryptedPassword)
+    base64.decode(encryptedPassword) as Uint8Array<ArrayBuffer>
   )
 
   return new TextDecoder().decode(decrypted)

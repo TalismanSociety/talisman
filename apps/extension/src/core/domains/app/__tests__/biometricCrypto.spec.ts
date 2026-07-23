@@ -1,9 +1,9 @@
-import { bytesToBase64 } from "@common/base64"
+import { base64 } from "@talismn/crypto"
 import { describe, expect, test } from "vitest"
 
 import { decryptPassword, encryptPassword } from "../biometricCrypto"
 
-const randomPrfOutput = () => bytesToBase64(crypto.getRandomValues(new Uint8Array(32)))
+const randomPrfOutput = () => base64.encode(crypto.getRandomValues(new Uint8Array(32)))
 
 const PASSWORD = "$2a$13$JJqAn9jUJ3P5nSGLpXHrAeaLtGYRR4mMRSDkVtwjBHFcbrPXK1Q1O"
 
@@ -26,7 +26,7 @@ describe("biometricCrypto", () => {
   test("fails to decrypt with another iv", async () => {
     const prfOutput = randomPrfOutput()
     const { encryptedPassword } = await encryptPassword(PASSWORD, prfOutput)
-    const otherIv = bytesToBase64(crypto.getRandomValues(new Uint8Array(12)))
+    const otherIv = base64.encode(crypto.getRandomValues(new Uint8Array(12)))
 
     await expect(decryptPassword(encryptedPassword, otherIv, prfOutput)).rejects.toThrow()
   })

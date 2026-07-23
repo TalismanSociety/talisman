@@ -1,4 +1,4 @@
-import { base64ToBytes, bytesToBase64, bytesToBase64Url } from "@common/base64"
+import { base64, base64urlnopad } from "@talismn/crypto"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
 import { createBiometricCredential, getBiometricPrfOutput } from "./webauthnPrf"
@@ -32,10 +32,10 @@ describe("createBiometricCredential", () => {
 
     const result = await createBiometricCredential()
 
-    expect(result.credentialId).toBe(bytesToBase64Url(RAW_ID))
-    expect(result.prfOutput).toBe(bytesToBase64(CREATION_PRF_OUTPUT))
+    expect(result.credentialId).toBe(base64urlnopad.encode(RAW_ID))
+    expect(result.prfOutput).toBe(base64.encode(CREATION_PRF_OUTPUT))
     // the salt we report must be the one we evaluated the PRF with
-    expect(prfSaltOf(create.mock.calls[0])).toEqual(base64ToBytes(result.prfSalt))
+    expect(prfSaltOf(create.mock.calls[0])).toEqual(base64.decode(result.prfSalt))
     // no assertion is needed when the authenticator evaluated the PRF during creation
     expect(get).not.toHaveBeenCalled()
   })
@@ -46,7 +46,7 @@ describe("createBiometricCredential", () => {
 
     const result = await createBiometricCredential()
 
-    expect(result.prfOutput).toBe(bytesToBase64(ASSERTION_PRF_OUTPUT))
+    expect(result.prfOutput).toBe(base64.encode(ASSERTION_PRF_OUTPUT))
     expect(get).toHaveBeenCalledOnce()
 
     // the assertion must target the credential we just created, with the same salt
@@ -88,22 +88,22 @@ describe("getBiometricPrfOutput", () => {
   test("returns the PRF output of the assertion", async () => {
     get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
 
-    const prfSalt = bytesToBase64(new Uint8Array(32).fill(3))
-    const credentialId = bytesToBase64Url(RAW_ID)
+    const prfSalt = base64.encode(new Uint8Array(32).fill(3))
+    const credentialId = base64urlnopad.encode(RAW_ID)
 
     expect(await getBiometricPrfOutput(credentialId, prfSalt)).toBe(
-      bytesToBase64(ASSERTION_PRF_OUTPUT)
+      base64.encode(ASSERTION_PRF_OUTPUT)
     )
 
     const [{ publicKey }] = get.mock.calls[0]
     expect(new Uint8Array(publicKey.allowCredentials[0].id)).toEqual(RAW_ID)
-    expect(prfSaltOf(get.mock.calls[0])).toEqual(base64ToBytes(prfSalt))
+    expect(prfSaltOf(get.mock.calls[0])).toEqual(base64.decode(prfSalt))
   })
 
   test("rejects when the PRF could not be evaluated", async () => {
     get.mockResolvedValue(credential({ enabled: true }))
 
-    await expect(getBiometricPrfOutput("credId", "c2FsdA==")).rejects.toThrow(
+    await expect(getBiometricPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")).rejects.toThrow(
       "PRF evaluation failed"
     )
   })

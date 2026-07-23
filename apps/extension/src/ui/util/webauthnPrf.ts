@@ -1,6 +1,6 @@
-import { base64ToBytes, base64UrlToBytes, bytesToBase64, bytesToBase64Url } from "@common/base64"
 import { IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
+import { base64, base64urlnopad } from "@talismn/crypto"
 
 /**
  * Drives the WebAuthn PRF ceremony. Only ever handles the PRF output, which is useless without the
@@ -36,7 +36,7 @@ export async function createBiometricCredential(
   signal?: AbortSignal
 ): Promise<BiometricCredential> {
   const prfSaltBytes = crypto.getRandomValues(new Uint8Array(32))
-  const prfSalt = bytesToBase64(prfSaltBytes)
+  const prfSalt = base64.encode(prfSaltBytes)
   // the user handle is required by the spec but never used, credentials are addressed by their id
   const userId = crypto.getRandomValues(new Uint8Array(32))
 
@@ -67,7 +67,7 @@ export async function createBiometricCredential(
 
   if (!credential) throw new Error("Credential creation was cancelled")
 
-  const credentialId = bytesToBase64Url(credential.rawId)
+  const credentialId = base64urlnopad.encode(new Uint8Array(credential.rawId))
   const prf = getPrfExtensionResults(credential)
 
   // an authenticator that supports PRF may still be unable to evaluate it while creating the
@@ -79,7 +79,7 @@ export async function createBiometricCredential(
     )
 
   const prfOutput = prf.results?.first
-    ? bytesToBase64(prf.results.first)
+    ? base64.encode(new Uint8Array(prf.results.first))
     : await getBiometricPrfOutput(credentialId, prfSalt, signal)
 
   return { credentialId, prfSalt, prfOutput }
@@ -120,12 +120,12 @@ export async function getBiometricPrfOutput(
       allowCredentials: [
         {
           type: "public-key",
-          id: base64UrlToBytes(credentialId),
+          id: base64urlnopad.decode(credentialId) as Uint8Array<ArrayBuffer>,
         },
       ],
       userVerification: "required",
       extensions: {
-        prf: { eval: { first: base64ToBytes(prfSalt) } },
+        prf: { eval: { first: base64.decode(prfSalt) } },
       } as AuthenticationExtensionsClientInputs,
     },
   })) as PublicKeyCredential | null
@@ -135,7 +135,7 @@ export async function getBiometricPrfOutput(
   const prfOutput = getPrfExtensionResults(assertion)?.results?.first
   if (!prfOutput) throw new Error("PRF evaluation failed")
 
-  return bytesToBase64(prfOutput)
+  return base64.encode(new Uint8Array(prfOutput))
 }
 
 type PrfExtensionResults = { enabled?: boolean; results?: { first?: ArrayBuffer } }
