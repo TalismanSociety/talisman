@@ -63,8 +63,7 @@ export async function enrollBiometric(hashedPassword: string): Promise<Enrollmen
     )
   }
 
-  const prfOutput = new Uint8Array(prfResults.results.first)
-  const aesKey = await deriveAesKey(prfOutput)
+  const aesKey = await deriveAesKey(prfResults.results.first as ArrayBuffer)
 
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const encoded = new TextEncoder().encode(hashedPassword)
@@ -112,8 +111,7 @@ export async function unlockWithBiometric(
     throw new Error("PRF evaluation failed")
   }
 
-  const prfOutput = new Uint8Array(prfResults.results.first)
-  const aesKey = await deriveAesKey(prfOutput)
+  const aesKey = await deriveAesKey(prfResults.results.first as ArrayBuffer)
 
   const decrypted = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv: base64ToBuffer(iv) },
@@ -126,7 +124,7 @@ export async function unlockWithBiometric(
 
 // --- Key Derivation ---
 
-async function deriveAesKey(prfOutput: Uint8Array): Promise<CryptoKey> {
+async function deriveAesKey(prfOutput: ArrayBuffer): Promise<CryptoKey> {
   const keyMaterial = await crypto.subtle.importKey("raw", prfOutput, "HKDF", false, ["deriveKey"])
   return crypto.subtle.deriveKey(
     {
@@ -148,7 +146,7 @@ function bufferToBase64(buffer: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
 }
 
-export function base64ToBuffer(b64: string): ArrayBuffer {
+function base64ToBuffer(b64: string): ArrayBuffer {
   const binary = atob(b64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
