@@ -63,7 +63,7 @@ export default class AppHandler extends ExtensionHandler {
     } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
 
-    this.stores.password.setPassword(transformedPw)
+    await this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
     talismanAnalytics.capture("password created")
 
@@ -82,7 +82,7 @@ export default class AppHandler extends ExtensionHandler {
         authenticateLegacyMethod(transformedPassword)
 
         // we can now set up the auth secret
-        this.stores.password.setPassword(transformedPassword)
+        await this.stores.password.setPassword(transformedPassword)
         await this.stores.password.setupAuthSecret(transformedPassword)
         talismanAnalytics.capture("authenticate", { method: "legacy" })
       } else {
@@ -96,7 +96,7 @@ export default class AppHandler extends ExtensionHandler {
 
       return true
     } catch {
-      this.stores.password.clearPassword()
+      await this.stores.password.clearPassword()
       return false
     }
   }
@@ -105,8 +105,8 @@ export default class AppHandler extends ExtensionHandler {
     return this.stores.password.isLoggedIn.value
   }
 
-  private lock(): LoggedinType {
-    this.stores.password.clearPassword()
+  private async lock(): Promise<LoggedinType> {
+    await this.stores.password.clearPassword()
     return this.authStatus()
   }
 
@@ -331,7 +331,7 @@ export default class AppHandler extends ExtensionHandler {
 
       return true
     } catch (cause) {
-      this.stores.password.clearPassword()
+      await this.stores.password.clearPassword()
 
       // the auth secret was read above, so the recovered password simply doesn't match it anymore
       // and this enrollment can never unlock the wallet again

@@ -54,7 +54,7 @@ describe("Test password store password not hashed", () => {
     expect(returnedPw).toEqual(spaceyPw)
 
     // log out (see the `lock` method of `packages/extension-core/src/domains/app/handler.ts` to confirm this is the same as there)
-    passwordStore.clearPassword()
+    await passwordStore.clearPassword()
 
     // check that the password was cleared from storage by initialising a new PasswordStore and checking that it is not authenticated
     // (PasswordStore loads any stored password from storage as part of its constructor)

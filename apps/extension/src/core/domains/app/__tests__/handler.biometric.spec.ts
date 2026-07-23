@@ -59,7 +59,7 @@ describe("App handler biometric unlock", () => {
   beforeEach(async () => {
     await extensionStores.password.set(initialStoreData.password ?? {})
     await extensionStores.biometric.unenroll()
-    extensionStores.password.clearPassword()
+    await extensionStores.password.clearPassword()
     await messageSender("pri(app.authenticate)", { pass: password })
   })
 

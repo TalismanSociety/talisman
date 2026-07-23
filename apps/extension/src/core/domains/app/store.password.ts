@@ -47,11 +47,11 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     // on every instantiation of this store, check to see if logged in
     this.hasPassword().then((result) => this.isLoggedIn.next(result ? TRUE : FALSE))
 
-    chrome.alarms.onAlarm.addListener((alarm) => {
+    chrome.alarms.onAlarm.addListener(async (alarm) => {
       if (alarm.name !== ALARM_NAME) return
       if (this.isLoggedIn.value !== TRUE) return
 
-      this.clearPassword()
+      await this.clearPassword()
       createNotification("autolocked", "", "autolocked")
     })
   }
@@ -156,12 +156,14 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     const result = (await decrypt(hashedPw, check)) as { secret: string }
     assert(result.secret && result.secret === secret, "Incorrect Password")
 
-    this.setPassword(hashedPw)
+    await this.setPassword(hashedPw)
   }
 
-  setPassword(password: string | undefined) {
-    if (typeof password === "string") sessionStorage.set({ password })
-    else sessionStorage.remove("password")
+  async setPassword(password: string | undefined) {
+    // the session mutation must complete before the login status changes, or the transformed
+    // password would still be retrievable while the wallet reports itself as locked
+    if (typeof password === "string") await sessionStorage.set({ password })
+    else await sessionStorage.remove("password")
 
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
   }
@@ -178,15 +180,15 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
 
   public async setPlaintextPassword(plaintextPw: string) {
     const pw = await this.transformPassword(plaintextPw)
-    this.setPassword(pw)
+    await this.setPassword(pw)
   }
 
-  public clearPassword() {
+  public async clearPassword() {
     // clear password
-    this.setPassword(undefined)
+    await this.setPassword(undefined)
 
     // clear autolock timer
-    this.resetAutolockTimer()
+    await this.resetAutolockTimer()
   }
 
   async transformPassword(password: string) {
