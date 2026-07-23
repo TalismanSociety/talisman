@@ -80,7 +80,7 @@ export const BiometricSetting = () => {
         error ? (
           <span className="text-alert-warn">{error}</span>
         ) : available ? (
-          t("Use Touch ID or Windows Hello to unlock your wallet")
+          t("Use Touch ID, Windows Hello or your device's screen lock to unlock your wallet")
         ) : (
           t("The enrolled authenticator is unavailable, turn this off to stop using it.")
         )

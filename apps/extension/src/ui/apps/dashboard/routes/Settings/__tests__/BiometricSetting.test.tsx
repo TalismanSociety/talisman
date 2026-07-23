@@ -108,6 +108,7 @@ describe("BiometricSetting", () => {
     fireEvent.click(await screen.findByRole("checkbox"))
 
     await waitFor(() => expect(mockCreateCredential).toHaveBeenCalled())
-    expect(screen.getByText(/Touch ID or Windows Hello/i)).toBeDefined()
+    // match the stable part of the subtitle, the authenticator names are copy that may change
+    expect(screen.getByText(/unlock your wallet/i)).toBeDefined()
   })
 })

@@ -78,7 +78,7 @@ export async function createBiometricCredential(
     // obtain the output
     if (!prf?.enabled && !prf?.results?.first)
       throw new Error(
-        "This authenticator does not support biometric unlock. Please use your device's built-in authenticator (Touch ID, Windows Hello) instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
+        "This authenticator does not support biometric unlock. Please use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
       )
 
     const prfOutput = prf.results?.first
