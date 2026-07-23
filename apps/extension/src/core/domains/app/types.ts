@@ -96,6 +96,15 @@ export interface BiometricAuthenticateRequest {
   prfOutput: string
 }
 
+/**
+ * The outcome of a biometric unlock attempt:
+ * - `success` - the wallet is unlocked
+ * - `failed` - the attempt didn't unlock the wallet, but the enrollment may still work later
+ * - `unenrolled` - the enrollment can never unlock the wallet again and has been dropped, so the
+ *   passkey is now useless and the UI may tell the authenticator about it
+ */
+export type BiometricAuthenticateResult = "success" | "failed" | "unenrolled"
+
 /** The non-sensitive part of the enrollment, needed by the UI to run the WebAuthn ceremony */
 export interface BiometricCredentialInfo {
   credentialId: string
@@ -126,5 +135,5 @@ export interface AppMessages {
   "pri(app.biometric.unenroll)": [null, boolean]
   "pri(app.biometric.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
   "pri(app.biometric.getCredentialInfo)": [null, BiometricCredentialInfo | null]
-  "pri(app.biometric.authenticate)": [BiometricAuthenticateRequest, boolean]
+  "pri(app.biometric.authenticate)": [BiometricAuthenticateRequest, BiometricAuthenticateResult]
 }

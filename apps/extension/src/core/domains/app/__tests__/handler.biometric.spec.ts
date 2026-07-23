@@ -89,7 +89,7 @@ describe("App handler biometric unlock", () => {
     await messageSender("pri(app.lock)", null)
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
 
-    expect(await messageSender("pri(app.biometric.authenticate)", { prfOutput })).toBe(true)
+    expect(await messageSender("pri(app.biometric.authenticate)", { prfOutput })).toBe("success")
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
     expect(await extensionStores.password.getPassword()).toBe(
       await extensionStores.password.getHashedPassword(password)
@@ -112,7 +112,7 @@ describe("App handler biometric unlock", () => {
 
     expect(
       await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
-    ).toBe(false)
+    ).toBe("unenrolled")
 
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
     expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
@@ -123,7 +123,7 @@ describe("App handler biometric unlock", () => {
 
     expect(
       await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
-    ).toBe(true)
+    ).toBe("success")
 
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
     expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
@@ -134,8 +134,20 @@ describe("App handler biometric unlock", () => {
 
     expect(
       await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
-    ).toBe(false)
+    ).toBe("unenrolled")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
+  })
+
+  test("keeps the enrollment when the auth secret is missing", async () => {
+    const prfOutput = randomPrfOutput()
+    await messageSender("pri(app.biometric.enroll)", enrollRequest(prfOutput))
+    await messageSender("pri(app.lock)", null)
+
+    // the next password login sets the auth secret back up, so this enrollment isn't dead
+    await extensionStores.password.set({ secret: undefined, check: undefined })
+
+    expect(await messageSender("pri(app.biometric.authenticate)", { prfOutput })).toBe("failed")
+    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
   })
 
   test("clears the enrollment when the password changes", async () => {

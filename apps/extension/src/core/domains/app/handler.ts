@@ -18,6 +18,7 @@ import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
   BiometricAuthenticateRequest,
+  BiometricAuthenticateResult,
   BiometricCredentialInfo,
   BiometricEnrollRequest,
   ChangePasswordStatusUpdate,
@@ -296,18 +297,20 @@ export default class AppHandler extends ExtensionHandler {
 
   private async biometricAuthenticate({
     prfOutput,
-  }: BiometricAuthenticateRequest): Promise<boolean> {
+  }: BiometricAuthenticateRequest): Promise<BiometricAuthenticateResult> {
     // nothing to unlock, and a mismatching prf output here must not log the user out
-    if (this.stores.password.isLoggedIn.value === "TRUE") return true
+    if (this.stores.password.isLoggedIn.value === "TRUE") return "success"
 
     if (!(DEBUG || TEST)) await sleep(1000)
 
     // read outside of the try blocks, a storage failure here must not clear a valid enrollment
     const enrollment = await this.stores.biometric.get()
-    if (!isCompleteEnrollment(enrollment)) return false
+    // nothing usable is stored, whatever credential the caller holds is orphaned
+    if (!isCompleteEnrollment(enrollment)) return "unenrolled"
 
+    // a password login can still set the auth secret up, this enrollment isn't dead yet
     const { secret, check } = await this.stores.password.get()
-    if (!secret || !check) return false
+    if (!secret || !check) return "failed"
 
     let password: string
     try {
@@ -318,7 +321,7 @@ export default class AppHandler extends ExtensionHandler {
       // login
       log.error("Biometric decryption failed, clearing enrollment", { cause })
       await this.stores.biometric.unenroll()
-      return false
+      return "unenrolled"
     }
 
     try {
@@ -329,7 +332,7 @@ export default class AppHandler extends ExtensionHandler {
         .get()
         .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
 
-      return true
+      return "success"
     } catch (cause) {
       await this.stores.password.clearPassword()
 
@@ -338,7 +341,7 @@ export default class AppHandler extends ExtensionHandler {
       log.error("Biometric authentication failed, clearing enrollment", { cause })
       await this.stores.biometric.unenroll()
 
-      return false
+      return "unenrolled"
     }
   }
 

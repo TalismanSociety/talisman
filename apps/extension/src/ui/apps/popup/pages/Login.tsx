@@ -139,12 +139,19 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
           abort.signal
         )
 
-        // the background clears the enrollment when it can't be used to unlock anymore
         const result = await api.biometricAuthenticate(prfOutput)
-        if (!result) {
+
+        // the passkey outlives the enrollment, only tell the authenticator about it once the
+        // background has confirmed the enrollment is gone for good
+        if (result === "unenrolled") {
           await signalCredentialRemoved(credentialInfo.credentialId)
           return setError(t("Biometric unlock was reset, please enable it again from settings."))
         }
+
+        if (result === "failed")
+          return setError(
+            t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+          )
 
         const qs = new URLSearchParams(window.location.search)
         if (qs.get("closeAfterLogin") === "true") window.close()
