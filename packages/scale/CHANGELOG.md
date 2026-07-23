@@ -1,5 +1,15 @@
 # @talismn/scale
 
+## 2.0.0
+
+### Major Changes
+
+- f0abc19: Relicense: packages move from GPL-3.0-or-later to the Talisman Licence, except `@talismn/orb`, which moves to MIT.
+
+### Patch Changes
+
+- 24fee4e: Upgrade to typescript 7, switch build tool from tsup to tsdown
+
 ## 1.0.0
 
 ### Major Changes

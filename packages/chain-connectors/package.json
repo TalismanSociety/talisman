@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chain-connectors",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@polkadot-api/substrate-client": "0.7.0",
-    "@polkadot-api/ws-provider": "0.9.0",
+    "@polkadot-api/ws-provider": "0.9.1",
     "@solana/kit": "6.10.0",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/util": "workspace:*",
