@@ -5,7 +5,7 @@ Encrypts the transformed password with a key derived from the WebAuthn PRF outpu
 Runs in the background only, so the transformed password never crosses the port.
 ------------------------------------------------------------------*/
 
-const HKDF_SALT = "talisman-biometric-v1"
+const HKDF_INFO = "talisman-biometric-v1"
 
 /** Derives the AES-GCM key protecting the stored password from a WebAuthn PRF output */
 const deriveAesKey = async (prfOutput: string): Promise<CryptoKey> => {
@@ -21,8 +21,9 @@ const deriveAesKey = async (prfOutput: string): Promise<CryptoKey> => {
     {
       name: "HKDF",
       hash: "SHA-256",
-      salt: new TextEncoder().encode(HKDF_SALT),
-      info: new Uint8Array(0),
+      // the PRF output is already high entropy, the context string belongs in info
+      salt: new Uint8Array(0),
+      info: new TextEncoder().encode(HKDF_INFO),
     },
     keyMaterial,
     { name: "AES-GCM", length: 256 },

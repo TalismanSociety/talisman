@@ -13,7 +13,7 @@ class BiometricStore extends StorageProvider<BiometricStoreData> {
   }
 
   async unenroll(): Promise<void> {
-    await this.replace({} as BiometricStoreData)
+    await this.replace({})
   }
 }
 
