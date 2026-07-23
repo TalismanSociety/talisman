@@ -18,7 +18,6 @@ export const BiometricSetting = () => {
   const [available, setAvailable] = useState<boolean | null>(null)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const [showRemoveHint, setShowRemoveHint] = useState(false)
   const getErrorMessage = useBiometricErrorMessage()
 
   const abortRef = useRef<AbortController>(null)
@@ -33,7 +32,6 @@ export const BiometricSetting = () => {
     async (checked: boolean) => {
       setProcessing(true)
       setError(undefined)
-      setShowRemoveHint(false)
       abortRef.current?.abort()
       const abort = new AbortController()
       abortRef.current = abort
@@ -45,7 +43,6 @@ export const BiometricSetting = () => {
           const credentialInfo = await api.biometricGetCredentialInfo()
           await api.biometricUnenroll()
           if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
-          setShowRemoveHint(true)
         }
       } catch (err) {
         // resolves to null if the user cancelled the biometric prompt, or if we abandoned it
@@ -68,8 +65,6 @@ export const BiometricSetting = () => {
       subtitle={
         error ? (
           <span className="text-alert-warn">{error}</span>
-        ) : showRemoveHint ? (
-          t("You may also remove the passkey from your system keychain manually.")
         ) : available ? (
           t("Use Touch ID or Windows Hello to unlock your wallet")
         ) : (
