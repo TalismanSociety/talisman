@@ -118,6 +118,17 @@ describe("App handler biometric unlock", () => {
     expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
   })
 
+  test("keeps the session and the enrollment when called while already unlocked", async () => {
+    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+
+    expect(
+      await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
+    ).toBe(true)
+
+    expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
+    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
+  })
+
   test("does not unlock when not enrolled", async () => {
     await messageSender("pri(app.lock)", null)
 

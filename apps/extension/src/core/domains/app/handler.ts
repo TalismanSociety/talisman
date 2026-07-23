@@ -292,6 +292,9 @@ export default class AppHandler extends ExtensionHandler {
   private async biometricAuthenticate({
     prfOutput,
   }: BiometricAuthenticateRequest): Promise<boolean> {
+    // nothing to unlock, and a mismatching prf output here must not log the user out
+    if (this.stores.password.isLoggedIn.value === "TRUE") return true
+
     if (!(DEBUG || TEST)) await sleep(1000)
 
     // read outside of the try blocks, a storage failure here must not clear a valid enrollment
