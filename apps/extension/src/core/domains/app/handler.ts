@@ -301,7 +301,8 @@ export default class AppHandler extends ExtensionHandler {
     // nothing to unlock, and a mismatching prf output here must not log the user out
     if (this.stores.password.isLoggedIn.value === "TRUE") return "success"
 
-    if (!(DEBUG || TEST)) await sleep(1000)
+    // no throttle here, unlike the password paths: a mismatching prf output unenrolls on the first
+    // attempt, so there is no second guess to slow down
 
     // read outside of the try blocks, a storage failure here must not clear a valid enrollment
     const enrollment = await this.stores.biometric.get()
