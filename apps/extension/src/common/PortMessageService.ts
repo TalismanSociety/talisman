@@ -72,12 +72,27 @@ export default class PortMessageService {
       this.port.onMessage.addListener(this.handleResponse)
       this.port.onDisconnect.addListener(() => {
         this.port = undefined
+
+        // a disconnected port will never deliver a response, settle the pending requests instead of
+        // leaving their callers (and any secret in their scope) hanging forever
+        for (const [id, handler] of Object.entries(this.handlers)) {
+          if (handler.subscriber) continue
+          this.rejectHandler(id, new Error("Port disconnected"))
+        }
       })
 
       return this.port
     }
 
     throw new Error("Failed to create port after multiple attempts", { cause: lastError })
+  }
+
+  private rejectHandler(id: string, error: Error) {
+    const handler = this.handlers[id]
+    if (!handler) return
+
+    delete this.handlers[id]
+    handler.reject(error)
   }
 
   private async ensurePortAndSendMessage<TMessageType extends MessageTypes>(
@@ -128,7 +143,9 @@ export default class PortMessageService {
         request: request || (null as RequestTypes[TMessageType]),
       }
 
-      this.ensurePortAndSendMessage(transportRequestMessage)
+      this.ensurePortAndSendMessage(transportRequestMessage).catch((cause) =>
+        this.rejectHandler(id, cause instanceof Error ? cause : new Error(String(cause)))
+      )
     })
   }
 
@@ -158,7 +175,9 @@ export default class PortMessageService {
       request: request || (null as RequestTypes[TMessageType]),
     }
 
-    this.ensurePortAndSendMessage(transportRequestMessage)
+    this.ensurePortAndSendMessage(transportRequestMessage).catch((cause) =>
+      this.rejectHandler(id, cause instanceof Error ? cause : new Error(String(cause)))
+    )
 
     return () => {
       this.sendMessage("pri(unsubscribe)", { id }).then(() => delete this.handlers[id])
