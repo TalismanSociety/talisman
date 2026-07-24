@@ -1,8 +1,10 @@
 import { log } from "@common/log"
 import { getBtcLedgerPaths } from "@core/domains/bitcoin/helpers"
 import { normalizeXpub } from "@talismn/crypto"
+import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
 import type { LedgerAccountDefBitcoin } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerBitcoin } from "@ui/hooks/ledger/useLedgerBitcoin"
 import { useAccounts } from "@ui/state/accounts"
@@ -11,6 +13,24 @@ import { useTranslation } from "react-i18next"
 
 import { type DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
+
+// bitcoin uses 8 decimals; ledger accounts aren't yet in the wallet so their balance
+// comes from a preview scan (btcAccountPreview) rather than the balances subscription
+const BTC_DECIMALS = 8
+
+const LedgerBtcPreviewBalance: FC<{ sats?: string }> = ({ sats }) =>
+  sats === undefined ? (
+    <span className="text-body-disabled text-xs">—</span>
+  ) : (
+    <Tokens
+      amount={planckToTokens(sats, BTC_DECIMALS) ?? "0"}
+      symbol="BTC"
+      decimals={BTC_DECIMALS}
+      isBalance
+      noCountUp
+      className="text-sm"
+    />
+  )
 
 type LedgerBitcoinAccount = DerivedAccountBase &
   LedgerAccountDefBitcoin & { previewSats?: string; previewTxCount?: number }
@@ -116,6 +136,7 @@ const useLedgerBitcoinAccounts = (
       name: existing?.name ?? acc.name,
       connected: !!existing,
       selected: selectedAccounts.some((sa) => sa.accountIndex === acc.accountIndex),
+      balanceContent: <LedgerBtcPreviewBalance sats={acc.previewSats} />,
     }
   })
 
@@ -172,7 +193,7 @@ export const LedgerBitcoinAccountPicker: FC<LedgerBitcoinAccountPickerProps> = (
       </div>
       <DerivedAccountPickerBase
         accounts={accounts}
-        withBalances={false}
+        withBalances
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={() => setPageIndex(0)}
