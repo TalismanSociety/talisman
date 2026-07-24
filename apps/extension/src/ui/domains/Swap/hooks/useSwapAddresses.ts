@@ -130,11 +130,17 @@ export function useSwapAddresses({
   // Handles manually-set addresses that the auto-select effect skips.
   useEffect(() => {
     if (!fromAddress || !fromNetwork) return
-    if (!isAddressCompatibleWithNetwork(fromNetwork, fromAddress)) {
+    // a bitcoin account's identity is an xpub, which isn't a decodable on-chain
+    // address — check via the owned account when we have it, falling back to the
+    // address-only check for pasted/external addresses
+    const compatible = fromAccount
+      ? isAccountCompatibleWithNetwork(fromNetwork, fromAccount)
+      : isAddressCompatibleWithNetwork(fromNetwork, fromAddress)
+    if (!compatible) {
       fromAddressManuallySet.current = false
       setFromAddress(null)
     }
-  }, [fromAddress, fromNetwork, setFromAddress])
+  }, [fromAddress, fromNetwork, fromAccount, setFromAddress])
 
   // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {

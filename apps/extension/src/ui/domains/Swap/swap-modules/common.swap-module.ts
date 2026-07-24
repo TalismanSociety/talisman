@@ -89,6 +89,9 @@ export type SwapTransactionContext =
   | { platform: "ethereum" }
   | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
   | { platform: "solana"; rpc: SolRpc }
+  // bitcoin needs no extra context: the deposit PSBT is built in the UI from the
+  // sender's utxos (via the bitcoin send flow), not inside the swap module
+  | { platform: "bitcoin" }
 
 export type GetTransactionParams = {
   fromTokenId: TokenId
@@ -110,6 +113,14 @@ export type SwapModuleTransaction =
   | {
       platform: "solana"
       transaction: SolTransaction
+    }
+  | {
+      // the deposit target only; the UI builds and signs the actual PSBT from the
+      // sender's utxos, so the module just normalizes the exchange's deposit info
+      platform: "bitcoin"
+      networkId: string
+      depositAddress: string
+      depositAmountSats: string
     }
 
 export type ApprovalInfo = {
