@@ -36,7 +36,7 @@ import { SwapModal } from "@ui/domains/Swap/components/SwapModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
-import { Suspense, useEffect } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
@@ -61,6 +61,13 @@ import { TxHistoryPage } from "./pages/TxHistory"
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
 
+  // the user locking the wallet (or the autolock timer) swaps the portfolio for the login screen
+  // in a popup that is on its way out - biometrics must not prompt on their behalf there
+  const wasLoggedIn = useRef(false)
+  useEffect(() => {
+    if (isLoggedIn) wasLoggedIn.current = true
+  }, [isLoggedIn])
+
   // force onboarding if not onboarded
   useEffect(() => {
     if (!isOnboarded) {
@@ -72,7 +79,7 @@ const Popup = () => {
     }
   }, [isOnboarded])
 
-  if (!isLoggedIn) return <LoginViewManager />
+  if (!isLoggedIn) return <LoginViewManager autoTriggerBiometric={!wasLoggedIn.current} />
 
   if (isMigrating) return <MigrationProgress />
 
