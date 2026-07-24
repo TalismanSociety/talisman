@@ -1,7 +1,7 @@
 import { base64, base64urlnopad } from "@talismn/crypto"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
-import { createBiometricCredential, getBiometricPrfOutput } from "./webauthnPrf"
+import { createBiometricCredential, getBiometricPrfOutput, PrfEvaluationError } from "./webauthnPrf"
 
 const create = vi.fn()
 const get = vi.fn()
@@ -58,11 +58,23 @@ describe("createBiometricCredential", () => {
     expect(prfSaltOf(get.mock.calls[0])).toEqual(prfSaltOf(create.mock.calls[0]))
   })
 
+  test("falls back to an assertion when creation reports no PRF support at all", async () => {
+    // windows hello on chrome 146 and below: nothing on create, PRF evaluated on assertion
+    create.mockResolvedValue(credential(undefined))
+    get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
+
+    const result = await createBiometricCredential()
+
+    expect(result.prfOutput).toBe(base64.encode(ASSERTION_PRF_OUTPUT))
+    expect(get).toHaveBeenCalledOnce()
+    expect(signalUnknownCredential).not.toHaveBeenCalled()
+  })
+
   test("rejects an authenticator that does not support PRF, and drops its credential", async () => {
     create.mockResolvedValue(credential(undefined))
+    get.mockResolvedValue(credential({ enabled: true }))
 
     await expect(createBiometricCredential()).rejects.toThrow(/does not support biometric unlock/)
-    expect(get).not.toHaveBeenCalled()
     expect(signalUnknownCredential).toHaveBeenCalledWith(
       expect.objectContaining({ credentialId: base64urlnopad.encode(RAW_ID) })
     )
@@ -132,7 +144,7 @@ describe("getBiometricPrfOutput", () => {
     get.mockResolvedValue(credential({ enabled: true }))
 
     await expect(getBiometricPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")).rejects.toThrow(
-      "PRF evaluation failed"
+      PrfEvaluationError
     )
   })
 })

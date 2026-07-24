@@ -74,21 +74,33 @@ export async function createBiometricCredential(
     const prf = getPrfExtensionResults(credential)
 
     // an authenticator that supports PRF may still be unable to evaluate it while creating the
-    // credential, in which case the spec only guarantees `enabled` and requires an assertion to
-    // obtain the output
-    if (!prf?.enabled && !prf?.results?.first)
-      throw new Error(
-        "This authenticator does not support biometric unlock. Please use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
-      )
-
-    const prfOutput = prf.results?.first
+    // credential, and may not even advertise support at that point - Windows Hello reports nothing
+    // at all on Chrome 146 and below, while evaluating the PRF just fine during an assertion.
+    // asking for one is the only reliable way to find out
+    const prfOutput = prf?.results?.first
       ? base64.encode(new Uint8Array(prf.results.first))
-      : await getBiometricPrfOutput(credentialId, prfSalt, signal)
+      : await evaluatePrfOrExplain(credentialId, prfSalt, signal)
 
     return { credentialId, prfSalt, prfOutput }
   } catch (err) {
     await signalCredentialRemoved(credentialId)
     throw err
+  }
+}
+
+/** The assertion is what tells us PRF is unsupported, turn its failure into something actionable */
+const evaluatePrfOrExplain = async (
+  credentialId: string,
+  prfSalt: string,
+  signal?: AbortSignal
+) => {
+  try {
+    return await getBiometricPrfOutput(credentialId, prfSalt, signal)
+  } catch (err) {
+    if (!(err instanceof PrfEvaluationError)) throw err
+    throw new Error(
+      "This authenticator does not support biometric unlock. Please use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, instead of a browser profile or security key - and make sure your browser and operating system are up to date. A passkey may have been created, you can remove it from your system settings."
+    )
   }
 }
 
@@ -141,9 +153,17 @@ export async function getBiometricPrfOutput(
   if (!assertion) throw new Error("Biometric authentication was cancelled")
 
   const prfOutput = getPrfExtensionResults(assertion)?.results?.first
-  if (!prfOutput) throw new Error("PRF evaluation failed")
+  if (!prfOutput) throw new PrfEvaluationError()
 
   return base64.encode(new Uint8Array(prfOutput))
+}
+
+/** The ceremony completed but the authenticator returned no PRF output, it can't do this */
+export class PrfEvaluationError extends Error {
+  constructor() {
+    super("Biometric unlock is unavailable. Your browser or operating system may need an update.")
+    this.name = "PrfEvaluationError"
+  }
 }
 
 type PrfExtensionResults = { enabled?: boolean; results?: { first?: ArrayBuffer } }
