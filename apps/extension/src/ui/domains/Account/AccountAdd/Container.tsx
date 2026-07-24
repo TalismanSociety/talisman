@@ -217,10 +217,10 @@ function ConnectAccountMethodButtons() {
         title={t("Connect Ledger")}
         subtitle={
           isLedgerCapable
-            ? t("Ethereum, Substrate or Solana accounts")
+            ? t("Ethereum, Substrate, Solana or Bitcoin accounts")
             : t("Not supported on this browser")
         }
-        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana", "bittensor"] : []}
+        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana", "bittensor", "bitcoin"] : []}
         disabled={!isLedgerCapable}
         to={`/accounts/add/ledger`}
       />
