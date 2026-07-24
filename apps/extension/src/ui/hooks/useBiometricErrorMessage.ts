@@ -1,3 +1,4 @@
+import { PrfEvaluationError } from "@ui/util/webauthnPrf"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,6 +15,13 @@ export const useBiometricErrorMessage = () => {
 
   return useCallback(
     (err: unknown): string | null => {
+      // the ceremony worked, the authenticator just can't evaluate a PRF - it isn't the right kind
+      // of authenticator, or the browser and OS are too old to expose the capability
+      if (err instanceof PrfEvaluationError)
+        return t(
+          "This authenticator can't be used for biometric unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
+        )
+
       switch ((err as DOMException)?.name) {
         case "NotAllowedError":
         case "AbortError":

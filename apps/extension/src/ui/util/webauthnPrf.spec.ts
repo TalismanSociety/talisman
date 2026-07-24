@@ -31,7 +31,7 @@ describe("createBiometricCredential", () => {
   })
 
   test("uses the PRF output returned at creation time", async () => {
-    create.mockResolvedValue(credential({ enabled: true, results: { first: CREATION_PRF_OUTPUT } }))
+    create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
 
     const result = await createBiometricCredential()
 
@@ -44,7 +44,7 @@ describe("createBiometricCredential", () => {
   })
 
   test("falls back to an assertion when creation returns no PRF output", async () => {
-    create.mockResolvedValue(credential({ enabled: true }))
+    create.mockResolvedValue(credential({}))
     get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
 
     const result = await createBiometricCredential()
@@ -72,16 +72,16 @@ describe("createBiometricCredential", () => {
 
   test("rejects an authenticator that does not support PRF, and drops its credential", async () => {
     create.mockResolvedValue(credential(undefined))
-    get.mockResolvedValue(credential({ enabled: true }))
+    get.mockResolvedValue(credential({}))
 
-    await expect(createBiometricCredential()).rejects.toThrow(/does not support biometric unlock/)
+    await expect(createBiometricCredential()).rejects.toThrow(PrfEvaluationError)
     expect(signalUnknownCredential).toHaveBeenCalledWith(
       expect.objectContaining({ credentialId: base64urlnopad.encode(RAW_ID) })
     )
   })
 
   test("drops the credential when the fallback assertion fails", async () => {
-    create.mockResolvedValue(credential({ enabled: true }))
+    create.mockResolvedValue(credential({}))
     get.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
     await expect(createBiometricCredential()).rejects.toThrow(
@@ -93,7 +93,7 @@ describe("createBiometricCredential", () => {
   })
 
   test("keeps the credential when the ceremony succeeds", async () => {
-    create.mockResolvedValue(credential({ enabled: true, results: { first: CREATION_PRF_OUTPUT } }))
+    create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
 
     await createBiometricCredential()
 
@@ -111,7 +111,7 @@ describe("createBiometricCredential", () => {
   })
 
   test("forwards the abort signal", async () => {
-    create.mockResolvedValue(credential({ enabled: true, results: { first: CREATION_PRF_OUTPUT } }))
+    create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
     const { signal } = new AbortController()
 
     await createBiometricCredential(signal)
@@ -141,7 +141,7 @@ describe("getBiometricPrfOutput", () => {
   })
 
   test("rejects when the PRF could not be evaluated", async () => {
-    get.mockResolvedValue(credential({ enabled: true }))
+    get.mockResolvedValue(credential({}))
 
     await expect(getBiometricPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")).rejects.toThrow(
       PrfEvaluationError

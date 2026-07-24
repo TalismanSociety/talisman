@@ -79,28 +79,12 @@ export async function createBiometricCredential(
     // asking for one is the only reliable way to find out
     const prfOutput = prf?.results?.first
       ? base64.encode(new Uint8Array(prf.results.first))
-      : await evaluatePrfOrExplain(credentialId, prfSalt, signal)
+      : await getBiometricPrfOutput(credentialId, prfSalt, signal)
 
     return { credentialId, prfSalt, prfOutput }
   } catch (err) {
     await signalCredentialRemoved(credentialId)
     throw err
-  }
-}
-
-/** The assertion is what tells us PRF is unsupported, turn its failure into something actionable */
-const evaluatePrfOrExplain = async (
-  credentialId: string,
-  prfSalt: string,
-  signal?: AbortSignal
-) => {
-  try {
-    return await getBiometricPrfOutput(credentialId, prfSalt, signal)
-  } catch (err) {
-    if (!(err instanceof PrfEvaluationError)) throw err
-    throw new Error(
-      "This authenticator does not support biometric unlock. Please use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, instead of a browser profile or security key - and make sure your browser and operating system are up to date. A passkey may have been created, you can remove it from your system settings."
-    )
   }
 }
 
@@ -158,15 +142,20 @@ export async function getBiometricPrfOutput(
   return base64.encode(new Uint8Array(prfOutput))
 }
 
-/** The ceremony completed but the authenticator returned no PRF output, it can't do this */
+/**
+ * The ceremony completed but the authenticator returned no PRF output, it can't do this.
+ * User facing copy lives in useBiometricErrorMessage, keyed on the error name.
+ */
 export class PrfEvaluationError extends Error {
   constructor() {
-    super("Biometric unlock is unavailable. Your browser or operating system may need an update.")
+    super("PRF evaluation failed")
     this.name = "PrfEvaluationError"
   }
 }
 
-type PrfExtensionResults = { enabled?: boolean; results?: { first?: ArrayBuffer } }
+// `enabled` is deliberately left out: it is unset on the browsers that evaluate the PRF anyway,
+// so it can't be used to decide anything
+type PrfExtensionResults = { results?: { first?: ArrayBuffer } }
 
 const getPrfExtensionResults = (credential: PublicKeyCredential): PrfExtensionResults | undefined =>
   // biome-ignore lint/suspicious/noExplicitAny: PRF extension results not in TS types yet

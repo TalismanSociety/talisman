@@ -17,7 +17,9 @@ vi.mock("@ui/api", () => ({
   },
 }))
 
-vi.mock("@ui/util/webauthnPrf", () => ({
+// keep the real PrfEvaluationError, the component and the error message hook both test against it
+vi.mock("@ui/util/webauthnPrf", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ui/util/webauthnPrf")>()),
   isBiometricAvailable: () => mockIsAvailable(),
   createBiometricCredential: (...args: unknown[]) => mockCreateCredential(...args),
   signalCredentialRemoved: (...args: unknown[]) => mockSignalRemoved(...args),
@@ -26,6 +28,8 @@ vi.mock("@ui/util/webauthnPrf", () => ({
 vi.mock("@ui/state/biometric", () => ({
   useIsBiometricEnrolled: () => mockUseIsEnrolled(),
 }))
+
+import { PrfEvaluationError } from "@ui/util/webauthnPrf"
 
 import { BiometricSetting } from "../BiometricSetting"
 
@@ -87,6 +91,19 @@ describe("BiometricSetting", () => {
 
     await waitFor(() => expect(mockSignalRemoved).toHaveBeenCalledWith("credId"))
     expect(await screen.findByText(/A passkey may have been created/i)).toBeDefined()
+  })
+
+  test("explains an authenticator that can't evaluate a PRF, and mentions the passkey", async () => {
+    mockCreateCredential.mockRejectedValue(new PrfEvaluationError())
+
+    render(<BiometricSetting />)
+
+    fireEvent.click(await screen.findByRole("checkbox"))
+
+    expect(await screen.findByText(/can't be used for biometric unlock/i)).toBeDefined()
+    expect(screen.getByText(/A passkey may have been created/i)).toBeDefined()
+    // the raw error message must not reach the user
+    expect(screen.queryByText(/PRF evaluation failed/i)).toBeNull()
   })
 
   test("explains browser exceptions instead of showing their name", async () => {

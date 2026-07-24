@@ -129,12 +129,6 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const handleBiometricUnlock = useCallback(
     async (explicit: boolean) => {
       if (processing) return
-
-      // an unfocused popup is one the browser is tearing down, or one the user has moved on from.
-      // prompting there puts an OS dialog (Windows Hello) on screen that nobody asked for, and on
-      // windows that dialog outlives the page it was started from. explicit clicks always go ahead.
-      if (!explicit && (document.visibilityState !== "visible" || !document.hasFocus())) return
-
       setProcessing(true)
       setError(undefined)
       abortRef.current?.abort()
@@ -196,6 +190,12 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   // auto-trigger biometric on first render, unless the user is already typing their password
   useEffect(() => {
     if (!autoTrigger || !enrolled || triggeredRef.current) return
+
+    // an unfocused popup is one the browser is tearing down, or one the user has moved on from.
+    // prompting there puts an OS dialog (Windows Hello) on screen that nobody asked for, and on
+    // windows that dialog outlives the page it was started from
+    if (document.visibilityState !== "visible" || !document.hasFocus()) return
+
     triggeredRef.current = true
     handleBiometricUnlock(false)
   }, [autoTrigger, enrolled, handleBiometricUnlock])
@@ -335,10 +335,10 @@ const Login = ({
 }
 
 export const LoginViewManager = ({
-  autoTriggerBiometric = true,
+  autoTriggerBiometric,
 }: {
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
-  autoTriggerBiometric?: boolean
+  autoTriggerBiometric: boolean
 }) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
 
