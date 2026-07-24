@@ -294,7 +294,7 @@ function WatchedAccountMethodButtons() {
         supportedNetworks={
           <div className="flex items-center gap-2">
             <NetworkLogo networkId="bitcoin" className="text-md" />
-            <div>{t("Bitcoin accounts are watched via their xpub")}</div>
+            <div>{t("Watch a bitcoin xpub or a single address")}</div>
           </div>
         }
         to={`/accounts/add/watched?platform=bitcoin`}

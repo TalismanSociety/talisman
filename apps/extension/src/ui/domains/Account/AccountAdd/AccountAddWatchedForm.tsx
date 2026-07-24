@@ -4,6 +4,7 @@ import {
   type AccountPlatform,
   getAccountPlatformFromAddress,
   getXpubPrefix,
+  isBitcoinOnChainAddress,
   isBitcoinXpub,
 } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
@@ -45,6 +46,13 @@ const getBtcXpubKind = (address: string): BtcXpubKind | null => {
   return { kind: "ambiguous" }
 }
 
+// a single on-chain address has no HD tree — the script type is cosmetic here (balances
+// are read directly for the address), so infer it from the bech32(m) witness version
+const getPlainBtcAddressType = (address: string): BitcoinAddressType => {
+  const lower = address.toLowerCase()
+  return lower.startsWith("bc1p") || lower.startsWith("tb1p") ? "p2tr" : "p2wpkh"
+}
+
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation()
   // get type paramter from url
@@ -76,13 +84,13 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 message: t("Invalid address"),
               })
 
-            // bitcoin accounts are watched by xpub: a single on-chain address cannot
-            // track an HD wallet's balance
+            // bitcoin can be watched either by account xpub (tracks a whole HD tree) or
+            // by a single on-chain address (tracks just that address)
             if (platform === "bitcoin") {
-              if (!isBitcoinXpub(address))
+              if (!isBitcoinXpub(address) && !isBitcoinOnChainAddress(address))
                 return ctx.createError({
                   path: "address",
-                  message: t("Enter an account xpub, not an address"),
+                  message: t("Enter a bitcoin address or account xpub"),
                 })
               if (getBtcXpubKind(address)?.kind === "unsupported")
                 return ctx.createError({
@@ -154,7 +162,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   }, [nsLookup, isNsLookup, searchAddress, setValue, isNsFetching])
 
   const submit = useCallback(
-    async ({ name, address, isPortfolio }: FormData) => {
+    async ({ name, address, platform, isPortfolio }: FormData) => {
       const notificationId = notify(
         {
           type: "processing",
@@ -166,6 +174,9 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
       try {
         const kind = getBtcXpubKind(address)
+        // plain bitcoin on-chain address: watch that single address (no HD tree)
+        const isBtcPlainAddress =
+          platform === "bitcoin" && !kind && isBitcoinOnChainAddress(address)
         const [addr] = await api.accountAddExternal([
           kind
             ? {
@@ -177,12 +188,20 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 // ambiguous (BIP84 vs BIP86) so the user picks in the form
                 addressType: kind.kind === "detected" ? kind.addressType : btcAddressType,
               }
-            : {
-                type: "watch-only",
-                name,
-                address,
-                isPortfolio,
-              },
+            : isBtcPlainAddress
+              ? {
+                  type: "watch-only-bitcoin",
+                  name,
+                  address,
+                  isPortfolio,
+                  addressType: getPlainBtcAddressType(address),
+                }
+              : {
+                  type: "watch-only",
+                  name,
+                  address,
+                  isPortfolio,
+                },
         ])
 
         onSuccess(addr)
@@ -244,7 +263,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             {platform === "bitcoin" && (
               <p className="text-body-disabled text-xs">
                 {t(
-                  "Bitcoin accounts are watched via their account xpub (zpub for Native SegWit, xpub for Taproot). One key tracks one address tree."
+                  "Enter an account xpub (zpub for Native SegWit, xpub for Taproot) to track its whole address tree, or a single on-chain address to track just that address."
                 )}
               </p>
             )}
