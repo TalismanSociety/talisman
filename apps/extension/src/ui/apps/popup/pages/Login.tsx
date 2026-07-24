@@ -193,11 +193,23 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
     // an unfocused popup is one the browser is tearing down, or one the user has moved on from.
     // prompting there puts an OS dialog (Windows Hello) on screen that nobody asked for, and on
-    // windows that dialog outlives the page it was started from
-    if (document.visibilityState !== "visible" || !document.hasFocus()) return
+    // windows that dialog outlives the page it was started from.
+    //
+    // a popup the browser has just opened for us (a dapp request, or a login prompt) often hasn't
+    // been given focus yet by the time we get here, so wait for it instead of giving up - a popup
+    // on its way out never gets focus back
+    const trigger = () => {
+      if (triggeredRef.current) return
+      if (document.visibilityState !== "visible" || !document.hasFocus()) return
 
-    triggeredRef.current = true
-    handleBiometricUnlock(false)
+      triggeredRef.current = true
+      window.removeEventListener("focus", trigger)
+      handleBiometricUnlock(false)
+    }
+
+    trigger()
+    window.addEventListener("focus", trigger)
+    return () => window.removeEventListener("focus", trigger)
   }, [autoTrigger, enrolled, handleBiometricUnlock])
 
   if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
