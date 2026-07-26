@@ -1,4 +1,4 @@
-import { ArrowRightCircleIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
+import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
@@ -109,23 +109,15 @@ export const GetStarted = () => {
         </div>
       )}
 
-      {IS_POPUP ? (
-        <GetStartedActionButton
-          label={t("About")}
-          iconTop={<ArrowRightCircleIcon className="-ml-2 size-12" />}
-          onClick={onLearnMoreClick}
-        />
-      ) : (
-        <GetStartedActionButton
-          label={t("About Talisman")}
-          description={t("Discover how Talisman can elevate your web3 journey")}
-          className="group"
-          iconRight={
-            <ChevronRightIcon className="-mr-4 size-12 text-body-inactive group-hover:text-body-secondary" />
-          }
-          onClick={onLearnMoreClick}
-        />
-      )}
+      <GetStartedActionButton
+        label={t("About Talisman")}
+        description={t("Discover how Talisman can elevate your web3 journey")}
+        className="group"
+        iconRight={
+          <ChevronRightIcon className="-mr-4 size-12 text-body-inactive group-hover:text-body-secondary" />
+        }
+        onClick={onLearnMoreClick}
+      />
     </div>
   )
 }
