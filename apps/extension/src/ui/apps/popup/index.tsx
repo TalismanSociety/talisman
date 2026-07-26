@@ -20,7 +20,6 @@ import { EarnSystemActionModals } from "@ui/domains/Earn/systems/EarnSystemActio
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
 import { YieldxyzManagePositionModal } from "@ui/domains/Earn/yieldxyz/manage/YieldxyzManagePositionModal"
-import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
@@ -122,7 +121,6 @@ const Popup = () => {
         <RampsModal />
         <SwapModal />
         <UnbondModal />
-        <SeekBenefitsModal />
         <EarnDepositModal />
         <EarnSystemActionModals />
         <YieldxyzEnterPositionModal />
