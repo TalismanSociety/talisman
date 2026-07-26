@@ -116,8 +116,14 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const abortRef = useRef<AbortController>(null)
 
   useEffect(() => {
-    // abandon any ceremony still waiting on the user
-    return () => abortRef.current?.abort()
+    // abandon any ceremony still waiting on the user. pagehide covers the popup being torn down,
+    // where react never gets to run the unmount cleanup
+    const abort = () => abortRef.current?.abort()
+    window.addEventListener("pagehide", abort)
+    return () => {
+      window.removeEventListener("pagehide", abort)
+      abort()
+    }
   }, [])
 
   const handleBiometricUnlock = useCallback(
@@ -184,8 +190,26 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   // auto-trigger biometric on first render, unless the user is already typing their password
   useEffect(() => {
     if (!autoTrigger || !enrolled || triggeredRef.current) return
-    triggeredRef.current = true
-    handleBiometricUnlock(false)
+
+    // an unfocused popup is one the browser is tearing down, or one the user has moved on from.
+    // prompting there puts an OS dialog (Windows Hello) on screen that nobody asked for, and on
+    // windows that dialog outlives the page it was started from.
+    //
+    // a popup the browser has just opened for us (a dapp request, or a login prompt) often hasn't
+    // been given focus yet by the time we get here, so wait for it instead of giving up - a popup
+    // on its way out never gets focus back
+    const trigger = () => {
+      if (triggeredRef.current) return
+      if (document.visibilityState !== "visible" || !document.hasFocus()) return
+
+      triggeredRef.current = true
+      window.removeEventListener("focus", trigger)
+      handleBiometricUnlock(false)
+    }
+
+    trigger()
+    window.addEventListener("focus", trigger)
+    return () => window.removeEventListener("focus", trigger)
   }, [autoTrigger, enrolled, handleBiometricUnlock])
 
   if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
@@ -210,7 +234,13 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   )
 }
 
-const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
+const Login = ({
+  setShowResetWallet,
+  autoTriggerBiometric,
+}: {
+  setShowResetWallet: () => void
+  autoTriggerBiometric: boolean
+}) => {
   const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
 
@@ -300,7 +330,9 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             {t("Unlock")}
           </Button>
-          <BiometricUnlockButton autoTrigger={!isDirty && !IS_DEV_AUTOLOGIN} />
+          <BiometricUnlockButton
+            autoTrigger={autoTriggerBiometric && !isDirty && !IS_DEV_AUTOLOGIN}
+          />
           <button
             type="button"
             className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
@@ -314,11 +346,21 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   )
 }
 
-export const LoginViewManager = () => {
+export const LoginViewManager = ({
+  autoTriggerBiometric,
+}: {
+  /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
+  autoTriggerBiometric: boolean
+}) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
 
   if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
-  return <Login setShowResetWallet={() => setShowResetWallet(true)} />
+  return (
+    <Login
+      setShowResetWallet={() => setShowResetWallet(true)}
+      autoTriggerBiometric={autoTriggerBiometric}
+    />
+  )
 }
 
 /** autologin, for developers only */

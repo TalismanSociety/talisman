@@ -7,6 +7,7 @@ import { useIsBiometricEnrolled } from "@ui/state/biometric"
 import {
   createBiometricCredential,
   isBiometricAvailable,
+  PrfEvaluationError,
   signalCredentialRemoved,
 } from "@ui/util/webauthnPrf"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -60,7 +61,18 @@ export const BiometricSetting = () => {
         }
       } catch (err) {
         // resolves to null if the user cancelled the biometric prompt, or if we abandoned it
-        setError(getErrorMessage(err) ?? undefined)
+        const message = getErrorMessage(err)
+
+        // a passkey was created before we found out the authenticator can't evaluate a PRF, and
+        // removing it again is only best-effort
+        if (message && err instanceof PrfEvaluationError)
+          setError(
+            t(
+              "{{reason}} A passkey may have been created, you can remove it from your system settings.",
+              { reason: message }
+            )
+          )
+        else setError(message ?? undefined)
       } finally {
         setProcessing(false)
       }

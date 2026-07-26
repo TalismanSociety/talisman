@@ -74,14 +74,10 @@ export async function createBiometricCredential(
     const prf = getPrfExtensionResults(credential)
 
     // an authenticator that supports PRF may still be unable to evaluate it while creating the
-    // credential, in which case the spec only guarantees `enabled` and requires an assertion to
-    // obtain the output
-    if (!prf?.enabled && !prf?.results?.first)
-      throw new Error(
-        "This authenticator does not support biometric unlock. Please use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, instead of a browser profile or security key. A passkey may have been created, you can remove it from your system settings."
-      )
-
-    const prfOutput = prf.results?.first
+    // credential, and may not even advertise support at that point - Windows Hello reports nothing
+    // at all on Chrome 146 and below, while evaluating the PRF just fine during an assertion.
+    // asking for one is the only reliable way to find out
+    const prfOutput = prf?.results?.first
       ? base64.encode(new Uint8Array(prf.results.first))
       : await getBiometricPrfOutput(credentialId, prfSalt, signal)
 
@@ -141,12 +137,25 @@ export async function getBiometricPrfOutput(
   if (!assertion) throw new Error("Biometric authentication was cancelled")
 
   const prfOutput = getPrfExtensionResults(assertion)?.results?.first
-  if (!prfOutput) throw new Error("PRF evaluation failed")
+  if (!prfOutput) throw new PrfEvaluationError()
 
   return base64.encode(new Uint8Array(prfOutput))
 }
 
-type PrfExtensionResults = { enabled?: boolean; results?: { first?: ArrayBuffer } }
+/**
+ * The ceremony completed but the authenticator returned no PRF output, it can't do this.
+ * User facing copy lives in useBiometricErrorMessage, keyed on the error name.
+ */
+export class PrfEvaluationError extends Error {
+  constructor() {
+    super("PRF evaluation failed")
+    this.name = "PrfEvaluationError"
+  }
+}
+
+// `enabled` is deliberately left out: it is unset on the browsers that evaluate the PRF anyway,
+// so it can't be used to decide anything
+type PrfExtensionResults = { results?: { first?: ArrayBuffer } }
 
 const getPrfExtensionResults = (credential: PublicKeyCredential): PrfExtensionResults | undefined =>
   // biome-ignore lint/suspicious/noExplicitAny: PRF extension results not in TS types yet
