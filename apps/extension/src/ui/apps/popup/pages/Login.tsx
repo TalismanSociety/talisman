@@ -229,7 +229,7 @@ const QuickUnlockButton = ({
         processing && "animate-pulse"
       )}
     >
-      {t("Quick unlock")}
+      {t("Quick Unlock")}
     </button>
   )
 }
