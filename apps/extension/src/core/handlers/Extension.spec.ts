@@ -1,11 +1,12 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
+import { base64 } from "@scure/base"
 import { verify as sr25519Verify } from "@scure/sr25519"
 import { vrfVerifySubstrate } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
-import { u8aToHex } from "@talismn/util"
+import { hexToU8a, u8aToHex } from "@talismn/util"
 import { waitFor } from "@testing-library/dom"
 import { v4 } from "uuid"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
@@ -13,7 +14,7 @@ import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
-import { signSubstrate, signVrf } from "../domains/signing/requests"
+import { signSubstrate } from "../domains/signing/requests"
 import type { VrfSignPayload } from "../domains/signing/types"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
@@ -88,7 +89,29 @@ describe("Extension", () => {
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
-    await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
+    // hardhat #0, only used to exercise the "must be sr25519" checks
+    const [ethAddress] = await messageSender("pri(accounts.add.keypair)", [
+      {
+        name: "Test Ethereum Account",
+        curve: "ethereum",
+        secretKey: base64.encode(
+          hexToU8a("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
+        ),
+      },
+    ])
+
+    const [watchOnlyAddress] = await messageSender("pri(accounts.add.external)", [
+      {
+        type: "watch-only",
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        name: "Test Watch Only Account",
+        isPortfolio: false,
+      },
+    ])
+
+    await extensionStores.sites.updateSite("localhost:3000", {
+      addresses: [address, ethAddress, watchOnlyAddress],
+    })
     await extensionStores.app.setOnboarded()
   })
 
@@ -239,12 +262,7 @@ describe("Extension", () => {
       tabs.handle(v4(), "pub(vrf.sign)", payload, {} as chrome.runtime.Port, DAPP_URL)
 
     const signVrfOnce = async (account: Account, data: `0x${string}`) => {
-      const requestPromise = signVrf(
-        "http://test.com",
-        { payload: { address: account.address, data } },
-        account,
-        {} as chrome.runtime.Port
-      )
+      const requestPromise = requestVrfSign({ address: account.address, data })
 
       await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
 
@@ -309,6 +327,23 @@ describe("Extension", () => {
 
       await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
         /Invalid data/
+      )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // the VRF needs the raw sr25519 secret key, so both predicates of the account check matter:
+    // ethereum isolates the curve one, watch-only isolates the account type one
+    test.each([
+      ["a non-sr25519 keypair", "Test Ethereum Account"],
+      ["a watch-only account", "Test Watch Only Account"],
+    ])("rejects %s", async (_, name) => {
+      const accounts = await keyringStore.getAccounts()
+      const account = accounts.find((acc) => acc.name === name)
+      expect(account).toBeDefined()
+      if (!account) throw new Error("Account not found")
+
+      await expect(requestVrfSign({ address: account.address, data: "0x00" })).rejects.toThrow(
+        /VRF signing requires a local sr25519 account/
       )
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
