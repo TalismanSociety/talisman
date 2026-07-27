@@ -137,7 +137,7 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
       try {
         const credentialInfo = await api.biometricGetCredentialInfo()
         if (!credentialInfo)
-          return setError(t("Biometric unlock was reset, please enable it again from settings."))
+          return setError(t("Smart unlock was reset, please enable it again from settings."))
 
         const prfOutput = await getBiometricPrfOutput(
           credentialInfo.credentialId,
@@ -151,12 +151,12 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         // background has confirmed the enrollment is gone for good
         if (result === "unenrolled") {
           await signalCredentialRemoved(credentialInfo.credentialId)
-          return setError(t("Biometric unlock was reset, please enable it again from settings."))
+          return setError(t("Smart unlock was reset, please enable it again from settings."))
         }
 
         if (result === "failed")
           return setError(
-            t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+            t("Smart unlock didn't complete. Use your password, or turn it off in settings.")
           )
 
         const qs = new URLSearchParams(window.location.search)
@@ -171,7 +171,7 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         // the spec doesn't let us tell those apart - point at the way out instead of guessing
         const message =
           name === "NotAllowedError"
-            ? t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+            ? t("Smart unlock didn't complete. Use your password, or turn it off in settings.")
             : getErrorMessage(err)
         if (!message) return
 
@@ -227,7 +227,7 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         )}
       >
         <UserCheckIcon className="text-lg" />
-        {t("Unlock with biometrics")}
+        {t("Use smart unlock")}
       </button>
       {error && <span className="text-alert-warn text-sm">{error}</span>}
     </>

@@ -19,7 +19,7 @@ export const useBiometricErrorMessage = () => {
       // of authenticator, or the browser and OS are too old to expose the capability
       if (err instanceof PrfEvaluationError)
         return t(
-          "This authenticator can't be used for biometric unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
+          "This authenticator can't be used for smart unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
         )
 
       switch ((err as DOMException)?.name) {
@@ -28,17 +28,17 @@ export const useBiometricErrorMessage = () => {
           return null
 
         case "SecurityError":
-          return t("Your browser doesn't allow biometric unlock from an extension page.")
+          return t("Your browser doesn't allow smart unlock from an extension page.")
 
         case "NotSupportedError":
         case "ConstraintError":
-          return t("Your device doesn't support biometric unlock.")
+          return t("Your device doesn't support smart unlock.")
 
         default:
           // our own errors carry a useful explanation, anything else from the browser does not
           return err instanceof DOMException
-            ? t("Biometric unlock failed, please try again.")
-            : ((err as Error)?.message ?? t("Biometric unlock failed, please try again."))
+            ? t("Smart unlock failed, please try again.")
+            : ((err as Error)?.message ?? t("Smart unlock failed, please try again."))
       }
     },
     [t]

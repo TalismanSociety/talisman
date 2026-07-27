@@ -48,7 +48,7 @@ export const BiometricSetting = () => {
             setError(
               t(
                 "{{reason}} A passkey may have been created, you can remove it from your system settings.",
-                { reason: getErrorMessage(err) ?? t("Biometric unlock could not be enabled.") }
+                { reason: getErrorMessage(err) ?? t("Smart unlock could not be enabled.") }
               )
             )
             return
@@ -87,7 +87,7 @@ export const BiometricSetting = () => {
   return (
     <Setting
       iconLeft={UserCheckIcon}
-      title={t("Biometric unlock")}
+      title={t("Smart unlock")}
       subtitle={
         error ? (
           <span className="text-alert-warn">{error}</span>

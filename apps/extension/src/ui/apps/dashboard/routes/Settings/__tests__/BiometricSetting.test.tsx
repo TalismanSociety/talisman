@@ -100,7 +100,7 @@ describe("BiometricSetting", () => {
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
-    expect(await screen.findByText(/can't be used for biometric unlock/i)).toBeDefined()
+    expect(await screen.findByText(/can't be used for smart unlock/i)).toBeDefined()
     expect(screen.getByText(/A passkey may have been created/i)).toBeDefined()
     // the raw error message must not reach the user
     expect(screen.queryByText(/PRF evaluation failed/i)).toBeNull()
@@ -113,7 +113,7 @@ describe("BiometricSetting", () => {
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
-    expect(await screen.findByText(/doesn't allow biometric unlock/i)).toBeDefined()
+    expect(await screen.findByText(/doesn't allow smart unlock/i)).toBeDefined()
     expect(screen.queryByText(/SecurityError/)).toBeNull()
   })
 
