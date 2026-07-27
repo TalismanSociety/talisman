@@ -8,7 +8,6 @@ import {
 } from "../../domains/analytics/migrations"
 import {
   cleanBadContacts,
-  clearLegacyBiometricStore,
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
   migrateEnabledTestnets,
@@ -50,7 +49,6 @@ export const migrations: Migrations = [
   migrateTransactionsV2,
   migrateNftsV2,
   migrateAssetDiscoveryV3,
-  clearLegacyBiometricStore,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
