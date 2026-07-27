@@ -372,11 +372,6 @@
     margin: 0;
   }
 
-  /* hide dcent iframe */
-  #dcent-connect {
-    display: none;
-  }
-
   /* Would be great to remove this at some point */
   *:not(.allow-focus):focus {
     outline: none;
