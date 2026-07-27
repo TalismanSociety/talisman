@@ -15,9 +15,9 @@ runs:
     # no corepack: action-setup bootstraps pnpm itself from the `packageManager` field in
     # package.json, and pnpm 10+ self-manages its own version against that same field
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v6
     - name: Setup Node.js environment
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: 24
         cache: pnpm
@@ -28,7 +28,7 @@ runs:
     # `package.json` is tracked in git.
     - name: Restore papi descriptors
       if: inputs.papi == 'true'
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           .papi/descriptors/dist
