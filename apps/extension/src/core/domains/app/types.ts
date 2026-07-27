@@ -7,7 +7,7 @@ import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
 export type RemoteConfigStoreData = RemoteConfigData
 
-export interface SmartUnlockStoreData {
+export interface QuickUnlockStoreData {
   /** Base64url-encoded WebAuthn credential ID */
   credentialId?: string
   /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
@@ -84,29 +84,29 @@ export interface RequestAllowPhishingSite {
   url: string
 }
 
-export interface SmartUnlockEnrollRequest {
+export interface QuickUnlockEnrollRequest {
   credentialId: string
   prfSalt: string
   /** Base64-encoded PRF output, used by the background to derive the encryption key */
   prfOutput: string
 }
 
-export interface SmartUnlockAuthenticateRequest {
+export interface QuickUnlockAuthenticateRequest {
   /** Base64-encoded PRF output, used by the background to derive the decryption key */
   prfOutput: string
 }
 
 /**
- * The outcome of a smart unlock attempt:
+ * The outcome of a quick unlock attempt:
  * - `success` - the wallet is unlocked
  * - `failed` - the attempt didn't unlock the wallet, but the enrollment may still work later
  * - `unenrolled` - the enrollment can never unlock the wallet again and has been dropped, so the
  *   passkey is now useless and the UI may tell the authenticator about it
  */
-export type SmartUnlockAuthenticateResult = "success" | "failed" | "unenrolled"
+export type QuickUnlockAuthenticateResult = "success" | "failed" | "unenrolled"
 
 /** The non-sensitive part of the enrollment, needed by the UI to run the WebAuthn ceremony */
-export interface SmartUnlockCredentialInfo {
+export interface QuickUnlockCredentialInfo {
   credentialId: string
   prfSalt: string
 }
@@ -130,13 +130,13 @@ export interface AppMessages {
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
 
-  // smart unlock
-  "pri(app.smartUnlock.enroll)": [SmartUnlockEnrollRequest, boolean]
-  "pri(app.smartUnlock.unenroll)": [null, boolean]
-  "pri(app.smartUnlock.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
-  "pri(app.smartUnlock.getCredentialInfo)": [null, SmartUnlockCredentialInfo | null]
-  "pri(app.smartUnlock.authenticate)": [
-    SmartUnlockAuthenticateRequest,
-    SmartUnlockAuthenticateResult,
+  // quick unlock
+  "pri(app.quickUnlock.enroll)": [QuickUnlockEnrollRequest, boolean]
+  "pri(app.quickUnlock.unenroll)": [null, boolean]
+  "pri(app.quickUnlock.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
+  "pri(app.quickUnlock.getCredentialInfo)": [null, QuickUnlockCredentialInfo | null]
+  "pri(app.quickUnlock.authenticate)": [
+    QuickUnlockAuthenticateRequest,
+    QuickUnlockAuthenticateResult,
   ]
 }

@@ -3,10 +3,10 @@ import type { AccountsCatalogData } from "../domains/accounts/store.catalog"
 import { type AppStoreData, appStore } from "../domains/app/store.app"
 import { type ErrorsStoreData, errorsStore } from "../domains/app/store.errors"
 import { type PasswordStoreData, passwordStore } from "../domains/app/store.password"
+import { quickUnlockStore } from "../domains/app/store.quickUnlock"
 import { remoteConfigStore } from "../domains/app/store.remoteConfig"
 import { type SettingsStoreData, settingsStore } from "../domains/app/store.settings"
-import { smartUnlockStore } from "../domains/app/store.smartUnlock"
-import type { RemoteConfigStoreData, SmartUnlockStoreData } from "../domains/app/types"
+import type { QuickUnlockStoreData, RemoteConfigStoreData } from "../domains/app/types"
 import { sitesAuthorisationStore } from "../domains/sitesAuthorised"
 import sitesAuthorisedStore from "../domains/sitesAuthorised/store"
 import type { AuthorizedSites } from "../domains/sitesAuthorised/types"
@@ -23,14 +23,14 @@ export type TabStore = {
 
 export type ExtensionStore = TabStore & {
   accountsCatalog: typeof accountsCatalogStore
-  smartUnlock: typeof smartUnlockStore
+  quickUnlock: typeof quickUnlockStore
   password: typeof passwordStore
 }
 
 type GettableStores = {
   accountsCatalog: [typeof accountsCatalogStore, AccountsCatalogData]
   app: [typeof appStore, AppStoreData]
-  smartUnlock: [typeof smartUnlockStore, SmartUnlockStoreData]
+  quickUnlock: [typeof quickUnlockStore, QuickUnlockStoreData]
   errors: [typeof errorsStore, ErrorsStoreData]
   password: [typeof passwordStore, PasswordStoreData]
   settings: [typeof settingsStore, SettingsStoreData]
@@ -54,14 +54,14 @@ export const tabStores = {
 export const extensionStores = {
   ...tabStores,
   accountsCatalog: accountsCatalogStore,
-  smartUnlock: smartUnlockStore,
+  quickUnlock: quickUnlockStore,
   password: passwordStore,
 }
 
 const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   accountsCatalog: accountsCatalogStore,
   app: appStore,
-  smartUnlock: smartUnlockStore,
+  quickUnlock: quickUnlockStore,
   errors: errorsStore,
   password: passwordStore,
   settings: settingsStore,

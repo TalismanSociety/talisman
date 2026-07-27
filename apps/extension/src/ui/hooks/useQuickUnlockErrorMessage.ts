@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next"
 /**
  * Turns a failed WebAuthn ceremony into something we can show the user.
  *
- * Whether smart unlock works depends on the browser, the OS and the active passkey provider all
+ * Whether quick unlock works depends on the browser, the OS and the active passkey provider all
  * at once, so there is no version we could check upfront - we let the ceremony fail and explain why.
  *
  * Returns null when the user cancelled, in which case nothing should be shown.
  */
-export const useSmartUnlockErrorMessage = () => {
+export const useQuickUnlockErrorMessage = () => {
   const { t } = useTranslation()
 
   return useCallback(
@@ -19,7 +19,7 @@ export const useSmartUnlockErrorMessage = () => {
       // of authenticator, or the browser and OS are too old to expose the capability
       if (err instanceof PrfEvaluationError)
         return t(
-          "This authenticator can't be used for smart unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
+          "This authenticator can't be used for quick unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
         )
 
       switch ((err as DOMException)?.name) {
@@ -28,17 +28,17 @@ export const useSmartUnlockErrorMessage = () => {
           return null
 
         case "SecurityError":
-          return t("Your browser doesn't allow smart unlock from an extension page.")
+          return t("Your browser doesn't allow quick unlock from an extension page.")
 
         case "NotSupportedError":
         case "ConstraintError":
-          return t("Your device doesn't support smart unlock.")
+          return t("Your device doesn't support quick unlock.")
 
         default:
           // our own errors carry a useful explanation, anything else from the browser does not
           return err instanceof DOMException
-            ? t("Smart unlock failed, please try again.")
-            : ((err as Error)?.message ?? t("Smart unlock failed, please try again."))
+            ? t("Quick unlock failed, please try again.")
+            : ((err as Error)?.message ?? t("Quick unlock failed, please try again."))
       }
     },
     [t]

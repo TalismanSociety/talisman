@@ -11,29 +11,29 @@ const mockUseIsEnrolled = vi.fn()
 
 vi.mock("@ui/api", () => ({
   api: {
-    smartUnlockEnroll: (...args: unknown[]) => mockEnroll(...args),
-    smartUnlockUnenroll: () => mockUnenroll(),
-    smartUnlockGetCredentialInfo: () => mockGetCredentialInfo(),
+    quickUnlockEnroll: (...args: unknown[]) => mockEnroll(...args),
+    quickUnlockUnenroll: () => mockUnenroll(),
+    quickUnlockGetCredentialInfo: () => mockGetCredentialInfo(),
   },
 }))
 
 // keep the real PrfEvaluationError, the component and the error message hook both test against it
 vi.mock("@ui/util/webauthnPrf", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ui/util/webauthnPrf")>()),
-  isSmartUnlockAvailable: () => mockIsAvailable(),
-  createSmartUnlockCredential: (...args: unknown[]) => mockCreateCredential(...args),
+  isQuickUnlockAvailable: () => mockIsAvailable(),
+  createQuickUnlockCredential: (...args: unknown[]) => mockCreateCredential(...args),
   signalCredentialRemoved: (...args: unknown[]) => mockSignalRemoved(...args),
 }))
 
-vi.mock("@ui/state/smartUnlock", () => ({
-  useIsSmartUnlockEnrolled: () => mockUseIsEnrolled(),
+vi.mock("@ui/state/quickUnlock", () => ({
+  useIsQuickUnlockEnrolled: () => mockUseIsEnrolled(),
 }))
 
 import { PrfEvaluationError } from "@ui/util/webauthnPrf"
 
-import { SmartUnlockSetting } from "../SmartUnlockSetting"
+import { QuickUnlockSetting } from "../QuickUnlockSetting"
 
-describe("SmartUnlockSetting", () => {
+describe("QuickUnlockSetting", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockIsAvailable.mockResolvedValue(true)
@@ -41,10 +41,10 @@ describe("SmartUnlockSetting", () => {
     mockGetCredentialInfo.mockResolvedValue({ credentialId: "credId", prfSalt: "salt" })
   })
 
-  test("is hidden when smart unlock is unavailable and not enrolled", async () => {
+  test("is hidden when quick unlock is unavailable and not enrolled", async () => {
     mockIsAvailable.mockResolvedValue(false)
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     await waitFor(() => expect(mockIsAvailable).toHaveBeenCalled())
     expect(screen.queryByRole("checkbox")).toBeNull()
@@ -54,7 +54,7 @@ describe("SmartUnlockSetting", () => {
     mockIsAvailable.mockResolvedValue(false)
     mockUseIsEnrolled.mockReturnValue(true)
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     const toggle = (await screen.findByRole("checkbox")) as HTMLInputElement
     expect(toggle.checked).toBe(true)
@@ -69,7 +69,7 @@ describe("SmartUnlockSetting", () => {
   test("shows enrollment errors", async () => {
     mockCreateCredential.mockRejectedValue(new Error("This authenticator is not supported"))
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
@@ -85,7 +85,7 @@ describe("SmartUnlockSetting", () => {
     })
     mockEnroll.mockRejectedValue(new Error("Please log in again"))
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
@@ -96,11 +96,11 @@ describe("SmartUnlockSetting", () => {
   test("explains an authenticator that can't evaluate a PRF, and mentions the passkey", async () => {
     mockCreateCredential.mockRejectedValue(new PrfEvaluationError())
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
-    expect(await screen.findByText(/can't be used for smart unlock/i)).toBeDefined()
+    expect(await screen.findByText(/can't be used for quick unlock/i)).toBeDefined()
     expect(screen.getByText(/A passkey may have been created/i)).toBeDefined()
     // the raw error message must not reach the user
     expect(screen.queryByText(/PRF evaluation failed/i)).toBeNull()
@@ -109,18 +109,18 @@ describe("SmartUnlockSetting", () => {
   test("explains browser exceptions instead of showing their name", async () => {
     mockCreateCredential.mockRejectedValue(new DOMException("rp id not allowed", "SecurityError"))
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
-    expect(await screen.findByText(/doesn't allow smart unlock/i)).toBeDefined()
+    expect(await screen.findByText(/doesn't allow quick unlock/i)).toBeDefined()
     expect(screen.queryByText(/SecurityError/)).toBeNull()
   })
 
   test("stays silent when the user cancels the prompt", async () => {
     mockCreateCredential.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
-    render(<SmartUnlockSetting />)
+    render(<QuickUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 

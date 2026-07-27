@@ -2,8 +2,8 @@ import { base64, base64urlnopad } from "@talismn/crypto"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
 import {
-  createSmartUnlockCredential,
-  getSmartUnlockPrfOutput,
+  createQuickUnlockCredential,
+  getQuickUnlockPrfOutput,
   PrfEvaluationError,
 } from "./webauthnPrf"
 
@@ -27,7 +27,7 @@ const credential = (prf: any) => ({
 // biome-ignore lint/suspicious/noExplicitAny: WebAuthn extension inputs are loosely typed
 const prfSaltOf = (call: any) => new Uint8Array(call[0].publicKey.extensions.prf.eval.first)
 
-describe("createSmartUnlockCredential", () => {
+describe("createQuickUnlockCredential", () => {
   beforeEach(() => {
     create.mockReset()
     get.mockReset()
@@ -37,7 +37,7 @@ describe("createSmartUnlockCredential", () => {
   test("uses the PRF output returned at creation time", async () => {
     create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
 
-    const result = await createSmartUnlockCredential()
+    const result = await createQuickUnlockCredential()
 
     expect(result.credentialId).toBe(base64urlnopad.encode(RAW_ID))
     expect(result.prfOutput).toBe(base64.encode(CREATION_PRF_OUTPUT))
@@ -51,7 +51,7 @@ describe("createSmartUnlockCredential", () => {
     create.mockResolvedValue(credential({}))
     get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
 
-    const result = await createSmartUnlockCredential()
+    const result = await createQuickUnlockCredential()
 
     expect(result.prfOutput).toBe(base64.encode(ASSERTION_PRF_OUTPUT))
     expect(get).toHaveBeenCalledOnce()
@@ -67,7 +67,7 @@ describe("createSmartUnlockCredential", () => {
     create.mockResolvedValue(credential(undefined))
     get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
 
-    const result = await createSmartUnlockCredential()
+    const result = await createQuickUnlockCredential()
 
     expect(result.prfOutput).toBe(base64.encode(ASSERTION_PRF_OUTPUT))
     expect(get).toHaveBeenCalledOnce()
@@ -78,7 +78,7 @@ describe("createSmartUnlockCredential", () => {
     create.mockResolvedValue(credential(undefined))
     get.mockResolvedValue(credential({}))
 
-    await expect(createSmartUnlockCredential()).rejects.toThrow(PrfEvaluationError)
+    await expect(createQuickUnlockCredential()).rejects.toThrow(PrfEvaluationError)
     expect(signalUnknownCredential).toHaveBeenCalledWith(
       expect.objectContaining({ credentialId: base64urlnopad.encode(RAW_ID) })
     )
@@ -88,7 +88,7 @@ describe("createSmartUnlockCredential", () => {
     create.mockResolvedValue(credential({}))
     get.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
-    await expect(createSmartUnlockCredential()).rejects.toThrow(
+    await expect(createQuickUnlockCredential()).rejects.toThrow(
       expect.objectContaining({ name: "NotAllowedError" })
     )
     expect(signalUnknownCredential).toHaveBeenCalledWith(
@@ -99,7 +99,7 @@ describe("createSmartUnlockCredential", () => {
   test("keeps the credential when the ceremony succeeds", async () => {
     create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
 
-    await createSmartUnlockCredential()
+    await createQuickUnlockCredential()
 
     expect(signalUnknownCredential).not.toHaveBeenCalled()
   })
@@ -107,7 +107,7 @@ describe("createSmartUnlockCredential", () => {
   test("rejects when the ceremony is cancelled", async () => {
     create.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
-    await expect(createSmartUnlockCredential()).rejects.toThrow(
+    await expect(createQuickUnlockCredential()).rejects.toThrow(
       expect.objectContaining({ name: "NotAllowedError" })
     )
     // no credential was created, there is nothing to clean up
@@ -118,13 +118,13 @@ describe("createSmartUnlockCredential", () => {
     create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
     const { signal } = new AbortController()
 
-    await createSmartUnlockCredential(signal)
+    await createQuickUnlockCredential(signal)
 
     expect(create.mock.calls[0][0].signal).toBe(signal)
   })
 })
 
-describe("getSmartUnlockPrfOutput", () => {
+describe("getQuickUnlockPrfOutput", () => {
   beforeEach(() => {
     get.mockReset()
   })
@@ -135,7 +135,7 @@ describe("getSmartUnlockPrfOutput", () => {
     const prfSalt = base64.encode(new Uint8Array(32).fill(3))
     const credentialId = base64urlnopad.encode(RAW_ID)
 
-    expect(await getSmartUnlockPrfOutput(credentialId, prfSalt)).toBe(
+    expect(await getQuickUnlockPrfOutput(credentialId, prfSalt)).toBe(
       base64.encode(ASSERTION_PRF_OUTPUT)
     )
 
@@ -148,7 +148,7 @@ describe("getSmartUnlockPrfOutput", () => {
     get.mockResolvedValue(credential({}))
 
     await expect(
-      getSmartUnlockPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")
+      getQuickUnlockPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")
     ).rejects.toThrow(PrfEvaluationError)
   })
 })

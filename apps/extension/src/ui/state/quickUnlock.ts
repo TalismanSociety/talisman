@@ -4,12 +4,12 @@ import { Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
-const isSmartUnlockEnrolled$ = new Observable<boolean>((subscriber) => {
-  const unsubscribe = api.smartUnlockIsEnrolledSubscribe(({ enrolled }) =>
+const isQuickUnlockEnrolled$ = new Observable<boolean>((subscriber) => {
+  const unsubscribe = api.quickUnlockIsEnrolledSubscribe(({ enrolled }) =>
     subscriber.next(enrolled)
   )
   return () => unsubscribe()
-}).pipe(debugObservable("isSmartUnlockEnrolled$"), shareReplay(1))
+}).pipe(debugObservable("isQuickUnlockEnrolled$"), shareReplay(1))
 
 // bound with a default value, the login screen must not suspend on it
-export const [useIsSmartUnlockEnrolled] = bind(isSmartUnlockEnrolled$, false)
+export const [useIsQuickUnlockEnrolled] = bind(isQuickUnlockEnrolled$, false)

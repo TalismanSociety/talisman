@@ -10,12 +10,12 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { useSmartUnlockErrorMessage } from "@ui/hooks/useSmartUnlockErrorMessage"
+import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
+import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
 import { useSetting } from "@ui/state/settings"
-import { useIsSmartUnlockEnrolled } from "@ui/state/smartUnlock"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
-import { getSmartUnlockPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
+import { getQuickUnlockPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -103,15 +103,15 @@ const Background = () => {
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
 }
 
-/** autologin (below) drives the password field itself, it must not race the smart unlock prompt */
+/** autologin (below) drives the password field itself, it must not race the quick unlock prompt */
 const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
 
-const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
+const QuickUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const { t } = useTranslation()
-  const enrolled = useIsSmartUnlockEnrolled()
+  const enrolled = useIsQuickUnlockEnrolled()
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const getErrorMessage = useSmartUnlockErrorMessage()
+  const getErrorMessage = useQuickUnlockErrorMessage()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
@@ -126,7 +126,7 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
     }
   }, [])
 
-  const handleSmartUnlockUnlock = useCallback(
+  const handleQuickUnlockUnlock = useCallback(
     async (explicit: boolean) => {
       if (processing) return
       setProcessing(true)
@@ -135,28 +135,28 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
       const abort = new AbortController()
       abortRef.current = abort
       try {
-        const credentialInfo = await api.smartUnlockGetCredentialInfo()
+        const credentialInfo = await api.quickUnlockGetCredentialInfo()
         if (!credentialInfo)
-          return setError(t("Smart unlock was reset, please enable it again from settings."))
+          return setError(t("Quick unlock was reset, please enable it again from settings."))
 
-        const prfOutput = await getSmartUnlockPrfOutput(
+        const prfOutput = await getQuickUnlockPrfOutput(
           credentialInfo.credentialId,
           credentialInfo.prfSalt,
           abort.signal
         )
 
-        const result = await api.smartUnlockAuthenticate(prfOutput)
+        const result = await api.quickUnlockAuthenticate(prfOutput)
 
         // the passkey outlives the enrollment, only tell the authenticator about it once the
         // background has confirmed the enrollment is gone for good
         if (result === "unenrolled") {
           await signalCredentialRemoved(credentialInfo.credentialId)
-          return setError(t("Smart unlock was reset, please enable it again from settings."))
+          return setError(t("Quick unlock was reset, please enable it again from settings."))
         }
 
         if (result === "failed")
           return setError(
-            t("Smart unlock didn't complete. Use your password, or turn it off in settings.")
+            t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
           )
 
         const qs = new URLSearchParams(window.location.search)
@@ -171,12 +171,12 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         // the spec doesn't let us tell those apart - point at the way out instead of guessing
         const message =
           name === "NotAllowedError"
-            ? t("Smart unlock didn't complete. Use your password, or turn it off in settings.")
+            ? t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
             : getErrorMessage(err)
         if (!message) return
 
         // log the error category only, it must never carry credential or password data
-        log.error("Smart unlock failed", { name })
+        log.error("Quick unlock failed", { name })
         setError(message)
       } finally {
         setProcessing(false)
@@ -185,9 +185,9 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
     [getErrorMessage, processing, t]
   )
 
-  const handleClick = useCallback(() => handleSmartUnlockUnlock(true), [handleSmartUnlockUnlock])
+  const handleClick = useCallback(() => handleQuickUnlockUnlock(true), [handleQuickUnlockUnlock])
 
-  // auto-trigger smart unlock on first render, unless the user is already typing their password
+  // auto-trigger quick unlock on first render, unless the user is already typing their password
   useEffect(() => {
     if (!autoTrigger || !enrolled || triggeredRef.current) return
 
@@ -204,13 +204,13 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
       triggeredRef.current = true
       window.removeEventListener("focus", trigger)
-      handleSmartUnlockUnlock(false)
+      handleQuickUnlockUnlock(false)
     }
 
     trigger()
     window.addEventListener("focus", trigger)
     return () => window.removeEventListener("focus", trigger)
-  }, [autoTrigger, enrolled, handleSmartUnlockUnlock])
+  }, [autoTrigger, enrolled, handleQuickUnlockUnlock])
 
   if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
 
@@ -227,7 +227,7 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         )}
       >
         <UserCheckIcon className="text-lg" />
-        {t("Use smart unlock")}
+        {t("Use quick unlock")}
       </button>
       {error && <span className="text-alert-warn text-sm">{error}</span>}
     </>
@@ -236,10 +236,10 @@ const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
 const Login = ({
   setShowResetWallet,
-  autoTriggerSmartUnlock,
+  autoTriggerQuickUnlock,
 }: {
   setShowResetWallet: () => void
-  autoTriggerSmartUnlock: boolean
+  autoTriggerQuickUnlock: boolean
 }) => {
   const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
@@ -330,8 +330,8 @@ const Login = ({
           >
             {t("Unlock")}
           </Button>
-          <SmartUnlockUnlockButton
-            autoTrigger={autoTriggerSmartUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
+          <QuickUnlockUnlockButton
+            autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
           />
           <button
             type="button"
@@ -347,10 +347,10 @@ const Login = ({
 }
 
 export const LoginViewManager = ({
-  autoTriggerSmartUnlock,
+  autoTriggerQuickUnlock,
 }: {
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
-  autoTriggerSmartUnlock: boolean
+  autoTriggerQuickUnlock: boolean
 }) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
 
@@ -358,7 +358,7 @@ export const LoginViewManager = ({
   return (
     <Login
       setShowResetWallet={() => setShowResetWallet(true)}
-      autoTriggerSmartUnlock={autoTriggerSmartUnlock}
+      autoTriggerQuickUnlock={autoTriggerQuickUnlock}
     />
   )
 }

@@ -1,14 +1,14 @@
 import { StorageProvider } from "../../libs/Store"
-import type { SmartUnlockStoreData } from "./types"
+import type { QuickUnlockStoreData } from "./types"
 
 /** An enrollment can only unlock the wallet if all of its parts are present */
 export const isCompleteEnrollment = (
-  data: SmartUnlockStoreData
-): data is Required<SmartUnlockStoreData> =>
+  data: QuickUnlockStoreData
+): data is Required<QuickUnlockStoreData> =>
   !!(data.credentialId && data.encryptedPassword && data.iv && data.prfSalt)
 
-class SmartUnlockStore extends StorageProvider<SmartUnlockStoreData> {
-  async enroll(data: Required<SmartUnlockStoreData>): Promise<void> {
+class QuickUnlockStore extends StorageProvider<QuickUnlockStoreData> {
+  async enroll(data: Required<QuickUnlockStoreData>): Promise<void> {
     await this.replace(data)
   }
 
@@ -17,4 +17,4 @@ class SmartUnlockStore extends StorageProvider<SmartUnlockStoreData> {
   }
 }
 
-export const smartUnlockStore = new SmartUnlockStore("smartUnlock", {})
+export const quickUnlockStore = new QuickUnlockStore("quickUnlock", {})

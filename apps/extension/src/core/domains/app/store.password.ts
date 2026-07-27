@@ -159,7 +159,7 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   }
 
   /**
-   * Authenticates using an already transformed (hashed) password, as recovered by smart unlock.
+   * Authenticates using an already transformed (hashed) password, as recovered by quick unlock.
    * Throws if it doesn't match the stored auth secret.
    */
   async authenticateHashed(hashedPw: string) {

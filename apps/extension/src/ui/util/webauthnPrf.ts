@@ -7,7 +7,7 @@ import { base64, base64urlnopad } from "@talismn/crypto"
  * ciphertext the background worker keeps to itself - the wallet password never reaches the UI.
  */
 
-export type SmartUnlockCredential = {
+export type QuickUnlockCredential = {
   /** Base64url-encoded WebAuthn credential ID */
   credentialId: string
   /** Base64-encoded salt passed to the PRF extension */
@@ -18,7 +18,7 @@ export type SmartUnlockCredential = {
 
 // --- Feature Detection ---
 
-export async function isSmartUnlockAvailable(): Promise<boolean> {
+export async function isQuickUnlockAvailable(): Promise<boolean> {
   if (IS_FIREFOX) return false
   if (typeof window === "undefined") return false
   if (!window.PublicKeyCredential) return false
@@ -32,9 +32,9 @@ export async function isSmartUnlockAvailable(): Promise<boolean> {
 
 // --- Enrollment ---
 
-export async function createSmartUnlockCredential(
+export async function createQuickUnlockCredential(
   signal?: AbortSignal
-): Promise<SmartUnlockCredential> {
+): Promise<QuickUnlockCredential> {
   const prfSaltBytes = crypto.getRandomValues(new Uint8Array(32))
   const prfSalt = base64.encode(prfSaltBytes)
   // the user handle is required by the spec but never used, credentials are addressed by their id
@@ -79,7 +79,7 @@ export async function createSmartUnlockCredential(
     // asking for one is the only reliable way to find out
     const prfOutput = prf?.results?.first
       ? base64.encode(new Uint8Array(prf.results.first))
-      : await getSmartUnlockPrfOutput(credentialId, prfSalt, signal)
+      : await getQuickUnlockPrfOutput(credentialId, prfSalt, signal)
 
     return { credentialId, prfSalt, prfOutput }
   } catch (err) {
@@ -104,14 +104,14 @@ export async function signalCredentialRemoved(credentialId: string): Promise<voi
       credentialId,
     })
   } catch (err) {
-    log.warn("Failed to signal smart unlock credential removal", { err })
+    log.warn("Failed to signal quick unlock credential removal", { err })
   }
 }
 
 // --- Unlock ---
 
 /** Re-evaluates the PRF for an existing credential, returning the base64-encoded output */
-export async function getSmartUnlockPrfOutput(
+export async function getQuickUnlockPrfOutput(
   credentialId: string,
   prfSalt: string,
   signal?: AbortSignal
@@ -134,7 +134,7 @@ export async function getSmartUnlockPrfOutput(
     },
   })) as PublicKeyCredential | null
 
-  if (!assertion) throw new Error("Smart unlock was cancelled")
+  if (!assertion) throw new Error("Quick unlock was cancelled")
 
   const prfOutput = getPrfExtensionResults(assertion)?.results?.first
   if (!prfOutput) throw new PrfEvaluationError()
@@ -144,7 +144,7 @@ export async function getSmartUnlockPrfOutput(
 
 /**
  * The ceremony completed but the authenticator returned no PRF output, it can't do this.
- * User facing copy lives in useSmartUnlockErrorMessage, keyed on the error name.
+ * User facing copy lives in useQuickUnlockErrorMessage, keyed on the error name.
  */
 export class PrfEvaluationError extends Error {
   constructor() {
