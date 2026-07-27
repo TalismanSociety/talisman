@@ -78,3 +78,14 @@ export const migrateEnabledTestnets: Migration = {
     await legacySettingsStore.delete("useTestnets")
   }),
 }
+
+export const clearLegacyBiometricStore: Migration = {
+  forward: new MigrationFunction(async (_) => {
+    // biometric unlock was renamed to smart unlock before it ever shipped. the enrollment can't be
+    // carried over - the key derivation changed with it - so drop the old storage key instead of
+    // leaving a blob nothing can decrypt. anyone who enabled it on a dev build has to enable it
+    // again, and can remove the leftover passkey from their system settings
+    await chrome.storage.local.remove("biometric")
+  }),
+  // no way back
+}

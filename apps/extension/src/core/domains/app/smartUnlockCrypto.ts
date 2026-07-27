@@ -8,7 +8,7 @@ Mutable buffers holding secret material are zeroed as soon as WebCrypto is done 
 so they don't linger in the heap until the garbage collector gets to them.
 ------------------------------------------------------------------*/
 
-const HKDF_INFO = "talisman-biometric-v1"
+const HKDF_INFO = "talisman-smart-unlock-v1"
 
 /** WebAuthn PRF outputs are 32 bytes, accept longer in case a platform ever deviates upwards */
 const MIN_PRF_OUTPUT_BYTES = 32

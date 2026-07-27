@@ -9,13 +9,13 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { useIsBiometricEnrolled } from "@ui/state/biometric"
+import { useSmartUnlockErrorMessage } from "@ui/hooks/useSmartUnlockErrorMessage"
 import { useSetting } from "@ui/state/settings"
+import { useIsSmartUnlockEnrolled } from "@ui/state/smartUnlock"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
-import { getBiometricPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
+import { getSmartUnlockPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -103,15 +103,15 @@ const Background = () => {
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
 }
 
-/** autologin (below) drives the password field itself, it must not race the biometric prompt */
+/** autologin (below) drives the password field itself, it must not race the smart unlock prompt */
 const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
 
-const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
+const SmartUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
   const { t } = useTranslation()
-  const enrolled = useIsBiometricEnrolled()
+  const enrolled = useIsSmartUnlockEnrolled()
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const getErrorMessage = useBiometricErrorMessage()
+  const getErrorMessage = useSmartUnlockErrorMessage()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
@@ -126,7 +126,7 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
     }
   }, [])
 
-  const handleBiometricUnlock = useCallback(
+  const handleSmartUnlockUnlock = useCallback(
     async (explicit: boolean) => {
       if (processing) return
       setProcessing(true)
@@ -135,17 +135,17 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
       const abort = new AbortController()
       abortRef.current = abort
       try {
-        const credentialInfo = await api.biometricGetCredentialInfo()
+        const credentialInfo = await api.smartUnlockGetCredentialInfo()
         if (!credentialInfo)
           return setError(t("Smart unlock was reset, please enable it again from settings."))
 
-        const prfOutput = await getBiometricPrfOutput(
+        const prfOutput = await getSmartUnlockPrfOutput(
           credentialInfo.credentialId,
           credentialInfo.prfSalt,
           abort.signal
         )
 
-        const result = await api.biometricAuthenticate(prfOutput)
+        const result = await api.smartUnlockAuthenticate(prfOutput)
 
         // the passkey outlives the enrollment, only tell the authenticator about it once the
         // background has confirmed the enrollment is gone for good
@@ -176,7 +176,7 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         if (!message) return
 
         // log the error category only, it must never carry credential or password data
-        log.error("Biometric unlock failed", { name })
+        log.error("Smart unlock failed", { name })
         setError(message)
       } finally {
         setProcessing(false)
@@ -185,9 +185,9 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
     [getErrorMessage, processing, t]
   )
 
-  const handleClick = useCallback(() => handleBiometricUnlock(true), [handleBiometricUnlock])
+  const handleClick = useCallback(() => handleSmartUnlockUnlock(true), [handleSmartUnlockUnlock])
 
-  // auto-trigger biometric on first render, unless the user is already typing their password
+  // auto-trigger smart unlock on first render, unless the user is already typing their password
   useEffect(() => {
     if (!autoTrigger || !enrolled || triggeredRef.current) return
 
@@ -204,13 +204,13 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
       triggeredRef.current = true
       window.removeEventListener("focus", trigger)
-      handleBiometricUnlock(false)
+      handleSmartUnlockUnlock(false)
     }
 
     trigger()
     window.addEventListener("focus", trigger)
     return () => window.removeEventListener("focus", trigger)
-  }, [autoTrigger, enrolled, handleBiometricUnlock])
+  }, [autoTrigger, enrolled, handleSmartUnlockUnlock])
 
   if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
 
@@ -236,10 +236,10 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
 const Login = ({
   setShowResetWallet,
-  autoTriggerBiometric,
+  autoTriggerSmartUnlock,
 }: {
   setShowResetWallet: () => void
-  autoTriggerBiometric: boolean
+  autoTriggerSmartUnlock: boolean
 }) => {
   const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
@@ -330,8 +330,8 @@ const Login = ({
           >
             {t("Unlock")}
           </Button>
-          <BiometricUnlockButton
-            autoTrigger={autoTriggerBiometric && !isDirty && !IS_DEV_AUTOLOGIN}
+          <SmartUnlockUnlockButton
+            autoTrigger={autoTriggerSmartUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
           />
           <button
             type="button"
@@ -347,10 +347,10 @@ const Login = ({
 }
 
 export const LoginViewManager = ({
-  autoTriggerBiometric,
+  autoTriggerSmartUnlock,
 }: {
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
-  autoTriggerBiometric: boolean
+  autoTriggerSmartUnlock: boolean
 }) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
 
@@ -358,7 +358,7 @@ export const LoginViewManager = ({
   return (
     <Login
       setShowResetWallet={() => setShowResetWallet(true)}
-      autoTriggerBiometric={autoTriggerBiometric}
+      autoTriggerSmartUnlock={autoTriggerSmartUnlock}
     />
   )
 }

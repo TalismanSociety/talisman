@@ -46,15 +46,15 @@ export const api: MessageTypes = {
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
-  // biometric messages -------------------------------------------------------
-  biometricEnroll: (data) => messageService.sendMessage("pri(app.biometric.enroll)", data),
-  biometricUnenroll: () => messageService.sendMessage("pri(app.biometric.unenroll)"),
-  biometricIsEnrolledSubscribe: (cb) =>
-    messageService.subscribe("pri(app.biometric.isEnrolled.subscribe)", null, cb),
-  biometricGetCredentialInfo: () =>
-    messageService.sendMessage("pri(app.biometric.getCredentialInfo)"),
-  biometricAuthenticate: (prfOutput) =>
-    messageService.sendMessage("pri(app.biometric.authenticate)", { prfOutput }),
+  // smart unlock messages -------------------------------------------------------
+  smartUnlockEnroll: (data) => messageService.sendMessage("pri(app.smartUnlock.enroll)", data),
+  smartUnlockUnenroll: () => messageService.sendMessage("pri(app.smartUnlock.unenroll)"),
+  smartUnlockIsEnrolledSubscribe: (cb) =>
+    messageService.subscribe("pri(app.smartUnlock.isEnrolled.subscribe)", null, cb),
+  smartUnlockGetCredentialInfo: () =>
+    messageService.sendMessage("pri(app.smartUnlock.getCredentialInfo)"),
+  smartUnlockAuthenticate: (prfOutput) =>
+    messageService.sendMessage("pri(app.smartUnlock.authenticate)", { prfOutput }),
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),

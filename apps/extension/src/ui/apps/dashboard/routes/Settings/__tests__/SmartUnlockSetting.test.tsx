@@ -11,29 +11,29 @@ const mockUseIsEnrolled = vi.fn()
 
 vi.mock("@ui/api", () => ({
   api: {
-    biometricEnroll: (...args: unknown[]) => mockEnroll(...args),
-    biometricUnenroll: () => mockUnenroll(),
-    biometricGetCredentialInfo: () => mockGetCredentialInfo(),
+    smartUnlockEnroll: (...args: unknown[]) => mockEnroll(...args),
+    smartUnlockUnenroll: () => mockUnenroll(),
+    smartUnlockGetCredentialInfo: () => mockGetCredentialInfo(),
   },
 }))
 
 // keep the real PrfEvaluationError, the component and the error message hook both test against it
 vi.mock("@ui/util/webauthnPrf", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ui/util/webauthnPrf")>()),
-  isBiometricAvailable: () => mockIsAvailable(),
-  createBiometricCredential: (...args: unknown[]) => mockCreateCredential(...args),
+  isSmartUnlockAvailable: () => mockIsAvailable(),
+  createSmartUnlockCredential: (...args: unknown[]) => mockCreateCredential(...args),
   signalCredentialRemoved: (...args: unknown[]) => mockSignalRemoved(...args),
 }))
 
-vi.mock("@ui/state/biometric", () => ({
-  useIsBiometricEnrolled: () => mockUseIsEnrolled(),
+vi.mock("@ui/state/smartUnlock", () => ({
+  useIsSmartUnlockEnrolled: () => mockUseIsEnrolled(),
 }))
 
 import { PrfEvaluationError } from "@ui/util/webauthnPrf"
 
-import { BiometricSetting } from "../BiometricSetting"
+import { SmartUnlockSetting } from "../SmartUnlockSetting"
 
-describe("BiometricSetting", () => {
+describe("SmartUnlockSetting", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockIsAvailable.mockResolvedValue(true)
@@ -41,10 +41,10 @@ describe("BiometricSetting", () => {
     mockGetCredentialInfo.mockResolvedValue({ credentialId: "credId", prfSalt: "salt" })
   })
 
-  test("is hidden when biometrics are unavailable and not enrolled", async () => {
+  test("is hidden when smart unlock is unavailable and not enrolled", async () => {
     mockIsAvailable.mockResolvedValue(false)
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     await waitFor(() => expect(mockIsAvailable).toHaveBeenCalled())
     expect(screen.queryByRole("checkbox")).toBeNull()
@@ -54,7 +54,7 @@ describe("BiometricSetting", () => {
     mockIsAvailable.mockResolvedValue(false)
     mockUseIsEnrolled.mockReturnValue(true)
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     const toggle = (await screen.findByRole("checkbox")) as HTMLInputElement
     expect(toggle.checked).toBe(true)
@@ -69,7 +69,7 @@ describe("BiometricSetting", () => {
   test("shows enrollment errors", async () => {
     mockCreateCredential.mockRejectedValue(new Error("This authenticator is not supported"))
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
@@ -85,7 +85,7 @@ describe("BiometricSetting", () => {
     })
     mockEnroll.mockRejectedValue(new Error("Please log in again"))
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
@@ -96,7 +96,7 @@ describe("BiometricSetting", () => {
   test("explains an authenticator that can't evaluate a PRF, and mentions the passkey", async () => {
     mockCreateCredential.mockRejectedValue(new PrfEvaluationError())
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
@@ -109,7 +109,7 @@ describe("BiometricSetting", () => {
   test("explains browser exceptions instead of showing their name", async () => {
     mockCreateCredential.mockRejectedValue(new DOMException("rp id not allowed", "SecurityError"))
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 
@@ -120,7 +120,7 @@ describe("BiometricSetting", () => {
   test("stays silent when the user cancels the prompt", async () => {
     mockCreateCredential.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
-    render(<BiometricSetting />)
+    render(<SmartUnlockSetting />)
 
     fireEvent.click(await screen.findByRole("checkbox"))
 

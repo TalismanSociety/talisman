@@ -1,7 +1,11 @@
 import { base64, base64urlnopad } from "@talismn/crypto"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
-import { createBiometricCredential, getBiometricPrfOutput, PrfEvaluationError } from "./webauthnPrf"
+import {
+  createSmartUnlockCredential,
+  getSmartUnlockPrfOutput,
+  PrfEvaluationError,
+} from "./webauthnPrf"
 
 const create = vi.fn()
 const get = vi.fn()
@@ -23,7 +27,7 @@ const credential = (prf: any) => ({
 // biome-ignore lint/suspicious/noExplicitAny: WebAuthn extension inputs are loosely typed
 const prfSaltOf = (call: any) => new Uint8Array(call[0].publicKey.extensions.prf.eval.first)
 
-describe("createBiometricCredential", () => {
+describe("createSmartUnlockCredential", () => {
   beforeEach(() => {
     create.mockReset()
     get.mockReset()
@@ -33,7 +37,7 @@ describe("createBiometricCredential", () => {
   test("uses the PRF output returned at creation time", async () => {
     create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
 
-    const result = await createBiometricCredential()
+    const result = await createSmartUnlockCredential()
 
     expect(result.credentialId).toBe(base64urlnopad.encode(RAW_ID))
     expect(result.prfOutput).toBe(base64.encode(CREATION_PRF_OUTPUT))
@@ -47,7 +51,7 @@ describe("createBiometricCredential", () => {
     create.mockResolvedValue(credential({}))
     get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
 
-    const result = await createBiometricCredential()
+    const result = await createSmartUnlockCredential()
 
     expect(result.prfOutput).toBe(base64.encode(ASSERTION_PRF_OUTPUT))
     expect(get).toHaveBeenCalledOnce()
@@ -63,7 +67,7 @@ describe("createBiometricCredential", () => {
     create.mockResolvedValue(credential(undefined))
     get.mockResolvedValue(credential({ results: { first: ASSERTION_PRF_OUTPUT } }))
 
-    const result = await createBiometricCredential()
+    const result = await createSmartUnlockCredential()
 
     expect(result.prfOutput).toBe(base64.encode(ASSERTION_PRF_OUTPUT))
     expect(get).toHaveBeenCalledOnce()
@@ -74,7 +78,7 @@ describe("createBiometricCredential", () => {
     create.mockResolvedValue(credential(undefined))
     get.mockResolvedValue(credential({}))
 
-    await expect(createBiometricCredential()).rejects.toThrow(PrfEvaluationError)
+    await expect(createSmartUnlockCredential()).rejects.toThrow(PrfEvaluationError)
     expect(signalUnknownCredential).toHaveBeenCalledWith(
       expect.objectContaining({ credentialId: base64urlnopad.encode(RAW_ID) })
     )
@@ -84,7 +88,7 @@ describe("createBiometricCredential", () => {
     create.mockResolvedValue(credential({}))
     get.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
-    await expect(createBiometricCredential()).rejects.toThrow(
+    await expect(createSmartUnlockCredential()).rejects.toThrow(
       expect.objectContaining({ name: "NotAllowedError" })
     )
     expect(signalUnknownCredential).toHaveBeenCalledWith(
@@ -95,7 +99,7 @@ describe("createBiometricCredential", () => {
   test("keeps the credential when the ceremony succeeds", async () => {
     create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
 
-    await createBiometricCredential()
+    await createSmartUnlockCredential()
 
     expect(signalUnknownCredential).not.toHaveBeenCalled()
   })
@@ -103,7 +107,7 @@ describe("createBiometricCredential", () => {
   test("rejects when the ceremony is cancelled", async () => {
     create.mockRejectedValue(new DOMException("cancelled", "NotAllowedError"))
 
-    await expect(createBiometricCredential()).rejects.toThrow(
+    await expect(createSmartUnlockCredential()).rejects.toThrow(
       expect.objectContaining({ name: "NotAllowedError" })
     )
     // no credential was created, there is nothing to clean up
@@ -114,13 +118,13 @@ describe("createBiometricCredential", () => {
     create.mockResolvedValue(credential({ results: { first: CREATION_PRF_OUTPUT } }))
     const { signal } = new AbortController()
 
-    await createBiometricCredential(signal)
+    await createSmartUnlockCredential(signal)
 
     expect(create.mock.calls[0][0].signal).toBe(signal)
   })
 })
 
-describe("getBiometricPrfOutput", () => {
+describe("getSmartUnlockPrfOutput", () => {
   beforeEach(() => {
     get.mockReset()
   })
@@ -131,7 +135,7 @@ describe("getBiometricPrfOutput", () => {
     const prfSalt = base64.encode(new Uint8Array(32).fill(3))
     const credentialId = base64urlnopad.encode(RAW_ID)
 
-    expect(await getBiometricPrfOutput(credentialId, prfSalt)).toBe(
+    expect(await getSmartUnlockPrfOutput(credentialId, prfSalt)).toBe(
       base64.encode(ASSERTION_PRF_OUTPUT)
     )
 
@@ -143,8 +147,8 @@ describe("getBiometricPrfOutput", () => {
   test("rejects when the PRF could not be evaluated", async () => {
     get.mockResolvedValue(credential({}))
 
-    await expect(getBiometricPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")).rejects.toThrow(
-      PrfEvaluationError
-    )
+    await expect(
+      getSmartUnlockPrfOutput(base64urlnopad.encode(RAW_ID), "c2FsdA==")
+    ).rejects.toThrow(PrfEvaluationError)
   })
 })

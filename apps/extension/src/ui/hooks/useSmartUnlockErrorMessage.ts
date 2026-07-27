@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next"
 /**
  * Turns a failed WebAuthn ceremony into something we can show the user.
  *
- * Whether biometric unlock works depends on the browser, the OS and the active passkey provider all
+ * Whether smart unlock works depends on the browser, the OS and the active passkey provider all
  * at once, so there is no version we could check upfront - we let the ceremony fail and explain why.
  *
  * Returns null when the user cancelled, in which case nothing should be shown.
  */
-export const useBiometricErrorMessage = () => {
+export const useSmartUnlockErrorMessage = () => {
   const { t } = useTranslation()
 
   return useCallback(

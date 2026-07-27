@@ -2,29 +2,29 @@ import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
-import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
-import { useIsBiometricEnrolled } from "@ui/state/biometric"
+import { useSmartUnlockErrorMessage } from "@ui/hooks/useSmartUnlockErrorMessage"
+import { useIsSmartUnlockEnrolled } from "@ui/state/smartUnlock"
 import {
-  createBiometricCredential,
-  isBiometricAvailable,
+  createSmartUnlockCredential,
+  isSmartUnlockAvailable,
   PrfEvaluationError,
   signalCredentialRemoved,
 } from "@ui/util/webauthnPrf"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-export const BiometricSetting = () => {
+export const SmartUnlockSetting = () => {
   const { t } = useTranslation()
-  const enrolled = useIsBiometricEnrolled()
+  const enrolled = useIsSmartUnlockEnrolled()
   const [available, setAvailable] = useState<boolean | null>(null)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const getErrorMessage = useBiometricErrorMessage()
+  const getErrorMessage = useSmartUnlockErrorMessage()
 
   const abortRef = useRef<AbortController>(null)
 
   useEffect(() => {
-    isBiometricAvailable().then(setAvailable)
+    isSmartUnlockAvailable().then(setAvailable)
     // abandon any ceremony still waiting on the user
     return () => abortRef.current?.abort()
   }, [])
@@ -38,9 +38,9 @@ export const BiometricSetting = () => {
       abortRef.current = abort
       try {
         if (checked) {
-          const credential = await createBiometricCredential(abort.signal)
+          const credential = await createSmartUnlockCredential(abort.signal)
           try {
-            await api.biometricEnroll(credential)
+            await api.smartUnlockEnroll(credential)
           } catch (err) {
             // the passkey exists but we can't use it, don't leave it behind. removal is best-effort
             // though, so tell the user where to find it if the authenticator keeps it
@@ -55,12 +55,12 @@ export const BiometricSetting = () => {
           }
         } else {
           // read the credential before dropping it, so we can ask the authenticator to forget it too
-          const credentialInfo = await api.biometricGetCredentialInfo()
-          await api.biometricUnenroll()
+          const credentialInfo = await api.smartUnlockGetCredentialInfo()
+          await api.smartUnlockUnenroll()
           if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
         }
       } catch (err) {
-        // resolves to null if the user cancelled the biometric prompt, or if we abandoned it
+        // resolves to null if the user cancelled the smart unlock prompt, or if we abandoned it
         const message = getErrorMessage(err)
 
         // a passkey was created before we found out the authenticator can't evaluate a PRF, and

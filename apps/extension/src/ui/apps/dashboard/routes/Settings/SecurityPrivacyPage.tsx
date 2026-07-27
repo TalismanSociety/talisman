@@ -21,7 +21,7 @@ import { useSetting } from "@ui/state/settings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import { BiometricSetting } from "./BiometricSetting"
+import { SmartUnlockSetting } from "./SmartUnlockSetting"
 
 const Content = () => {
   const { t } = useTranslation()
@@ -62,7 +62,7 @@ const Content = () => {
           subtitle={t("Set a timer to automatically lock your Talisman wallet")}
           to={`/settings/security-privacy-settings/autolock`}
         />
-        <BiometricSetting />
+        <SmartUnlockSetting />
         {withRiskAnalysis && (
           <Setting
             iconLeft={ShieldZapIcon}

@@ -14,12 +14,12 @@ import type {
 } from "@core/domains/accounts/types"
 import type {
   AnalyticsCaptureRequest,
-  BiometricAuthenticateResult,
-  BiometricCredentialInfo,
-  BiometricEnrollRequest,
   ChangePasswordStatusUpdate,
   LoggedinType,
   SendFundsOpenRequest,
+  SmartUnlockAuthenticateResult,
+  SmartUnlockCredentialInfo,
+  SmartUnlockEnrollRequest,
 } from "@core/domains/app/types"
 import type {
   AddressesAndTokens,
@@ -107,12 +107,12 @@ export default interface MessageTypes {
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
 
-  // biometric messages -------------------------------------------------------
-  biometricEnroll: (data: BiometricEnrollRequest) => Promise<boolean>
-  biometricUnenroll: () => Promise<boolean>
-  biometricIsEnrolledSubscribe: (cb: (data: { enrolled: boolean }) => void) => UnsubscribeFn
-  biometricGetCredentialInfo: () => Promise<BiometricCredentialInfo | null>
-  biometricAuthenticate: (prfOutput: string) => Promise<BiometricAuthenticateResult>
+  // smart unlock messages -------------------------------------------------------
+  smartUnlockEnroll: (data: SmartUnlockEnrollRequest) => Promise<boolean>
+  smartUnlockUnenroll: () => Promise<boolean>
+  smartUnlockIsEnrolledSubscribe: (cb: (data: { enrolled: boolean }) => void) => UnsubscribeFn
+  smartUnlockGetCredentialInfo: () => Promise<SmartUnlockCredentialInfo | null>
+  smartUnlockAuthenticate: (prfOutput: string) => Promise<SmartUnlockAuthenticateResult>
 
   // signing messages -------------------------------------------------------
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
