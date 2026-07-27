@@ -254,6 +254,7 @@ const Login = ({
     watch,
     register,
     handleSubmit,
+    clearErrors,
     setError,
     setValue,
     setFocus,
@@ -263,8 +264,17 @@ const Login = ({
     resolver: yupResolver(schema),
   })
 
+  const handleQuickUnlockError = useCallback(
+    (error?: string) => {
+      clearErrors("password")
+      setQuickUnlockError(error)
+    },
+    [clearErrors]
+  )
+
   const submit = useCallback<SubmitHandler<FormData>>(
     async ({ password }) => {
+      setQuickUnlockError(undefined)
       try {
         const result = await api.authenticate(password)
         if (result) {
@@ -305,8 +315,8 @@ const Login = ({
           <HandMonoLogo className="inline-block text-[64px]" />
         </div>
         <h1 className="mt-[34px] font-surtExpanded text-lg">{t("Unlock the Talisman")}</h1>
-        {errors.password?.message && (
-          <div className="mt-8 text-alert-warn">{errors.password?.message}</div>
+        {(errors.password?.message ?? quickUnlockError) && (
+          <div className="mt-8 text-alert-warn">{errors.password?.message ?? quickUnlockError}</div>
         )}
       </PopupContent>
       <PopupFooter className="z-10">
@@ -332,28 +342,25 @@ const Login = ({
           >
             {t("Unlock")}
           </Button>
-          <div className="mt-2 flex w-full flex-col items-center gap-4">
-            {/* both entry points share a row, so enrolling doesn't move the form up */}
-            <div className={cn("grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}>
-              <QuickUnlockButton
-                autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
-                onError={setQuickUnlockError}
-              />
-              <button
-                type="button"
-                className={cn(
-                  "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
-                  // the column edge is the separator, so it can't drift off centre
-                  quickUnlockEnrolled && "border-grey-700 border-l"
-                )}
-                onClick={setShowResetWallet}
-              >
-                {t("Forgot Password?")}
-              </button>
-            </div>
-            {quickUnlockError && (
-              <span className="text-alert-warn text-sm">{quickUnlockError}</span>
-            )}
+          {/* both entry points share a row, so enrolling doesn't move the form up */}
+          <div
+            className={cn("mt-2 grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}
+          >
+            <QuickUnlockButton
+              autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
+              onError={handleQuickUnlockError}
+            />
+            <button
+              type="button"
+              className={cn(
+                "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+                // the column edge is the separator, so it can't drift off centre
+                quickUnlockEnrolled && "border-grey-700 border-l"
+              )}
+              onClick={setShowResetWallet}
+            >
+              {t("Forgot Password?")}
+            </button>
           </div>
         </form>
       </PopupFooter>
