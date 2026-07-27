@@ -12,8 +12,8 @@ inputs:
 runs:
   using: composite
   steps:
-    # no corepack: action-setup bootstraps pnpm itself from the `packageManager` field in
-    # package.json, and pnpm 10+ self-manages its own version against that same field
+    # action-setup bootstraps pnpm from the `packageManager` field in package.json, and pnpm
+    # self-manages its own version against that same field
     - name: Setup pnpm
       uses: pnpm/action-setup@v6
     - name: Setup Node.js environment

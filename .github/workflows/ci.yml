@@ -104,9 +104,7 @@ jobs:
           distribution: temurin
           java-version: "21"
       - name: Upload translatable strings
-        # inlined rather than using simplelocalize/github-action-cli: its composite pins
-        # actions/setup-java@v4, which still runs on the deprecated node20 runtime.
-        # cli 2.2.0 is pinned: 2.9.0 dropped the `autoTranslation` key simplelocalize.yml uses.
+        # the cli is pinned to 2.2.0: 2.9.0 dropped the `autoTranslation` key simplelocalize.yml uses
         env:
           CLI_VERSION: "2.2.0"
           SIMPLE_LOCALIZE_API_KEY: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
@@ -144,7 +142,7 @@ jobs:
       - name: Install playwright browser - chromium
         run: pnpm exec playwright install chromium
       - name: Install chromium system dependencies and xvfb
-        # single apt-get update for both, instead of one here and one inside `playwright install --with-deps`
+        # `install-deps` reuses the apt-get update run for xvfb
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
@@ -373,11 +371,9 @@ jobs:
           echo '${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: Report the changeset status on the PR
-        # replaces thollander/actions-comment-pull-request, which is still on the deprecated
-        # node20 runtime (v3.0.1 is its latest). An existing comment is always updated; a new one
-        # is only created when changesets are actually missing. Comments left by the action on
-        # currently open PRs are picked up through their own trailing marker and rewritten in the
-        # new format, so they migrate on the next run instead of going stale next to a duplicate.
+        # An existing comment is always updated; a new one is only created when changesets are
+        # actually missing. Comments carrying the trailing marker of
+        # thollander/actions-comment-pull-request are matched too, and rewritten in the new format.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
