@@ -104,7 +104,9 @@ jobs:
           # v5 appends `--apiKey <api-key>` itself, so it must not also be passed through `args`
           api-key: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
           command: "upload"
-          cli-version: "2.9.0"
+          # pinned: the action defaults to 2.9.0, which dropped the `autoTranslation` key that
+          # simplelocalize.yml still uses. Bumping the cli needs that config migrated first.
+          cli-version: "2.2.0"
           args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json"
       - name: Build extension
         run: pnpm build:extension
