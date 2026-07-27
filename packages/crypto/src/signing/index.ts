@@ -59,9 +59,15 @@ const EMPTY_BYTES = new Uint8Array()
  *
  * Returns 96 bytes: `output(32) || proof(64)`.
  *
- * Unlike regular sr25519 signatures (randomized nonce), the 32-byte VRF *output* is
- * deterministic for a given (secretKey, context, message, extra) — only the proof embeds
- * randomness. This is what makes it usable for signature-based key derivation.
+ * Unlike regular sr25519 signatures (randomized nonce), the 32-byte VRF *output* is fully
+ * determined by `(secretKey, context, message)` — it is `hash_to_point(context, message,
+ * publicKey)^secretKey`. This is what makes it usable for signature-based key derivation.
+ *
+ * `context` is the only domain separator of the output: two different contexts over the same
+ * message yield unrelated outputs. `extra` binds the DLEQ *proof* transcript only and does
+ * **not** change the output — signing the same `(secretKey, context, message)` under different
+ * `extra` values yields the same 32 bytes. The proof itself embeds randomness and is verifiable
+ * against the public key.
  */
 export const vrfSignSubstrate = (
   secretKey: Uint8Array,
@@ -72,7 +78,10 @@ export const vrfSignSubstrate = (
 
 /**
  * Verifies an sr25519 VRF signature produced by `vrfSignSubstrate` (or any schnorrkel
- * `vrf_sign_extra` implementation using the same context).
+ * `vrf_sign_extra` implementation using the same context and extra).
+ *
+ * Malformed input (non-canonical points, wrong lengths, identity output point) verifies as
+ * `false` rather than throwing.
  */
 export const vrfVerifySubstrate = (
   publicKey: Uint8Array,
@@ -80,7 +89,13 @@ export const vrfVerifySubstrate = (
   signature: Uint8Array,
   context: Uint8Array = EMPTY_BYTES,
   extra: Uint8Array = EMPTY_BYTES
-): boolean => sr25519Vrf.verify(message, signature, publicKey, context, extra)
+): boolean => {
+  try {
+    return sr25519Vrf.verify(message, signature, publicKey, context, extra)
+  } catch {
+    return false
+  }
+}
 
 /** MultiSignature enum variant index per signature scheme, used to type-prefix signatures */
 export const SIGNATURE_TYPE_PREFIX: Partial<Record<KeypairCurve, number>> = {

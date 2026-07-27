@@ -102,4 +102,49 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
       true
     )
   })
+
+  // extra binds the DLEQ proof transcript, it is not part of hash_to_point - callers deriving
+  // one identity per purpose must vary context (or the message), varying extra achieves nothing
+  it("does not domain-separate by extra", () => {
+    const ctx = new TextEncoder().encode("ctx")
+    const sigA = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("a"))
+    const sigB = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("b"))
+
+    expect(hex.encode(sigA.subarray(0, 32))).toBe(hex.encode(sigB.subarray(0, 32)))
+    expect(hex.encode(sigA.subarray(0, 32))).toBe(
+      hex.encode(vrfSignSubstrate(secretKey, MSG_SHORT, ctx).subarray(0, 32))
+    )
+  })
+
+  it("binds the proof to extra", () => {
+    const ctx = new TextEncoder().encode("ctx")
+    const extra = new TextEncoder().encode("a")
+    const sig = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, extra)
+
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, ctx, extra)).toBe(true)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, ctx, new TextEncoder().encode("b"))).toBe(
+      false
+    )
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, ctx)).toBe(false)
+  })
+
+  it("rejects malformed input instead of throwing", () => {
+    const sig = vrfSignSubstrate(secretKey, MSG_SHORT)
+
+    const identityOutput = Uint8Array.from(sig)
+    identityOutput.fill(0, 0, 32)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, identityOutput)).toBe(false)
+
+    const invalidOutput = Uint8Array.from(sig)
+    invalidOutput.fill(0xff, 0, 32)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, invalidOutput)).toBe(false)
+
+    const nonCanonicalScalar = Uint8Array.from(sig)
+    nonCanonicalScalar.fill(0xff, 32, 64)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, nonCanonicalScalar)).toBe(false)
+
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig.subarray(0, 95))).toBe(false)
+    expect(vrfVerifySubstrate(publicKey.subarray(0, 31), MSG_SHORT, sig)).toBe(false)
+    expect(vrfVerifySubstrate(new Uint8Array(32).fill(0xff), MSG_SHORT, sig)).toBe(false)
+  })
 })

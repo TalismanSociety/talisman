@@ -108,10 +108,14 @@ export class TalismanSigner {
    * (schnorrkel `vrf_sign_extra`, byte-compatible with polkadot-js `sr25519VrfSign` with an
    * empty context).
    *
-   * Returns 96 hex-encoded bytes: `output(32) || proof(64)`. The 32-byte output is
-   * deterministic for a given (account, context, data, extra) — unlike `signRaw`, whose
-   * sr25519 signatures are randomized — which makes it suitable for signature-based key
-   * derivation. The proof is randomized and verifiable against the account's public key.
+   * Returns 96 hex-encoded bytes: `output(32) || proof(64)`. The 32-byte output is fully
+   * determined by (account, context, data) — unlike `signRaw`, whose sr25519 signatures are
+   * randomized — which makes it suitable for signature-based key derivation. The proof is
+   * randomized and verifiable against the account's public key.
+   *
+   * `context` is the only domain separator of the output. `extra` binds the proof transcript
+   * only and does **not** change the output: deriving one identity per purpose requires
+   * distinct `context` (or `data`) values, not distinct `extra` values.
    *
    * Only local sr25519 accounts can VRF-sign; requests for hardware or watch-only accounts
    * are rejected. Feature-detect with `typeof signer.signVrf === "function"`.
