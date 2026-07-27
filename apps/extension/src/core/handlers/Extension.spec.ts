@@ -7,21 +7,34 @@ import type { Account } from "@talismn/keyring"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import { u8aToHex } from "@talismn/util"
 import { waitFor } from "@testing-library/dom"
+import { v4 } from "uuid"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
 import { signSubstrate, signVrf } from "../domains/signing/requests"
+import type { VrfSignPayload } from "../domains/signing/types"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
+import Tabs from "./Tabs"
+
+// the phishing lists are fetched over the network on first use, which every `pub(*)` message
+// would otherwise wait on
+vi.mock("../domains/app/protector", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../domains/app/protector")>()),
+  isPhishingSite: async () => false,
+}))
 
 vi.setConfig({ testTimeout: 10_000 })
 
+const DAPP_URL = "http://localhost:3000"
+
 describe("Extension", () => {
   let extension: Extension
+  let tabs: Tabs
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
@@ -54,6 +67,7 @@ describe("Extension", () => {
   beforeAll(async () => {
     await chrome.storage.local.clear()
     extension = await createExtension()
+    tabs = new Tabs(extensionStores)
     messageSender = getMessageSenderFn(extension)
 
     await messageSender("pri(app.onboardCreatePassword)", {
@@ -221,6 +235,9 @@ describe("Extension", () => {
       requestStore.clearRequests()
     })
 
+    const requestVrfSign = (payload: VrfSignPayload) =>
+      tabs.handle(v4(), "pub(vrf.sign)", payload, {} as chrome.runtime.Port, DAPP_URL)
+
     const signVrfOnce = async (account: Account, data: `0x${string}`) => {
       const requestPromise = signVrf(
         "http://test.com",
@@ -259,6 +276,41 @@ describe("Extension", () => {
       const sigBytes = Buffer.from(sig1.slice(2), "hex")
       const msgBytes = Buffer.from(data.slice(2), "hex")
       expect(vrfVerifySubstrate(addressInfo.publicKey, msgBytes, sigBytes)).toBe(true)
+    })
+
+    test.each([
+      ["invalid hex digits", "0xzz"],
+      ["odd length", "0x1"],
+      ["a missing 0x prefix", "1234"],
+      ["an empty string", ""],
+    ])("rejects data with %s", async (_, data) => {
+      const account = await getAccount()
+
+      await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
+        /Invalid data/
+      )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // an omitted context means "empty", an empty string is malformed - "0x" is how a caller
+    // asks for empty bytes
+    test("rejects an empty context string", async () => {
+      const account = await getAccount()
+
+      await expect(
+        requestVrfSign({ address: account.address, data: "0x00", context: "" })
+      ).rejects.toThrow(/Invalid context/)
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    test("rejects oversized data", async () => {
+      const account = await getAccount()
+      const data = `0x${"00".repeat(64 * 1024 + 1)}`
+
+      await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
+        /Invalid data/
+      )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
   })
 

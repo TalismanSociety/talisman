@@ -1,7 +1,7 @@
 import { TEST } from "@common/constants"
 import { encodeAnyAddress, signSubstrate, vrfSignSubstrate } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
-import { addTrailingSlash, assert, hexToU8a, u8aToHex, u8aWrapBytes } from "@talismn/util"
+import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -22,6 +22,7 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "./types"
+import { parseVrfSignPayload } from "./vrf"
 
 /**
  * Only return `signedTransaction` to the dapp when the wallet actually altered the payload
@@ -126,18 +127,14 @@ export default class SigningHandler extends ExtensionHandler {
     const { reject, request, resolve, url } = queued
     const address = encodeAnyAddress(queued.account.address)
 
+    // re-parse rather than trust what was queued, so the secret key is never used on bytes that
+    // did not survive the same validation the dapp's request went through
+    const { data, context, extra } = parseVrfSignPayload(request.payload)
+
     const result = await withSecretKey(address, async (secretKey, curve) => {
       assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
 
-      const { payload } = request
-      const signature = u8aToHex(
-        vrfSignSubstrate(
-          secretKey,
-          hexToU8a(validateHexString(payload.data)),
-          payload.context ? hexToU8a(validateHexString(payload.context)) : undefined,
-          payload.extra ? hexToU8a(validateHexString(payload.extra)) : undefined
-        )
-      )
+      const signature = u8aToHex(vrfSignSubstrate(secretKey, data, context, extra))
 
       const { ok, val: hostName } = getHostName(url)
       talismanAnalytics.captureDelayed("vrf sign approve", {

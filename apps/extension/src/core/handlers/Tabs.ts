@@ -27,6 +27,7 @@ import type {
   VrfSignPayload,
   VrfSignResponse,
 } from "../domains/signing/types"
+import { parseVrfSignPayload } from "../domains/signing/vrf"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
 import type {
   AuthorizedSite,
@@ -179,6 +180,9 @@ export default class Tabs extends TabsHandler {
     request: VrfSignPayload,
     port: Port
   ): Promise<VrfSignResponse> {
+    // reject malformed transcript fields here so they never reach the approval popup
+    parseVrfSignPayload(request)
+
     const account = await keyringStore.getAccount(request.address)
     if (!account) throw new Error("Account not found")
 
