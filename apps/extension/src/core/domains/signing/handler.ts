@@ -225,9 +225,10 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
-    talismanAnalytics.captureDelayed("sign reject", {
-      networkType: "substrate",
-    })
+    talismanAnalytics.captureDelayed(
+      queued.type === "vrf-sign" ? "vrf sign reject" : "sign reject",
+      { networkType: "substrate" }
+    )
     queued.reject(new Error("Cancelled"))
 
     return true
@@ -286,6 +287,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       case "pri(signing.approveSign.vrf)":
         return await this.signingApproveVrf(request as RequestType<"pri(signing.approveSign.vrf)">)
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
