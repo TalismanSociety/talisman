@@ -6,7 +6,6 @@ import {
   LockIcon,
   PlusIcon,
   RepeatIcon,
-  SeekEyeIcon,
   SendIcon,
   SettingsIcon,
   UsersIcon,
@@ -19,7 +18,6 @@ import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { Nav, NavItem } from "@ui/components/Nav"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
-import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
@@ -138,14 +136,6 @@ export const NavigationDrawer: FC = () => {
     close()
   }, [openRampsModal, close])
 
-  const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
-  const { open: openSeekBenefitsModal } = useSeekBenefitsModal()
-  const handleSeekBenefitsClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Seek Benefits" })
-    openSeekBenefitsModal()
-    close()
-  }, [openSeekBenefitsModal, close])
-
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
@@ -188,15 +178,6 @@ export const NavigationDrawer: FC = () => {
                 {!allBackedUp && <AlertCircleIcon className="ml-2 inline text-primary text-sm" />}
               </span>
             </NavItem>
-            {!!showSeekBenefits && (
-              <NavItem
-                className="hover:bg-primary/10"
-                icon={<SeekEyeIcon className="text-primary" />}
-                onClick={handleSeekBenefitsClick}
-              >
-                <span className="font-bold text-primary">SEEK</span>
-              </NavItem>
-            )}
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("All Settings")}
             </NavItem>
