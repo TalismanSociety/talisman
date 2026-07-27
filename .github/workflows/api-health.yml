@@ -19,20 +19,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Run API health tests
         run: pnpm exec playwright test --project=api

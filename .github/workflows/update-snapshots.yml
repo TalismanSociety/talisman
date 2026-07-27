@@ -25,20 +25,8 @@ jobs:
           ref: ${{ github.event.inputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Build extension
         run: pnpm build:extension
@@ -46,11 +34,22 @@ jobs:
           COMMIT_SHA_SHORT: ${{ github.sha }}
           E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
 
-      - name: Install playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Cache playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-browsers-${{ runner.os }}-
 
-      - name: Install xvfb
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Install playwright browser
+        run: pnpm exec playwright install chromium
+
+      - name: Install chromium system dependencies and xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          pnpm exec playwright install-deps chromium
 
       - name: Update snapshots
         run: |
