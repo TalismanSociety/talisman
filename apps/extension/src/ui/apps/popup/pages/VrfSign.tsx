@@ -1,5 +1,6 @@
 import { DEBUG } from "@common/constants"
 import type { SigningRequestID } from "@core/domains/signing/types"
+import { hexToU8a, isAsciiPrintable, u8aToString } from "@talismn/util"
 import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
@@ -9,12 +10,37 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useStatus from "@ui/hooks/useStatus"
 import { useRequest } from "@ui/state/requests"
-import { useCallback, useEffect } from "react"
+import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 import { SignAccountAvatar } from "./Sign/SignAccountAvatar"
+
+/**
+ * `context` and `extra` are dapp-controlled and go into the schnorrkel transcript, so they are
+ * part of what the user authorizes even when omitted. An omitted field and an explicit `0x` both
+ * mean empty bytes.
+ */
+const TranscriptField: FC<{ label: string; value?: string; hint?: string }> = ({
+  label,
+  value,
+  hint,
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex w-full flex-col gap-1">
+      <div className="text-grey-500">
+        {label}
+        {hint ? ` — ${hint}` : null}
+      </div>
+      <div className="break-all font-mono text-body-secondary">
+        {value && value !== "0x" ? value : t("empty")}
+      </div>
+    </div>
+  )
+}
 
 export const VrfSignRequest = () => {
   const { t } = useTranslation()
@@ -57,6 +83,13 @@ export const VrfSignRequest = () => {
   const processing = status === "PROCESSING"
   const errorMessage = status === "ERROR" ? message : ""
 
+  const data = req?.request.payload.data
+  // the VRF signs `data` verbatim, there is no <Bytes> wrapper to strip
+  const dataText = useMemo(
+    () => (data && isAsciiPrintable(data) ? u8aToString(hexToU8a(data)) : undefined),
+    [data]
+  )
+
   return (
     <PopupLayout>
       <PopupHeader right={<SignAccountAvatar account={req?.account} />}>
@@ -73,11 +106,31 @@ export const VrfSignRequest = () => {
               <br />
               <AccountPill account={req.account} />
             </h2>
-            <Message className="mt-8 w-full grow" text={req.request.payload.data} />
+            <Message className="mt-8 w-full grow" text={dataText ?? req.request.payload.data} />
+            {dataText !== undefined && (
+              <div className="mt-4 w-full break-all text-left font-mono text-grey-500 text-xs">
+                {req.request.payload.data}
+              </div>
+            )}
+            <div className="mt-8 flex w-full flex-col gap-4 text-xs">
+              <TranscriptField label={t("Context")} value={req.request.payload.context} />
+              <TranscriptField
+                label={t("Extra")}
+                value={req.request.payload.extra}
+                hint={t("proof only, does not change the result")}
+              />
+            </div>
           </div>
         )}
       </PopupContent>
       <PopupFooter>
+        {req && (
+          <SignAlertMessage className="mb-8">
+            {t(
+              "The result is a value derived from this account. The site receives it and can reproduce it at any time by requesting the same data and context, so it works as a persistent identifier. Changing extra does not change it."
+            )}
+          </SignAlertMessage>
+        )}
         {errorMessage && (
           <SignAlertMessage className="mb-8" type="error">
             {errorMessage}

@@ -43,7 +43,7 @@ type VrfSignResult = { id: number; signature: string }
 type DappWindow = Window & {
   talismanReady: Promise<boolean>
   connectTalisman: () => Promise<InjectedAccount[]>
-  signVrf: (payload: { address: string; data: string }) => Promise<VrfSignResult>
+  signVrf: (payload: { address: string; data: string; context?: string }) => Promise<VrfSignResult>
   accountsPromise: Promise<InjectedAccount[]>
   signPromise: Promise<VrfSignResult>
 }
@@ -80,18 +80,20 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
 
     const data = `0x${Buffer.from("orbinum vrf e2e", "utf8").toString("hex")}`
 
-    const signOnce = async () => {
+    const signOnce = async (vrfContext?: string) => {
       const [popup] = await Promise.all([
         context.waitForEvent("page"),
         dapp.evaluate(
-          ({ address, data }) => {
+          ({ address, data, vrfContext }) => {
             const w = window as unknown as DappWindow
-            w.signPromise = w.signVrf({ address, data })
+            w.signPromise = w.signVrf({ address, data, context: vrfContext })
           },
-          { address: srAccount.address, data }
+          { address: srAccount.address, data, vrfContext }
         ),
       ])
       await expect(popup.getByText("VRF Signature Request")).toBeVisible()
+      // the popup must show the whole transcript, not just the data
+      await expect(popup.getByText(vrfContext ?? "empty")).toBeVisible()
       await popup.getByRole("button", { name: "Approve" }).click()
       const result = await dapp.evaluate(() => (window as unknown as DappWindow).signPromise)
       return result.signature
@@ -106,6 +108,10 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
     // and proof is covered by the wasm-schnorrkel parity vectors in @talismn/crypto
     expect(sig1.slice(0, 66)).toBe(sig2.slice(0, 66))
     expect(sig1).not.toBe(sig2)
+
+    // context is the output domain separator
+    const sig3 = await signOnce(`0x${Buffer.from("substrate", "utf8").toString("hex")}`)
+    expect(sig3.slice(0, 66)).not.toBe(sig1.slice(0, 66))
   } finally {
     server.close()
   }

@@ -117,6 +117,11 @@ export class TalismanSigner {
    * only and does **not** change the output: deriving one identity per purpose requires
    * distinct `context` (or `data`) values, not distinct `extra` values.
    *
+   * The output is not origin-bound. Another site the user has authorized for the same account
+   * can request the same `(data, context)` and, if the user approves, receive the same output.
+   * `context` separates cooperating callers from each other, it does not authenticate who is
+   * asking — treat the result as a value the requesting site holds, not as a shared secret.
+   *
    * Only local sr25519 accounts can VRF-sign; requests for hardware or watch-only accounts
    * are rejected. Feature-detect with `typeof signer.signVrf === "function"`.
    */
