@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EyeIcon, EyeOffIcon, UserCheckIcon } from "@talismn/icons"
+import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
@@ -225,13 +225,11 @@ const QuickUnlockButton = ({
       onClick={handleClick}
       disabled={processing}
       className={cn(
-        "flex cursor-pointer items-center justify-center gap-4",
-        "text-body-disabled text-sm transition-colors hover:text-white",
+        "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
         processing && "animate-pulse"
       )}
     >
-      <UserCheckIcon className="text-lg" />
-      {t("Use quick unlock")}
+      {t("Quick unlock")}
     </button>
   )
 }
