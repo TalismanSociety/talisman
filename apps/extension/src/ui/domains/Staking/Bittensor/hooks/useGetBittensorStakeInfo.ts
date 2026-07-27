@@ -50,6 +50,7 @@ export const useGetBittensorStakeInfo = ({
     hotkey,
     address,
     networkId,
+    remarkType: "stake",
   })
 
   const currentHotkey = useBittensorCurrentHotkey({ address, networkId, netuid })
