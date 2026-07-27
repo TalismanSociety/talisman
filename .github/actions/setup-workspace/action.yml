@@ -1,0 +1,57 @@
+name: "Setup workspace"
+description: "pnpm + node, with cached papi descriptors, then install"
+
+inputs:
+  papi:
+    description: >
+      Whether the job needs the generated papi descriptors. Set to "false" for jobs which only
+      need a node_modules tree (they install with --ignore-scripts, which skips the codegen).
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    # action-setup bootstraps pnpm from the `packageManager` field in package.json, and pnpm
+    # self-manages its own version against that same field
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v6
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        cache: pnpm
+
+    # papi codegen runs on postinstall and takes ~40s of the ~70s install step.
+    # Only `dist` and `generated.json` are cached: `.papi/descriptors/node_modules` holds pnpm
+    # symlinks which must not be restored on top of the ones `pnpm install` creates, and
+    # `package.json` is tracked in git.
+    - name: Restore papi descriptors
+      if: inputs.papi == 'true'
+      uses: actions/cache@v6
+      with:
+        path: |
+          .papi/descriptors/dist
+          .papi/descriptors/generated.json
+        key: papi-${{ runner.os }}-${{ hashFiles('.papi/polkadot-api.json', '.papi/scale/**', 'pnpm-lock.yaml') }}
+        restore-keys: |
+          papi-${{ runner.os }}-
+
+    - name: Install dependencies
+      if: inputs.papi == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Install dependencies (without lifecycle scripts)
+      if: inputs.papi != 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile --ignore-scripts
+
+    # The `papi:once` postinstall skips codegen whenever `descriptors/dist` exists, so descriptors
+    # restored through `restore-keys` (i.e. an inexact cache hit) could be stale. `papi` compares
+    # the metadata hashes recorded in generated.json against .papi/scale and only regenerates on a
+    # mismatch, so this is a ~2s no-op on a valid cache hit and a full regen otherwise.
+    - name: Verify papi descriptors
+      if: inputs.papi == 'true'
+      shell: bash
+      run: pnpm papi
