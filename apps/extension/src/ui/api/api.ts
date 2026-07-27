@@ -46,15 +46,15 @@ export const api: MessageTypes = {
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
-  // biometric messages -------------------------------------------------------
-  biometricEnroll: (data) => messageService.sendMessage("pri(app.biometric.enroll)", data),
-  biometricUnenroll: () => messageService.sendMessage("pri(app.biometric.unenroll)"),
-  biometricIsEnrolledSubscribe: (cb) =>
-    messageService.subscribe("pri(app.biometric.isEnrolled.subscribe)", null, cb),
-  biometricGetCredentialInfo: () =>
-    messageService.sendMessage("pri(app.biometric.getCredentialInfo)"),
-  biometricAuthenticate: (prfOutput) =>
-    messageService.sendMessage("pri(app.biometric.authenticate)", { prfOutput }),
+  // quick unlock messages -------------------------------------------------------
+  quickUnlockEnroll: (data) => messageService.sendMessage("pri(app.quickUnlock.enroll)", data),
+  quickUnlockUnenroll: () => messageService.sendMessage("pri(app.quickUnlock.unenroll)"),
+  quickUnlockIsEnrolledSubscribe: (cb) =>
+    messageService.subscribe("pri(app.quickUnlock.isEnrolled.subscribe)", null, cb),
+  quickUnlockGetCredentialInfo: () =>
+    messageService.sendMessage("pri(app.quickUnlock.getCredentialInfo)"),
+  quickUnlockAuthenticate: (prfOutput) =>
+    messageService.sendMessage("pri(app.quickUnlock.authenticate)", { prfOutput }),
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),

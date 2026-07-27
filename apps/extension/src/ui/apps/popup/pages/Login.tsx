@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EyeIcon, EyeOffIcon, UserCheckIcon } from "@talismn/icons"
+import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
@@ -9,13 +9,13 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useBiometricErrorMessage } from "@ui/hooks/useBiometricErrorMessage"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { useIsBiometricEnrolled } from "@ui/state/biometric"
+import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
+import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
-import { getBiometricPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
+import { getQuickUnlockPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -103,15 +103,20 @@ const Background = () => {
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
 }
 
-/** autologin (below) drives the password field itself, it must not race the biometric prompt */
+/** autologin (below) drives the password field itself, it must not race the quick unlock prompt */
 const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
 
-const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
+const QuickUnlockButton = ({
+  autoTrigger,
+  onError,
+}: {
+  autoTrigger: boolean
+  onError: (error?: string) => void
+}) => {
   const { t } = useTranslation()
-  const enrolled = useIsBiometricEnrolled()
+  const enrolled = useIsQuickUnlockEnrolled()
   const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState<string>()
-  const getErrorMessage = useBiometricErrorMessage()
+  const getErrorMessage = useQuickUnlockErrorMessage()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
@@ -126,37 +131,37 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
     }
   }, [])
 
-  const handleBiometricUnlock = useCallback(
+  const handleQuickUnlock = useCallback(
     async (explicit: boolean) => {
       if (processing) return
       setProcessing(true)
-      setError(undefined)
+      onError(undefined)
       abortRef.current?.abort()
       const abort = new AbortController()
       abortRef.current = abort
       try {
-        const credentialInfo = await api.biometricGetCredentialInfo()
+        const credentialInfo = await api.quickUnlockGetCredentialInfo()
         if (!credentialInfo)
-          return setError(t("Biometric unlock was reset, please enable it again from settings."))
+          return onError(t("Quick unlock was reset, please enable it again from settings."))
 
-        const prfOutput = await getBiometricPrfOutput(
+        const prfOutput = await getQuickUnlockPrfOutput(
           credentialInfo.credentialId,
           credentialInfo.prfSalt,
           abort.signal
         )
 
-        const result = await api.biometricAuthenticate(prfOutput)
+        const result = await api.quickUnlockAuthenticate(prfOutput)
 
         // the passkey outlives the enrollment, only tell the authenticator about it once the
         // background has confirmed the enrollment is gone for good
         if (result === "unenrolled") {
           await signalCredentialRemoved(credentialInfo.credentialId)
-          return setError(t("Biometric unlock was reset, please enable it again from settings."))
+          return onError(t("Quick unlock was reset, please enable it again from settings."))
         }
 
         if (result === "failed")
-          return setError(
-            t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+          return onError(
+            t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
           )
 
         const qs = new URLSearchParams(window.location.search)
@@ -171,23 +176,23 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         // the spec doesn't let us tell those apart - point at the way out instead of guessing
         const message =
           name === "NotAllowedError"
-            ? t("Biometric unlock didn't complete. Use your password, or turn it off in settings.")
+            ? t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
             : getErrorMessage(err)
         if (!message) return
 
         // log the error category only, it must never carry credential or password data
-        log.error("Biometric unlock failed", { name })
-        setError(message)
+        log.error("Quick unlock failed", { name })
+        onError(message)
       } finally {
         setProcessing(false)
       }
     },
-    [getErrorMessage, processing, t]
+    [getErrorMessage, onError, processing, t]
   )
 
-  const handleClick = useCallback(() => handleBiometricUnlock(true), [handleBiometricUnlock])
+  const handleClick = useCallback(() => handleQuickUnlock(true), [handleQuickUnlock])
 
-  // auto-trigger biometric on first render, unless the user is already typing their password
+  // auto-trigger quick unlock on first render, unless the user is already typing their password
   useEffect(() => {
     if (!autoTrigger || !enrolled || triggeredRef.current) return
 
@@ -204,45 +209,42 @@ const BiometricUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
       triggeredRef.current = true
       window.removeEventListener("focus", trigger)
-      handleBiometricUnlock(false)
+      handleQuickUnlock(false)
     }
 
     trigger()
     window.addEventListener("focus", trigger)
     return () => window.removeEventListener("focus", trigger)
-  }, [autoTrigger, enrolled, handleBiometricUnlock])
+  }, [autoTrigger, enrolled, handleQuickUnlock])
 
-  if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
+  if (!enrolled) return null
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={processing}
-        className={cn(
-          "flex cursor-pointer items-center justify-center gap-4",
-          "text-body-disabled text-sm transition-colors hover:text-white",
-          processing && "animate-pulse"
-        )}
-      >
-        <UserCheckIcon className="text-lg" />
-        {t("Unlock with biometrics")}
-      </button>
-      {error && <span className="text-alert-warn text-sm">{error}</span>}
-    </>
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={processing}
+      className={cn(
+        "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+        processing && "animate-pulse"
+      )}
+    >
+      {t("Quick Unlock")}
+    </button>
   )
 }
 
 const Login = ({
   setShowResetWallet,
-  autoTriggerBiometric,
+  autoTriggerQuickUnlock,
 }: {
   setShowResetWallet: () => void
-  autoTriggerBiometric: boolean
+  autoTriggerQuickUnlock: boolean
 }) => {
   const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
+  const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
+  const [quickUnlockError, setQuickUnlockError] = useState<string>()
 
   useEffect(() => {
     popupOpenEvent("auth")
@@ -252,6 +254,7 @@ const Login = ({
     watch,
     register,
     handleSubmit,
+    clearErrors,
     setError,
     setValue,
     setFocus,
@@ -261,8 +264,17 @@ const Login = ({
     resolver: yupResolver(schema),
   })
 
+  const handleQuickUnlockError = useCallback(
+    (error?: string) => {
+      clearErrors("password")
+      setQuickUnlockError(error)
+    },
+    [clearErrors]
+  )
+
   const submit = useCallback<SubmitHandler<FormData>>(
     async ({ password }) => {
+      setQuickUnlockError(undefined)
       try {
         const result = await api.authenticate(password)
         if (result) {
@@ -303,8 +315,8 @@ const Login = ({
           <HandMonoLogo className="inline-block text-[64px]" />
         </div>
         <h1 className="mt-[34px] font-surtExpanded text-lg">{t("Unlock the Talisman")}</h1>
-        {errors.password?.message && (
-          <div className="mt-8 text-alert-warn">{errors.password?.message}</div>
+        {(errors.password?.message ?? quickUnlockError) && (
+          <div className="mt-8 text-alert-warn">{errors.password?.message ?? quickUnlockError}</div>
         )}
       </PopupContent>
       <PopupFooter className="z-10">
@@ -330,16 +342,26 @@ const Login = ({
           >
             {t("Unlock")}
           </Button>
-          <BiometricUnlockButton
-            autoTrigger={autoTriggerBiometric && !isDirty && !IS_DEV_AUTOLOGIN}
-          />
-          <button
-            type="button"
-            className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
-            onClick={setShowResetWallet}
+          {/* both entry points share a row, so enrolling doesn't move the form up */}
+          <div
+            className={cn("mt-2 grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}
           >
-            {t("Forgot Password?")}
-          </button>
+            <QuickUnlockButton
+              autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
+              onError={handleQuickUnlockError}
+            />
+            <button
+              type="button"
+              className={cn(
+                "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+                // the column edge is the separator, so it can't drift off centre
+                quickUnlockEnrolled && "border-grey-700 border-l"
+              )}
+              onClick={setShowResetWallet}
+            >
+              {t("Forgot Password?")}
+            </button>
+          </div>
         </form>
       </PopupFooter>
     </PopupLayout>
@@ -347,10 +369,10 @@ const Login = ({
 }
 
 export const LoginViewManager = ({
-  autoTriggerBiometric,
+  autoTriggerQuickUnlock,
 }: {
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
-  autoTriggerBiometric: boolean
+  autoTriggerQuickUnlock: boolean
 }) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
 
@@ -358,7 +380,7 @@ export const LoginViewManager = ({
   return (
     <Login
       setShowResetWallet={() => setShowResetWallet(true)}
-      autoTriggerBiometric={autoTriggerBiometric}
+      autoTriggerQuickUnlock={autoTriggerQuickUnlock}
     />
   )
 }

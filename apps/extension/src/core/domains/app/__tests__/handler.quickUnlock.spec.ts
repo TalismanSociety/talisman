@@ -16,7 +16,7 @@ const enrollRequest = (prfOutput: string) => ({
   prfOutput,
 })
 
-describe("App handler biometric unlock", () => {
+describe("App handler quick unlock", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
@@ -58,7 +58,7 @@ describe("App handler biometric unlock", () => {
 
   beforeEach(async () => {
     await extensionStores.password.set(initialStoreData.password ?? {})
-    await extensionStores.biometric.unenroll()
+    await extensionStores.quickUnlock.unenroll()
     await extensionStores.password.clearPassword()
     await messageSender("pri(app.authenticate)", { pass: password })
   })
@@ -67,10 +67,10 @@ describe("App handler biometric unlock", () => {
     await messageSender("pri(app.lock)", null)
 
     await expect(
-      messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
-    ).rejects.toThrow("Must be logged in to enroll biometric")
+      messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
+    ).rejects.toThrow("Must be logged in to enable quick unlock")
 
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).toBeNull()
   })
 
   test("cannot enroll without an auth secret", async () => {
@@ -78,18 +78,18 @@ describe("App handler biometric unlock", () => {
     await extensionStores.password.set({ secret: undefined, check: undefined })
 
     await expect(
-      messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
-    ).rejects.toThrow("Please log in again before enabling biometric unlock")
+      messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
+    ).rejects.toThrow("Please log in again before enabling quick unlock")
   })
 
   test("unlocks the wallet with the enrolled PRF output", async () => {
     const prfOutput = randomPrfOutput()
-    expect(await messageSender("pri(app.biometric.enroll)", enrollRequest(prfOutput))).toBe(true)
+    expect(await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(prfOutput))).toBe(true)
 
     await messageSender("pri(app.lock)", null)
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
 
-    expect(await messageSender("pri(app.biometric.authenticate)", { prfOutput })).toBe("success")
+    expect(await messageSender("pri(app.quickUnlock.authenticate)", { prfOutput })).toBe("success")
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
     expect(await extensionStores.password.getPassword()).toBe(
       await extensionStores.password.getHashedPassword(password)
@@ -98,60 +98,60 @@ describe("App handler biometric unlock", () => {
 
   test("only exposes the public part of the enrollment", async () => {
     const request = enrollRequest(randomPrfOutput())
-    await messageSender("pri(app.biometric.enroll)", request)
+    await messageSender("pri(app.quickUnlock.enroll)", request)
 
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toEqual({
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).toEqual({
       credentialId: request.credentialId,
       prfSalt: request.prfSalt,
     })
   })
 
   test("stays locked and clears the enrollment on a wrong PRF output", async () => {
-    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+    await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
     await messageSender("pri(app.lock)", null)
 
     expect(
-      await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
+      await messageSender("pri(app.quickUnlock.authenticate)", { prfOutput: randomPrfOutput() })
     ).toBe("unenrolled")
 
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).toBeNull()
   })
 
   test("keeps the session and the enrollment when called while already unlocked", async () => {
-    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+    await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
 
     expect(
-      await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
+      await messageSender("pri(app.quickUnlock.authenticate)", { prfOutput: randomPrfOutput() })
     ).toBe("success")
 
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).not.toBeNull()
   })
 
   test("does not unlock when not enrolled", async () => {
     await messageSender("pri(app.lock)", null)
 
     expect(
-      await messageSender("pri(app.biometric.authenticate)", { prfOutput: randomPrfOutput() })
+      await messageSender("pri(app.quickUnlock.authenticate)", { prfOutput: randomPrfOutput() })
     ).toBe("unenrolled")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
   })
 
   test("keeps the enrollment when the auth secret is missing", async () => {
     const prfOutput = randomPrfOutput()
-    await messageSender("pri(app.biometric.enroll)", enrollRequest(prfOutput))
+    await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(prfOutput))
     await messageSender("pri(app.lock)", null)
 
     // the next password login sets the auth secret back up, so this enrollment isn't dead
     await extensionStores.password.set({ secret: undefined, check: undefined })
 
-    expect(await messageSender("pri(app.biometric.authenticate)", { prfOutput })).toBe("failed")
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.authenticate)", { prfOutput })).toBe("failed")
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).not.toBeNull()
   })
 
   test("clears the enrollment when the password changes", async () => {
-    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+    await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
 
     // mnemonic store needs to have confirmed === true or password cannot be changed
     await keyringStore.updateMnemonic(mnemonicId, { confirmed: true })
@@ -164,23 +164,23 @@ describe("App handler biometric unlock", () => {
       })
     ).toBe(true)
 
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).toBeNull()
   })
 
   test("unenroll clears the enrollment", async () => {
-    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+    await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
 
-    expect(await messageSender("pri(app.biometric.unenroll)", null)).toBe(true)
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.unenroll)", null)).toBe(true)
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).toBeNull()
   })
 
   test("cannot unenroll while logged out", async () => {
-    await messageSender("pri(app.biometric.enroll)", enrollRequest(randomPrfOutput()))
+    await messageSender("pri(app.quickUnlock.enroll)", enrollRequest(randomPrfOutput()))
     await messageSender("pri(app.lock)", null)
 
-    await expect(messageSender("pri(app.biometric.unenroll)", null)).rejects.toThrow(
-      "Must be logged in to disable biometric unlock"
+    await expect(messageSender("pri(app.quickUnlock.unenroll)", null)).rejects.toThrow(
+      "Must be logged in to disable quick unlock"
     )
-    expect(await messageSender("pri(app.biometric.getCredentialInfo)", null)).not.toBeNull()
+    expect(await messageSender("pri(app.quickUnlock.getCredentialInfo)", null)).not.toBeNull()
   })
 })

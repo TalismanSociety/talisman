@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next"
 /**
  * Turns a failed WebAuthn ceremony into something we can show the user.
  *
- * Whether biometric unlock works depends on the browser, the OS and the active passkey provider all
+ * Whether quick unlock works depends on the browser, the OS and the active passkey provider all
  * at once, so there is no version we could check upfront - we let the ceremony fail and explain why.
  *
  * Returns null when the user cancelled, in which case nothing should be shown.
  */
-export const useBiometricErrorMessage = () => {
+export const useQuickUnlockErrorMessage = () => {
   const { t } = useTranslation()
 
   return useCallback(
@@ -19,7 +19,7 @@ export const useBiometricErrorMessage = () => {
       // of authenticator, or the browser and OS are too old to expose the capability
       if (err instanceof PrfEvaluationError)
         return t(
-          "This authenticator can't be used for biometric unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
+          "This authenticator can't be used for quick unlock. Use your device's built-in authenticator, such as Touch ID, Windows Hello or your screen lock, and make sure your browser and operating system are up to date."
         )
 
       switch ((err as DOMException)?.name) {
@@ -28,17 +28,17 @@ export const useBiometricErrorMessage = () => {
           return null
 
         case "SecurityError":
-          return t("Your browser doesn't allow biometric unlock from an extension page.")
+          return t("Your browser doesn't allow quick unlock from an extension page.")
 
         case "NotSupportedError":
         case "ConstraintError":
-          return t("Your device doesn't support biometric unlock.")
+          return t("Your device doesn't support quick unlock.")
 
         default:
           // our own errors carry a useful explanation, anything else from the browser does not
           return err instanceof DOMException
-            ? t("Biometric unlock failed, please try again.")
-            : ((err as Error)?.message ?? t("Biometric unlock failed, please try again."))
+            ? t("Quick unlock failed, please try again.")
+            : ((err as Error)?.message ?? t("Quick unlock failed, please try again."))
       }
     },
     [t]

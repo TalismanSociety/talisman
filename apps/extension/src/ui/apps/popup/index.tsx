@@ -61,7 +61,7 @@ const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
 
   // the user locking the wallet (or the autolock timer) swaps the portfolio for the login screen
-  // in a popup that is on its way out - biometrics must not prompt on their behalf there
+  // in a popup that is on its way out - quick unlock must not prompt on their behalf there
   const wasLoggedIn = useRef(false)
   useEffect(() => {
     if (isLoggedIn) wasLoggedIn.current = true
@@ -78,7 +78,7 @@ const Popup = () => {
     }
   }, [isOnboarded])
 
-  if (!isLoggedIn) return <LoginViewManager autoTriggerBiometric={!wasLoggedIn.current} />
+  if (!isLoggedIn) return <LoginViewManager autoTriggerQuickUnlock={!wasLoggedIn.current} />
 
   if (isMigrating) return <MigrationProgress />
 

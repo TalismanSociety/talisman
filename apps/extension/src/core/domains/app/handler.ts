@@ -11,19 +11,19 @@ import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
 import { keyringStore } from "../keyring/store"
-import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./biometricCrypto"
 import { addException } from "./protector"
-import { isCompleteEnrollment } from "./store.biometric"
+import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./quickUnlockCrypto"
 import type { PasswordStoreData } from "./store.password"
+import { isCompleteEnrollment } from "./store.quickUnlock"
 import type {
   AnalyticsCaptureRequest,
-  BiometricAuthenticateRequest,
-  BiometricAuthenticateResult,
-  BiometricCredentialInfo,
-  BiometricEnrollRequest,
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,
+  QuickUnlockAuthenticateRequest,
+  QuickUnlockAuthenticateResult,
+  QuickUnlockCredentialInfo,
+  QuickUnlockEnrollRequest,
   RequestLogin,
   RequestOnboardCreatePassword,
   RequestRoute,
@@ -175,8 +175,8 @@ export default class AppHandler extends ExtensionHandler {
       await this.stores.password.set(pwStoreData)
       await this.stores.password.setPlaintextPassword(newPw)
 
-      // invalidate biometric enrollment since password changed
-      await this.stores.biometric.unenroll()
+      // invalidate quick unlock enrollment since password changed
+      await this.stores.quickUnlock.unenroll()
 
       updateProgress(ChangePasswordStatusUpdateStatus.DONE)
 
@@ -196,7 +196,7 @@ export default class AppHandler extends ExtensionHandler {
     this.stores.app.set({ onboarded: "FALSE" })
 
     await this.stores.password.reset()
-    await this.stores.biometric.unenroll()
+    await this.stores.quickUnlock.unenroll()
 
     await keyringStore.reset()
 
@@ -246,18 +246,18 @@ export default class AppHandler extends ExtensionHandler {
     return windowManager.promptLogin()
   }
 
-  // --- biometric unlock ---
+  // --- quick unlock ---
 
-  private async biometricEnroll(request: BiometricEnrollRequest): Promise<boolean> {
+  private async quickUnlockEnroll(request: QuickUnlockEnrollRequest): Promise<boolean> {
     assert(
       this.stores.password.isLoggedIn.value === "TRUE",
-      "Must be logged in to enroll biometric"
+      "Must be logged in to enable quick unlock"
     )
 
-    // biometric unlock authenticates against the auth secret, which accounts that last logged in
+    // quick unlock authenticates against the auth secret, which accounts that last logged in
     // through the legacy method may not have yet - enrolling them would never be able to unlock
     const { secret, check } = await this.stores.password.get()
-    assert(secret && check, "Please log in again before enabling biometric unlock")
+    assert(secret && check, "Please log in again before enabling quick unlock")
 
     const password = await this.stores.password.getPassword()
     assert(password, "No password in session")
@@ -265,39 +265,39 @@ export default class AppHandler extends ExtensionHandler {
     // the transformed password is encrypted here and never leaves the background
     const { encryptedPassword, iv } = await encryptPassword(password, request.prfOutput)
 
-    await this.stores.biometric.enroll({
+    await this.stores.quickUnlock.enroll({
       credentialId: request.credentialId,
       prfSalt: request.prfSalt,
       encryptedPassword,
       iv,
     })
-    talismanAnalytics.capture("biometric enrolled")
+    talismanAnalytics.capture("quick unlock enrolled")
     return true
   }
 
-  private async biometricUnenroll(): Promise<boolean> {
+  private async quickUnlockUnenroll(): Promise<boolean> {
     assert(
       this.stores.password.isLoggedIn.value === "TRUE",
-      "Must be logged in to disable biometric unlock"
+      "Must be logged in to disable quick unlock"
     )
 
-    await this.stores.biometric.unenroll()
-    talismanAnalytics.capture("biometric unenrolled")
+    await this.stores.quickUnlock.unenroll()
+    talismanAnalytics.capture("quick unlock unenrolled")
     return true
   }
 
   /** Only the public part of the enrollment - the ciphertext never leaves the background */
-  private async biometricGetCredentialInfo(): Promise<BiometricCredentialInfo | null> {
-    const enrollment = await this.stores.biometric.get()
+  private async quickUnlockGetCredentialInfo(): Promise<QuickUnlockCredentialInfo | null> {
+    const enrollment = await this.stores.quickUnlock.get()
     if (!isCompleteEnrollment(enrollment)) return null
 
     const { credentialId, prfSalt } = enrollment
     return { credentialId, prfSalt }
   }
 
-  private async biometricAuthenticate({
+  private async quickUnlockAuthenticate({
     prfOutput,
-  }: BiometricAuthenticateRequest): Promise<BiometricAuthenticateResult> {
+  }: QuickUnlockAuthenticateRequest): Promise<QuickUnlockAuthenticateResult> {
     // nothing to unlock, and a mismatching prf output here must not log the user out
     if (this.stores.password.isLoggedIn.value === "TRUE") return "success"
 
@@ -309,7 +309,7 @@ export default class AppHandler extends ExtensionHandler {
     if (!isUsablePrfOutput(prfOutput)) return "failed"
 
     // read outside of the try blocks, a storage failure here must not clear a valid enrollment
-    const enrollment = await this.stores.biometric.get()
+    const enrollment = await this.stores.quickUnlock.get()
     // nothing usable is stored, whatever credential the caller holds is orphaned
     if (!isCompleteEnrollment(enrollment)) return "unenrolled"
 
@@ -324,8 +324,8 @@ export default class AppHandler extends ExtensionHandler {
       // the prf output decodes, so decryption is now a pure computation over stored data and a
       // failure means the output doesn't match the enrollment and never will - drop it instead of
       // prompting for it on every login
-      log.error("Biometric decryption failed, clearing enrollment", { cause })
-      await this.stores.biometric.unenroll()
+      log.error("Quick unlock decryption failed, clearing enrollment", { cause })
+      await this.stores.quickUnlock.unenroll()
       return "unenrolled"
     }
 
@@ -337,8 +337,8 @@ export default class AppHandler extends ExtensionHandler {
 
       // the auth secret was read above, so the recovered password simply doesn't match it anymore
       // and this enrollment can never unlock the wallet again
-      log.error("Biometric authentication failed, clearing enrollment", { cause })
-      await this.stores.biometric.unenroll()
+      log.error("Quick unlock authentication failed, clearing enrollment", { cause })
+      await this.stores.quickUnlock.unenroll()
 
       return "unenrolled"
     }
@@ -349,11 +349,11 @@ export default class AppHandler extends ExtensionHandler {
       // the password is proven good, so this is the session write failing - the enrollment is still
       // valid and the next attempt can succeed, keep it
       await this.stores.password.clearPassword()
-      log.error("Biometric unlock could not start the session", { cause })
+      log.error("Quick unlock could not start the session", { cause })
       return "failed"
     }
 
-    talismanAnalytics.capture("authenticate", { method: "biometric" })
+    talismanAnalytics.capture("authenticate", { method: "quickUnlock" })
 
     this.stores.settings
       .get()
@@ -434,28 +434,28 @@ export default class AppHandler extends ExtensionHandler {
         return requestStore.subscribe(id, port)
 
       // --------------------------------------------------------------------
-      // biometric handlers -------------------------------------------------
+      // quick unlock handlers -------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(app.biometric.enroll)":
-        return this.biometricEnroll(request as BiometricEnrollRequest)
+      case "pri(app.quickUnlock.enroll)":
+        return this.quickUnlockEnroll(request as QuickUnlockEnrollRequest)
 
-      case "pri(app.biometric.unenroll)":
-        return this.biometricUnenroll()
+      case "pri(app.quickUnlock.unenroll)":
+        return this.quickUnlockUnenroll()
 
-      case "pri(app.biometric.isEnrolled.subscribe)":
-        return genericSubscription<"pri(app.biometric.isEnrolled.subscribe)">(
+      case "pri(app.quickUnlock.isEnrolled.subscribe)":
+        return genericSubscription<"pri(app.quickUnlock.isEnrolled.subscribe)">(
           id,
           port,
-          this.stores.biometric.observable.pipe(
+          this.stores.quickUnlock.observable.pipe(
             map((data) => ({ enrolled: isCompleteEnrollment(data) }))
           )
         )
 
-      case "pri(app.biometric.getCredentialInfo)":
-        return this.biometricGetCredentialInfo()
+      case "pri(app.quickUnlock.getCredentialInfo)":
+        return this.quickUnlockGetCredentialInfo()
 
-      case "pri(app.biometric.authenticate)":
-        return this.biometricAuthenticate(request as BiometricAuthenticateRequest)
+      case "pri(app.quickUnlock.authenticate)":
+        return this.quickUnlockAuthenticate(request as QuickUnlockAuthenticateRequest)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

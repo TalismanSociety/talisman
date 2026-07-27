@@ -1,13 +1,13 @@
 import { base64 } from "@talismn/crypto"
 import { describe, expect, test } from "vitest"
 
-import { decryptPassword, encryptPassword, isUsablePrfOutput } from "../biometricCrypto"
+import { decryptPassword, encryptPassword, isUsablePrfOutput } from "../quickUnlockCrypto"
 
 const randomPrfOutput = () => base64.encode(crypto.getRandomValues(new Uint8Array(32)))
 
 const PASSWORD = "$2a$13$JJqAn9jUJ3P5nSGLpXHrAeaLtGYRR4mMRSDkVtwjBHFcbrPXK1Q1O"
 
-describe("biometricCrypto", () => {
+describe("quickUnlockCrypto", () => {
   test("round trips the password", async () => {
     const prfOutput = randomPrfOutput()
 
