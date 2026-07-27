@@ -106,11 +106,16 @@ const Background = () => {
 /** autologin (below) drives the password field itself, it must not race the quick unlock prompt */
 const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
 
-const QuickUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
+const QuickUnlockButton = ({
+  autoTrigger,
+  onError,
+}: {
+  autoTrigger: boolean
+  onError: (error?: string) => void
+}) => {
   const { t } = useTranslation()
   const enrolled = useIsQuickUnlockEnrolled()
   const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState<string>()
   const getErrorMessage = useQuickUnlockErrorMessage()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
@@ -126,18 +131,18 @@ const QuickUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
     }
   }, [])
 
-  const handleQuickUnlockUnlock = useCallback(
+  const handleQuickUnlock = useCallback(
     async (explicit: boolean) => {
       if (processing) return
       setProcessing(true)
-      setError(undefined)
+      onError(undefined)
       abortRef.current?.abort()
       const abort = new AbortController()
       abortRef.current = abort
       try {
         const credentialInfo = await api.quickUnlockGetCredentialInfo()
         if (!credentialInfo)
-          return setError(t("Quick unlock was reset, please enable it again from settings."))
+          return onError(t("Quick unlock was reset, please enable it again from settings."))
 
         const prfOutput = await getQuickUnlockPrfOutput(
           credentialInfo.credentialId,
@@ -151,11 +156,11 @@ const QuickUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
         // background has confirmed the enrollment is gone for good
         if (result === "unenrolled") {
           await signalCredentialRemoved(credentialInfo.credentialId)
-          return setError(t("Quick unlock was reset, please enable it again from settings."))
+          return onError(t("Quick unlock was reset, please enable it again from settings."))
         }
 
         if (result === "failed")
-          return setError(
+          return onError(
             t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
           )
 
@@ -177,15 +182,15 @@ const QuickUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
         // log the error category only, it must never carry credential or password data
         log.error("Quick unlock failed", { name })
-        setError(message)
+        onError(message)
       } finally {
         setProcessing(false)
       }
     },
-    [getErrorMessage, processing, t]
+    [getErrorMessage, onError, processing, t]
   )
 
-  const handleClick = useCallback(() => handleQuickUnlockUnlock(true), [handleQuickUnlockUnlock])
+  const handleClick = useCallback(() => handleQuickUnlock(true), [handleQuickUnlock])
 
   // auto-trigger quick unlock on first render, unless the user is already typing their password
   useEffect(() => {
@@ -204,33 +209,30 @@ const QuickUnlockUnlockButton = ({ autoTrigger }: { autoTrigger: boolean }) => {
 
       triggeredRef.current = true
       window.removeEventListener("focus", trigger)
-      handleQuickUnlockUnlock(false)
+      handleQuickUnlock(false)
     }
 
     trigger()
     window.addEventListener("focus", trigger)
     return () => window.removeEventListener("focus", trigger)
-  }, [autoTrigger, enrolled, handleQuickUnlockUnlock])
+  }, [autoTrigger, enrolled, handleQuickUnlock])
 
-  if (!enrolled) return error ? <span className="text-alert-warn text-sm">{error}</span> : null
+  if (!enrolled) return null
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={processing}
-        className={cn(
-          "flex cursor-pointer items-center justify-center gap-4",
-          "text-body-disabled text-sm transition-colors hover:text-white",
-          processing && "animate-pulse"
-        )}
-      >
-        <UserCheckIcon className="text-lg" />
-        {t("Use quick unlock")}
-      </button>
-      {error && <span className="text-alert-warn text-sm">{error}</span>}
-    </>
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={processing}
+      className={cn(
+        "flex cursor-pointer items-center justify-center gap-4",
+        "text-body-disabled text-sm transition-colors hover:text-white",
+        processing && "animate-pulse"
+      )}
+    >
+      <UserCheckIcon className="text-lg" />
+      {t("Use quick unlock")}
+    </button>
   )
 }
 
@@ -243,6 +245,8 @@ const Login = ({
 }) => {
   const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
+  const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
+  const [quickUnlockError, setQuickUnlockError] = useState<string>()
 
   useEffect(() => {
     popupOpenEvent("auth")
@@ -330,16 +334,30 @@ const Login = ({
           >
             {t("Unlock")}
           </Button>
-          <QuickUnlockUnlockButton
-            autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
-          />
-          <button
-            type="button"
-            className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
-            onClick={setShowResetWallet}
-          >
-            {t("Forgot Password?")}
-          </button>
+          <div className="mt-2 flex w-full flex-col items-center gap-4">
+            {/* both entry points share a row, so enrolling doesn't move the form up */}
+            <div className="flex w-full items-center justify-evenly">
+              <QuickUnlockButton
+                autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
+                onError={setQuickUnlockError}
+              />
+              {quickUnlockEnrolled && (
+                <span aria-hidden className="text-body-disabled text-sm">
+                  |
+                </span>
+              )}
+              <button
+                type="button"
+                className="cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
+                onClick={setShowResetWallet}
+              >
+                {t("Forgot Password?")}
+              </button>
+            </div>
+            {quickUnlockError && (
+              <span className="text-alert-warn text-sm">{quickUnlockError}</span>
+            )}
+          </div>
         </form>
       </PopupFooter>
     </PopupLayout>
