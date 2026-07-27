@@ -375,7 +375,9 @@ jobs:
       - name: Report the changeset status on the PR
         # replaces thollander/actions-comment-pull-request, which is still on the deprecated
         # node20 runtime (v3.0.1 is its latest). An existing comment is always updated; a new one
-        # is only created when changesets are actually missing.
+        # is only created when changesets are actually missing. Comments left by the action on
+        # currently open PRs are picked up through their own trailing marker and rewritten in the
+        # new format, so they migrate on the next run instead of going stale next to a duplicate.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -386,6 +388,7 @@ jobs:
           CHANGESETS: ${{ steps.changesets.outputs.CHANGESETS }}
         run: |
           MARKER="<!-- missing-changesets -->"
+          LEGACY_MARKER='<!-- thollander/actions-comment-pull-request "missing-changesets" -->'
           LEARN="Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md)."
 
           if [ "$IS_MISSING" = "yes" ]; then
@@ -402,8 +405,13 @@ jobs:
               "$MARKER" "$LEARN")
           fi
 
+          # `jq -s` + `add` because `--paginate` emits one array per page
           COMMENT_ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
-            | jq -r --arg m "$MARKER" '[.[] | select(.body | startswith($m)) | .id] | first // empty')
+            | jq -rs --arg m "$MARKER" --arg legacy "$LEGACY_MARKER" '
+                (add // []) as $comments
+                | [$comments[] | select(.body | startswith($m)) | .id] as $new
+                | [$comments[] | select(.body | contains($legacy)) | .id] as $old
+                | ($new + $old | first) // empty')
 
           if [ -n "$COMMENT_ID" ]; then
             gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -f body="$BODY" --silent
