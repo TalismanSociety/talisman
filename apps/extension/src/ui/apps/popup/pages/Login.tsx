@@ -334,19 +334,18 @@ const Login = ({
           </Button>
           <div className="mt-2 flex w-full flex-col items-center gap-4">
             {/* both entry points share a row, so enrolling doesn't move the form up */}
-            <div className="flex w-full items-center justify-evenly">
+            <div className={cn("grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}>
               <QuickUnlockButton
                 autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
                 onError={setQuickUnlockError}
               />
-              {quickUnlockEnrolled && (
-                <span aria-hidden className="text-body-disabled text-sm">
-                  |
-                </span>
-              )}
               <button
                 type="button"
-                className="cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
+                className={cn(
+                  "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+                  // the column edge is the separator, so it can't drift off centre
+                  quickUnlockEnrolled && "border-grey-700 border-l"
+                )}
                 onClick={setShowResetWallet}
               >
                 {t("Forgot Password?")}
