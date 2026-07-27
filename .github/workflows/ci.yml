@@ -98,16 +98,24 @@ jobs:
           echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
       - name: Extract translatable strings
         run: pnpm chore:update-translations
-      - name: Upload translatable strings
-        uses: simplelocalize/github-action-cli@v5
+      - name: Setup Java for the SimpleLocalize CLI
+        uses: actions/setup-java@v5
         with:
-          # v5 appends `--apiKey <api-key>` itself, so it must not also be passed through `args`
-          api-key: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
-          command: "upload"
-          # pinned: the action defaults to 2.9.0, which dropped the `autoTranslation` key that
-          # simplelocalize.yml still uses. Bumping the cli needs that config migrated first.
-          cli-version: "2.2.0"
-          args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json"
+          distribution: temurin
+          java-version: "21"
+      - name: Upload translatable strings
+        # inlined rather than using simplelocalize/github-action-cli: its composite pins
+        # actions/setup-java@v4, which still runs on the deprecated node20 runtime.
+        # cli 2.2.0 is pinned: 2.9.0 dropped the `autoTranslation` key simplelocalize.yml uses.
+        env:
+          CLI_VERSION: "2.2.0"
+          SIMPLE_LOCALIZE_API_KEY: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
+        run: |
+          curl -sSf -o "$RUNNER_TEMP/simplelocalize.jar" \
+            "https://get.simplelocalize.io/binaries/$CLI_VERSION/simplelocalize-cli-$CLI_VERSION.jar"
+          java -jar "$RUNNER_TEMP/simplelocalize.jar" upload \
+            --apiKey "$SIMPLE_LOCALIZE_API_KEY" \
+            --uploadPath './apps/extension/.i18next-parser/locales/{lang}/{ns}.json'
       - name: Build extension
         run: pnpm build:extension
         env:
@@ -284,6 +292,9 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev'
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout repo
@@ -361,52 +372,44 @@ jobs:
           echo "--IS_MISSING_CHANGESETS--" >> $GITHUB_STEP_SUMMARY
           echo '${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-      - name: Comment on the PR to indicate which packages they should add a changeset to
-        uses: thollander/actions-comment-pull-request@v3
-        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
-        with:
-          comment-tag: "missing-changesets"
-          message: |
-            ### :boom: No changeset(s) detected
+      - name: Report the changeset status on the PR
+        # replaces thollander/actions-comment-pull-request, which is still on the deprecated
+        # node20 runtime (v3.0.1 is its latest). An existing comment is always updated; a new one
+        # is only created when changesets are actually missing.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # pass context values through env (never interpolate ${{ }} into run:)
+          IS_MISSING: ${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}
+          CHANGED_PACKAGES: ${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}
+          WITHOUT_CHANGESETS: ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
+          CHANGESETS: ${{ steps.changesets.outputs.CHANGESETS }}
+        run: |
+          MARKER="<!-- missing-changesets -->"
+          LEARN="Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md)."
 
-            This PR is missing changesets for the following packages:
+          if [ "$IS_MISSING" = "yes" ]; then
+            CREATE_IF_MISSING=true
+            BODY=$(printf '%s\n### :boom: No changeset(s) detected\n\nThis PR is missing changesets for the following packages:\n\n```\n%s\n```\n\nPlease add a changeset for these packages.\nYou can do so by running `pnpm changeset` in your local development environment.\n\n%s\n' \
+              "$MARKER" "$WITHOUT_CHANGESETS" "$LEARN")
+          elif [ -n "$CHANGED_PACKAGES" ]; then
+            CREATE_IF_MISSING=false
+            BODY=$(printf '%s\n### :butterfly: Changeset(s) detected\n\nThis PR includes changeset(s) for the following changed packages:\n\n```\n%s\n```\n\n%s\n' \
+              "$MARKER" "$CHANGESETS" "$LEARN")
+          else
+            CREATE_IF_MISSING=false
+            BODY=$(printf '%s\n### :sparkles: No changeset(s) required\n\nThis PR does not include any package changes, and so it does not require any changesets to be added.\n\n%s\n' \
+              "$MARKER" "$LEARN")
+          fi
 
-            ```
-            ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
-            ```
+          COMMENT_ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            | jq -r --arg m "$MARKER" '[.[] | select(.body | startswith($m)) | .id] | first // empty')
 
-            Please add a changeset for these packages.
-            You can do so by running `pnpm changeset` in your local development environment.
-
-            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
-      - name: Update PR comment to indicate that all packages have changesets
-        uses: thollander/actions-comment-pull-request@v3
-        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'no' && steps.changed-packages.outputs.CHANGED_PACKAGES != ''
-        with:
-          comment-tag: "missing-changesets"
-          create-if-not-exists: false
-          message: |
-            ### :butterfly: Changeset(s) detected
-
-            This PR includes changeset(s) for the following changed packages:
-
-            ```
-            ${{ steps.changesets.outputs.CHANGESETS }}
-            ```
-
-            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
-      - name: Update PR comment to indicate that no changesets are needed
-        uses: thollander/actions-comment-pull-request@v3
-        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'no' && steps.changed-packages.outputs.CHANGED_PACKAGES == ''
-        with:
-          comment-tag: "missing-changesets"
-          create-if-not-exists: false
-          message: |
-            ### :sparkles: No changeset(s) required
-
-            This PR does not include any package changes, and so it does not require any changesets to be added.
-
-            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -f body="$BODY" --silent
+          elif [ "$CREATE_IF_MISSING" = "true" ]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$BODY" --silent
+          fi
       - name: Fail job if some packages don't have a changeset
         if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
         run: exit 1
