@@ -7,6 +7,7 @@ import { useMemo } from "react"
 import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetBittensorDefaultMinStake } from "../../hooks/bittensor/useGetBittensorMinStake"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
+import type { RemarkType } from "../utils/constants"
 import {
   calculateEffectiveFeeRate,
   calculateFee,
@@ -31,6 +32,7 @@ type UseBittensorStakingPayloadProps = {
   netuid: number | null
   amountIn: bigint | null
   direction: StakeDirection
+  remarkType: RemarkType
 }
 
 const MOCKED_HOTKEY = "5HK5tp6t2S59DywmHRWPBVJeJ86T61KjurYqeooqj8sREpeN"
@@ -42,6 +44,7 @@ export const useBittensorStakingPayload = ({
   netuid,
   direction,
   amountIn,
+  remarkType,
 }: UseBittensorStakingPayloadProps) => {
   const { tier } = useGetSeekDiscount()
   const subnetFee = useGetSubnetFee({ netuid: netuid ?? 0, direction })
@@ -191,6 +194,7 @@ export const useBittensorStakingPayload = ({
     amount,
     priceLimit,
     talismanFee,
+    remarkType,
   })
 
   const {
@@ -207,6 +211,7 @@ export const useBittensorStakingPayload = ({
     // Use fallbacks >= 16384 to match real values' 4-byte SCALE compact encoding - less would provide a fee estimate that is 2 plancks short
     priceLimit: priceLimit ?? 100_000n,
     talismanFee: talismanFee ?? 100_000n,
+    remarkType,
   })
 
   return {
@@ -254,6 +259,7 @@ type useBittensorAnyStakingPayloadProps = {
   amount: bigint | null | undefined
   priceLimit: bigint | null
   talismanFee: bigint | null
+  remarkType: RemarkType
 }
 
 const useBittensorAnyStakingPayload = ({
@@ -265,6 +271,7 @@ const useBittensorAnyStakingPayload = ({
   amount,
   priceLimit,
   talismanFee,
+  remarkType,
 }: useBittensorAnyStakingPayloadProps) => {
   return useQuery({
     queryKey: [
@@ -277,6 +284,7 @@ const useBittensorAnyStakingPayload = ({
       amount?.toString(),
       priceLimit?.toString(),
       talismanFee?.toString(),
+      remarkType,
     ],
     queryFn: () => {
       if (
@@ -300,6 +308,7 @@ const useBittensorAnyStakingPayload = ({
             priceLimit,
             netuid,
             talismanFee,
+            remarkType,
           })
         case "alphaToTao":
           return getBittensorUnbondPayload({
@@ -310,6 +319,7 @@ const useBittensorAnyStakingPayload = ({
             priceLimit,
             netuid,
             talismanFee,
+            remarkType,
           })
       }
     },

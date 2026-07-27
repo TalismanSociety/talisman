@@ -146,7 +146,6 @@ async function getGeneralReport({
     talisman: 0,
     qr: 0,
     ledger: 0,
-    dcent: 0,
     watched: 0,
     signet: 0,
   }

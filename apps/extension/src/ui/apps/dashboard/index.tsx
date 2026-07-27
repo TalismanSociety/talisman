@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { AccountAddMenu } from "./routes/AccountAdd"
-import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
@@ -30,7 +29,6 @@ import { AboutPage } from "./routes/Settings/AboutPage"
 import { AccountsPage } from "./routes/Settings/Accounts"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
-import { AssetDiscoveryPage } from "./routes/Settings/AssetsDiscovery/AssetDiscoveryPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
@@ -66,7 +64,6 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
-            <Route path="dcent/*" element={<AccountAddDcentDashboardWizard />} />
             <Route path="signet/*" element={<AccountAddSignetDashboardWizard />} />
             <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
@@ -92,7 +89,6 @@ const DashboardInner = () => {
           </Route>
           <Route path="networks-tokens">
             <Route path="" element={<NetworksTokensPage />} />
-            <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
             <Route path="tokens">
               <Route path="" element={<TokensPage />} />
               <Route path="add" element={<AddTokenPage />} />

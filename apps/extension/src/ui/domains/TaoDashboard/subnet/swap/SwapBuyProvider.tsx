@@ -205,6 +205,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     hotkey,
     address,
     networkId: BITTENSOR_NETWORK_ID,
+    remarkType: "swap",
   })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {

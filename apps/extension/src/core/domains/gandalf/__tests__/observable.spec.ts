@@ -106,6 +106,31 @@ describe("gandalfAccessToken$", () => {
     expect(result[1]).toEqual({ status: "success", data: "jwt-new" })
   })
 
+  it("keeps credentials that appeared while registration was in flight", async () => {
+    mockGandalfStore.get
+      .mockResolvedValueOnce({ installId: null, privateKeyHex: null })
+      .mockResolvedValueOnce({ installId: "seeded-inst", privateKeyHex: "1122" })
+    mockRegisterInstall.mockResolvedValue({
+      installId: "new-inst",
+      privateKeyHex: "ccdd",
+    })
+    mockRequestAccessToken.mockResolvedValue({
+      accessToken: "jwt-seeded",
+      expiresIn: 300,
+    })
+
+    const { gandalfAccessToken$ } = await importFresh()
+
+    const resultPromise = firstValueFrom(gandalfAccessToken$.pipe(take(2), toArray()))
+
+    await vi.advanceTimersByTimeAsync(0)
+    const result = await resultPromise
+
+    expect(mockGandalfStore.set).not.toHaveBeenCalled()
+    expect(mockRequestAccessToken).toHaveBeenCalledWith("seeded-inst", "1122", expect.anything())
+    expect(result[1]).toEqual({ status: "success", data: "jwt-seeded" })
+  })
+
   it("emits error status when requestAccessToken fails", async () => {
     mockGandalfStore.get.mockResolvedValue({
       installId: "inst-1",

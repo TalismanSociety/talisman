@@ -13,4 +13,13 @@ export const TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR =
 
 export const TALISMAN_FEE_BITTENSOR = 0.3
 
+/** which UI a staking operation originates from: the staking wizard, or the TAO dashboard's buy/sell wizard */
+export type RemarkType = "stake" | "swap"
+
+// remarks batched with staking extrinsics, so on-chain volume can be attributed to the UI it originates from
+export const DTAO_STAKING_REMARKS: Record<RemarkType, string> = {
+  stake: "chili001",
+  swap: "garlic002",
+}
+
 export const DEFAULT_ROOT_CLAIM_TYPE: RootClaimType = "Swap"

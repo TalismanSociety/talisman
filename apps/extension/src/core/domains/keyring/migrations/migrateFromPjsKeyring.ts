@@ -199,13 +199,14 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             break
           }
 
-          case LegacyAccountOrigin.Watched:
-          case LegacyAccountOrigin.Dcent: {
+          // "DCENT" is a dropped hardware wallet: accounts created back then are kept as watch-only
+          case "DCENT":
+          case LegacyAccountOrigin.Watched: {
             await keyringStore.addAccountExternal({
               type: "watch-only",
               address: oldPair.address,
               name: (oldPair.meta.name as string) ?? `${capitalize(origin)} ${oldPair.address}`,
-              isPortfolio: !!oldPair.meta.isPortfolio || origin === LegacyAccountOrigin.Dcent,
+              isPortfolio: !!oldPair.meta.isPortfolio || origin === "DCENT",
             })
             break
           }

@@ -7,6 +7,17 @@ import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
 export type RemoteConfigStoreData = RemoteConfigData
 
+export interface QuickUnlockStoreData {
+  /** Base64url-encoded WebAuthn credential ID */
+  credentialId?: string
+  /** Hashed password encrypted with PRF-derived AES-256-GCM key (Base64) */
+  encryptedPassword?: string
+  /** AES-GCM initialization vector (Base64) */
+  iv?: string
+  /** Salt passed to the WebAuthn PRF extension (Base64) */
+  prfSalt?: string
+}
+
 export interface RequestOnboardCreatePassword {
   pass: string
   passConfirm: string
@@ -73,6 +84,33 @@ export interface RequestAllowPhishingSite {
   url: string
 }
 
+export interface QuickUnlockEnrollRequest {
+  credentialId: string
+  prfSalt: string
+  /** Base64-encoded PRF output, used by the background to derive the encryption key */
+  prfOutput: string
+}
+
+export interface QuickUnlockAuthenticateRequest {
+  /** Base64-encoded PRF output, used by the background to derive the decryption key */
+  prfOutput: string
+}
+
+/**
+ * The outcome of a quick unlock attempt:
+ * - `success` - the wallet is unlocked
+ * - `failed` - the attempt didn't unlock the wallet, but the enrollment may still work later
+ * - `unenrolled` - the enrollment can never unlock the wallet again and has been dropped, so the
+ *   passkey is now useless and the UI may tell the authenticator about it
+ */
+export type QuickUnlockAuthenticateResult = "success" | "failed" | "unenrolled"
+
+/** The non-sensitive part of the enrollment, needed by the UI to run the WebAuthn ceremony */
+export interface QuickUnlockCredentialInfo {
+  credentialId: string
+  prfSalt: string
+}
+
 export interface AppMessages {
   "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]
   "pri(app.authenticate)": [RequestLogin, boolean]
@@ -91,4 +129,14 @@ export interface AppMessages {
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
+
+  // quick unlock
+  "pri(app.quickUnlock.enroll)": [QuickUnlockEnrollRequest, boolean]
+  "pri(app.quickUnlock.unenroll)": [null, boolean]
+  "pri(app.quickUnlock.isEnrolled.subscribe)": [null, boolean, { enrolled: boolean }]
+  "pri(app.quickUnlock.getCredentialInfo)": [null, QuickUnlockCredentialInfo | null]
+  "pri(app.quickUnlock.authenticate)": [
+    QuickUnlockAuthenticateRequest,
+    QuickUnlockAuthenticateResult,
+  ]
 }

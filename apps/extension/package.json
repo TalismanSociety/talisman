@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "3.7.1",
+  "version": "3.7.2",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
@@ -29,7 +29,7 @@
     "@polkadot-api/substrate-bindings": "0.20.3",
     "@polkadot-api/substrate-client": "0.7.0",
     "@polkadot-api/utils": "0.4.0",
-    "@polkadot-api/ws-provider": "0.9.0",
+    "@polkadot-api/ws-provider": "0.9.1",
     "@react-rxjs/core": "^0.10.8",
     "@scure/bip39": "^2.2.0",
     "@scure/sr25519": "2.2.0",
@@ -116,7 +116,7 @@
     "ts-results": "3.3.0",
     "typescript": "^7.0.2",
     "url-join": "^5.0.0",
-    "uuid": "^13.0.0",
+    "uuid": "^13.0.1",
     "viem": "2.52.2",
     "webfontloader": "^1.6.28",
     "yup": "1.7.1",
@@ -171,6 +171,7 @@
     "chore:generate-clients:tda:local": "pnpm dlx swagger-typescript-api@13.6.2 generate -p http://localhost:8787/openapi.json -o ./src/core/domains/bittensor/tao-data -n TaoDataApi --api-class-name TaoDataApi",
     "chore:generate-clients": "pnpm chore:generate-clients:sn45 && pnpm chore:generate-clients:tda && pnpm chore:generate-clients:wrc",
     "chore:generate-init-data": "tsx scripts/generateRemoteConfigInitData.ts",
+    "chore:register-gandalf-e2e": "pnpm --silent tsx scripts/register-gandalf-e2e.ts",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "dev:kill": "lsof -ti:8254 | xargs kill -9 2>/dev/null || true",

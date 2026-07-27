@@ -3,7 +3,12 @@ import { TAO_DECIMALS } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 
 import type { StakeDirection } from "../hooks/types"
-import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./constants"
+import type { RemarkType } from "./constants"
+import {
+  DTAO_STAKING_REMARKS,
+  ROOT_NETUID,
+  TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR,
+} from "./constants"
 
 export type BittensorSwapSimulation = {
   tao_amount: bigint
@@ -59,6 +64,7 @@ export const getBittensorStakingPayload = async ({
   priceLimit,
   netuid,
   talismanFee,
+  remarkType,
 }: {
   sapi: ScaleApi
   address: string
@@ -67,6 +73,7 @@ export const getBittensorStakingPayload = async ({
   priceLimit: bigint
   netuid: number
   talismanFee: bigint
+  remarkType: RemarkType
 }) => {
   if (netuid === 0) {
     return sapi.getExtrinsicPayload(
@@ -80,7 +87,7 @@ export const getBittensorStakingPayload = async ({
             amount_staked: amount,
           }),
           sapi.getDecodedCall("System", "remark_with_event", {
-            remark: Binary.fromText("talisman-bittensor"),
+            remark: Binary.fromText(DTAO_STAKING_REMARKS[remarkType]),
           }),
         ],
       },
@@ -111,7 +118,7 @@ export const getBittensorStakingPayload = async ({
           allow_partial: false,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
-          remark: Binary.fromText("talisman-bittensor"),
+          remark: Binary.fromText(DTAO_STAKING_REMARKS[remarkType]),
         }),
       ],
     },
@@ -127,6 +134,7 @@ type GetBittensorUnbondPayload = {
   talismanFee: bigint
   priceLimit: bigint
   netuid: number
+  remarkType: RemarkType
 }
 
 type GetBittensorMoveStakePayload = {
@@ -147,6 +155,7 @@ export const getBittensorUnbondPayload = ({
   netuid,
   priceLimit,
   talismanFee,
+  remarkType,
 }: GetBittensorUnbondPayload) => {
   if (netuid === ROOT_NETUID) {
     return sapi.getExtrinsicPayload(
@@ -160,7 +169,7 @@ export const getBittensorUnbondPayload = ({
             amount_unstaked: amount,
           }),
           sapi.getDecodedCall("System", "remark_with_event", {
-            remark: Binary.fromText("talisman-bittensor"),
+            remark: Binary.fromText(DTAO_STAKING_REMARKS[remarkType]),
           }),
         ],
       },
@@ -187,7 +196,7 @@ export const getBittensorUnbondPayload = ({
           value: talismanFee,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
-          remark: Binary.fromText("talisman-bittensor"),
+          remark: Binary.fromText(DTAO_STAKING_REMARKS[remarkType]),
         }),
       ],
     },
@@ -237,7 +246,7 @@ export const getBittensorMoveStakePayload = ({
           alpha_amount: alphaAmount,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
-          remark: Binary.fromText("talisman-bittensor"),
+          remark: Binary.fromText(DTAO_STAKING_REMARKS.stake),
         }),
       ],
     },

@@ -14,7 +14,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
 
     // these do not contain any user data, they will be safely recreated on next startup
     await Promise.allSettled([
-      assetDiscoveryStore.reset(),
+      assetDiscoveryStore.reset(), // cancels current/pending scans
       talismanDb.metadata.clear(),
       talismanDb.blobs.clear(), // chaindata, balances, nfts etc
       tryDeleteDatabase("TalismanChaindata"), // old chaindata db

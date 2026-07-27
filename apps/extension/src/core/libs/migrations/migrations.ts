@@ -15,6 +15,7 @@ import {
 import {
   migrateAssetDiscoveryRollout,
   migrateAssetDiscoveryV2,
+  migrateAssetDiscoveryV3,
 } from "../../domains/assetDiscovery/migrations"
 import { migrateToChaindataV4 } from "../../domains/chaindata/migrations/migrateToChaindataV4"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
@@ -47,6 +48,7 @@ export const migrations: Migrations = [
   migrateToChaindataV4,
   migrateTransactionsV2,
   migrateNftsV2,
+  migrateAssetDiscoveryV3,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:

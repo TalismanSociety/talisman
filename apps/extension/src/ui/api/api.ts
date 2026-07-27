@@ -46,6 +46,16 @@ export const api: MessageTypes = {
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
+  // quick unlock messages -------------------------------------------------------
+  quickUnlockEnroll: (data) => messageService.sendMessage("pri(app.quickUnlock.enroll)", data),
+  quickUnlockUnenroll: () => messageService.sendMessage("pri(app.quickUnlock.unenroll)"),
+  quickUnlockIsEnrolledSubscribe: (cb) =>
+    messageService.subscribe("pri(app.quickUnlock.isEnrolled.subscribe)", null, cb),
+  quickUnlockGetCredentialInfo: () =>
+    messageService.sendMessage("pri(app.quickUnlock.getCredentialInfo)"),
+  quickUnlockAuthenticate: (prfOutput) =>
+    messageService.sendMessage("pri(app.quickUnlock.authenticate)", { prfOutput }),
+
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   approveSign: (id, payload) =>
@@ -291,11 +301,6 @@ export const api: MessageTypes = {
     }) as Promise<ResponseSolanaSubmit>,
   solSignApprove: (req) =>
     messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
-
-  // asset discovery
-  assetDiscoveryStartScan: (scope) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", scope),
-  assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
 
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),

@@ -1,18 +1,10 @@
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import {
-  ArrowDownIcon,
-  CreditCardIcon,
-  RepeatIcon,
-  SeekEyeIcon,
-  SendIcon,
-  TaoIcon,
-} from "@talismn/icons"
+import { ArrowDownIcon, CreditCardIcon, RepeatIcon, SendIcon, TaoIcon } from "@talismn/icons"
 import { isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
@@ -35,7 +27,6 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   const { open: openSwapModal } = useSwapModal()
   const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
-  const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
   const isBittensorEnabled = useIsBittensorEnabled()
 
   const [disableActions, disabledReason] = useMemo(() => {
@@ -131,20 +122,15 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   return (
     <div
       className={cn(
-        "flex w-full max-w-full items-center justify-between gap-8 overflow-hidden",
+        "flex w-full max-w-full items-center justify-start gap-4 overflow-hidden",
         className
       )}
+      data-testid="top-actions-buttons"
     >
-      <div
-        className="flex grow justify-start gap-4 overflow-hidden"
-        data-testid="top-actions-buttons"
-      >
-        {actions.map((action, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static list
-          <Action key={index} analyticsPage={analyticsPage} {...action} />
-        ))}
-      </div>
-      {!!showSeekLink && <SeekBenefitsLink analyticsPage={analyticsPage} />}
+      {actions.map((action, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static list
+        <Action key={index} analyticsPage={analyticsPage} {...action} />
+      ))}
     </div>
   )
 }
@@ -210,27 +196,5 @@ const Action: FC<ActionProps> = ({
         <TooltipContent>{disabledReason || tooltip}</TooltipContent>
       )}
     </Tooltip>
-  )
-}
-
-const SeekBenefitsLink: FC<{ analyticsPage: AnalyticsPage }> = ({ analyticsPage }) => {
-  const { open } = useSeekBenefitsModal()
-
-  const handleSeekClick = useCallback(() => {
-    sendAnalyticsEvent({ ...analyticsPage, name: "Goto", action: "SEEK" })
-    open()
-  }, [analyticsPage, open])
-
-  return (
-    <button
-      type="button"
-      className="flex shrink-0 items-center gap-3 text-base text-primary-700 hover:text-primary"
-      onClick={handleSeekClick}
-    >
-      <div className="flex flex-col justify-center text-[1.25rem]">
-        <SeekEyeIcon />
-      </div>
-      <div>SEEK</div>
-    </button>
   )
 }

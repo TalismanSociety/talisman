@@ -32,8 +32,18 @@ minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   # published by Talisman, no buffer time needed
   - "@talismn/siws"
-  # 0.5.0 verified by diff against 0.4.0 (itself diffed against the source we previously vendored) — can be removed after 2026-07-19
-  - "@polkadot-api/tx-utils"
+  # polkadot-api 2.2.0 and its graph were published 2026-07-20. Diffed 2.2.0 against
+  # 2.1.6: a watch-entries refactor plus dep bumps; ws-provider 0.9.1 is a dep bump
+  # only; json-rpc-provider-proxy 0.4.1 is the sync-provider backoff reset fix we
+  # want. The rest below are transitive bumps pinned by polkadot-api 2.2.0.
+  # Can all be removed after 2026-07-23.
+  - "polkadot-api"
+  - "@polkadot-api/cli"
+  - "@polkadot-api/json-rpc-provider-proxy"
+  - "@polkadot-api/known-chains"
+  - "@polkadot-api/sm-provider"
+  - "@polkadot-api/ws-middleware"
+  - "@polkadot-api/ws-provider"
 
 overrides:
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
@@ -42,6 +52,11 @@ overrides:
   # stable across 6.x. devices follows transport.
   "@ledgerhq/devices": "8.15.1"
   "@ledgerhq/hw-transport": "6.35.4"
+  # .papi/descriptors declares an open `polkadot-api: >=2.0.0` peer range (papi codegen
+  # writes that file), which otherwise resolves to its own copy and ships a second
+  # polkadot-api — and a second sync-provider — in the bundle. Keep in sync with the
+  # polkadot-api version in the root package.json.
+  "polkadot-api": "2.2.0"
   "braces@<3.0.3": ">=3.0.3"
   "cookie@<0.7.0": ">=0.7.0"
   "decode-uri-component": "0.2.2"
@@ -70,6 +85,10 @@ overrides:
   "undici@>=6.0.0 <6.21.1": ">=6.21.1"
   "esbuild@<0.28.1": ">=0.28.1"
   "vite@>=5.0.0 <=5.4.11": ">=5.4.12"
+  "bn.js@<4.12.3": ">=4.12.3"
+  "bn.js@>=5.0.0 <5.2.3": ">=5.2.3"
+  # <12 cap: uuid 11.x is the last line with a CJS entrypoint, some consumers still require()
+  "uuid@<11.1.1": ">=11.1.1 <12.0.0"
   "vite@>=5.0.0 <5.4.15": ">=5.4.15"
   "vite@>=5.0.0 <5.4.16": ">=5.4.16"
   "vite@>=5.0.0 <5.4.18": ">=5.4.18"

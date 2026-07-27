@@ -16,9 +16,11 @@ import type {
   AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
   LoggedinType,
+  QuickUnlockAuthenticateResult,
+  QuickUnlockCredentialInfo,
+  QuickUnlockEnrollRequest,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
-import type { AssetDiscoveryScanScope } from "@core/domains/assetDiscovery/types"
 import type {
   AddressesAndTokens,
   BalanceSubscriptionResponse,
@@ -104,6 +106,13 @@ export default interface MessageTypes {
   approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
+
+  // quick unlock messages -------------------------------------------------------
+  quickUnlockEnroll: (data: QuickUnlockEnrollRequest) => Promise<boolean>
+  quickUnlockUnenroll: () => Promise<boolean>
+  quickUnlockIsEnrolledSubscribe: (cb: (data: { enrolled: boolean }) => void) => UnsubscribeFn
+  quickUnlockGetCredentialInfo: () => Promise<QuickUnlockCredentialInfo | null>
+  quickUnlockAuthenticate: (prfOutput: string) => Promise<QuickUnlockAuthenticateResult>
 
   // signing messages -------------------------------------------------------
   cancelSignRequest: (id: SigningRequestID<"substrate-sign" | "vrf-sign">) => Promise<boolean>
@@ -300,9 +309,6 @@ export default interface MessageTypes {
     genesisHash: HexString,
     specVersion?: number
   ) => Promise<MetadataDef | undefined>
-
-  assetDiscoveryStartScan: (scope: AssetDiscoveryScanScope) => Promise<boolean>
-  assetDiscoveryStopScan: () => Promise<boolean>
 
   nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
   nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
