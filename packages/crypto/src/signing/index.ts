@@ -100,9 +100,11 @@ const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
  * a caller-chosen context can never reproduce another schnorrkel protocol's transcript. `origin`
  * identifies who the output is derived for — the wallet passes the requesting site's web origin
  * (`scheme://host`), so one site can never obtain another's outputs, not even across schemes on
- * the same host — and `context` is the caller's own separator within
- * that origin. Both are length-prefixed, which is what makes the pair injective: without it a
- * caller could pick a `context` that reconstructs another origin's frame.
+ * the same host — and `context` is the caller's own separator within that origin. The origin's
+ * length prefix is what makes the pair injective: without it a caller could pick a `context` that
+ * reconstructs another origin's frame. The trailing `context` prefix adds nothing on top (it is
+ * the last field, and Merlin length-frames the whole effective context anyway); it stays because
+ * the layout is frozen.
  *
  * That layout is frozen: outputs are deterministic per effective context, so any change rotates
  * every derived identity. A revision must be a new opt-in tag, never a replacement.

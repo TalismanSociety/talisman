@@ -201,7 +201,7 @@ describe("substrate-vrf namespace", () => {
     ).toBe(false)
   })
 
-  // both fields are length-prefixed so no context can reconstruct another origin's frame
+  // the origin length prefix is what stops a context from reconstructing another origin's frame
   it("does not let a context impersonate another origin", () => {
     expect(
       output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: "ab", context: utf8("cd") }))
