@@ -2,4 +2,4 @@
 "@talismn/crypto": minor
 ---
 
-Add vrfSignSubstrate and vrfVerifySubstrate for sr25519 VRF signatures
+Add vrfSign / vrfVerify for sr25519 VRF signatures in the substrate-vrf context namespace

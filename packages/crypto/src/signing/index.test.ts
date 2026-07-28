@@ -2,7 +2,14 @@ import { verify as sr25519Verify } from "@scure/sr25519"
 import { describe, expect, it } from "vitest"
 
 import { hex } from "../utils"
-import { signSubstrate, vrfSignSubstrate, vrfVerifySubstrate } from "."
+import {
+  signSubstrate,
+  substrateVrfContext,
+  vrfSign,
+  vrfSignSubstrate,
+  vrfVerify,
+  vrfVerifySubstrate,
+} from "."
 
 // polkadot-js KeyringPair.sign parity vectors, generated with @polkadot/keyring 14.0.3.
 // Secret keys are the //Alice (substrate) / hardhat #0 (ethereum) dev keys.
@@ -146,5 +153,54 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
     expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig.subarray(0, 95))).toBe(false)
     expect(vrfVerifySubstrate(publicKey.subarray(0, 31), MSG_SHORT, sig)).toBe(false)
     expect(vrfVerifySubstrate(new Uint8Array(32).fill(0xff), MSG_SHORT, sig)).toBe(false)
+  })
+})
+
+describe("substrate-vrf namespace", () => {
+  // //Alice substrate dev key
+  const secretKey = hex.decode(
+    "98319d4ff8a9508c4bb0cf0b5a78d760a0b2082c02775e6e82370816fedfff48925a225d97aa00682d6a59b95b18780c10d7032336e88f3442b42361f4a66011"
+  )
+  const publicKey = hex.decode("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d")
+
+  // the layout is frozen - changing it would rotate every identity derived from a
+  // namespaced VRF output, so these bytes are asserted exactly
+  it("builds the frozen effective context layout", () => {
+    expect(hex.encode(substrateVrfContext())).toBe(
+      `${hex.encode(new TextEncoder().encode("substrate-vrf"))}00000000`
+    )
+    expect(hex.encode(substrateVrfContext(new TextEncoder().encode("ctx")))).toBe(
+      `${hex.encode(new TextEncoder().encode("substrate-vrf"))}03000000${hex.encode(new TextEncoder().encode("ctx"))}`
+    )
+  })
+
+  it("signs and verifies within the namespace", () => {
+    const ctx = new TextEncoder().encode("ctx")
+    const sig = vrfSign(secretKey, MSG_SHORT, ctx)
+
+    expect(sig.length).toBe(96)
+    expect(vrfVerify(publicKey, MSG_SHORT, sig, ctx)).toBe(true)
+    // deterministic output under the same caller context
+    expect(hex.encode(vrfSign(secretKey, MSG_SHORT, ctx).subarray(0, 32))).toBe(
+      hex.encode(sig.subarray(0, 32))
+    )
+    // caller contexts still domain-separate each other
+    expect(
+      hex.encode(vrfSign(secretKey, MSG_SHORT, new TextEncoder().encode("ctx2")).subarray(0, 32))
+    ).not.toBe(hex.encode(sig.subarray(0, 32)))
+  })
+
+  // the namespace exists so the wallet cannot act as a VRF oracle for other schnorrkel
+  // protocols: signatures must not verify across the raw/namespaced boundary in either direction
+  it("does not verify across the namespace boundary", () => {
+    const ctx = new TextEncoder().encode("ctx")
+
+    const namespaced = vrfSign(secretKey, MSG_SHORT, ctx)
+    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, namespaced, ctx)).toBe(false)
+
+    const raw = vrfSignSubstrate(secretKey, MSG_SHORT, ctx)
+    expect(vrfVerify(publicKey, MSG_SHORT, raw, ctx)).toBe(false)
+
+    expect(hex.encode(namespaced.subarray(0, 32))).not.toBe(hex.encode(raw.subarray(0, 32)))
   })
 })

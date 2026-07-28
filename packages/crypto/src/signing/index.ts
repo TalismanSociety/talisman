@@ -68,6 +68,9 @@ const EMPTY_BYTES = new Uint8Array()
  * **not** change the output — signing the same `(secretKey, context, message)` under different
  * `extra` values yields the same 32 bytes. The proof itself embeds randomness and is verifiable
  * against the public key.
+ *
+ * Exported for tests only — not part of the package's public surface. Wallet-facing VRF
+ * signing must go through `vrfSign`, which namespaces the context.
  */
 export const vrfSignSubstrate = (
   secretKey: Uint8Array,
@@ -82,6 +85,9 @@ export const vrfSignSubstrate = (
  *
  * Malformed input (non-canonical points, wrong lengths, identity output point) verifies as
  * `false` rather than throwing.
+ *
+ * Exported for tests only — not part of the package's public surface. Signatures from
+ * `signer.signVrf` verify with `vrfVerify`.
  */
 export const vrfVerifySubstrate = (
   publicKey: Uint8Array,
@@ -96,6 +102,60 @@ export const vrfVerifySubstrate = (
     return false
   }
 }
+
+const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
+
+/**
+ * Builds the effective schnorrkel signing context of the `substrate-vrf` namespace:
+ * `"substrate-vrf" || u32_le(context.byteLength) || context`.
+ *
+ * The constant tag confines everything a wallet signs on behalf of external callers to a
+ * dedicated VRF namespace: a caller-chosen context can never reproduce another protocol's
+ * `vrf_sign_extra` transcript (nor a wallet's internal key-derivation outputs for the same
+ * seed), because no other protocol's context starts with these bytes. The length prefix makes
+ * the mapping injective, so distinct caller contexts always yield distinct effective contexts.
+ *
+ * The tag is deliberately wallet-neutral: any substrate wallet implementing the same
+ * construction produces identical outputs for the same account and inputs, keeping
+ * VRF-derived identities portable across wallets. This is the `<Bytes>` wrapping story of
+ * `signRaw`, applied to VRF — interop comes from sharing the frame, not from omitting it.
+ *
+ * The layout is frozen: outputs are deterministic per effective context, so any change here
+ * would rotate every identity derived from these outputs. A future revision must be an
+ * additive, opt-in namespace under a new tag (e.g. `substrate-vrf-v2`), never a replacement.
+ *
+ * Exported for tests and interop tooling only — not part of the package's public surface,
+ * `vrfSign`/`vrfVerify` apply it.
+ */
+export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Array => {
+  const effective = new Uint8Array(SUBSTRATE_VRF_TAG.length + 4 + context.length)
+  effective.set(SUBSTRATE_VRF_TAG, 0)
+  new DataView(effective.buffer).setUint32(SUBSTRATE_VRF_TAG.length, context.length, true)
+  effective.set(context, SUBSTRATE_VRF_TAG.length + 4)
+  return effective
+}
+
+/**
+ * sr25519 VRF signature in the `substrate-vrf` namespace: `vrfSignSubstrate` with the
+ * context wrapped by `substrateVrfContext`. This is what `signer.signVrf` produces — use
+ * `vrfVerify` (or any schnorrkel `vrf_verify_extra` with the same effective context)
+ * to verify.
+ */
+export const vrfSign = (
+  secretKey: Uint8Array,
+  message: Uint8Array,
+  context?: Uint8Array,
+  extra?: Uint8Array
+): Uint8Array => vrfSignSubstrate(secretKey, message, substrateVrfContext(context), extra)
+
+/** Verifies a signature produced by `vrfSign` for the given caller context. */
+export const vrfVerify = (
+  publicKey: Uint8Array,
+  message: Uint8Array,
+  signature: Uint8Array,
+  context?: Uint8Array,
+  extra?: Uint8Array
+): boolean => vrfVerifySubstrate(publicKey, message, signature, substrateVrfContext(context), extra)
 
 /** MultiSignature enum variant index per signature scheme, used to type-prefix signatures */
 export const SIGNATURE_TYPE_PREFIX: Partial<Record<KeypairCurve, number>> = {

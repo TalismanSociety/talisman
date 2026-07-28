@@ -105,8 +105,17 @@ export class TalismanSigner {
 
   /**
    * Talisman-specific extension to the injected-web3 spec: sr25519 VRF signing
-   * (schnorrkel `vrf_sign_extra`, byte-compatible with polkadot-js `sr25519VrfSign` with an
-   * empty context).
+   * (schnorrkel `vrf_sign_extra`).
+   *
+   * Signatures live in the dedicated, wallet-neutral `substrate-vrf` namespace: the effective
+   * signing context is `"substrate-vrf" || u32_le(context.byteLength) || context`, never the
+   * raw `context` bytes. This makes the wallet useless as a VRF oracle for other schnorrkel
+   * protocols, while any wallet implementing the same construction produces identical outputs
+   * for the same account — VRF-derived identities are portable across conforming wallets, the
+   * same way `<Bytes>` wrapping keeps `signRaw` portable. Verify with `vrfVerify` from
+   * `@talismn/crypto`, or any schnorrkel `vrf_verify_extra` after applying the same wrapping.
+   * The layout is frozen — outputs are deterministic per effective context, so a future
+   * revision would be a new opt-in namespace, not a change to this one.
    *
    * Returns 96 hex-encoded bytes: `output(32) || proof(64)`. The 32-byte output is fully
    * determined by (account, context, data) — unlike `signRaw`, whose sr25519 signatures are
