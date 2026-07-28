@@ -98,8 +98,9 @@ const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
  *
  * The constant tag confines everything the wallet signs for external callers to one namespace, so
  * a caller-chosen context can never reproduce another schnorrkel protocol's transcript. `origin`
- * identifies who the output is derived for — the wallet passes the requesting site's host, so one
- * site can never obtain another's outputs — and `context` is the caller's own separator within
+ * identifies who the output is derived for — the wallet passes the requesting site's web origin
+ * (`scheme://host`), so one site can never obtain another's outputs, not even across schemes on
+ * the same host — and `context` is the caller's own separator within
  * that origin. Both are length-prefixed, which is what makes the pair injective: without it a
  * caller could pick a `context` that reconstructs another origin's frame.
  *
@@ -129,7 +130,7 @@ export const substrateVrfContext = (
 }
 
 export type SubstrateVrfNamespace = {
-  /** who the output is derived for, the requesting site's host when the wallet signs */
+  /** who the output is derived for, the requesting site's origin (`scheme://host`) when the wallet signs */
   origin: string
   /** the caller's own domain separator within `origin`, empty if omitted */
   context?: Uint8Array

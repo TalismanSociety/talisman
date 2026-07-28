@@ -258,11 +258,11 @@ describe("Extension", () => {
       requestStore.clearRequests()
     })
 
-    const requestVrfSign = (payload: VrfSignPayload) =>
-      tabs.handle(v4(), "pub(vrf.sign)", payload, {} as chrome.runtime.Port, DAPP_URL)
+    const requestVrfSign = (payload: VrfSignPayload, url = DAPP_URL) =>
+      tabs.handle(v4(), "pub(vrf.sign)", payload, {} as chrome.runtime.Port, url)
 
-    const signVrfOnce = async (account: Account, data: `0x${string}`) => {
-      const requestPromise = requestVrfSign({ address: account.address, data })
+    const signVrfOnce = async (account: Account, data: `0x${string}`, url = DAPP_URL) => {
+      const requestPromise = requestVrfSign({ address: account.address, data }, url)
 
       await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
 
@@ -294,11 +294,41 @@ describe("Extension", () => {
       const sigBytes = Buffer.from(sig1.slice(2), "hex")
       const msgBytes = Buffer.from(data.slice(2), "hex")
       // verifying through the namespace proves the handler applies the origin and context frame
-      const origin = new URL(DAPP_URL).host
+      const origin = new URL(DAPP_URL).origin
       expect(sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, { origin })).toBe(true)
       // the output is bound to the requesting site, so no other site can obtain it
       expect(
-        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, { origin: "evil.example.com" })
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, {
+          origin: "https://evil.example.com",
+        })
+      ).toBe(false)
+    })
+
+    // the namespace binds `scheme://host`, so schemes never share an identity even though site
+    // authorization is host-keyed
+    test("derives a different output for http and https on the same host", async () => {
+      const account = await getAccount()
+      const data = u8aToHex(new TextEncoder().encode("talisman vrf test"))
+
+      const httpSig = await signVrfOnce(account, data)
+      const httpsSig = await signVrfOnce(account, data, "https://localhost:3000")
+
+      expect(httpsSig.slice(0, 66)).not.toBe(httpSig.slice(0, 66))
+
+      const addressInfo = getSs58AddressInfo(account.address)
+      if (!addressInfo.isValid) throw new Error("Invalid address")
+      const msgBytes = Buffer.from(data.slice(2), "hex")
+      const httpsSigBytes = Buffer.from(httpsSig.slice(2), "hex")
+      expect(
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, httpsSigBytes, {
+          origin: "https://localhost:3000",
+        })
+      ).toBe(true)
+      // a bare host — the namespace value before the scheme was included — must not verify
+      expect(
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, httpsSigBytes, {
+          origin: "localhost:3000",
+        })
       ).toBe(false)
     })
 

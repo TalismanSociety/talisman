@@ -162,7 +162,7 @@ describe("substrate-vrf namespace", () => {
 
   const utf8 = (value: string) => new TextEncoder().encode(value)
   const TAG = hex.encode(utf8("substrate-vrf"))
-  const ORIGIN = "app.example.com"
+  const ORIGIN = "https://app.example.com"
   const output = (signature: Uint8Array) => hex.encode(signature.subarray(0, 32))
 
   // frozen layout: asserted byte-exactly because a change rotates every derived identity
@@ -194,10 +194,10 @@ describe("substrate-vrf namespace", () => {
     const sig = sr25519SignVrf(secretKey, MSG_SHORT, { origin: ORIGIN, context })
 
     expect(
-      output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: "evil.example.com", context }))
+      output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: "https://evil.example.com", context }))
     ).not.toBe(output(sig))
     expect(
-      sr25519VerifyVrf(publicKey, MSG_SHORT, sig, { origin: "evil.example.com", context })
+      sr25519VerifyVrf(publicKey, MSG_SHORT, sig, { origin: "https://evil.example.com", context })
     ).toBe(false)
   })
 
