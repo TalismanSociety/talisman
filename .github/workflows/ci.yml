@@ -311,7 +311,8 @@ jobs:
         # this will find the files which have been changed in this PR
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          HEAD_REF="remotes/origin/${{ github.event.pull_request.head.ref }}"
+          # use the head sha rather than the branch name: fork PR branches don't exist on origin
+          HEAD_REF="${{ github.event.pull_request.head.sha }}"
           BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
           echo "CHANGED_FILES<<$EOF" >> "$GITHUB_OUTPUT"
           git diff --name-only $HEAD_REF $(git merge-base $HEAD_REF $BASE_REF) >> $GITHUB_OUTPUT
@@ -374,6 +375,9 @@ jobs:
         # An existing comment is always updated; a new one is only created when changesets are
         # actually missing. Comments carrying the trailing marker of
         # thollander/actions-comment-pull-request are matched too, and rewritten in the new format.
+        # Skipped for fork PRs: GITHUB_TOKEN is read-only there, so we can't comment.
+        # The failing check + the step summary above still report the missing changesets.
+        if: github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
