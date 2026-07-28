@@ -14,7 +14,7 @@ import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
-import { signSubstrate } from "../domains/signing/requests"
+import { signSubstrate, signVrf } from "../domains/signing/requests"
 import type { VrfSignPayload } from "../domains/signing/types"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
@@ -346,6 +346,31 @@ describe("Extension", () => {
       await expect(requestVrfSign({ address: account.address, data: "0x00" })).rejects.toThrow(
         /VRF signing requires a local sr25519 account/
       )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // the request store only drops a request through resolve/reject, so a failing approval must
+    // reject it rather than throw and leave the dapp waiting. queued directly to get past the
+    // account check `pub(vrf.sign)` does, and reach the handler's own curve assertion
+    test("rejects the queued request when approval fails", async () => {
+      const accounts = await keyringStore.getAccounts()
+      const account = accounts.find((acc) => acc.name === "Test Ethereum Account")
+      if (!account) throw new Error("Account not found")
+
+      const requestPromise = signVrf(
+        DAPP_URL,
+        { payload: { address: account.address, data: "0x00" } },
+        account,
+        {} as chrome.runtime.Port
+      )
+
+      await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
+      const request = requestStore.allRequests("vrf-sign")[0]
+
+      await expect(
+        messageSender("pri(signing.approveSign.vrf)", { id: request.id })
+      ).rejects.toThrow(/only supported for sr25519/)
+      await expect(requestPromise).rejects.toThrow(/only supported for sr25519/)
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
   })

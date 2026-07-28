@@ -147,9 +147,11 @@ export default class SigningHandler extends ExtensionHandler {
       resolve({ id, signature })
     })
     if (!result.ok) {
-      if (result.val === "Unauthorised") reject(new Error(result.val))
-      else if (typeof result.val === "string") throw new Error(result.val)
-      else throw result.val
+      const error = typeof result.val === "string" ? new Error(result.val) : result.val
+      // settle the dapp's promise on every failure path, not just Unauthorised: the request store
+      // only drops a request through resolve/reject, so throwing alone leaves it queued
+      reject(error)
+      if (result.val !== "Unauthorised") throw error
     }
     return true
   }
