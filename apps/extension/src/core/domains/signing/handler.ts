@@ -44,6 +44,8 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
+    // the approval paths share an id space, and a VrfSignPayload also parses as a raw payload
+    assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
     const { reject, request, resolve, url } = queued
 
@@ -123,6 +125,9 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
+    // a SignerPayloadRaw parses as a VrfSignPayload, so without this a substrate-sign request
+    // approved through this path would be answered with a VRF signature
+    assert(queued.type === "vrf-sign", "Not a VRF signing request")
 
     const { reject, request, resolve, url } = queued
     const address = encodeAnyAddress(queued.account.address)

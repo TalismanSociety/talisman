@@ -373,6 +373,29 @@ describe("Extension", () => {
       await expect(requestPromise).rejects.toThrow(/only supported for sr25519/)
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
+
+    test("refuses to VRF-sign a substrate signing request", async () => {
+      const account = await getAccount()
+      // a raw payload's `data` field also parses as a VrfSignPayload, so only the request type
+      // stops this approval path from answering a signRaw with a VRF signature
+      signSubstrate(
+        DAPP_URL,
+        { payload: { address: account.address, data: "0x00", type: "bytes" } },
+        account,
+        {} as chrome.runtime.Port
+      ).catch(() => {})
+
+      await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
+      const request = requestStore.allRequests("substrate-sign")[0]
+
+      await expect(
+        messageSender("pri(signing.approveSign.vrf)", {
+          id: request.id as never,
+        })
+      ).rejects.toThrow(/Not a VRF signing request/)
+
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+    })
   })
 
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {
