@@ -111,12 +111,11 @@ export class TalismanSigner {
    * which is what makes it usable for key derivation. `context` is its only domain separator;
    * schnorrkel's `extra` is not accepted, as it changes the proof but not the output.
    *
-   * Signing happens in the wallet-neutral, frozen `substrate-vrf` namespace, never over the raw
-   * `context` — verify with `sr25519VerifyVrf` from `@talismn/crypto`.
+   * Signing happens in the frozen `substrate-vrf` namespace, never over the raw `context` — verify
+   * with `sr25519VerifyVrf` from `@talismn/crypto`, passing `location.host` as the origin.
    *
-   * The output is not origin-bound: another site authorized for the same account can request the
-   * same `(data, context)` and, if the user approves, receive the same output. Treat it as a
-   * value the requesting site holds, not as a shared secret.
+   * The output is bound to that host: no other site can obtain it, and a dapp served from several
+   * hosts derives a different value on each, so pin a canonical one.
    *
    * Local sr25519 accounts only. Feature-detect with `typeof signer.signVrf === "function"`.
    */

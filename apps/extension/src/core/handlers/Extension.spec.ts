@@ -293,8 +293,13 @@ describe("Extension", () => {
       if (!addressInfo.isValid) throw new Error("Invalid address")
       const sigBytes = Buffer.from(sig1.slice(2), "hex")
       const msgBytes = Buffer.from(data.slice(2), "hex")
-      // verifying through the namespace proves the handler applies the context prefix
-      expect(sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes)).toBe(true)
+      // verifying through the namespace proves the handler applies the origin and context frame
+      const origin = new URL(DAPP_URL).host
+      expect(sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, { origin })).toBe(true)
+      // the output is bound to the requesting site, so no other site can obtain it
+      expect(
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, { origin: "evil.example.com" })
+      ).toBe(false)
     })
 
     test.each([

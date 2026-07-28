@@ -9,6 +9,7 @@ export * from "./platform"
 // namespace builder stay internal (see their docstrings)
 export {
   SIGNATURE_TYPE_PREFIX,
+  type SubstrateVrfNamespace,
   signSubstrate,
   sr25519SignVrf,
   sr25519VerifyVrf,

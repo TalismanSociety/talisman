@@ -10,6 +10,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { isJsonPayload } from "../../util/isJsonPayload"
+import { urlToDomain } from "../../util/urlToDomain"
 import { validateHexString } from "../../util/validateHexString"
 import { getHostName } from "../app/helpers"
 import { withSecretKey } from "../keyring/withSecretKey"
@@ -134,10 +135,14 @@ export default class SigningHandler extends ExtensionHandler {
     // re-parse: the secret key must never run on bytes that skipped the boundary validation
     const { data, context } = parseVrfSignPayload(request.payload)
 
+    // the output is bound to the requesting site, so the origin comes from the queued url only
+    const domain = urlToDomain(url)
+    assert(domain.ok && domain.val, "Unable to determine the requesting site")
+
     const result = await withSecretKey(address, async (secretKey, curve) => {
       assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
 
-      const signature = u8aToHex(sr25519SignVrf(secretKey, data, context))
+      const signature = u8aToHex(sr25519SignVrf(secretKey, data, { origin: domain.val, context }))
 
       const { ok, val: hostName } = getHostName(url)
       talismanAnalytics.captureDelayed("vrf sign approve", {

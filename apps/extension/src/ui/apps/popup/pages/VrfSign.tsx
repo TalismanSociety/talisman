@@ -1,5 +1,6 @@
 import { DEBUG } from "@common/constants"
 import type { SigningRequestID } from "@core/domains/signing/types"
+import { urlToDomain } from "@core/util/urlToDomain"
 import { hexToU8a, isAsciiPrintable, u8aToString } from "@talismn/util"
 import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
@@ -85,6 +86,12 @@ export const VrfSignRequest = () => {
     () => (data && data.length > MAX_HEX_CHARS ? `${data.slice(0, MAX_HEX_CHARS)}…` : data),
     [data]
   )
+  // the host the output is bound to, derived the same way the backend does it
+  const origin = useMemo(() => {
+    if (!req) return undefined
+    const domain = urlToDomain(req.url)
+    return domain.ok ? domain.val : undefined
+  }, [req])
 
   return (
     <PopupLayout>
@@ -109,6 +116,7 @@ export const VrfSignRequest = () => {
               </div>
             )}
             <div className="mt-8 flex w-full flex-col gap-4 text-xs" data-testid="vrf-transcript">
+              <TranscriptField label={t("Site")} value={origin} />
               <TranscriptField label={t("Context")} value={req.request.payload.context} />
             </div>
           </div>
@@ -118,7 +126,7 @@ export const VrfSignRequest = () => {
         {req && (
           <SignAlertMessage className="mb-8">
             {t(
-              "The result is a value derived from this account. The site receives it and can reproduce it at any time by requesting the same data and context, so it works as a persistent identifier."
+              "The result is a value derived from this account and this site. No other site can obtain it, but this one can reproduce it at any time by requesting the same data and context, so it works as a persistent identifier."
             )}
           </SignAlertMessage>
         )}

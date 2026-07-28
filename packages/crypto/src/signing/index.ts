@@ -94,32 +94,50 @@ const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
 
 /**
  * Effective signing context of the `substrate-vrf` namespace:
- * `"substrate-vrf" || u32_le(context.byteLength) || context`.
+ * `"substrate-vrf" || u32_le(origin.len) || utf8(origin) || u32_le(context.len) || context`.
  *
  * The constant tag confines everything the wallet signs for external callers to one namespace, so
- * a caller-chosen context can never reproduce another schnorrkel protocol's transcript. It is
- * wallet-neutral on purpose: any wallet using the same frame derives the same identities, the way
- * `<Bytes>` keeps `signRaw` portable. The length prefix is redundant — the fixed-length tag
- * already makes the mapping injective, and Merlin length-frames the context anyway — but is part
- * of the layout.
+ * a caller-chosen context can never reproduce another schnorrkel protocol's transcript. `origin`
+ * identifies who the output is derived for — the wallet passes the requesting site's host, so one
+ * site can never obtain another's outputs — and `context` is the caller's own separator within
+ * that origin. Both are length-prefixed, which is what makes the pair injective: without it a
+ * caller could pick a `context` that reconstructs another origin's frame.
  *
  * That layout is frozen: outputs are deterministic per effective context, so any change rotates
  * every derived identity. A revision must be a new opt-in tag, never a replacement.
  *
  * Test-only, not re-exported from the package — re-implementers work from the layout above.
  */
-export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Array => {
-  const effective = new Uint8Array(SUBSTRATE_VRF_TAG.length + 4 + context.length)
+export const substrateVrfContext = (
+  origin: string,
+  context: Uint8Array = EMPTY_BYTES
+): Uint8Array => {
+  const originBytes = new TextEncoder().encode(origin)
+  const originOffset = SUBSTRATE_VRF_TAG.length + 4
+  const contextOffset = originOffset + originBytes.length + 4
+
+  const effective = new Uint8Array(contextOffset + context.length)
+  const view = new DataView(effective.buffer)
+
   effective.set(SUBSTRATE_VRF_TAG, 0)
-  new DataView(effective.buffer).setUint32(SUBSTRATE_VRF_TAG.length, context.length, true)
-  effective.set(context, SUBSTRATE_VRF_TAG.length + 4)
+  view.setUint32(SUBSTRATE_VRF_TAG.length, originBytes.length, true)
+  effective.set(originBytes, originOffset)
+  view.setUint32(contextOffset - 4, context.length, true)
+  effective.set(context, contextOffset)
+
   return effective
+}
+
+export type SubstrateVrfNamespace = {
+  /** who the output is derived for, the requesting site's host when the wallet signs */
+  origin: string
+  /** the caller's own domain separator within `origin`, empty if omitted */
+  context?: Uint8Array
 }
 
 /**
  * sr25519 VRF signature in the `substrate-vrf` namespace — what `signer.signVrf` produces. Verify
- * with `sr25519VerifyVrf`, or any `vrf_verify_extra` over `substrateVrfContext(context)` and no
- * extra.
+ * with `sr25519VerifyVrf`, or any `vrf_verify_extra` over `substrateVrfContext` and no extra.
  *
  * `extra` is not exposed: it changes the proof but not the output, so a caller using it as a
  * domain separator would derive one identity where they expect several.
@@ -127,16 +145,17 @@ export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Arr
 export const sr25519SignVrf = (
   secretKey: Uint8Array,
   message: Uint8Array,
-  context?: Uint8Array
-): Uint8Array => sr25519SignVrfRaw(secretKey, message, substrateVrfContext(context))
+  { origin, context }: SubstrateVrfNamespace
+): Uint8Array => sr25519SignVrfRaw(secretKey, message, substrateVrfContext(origin, context))
 
-/** Verifies a signature produced by `sr25519SignVrf` for the given caller context. */
+/** Verifies a signature produced by `sr25519SignVrf` for the same origin and context. */
 export const sr25519VerifyVrf = (
   publicKey: Uint8Array,
   message: Uint8Array,
   signature: Uint8Array,
-  context?: Uint8Array
-): boolean => sr25519VerifyVrfRaw(publicKey, message, signature, substrateVrfContext(context))
+  { origin, context }: SubstrateVrfNamespace
+): boolean =>
+  sr25519VerifyVrfRaw(publicKey, message, signature, substrateVrfContext(origin, context))
 
 /** MultiSignature enum variant index per signature scheme, used to type-prefix signatures */
 export const SIGNATURE_TYPE_PREFIX: Partial<Record<KeypairCurve, number>> = {

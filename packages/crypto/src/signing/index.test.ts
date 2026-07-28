@@ -160,43 +160,64 @@ describe("substrate-vrf namespace", () => {
   )
   const publicKey = hex.decode("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d")
 
+  const utf8 = (value: string) => new TextEncoder().encode(value)
+  const TAG = hex.encode(utf8("substrate-vrf"))
+  const ORIGIN = "app.example.com"
+  const output = (signature: Uint8Array) => hex.encode(signature.subarray(0, 32))
+
   // frozen layout: asserted byte-exactly because a change rotates every derived identity
   it("builds the frozen effective context layout", () => {
-    expect(hex.encode(substrateVrfContext())).toBe(
-      `${hex.encode(new TextEncoder().encode("substrate-vrf"))}00000000`
-    )
-    expect(hex.encode(substrateVrfContext(new TextEncoder().encode("ctx")))).toBe(
-      `${hex.encode(new TextEncoder().encode("substrate-vrf"))}03000000${hex.encode(new TextEncoder().encode("ctx"))}`
+    expect(hex.encode(substrateVrfContext(""))).toBe(`${TAG}0000000000000000`)
+    expect(hex.encode(substrateVrfContext("ab", utf8("ctx")))).toBe(
+      `${TAG}02000000${hex.encode(utf8("ab"))}03000000${hex.encode(utf8("ctx"))}`
     )
   })
 
   it("signs and verifies within the namespace", () => {
-    const ctx = new TextEncoder().encode("ctx")
-    const sig = sr25519SignVrf(secretKey, MSG_SHORT, ctx)
+    const context = utf8("ctx")
+    const sig = sr25519SignVrf(secretKey, MSG_SHORT, { origin: ORIGIN, context })
 
     expect(sig.length).toBe(96)
-    expect(sr25519VerifyVrf(publicKey, MSG_SHORT, sig, ctx)).toBe(true)
-    expect(hex.encode(sr25519SignVrf(secretKey, MSG_SHORT, ctx).subarray(0, 32))).toBe(
-      hex.encode(sig.subarray(0, 32))
+    expect(sr25519VerifyVrf(publicKey, MSG_SHORT, sig, { origin: ORIGIN, context })).toBe(true)
+    expect(output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: ORIGIN, context }))).toBe(
+      output(sig)
     )
-    // caller contexts still domain-separate each other
+    // caller contexts still domain-separate each other within one origin
     expect(
-      hex.encode(
-        sr25519SignVrf(secretKey, MSG_SHORT, new TextEncoder().encode("ctx2")).subarray(0, 32)
-      )
-    ).not.toBe(hex.encode(sig.subarray(0, 32)))
+      output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: ORIGIN, context: utf8("ctx2") }))
+    ).not.toBe(output(sig))
+  })
+
+  // the point of the origin field: another site cannot obtain this site's outputs
+  it("domain-separates by origin", () => {
+    const context = utf8("ctx")
+    const sig = sr25519SignVrf(secretKey, MSG_SHORT, { origin: ORIGIN, context })
+
+    expect(
+      output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: "evil.example.com", context }))
+    ).not.toBe(output(sig))
+    expect(
+      sr25519VerifyVrf(publicKey, MSG_SHORT, sig, { origin: "evil.example.com", context })
+    ).toBe(false)
+  })
+
+  // both fields are length-prefixed so no context can reconstruct another origin's frame
+  it("does not let a context impersonate another origin", () => {
+    expect(
+      output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: "ab", context: utf8("cd") }))
+    ).not.toBe(output(sr25519SignVrf(secretKey, MSG_SHORT, { origin: "abcd" })))
   })
 
   // the wallet must not act as a VRF oracle: no verification across the boundary, either way
   it("does not verify across the namespace boundary", () => {
-    const ctx = new TextEncoder().encode("ctx")
+    const context = utf8("ctx")
 
-    const namespaced = sr25519SignVrf(secretKey, MSG_SHORT, ctx)
-    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, namespaced, ctx)).toBe(false)
+    const namespaced = sr25519SignVrf(secretKey, MSG_SHORT, { origin: ORIGIN, context })
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, namespaced, context)).toBe(false)
 
-    const raw = sr25519SignVrfRaw(secretKey, MSG_SHORT, ctx)
-    expect(sr25519VerifyVrf(publicKey, MSG_SHORT, raw, ctx)).toBe(false)
+    const raw = sr25519SignVrfRaw(secretKey, MSG_SHORT, context)
+    expect(sr25519VerifyVrf(publicKey, MSG_SHORT, raw, { origin: ORIGIN, context })).toBe(false)
 
-    expect(hex.encode(namespaced.subarray(0, 32))).not.toBe(hex.encode(raw.subarray(0, 32)))
+    expect(output(namespaced)).not.toBe(output(raw))
   })
 })
