@@ -95,10 +95,10 @@ export const VrfSignRequest = () => {
         {req && (
           <div className="flex h-full w-full flex-col items-center pt-8 text-body-secondary">
             <h1 className="my-0 font-bold font-sans text-body text-md leading-base">
-              {t("Derivation Request")}
+              {t("Sign Request")}
             </h1>
             <h2 className="mt-8 flex w-full flex-col items-center text-base leading-16">
-              {t("You are deriving a value from this data with")}
+              {t("You are signing this data with")}
               <br />
               <AccountPill account={req.account} />
             </h2>
@@ -110,9 +110,6 @@ export const VrfSignRequest = () => {
             )}
             <div className="mt-8 flex w-full flex-col gap-4 text-xs" data-testid="vrf-transcript">
               <TranscriptField label={t("Context")} value={req.request.payload.context} />
-            </div>
-            <div className="mt-4 w-full text-grey-500 text-xs">
-              {t("This site gets the same result every time it asks for the same data.")}
             </div>
           </div>
         )}
