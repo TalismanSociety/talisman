@@ -61,9 +61,9 @@ const EMPTY_BYTES = new Uint8Array()
  * sr25519 signature, whose nonce is random. `extra` binds the proof transcript only and never
  * changes the output.
  *
- * Test-only: wallet-facing signing goes through `vrfSign`, which namespaces the context.
+ * Test-only: wallet-facing signing goes through `sr25519SignVrf`, which namespaces the context.
  */
-export const vrfSignSubstrate = (
+export const sr25519SignVrfRaw = (
   secretKey: Uint8Array,
   message: Uint8Array,
   context: Uint8Array = EMPTY_BYTES,
@@ -71,12 +71,12 @@ export const vrfSignSubstrate = (
 ): Uint8Array => sr25519Vrf.sign(message, secretKey, context, extra)
 
 /**
- * Verifies a `vrfSignSubstrate` signature. Malformed input (wrong lengths, non-canonical points,
+ * Verifies a `sr25519SignVrfRaw` signature. Malformed input (wrong lengths, non-canonical points,
  * identity output) returns `false` rather than throwing.
  *
- * Test-only: signatures from `signer.signVrf` verify with `vrfVerify`.
+ * Test-only: signatures from `signer.signVrf` verify with `sr25519VerifyVrf`.
  */
-export const vrfVerifySubstrate = (
+export const sr25519VerifyVrfRaw = (
   publicKey: Uint8Array,
   message: Uint8Array,
   signature: Uint8Array,
@@ -118,24 +118,25 @@ export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Arr
 
 /**
  * sr25519 VRF signature in the `substrate-vrf` namespace — what `signer.signVrf` produces. Verify
- * with `vrfVerify`, or any `vrf_verify_extra` over `substrateVrfContext(context)` and no extra.
+ * with `sr25519VerifyVrf`, or any `vrf_verify_extra` over `substrateVrfContext(context)` and no
+ * extra.
  *
  * `extra` is not exposed: it changes the proof but not the output, so a caller using it as a
  * domain separator would derive one identity where they expect several.
  */
-export const vrfSign = (
+export const sr25519SignVrf = (
   secretKey: Uint8Array,
   message: Uint8Array,
   context?: Uint8Array
-): Uint8Array => vrfSignSubstrate(secretKey, message, substrateVrfContext(context))
+): Uint8Array => sr25519SignVrfRaw(secretKey, message, substrateVrfContext(context))
 
-/** Verifies a signature produced by `vrfSign` for the given caller context. */
-export const vrfVerify = (
+/** Verifies a signature produced by `sr25519SignVrf` for the given caller context. */
+export const sr25519VerifyVrf = (
   publicKey: Uint8Array,
   message: Uint8Array,
   signature: Uint8Array,
   context?: Uint8Array
-): boolean => vrfVerifySubstrate(publicKey, message, signature, substrateVrfContext(context))
+): boolean => sr25519VerifyVrfRaw(publicKey, message, signature, substrateVrfContext(context))
 
 /** MultiSignature enum variant index per signature scheme, used to type-prefix signatures */
 export const SIGNATURE_TYPE_PREFIX: Partial<Record<KeypairCurve, number>> = {

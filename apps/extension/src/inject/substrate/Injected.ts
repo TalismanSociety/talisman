@@ -112,7 +112,7 @@ export class TalismanSigner {
    * schnorrkel's `extra` is not accepted, as it changes the proof but not the output.
    *
    * Signing happens in the wallet-neutral, frozen `substrate-vrf` namespace, never over the raw
-   * `context` — see `substrateVrfContext` in `@talismn/crypto`, and verify with `vrfVerify`.
+   * `context` — verify with `sr25519VerifyVrf` from `@talismn/crypto`.
    *
    * The output is not origin-bound: another site authorized for the same account can request the
    * same `(data, context)` and, if the user approves, receive the same output. Treat it as a

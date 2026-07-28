@@ -4,11 +4,11 @@ import { describe, expect, it } from "vitest"
 import { hex } from "../utils"
 import {
   signSubstrate,
+  sr25519SignVrf,
+  sr25519SignVrfRaw,
+  sr25519VerifyVrf,
+  sr25519VerifyVrfRaw,
   substrateVrfContext,
-  vrfSign,
-  vrfSignSubstrate,
-  vrfVerify,
-  vrfVerifySubstrate,
 } from "."
 
 // polkadot-js KeyringPair.sign parity vectors, generated with @polkadot/keyring 14.0.3.
@@ -69,7 +69,7 @@ describe("signSubstrate (polkadot-js parity)", () => {
   })
 })
 
-describe("vrfSignSubstrate (schnorrkel parity)", () => {
+describe("sr25519SignVrfRaw (schnorrkel parity)", () => {
   // //Alice substrate dev key
   const secretKey = hex.decode(
     "98319d4ff8a9508c4bb0cf0b5a78d760a0b2082c02775e6e82370816fedfff48925a225d97aa00682d6a59b95b18780c10d7032336e88f3442b42361f4a66011"
@@ -82,28 +82,28 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
     "5ebd74106216d6fe7d3f56b52d5bd8a755e2af12bcb2ff7786600856d4ca9d5519a7ffebfe360361a2183dda7f75638cea8d29cdaeaa4a8650600b8fab4e650eccf24b53c0b17e51c2891eff23e37f5af855ada7dbfe42f601f57149fa572704"
 
   it("produces the wasm-schnorrkel deterministic output", () => {
-    const sig1 = vrfSignSubstrate(secretKey, MSG_SHORT)
-    const sig2 = vrfSignSubstrate(secretKey, MSG_SHORT)
+    const sig1 = sr25519SignVrfRaw(secretKey, MSG_SHORT)
+    const sig2 = sr25519SignVrfRaw(secretKey, MSG_SHORT)
     expect(sig1.length).toBe(96)
     expect(hex.encode(sig1.subarray(0, 32))).toBe(WASM_OUTPUT)
     expect(hex.encode(sig2.subarray(0, 32))).toBe(WASM_OUTPUT)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig1)).toBe(true)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig1)).toBe(true)
   })
 
   it("verifies a wasm-schnorrkel signature", () => {
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, hex.decode(WASM_SIGNATURE))).toBe(true)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, hex.decode(WASM_SIGNATURE))).toBe(true)
   })
 
   it("rejects a signature over a different message", () => {
-    const sig = vrfSignSubstrate(secretKey, MSG_SHORT)
-    expect(vrfVerifySubstrate(publicKey, MSG_LONG, sig)).toBe(false)
+    const sig = sr25519SignVrfRaw(secretKey, MSG_SHORT)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_LONG, sig)).toBe(false)
   })
 
   it("domain-separates by context", () => {
-    const sig = vrfSignSubstrate(secretKey, MSG_SHORT, new TextEncoder().encode("ctx"))
+    const sig = sr25519SignVrfRaw(secretKey, MSG_SHORT, new TextEncoder().encode("ctx"))
     expect(hex.encode(sig.subarray(0, 32))).not.toBe(WASM_OUTPUT)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig)).toBe(false)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, new TextEncoder().encode("ctx"))).toBe(
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig)).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig, new TextEncoder().encode("ctx"))).toBe(
       true
     )
   })
@@ -111,45 +111,45 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
   // extra is not part of hash_to_point: deriving one identity per purpose needs a distinct context
   it("does not domain-separate by extra", () => {
     const ctx = new TextEncoder().encode("ctx")
-    const sigA = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("a"))
-    const sigB = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("b"))
+    const sigA = sr25519SignVrfRaw(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("a"))
+    const sigB = sr25519SignVrfRaw(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("b"))
 
     expect(hex.encode(sigA.subarray(0, 32))).toBe(hex.encode(sigB.subarray(0, 32)))
     expect(hex.encode(sigA.subarray(0, 32))).toBe(
-      hex.encode(vrfSignSubstrate(secretKey, MSG_SHORT, ctx).subarray(0, 32))
+      hex.encode(sr25519SignVrfRaw(secretKey, MSG_SHORT, ctx).subarray(0, 32))
     )
   })
 
   it("binds the proof to extra", () => {
     const ctx = new TextEncoder().encode("ctx")
     const extra = new TextEncoder().encode("a")
-    const sig = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, extra)
+    const sig = sr25519SignVrfRaw(secretKey, MSG_SHORT, ctx, extra)
 
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, ctx, extra)).toBe(true)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, ctx, new TextEncoder().encode("b"))).toBe(
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig, ctx, extra)).toBe(true)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig, ctx, new TextEncoder().encode("b"))).toBe(
       false
     )
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig, ctx)).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig, ctx)).toBe(false)
   })
 
   it("rejects malformed input instead of throwing", () => {
-    const sig = vrfSignSubstrate(secretKey, MSG_SHORT)
+    const sig = sr25519SignVrfRaw(secretKey, MSG_SHORT)
 
     const identityOutput = Uint8Array.from(sig)
     identityOutput.fill(0, 0, 32)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, identityOutput)).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, identityOutput)).toBe(false)
 
     const invalidOutput = Uint8Array.from(sig)
     invalidOutput.fill(0xff, 0, 32)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, invalidOutput)).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, invalidOutput)).toBe(false)
 
     const nonCanonicalScalar = Uint8Array.from(sig)
     nonCanonicalScalar.fill(0xff, 32, 64)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, nonCanonicalScalar)).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, nonCanonicalScalar)).toBe(false)
 
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig.subarray(0, 95))).toBe(false)
-    expect(vrfVerifySubstrate(publicKey.subarray(0, 31), MSG_SHORT, sig)).toBe(false)
-    expect(vrfVerifySubstrate(new Uint8Array(32).fill(0xff), MSG_SHORT, sig)).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, sig.subarray(0, 95))).toBe(false)
+    expect(sr25519VerifyVrfRaw(publicKey.subarray(0, 31), MSG_SHORT, sig)).toBe(false)
+    expect(sr25519VerifyVrfRaw(new Uint8Array(32).fill(0xff), MSG_SHORT, sig)).toBe(false)
   })
 })
 
@@ -172,16 +172,18 @@ describe("substrate-vrf namespace", () => {
 
   it("signs and verifies within the namespace", () => {
     const ctx = new TextEncoder().encode("ctx")
-    const sig = vrfSign(secretKey, MSG_SHORT, ctx)
+    const sig = sr25519SignVrf(secretKey, MSG_SHORT, ctx)
 
     expect(sig.length).toBe(96)
-    expect(vrfVerify(publicKey, MSG_SHORT, sig, ctx)).toBe(true)
-    expect(hex.encode(vrfSign(secretKey, MSG_SHORT, ctx).subarray(0, 32))).toBe(
+    expect(sr25519VerifyVrf(publicKey, MSG_SHORT, sig, ctx)).toBe(true)
+    expect(hex.encode(sr25519SignVrf(secretKey, MSG_SHORT, ctx).subarray(0, 32))).toBe(
       hex.encode(sig.subarray(0, 32))
     )
     // caller contexts still domain-separate each other
     expect(
-      hex.encode(vrfSign(secretKey, MSG_SHORT, new TextEncoder().encode("ctx2")).subarray(0, 32))
+      hex.encode(
+        sr25519SignVrf(secretKey, MSG_SHORT, new TextEncoder().encode("ctx2")).subarray(0, 32)
+      )
     ).not.toBe(hex.encode(sig.subarray(0, 32)))
   })
 
@@ -189,11 +191,11 @@ describe("substrate-vrf namespace", () => {
   it("does not verify across the namespace boundary", () => {
     const ctx = new TextEncoder().encode("ctx")
 
-    const namespaced = vrfSign(secretKey, MSG_SHORT, ctx)
-    expect(vrfVerifySubstrate(publicKey, MSG_SHORT, namespaced, ctx)).toBe(false)
+    const namespaced = sr25519SignVrf(secretKey, MSG_SHORT, ctx)
+    expect(sr25519VerifyVrfRaw(publicKey, MSG_SHORT, namespaced, ctx)).toBe(false)
 
-    const raw = vrfSignSubstrate(secretKey, MSG_SHORT, ctx)
-    expect(vrfVerify(publicKey, MSG_SHORT, raw, ctx)).toBe(false)
+    const raw = sr25519SignVrfRaw(secretKey, MSG_SHORT, ctx)
+    expect(sr25519VerifyVrf(publicKey, MSG_SHORT, raw, ctx)).toBe(false)
 
     expect(hex.encode(namespaced.subarray(0, 32))).not.toBe(hex.encode(raw.subarray(0, 32)))
   })

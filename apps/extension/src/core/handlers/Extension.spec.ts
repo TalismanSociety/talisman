@@ -3,7 +3,7 @@ import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { base64 } from "@scure/base"
 import { verify as sr25519Verify } from "@scure/sr25519"
-import { vrfVerify } from "@talismn/crypto"
+import { sr25519VerifyVrf } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import { hexToU8a, u8aToHex } from "@talismn/util"
@@ -294,7 +294,7 @@ describe("Extension", () => {
       const sigBytes = Buffer.from(sig1.slice(2), "hex")
       const msgBytes = Buffer.from(data.slice(2), "hex")
       // verifying through the namespace proves the handler applies the context prefix
-      expect(vrfVerify(addressInfo.publicKey, msgBytes, sigBytes)).toBe(true)
+      expect(sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes)).toBe(true)
     })
 
     test.each([

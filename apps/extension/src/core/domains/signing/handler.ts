@@ -1,5 +1,5 @@
 import { TEST } from "@common/constants"
-import { encodeAnyAddress, signSubstrate, vrfSign } from "@talismn/crypto"
+import { encodeAnyAddress, signSubstrate, sr25519SignVrf } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
 import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -137,7 +137,7 @@ export default class SigningHandler extends ExtensionHandler {
     const result = await withSecretKey(address, async (secretKey, curve) => {
       assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
 
-      const signature = u8aToHex(vrfSign(secretKey, data, context))
+      const signature = u8aToHex(sr25519SignVrf(secretKey, data, context))
 
       const { ok, val: hostName } = getHostName(url)
       talismanAnalytics.captureDelayed("vrf sign approve", {
