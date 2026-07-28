@@ -76,9 +76,11 @@ export const VrfSignRequest = () => {
   const errorMessage = status === "ERROR" ? message : ""
 
   const data = req?.request.payload.data
-  // the VRF signs `data` verbatim, there is no <Bytes> wrapper to strip
+  // the VRF signs `data` verbatim, there is no <Bytes> wrapper to strip; empty data ("0x", a valid
+  // request) falls through to the hex branch rather than rendering a blank box
   const dataText = useMemo(
-    () => (data && isAsciiPrintable(data) ? u8aToString(hexToU8a(data)) : undefined),
+    () =>
+      data && data !== "0x" && isAsciiPrintable(data) ? u8aToString(hexToU8a(data)) : undefined,
     [data]
   )
   const dataHex = useMemo(
