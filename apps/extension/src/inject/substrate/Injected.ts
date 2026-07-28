@@ -104,36 +104,21 @@ export class TalismanSigner {
   }
 
   /**
-   * Talisman-specific extension to the injected-web3 spec: sr25519 VRF signing
-   * (schnorrkel `vrf_sign_extra`).
+   * Talisman-specific extension to the injected-web3 spec: sr25519 VRF signing.
    *
-   * Signatures live in the dedicated, wallet-neutral `substrate-vrf` namespace: the effective
-   * signing context is `"substrate-vrf" || u32_le(context.byteLength) || context`, never the
-   * raw `context` bytes. This makes the wallet useless as a VRF oracle for other schnorrkel
-   * protocols, while any wallet implementing the same construction produces identical outputs
-   * for the same account — VRF-derived identities are portable across conforming wallets, the
-   * same way `<Bytes>` wrapping keeps `signRaw` portable. Verify with `vrfVerify` from
-   * `@talismn/crypto`, or any schnorrkel `vrf_verify_extra` after applying the same wrapping,
-   * with an empty extra. The layout is frozen — outputs are deterministic per effective context,
-   * so a future revision would be a new opt-in namespace, not a change to this one.
+   * Returns 96 hex-encoded bytes, `output(32) || proof(64)`. The output is deterministic per
+   * `(account, context, data)` — unlike `signRaw`, whose sr25519 signatures are randomized —
+   * which is what makes it usable for key derivation. `context` is its only domain separator;
+   * schnorrkel's `extra` is not accepted, as it changes the proof but not the output.
    *
-   * Returns 96 hex-encoded bytes: `output(32) || proof(64)`. The 32-byte output is fully
-   * determined by (account, context, data) — unlike `signRaw`, whose sr25519 signatures are
-   * randomized — which makes it suitable for signature-based key derivation. The proof is
-   * randomized and verifiable against the account's public key.
+   * Signing happens in the wallet-neutral, frozen `substrate-vrf` namespace, never over the raw
+   * `context` — see `substrateVrfContext` in `@talismn/crypto`, and verify with `vrfVerify`.
    *
-   * `context` is the only domain separator of the output: deriving one identity per purpose
-   * requires distinct `context` (or `data`) values. Schnorrkel's `extra` is not accepted — it
-   * binds the proof transcript without changing the output, so a caller reading it as a domain
-   * separator would derive one identity from what they think are several.
+   * The output is not origin-bound: another site authorized for the same account can request the
+   * same `(data, context)` and, if the user approves, receive the same output. Treat it as a
+   * value the requesting site holds, not as a shared secret.
    *
-   * The output is not origin-bound. Another site the user has authorized for the same account
-   * can request the same `(data, context)` and, if the user approves, receive the same output.
-   * `context` separates cooperating callers from each other, it does not authenticate who is
-   * asking — treat the result as a value the requesting site holds, not as a shared secret.
-   *
-   * Only local sr25519 accounts can VRF-sign; requests for hardware or watch-only accounts
-   * are rejected. Feature-detect with `typeof signer.signVrf === "function"`.
+   * Local sr25519 accounts only. Feature-detect with `typeof signer.signVrf === "function"`.
    */
   public signVrf = async (payload: VrfSignPayload): Promise<VrfSignResult> => {
     const id = ++nextSignerId

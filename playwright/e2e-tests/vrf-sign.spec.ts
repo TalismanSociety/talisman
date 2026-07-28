@@ -92,7 +92,7 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
         ),
       ])
       await expect(popup.getByText("VRF Signature Request")).toBeVisible()
-      // the popup must show the whole transcript, not just the data
+      // the popup must show the context, not just the data
       const transcript = popup.getByTestId("vrf-transcript")
       if (vrfContext) await expect(transcript.getByText(vrfContext)).toBeVisible()
       // an omitted context renders as empty
@@ -107,8 +107,7 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
 
     // output(32) || proof(64), hex encoded
     expect(sig1).toMatch(/^0x[0-9a-f]{192}$/)
-    // deterministic VRF output, randomized proof — cryptographic validity of the output
-    // and proof is covered by the wasm-schnorrkel parity vectors in @talismn/crypto
+    // validity is covered by the wasm-schnorrkel parity vectors in @talismn/crypto
     expect(sig1.slice(0, 66)).toBe(sig2.slice(0, 66))
     expect(sig1).not.toBe(sig2)
 

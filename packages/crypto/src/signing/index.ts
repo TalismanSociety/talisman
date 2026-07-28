@@ -53,24 +53,15 @@ export const signSubstrate = (
 const EMPTY_BYTES = new Uint8Array()
 
 /**
- * sr25519 VRF signature, byte-compatible with schnorrkel's `vrf_sign_extra` as exposed by
- * polkadot-js `sr25519VrfSign` (with an explicit empty default context, where polkadot-js
- * defaults to `"substrate"`).
+ * sr25519 VRF signature, byte-compatible with schnorrkel's `vrf_sign_extra` (polkadot-js
+ * `sr25519VrfSign`, which defaults `context` to `"substrate"` where this defaults to empty).
  *
- * Returns 96 bytes: `output(32) || proof(64)`.
+ * Returns `output(32) || proof(64)`. The output is `hash_to_point(context, message, publicKey)^
+ * secretKey`, so it is deterministic per `(secretKey, context, message)` — unlike a regular
+ * sr25519 signature, whose nonce is random. `extra` binds the proof transcript only and never
+ * changes the output.
  *
- * Unlike regular sr25519 signatures (randomized nonce), the 32-byte VRF *output* is fully
- * determined by `(secretKey, context, message)` — it is `hash_to_point(context, message,
- * publicKey)^secretKey`. This is what makes it usable for signature-based key derivation.
- *
- * `context` is the only domain separator of the output: two different contexts over the same
- * message yield unrelated outputs. `extra` binds the DLEQ *proof* transcript only and does
- * **not** change the output — signing the same `(secretKey, context, message)` under different
- * `extra` values yields the same 32 bytes. The proof itself embeds randomness and is verifiable
- * against the public key.
- *
- * Exported for tests only — not part of the package's public surface. Wallet-facing VRF
- * signing must go through `vrfSign`, which namespaces the context.
+ * Test-only: wallet-facing signing goes through `vrfSign`, which namespaces the context.
  */
 export const vrfSignSubstrate = (
   secretKey: Uint8Array,
@@ -80,14 +71,10 @@ export const vrfSignSubstrate = (
 ): Uint8Array => sr25519Vrf.sign(message, secretKey, context, extra)
 
 /**
- * Verifies an sr25519 VRF signature produced by `vrfSignSubstrate` (or any schnorrkel
- * `vrf_sign_extra` implementation using the same context and extra).
+ * Verifies a `vrfSignSubstrate` signature. Malformed input (wrong lengths, non-canonical points,
+ * identity output) returns `false` rather than throwing.
  *
- * Malformed input (non-canonical points, wrong lengths, identity output point) verifies as
- * `false` rather than throwing.
- *
- * Exported for tests only — not part of the package's public surface. Signatures from
- * `signer.signVrf` verify with `vrfVerify`.
+ * Test-only: signatures from `signer.signVrf` verify with `vrfVerify`.
  */
 export const vrfVerifySubstrate = (
   publicKey: Uint8Array,
@@ -106,28 +93,20 @@ export const vrfVerifySubstrate = (
 const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
 
 /**
- * Builds the effective schnorrkel signing context of the `substrate-vrf` namespace:
+ * Effective signing context of the `substrate-vrf` namespace:
  * `"substrate-vrf" || u32_le(context.byteLength) || context`.
  *
- * The constant tag confines everything a wallet signs on behalf of external callers to a
- * dedicated VRF namespace: a caller-chosen context can never reproduce another protocol's
- * `vrf_sign_extra` transcript (nor a wallet's internal key-derivation outputs for the same
- * seed), because no other protocol's context starts with these bytes. The fixed-length tag alone
- * already makes the mapping injective, and schnorrkel's Merlin transcript length-frames the whole
- * context on top of that: the explicit length prefix is redundant, and is kept only because the
- * layout is frozen.
+ * The constant tag confines everything the wallet signs for external callers to one namespace, so
+ * a caller-chosen context can never reproduce another schnorrkel protocol's transcript. It is
+ * wallet-neutral on purpose: any wallet using the same frame derives the same identities, the way
+ * `<Bytes>` keeps `signRaw` portable. The length prefix is redundant — the fixed-length tag
+ * already makes the mapping injective, and Merlin length-frames the context anyway — but is part
+ * of the layout.
  *
- * The tag is deliberately wallet-neutral: any substrate wallet implementing the same
- * construction produces identical outputs for the same account and inputs, keeping
- * VRF-derived identities portable across wallets. This is the `<Bytes>` wrapping story of
- * `signRaw`, applied to VRF — interop comes from sharing the frame, not from omitting it.
+ * That layout is frozen: outputs are deterministic per effective context, so any change rotates
+ * every derived identity. A revision must be a new opt-in tag, never a replacement.
  *
- * The layout is frozen: outputs are deterministic per effective context, so any change here
- * would rotate every identity derived from these outputs. A future revision must be an
- * additive, opt-in namespace under a new tag (e.g. `substrate-vrf-v2`), never a replacement.
- *
- * Exported for tests only — the package entry point does not re-export it, and `vrfSign`/
- * `vrfVerify` apply it. Re-implementers work from the layout documented above.
+ * Test-only, not re-exported from the package — re-implementers work from the layout above.
  */
 export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Array => {
   const effective = new Uint8Array(SUBSTRATE_VRF_TAG.length + 4 + context.length)
@@ -138,14 +117,11 @@ export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Arr
 }
 
 /**
- * sr25519 VRF signature in the `substrate-vrf` namespace: `vrfSignSubstrate` with the
- * context wrapped by `substrateVrfContext`. This is what `signer.signVrf` produces — use
- * `vrfVerify` (or any schnorrkel `vrf_verify_extra` with the same effective context and an
- * empty extra) to verify.
+ * sr25519 VRF signature in the `substrate-vrf` namespace — what `signer.signVrf` produces. Verify
+ * with `vrfVerify`, or any `vrf_verify_extra` over `substrateVrfContext(context)` and no extra.
  *
- * `extra` is deliberately not exposed: it binds the DLEQ proof transcript without changing the
- * output, so callers reading it as a domain separator would silently derive one identity from
- * what they think are several. It is always empty here.
+ * `extra` is not exposed: it changes the proof but not the output, so a caller using it as a
+ * domain separator would derive one identity where they expect several.
  */
 export const vrfSign = (
   secretKey: Uint8Array,

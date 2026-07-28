@@ -76,8 +76,7 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
   )
   const publicKey = hex.decode("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d")
 
-  // generated with @polkadot/util-crypto 14.0.3 (wasm schnorrkel) sr25519VrfSign, empty
-  // context/extra. The 32-byte output is deterministic, the 64-byte proof is randomized.
+  // generated with @polkadot/util-crypto 14.0.3 (wasm schnorrkel) sr25519VrfSign, empty ctx/extra
   const WASM_OUTPUT = "5ebd74106216d6fe7d3f56b52d5bd8a755e2af12bcb2ff7786600856d4ca9d55"
   const WASM_SIGNATURE =
     "5ebd74106216d6fe7d3f56b52d5bd8a755e2af12bcb2ff7786600856d4ca9d5519a7ffebfe360361a2183dda7f75638cea8d29cdaeaa4a8650600b8fab4e650eccf24b53c0b17e51c2891eff23e37f5af855ada7dbfe42f601f57149fa572704"
@@ -87,7 +86,6 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
     const sig2 = vrfSignSubstrate(secretKey, MSG_SHORT)
     expect(sig1.length).toBe(96)
     expect(hex.encode(sig1.subarray(0, 32))).toBe(WASM_OUTPUT)
-    // deterministic output, randomized proof
     expect(hex.encode(sig2.subarray(0, 32))).toBe(WASM_OUTPUT)
     expect(vrfVerifySubstrate(publicKey, MSG_SHORT, sig1)).toBe(true)
   })
@@ -110,8 +108,7 @@ describe("vrfSignSubstrate (schnorrkel parity)", () => {
     )
   })
 
-  // extra binds the DLEQ proof transcript, it is not part of hash_to_point - callers deriving
-  // one identity per purpose must vary context (or the message), varying extra achieves nothing
+  // extra is not part of hash_to_point: deriving one identity per purpose needs a distinct context
   it("does not domain-separate by extra", () => {
     const ctx = new TextEncoder().encode("ctx")
     const sigA = vrfSignSubstrate(secretKey, MSG_SHORT, ctx, new TextEncoder().encode("a"))
@@ -163,8 +160,7 @@ describe("substrate-vrf namespace", () => {
   )
   const publicKey = hex.decode("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d")
 
-  // the layout is frozen - changing it would rotate every identity derived from a
-  // namespaced VRF output, so these bytes are asserted exactly
+  // frozen layout: asserted byte-exactly because a change rotates every derived identity
   it("builds the frozen effective context layout", () => {
     expect(hex.encode(substrateVrfContext())).toBe(
       `${hex.encode(new TextEncoder().encode("substrate-vrf"))}00000000`
@@ -180,7 +176,6 @@ describe("substrate-vrf namespace", () => {
 
     expect(sig.length).toBe(96)
     expect(vrfVerify(publicKey, MSG_SHORT, sig, ctx)).toBe(true)
-    // deterministic output under the same caller context
     expect(hex.encode(vrfSign(secretKey, MSG_SHORT, ctx).subarray(0, 32))).toBe(
       hex.encode(sig.subarray(0, 32))
     )
@@ -190,8 +185,7 @@ describe("substrate-vrf namespace", () => {
     ).not.toBe(hex.encode(sig.subarray(0, 32)))
   })
 
-  // the namespace exists so the wallet cannot act as a VRF oracle for other schnorrkel
-  // protocols: signatures must not verify across the raw/namespaced boundary in either direction
+  // the wallet must not act as a VRF oracle: no verification across the boundary, either way
   it("does not verify across the namespace boundary", () => {
     const ctx = new TextEncoder().encode("ctx")
 

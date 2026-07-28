@@ -45,13 +45,13 @@ export type SubstrateSignResponse = Omit<SignerResult, "id"> & { id: string }
 type VRF_SIGN = "vrf-sign"
 const VRF_SIGN: VRF_SIGN = "vrf-sign"
 
-/** Dapp-provided payload for `pub(vrf.sign)`. All byte fields are hex-encoded. */
+/** Dapp-provided payload for `pub(vrf.sign)`. Byte fields are hex-encoded. */
 export interface VrfSignPayload {
-  /** The ss-58 encoded address */
+  /** ss-58 encoded address */
   address: string
-  /** The hex-encoded message to compute the VRF over */
+  /** message to compute the VRF over */
   data: string
-  /** The hex-encoded VRF signing context (domain separator), empty if omitted */
+  /** VRF signing context (domain separator), empty if omitted */
   context?: string
 }
 

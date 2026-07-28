@@ -17,13 +17,10 @@ import { useParams } from "react-router-dom"
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 import { SignAccountAvatar } from "./Sign/SignAccountAvatar"
 
-/** matches the truncation budget of the `Message` textarea above it */
+/** `data` is bounded at 64kB, still 128k characters of hex — same budget as `Message` */
 const MAX_HEX_CHARS = 1000
 
-/**
- * `context` is dapp-controlled and goes into the schnorrkel transcript, so it is part of what the
- * user authorizes even when omitted. An omitted field and an explicit `0x` both mean empty bytes.
- */
+/** an omitted field and an explicit `0x` both mean empty bytes */
 const TranscriptField: FC<{ label: string; value?: string }> = ({ label, value }) => {
   const { t } = useTranslation()
 
@@ -84,7 +81,6 @@ export const VrfSignRequest = () => {
     () => (data && isAsciiPrintable(data) ? u8aToString(hexToU8a(data)) : undefined),
     [data]
   )
-  // `data` is bounded at 64kB, which is still 128k characters of hex for the popup to lay out
   const dataHex = useMemo(
     () => (data && data.length > MAX_HEX_CHARS ? `${data.slice(0, MAX_HEX_CHARS)}…` : data),
     [data]

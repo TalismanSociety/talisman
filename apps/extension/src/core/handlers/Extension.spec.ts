@@ -286,14 +286,14 @@ describe("Extension", () => {
 
       // output(32) || proof(64)
       expect(sig1.length).toBe(2 + 96 * 2)
-      // the VRF output is deterministic across signatures, the proof is not
+      // only the output is deterministic
       expect(sig1.slice(0, 66)).toBe(sig2.slice(0, 66))
 
       const addressInfo = getSs58AddressInfo(account.address)
       if (!addressInfo.isValid) throw new Error("Invalid address")
       const sigBytes = Buffer.from(sig1.slice(2), "hex")
       const msgBytes = Buffer.from(data.slice(2), "hex")
-      // verifying through the Talisman namespace proves the handler applies the context prefix
+      // verifying through the namespace proves the handler applies the context prefix
       expect(vrfVerify(addressInfo.publicKey, msgBytes, sigBytes)).toBe(true)
     })
 
@@ -311,8 +311,7 @@ describe("Extension", () => {
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
-    // an omitted context means "empty", an empty string is malformed - "0x" is how a caller
-    // asks for empty bytes
+    // an omitted context means "empty"; "0x" is how a caller asks for empty bytes
     test("rejects an empty context string", async () => {
       const account = await getAccount()
 
@@ -322,8 +321,7 @@ describe("Extension", () => {
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
-    // schnorrkel's `extra` binds the proof without changing the output, so it is refused rather
-    // than ignored - a caller using it as a domain separator must find out
+    // refused rather than ignored: a caller using extra as a domain separator must find out
     test("rejects extra transcript data", async () => {
       const account = await getAccount()
 
@@ -343,8 +341,7 @@ describe("Extension", () => {
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
-    // the VRF needs the raw sr25519 secret key, so both predicates of the account check matter:
-    // ethereum isolates the curve one, watch-only isolates the account type one
+    // both predicates matter: ethereum isolates the curve check, watch-only the account type
     test.each([
       ["a non-sr25519 keypair", "Test Ethereum Account"],
       ["a watch-only account", "Test Watch Only Account"],
@@ -360,9 +357,7 @@ describe("Extension", () => {
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
-    // the request store only drops a request through resolve/reject, so a failing approval must
-    // reject it rather than throw and leave the dapp waiting. queued directly to get past the
-    // account check `pub(vrf.sign)` does, and reach the handler's own curve assertion
+    // queued directly, to get past the `pub(vrf.sign)` account check and fail inside the handler
     test("rejects the queued request when approval fails", async () => {
       const accounts = await keyringStore.getAccounts()
       const account = accounts.find((acc) => acc.name === "Test Ethereum Account")
@@ -387,8 +382,7 @@ describe("Extension", () => {
 
     test("refuses to VRF-sign a substrate signing request", async () => {
       const account = await getAccount()
-      // a raw payload's `data` field also parses as a VrfSignPayload, so only the request type
-      // stops this approval path from answering a signRaw with a VRF signature
+      // a raw payload's `data` also parses as a VrfSignPayload
       signSubstrate(
         DAPP_URL,
         { payload: { address: account.address, data: "0x00", type: "bytes" } },

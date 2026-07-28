@@ -180,13 +180,13 @@ export default class Tabs extends TabsHandler {
     request: VrfSignPayload,
     port: Port
   ): Promise<VrfSignResponse> {
-    // reject malformed transcript fields here so they never reach the approval popup
+    // reject malformed payloads here so they never reach the approval popup
     parseVrfSignPayload(request)
 
     const account = await keyringStore.getAccount(request.address)
     if (!account) throw new Error("Account not found")
 
-    // VRF signing needs the raw sr25519 secret key: hardware/vault/watch-only accounts can't do it
+    // VRF signing needs the raw secret key: hardware/vault/watch-only accounts can't do it
     assert(
       account.type === "keypair" && account.curve === "sr25519",
       "VRF signing requires a local sr25519 account"

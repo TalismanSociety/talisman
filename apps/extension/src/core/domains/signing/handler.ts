@@ -44,7 +44,7 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
-    // the approval paths share an id space, and a VrfSignPayload also parses as a raw payload
+    // the approval paths share an id space
     assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
     const { reject, request, resolve, url } = queued
@@ -125,21 +125,18 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
-    // a SignerPayloadRaw parses as a VrfSignPayload, so without this a substrate-sign request
-    // approved through this path would be answered with a VRF signature
+    // a SignerPayloadRaw parses as a VrfSignPayload, so only the type stops a cross-path approval
     assert(queued.type === "vrf-sign", "Not a VRF signing request")
 
     const { reject, request, resolve, url } = queued
     const address = encodeAnyAddress(queued.account.address)
 
-    // re-parse rather than trust what was queued, so the secret key is never used on bytes that
-    // did not survive the same validation the dapp's request went through
+    // re-parse: the secret key must never run on bytes that skipped the boundary validation
     const { data, context } = parseVrfSignPayload(request.payload)
 
     const result = await withSecretKey(address, async (secretKey, curve) => {
       assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
 
-      // namespaced so a dapp cannot use the wallet as a VRF oracle for other schnorrkel protocols
       const signature = u8aToHex(vrfSign(secretKey, data, context))
 
       const { ok, val: hostName } = getHostName(url)
@@ -153,8 +150,7 @@ export default class SigningHandler extends ExtensionHandler {
     })
     if (!result.ok) {
       const error = typeof result.val === "string" ? new Error(result.val) : result.val
-      // settle the dapp's promise on every failure path, not just Unauthorised: the request store
-      // only drops a request through resolve/reject, so throwing alone leaves it queued
+      // the store only drops a request through resolve/reject, so throwing alone leaves it queued
       reject(error)
       if (result.val !== "Unauthorised") throw error
     }
