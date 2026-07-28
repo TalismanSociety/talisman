@@ -21,6 +21,7 @@ export default defineConfig({
       "@talismn/scale": path.join(packagesDir, "scale/src"),
       "@talismn/chain-connectors": path.join(packagesDir, "chain-connectors/src"),
       "@talismn/solana": path.join(packagesDir, "solana/src"),
+      "@talismn/substrate-vrf": path.join(packagesDir, "substrate-vrf/src"),
       "@talismn/token-rates": path.join(packagesDir, "token-rates/src"),
       "@talismn/on-chain-id": path.join(packagesDir, "on-chain-id/src"),
       "@talismn/orb": path.join(packagesDir, "orb/src"),
