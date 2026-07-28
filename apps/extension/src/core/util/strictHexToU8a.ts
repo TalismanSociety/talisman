@@ -11,14 +11,15 @@ const REGEX_STRICT_HEX = /^0x(?:[0-9a-fA-F]{2})*$/
  * can differ - hence the strict parse.
  */
 export const strictHexToU8a = (value: unknown, label: string, maxBytes: number): Uint8Array => {
-  assert(
-    typeof value === "string" && REGEX_STRICT_HEX.test(value),
-    `Invalid ${label}: expected an even-length 0x-prefixed hex string`
-  )
+  const malformed = `Invalid ${label}: expected an even-length 0x-prefixed hex string`
+
+  assert(typeof value === "string", malformed)
+  // bound the length before the regex, so an oversized string is rejected without being scanned
   assert(
     (value.length - 2) / 2 <= maxBytes,
     `Invalid ${label}: exceeds the maximum size of ${maxBytes} bytes`
   )
+  assert(REGEX_STRICT_HEX.test(value), malformed)
 
   return hexToU8a(value as HexString)
 }
