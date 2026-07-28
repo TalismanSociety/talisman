@@ -120,7 +120,7 @@ export const VrfSignRequest = () => {
                 {dataHex}
               </div>
             )}
-            <div className="mt-8 flex w-full flex-col gap-4 text-xs">
+            <div className="mt-8 flex w-full flex-col gap-4 text-xs" data-testid="vrf-transcript">
               <TranscriptField label={t("Context")} value={req.request.payload.context} />
               <TranscriptField
                 label={t("Extra")}
