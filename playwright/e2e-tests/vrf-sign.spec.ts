@@ -107,7 +107,7 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
 
     // output(32) || proof(64), hex encoded
     expect(sig1).toMatch(/^0x[0-9a-f]{192}$/)
-    // validity is covered by the wasm-schnorrkel parity vectors in @talismn/crypto
+    // validity is covered by the wasm-schnorrkel parity vectors in @talismn/substrate-vrf
     expect(sig1.slice(0, 66)).toBe(sig2.slice(0, 66))
     expect(sig1).not.toBe(sig2)
 
