@@ -1,5 +1,6 @@
 import { TEST } from "@common/constants"
-import { encodeAnyAddress, signSubstrate, sr25519SignVrf } from "@talismn/crypto"
+import { encodeAnyAddress, signSubstrate } from "@talismn/crypto"
+import { sr25519SignVrf } from "@talismn/substrate-vrf"
 import type { HexString } from "@talismn/util"
 import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { talismanAnalytics } from "../../libs/Analytics"

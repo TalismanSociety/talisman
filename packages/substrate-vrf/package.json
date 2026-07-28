@@ -1,0 +1,52 @@
+{
+  "name": "@talismn/substrate-vrf",
+  "version": "0.0.0",
+  "author": "Talisman",
+  "homepage": "https://talisman.xyz",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "repository": {
+    "directory": "packages/substrate-vrf",
+    "type": "git",
+    "url": "https://github.com/TalismanSociety/talisman.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo node_modules",
+    "build": "tsdown -l error",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@scure/sr25519": "2.2.0"
+  },
+  "devDependencies": {
+    "@scure/base": "2.2.0",
+    "@talismn/tsconfig": "workspace:*",
+    "typescript": "^7.0.2"
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@talismn/source": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  }
+}

@@ -112,7 +112,7 @@ export class TalismanSigner {
    * schnorrkel's `extra` is not accepted, as it changes the proof but not the output.
    *
    * Signing happens in the frozen `substrate-vrf` namespace, never over the raw `context` — verify
-   * with `sr25519VerifyVrf` from `@talismn/crypto`, passing `location.origin` as the origin.
+   * with `sr25519VerifyVrf` from `@talismn/substrate-vrf`, passing `location.origin` as the origin.
    *
    * The output is bound to that origin: no other site can obtain it, and a dapp served from
    * several origins (including http vs https) derives a different value on each, so pin a
