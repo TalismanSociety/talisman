@@ -112,8 +112,10 @@ const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
  * The constant tag confines everything a wallet signs on behalf of external callers to a
  * dedicated VRF namespace: a caller-chosen context can never reproduce another protocol's
  * `vrf_sign_extra` transcript (nor a wallet's internal key-derivation outputs for the same
- * seed), because no other protocol's context starts with these bytes. The length prefix makes
- * the mapping injective, so distinct caller contexts always yield distinct effective contexts.
+ * seed), because no other protocol's context starts with these bytes. The fixed-length tag alone
+ * already makes the mapping injective, and schnorrkel's Merlin transcript length-frames the whole
+ * context on top of that: the explicit length prefix is redundant, and is kept only because the
+ * layout is frozen.
  *
  * The tag is deliberately wallet-neutral: any substrate wallet implementing the same
  * construction produces identical outputs for the same account and inputs, keeping
@@ -124,8 +126,8 @@ const SUBSTRATE_VRF_TAG = new TextEncoder().encode("substrate-vrf")
  * would rotate every identity derived from these outputs. A future revision must be an
  * additive, opt-in namespace under a new tag (e.g. `substrate-vrf-v2`), never a replacement.
  *
- * Exported for tests and interop tooling only — not part of the package's public surface,
- * `vrfSign`/`vrfVerify` apply it.
+ * Exported for tests only — the package entry point does not re-export it, and `vrfSign`/
+ * `vrfVerify` apply it. Re-implementers work from the layout documented above.
  */
 export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Array => {
   const effective = new Uint8Array(SUBSTRATE_VRF_TAG.length + 4 + context.length)
