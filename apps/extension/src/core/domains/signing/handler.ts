@@ -170,6 +170,8 @@ export default class SigningHandler extends ExtensionHandler {
   }: RequestSigningApproveSignature): Promise<boolean> {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
+    // the approval paths share an id space
+    assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
     const { request, url, account } = queued
     const { payload: originalPayload } = request
