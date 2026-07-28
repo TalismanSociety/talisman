@@ -367,6 +367,7 @@ function createPackageSourceAliases(): Alias[] {
     { find: "@talismn/sapi", replacement: resolve(packagesDir, "sapi/src") },
     { find: "@talismn/scale", replacement: resolve(packagesDir, "scale/src") },
     { find: "@talismn/solana", replacement: resolve(packagesDir, "solana/src") },
+    { find: "@talismn/substrate-vrf", replacement: resolve(packagesDir, "substrate-vrf/src") },
     { find: "@talismn/token-rates", replacement: resolve(packagesDir, "token-rates/src") },
     { find: "@talismn/util", replacement: resolve(packagesDir, "util/src") },
   ]
