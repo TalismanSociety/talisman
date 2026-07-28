@@ -91,7 +91,7 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
           { address: srAccount.address, data, vrfContext }
         ),
       ])
-      await expect(popup.getByText("VRF Signature Request")).toBeVisible()
+      await expect(popup.getByText("Derivation Request")).toBeVisible()
       // the popup must show the whole transcript, not just the data
       const transcript = popup.getByTestId("vrf-transcript")
       // the site the output is bound to
