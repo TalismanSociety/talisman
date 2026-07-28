@@ -322,6 +322,17 @@ describe("Extension", () => {
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
+    // schnorrkel's `extra` binds the proof without changing the output, so it is refused rather
+    // than ignored - a caller using it as a domain separator must find out
+    test("rejects extra transcript data", async () => {
+      const account = await getAccount()
+
+      await expect(
+        requestVrfSign({ address: account.address, data: "0x00", extra: "0x00" } as VrfSignPayload)
+      ).rejects.toThrow(/Invalid extra/)
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
     test("rejects oversized data", async () => {
       const account = await getAccount()
       const data = `0x${"00".repeat(64 * 1024 + 1)}`

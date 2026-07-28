@@ -95,8 +95,8 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
       // the popup must show the whole transcript, not just the data
       const transcript = popup.getByTestId("vrf-transcript")
       if (vrfContext) await expect(transcript.getByText(vrfContext)).toBeVisible()
-      // context and extra both render as empty
-      else await expect(transcript.getByText("empty")).toHaveCount(2)
+      // an omitted context renders as empty
+      else await expect(transcript.getByText("empty")).toHaveCount(1)
       await popup.getByRole("button", { name: "Approve" }).click()
       const result = await dapp.evaluate(() => (window as unknown as DappWindow).signPromise)
       return result.signature

@@ -134,13 +134,13 @@ export default class SigningHandler extends ExtensionHandler {
 
     // re-parse rather than trust what was queued, so the secret key is never used on bytes that
     // did not survive the same validation the dapp's request went through
-    const { data, context, extra } = parseVrfSignPayload(request.payload)
+    const { data, context } = parseVrfSignPayload(request.payload)
 
     const result = await withSecretKey(address, async (secretKey, curve) => {
       assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
 
       // namespaced so a dapp cannot use the wallet as a VRF oracle for other schnorrkel protocols
-      const signature = u8aToHex(vrfSign(secretKey, data, context, extra))
+      const signature = u8aToHex(vrfSign(secretKey, data, context))
 
       const { ok, val: hostName } = getHostName(url)
       talismanAnalytics.captureDelayed("vrf sign approve", {

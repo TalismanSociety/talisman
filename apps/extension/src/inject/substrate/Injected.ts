@@ -113,18 +113,19 @@ export class TalismanSigner {
    * protocols, while any wallet implementing the same construction produces identical outputs
    * for the same account — VRF-derived identities are portable across conforming wallets, the
    * same way `<Bytes>` wrapping keeps `signRaw` portable. Verify with `vrfVerify` from
-   * `@talismn/crypto`, or any schnorrkel `vrf_verify_extra` after applying the same wrapping.
-   * The layout is frozen — outputs are deterministic per effective context, so a future
-   * revision would be a new opt-in namespace, not a change to this one.
+   * `@talismn/crypto`, or any schnorrkel `vrf_verify_extra` after applying the same wrapping,
+   * with an empty extra. The layout is frozen — outputs are deterministic per effective context,
+   * so a future revision would be a new opt-in namespace, not a change to this one.
    *
    * Returns 96 hex-encoded bytes: `output(32) || proof(64)`. The 32-byte output is fully
    * determined by (account, context, data) — unlike `signRaw`, whose sr25519 signatures are
    * randomized — which makes it suitable for signature-based key derivation. The proof is
    * randomized and verifiable against the account's public key.
    *
-   * `context` is the only domain separator of the output. `extra` binds the proof transcript
-   * only and does **not** change the output: deriving one identity per purpose requires
-   * distinct `context` (or `data`) values, not distinct `extra` values.
+   * `context` is the only domain separator of the output: deriving one identity per purpose
+   * requires distinct `context` (or `data`) values. Schnorrkel's `extra` is not accepted — it
+   * binds the proof transcript without changing the output, so a caller reading it as a domain
+   * separator would derive one identity from what they think are several.
    *
    * The output is not origin-bound. Another site the user has authorized for the same account
    * can request the same `(data, context)` and, if the user approves, receive the same output.

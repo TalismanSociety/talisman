@@ -140,24 +140,26 @@ export const substrateVrfContext = (context: Uint8Array = EMPTY_BYTES): Uint8Arr
 /**
  * sr25519 VRF signature in the `substrate-vrf` namespace: `vrfSignSubstrate` with the
  * context wrapped by `substrateVrfContext`. This is what `signer.signVrf` produces — use
- * `vrfVerify` (or any schnorrkel `vrf_verify_extra` with the same effective context)
- * to verify.
+ * `vrfVerify` (or any schnorrkel `vrf_verify_extra` with the same effective context and an
+ * empty extra) to verify.
+ *
+ * `extra` is deliberately not exposed: it binds the DLEQ proof transcript without changing the
+ * output, so callers reading it as a domain separator would silently derive one identity from
+ * what they think are several. It is always empty here.
  */
 export const vrfSign = (
   secretKey: Uint8Array,
   message: Uint8Array,
-  context?: Uint8Array,
-  extra?: Uint8Array
-): Uint8Array => vrfSignSubstrate(secretKey, message, substrateVrfContext(context), extra)
+  context?: Uint8Array
+): Uint8Array => vrfSignSubstrate(secretKey, message, substrateVrfContext(context))
 
 /** Verifies a signature produced by `vrfSign` for the given caller context. */
 export const vrfVerify = (
   publicKey: Uint8Array,
   message: Uint8Array,
   signature: Uint8Array,
-  context?: Uint8Array,
-  extra?: Uint8Array
-): boolean => vrfVerifySubstrate(publicKey, message, signature, substrateVrfContext(context), extra)
+  context?: Uint8Array
+): boolean => vrfVerifySubstrate(publicKey, message, signature, substrateVrfContext(context))
 
 /** MultiSignature enum variant index per signature scheme, used to type-prefix signatures */
 export const SIGNATURE_TYPE_PREFIX: Partial<Record<KeypairCurve, number>> = {

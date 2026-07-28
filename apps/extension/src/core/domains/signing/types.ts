@@ -53,8 +53,6 @@ export interface VrfSignPayload {
   data: string
   /** The hex-encoded VRF signing context (domain separator), empty if omitted */
   context?: string
-  /** The hex-encoded extra transcript data, empty if omitted */
-  extra?: string
 }
 
 export type RequestVrfSign = { payload: VrfSignPayload }
