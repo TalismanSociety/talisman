@@ -17,6 +17,9 @@ import { useParams } from "react-router-dom"
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 import { SignAccountAvatar } from "./Sign/SignAccountAvatar"
 
+/** matches the truncation budget of the `Message` textarea above it */
+const MAX_HEX_CHARS = 1000
+
 /**
  * `context` and `extra` are dapp-controlled and go into the schnorrkel transcript, so they are
  * part of what the user authorizes even when omitted. An omitted field and an explicit `0x` both
@@ -89,6 +92,11 @@ export const VrfSignRequest = () => {
     () => (data && isAsciiPrintable(data) ? u8aToString(hexToU8a(data)) : undefined),
     [data]
   )
+  // `data` is bounded at 64kB, which is still 128k characters of hex for the popup to lay out
+  const dataHex = useMemo(
+    () => (data && data.length > MAX_HEX_CHARS ? `${data.slice(0, MAX_HEX_CHARS)}…` : data),
+    [data]
+  )
 
   return (
     <PopupLayout>
@@ -109,7 +117,7 @@ export const VrfSignRequest = () => {
             <Message className="mt-8 w-full grow" text={dataText ?? req.request.payload.data} />
             {dataText !== undefined && (
               <div className="mt-4 w-full break-all text-left font-mono text-grey-500 text-xs">
-                {req.request.payload.data}
+                {dataHex}
               </div>
             )}
             <div className="mt-8 flex w-full flex-col gap-4 text-xs">
