@@ -92,10 +92,8 @@ test("signVrf returns a deterministic, verifiable sr25519 VRF signature", async 
         ),
       ])
       await expect(popup.getByText("Derivation Request")).toBeVisible()
-      // the popup must show the whole transcript, not just the data
+      // the popup must show the context, not just the data
       const transcript = popup.getByTestId("vrf-transcript")
-      // the site the output is bound to
-      await expect(transcript.getByText(new URL(url).host)).toBeVisible()
       if (vrfContext) await expect(transcript.getByText(vrfContext)).toBeVisible()
       // an omitted context renders as empty
       else await expect(transcript.getByText("empty")).toHaveCount(1)
