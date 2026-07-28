@@ -38,6 +38,13 @@ const isPayloadModified = (
   modified: SignerPayloadJSON | undefined
 ) => !!modified && JSON.stringify(modified) !== JSON.stringify(original)
 
+// the store only drops a request through resolve/reject, so throwing alone would leave it queued
+const rejectApprovalFailure = (reject: (error: Error) => void, val: string | Error): never => {
+  const error = typeof val === "string" ? new Error(val) : val
+  reject(error)
+  throw error
+}
+
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({
     id,
@@ -115,11 +122,7 @@ export default class SigningHandler extends ExtensionHandler {
         signedTransaction,
       })
     })
-    if (!result.ok) {
-      if (result.val === "Unauthorised") reject(new Error(result.val))
-      else if (typeof result.val === "string") throw new Error(result.val)
-      else throw result.val
-    }
+    if (!result.ok) rejectApprovalFailure(reject, result.val)
     return true
   }
 
@@ -155,12 +158,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       resolve({ id, signature })
     })
-    if (!result.ok) {
-      const error = typeof result.val === "string" ? new Error(result.val) : result.val
-      // the store only drops a request through resolve/reject, so throwing alone leaves it queued
-      reject(error)
-      if (result.val !== "Unauthorised") throw error
-    }
+    if (!result.ok) rejectApprovalFailure(reject, result.val)
     return true
   }
 
