@@ -202,10 +202,12 @@ const ValidatorRow: FC<{
               : t("N/A")}
           </div>
         </div>
+        {/* metagraph entries have no registry stats: stakers/subnets would be fake zeros */}
         <div
           className={cn(
             "flex w-full justify-between text-body-secondary text-xs",
-            isLoading && "animate-pulse"
+            isLoading && "animate-pulse",
+            option.source === "metagraph" && "hidden"
           )}
         >
           <div className="flex items-center gap-4">

@@ -4,6 +4,7 @@ import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 
 import { useTaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 
@@ -11,7 +12,7 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
 
-  const { alphaToken: token } = useSubnetTokens(netuid)
+  const { alphaToken: token } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
   const { open } = useTaoDashboardSubnetPickerModal()
 
   const items = useMemo(

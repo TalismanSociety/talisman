@@ -4,6 +4,7 @@ import { Toggle } from "@ui/components/Toggle"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -15,13 +16,14 @@ import {
   BittensorRewardTypePicker,
   useRewardTypeLabel,
 } from "../../components/BittensorRewardTypePicker"
-import { BITTENSOR_NETWORK_ID, BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
+import { BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorSettingsModal } from "../hooks/useBittensorSettingsModal"
 import { useBittensorSettingsWizard } from "../hooks/useBittensorSettingsWizard"
 
 export const BittensorSettingsForm = () => {
   const { t } = useTranslation()
   const {
+    networkId,
     nativeToken,
     account,
     accountPicker,
@@ -46,6 +48,7 @@ export const BittensorSettingsForm = () => {
     setSelectedAcceptLockedAlpha,
     onSubmitted,
   } = useBittensorSettingsWizard()
+  const network = useNetworkById(networkId)
   const { close } = useBittensorSettingsModal()
   const rewardTypePicker = useOpenClose()
   const [pickerInitialView, setPickerInitialView] = useState<"type" | "subnets">("type")
@@ -99,8 +102,8 @@ export const BittensorSettingsForm = () => {
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Network")}</div>
           <div className="overflow-hidden text-body">
-            <NetworkLogo networkId={BITTENSOR_NETWORK_ID} className="mr-2 inline-block size-12" />{" "}
-            Bittensor
+            <NetworkLogo networkId={networkId} className="mr-2 inline-block size-12" />{" "}
+            {network?.name ?? "Bittensor"}
           </div>
         </div>
         <div className="flex h-16 items-center justify-between gap-4">
@@ -224,7 +227,7 @@ export const BittensorSettingsForm = () => {
         isOpen={rewardTypePicker.isOpen}
         containerId={BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID}
         value={selectedClaimType}
-        networkId={BITTENSOR_NETWORK_ID}
+        networkId={networkId}
         selectedSubnets={selectedSubnets}
         initialView={pickerInitialView}
         onSelect={setSelectedClaimType}

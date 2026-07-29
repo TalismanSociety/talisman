@@ -39,6 +39,7 @@ export const BittensorSettingsToolbarButton: FC<{
     }
 
     return {
+      networkId: token.networkId,
       address: balance.address,
       step: "settings",
     }

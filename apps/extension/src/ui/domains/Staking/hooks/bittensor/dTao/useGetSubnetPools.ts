@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 
 import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "@ui/util/taoDataApi"
 
-export function useGetSubnetPools() {
+export function useGetSubnetPools({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ["taoData", "subnetPools"],
+    enabled,
     queryFn: async ({ signal }) => {
       try {
         return (await taoDataApi.pools.listPools({ signal })).data

@@ -64,7 +64,10 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const tokenIn = selectedPosition?.token ?? null
   const tokenIdIn = tokenIn?.id ?? null
 
-  const { taoTokenId: tokenIdOut, taoToken: tokenOut } = useSubnetTokens(netuid)
+  const { taoTokenId: tokenIdOut, taoToken: tokenOut } = useSubnetTokens(
+    BITTENSOR_NETWORK_ID,
+    netuid
+  )
 
   const address = selectedPosition?.balance.address ?? null
   const hotkey = tokenIn?.hotkey ?? null

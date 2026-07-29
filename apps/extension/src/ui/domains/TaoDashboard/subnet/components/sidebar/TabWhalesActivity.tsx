@@ -20,6 +20,7 @@ import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import { useSetChartOverlay } from "../chart-overlay/ChartOverlayContext"
 import { SectionTitleBar } from "./SectionTitleBar"
 
@@ -53,7 +54,7 @@ const isInflowTransaction = (type: WhaleTransactionType): boolean => {
 
 const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
-  const { taoTokenId } = useSubnetTokens(netuid)
+  const { taoTokenId } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
   const { data, isLoading, isError } = useSubnetWhalesFlow(netuid, period)
 
   const inflowPercent = useMemo(() => {
@@ -137,7 +138,7 @@ const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid
     return parseFloat(taoPrice.price)
   }, [taoPrice])
 
-  const { alphaToken, taoToken } = useSubnetTokens(netuid)
+  const { alphaToken, taoToken } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
 
   const tokensLoaded = !!taoToken && !!alphaToken
 

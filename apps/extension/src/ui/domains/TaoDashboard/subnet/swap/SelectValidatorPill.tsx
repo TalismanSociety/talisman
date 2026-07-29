@@ -20,7 +20,7 @@ export const SelectValidatorPill: FC<{
   const { t } = useTranslation()
 
   // preload validator + yield data so the picker doesn't flicker on open
-  useCombinedBittensorValidatorsData(netuid)
+  useCombinedBittensorValidatorsData(BITTENSOR_NETWORK_ID, netuid)
 
   const { open, isOpen, close } = useOpenClose()
 

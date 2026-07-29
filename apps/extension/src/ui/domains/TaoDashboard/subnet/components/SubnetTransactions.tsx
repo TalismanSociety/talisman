@@ -12,6 +12,7 @@ import { AccountNameOrAddress } from "../../shared/AccountNameOrAddress"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { TransactionAvatar } from "../../shared/TransactionAvatar"
 import type { TransactionEntry } from "../../shared/types"
+import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import { useRealtimeStakeEventsContext } from "./realtime/RealtimeStakeEventsProvider"
 import { SubnetStakingOperationModal } from "./SubnetStakingOperationModal"
 import { useSubnetTransactions } from "./useSubnetTransactions"
@@ -55,7 +56,7 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
     MAX_ITEMS_PER_TAB,
     { realtimeEvents, onIndexerBlockHeight: reportFloor }
   )
-  const { alphaToken, taoToken } = useSubnetTokens(netuid)
+  const { alphaToken, taoToken } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to top if tab changes
   useEffect(() => {

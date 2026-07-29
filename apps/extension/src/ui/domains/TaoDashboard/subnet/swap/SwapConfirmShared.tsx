@@ -17,6 +17,7 @@ import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDi
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import {
@@ -110,7 +111,10 @@ export const SwapConfirmValidatorApyValue: FC<{ hotkey?: string; netuid?: number
   netuid,
 }) => {
   const { t } = useTranslation()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
+    BITTENSOR_NETWORK_ID,
+    netuid
+  )
 
   const apy = useMemo(() => {
     const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)

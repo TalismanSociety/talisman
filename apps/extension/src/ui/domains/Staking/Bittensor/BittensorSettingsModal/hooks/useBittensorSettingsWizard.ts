@@ -1,5 +1,5 @@
 import type { Address } from "@core/types/base"
-import { subNativeTokenId } from "@talismn/chaindata-provider"
+import { type DotNetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
 import type { RootClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorAcceptsLockedAlpha"
@@ -18,6 +18,7 @@ export type BittensorSettingsStep = "settings" | "follow-up"
 
 type WizardState = {
   step: BittensorSettingsStep
+  networkId: DotNetworkId
   address: Address | null
   hash: Hex | null
   selectedClaimType: RootClaimType | null
@@ -28,6 +29,7 @@ type WizardState = {
 }
 
 export type BittensorSettingsOpenOptions = {
+  networkId: DotNetworkId
   address: Address
   step?: BittensorSettingsStep
   onSubmitted?: () => void
@@ -35,6 +37,7 @@ export type BittensorSettingsOpenOptions = {
 
 const DEFAULT_STATE: WizardState = {
   step: "settings",
+  networkId: BITTENSOR_NETWORK_ID,
   address: null,
   hash: null,
   selectedClaimType: null,
@@ -49,6 +52,7 @@ export const useResetBittensorSettingsWizard = () => {
   const reset = useCallback((init: BittensorSettingsOpenOptions) => {
     wizardOpenState$.next({
       ...DEFAULT_STATE,
+      networkId: init.networkId,
       address: init.address,
       step: init.step ?? "settings",
       onSubmittedCallback: init.onSubmitted ?? null,
@@ -61,6 +65,7 @@ export const useResetBittensorSettingsWizard = () => {
 const useBittensorSettingsWizardProvider = () => {
   const [
     {
+      networkId,
       address,
       step,
       hash,
@@ -72,7 +77,7 @@ const useBittensorSettingsWizardProvider = () => {
     setWizardState,
   ] = useState(() => wizardOpenState$.getValue())
 
-  const nativeTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
+  const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const account = useAccountByAddress(address)
   const nativeToken = useToken(nativeTokenId, "substrate-native")
   const accountPicker = useOpenClose()
@@ -206,6 +211,7 @@ const useBittensorSettingsWizardProvider = () => {
   )
 
   return {
+    networkId,
     address,
     step,
     hash,

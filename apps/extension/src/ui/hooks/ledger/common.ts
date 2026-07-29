@@ -34,6 +34,7 @@ export const CHAIN_ID_TO_LEDGER_APP_NAME: Partial<Record<DotNetworkId, string>> 
   "darwinia": "Darwinia",
   "ajuna": "Ajuna",
   "bittensor": "Bittensor",
+  "bittensor-testnet": "Bittensor",
   "zeitgeist": "Zeitgeist",
   "joystream": "Joystream",
   "enjin-relay": "Enjin",

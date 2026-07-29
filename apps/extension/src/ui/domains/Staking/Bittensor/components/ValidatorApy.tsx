@@ -7,8 +7,11 @@ import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 export const ValidatorApy = () => {
   const { t } = useTranslation()
-  const { hotkey, netuid } = useBittensorBondWizard()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+  const { hotkey, netuid, networkId } = useBittensorBondWizard()
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
+    networkId,
+    netuid
+  )
 
   const apy = useMemo(() => {
     const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)

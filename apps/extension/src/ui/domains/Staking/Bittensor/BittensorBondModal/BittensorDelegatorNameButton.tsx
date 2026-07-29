@@ -12,8 +12,8 @@ export const BittensorDelegatorNameButton: FC<{
   className?: string
 }> = ({ hotkey, isDisabled, className }) => {
   const { t } = useTranslation()
-  const { netuid } = useBittensorBondWizard()
-  const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
+  const { netuid, networkId } = useBittensorBondWizard()
+  const { combinedValidatorsData } = useCombinedBittensorValidatorsData(networkId, netuid)
 
   const validator = useMemo(
     () => combinedValidatorsData.find((data) => data.hotkey === hotkey),
