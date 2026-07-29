@@ -1,25 +1,41 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
+import { base64 } from "@scure/base"
 import { verify as sr25519Verify } from "@scure/sr25519"
 import type { Account } from "@talismn/keyring"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
+import { sr25519VerifyVrf } from "@talismn/substrate-vrf"
+import { hexToU8a, u8aToHex } from "@talismn/util"
 import { waitFor } from "@testing-library/dom"
+import { v4 } from "uuid"
 import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
-import { signSubstrate } from "../domains/signing/requests"
+import { signSubstrate, signVrf } from "../domains/signing/requests"
+import type { VrfSignPayload } from "../domains/signing/types"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
+import Tabs from "./Tabs"
+
+// the phishing lists are fetched over the network on first use, which every `pub(*)` message
+// would otherwise wait on
+vi.mock("../domains/app/protector", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../domains/app/protector")>()),
+  isPhishingSite: async () => false,
+}))
 
 vi.setConfig({ testTimeout: 10_000 })
 
+const DAPP_URL = "http://localhost:3000"
+
 describe("Extension", () => {
   let extension: Extension
+  let tabs: Tabs
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
@@ -52,6 +68,7 @@ describe("Extension", () => {
   beforeAll(async () => {
     await chrome.storage.local.clear()
     extension = await createExtension()
+    tabs = new Tabs(extensionStores)
     messageSender = getMessageSenderFn(extension)
 
     await messageSender("pri(app.onboardCreatePassword)", {
@@ -72,7 +89,29 @@ describe("Extension", () => {
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
-    await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
+    // hardhat #0, only used to exercise the "must be sr25519" checks
+    const [ethAddress] = await messageSender("pri(accounts.add.keypair)", [
+      {
+        name: "Test Ethereum Account",
+        curve: "ethereum",
+        secretKey: base64.encode(
+          hexToU8a("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
+        ),
+      },
+    ])
+
+    const [watchOnlyAddress] = await messageSender("pri(accounts.add.external)", [
+      {
+        type: "watch-only",
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        name: "Test Watch Only Account",
+        isPortfolio: false,
+      },
+    ])
+
+    await extensionStores.sites.updateSite("localhost:3000", {
+      addresses: [address, ethAddress, watchOnlyAddress],
+    })
     await extensionStores.app.setOnboarded()
   })
 
@@ -211,6 +250,191 @@ describe("Extension", () => {
       const addressInfo = getSs58AddressInfo(account.address)
       if (!addressInfo.isValid) throw new Error("Invalid address")
       expect(sr25519Verify(signingInput, sigBytes.subarray(1), addressInfo.publicKey)).toBe(true)
+    })
+  })
+
+  describe("vrf signing", () => {
+    beforeEach(async () => {
+      requestStore.clearRequests()
+    })
+
+    const requestVrfSign = (payload: VrfSignPayload, url = DAPP_URL) =>
+      tabs.handle(v4(), "pub(vrf.sign)", payload, {} as chrome.runtime.Port, url)
+
+    const signVrfOnce = async (account: Account, data: `0x${string}`, url = DAPP_URL) => {
+      const requestPromise = requestVrfSign({ address: account.address, data }, url)
+
+      await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
+
+      const request = requestStore.allRequests("vrf-sign")[0]
+      const approveMessage = await messageSender("pri(signing.approveSign.vrf)", {
+        id: request.id,
+      })
+      expect(approveMessage).toEqual(true)
+
+      const { signature } = await requestPromise
+      requestStore.clearRequests()
+      return signature
+    }
+
+    test("signs with a deterministic, verifiable VRF output", async () => {
+      const account = await getAccount()
+      const data = u8aToHex(new TextEncoder().encode("talisman vrf test"))
+
+      const sig1 = await signVrfOnce(account, data)
+      const sig2 = await signVrfOnce(account, data)
+
+      // output(32) || proof(64)
+      expect(sig1.length).toBe(2 + 96 * 2)
+      // only the output is deterministic
+      expect(sig1.slice(0, 66)).toBe(sig2.slice(0, 66))
+
+      const addressInfo = getSs58AddressInfo(account.address)
+      if (!addressInfo.isValid) throw new Error("Invalid address")
+      const sigBytes = Buffer.from(sig1.slice(2), "hex")
+      const msgBytes = Buffer.from(data.slice(2), "hex")
+      // verifying through the namespace proves the handler applies the origin and context frame
+      const origin = new URL(DAPP_URL).origin
+      expect(sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, { origin })).toBe(true)
+      // the output is bound to the requesting site, so no other site can obtain it
+      expect(
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, sigBytes, {
+          origin: "https://evil.example.com",
+        })
+      ).toBe(false)
+    })
+
+    // the namespace binds `scheme://host`, so schemes never share an identity even though site
+    // authorization is host-keyed
+    test("derives a different output for http and https on the same host", async () => {
+      const account = await getAccount()
+      const data = u8aToHex(new TextEncoder().encode("talisman vrf test"))
+
+      const httpSig = await signVrfOnce(account, data)
+      const httpsSig = await signVrfOnce(account, data, "https://localhost:3000")
+
+      expect(httpsSig.slice(0, 66)).not.toBe(httpSig.slice(0, 66))
+
+      const addressInfo = getSs58AddressInfo(account.address)
+      if (!addressInfo.isValid) throw new Error("Invalid address")
+      const msgBytes = Buffer.from(data.slice(2), "hex")
+      const httpsSigBytes = Buffer.from(httpsSig.slice(2), "hex")
+      expect(
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, httpsSigBytes, {
+          origin: "https://localhost:3000",
+        })
+      ).toBe(true)
+      // a bare host — the namespace value before the scheme was included — must not verify
+      expect(
+        sr25519VerifyVrf(addressInfo.publicKey, msgBytes, httpsSigBytes, {
+          origin: "localhost:3000",
+        })
+      ).toBe(false)
+    })
+
+    test.each([
+      ["invalid hex digits", "0xzz"],
+      ["odd length", "0x1"],
+      ["a missing 0x prefix", "1234"],
+      ["an empty string", ""],
+    ])("rejects data with %s", async (_, data) => {
+      const account = await getAccount()
+
+      await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
+        /Invalid data/
+      )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // an omitted context means "empty"; "0x" is how a caller asks for empty bytes
+    test("rejects an empty context string", async () => {
+      const account = await getAccount()
+
+      await expect(
+        requestVrfSign({ address: account.address, data: "0x00", context: "" })
+      ).rejects.toThrow(/Invalid context/)
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // refused rather than ignored: a caller using extra as a domain separator must find out
+    test("rejects extra transcript data", async () => {
+      const account = await getAccount()
+
+      await expect(
+        requestVrfSign({ address: account.address, data: "0x00", extra: "0x00" } as VrfSignPayload)
+      ).rejects.toThrow(/Invalid extra/)
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    test("rejects oversized data", async () => {
+      const account = await getAccount()
+      const data = `0x${"00".repeat(64 * 1024 + 1)}`
+
+      await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
+        /Invalid data/
+      )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // both predicates matter: ethereum isolates the curve check, watch-only the account type
+    test.each([
+      ["a non-sr25519 keypair", "Test Ethereum Account"],
+      ["a watch-only account", "Test Watch Only Account"],
+    ])("rejects %s", async (_, name) => {
+      const accounts = await keyringStore.getAccounts()
+      const account = accounts.find((acc) => acc.name === name)
+      expect(account).toBeDefined()
+      if (!account) throw new Error("Account not found")
+
+      await expect(requestVrfSign({ address: account.address, data: "0x00" })).rejects.toThrow(
+        /VRF signing requires a local sr25519 account/
+      )
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    // queued directly, to get past the `pub(vrf.sign)` account check and fail inside the handler
+    test("rejects the queued request when approval fails", async () => {
+      const accounts = await keyringStore.getAccounts()
+      const account = accounts.find((acc) => acc.name === "Test Ethereum Account")
+      if (!account) throw new Error("Account not found")
+
+      const requestPromise = signVrf(
+        DAPP_URL,
+        { payload: { address: account.address, data: "0x00" } },
+        account,
+        {} as chrome.runtime.Port
+      )
+
+      await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
+      const request = requestStore.allRequests("vrf-sign")[0]
+
+      await expect(
+        messageSender("pri(signing.approveSign.vrf)", { id: request.id })
+      ).rejects.toThrow(/only supported for sr25519/)
+      await expect(requestPromise).rejects.toThrow(/only supported for sr25519/)
+      expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
+    })
+
+    test("refuses to VRF-sign a substrate signing request", async () => {
+      const account = await getAccount()
+      // a raw payload's `data` also parses as a VrfSignPayload
+      signSubstrate(
+        DAPP_URL,
+        { payload: { address: account.address, data: "0x00", type: "bytes" } },
+        account,
+        {} as chrome.runtime.Port
+      ).catch(() => {})
+
+      await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
+      const request = requestStore.allRequests("substrate-sign")[0]
+
+      await expect(
+        messageSender("pri(signing.approveSign.vrf)", {
+          id: request.id as never,
+        })
+      ).rejects.toThrow(/Not a VRF signing request/)
+
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
     })
   })
 
