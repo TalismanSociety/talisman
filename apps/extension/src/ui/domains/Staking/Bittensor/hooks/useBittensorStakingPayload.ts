@@ -133,7 +133,7 @@ export const useBittensorStakingPayload = ({
     isLoading: isLoadingSimulation,
     isError: isErrorSimulation,
   } = useBittensorSimulateSwap({
-    networkId: "bittensor",
+    networkId,
     direction,
     netuid,
     amountIn: amount,

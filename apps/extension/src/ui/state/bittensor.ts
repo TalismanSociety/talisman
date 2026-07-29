@@ -1,4 +1,9 @@
-import { BITTENSOR_NETWORK_ID, type BittensorValidator } from "@core/domains/bittensor/exports"
+import {
+  BITTENSOR_NETWORK_ID,
+  BITTENSOR_NETWORK_IDS,
+  type BittensorValidator,
+  isBittensorNetworkId,
+} from "@core/domains/bittensor/exports"
 import { bind } from "@react-rxjs/core"
 import type { Loadable } from "@talismn/util"
 import { api } from "@ui/api"
@@ -8,7 +13,7 @@ import { map, Observable, shareReplay } from "rxjs"
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
-export { BITTENSOR_NETWORK_ID }
+export { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS, isBittensorNetworkId }
 
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
   const unsubscribe = api.bittensorValidatorsSubscribe((data) => {

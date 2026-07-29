@@ -53,7 +53,14 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
       const address = lastSelectedAddress || defaultAddress || null
       return merge({}, DEFAULT_INPUTS, {
         address,
-        hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, address) ?? null,
+        hotkey:
+          getDefaultValidatorHotkey(
+            BITTENSOR_NETWORK_ID,
+            netuid,
+            remoteConfig,
+            allBalances,
+            address
+          ) ?? null,
       })
     }
   )
@@ -156,7 +163,14 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     prevNetuidRef.current = netuid
     setState((s) => ({
       ...s,
-      hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, s.address) ?? null,
+      hotkey:
+        getDefaultValidatorHotkey(
+          BITTENSOR_NETWORK_ID,
+          netuid,
+          remoteConfig,
+          allBalances,
+          s.address
+        ) ?? null,
       valueIn: null,
     }))
   }, [netuid, remoteConfig, allBalances])

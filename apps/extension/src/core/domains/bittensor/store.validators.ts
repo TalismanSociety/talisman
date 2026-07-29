@@ -50,12 +50,9 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
       if (error instanceof Error && error.name === "AbortError") return
 
       log.error("Failed to fetch bittensor validators", error)
-      // On error, keep showing existing data if we have it
-      if (hasEmittedData) {
-        subscriber.next({ status: "error", data: latestData } as Loadable<BittensorValidator[]>)
-      } else {
-        subscriber.error(error)
-      }
+      // On error, keep showing existing data if we have it.
+      // Never subscriber.error: genericSubscription only forwards next, the UI would be stuck on loading forever
+      subscriber.next({ status: "error", data: latestData } as Loadable<BittensorValidator[]>)
     } finally {
       if (!controller.signal.aborted) timeout = setTimeout(refresh, REFRESH_INTERVAL)
     }

@@ -148,8 +148,13 @@ const useBittensorBondWizardProvider = () => {
       return {
         ...defValue,
         hotkey:
-          getDefaultValidatorHotkey(defValue.netuid, remoteConfig, allBalances, defValue.address) ??
-          null,
+          getDefaultValidatorHotkey(
+            defValue.networkId,
+            defValue.netuid,
+            remoteConfig,
+            allBalances,
+            defValue.address
+          ) ?? null,
       }
 
     return defValue
@@ -270,7 +275,13 @@ const useBittensorBondWizardProvider = () => {
           stakeType: netuid ? "subnet" : "root",
           hotkey:
             prev.stakeDirection === "bond"
-              ? (getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, prev.address) ?? null)
+              ? (getDefaultValidatorHotkey(
+                  prev.networkId,
+                  netuid,
+                  remoteConfig,
+                  allBalances,
+                  prev.address
+                ) ?? null)
               : null,
         }
       })

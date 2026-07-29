@@ -7,7 +7,7 @@ import { getSwapSimulation } from "../utils/helpers"
 import type { StakeDirection } from "./types"
 
 type UseBittensorSimulateSwapInputs = {
-  networkId: DotNetworkId
+  networkId: DotNetworkId | undefined
   direction: StakeDirection
   netuid: number | null | undefined
   amountIn: bigint | null | undefined
