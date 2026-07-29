@@ -7,7 +7,7 @@ import { useBalances } from "@ui/state/balances"
 import { useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { type SubnetLeaderboardRow, useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
-import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
+import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
 import { raoToTao } from "../shared/util"
 
@@ -22,7 +22,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   } = useSubnetLeaderboard(period)
   const { data: taoPrice, isLoading: isTaoPriceLoading, isError: isTaoPriceError } = useTaoPrice()
 
-  const networkId = useTaoDashboardNetworkId()
+  const { networkId, isMainnet } = useTaoDashboardNetwork()
   const { selectedAccounts } = usePortfolioNavigation()
 
   const balances = useBalances("all")
@@ -144,18 +144,20 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     [isLeaderboardLoading, isTaoPriceLoading, balancesStatus.status]
   )
 
+  // outside mainnet the sn45 queries are disabled: flag their columns so cells render N/A
+  // instead of misleading zeros
   const errors = useMemo(
     () => ({
-      price: isLeaderboardError || isTaoPriceError,
+      price: !isMainnet || isLeaderboardError || isTaoPriceError,
       balance: false,
-      score: isLeaderboardError,
-      staked: isLeaderboardError,
-      volume: isLeaderboardError,
-      mcap: isLeaderboardError,
-      emission: isLeaderboardError,
-      chart: isLeaderboardError,
+      score: !isMainnet || isLeaderboardError,
+      staked: !isMainnet || isLeaderboardError,
+      volume: !isMainnet || isLeaderboardError,
+      mcap: !isMainnet || isLeaderboardError,
+      emission: !isMainnet || isLeaderboardError,
+      chart: !isMainnet || isLeaderboardError,
     }),
-    [isLeaderboardError, isTaoPriceError]
+    [isLeaderboardError, isMainnet, isTaoPriceError]
   )
 
   const isLoading = Object.values(loading).some(Boolean)

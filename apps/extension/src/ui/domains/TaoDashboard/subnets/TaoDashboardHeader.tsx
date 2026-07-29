@@ -10,13 +10,13 @@ import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import { Skeleton } from "../shared/Skeleton"
-import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
+import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../shared/util"
 
 export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
 
-  const networkId = useTaoDashboardNetworkId()
+  const { networkId, isMainnet } = useTaoDashboardNetwork()
   const tao = useToken(subNativeTokenId(networkId))
   const allBalances = useBalances("all-except-contacts")
   const { selectedAccounts } = usePortfolioNavigation()
@@ -109,6 +109,7 @@ export const TaoDashboardHeader = () => {
           planck={totalStakedPlanck}
           isLoading={isInitializing || isTaoPriceLoading}
           isRefetching={isBalanceRefetching || isTaoPriceRefetching}
+          unavailable={!isMainnet}
           className="pr-8"
         />
       </div>
@@ -121,12 +122,14 @@ export const TaoDashboardHeader = () => {
             change={stats.marketCapChange24h ?? undefined}
             isLoading={isStatsLoading}
             isRefetching={isStatsRefetching}
+            unavailable={!isMainnet}
           />
           <MarketStat
             label={t("Total Subnet Volume")}
             value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
             isLoading={isStatsLoading}
             isRefetching={isStatsRefetching}
+            unavailable={!isMainnet}
           />
           <MarketStat
             label={t("TAO Price")}
@@ -134,6 +137,7 @@ export const TaoDashboardHeader = () => {
             change={stats.priceChange24h ?? undefined}
             isLoading={isStatsLoading}
             isRefetching={isStatsRefetching}
+            unavailable={!isMainnet}
           />
         </div>
       </div>
@@ -148,8 +152,18 @@ const BalanceStat: FC<{
   planck: bigint
   isLoading: boolean
   isRefetching?: boolean
+  /** value derives from token rates, which have no source for this network */
+  unavailable?: boolean
   className?: string
-}> = ({ label, tokenId, planck, isLoading, isRefetching, className }) => {
+}> = ({ label, tokenId, planck, isLoading, isRefetching, unavailable, className }) => {
+  if (unavailable)
+    return (
+      <div className={cn("flex flex-col gap-2", className)}>
+        <span className="text-body-secondary text-xs">{label}</span>
+        <span className="px-1 font-semibold text-3xl text-body-inactive leading-base">-</span>
+      </div>
+    )
+
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <span className="text-body-secondary text-xs">{label}</span>
@@ -179,10 +193,20 @@ const MarketStat: FC<{
   change?: number
   isLoading?: boolean
   isRefetching?: boolean
-}> = ({ label, value, change, isLoading, isRefetching }) => {
+  /** market data has no source for this network: render a dash instead of a zero value */
+  unavailable?: boolean
+}> = ({ label, value, change, isLoading, isRefetching, unavailable }) => {
   const isPositive = change !== undefined && change > 0
   const isNegative = change !== undefined && change < 0
   const showSkeleton = isLoading && !value
+
+  if (unavailable)
+    return (
+      <div className="flex flex-col gap-2">
+        <span className="text-body-secondary text-xs">{label}</span>
+        <span className="font-semibold text-body-inactive text-lg leading-base">-</span>
+      </div>
+    )
 
   return (
     <div className="flex flex-col gap-2">

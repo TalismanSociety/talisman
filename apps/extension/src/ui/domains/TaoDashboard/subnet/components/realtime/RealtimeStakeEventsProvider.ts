@@ -315,6 +315,15 @@ const useRealtimeStakeEventsProvider = ({
           }
         }
 
+        // Without an indexer (e.g. testnet) no floor is ever reported and the buffer
+        // would grow forever: cap it to the last 1000 blocks
+        if (floorRef.current === 0) {
+          const cap = to - 1000
+          for (const key of bufferRef.current.keys()) if (key < cap) bufferRef.current.delete(key)
+          for (const key of processedRef.current.keys())
+            if (key < cap) processedRef.current.delete(key)
+        }
+
         lastProcessedBlockRef.current = lastSuccessBlock
         setBestBlockNumber(to)
         deriveEvents()
