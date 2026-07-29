@@ -27,7 +27,7 @@ export type SubnetLeaderboardRow = Omit<
 export const useTaoPrice = () => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "taoPrice"],
+    queryKey: ["sn45", isEnabled, "taoPrice"],
     enabled: isEnabled,
     queryFn: async ({ signal }) => {
       const response = await sn45Api.v1.getTaoPrice({ signal })
@@ -42,7 +42,7 @@ export const useTaoPrice = () => {
 export const useSubnetLeaderboard = (period: TimePeriod = "1d") => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetLeaderboard", period],
+    queryKey: ["sn45", isEnabled, "subnetLeaderboard", period],
     enabled: isEnabled,
     queryFn: async ({
       signal,
@@ -87,7 +87,7 @@ export const useSubnetLeaderboardEntry = (
 export const useSubnetTokenomics = (netuid: number | null | undefined) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetTokenomics", netuid],
+    queryKey: ["sn45", isEnabled, "subnetTokenomics", netuid],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetTokenomics(String(netuid), { signal })
@@ -103,7 +103,7 @@ export const useSubnetTokenomics = (netuid: number | null | undefined) => {
 export const useSubnetStakeEvents = (netuid: number | null | undefined) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetStakeEvents", netuid],
+    queryKey: ["sn45", isEnabled, "subnetStakeEvents", netuid],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetStakeEvents(String(netuid), { signal })
@@ -122,7 +122,7 @@ export const useSubnetTradeFlow = (
 ) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetTradeFlow", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetTradeFlow", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetTradeFlow(String(netuid), { period }, { signal })
@@ -138,7 +138,7 @@ export const useSubnetTradeFlow = (
 export const useSubnetTaoFlow = (netuid: number | null | undefined, period: TimePeriod = "1w") => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetTaoFlow", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetTaoFlow", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetTaoFlow(String(netuid), { period }, { signal })
@@ -154,7 +154,7 @@ export const useSubnetTaoFlow = (netuid: number | null | undefined, period: Time
 export const useSubnetHolders = (netuid: number | null | undefined, period: TimePeriod = "1m") => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetHolders", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetHolders", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetHolders(
@@ -175,7 +175,7 @@ export const useSubnetHolders = (netuid: number | null | undefined, period: Time
 export const useSubnetSentiment = (netuid: number | null | undefined, period?: TimePeriod) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetSentiment", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetSentiment", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetSentiment(String(netuid), { period }, { signal })
@@ -191,7 +191,7 @@ export const useSubnetSentiment = (netuid: number | null | undefined, period?: T
 export const useSubnetTweets = (netuid: number | null | undefined, period: TimePeriod = "1m") => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetTweets", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetTweets", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetTweets(String(netuid), { period }, { signal })
@@ -206,7 +206,7 @@ export const useSubnetTweets = (netuid: number | null | undefined, period: TimeP
 export const useSubnetWhalesFlow = (netuid: number | null | undefined, period?: TimePeriod) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetWhalesFlow", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetWhalesFlow", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetWhalesFlow(String(netuid), { period }, { signal })
@@ -221,7 +221,7 @@ export const useSubnetWhalesFlow = (netuid: number | null | undefined, period?: 
 export const useSubnetWhalesActivity = (netuid: number | null | undefined, period?: TimePeriod) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({
-    queryKey: ["sn45", "subnetWhalesActivity", netuid, period],
+    queryKey: ["sn45", isEnabled, "subnetWhalesActivity", netuid, period],
     queryFn: async ({ signal }) => {
       if (!netuid) return null
       const response = await sn45Api.v1.getSubnetWhalesActivity(

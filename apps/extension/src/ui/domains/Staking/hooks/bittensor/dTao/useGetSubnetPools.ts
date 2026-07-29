@@ -4,7 +4,8 @@ import { shouldRetryTaoDataApiError, taoDataApi, toTaoDataApiError } from "@ui/u
 
 export function useGetSubnetPools({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: ["taoData", "subnetPools"],
+    // enabled is part of the key: a disabled call must not read the cache of an enabled one
+    queryKey: ["taoData", "subnetPools", enabled],
     enabled,
     queryFn: async ({ signal }) => {
       try {

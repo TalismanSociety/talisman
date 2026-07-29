@@ -106,8 +106,8 @@ export function useOhlcvData({
   const queryClient = useQueryClient()
   const { isMainnet } = useTaoDashboardNetwork()
   const queryKey = useMemo(
-    () => ["sn45", "subnetOhlcv", netuid, resolution, pageSize] as const,
-    [netuid, resolution, pageSize]
+    () => ["sn45", "subnetOhlcv", isMainnet, netuid, resolution, pageSize] as const,
+    [isMainnet, netuid, resolution, pageSize]
   )
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, isError } =

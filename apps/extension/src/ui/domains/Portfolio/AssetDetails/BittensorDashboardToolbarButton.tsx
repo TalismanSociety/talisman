@@ -37,17 +37,17 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
   // guess the network and netuid based on the page's balances.
   // if any doubt, fall back to the default network / subnets list
   const target = useMemo(() => {
-    const dtaoTokens = balances.each
+    const bittensorTokens = balances.each
       .map((b) => b.token)
-      .filter(
-        (t): t is SubDTaoToken =>
-          isTokenOfType(t, "substrate-dtao") && bittensorNetworkIds.includes(t.networkId)
-      )
-    const networkIds = uniq(dtaoTokens.map((t) => t.networkId))
+      .filter((t) => !!t && bittensorNetworkIds.includes(t.networkId))
+    const networkIds = uniq(bittensorTokens.map((t) => t?.networkId))
     const networkId = networkIds.length === 1 ? networkIds[0] : defaultNetworkId
     const netuids = uniq(
-      dtaoTokens
-        .filter((t) => t.networkId === networkId && !!t.netuid) // ignore root (0)
+      bittensorTokens
+        .filter(
+          (t): t is SubDTaoToken =>
+            isTokenOfType(t, "substrate-dtao") && t.networkId === networkId && !!t.netuid // ignore root (0)
+        )
         .map((t) => t.netuid)
     )
     return { networkId, netuid: netuids.length === 1 ? netuids[0] : null }
