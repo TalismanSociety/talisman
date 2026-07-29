@@ -1,11 +1,11 @@
-import type { TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
@@ -25,6 +25,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
   const locale = useDateFnsLocale()
   const { data } = useNomPoolStakingStatus(tokenId)
   const { selectedAccount } = usePortfolioNavigation()
+  const bittensorNetworkIds = useBittensorNetworkIds()
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
@@ -47,8 +48,10 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
   )
 
   const canUnbond = useMemo(
-    () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === BITTENSOR_TOKEN_ID,
-    [accountStatus?.canUnstake, rowMeta.poolId, tokenId]
+    () =>
+      (accountStatus?.canUnstake && rowMeta.poolId) ||
+      bittensorNetworkIds.some((networkId) => subNativeTokenId(networkId) === tokenId),
+    [accountStatus?.canUnstake, bittensorNetworkIds, rowMeta.poolId, tokenId]
   )
 
   if (!rowAddress) return null

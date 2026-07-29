@@ -1,4 +1,5 @@
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { BITTENSOR_NETWORK_IDS } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
@@ -11,6 +12,8 @@ const TAB_TO_PATH: Record<EarnTabsKey, string> = {
 }
 
 const getTabFromPath = (pathname: string): EarnTabsKey => {
+  if (BITTENSOR_NETWORK_IDS.some((networkId) => pathname.startsWith(`/${networkId}/`)))
+    return "bittensor"
   return (
     (Object.entries(TAB_TO_PATH).find(([, path]) =>
       pathname.startsWith(path)

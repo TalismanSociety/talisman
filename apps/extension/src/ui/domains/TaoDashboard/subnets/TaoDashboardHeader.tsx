@@ -3,15 +3,18 @@ import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
+import { BITTENSOR_NETWORK_ID, useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import { Skeleton } from "../shared/Skeleton"
+import { type NavTabConfig, TaoDashboardNavTabs } from "../shared/TaoDashboardNavTabs"
 import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
-import { raoToTao } from "../shared/util"
+import { getTaoDashboardUrl, raoToTao } from "../shared/util"
 
 export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
@@ -114,6 +117,8 @@ export const TaoDashboardHeader = () => {
         />
       </div>
 
+      <TaoDashboardNetworkTabs />
+
       <div className="flex flex-1 items-center justify-end">
         <div className="flex items-start gap-28 border-grey-800 border-l py-3 pl-28">
           <MarketStat
@@ -142,6 +147,34 @@ export const TaoDashboardHeader = () => {
         </div>
       </div>
     </div>
+  )
+}
+
+/** Mainnet/Testnet switch, only shown when more than one bittensor network is active */
+const TaoDashboardNetworkTabs: FC = () => {
+  const { t } = useTranslation()
+  const { networkId } = useTaoDashboardNetwork()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const navigate = useNavigateWithQuery()
+
+  const tabs = useMemo<NavTabConfig<string>[]>(
+    () =>
+      bittensorNetworkIds.map((id) => ({
+        value: id,
+        label: id === BITTENSOR_NETWORK_ID ? t("Mainnet") : t("Testnet"),
+      })),
+    [bittensorNetworkIds, t]
+  )
+
+  if (bittensorNetworkIds.length < 2) return null
+
+  return (
+    <TaoDashboardNavTabs
+      tabs={tabs}
+      selected={networkId}
+      onSelect={(id) => id !== networkId && navigate(getTaoDashboardUrl(id))}
+      className="ml-8"
+    />
   )
 }
 
