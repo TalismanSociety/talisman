@@ -57,6 +57,14 @@ describe("calculatePendingRootClaimable", () => {
     expect(result).toEqual([])
   })
 
+  it("skips netuids whose total rounds to 0n", () => {
+    const rates = new Map<number, bigint>([[1, (1n << 31n) - 1n]])
+    const result = calculatePendingRootClaimable(
+      makeArgs({ stake: 1n, validatorRootClaimableRate: rates })
+    )
+    expect(result).toEqual([])
+  })
+
   it("computes I96F32 math correctly for a single netuid", () => {
     const stake = 1_000_000_000n
     const rate = 1n << 32n // fixed-point 1.0

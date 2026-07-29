@@ -24,11 +24,13 @@ export const calculatePendingRootClaimable = ({
   const pendingRootClaimBalances: SubDTaoBalance[] = []
 
   for (const [netuid, claimableRate] of validatorRootClaimableRate) {
-    if (claimableRate === 0n) {
-      continue
-    }
+    if (claimableRate === 0n) continue
 
     const totalClaimable = calculateTotalRootClaimable(stake, claimableRate)
+
+    // a zero total is a provably-zero pending claim: skip it so no balance (nor
+    // dynamic token downstream) is built for the position
+    if (totalClaimable === 0n) continue
 
     // Subtract already claimed amount to get net pending claimable
     const alreadyClaimed = alreadyClaimedByNetuid.get(netuid) ?? 0n
