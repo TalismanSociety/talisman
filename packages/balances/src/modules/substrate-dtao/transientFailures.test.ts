@@ -268,8 +268,9 @@ describe("fetchBalances transient failures", () => {
     vi.mocked(fetchRuntimeCallResult).mockResolvedValue([
       ["address-1", [{ netuid: 0, hotkey: "hotkey-1", stake: 100n }]],
     ] as unknown as Awaited<ReturnType<typeof fetchRuntimeCallResult>>)
-    // RootClaimable resolves with a claimable rate so the RootClaimed fetch runs
-    vi.mocked(fetchRpcQueryPack).mockResolvedValue([["hotkey-1", new Map([[5, 1n]])]])
+    // RootClaimable resolves with a rate whose rounded total is nonzero so the RootClaimed
+    // fetch runs — provably-zero totals skip the query entirely (see the test below)
+    vi.mocked(fetchRpcQueryPack).mockResolvedValue([["hotkey-1", new Map([[5, 1n << 32n]])]])
     // conviction lock scan finds no keys
     const connector = { send: vi.fn().mockResolvedValue([]) }
 
@@ -292,5 +293,64 @@ describe("fetchBalances transient failures", () => {
     expect(result.success).toEqual([])
     expect(result.errors).toHaveLength(1)
     expect(result.errors[0]).toMatchObject({ tokenId: token.id, address: "address-1" })
+    // guards against the fixture rounding to a zero total, which would skip the RootClaimed
+    // query and let this test pass without exercising the encode failure at all
+    expect(rootClaimedCoder.keys.enc).toHaveBeenCalled()
+  })
+
+  it("skips the RootClaimed query when every claimable total rounds to zero", async () => {
+    // stake=100n at rate=1n rounds to a zero total: pending is provably zero whatever
+    // RootClaimed holds, so the query must be skipped and its coder never invoked
+    const rootClaimedCoder = {
+      keys: {
+        enc: vi.fn(() => {
+          throw new Error("bad claimed key")
+        }),
+        dec: vi.fn(),
+      },
+      value: { dec: vi.fn() },
+    }
+    vi.mocked(parseMetadataRpcCached).mockReturnValue({
+      builder: {
+        buildStorage: vi.fn((_pallet: string, entry: string) =>
+          entry === "RootClaimed" ? rootClaimedCoder : makeCoder()
+        ),
+      },
+      unifiedMetadata: {},
+    } as unknown as ReturnType<typeof parseMetadataRpcCached>)
+    vi.mocked(fetchRuntimeCallResult).mockResolvedValue([
+      ["address-1", [{ netuid: 0, hotkey: "hotkey-1", stake: 100n }]],
+    ] as unknown as Awaited<ReturnType<typeof fetchRuntimeCallResult>>)
+    vi.mocked(fetchRpcQueryPack).mockClear()
+    vi.mocked(fetchRpcQueryPack).mockResolvedValue([["hotkey-1", new Map([[5, 1n]])]])
+    // conviction lock scan finds no keys
+    const connector = { send: vi.fn().mockResolvedValue([]) }
+
+    // request the position's own token id so the success row survives untouched
+    const token = {
+      id: "bittensor:substrate-dtao:0:hotkey-1",
+      type: "substrate-dtao",
+      platform: "polkadot",
+      networkId: "bittensor",
+      netuid: 0,
+    } as unknown as TokensWithAddresses[number][0]
+
+    const result = await fetchBalances({
+      networkId: "bittensor",
+      tokensWithAddresses: [[token, ["address-1"]]] as TokensWithAddresses,
+      connector,
+      miniMetadata: { data: "0x00", source: "substrate-dtao", chainId: "bittensor" },
+      signal: new AbortController().signal,
+    } as unknown as Parameters<typeof fetchBalances>[0])
+
+    expect(rootClaimedCoder.keys.enc).not.toHaveBeenCalled()
+    // only the RootClaimable rates fetch goes through fetchRpcQueryPack, not RootClaimed
+    expect(vi.mocked(fetchRpcQueryPack)).toHaveBeenCalledTimes(1)
+    expect(result.errors).toEqual([])
+    expect(result.success).toHaveLength(1)
+    expect(result.success[0]).toMatchObject({ tokenId: token.id, address: "address-1" })
+    expect(result.success[0]!.values).toContainEqual(
+      expect.objectContaining({ type: "free", amount: "100" })
+    )
   })
 })
