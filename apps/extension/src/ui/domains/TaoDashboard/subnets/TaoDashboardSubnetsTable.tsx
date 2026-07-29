@@ -7,13 +7,14 @@ import {
   ZapOffIcon,
   ZapPlusIcon,
 } from "@talismn/icons"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { normalizeGreek } from "@ui/domains/Staking/Bittensor/utils/normalizeGreek"
 import { cn } from "@ui/util/cn"
-import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
+import { type FC, memo, type PropsWithChildren, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { BehaviorSubject } from "rxjs"
@@ -159,6 +160,8 @@ export const TaoDashboardSubnetsTable: FC<{
     })
   }, [search, subnets])
 
+  const listRef = useRef<HTMLDivElement>(null)
+
   const sortedSubnets = useMemo(() => {
     const pinRoot = sortSetting.key !== "balanceUsd"
 
@@ -189,6 +192,15 @@ export const TaoDashboardSubnetsTable: FC<{
       }
     })
   }, [filteredSubnets, sortSetting])
+
+  const virtualizer = useVirtualizer({
+    count: sortedSubnets.length,
+    overscan: 8,
+    gap: 1, // 1px separators, shown as the container's background
+    estimateSize: () => 64, // h-32 rows
+    getScrollElement: () => document.getElementById("main"),
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+  })
 
   if (isLoading && subnets.length === 0) {
     return (
@@ -221,16 +233,32 @@ export const TaoDashboardSubnetsTable: FC<{
       )}
     >
       {!hideHeader && <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />}
-      <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
-        {sortedSubnets.map((subnet) => (
-          <SubnetRow
-            key={subnet.netuid}
-            subnet={subnet}
-            loading={loading}
-            errors={errors}
-            stakeAddress={stakeAddress}
-          />
-        ))}
+      <div
+        ref={listRef}
+        className="relative w-full bg-grey-750"
+        style={{ height: `${virtualizer.getTotalSize()}px` }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const subnet = sortedSubnets[item.index]
+          if (!subnet) return null
+          return (
+            <div
+              key={subnet.netuid}
+              className="absolute top-0 left-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
+              }}
+            >
+              <SubnetRow
+                subnet={subnet}
+                loading={loading}
+                errors={errors}
+                stakeAddress={stakeAddress}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
