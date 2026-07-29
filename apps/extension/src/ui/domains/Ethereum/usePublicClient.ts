@@ -10,6 +10,17 @@ type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unkn
 const viemRequest =
   (chainId: EthNetworkId): ViemRequest =>
   async ({ method, params }) => {
+    // Since viem 2.40, prepareTransactionRequest attempts eth_fillTransaction before its classic
+    // estimation path, but not all RPCs implement this method reliably. Answering "method not
+    // found" makes viem mark it as unsupported and fall back to its classic estimation path.
+    if (method === "eth_fillTransaction")
+      throw Object.assign(
+        new Error("the method eth_fillTransaction does not exist/is not available"),
+        {
+          code: -32601,
+        }
+      )
+
     try {
       return await api.ethRequest({ chainId, method, params })
     } catch (err) {
