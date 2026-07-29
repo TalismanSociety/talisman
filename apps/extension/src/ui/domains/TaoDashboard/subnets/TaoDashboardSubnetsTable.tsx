@@ -227,15 +227,12 @@ export const TaoDashboardSubnetsTable: FC<{
     // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
     <div
       role="table"
-      className={cn(
-        "w-full overflow-hidden bg-black-secondary",
-        hideHeader ? "rounded-b-lg" : "rounded-lg"
-      )}
+      className={cn("w-full overflow-hidden", hideHeader ? "rounded-b-lg" : "rounded-lg")}
     >
       {!hideHeader && <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />}
       <div
         ref={listRef}
-        className="relative w-full bg-grey-750"
+        className="relative w-full"
         style={{ height: `${virtualizer.getTotalSize()}px` }}
       >
         {virtualizer.getVirtualItems().map((item) => {
