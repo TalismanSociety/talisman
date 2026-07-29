@@ -4,8 +4,8 @@ import type { UTCTimestamp } from "lightweight-charts"
 import { useMemo } from "react"
 
 import { useSubnetTaoFlow } from "../../../hooks/useSn45Api"
+import { useTaoDashboardNetworkId } from "../../../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../../../shared/util"
-import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 import type { AlphaFlow, FlowChartPoint, FlowTotals } from "./types"
 
 // ---------------------------------------------------------------------------
@@ -23,7 +23,7 @@ export interface UseFlowHeaderDataReturn {
 
 export function useFlowHeaderData(netuid: number, period: TimePeriod): UseFlowHeaderDataReturn {
   const { data: taoFlow, isLoading } = useSubnetTaoFlow(netuid, period)
-  const { subnetData } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
+  const { subnetData } = useCombinedSubnetData(useTaoDashboardNetworkId())
 
   // Current subnet entry
   const currentSubnet = useMemo(

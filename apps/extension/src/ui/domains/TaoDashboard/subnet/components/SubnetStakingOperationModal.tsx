@@ -17,9 +17,9 @@ import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetTokens } from "../../hooks/useSubnetTokens"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import type { TransactionEntry } from "../../shared/types"
 import { raoToTao } from "../../shared/util"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import {
   type MatchedCall,
   type StakingOperationType,
@@ -53,7 +53,7 @@ const ModalContent: FC<{
   onClose: () => void
 }> = ({ netuid, transaction, onClose }) => {
   const { t } = useTranslation()
-  const { alphaToken } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
+  const { alphaToken } = useSubnetTokens(useTaoDashboardNetworkId(), netuid)
 
   const { data: transactions } = useSubnetTransactions(netuid, false, 1000)
   const tx = useMemo(() => {
@@ -137,7 +137,7 @@ const SwapSummary: FC<{ transaction: TransactionEntry; netuid: number }> = ({
   netuid,
 }) => {
   const { t } = useTranslation()
-  const { alphaTokenId } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
+  const { alphaTokenId } = useSubnetTokens(useTaoDashboardNetworkId(), netuid)
   const isBuy = transaction.direction === "buy"
   const isUnknown = transaction.status !== "indexed" && transaction.status !== "failed"
   const sign = isBuy ? "+" : "-"

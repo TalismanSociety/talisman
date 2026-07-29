@@ -10,13 +10,14 @@ import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import { Skeleton } from "../shared/Skeleton"
+import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../shared/util"
-import { BITTENSOR_NETWORK_ID } from "./constants"
 
 export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
 
-  const tao = useToken(subNativeTokenId(BITTENSOR_NETWORK_ID))
+  const networkId = useTaoDashboardNetworkId()
+  const tao = useToken(subNativeTokenId(networkId))
   const allBalances = useBalances("all-except-contacts")
   const { selectedAccounts } = usePortfolioNavigation()
 
@@ -46,9 +47,9 @@ export const TaoDashboardHeader = () => {
   const dtaoBalances = useMemo(
     () =>
       selectedBalances.find(
-        (b) => b.token?.type === "substrate-dtao" && b.token.networkId === BITTENSOR_NETWORK_ID
+        (b) => b.token?.type === "substrate-dtao" && b.token.networkId === networkId
       ),
-    [selectedBalances]
+    [selectedBalances, networkId]
   )
 
   const isInitializing = useIsBalanceInitializing()

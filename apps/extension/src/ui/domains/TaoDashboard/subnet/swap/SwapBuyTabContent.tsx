@@ -4,7 +4,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useBalances } from "@ui/state/balances"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
 import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"
@@ -140,6 +140,7 @@ const MevShieldToggle = () => {
 const StakedBalance: FC = () => {
   const { t } = useTranslation()
   const { address, netuid, tokenOutGeneric } = useSwapBuy()
+  const networkId = useTaoDashboardNetworkId()
   const ownedBalances = useBalances("owned")
 
   const stakedPlanck = useMemo(() => {
@@ -149,12 +150,12 @@ const StakedBalance: FC = () => {
         (b) =>
           b.address === address &&
           b.token?.type === "substrate-dtao" &&
-          b.token.networkId === BITTENSOR_NETWORK_ID &&
+          b.token.networkId === networkId &&
           b.token.netuid === netuid &&
           b.free.planck > 0n
       )
       .reduce((sum, b) => sum + b.free.planck, 0n)
-  }, [ownedBalances, address, netuid])
+  }, [ownedBalances, address, networkId, netuid])
 
   if (!tokenOutGeneric) return null
 

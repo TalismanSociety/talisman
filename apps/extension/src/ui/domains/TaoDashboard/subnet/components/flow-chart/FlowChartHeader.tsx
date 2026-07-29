@@ -6,7 +6,7 @@ import { formatCompactAlpha, formatCompactNumber } from "@ui/domains/TaoDashboar
 import { cn } from "@ui/util/cn"
 import type { FC, PropsWithChildren, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../../shared/TaoDashboardNetworkProvider"
 import { useFlowHeaderData } from "./useFlowChartData"
 
 interface FlowChartHeaderProps {
@@ -18,7 +18,7 @@ export const FlowChartHeader: FC<FlowChartHeaderProps> = ({ netuid, period }) =>
   const { t } = useTranslation()
   const { totals, alphaFlow, emissionPercent, dailyEmissions, distributionTrend, isLoading } =
     useFlowHeaderData(netuid, period)
-  const { alphaToken } = useSubnetTokens(BITTENSOR_NETWORK_ID, netuid)
+  const { alphaToken } = useSubnetTokens(useTaoDashboardNetworkId(), netuid)
 
   if (isLoading) return <FlowChartHeaderSkeleton />
 

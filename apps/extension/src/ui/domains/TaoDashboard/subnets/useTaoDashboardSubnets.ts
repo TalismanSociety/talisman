@@ -7,9 +7,9 @@ import { useBalances } from "@ui/state/balances"
 import { useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { type SubnetLeaderboardRow, useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
+import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
 import { raoToTao } from "../shared/util"
-import { BITTENSOR_NETWORK_ID } from "./constants"
 
 type SubnetSentiment = "bullish" | "bearish" | null
 
@@ -22,6 +22,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   } = useSubnetLeaderboard(period)
   const { data: taoPrice, isLoading: isTaoPriceLoading, isError: isTaoPriceError } = useTaoPrice()
 
+  const networkId = useTaoDashboardNetworkId()
   const { selectedAccounts } = usePortfolioNavigation()
 
   const balances = useBalances("all")
@@ -32,15 +33,15 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       (token): token is SubDTaoToken =>
         token.type === "substrate-dtao" &&
         !token.hotkey && // ignore dynamic tokens
-        token.networkId === BITTENSOR_NETWORK_ID // ignore testnet
+        token.networkId === networkId
     )
-  }, [allTokens])
+  }, [allTokens, networkId])
 
   const balancesPerNetuid = useMemo(() => {
     return balances.each.reduce((acc, b) => {
       if (
         b.token?.type === "substrate-dtao" &&
-        b.token.networkId === BITTENSOR_NETWORK_ID &&
+        b.token.networkId === networkId &&
         selectedAccounts.some((acc) => isAddressEqual(acc.address, b.address))
       ) {
         if (!acc.has(b.token.netuid)) acc.set(b.token.netuid, [])
@@ -48,11 +49,11 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       }
       return acc
     }, new Map<number, Balance[]>())
-  }, [balances, selectedAccounts])
+  }, [balances, networkId, selectedAccounts])
 
   // Find the first selected substrate account with transferable native TAO
   const stakeAddress = useMemo(() => {
-    const nativeTokenId = subNativeTokenId(BITTENSOR_NETWORK_ID)
+    const nativeTokenId = subNativeTokenId(networkId)
     for (const acc of selectedAccounts) {
       if (isEthereumAddress(acc.address)) continue
       const bal = balances.each.find(
@@ -64,7 +65,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       if (bal) return acc.address
     }
     return undefined
-  }, [selectedAccounts, balances])
+  }, [selectedAccounts, balances, networkId])
 
   // Index leaderboard by netuid
   const leaderboardMap = useMemo(() => {

@@ -6,7 +6,7 @@ import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import {
   findSubtensorStakeCall,
   getOperationType,
@@ -73,7 +73,7 @@ const findStakeEventInBlock = async (
 ): Promise<(StakeEventInfo & { coldkey: string }) | null> => {
   try {
     // Query events at the specific block
-    const eventsHex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_getStorage", [
+    const eventsHex = await api.subSend<string>(sapi.chainId, "state_getStorage", [
       // System.Events storage key
       "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7",
       blockHash,
@@ -152,7 +152,7 @@ type UseStakingOperationParams = {
  * @param params - Transaction details including netuid, hotkey, and valueIn to identify the correct staking call
  */
 export const useBittensorStakingOperation = (params: UseStakingOperationParams | null) => {
-  const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
+  const { data: sapi } = useScaleApi(useTaoDashboardNetworkId())
 
   return useQuery({
     queryKey: [
@@ -172,15 +172,13 @@ export const useBittensorStakingOperation = (params: UseStakingOperationParams |
       if (!blockHeight || !hash) return null
 
       // Step 1: Get the block hash for this block and the previous block
-      const blockHash = await api.subSend<`0x${string}`>(
-        BITTENSOR_NETWORK_ID,
-        "chain_getBlockHash",
-        [blockHeight]
-      )
+      const blockHash = await api.subSend<`0x${string}`>(sapi.chainId, "chain_getBlockHash", [
+        blockHeight,
+      ])
       if (!blockHash) return null
 
       const previousBlockHash = await api.subSend<`0x${string}`>(
-        BITTENSOR_NETWORK_ID,
+        sapi.chainId,
         "chain_getBlockHash",
         [blockHeight - 1]
       )
@@ -192,7 +190,7 @@ export const useBittensorStakingOperation = (params: UseStakingOperationParams |
 
       // Step 1: Fetch the block and find our extrinsic by hash to get its index
       const block = await api.subSend<{ block: { extrinsics: string[] } }>(
-        BITTENSOR_NETWORK_ID,
+        sapi.chainId,
         "chain_getBlock",
         [blockHash]
       )
@@ -364,7 +362,7 @@ const simulateSwapAtBlock = async (
   const argsHex = toHex(call.args.enc([netuid, amount]))
 
   try {
-    const hex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_call", [
+    const hex = await api.subSend<string>(sapi.chainId, "state_call", [
       `SwapRuntimeApi_${method}`,
       argsHex,
       blockHash,

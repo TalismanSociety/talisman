@@ -17,7 +17,6 @@ import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDi
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import {
@@ -29,6 +28,7 @@ import {
   useMemo,
 } from "react"
 import { useTranslation } from "react-i18next"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { FeeBreakdownTooltipContent } from "./SwapTabShared"
 
 export const SwapConfirmContainer: FC<PropsWithChildren<{ className?: string }>> = ({
@@ -112,7 +112,7 @@ export const SwapConfirmValidatorApyValue: FC<{ hotkey?: string; netuid?: number
 }) => {
   const { t } = useTranslation()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
-    BITTENSOR_NETWORK_ID,
+    useTaoDashboardNetworkId(),
     netuid
   )
 

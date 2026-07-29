@@ -18,8 +18,9 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { BehaviorSubject } from "rxjs"
 import { TokenLogo } from "../../Asset/TokenLogo"
+import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
-import { formatCompactNumber } from "../shared/util"
+import { formatCompactNumber, getTaoDashboardUrl } from "../shared/util"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import {
   type TaoDashboardSubnet,
@@ -393,6 +394,7 @@ const SubnetRow: FC<{
 }> = memo(({ subnet, loading, errors, stakeAddress }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const networkId = useTaoDashboardNetworkId()
   const { open: openBondModal } = useBittensorBondModal()
   const isRoot = subnet.netuid === 0
   const canStake = !!stakeAddress
@@ -406,8 +408,8 @@ const SubnetRow: FC<{
     subnet.sentiment === "bullish" || subnet.sentiment === "bearish" ? subnet.sentiment : null
 
   const handleRowClick = useCallback(() => {
-    if (!isRoot) navigate(`/bittensor/subnets/${subnet.token.netuid}`)
-  }, [isRoot, navigate, subnet.token.netuid])
+    if (!isRoot) navigate(getTaoDashboardUrl(networkId, subnet.token.netuid))
+  }, [isRoot, navigate, networkId, subnet.token.netuid])
 
   const handleStakeClick = useCallback(
     (e: React.MouseEvent) => {
