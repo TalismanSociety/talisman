@@ -39,7 +39,7 @@ export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) =>
         <div className="flex items-center gap-4">
           <TaoDashboardSubnetBreadcrumb netuid={netuid} />
           {!!network?.isTestnet && (
-            <span className="rounded bg-alert-warn/10 px-3 py-1 font-light text-alert-warn text-tiny">
+            <span className="flex h-16 items-center justify-center rounded-sm bg-alert-warn/10 px-5 font-light text-alert-warn text-sm">
               {t("Testnet")}
             </span>
           )}
