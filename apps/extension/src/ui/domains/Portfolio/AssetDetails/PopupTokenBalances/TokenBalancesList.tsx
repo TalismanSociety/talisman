@@ -5,9 +5,10 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type ReactNode, Suspense } from "react"
+import { useTranslation } from "react-i18next"
 
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressIconButton"
@@ -30,7 +31,9 @@ export const TokenBalancesList = ({
   chainOrNetworkId,
   children,
 }: TokenBalancesListProps) => {
+  const { t } = useTranslation()
   const token = useToken(tokenId)
+  const network = useNetworkById(chainOrNetworkId)
 
   if (!token) return null
 
@@ -54,6 +57,11 @@ export const TokenBalancesList = ({
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
                 <SendFundsTokenButton tokenId={tokenId} shouldClose />
               </Suspense>
+              {!!network?.isTestnet && (
+                <span className="ml-3 rounded bg-alert-warn/10 px-3 py-1 align-middle font-light text-alert-warn text-tiny">
+                  {t("Testnet")}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden">
