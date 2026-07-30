@@ -7,13 +7,23 @@ import {
   ZapOffIcon,
   ZapPlusIcon,
 } from "@talismn/icons"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { normalizeGreek } from "@ui/domains/Staking/Bittensor/utils/normalizeGreek"
 import { cn } from "@ui/util/cn"
-import { type FC, memo, type PropsWithChildren, useCallback, useMemo } from "react"
+import {
+  type FC,
+  memo,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { BehaviorSubject } from "rxjs"
@@ -159,6 +169,8 @@ export const TaoDashboardSubnetsTable: FC<{
     })
   }, [search, subnets])
 
+  const listRef = useRef<HTMLDivElement>(null)
+
   const sortedSubnets = useMemo(() => {
     const pinRoot = sortSetting.key !== "balanceUsd"
 
@@ -190,6 +202,48 @@ export const TaoDashboardSubnetsTable: FC<{
     })
   }, [filteredSubnets, sortSetting])
 
+  const virtualizer = useVirtualizer({
+    count: sortedSubnets.length,
+    overscan: 8,
+    gap: 1, // 1px separators, shown as the container's background
+    estimateSize: () => 64, // h-32 rows
+    getScrollElement: () => document.getElementById("main"),
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+    scrollPaddingStart: 150, // keep target row clear of the page's sticky header block
+  })
+
+  // rows outside the virtualizer window are unmounted, so native Tab can't reach them:
+  // ArrowUp/ArrowDown mounts the target row via scrollToIndex, then focuses it once rendered
+  const [pendingFocusIndex, setPendingFocusIndex] = useState<number | null>(null)
+
+  const handleListKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return
+      const wrapper = (e.target as HTMLElement).closest<HTMLElement>("[data-index]")
+      if (!wrapper) return
+      const direction = e.key === "ArrowDown" ? 1 : -1
+      let next = Number(wrapper.dataset.index) + direction
+      while (sortedSubnets[next]?.netuid === 0) next += direction // Root row is not focusable
+      if (next < 0 || next >= sortedSubnets.length) return
+      e.preventDefault()
+      virtualizer.scrollToIndex(next)
+      setPendingFocusIndex(next)
+    },
+    [sortedSubnets, virtualizer]
+  )
+
+  // no dependency array: retries after each render until the virtualizer mounts the target row
+  useEffect(() => {
+    if (pendingFocusIndex === null) return
+    const row = listRef.current?.querySelector<HTMLElement>(
+      `[data-index="${pendingFocusIndex}"] [role="row"]`
+    )
+    if (row) {
+      row.focus({ preventScroll: true })
+      setPendingFocusIndex(null)
+    }
+  })
+
   if (isLoading && subnets.length === 0) {
     return (
       // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
@@ -215,22 +269,40 @@ export const TaoDashboardSubnetsTable: FC<{
     // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
     <div
       role="table"
-      className={cn(
-        "w-full overflow-hidden bg-black-secondary",
-        hideHeader ? "rounded-b-lg" : "rounded-lg"
-      )}
+      aria-rowcount={sortedSubnets.length}
+      className={cn("w-full overflow-hidden", hideHeader ? "rounded-b-lg" : "rounded-lg")}
     >
       {!hideHeader && <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />}
-      <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
-        {sortedSubnets.map((subnet) => (
-          <SubnetRow
-            key={subnet.netuid}
-            subnet={subnet}
-            loading={loading}
-            errors={errors}
-            stakeAddress={stakeAddress}
-          />
-        ))}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: keyboard navigation across virtualized rows */}
+      <div
+        ref={listRef}
+        className="relative w-full"
+        style={{ height: `${virtualizer.getTotalSize()}px` }}
+        onKeyDown={handleListKeyDown}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const subnet = sortedSubnets[item.index]
+          if (!subnet) return null
+          return (
+            <div
+              key={subnet.netuid}
+              data-index={item.index}
+              className="absolute top-0 left-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
+              }}
+            >
+              <SubnetRow
+                subnet={subnet}
+                rowIndex={item.index + 1}
+                loading={loading}
+                errors={errors}
+                stakeAddress={stakeAddress}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -387,10 +459,11 @@ const SkeletonBar: FC<{ className?: string }> = ({ className }) => {
 
 const SubnetRow: FC<{
   subnet: TaoDashboardSubnet
+  rowIndex: number
   loading: TaoDashboardSubnetsLoading
   errors: TaoDashboardSubnetsErrors
   stakeAddress: string | undefined
-}> = memo(({ subnet, loading, errors, stakeAddress }) => {
+}> = memo(({ subnet, rowIndex, loading, errors, stakeAddress }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { open: openBondModal } = useBittensorBondModal()
@@ -441,6 +514,7 @@ const SubnetRow: FC<{
     // biome-ignore lint/a11y/useSemanticElements: intentional div-based grid layout with ARIA roles
     <div
       role="row"
+      aria-rowindex={rowIndex}
       tabIndex={isRoot ? undefined : 0}
       aria-label={
         isRoot
