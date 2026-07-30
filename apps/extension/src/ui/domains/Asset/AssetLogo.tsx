@@ -8,6 +8,7 @@ const isTalismanLogo = (url?: string | null) => {
   return (
     /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url) &&
     !/assets\/tokens\/coingecko/i.test(url) &&
+    !/assets\/tokens\/dtao/i.test(url) &&
     !/assets\/tokens\/vana/i.test(url)
   )
 }
