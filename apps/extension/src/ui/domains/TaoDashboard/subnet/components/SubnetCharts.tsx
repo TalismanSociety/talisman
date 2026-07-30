@@ -1,3 +1,4 @@
+import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,7 +17,8 @@ type ChartTab = "price" | "flow"
 
 export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) => {
   const { t } = useTranslation()
-  const { isMainnet } = useTaoDashboardNetwork()
+  const { networkId, isMainnet } = useTaoDashboardNetwork()
+  const network = useNetworkById(networkId)
   const [activeTab, setActiveTab] = useState<ChartTab>("price")
 
   // the flow chart is 100% indexer-based and has no data source outside mainnet
@@ -34,7 +36,14 @@ export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) =>
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <div className="flex items-center justify-between">
-        <TaoDashboardSubnetBreadcrumb netuid={netuid} />
+        <div className="flex items-center gap-4">
+          <TaoDashboardSubnetBreadcrumb netuid={netuid} />
+          {!!network?.isTestnet && (
+            <span className="rounded bg-alert-warn/10 px-3 py-1 font-light text-alert-warn text-tiny">
+              {t("Testnet")}
+            </span>
+          )}
+        </div>
         <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
 
