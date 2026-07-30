@@ -506,6 +506,7 @@ type TokenPickerProps = {
   initialSearch?: string
   allowUntransferable?: boolean
   ownedOnly?: boolean
+  activeOnly?: boolean
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
@@ -526,6 +527,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   initialSearch = "",
   allowUntransferable,
   ownedOnly,
+  activeOnly,
   isInitializing,
   className,
   showEmptyBalances,
@@ -599,7 +601,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           onAvailableNetworksChange={networkFilterContainerId ? setAvailableNetworks : undefined}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
-          activeOnly={!showEmptyBalances}
+          activeOnly={activeOnly ?? !showEmptyBalances}
         />
       </ScrollContainer>
       {!!networkFilterContainerId && (
