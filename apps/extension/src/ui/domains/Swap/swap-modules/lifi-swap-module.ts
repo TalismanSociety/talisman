@@ -33,6 +33,7 @@ import {
   type SwapModule,
   type SwapModuleTransaction,
 } from "./common.swap-module"
+import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 
 const apiUrl = "https://lifi.talisman.xyz/v1"
@@ -613,16 +614,20 @@ const getTransaction = async (
     if (!evmNetwork) throw new Error("Unknown chain")
 
     const publicClient = await getPublicClient(evmNetwork.id)
-    if (!publicClient) throw new Error("Missing public client")
+    if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
-    const transaction = await publicClient.prepareTransactionRequest({
-      chain: null,
-      to: txRequest.to as `0x${string}`,
-      value: BigInt(txRequest.value),
-      data: txRequest.data as `0x${string}`,
-      gasLimit: txRequest.gasLimit,
-      account: txRequest.from as `0x${string}`,
-    })
+    const transaction = await prepareTransactionRequestWithGasCheck(
+      publicClient,
+      evmNetwork.nativeTokenId,
+      {
+        chain: null,
+        to: txRequest.to as `0x${string}`,
+        value: BigInt(txRequest.value),
+        data: txRequest.data as `0x${string}`,
+        gasLimit: txRequest.gasLimit,
+        account: txRequest.from as `0x${string}`,
+      }
+    )
 
     return { platform: "ethereum", transaction }
   } catch (cause) {
