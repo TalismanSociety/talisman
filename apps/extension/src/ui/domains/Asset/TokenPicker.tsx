@@ -14,7 +14,7 @@ import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContai
 import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useAccountByAddress } from "@ui/state/accounts"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -272,6 +272,7 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
+  const accounts = useAccounts()
   const allTokens = useTokens({ activeOnly, includeTestnets: true })
   const activeTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
@@ -290,15 +291,25 @@ const TokensList: FC<TokensListProps> = ({
     [address, selected, balances]
   )
 
+  const compatibleNetworkIds = useMemo(
+    () =>
+      new Set(
+        Object.values(networksMap)
+          .filter((network) => accounts.some((acc) => isAccountCompatibleWithNetwork(network, acc)))
+          .map((network) => network.id)
+      ),
+    [accounts, networksMap]
+  )
+
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
       const network = networksMap[token.networkId]
       if (!network) return false
-      if (!account) return true
+      if (!account) return compatibleNetworkIds.has(token.networkId)
 
       return isAccountCompatibleWithNetwork(network, account)
     },
-    [account, networksMap]
+    [account, compatibleNetworkIds, networksMap]
   )
 
   const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
