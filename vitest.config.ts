@@ -16,6 +16,7 @@ export default defineConfig({
       // Crypto packages (node environment)
       "packages/crypto",
       "packages/keyring",
+      "packages/substrate-vrf",
 
       // Chain packages
       "packages/chain-connectors",

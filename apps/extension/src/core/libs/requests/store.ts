@@ -162,9 +162,10 @@ class RequestStore {
   }
 
   public getRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
-    const { request } = this.requests[id]
+    const request = this.requests[id]?.request
     const requestType = id.split(".")[0] as T
-    if (isRequestOfType(request, requestType)) return request as KnownRespondableRequest<T>
+    if (request && isRequestOfType(request, requestType))
+      return request as KnownRespondableRequest<T>
     return
   }
 

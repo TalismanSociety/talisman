@@ -1,5 +1,6 @@
 import { TEST } from "@common/constants"
 import { encodeAnyAddress, signSubstrate } from "@talismn/crypto"
+import { sr25519SignVrf } from "@talismn/substrate-vrf"
 import type { HexString } from "@talismn/util"
 import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -10,6 +11,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { isJsonPayload } from "../../util/isJsonPayload"
+import { urlToOrigin } from "../../util/urlToDomain"
 import { validateHexString } from "../../util/validateHexString"
 import { getHostName } from "../app/helpers"
 import { withSecretKey } from "../keyring/withSecretKey"
@@ -22,6 +24,7 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "./types"
+import { parseVrfSignPayload } from "./vrf"
 
 /**
  * Only return `signedTransaction` to the dapp when the wallet actually altered the payload
@@ -35,6 +38,13 @@ const isPayloadModified = (
   modified: SignerPayloadJSON | undefined
 ) => !!modified && JSON.stringify(modified) !== JSON.stringify(original)
 
+// the store only drops a request through resolve/reject, so throwing alone would leave it queued
+const rejectApprovalFailure = (reject: (error: Error) => void, val: string | Error): never => {
+  const error = typeof val === "string" ? new Error(val) : val
+  reject(error)
+  throw error
+}
+
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({
     id,
@@ -43,6 +53,8 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
+    // the approval paths share an id space
+    assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
     const { reject, request, resolve, url } = queued
 
@@ -110,11 +122,43 @@ export default class SigningHandler extends ExtensionHandler {
         signedTransaction,
       })
     })
-    if (!result.ok) {
-      if (result.val === "Unauthorised") reject(new Error(result.val))
-      else if (typeof result.val === "string") throw new Error(result.val)
-      else throw result.val
-    }
+    if (!result.ok) rejectApprovalFailure(reject, result.val)
+    return true
+  }
+
+  private async signingApproveVrf({ id }: KnownSigningRequestIdOnly<"vrf-sign">) {
+    const queued = requestStore.getRequest(id)
+
+    assert(queued, "Unable to find request")
+    // a SignerPayloadRaw parses as a VrfSignPayload, so only the type stops a cross-path approval
+    assert(queued.type === "vrf-sign", "Not a VRF signing request")
+
+    const { reject, request, resolve, url } = queued
+    const address = encodeAnyAddress(queued.account.address)
+
+    // re-parse: the secret key must never run on bytes that skipped the boundary validation
+    const { data, context } = parseVrfSignPayload(request.payload)
+
+    // the output is bound to the requesting site, so the origin comes from the queued url only;
+    // scheme included: http and https on the same host must not share an identity
+    const origin = urlToOrigin(url)
+    assert(origin.ok && origin.val, "Unable to determine the requesting site")
+
+    const result = await withSecretKey(address, async (secretKey, curve) => {
+      assert(curve === "sr25519", "VRF signing is only supported for sr25519 accounts")
+
+      const signature = u8aToHex(sr25519SignVrf(secretKey, data, { origin: origin.val, context }))
+
+      const { ok, val: hostName } = getHostName(url)
+      talismanAnalytics.captureDelayed("vrf sign approve", {
+        dapp: url,
+        hostName: ok ? hostName : undefined,
+        networkType: "substrate",
+      })
+
+      resolve({ id, signature })
+    })
+    if (!result.ok) rejectApprovalFailure(reject, result.val)
     return true
   }
 
@@ -125,6 +169,8 @@ export default class SigningHandler extends ExtensionHandler {
   }: RequestSigningApproveSignature): Promise<boolean> {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
+    // the approval paths share an id space
+    assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
     const { request, url, account } = queued
     const { payload: originalPayload } = request
@@ -183,16 +229,17 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async signingCancel({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
+  private async signingCancel({ id }: KnownSigningRequestIdOnly<"substrate-sign" | "vrf-sign">) {
     /*
      * This method used for both Eth and Polkadot requests
      */
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
-    talismanAnalytics.captureDelayed("sign reject", {
-      networkType: "substrate",
-    })
+    talismanAnalytics.captureDelayed(
+      queued.type === "vrf-sign" ? "vrf sign reject" : "sign reject",
+      { networkType: "substrate" }
+    )
     queued.reject(new Error("Cancelled"))
 
     return true
@@ -248,6 +295,10 @@ export default class SigningHandler extends ExtensionHandler {
 
       case "pri(signing.approveSign.signet)":
         return this.signingApproveSignet(request as RequestType<"pri(signing.approveSign.signet)">)
+
+      case "pri(signing.approveSign.vrf)":
+        return await this.signingApproveVrf(request as RequestType<"pri(signing.approveSign.vrf)">)
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

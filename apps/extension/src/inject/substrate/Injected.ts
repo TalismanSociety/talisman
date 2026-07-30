@@ -4,6 +4,7 @@ import type {
   EncryptPayload,
   EncryptResult,
 } from "@core/domains/encrypt/types"
+import type { VrfSignPayload, VrfSignResult } from "@core/domains/signing/types"
 import type { SendRequest } from "@core/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@core/types/pjsInterop"
 
@@ -98,6 +99,30 @@ export class TalismanSigner {
   public signRaw = async (payload: SignerPayloadRaw): Promise<SignerResult> => {
     const id = ++nextSignerId
     const result = await this.#sendRequest("pub(bytes.sign)", payload)
+
+    return { ...result, id }
+  }
+
+  /**
+   * Talisman-specific extension to the injected-web3 spec: sr25519 VRF signing.
+   *
+   * Returns 96 hex-encoded bytes, `output(32) || proof(64)`. The output is deterministic per
+   * `(account, context, data)` — unlike `signRaw`, whose sr25519 signatures are randomized —
+   * which is what makes it usable for key derivation. `context` is its only domain separator;
+   * schnorrkel's `extra` is not accepted, as it changes the proof but not the output.
+   *
+   * Signing happens in the frozen `substrate-vrf` namespace, never over the raw `context` — verify
+   * with `sr25519VerifyVrf` from `@talismn/substrate-vrf`, passing `location.origin` as the origin.
+   *
+   * The output is bound to that origin: no other site can obtain it, and a dapp served from
+   * several origins (including http vs https) derives a different value on each, so pin a
+   * canonical one.
+   *
+   * Local sr25519 accounts only. Feature-detect with `typeof signer.signVrf === "function"`.
+   */
+  public signVrf = async (payload: VrfSignPayload): Promise<VrfSignResult> => {
+    const id = ++nextSignerId
+    const result = await this.#sendRequest("pub(vrf.sign)", payload)
 
     return { ...result, id }
   }

@@ -76,6 +76,7 @@ export const api: MessageTypes = {
       payload,
     }),
   approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
+  approveSignVrf: (id) => messageService.sendMessage("pri(signing.approveSign.vrf)", { id }),
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id) =>

@@ -1,6 +1,9 @@
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
-import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
+import {
+  calculatePendingRootClaimable,
+  calculateTotalRootClaimable,
+} from "./calculatePendingRootClaimable"
 
 const NETWORK_ID = "bittensor-0"
 const ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
@@ -17,6 +20,28 @@ const makeArgs = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   }) as unknown as Parameters<typeof calculatePendingRootClaimable>[0]
 
+describe("calculateTotalRootClaimable", () => {
+  it("returns 0n when rate is 0n", () => {
+    expect(calculateTotalRootClaimable(1_000_000_000n, 0n)).toBe(0n)
+  })
+
+  it("returns 0n when stake is 0n", () => {
+    expect(calculateTotalRootClaimable(0n, 1n << 32n)).toBe(0n)
+  })
+
+  it("rounds to 0n when stake * rate is below 2^31", () => {
+    expect(calculateTotalRootClaimable(1n, (1n << 31n) - 1n)).toBe(0n)
+  })
+
+  it("rounds half up", () => {
+    expect(calculateTotalRootClaimable(1n, 1n << 31n)).toBe(1n)
+  })
+
+  it("computes exact multiples for fixed-point 1.0", () => {
+    expect(calculateTotalRootClaimable(1000n, 1n << 32n)).toBe(1000n)
+  })
+})
+
 describe("calculatePendingRootClaimable", () => {
   it("returns empty array when validatorRootClaimableRate is empty", () => {
     const result = calculatePendingRootClaimable(makeArgs())
@@ -29,6 +54,14 @@ describe("calculatePendingRootClaimable", () => {
       [2, 0n],
     ])
     const result = calculatePendingRootClaimable(makeArgs({ validatorRootClaimableRate: rates }))
+    expect(result).toEqual([])
+  })
+
+  it("skips netuids whose total rounds to 0n", () => {
+    const rates = new Map<number, bigint>([[1, (1n << 31n) - 1n]])
+    const result = calculatePendingRootClaimable(
+      makeArgs({ stake: 1n, validatorRootClaimableRate: rates })
+    )
     expect(result).toEqual([])
   })
 

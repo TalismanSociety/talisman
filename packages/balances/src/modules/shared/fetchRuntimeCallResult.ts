@@ -55,10 +55,8 @@ export const fetchRuntimeCallResult = async <T>(
       toHex(call.args.enc(args)),
     ])
 
-    // the response decode is synchronous and indivisible — for large results (e.g.
-    // bittensor get_stake_info_for_coldkeys / get_all_dynamic_info, polled every 6s)
-    // this can block the JS thread for hundreds of ms. Report it so host stall
-    // watchdogs can attribute the block.
+    // the response decode is synchronous and indivisible — large results can block
+    // the JS thread for hundreds of ms. Report it so host stall watchdogs can attribute the block.
     const start = performance.now()
     const result = call.value.dec(hex) as T
     reportJsActivity(

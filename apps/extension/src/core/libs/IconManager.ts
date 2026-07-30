@@ -12,7 +12,10 @@ class IconManager {
   private updateIcon(): void {
     const counts = requestStore.getCounts()
     const signingCount =
-      counts.get("eth-send") + counts.get("eth-sign") + counts.get("substrate-sign")
+      counts.get("eth-send") +
+      counts.get("eth-sign") +
+      counts.get("substrate-sign") +
+      counts.get("vrf-sign")
 
     const text = counts.get("auth")
       ? "Sites"

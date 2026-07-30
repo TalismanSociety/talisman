@@ -30,5 +30,16 @@ const GREEK_TO_LATIN: Record<string, string> = {
 
 const greekRegex = new RegExp(`[${Object.keys(GREEK_TO_LATIN).join("")}]`, "g")
 
-export const normalizeGreek = (str: string) =>
-  str.replace(greekRegex, (ch) => GREEK_TO_LATIN[ch] ?? ch)
+// pickers call this for every subnet on every keystroke - cache results
+const MAX_CACHE_SIZE = 10_000
+const cache = new Map<string, string>()
+
+export const normalizeGreek = (str: string) => {
+  const cached = cache.get(str)
+  if (cached !== undefined) return cached
+
+  if (cache.size >= MAX_CACHE_SIZE) cache.clear()
+  const normalized = str.replace(greekRegex, (ch) => GREEK_TO_LATIN[ch] ?? ch)
+  cache.set(str, normalized)
+  return normalized
+}
