@@ -13,7 +13,7 @@ import { map, Observable, shareReplay } from "rxjs"
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
-export { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS, isBittensorNetworkId }
+export { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS }
 
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
   const unsubscribe = api.bittensorValidatorsSubscribe((data) => {
