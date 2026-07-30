@@ -25,10 +25,12 @@ type Props = {
   onSelectTokenId: (tokenId: string) => void
   /** Used to determine which tokens should be prioritized to the top of the list */
   priorityMode?: "buy" | "sell"
+  /** Hide inactive tokens and tokens from inactive networks */
+  activeOnly?: boolean
 }
 
 export const SelectTokenButton: React.FC<Props> = memo(
-  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, priorityMode }) => {
+  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, priorityMode, activeOnly }) => {
     const { open, close, isOpen } = useOpenClose()
 
     const handleSelect = useCallback(
@@ -47,6 +49,7 @@ export const SelectTokenButton: React.FC<Props> = memo(
           tokenId={selectedTokenId ?? null}
           allowedTokenIds={allowedTokenIds}
           priorityMode={priorityMode}
+          activeOnly={activeOnly}
           onSelect={handleSelect}
           onDismiss={close}
         />
@@ -60,6 +63,7 @@ const TokenPickerModal: FC<{
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
+  activeOnly?: boolean
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
 }> = ({ isOpen, ...contentProps }) => {
@@ -74,9 +78,10 @@ const TokenPickerModalContent: FC<{
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
+  activeOnly?: boolean
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({ tokenId, allowedTokenIds, priorityMode, onSelect, onDismiss }) => {
+}> = ({ tokenId, allowedTokenIds, priorityMode, activeOnly, onSelect, onDismiss }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
@@ -148,6 +153,7 @@ const TokenPickerModalContent: FC<{
         selected={tokenId ?? undefined}
         allowUntransferable
         ownedOnly
+        activeOnly={activeOnly}
         isInitializing={!allowedTokenIds}
         networkFilterContainerId={PICKER_CONTAINER_ID}
         priorityTokens={priorityTokens}
