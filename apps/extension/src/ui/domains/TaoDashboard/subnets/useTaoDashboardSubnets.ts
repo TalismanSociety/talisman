@@ -6,6 +6,7 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances } from "@ui/state/balances"
 import { useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
+import { useAlphaPricesByNetuid } from "../hooks/useAlphaPricesByNetuid"
 import { type SubnetLeaderboardRow, useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
 import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
@@ -24,6 +25,12 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
 
   const { networkId, isMainnet } = useTaoDashboardNetwork()
   const { selectedAccounts } = usePortfolioNavigation()
+
+  const {
+    data: alphaPrices,
+    isLoading: isAlphaPricesLoading,
+    isError: isAlphaPricesError,
+  } = useAlphaPricesByNetuid()
 
   const balances = useBalances("all")
   const balancesStatus = useBalancesStatus(balances)
@@ -80,7 +87,8 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       .map((token) => {
         const leaderboard = leaderboardMap.get(token.netuid)
 
-        const priceTao = leaderboard?.currentPrice ?? undefined
+        // the on-chain pool price covers networks without leaderboard data (testnet)
+        const priceTao = leaderboard?.currentPrice ?? alphaPrices?.get(token.netuid)
         const priceUsd = typeof priceTao === "number" ? priceTao * taoUsdPrice : undefined
 
         const priceChange = leaderboard?.priceChange ?? undefined
@@ -128,11 +136,11 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
         }
       })
       .sort((a, b) => a.token.netuid - b.token.netuid)
-  }, [subnetTokens, leaderboardMap, taoUsdPrice, balancesPerNetuid])
+  }, [subnetTokens, leaderboardMap, taoUsdPrice, balancesPerNetuid, alphaPrices])
 
   const loading = useMemo(
     () => ({
-      price: isLeaderboardLoading || isTaoPriceLoading,
+      price: isLeaderboardLoading || isTaoPriceLoading || isAlphaPricesLoading,
       balance: balancesStatus.status === "fetching",
       score: isLeaderboardLoading,
       staked: isLeaderboardLoading,
@@ -141,14 +149,14 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       emission: isLeaderboardLoading,
       chart: isLeaderboardLoading,
     }),
-    [isLeaderboardLoading, isTaoPriceLoading, balancesStatus.status]
+    [isLeaderboardLoading, isTaoPriceLoading, isAlphaPricesLoading, balancesStatus.status]
   )
 
   // outside mainnet the sn45 queries are disabled: flag their columns so cells render N/A
-  // instead of misleading zeros
+  // instead of misleading zeros — except price, which falls back to the on-chain pool price
   const errors = useMemo(
     () => ({
-      price: !isMainnet || isLeaderboardError || isTaoPriceError,
+      price: isMainnet ? isLeaderboardError || isTaoPriceError : isAlphaPricesError,
       balance: false,
       score: !isMainnet || isLeaderboardError,
       staked: !isMainnet || isLeaderboardError,
@@ -157,7 +165,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       emission: !isMainnet || isLeaderboardError,
       chart: !isMainnet || isLeaderboardError,
     }),
-    [isLeaderboardError, isMainnet, isTaoPriceError]
+    [isLeaderboardError, isMainnet, isTaoPriceError, isAlphaPricesError]
   )
 
   const isLoading = Object.values(loading).some(Boolean)
