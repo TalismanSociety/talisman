@@ -4,7 +4,8 @@ import { isAddressEqual } from "@talismn/crypto"
 import { GaugeIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
+import { useDefaultTaoDashboardNetworkId } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
@@ -31,31 +32,36 @@ export const BittensorDashboardToolbarButton: FC<{ balances: Balances; className
     )
   }, [accounts, balances, bittensorNetworkIds])
 
-  // guess the netuid based on the page's balances.
-  // if any doubt, return null
-  const netuid = useMemo(() => {
+  const defaultNetworkId = useDefaultTaoDashboardNetworkId()
+
+  // guess the network and netuid based on the page's balances.
+  // if any doubt, fall back to the default network / subnets list
+  const target = useMemo(() => {
+    const bittensorTokens = balances.each
+      .map((b) => b.token)
+      .filter((t) => !!t && bittensorNetworkIds.includes(t.networkId))
+    const networkIds = uniq(bittensorTokens.map((t) => t?.networkId))
+    const networkId = networkIds.length === 1 ? networkIds[0] : defaultNetworkId
     const netuids = uniq(
-      balances.each
-        .map((b) => b.token)
+      bittensorTokens
         .filter(
           (t): t is SubDTaoToken =>
-            t?.networkId === BITTENSOR_NETWORK_ID &&
-            isTokenOfType(t, "substrate-dtao") &&
-            !!t.netuid // ignore root (0)
+            isTokenOfType(t, "substrate-dtao") && t.networkId === networkId && !!t.netuid // ignore root (0)
         )
         .map((t) => t.netuid)
     )
-    return netuids.length === 1 ? netuids[0] : null
-  }, [balances])
+    return { networkId, netuid: netuids.length === 1 ? netuids[0] : null }
+  }, [balances, bittensorNetworkIds, defaultNetworkId])
 
   const handleClick = useCallback(() => {
-    const url = netuid ? `/bittensor/subnets/${netuid}` : "/bittensor"
+    if (!target.networkId) return
+    const url = getTaoDashboardUrl(target.networkId, target.netuid ?? undefined)
     if (IS_POPUP) {
       api.dashboardOpen(url)
     } else {
       navigate(url)
     }
-  }, [navigate, netuid])
+  }, [navigate, target])
 
   if (!hasBittensorBalances) return null
 

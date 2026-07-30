@@ -1,4 +1,5 @@
 import type { FC } from "react"
+import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import { ChartOverlayProvider } from "./components/chart-overlay/ChartOverlayContext"
 import { RealtimeStakeEventsProvider } from "./components/realtime/RealtimeStakeEventsProvider"
 import { SubnetCharts } from "./components/SubnetCharts"
@@ -10,6 +11,9 @@ import { TaoDashboardSwap } from "./swap/TaoDashboardSwap"
 import { TaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 
 export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) => {
+  // the analytics sidebar is 100% sn45-based and has no data source outside mainnet
+  const { isMainnet } = useTaoDashboardNetwork()
+
   return (
     <SwapTxWatcherProvider>
       <RealtimeStakeEventsProvider netuid={netuid}>
@@ -37,9 +41,11 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
               </div>
 
               {/* Right Column - Analytics Sidebar */}
-              <div className="h-full w-95 shrink-0 overflow-hidden">
-                <TaoDashboardSidebar netuid={netuid} />
-              </div>
+              {isMainnet && (
+                <div className="h-full w-95 shrink-0 overflow-hidden">
+                  <TaoDashboardSidebar netuid={netuid} />
+                </div>
+              )}
             </div>
           </div>
           <TaoDashboardSubnetPickerModal />

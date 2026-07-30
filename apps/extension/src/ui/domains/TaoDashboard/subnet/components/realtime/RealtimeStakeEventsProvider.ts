@@ -6,7 +6,7 @@ import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../../shared/TaoDashboardNetworkProvider"
 import type { RealtimeStakeEvent } from "./types"
 
 /** System.Events storage key — constant across all Substrate chains */
@@ -50,11 +50,11 @@ const extractStakeEventsFromBlock = async (
   // 1. Get block hash (use pre-fetched if available)
   const blockHash =
     preBlockHash ??
-    (await api.subSend<`0x${string}`>(BITTENSOR_NETWORK_ID, "chain_getBlockHash", [blockNumber]))
+    (await api.subSend<`0x${string}`>(sapi.chainId, "chain_getBlockHash", [blockNumber]))
   if (!blockHash || signal.aborted) return EMPTY
 
   // 2. Fetch System.Events at this block
-  const eventsHex = await api.subSend<string>(BITTENSOR_NETWORK_ID, "state_getStorage", [
+  const eventsHex = await api.subSend<string>(sapi.chainId, "state_getStorage", [
     SYSTEM_EVENTS_KEY,
     blockHash,
   ])
@@ -105,7 +105,7 @@ const extractStakeEventsFromBlock = async (
 
   // 5. Fetch the block to compute extrinsic hashes
   const block = await api.subSend<{ block: { extrinsics: string[] } }>(
-    BITTENSOR_NETWORK_ID,
+    sapi.chainId,
     "chain_getBlock",
     [blockHash]
   )
@@ -165,7 +165,8 @@ const useRealtimeStakeEventsProvider = ({
 }: {
   netuid: number | null | undefined
 }): UseRealtimeStakeEventsReturn => {
-  const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
+  const networkId = useTaoDashboardNetworkId()
+  const { data: sapi } = useScaleApi(networkId)
 
   // --- Buffer state ---
   // Map<blockNumber, events[]> — the sliding buffer source of truth
@@ -240,11 +241,7 @@ const useRealtimeStakeEventsProvider = ({
       polling = true
       try {
         // Get best block header
-        const header = await api.subSend<{ number: string }>(
-          BITTENSOR_NETWORK_ID,
-          "chain_getHeader",
-          []
-        )
+        const header = await api.subSend<{ number: string }>(sapi.chainId, "chain_getHeader", [])
         if (!header?.number || signal.aborted) return
 
         const bestBlock = Number.parseInt(header.number, 16)
@@ -282,7 +279,7 @@ const useRealtimeStakeEventsProvider = ({
           }
 
           // Cheaply fetch the block hash to detect tip changes
-          const blockHash = await api.subSend<string>(BITTENSOR_NETWORK_ID, "chain_getBlockHash", [
+          const blockHash = await api.subSend<string>(sapi.chainId, "chain_getBlockHash", [
             blockNum,
           ])
           if (!blockHash || signal.aborted) continue
@@ -316,6 +313,15 @@ const useRealtimeStakeEventsProvider = ({
             log.warn("[RealtimeStakeEvents] Failed to process block", blockNum, err)
             break // Don't skip block numbers — try again next cycle
           }
+        }
+
+        // Without an indexer (e.g. testnet) no floor is ever reported and the buffer
+        // would grow forever: cap it to the last 1000 blocks
+        if (floorRef.current === 0) {
+          const cap = to - 1000
+          for (const key of bufferRef.current.keys()) if (key < cap) bufferRef.current.delete(key)
+          for (const key of processedRef.current.keys())
+            if (key < cap) processedRef.current.delete(key)
         }
 
         lastProcessedBlockRef.current = lastSuccessBlock

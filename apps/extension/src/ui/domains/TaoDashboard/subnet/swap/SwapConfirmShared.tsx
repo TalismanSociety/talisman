@@ -28,6 +28,7 @@ import {
   useMemo,
 } from "react"
 import { useTranslation } from "react-i18next"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { FeeBreakdownTooltipContent } from "./SwapTabShared"
 
 export const SwapConfirmContainer: FC<PropsWithChildren<{ className?: string }>> = ({
@@ -110,7 +111,10 @@ export const SwapConfirmValidatorApyValue: FC<{ hotkey?: string; netuid?: number
   netuid,
 }) => {
   const { t } = useTranslation()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
+    useTaoDashboardNetworkId(),
+    netuid
+  )
 
   const apy = useMemo(() => {
     const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)

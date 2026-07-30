@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useTaoDashboardNetworkId } from "../../../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../../../shared/util"
-import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 
 /**
  * Fetches the current alpha→TAO price via the on-chain
@@ -16,7 +16,7 @@ export function useRealtimeAlphaPrice(
   netuid: number | null | undefined,
   bestBlockNumber: number | null
 ) {
-  const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
+  const { data: sapi } = useScaleApi(useTaoDashboardNetworkId())
 
   const result = useQuery({
     queryKey: ["realtimeAlphaPrice", sapi?.id, netuid, bestBlockNumber],

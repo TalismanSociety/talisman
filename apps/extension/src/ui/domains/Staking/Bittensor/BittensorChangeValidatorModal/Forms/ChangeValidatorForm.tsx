@@ -161,7 +161,8 @@ const ValidatorSelectButton: FC<{
   onClick: () => void
 }> = ({ hotkey, netuid, onClick }) => {
   const { t } = useTranslation()
-  const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
+  const { token } = useBittensorChangeValidatorWizard()
+  const { combinedValidatorsData } = useCombinedBittensorValidatorsData(token?.networkId, netuid)
 
   const validator = useMemo(
     () => combinedValidatorsData.find((data) => data.hotkey === hotkey),

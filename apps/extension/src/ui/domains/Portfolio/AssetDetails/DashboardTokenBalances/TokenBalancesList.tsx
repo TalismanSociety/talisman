@@ -7,6 +7,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
@@ -42,6 +43,7 @@ export const TokenBalancesList = ({
   symbol,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
+  const network = useNetworkById(chainOrNetworkId)
 
   if (!token) return null
 
@@ -73,12 +75,18 @@ export const TokenBalancesList = ({
                     />
                   )}
                 </Suspense>
+                {!!network?.isTestnet && (
+                  <span className="ml-3 rounded bg-alert-warn/10 px-3 py-1 align-middle font-light text-alert-warn text-tiny">
+                    {t("Testnet")}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex w-full items-center gap-2 overflow-hidden">
               <NetworkLogo networkId={chainOrNetworkId} />
               <span className="truncate text-sm">
                 <NetworkName networkId={chainOrNetworkId} />
+
                 {token.type === "substrate-dtao" && (
                   <BittensorValidatorName
                     hotkey={token.hotkey}

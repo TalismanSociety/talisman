@@ -1,13 +1,10 @@
-import { isNetworkActive } from "@core/domains/balances/store.activeNetworks"
-import { useActiveNetworksState, useNetworkById } from "@ui/state/chaindata"
-import { useMemo } from "react"
-import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
+import { BITTENSOR_NETWORK_ID, useBittensorNetworkIds } from "@ui/state/bittensor"
 
-export const useIsBittensorEnabled = () => {
-  const activeNetworks = useActiveNetworksState()
-  const bittensorNetwork = useNetworkById(BITTENSOR_NETWORK_ID)
-  return useMemo(
-    () => !!bittensorNetwork && isNetworkActive(bittensorNetwork, activeNetworks),
-    [bittensorNetwork, activeNetworks]
-  )
+/** true when at least one bittensor network is active */
+export const useIsBittensorEnabled = () => useBittensorNetworkIds().length > 0
+
+/** network the tao dashboard entry points open: mainnet when active, else the first active bittensor network */
+export const useDefaultTaoDashboardNetworkId = () => {
+  const networkIds = useBittensorNetworkIds()
+  return networkIds.includes(BITTENSOR_NETWORK_ID) ? BITTENSOR_NETWORK_ID : (networkIds[0] ?? null)
 }

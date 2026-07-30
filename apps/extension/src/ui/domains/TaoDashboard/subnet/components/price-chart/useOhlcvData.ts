@@ -1,6 +1,7 @@
 import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { sn45Api } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useTaoDashboardNetwork } from "../../../shared/TaoDashboardNetworkProvider"
 
 import type { RealtimeStakeEvent } from "../realtime/types"
 import type { OhlcvBar, OhlcvResolution } from "./types"
@@ -103,9 +104,10 @@ export function useOhlcvData({
   onIndexerBlockHeight,
 }: UseOhlcvDataOptions): UseOhlcvDataReturn {
   const queryClient = useQueryClient()
+  const { isMainnet } = useTaoDashboardNetwork()
   const queryKey = useMemo(
-    () => ["sn45", "subnetOhlcv", netuid, resolution, pageSize] as const,
-    [netuid, resolution, pageSize]
+    () => ["sn45", "subnetOhlcv", isMainnet, netuid, resolution, pageSize] as const,
+    [isMainnet, netuid, resolution, pageSize]
   )
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, isError } =
@@ -131,7 +133,7 @@ export function useOhlcvData({
       },
       initialPageParam: undefined as string | undefined,
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-      enabled: !!netuid,
+      enabled: isMainnet && !!netuid,
       staleTime: 30_000,
       retry: shouldRetrySn45Error,
       refetchOnReconnect: true,
@@ -141,7 +143,7 @@ export function useOhlcvData({
   // Historical cursor-based pages are immutable and never re-fetched.
   const abortRef = useRef<AbortController | null>(null)
   useEffect(() => {
-    if (!netuid) return
+    if (!isMainnet || !netuid) return
 
     const interval = setInterval(async () => {
       abortRef.current?.abort()
@@ -170,7 +172,7 @@ export function useOhlcvData({
       clearInterval(interval)
       abortRef.current?.abort()
     }
-  }, [netuid, resolution, pageSize, queryClient, queryKey])
+  }, [isMainnet, netuid, resolution, pageSize, queryClient, queryKey])
 
   // Flatten all pages into a single sorted array of OhlcvBar
   const indexedBars = useMemo<OhlcvBar[]>(() => {

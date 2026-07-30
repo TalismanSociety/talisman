@@ -1,16 +1,20 @@
+import { useDefaultTaoDashboardNetworkId } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 import { EarnTabs, type EarnTabsKey } from "./EarnTabs"
 
-const TAB_TO_PATH: Record<EarnTabsKey, string> = {
+const TAB_TO_PATH: Record<Exclude<EarnTabsKey, "bittensor">, string> = {
   assets: "/earn/positions",
   discover: "/earn/discover",
-  bittensor: "/bittensor/subnets",
 }
 
 const getTabFromPath = (pathname: string): EarnTabsKey => {
+  if (BITTENSOR_NETWORK_IDS.some((networkId) => pathname.startsWith(`/${networkId}/`)))
+    return "bittensor"
   return (
     (Object.entries(TAB_TO_PATH).find(([, path]) =>
       pathname.startsWith(path)
@@ -21,6 +25,7 @@ const getTabFromPath = (pathname: string): EarnTabsKey => {
 export const EarnTabsDashboard: FC<{ className?: string }> = ({ className }) => {
   const location = useLocation()
   const navigate = useNavigateWithQuery()
+  const taoDashboardNetworkId = useDefaultTaoDashboardNetworkId()
 
   const selectedTab = useMemo<EarnTabsKey>(
     () => getTabFromPath(location.pathname),
@@ -30,9 +35,13 @@ export const EarnTabsDashboard: FC<{ className?: string }> = ({ className }) => 
   const handleTabChange = useCallback(
     (tab: EarnTabsKey) => {
       if (tab === selectedTab) return
-      navigate(TAB_TO_PATH[tab])
+      navigate(
+        tab === "bittensor"
+          ? getTaoDashboardUrl(taoDashboardNetworkId ?? BITTENSOR_NETWORK_ID)
+          : TAB_TO_PATH[tab]
+      )
     },
-    [navigate, selectedTab]
+    [navigate, selectedTab, taoDashboardNetworkId]
   )
 
   return (

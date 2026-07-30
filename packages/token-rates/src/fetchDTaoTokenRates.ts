@@ -82,8 +82,8 @@ export type FetchDTaoTokenRatesOptions = {
   previousRates: TokenRatesList
   /** custom fetch for the tao-data api (eg with auth headers), defaults to global fetch */
   customFetch?: typeof fetch
-  /** tao-data api url, defaults to https://tda.talisman.xyz */
-  taoDataApiUrl?: string
+  /** tao-data api url, defaults to https://tda.talisman.xyz — pass null to skip the 24h-change fetch (eg testnets, which the api has no data for) */
+  taoDataApiUrl?: string | null
   /** per-request timeout for the chain call and the tao-data api call, defaults to 10s */
   timeoutMs?: number
 }
@@ -126,7 +126,9 @@ export const fetchDTaoTokenRates = async ({
       log.warn("Failed to fetch alpha prices, keeping previous dtao rates", err)
       return null
     }),
-    getAlphaPriceChangesByNetuid(taoDataApiUrl, customFetch, timeoutMs),
+    taoDataApiUrl === null
+      ? null
+      : getAlphaPriceChangesByNetuid(taoDataApiUrl, customFetch, timeoutMs),
   ])
 
   if (!prices)

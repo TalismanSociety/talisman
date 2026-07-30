@@ -7,8 +7,8 @@ import {
   useTaoPrice,
 } from "../../../hooks/useSn45Api"
 import { ALPHA_MAX_SUPPLY } from "../../../shared/constants"
+import { useTaoDashboardNetworkId } from "../../../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../../../shared/util"
-import { BITTENSOR_NETWORK_ID } from "../../../subnets/constants"
 
 export interface SubnetStatsData {
   tokenPrice: number | null
@@ -40,7 +40,9 @@ export function useSubnetStats(netuid: number) {
     isError: isLeaderboardError,
   } = useSubnetLeaderboardEntry(netuid, "1d")
   // Still needed for daily emissions (per-block emission rate)
-  const { subnetData, isLoading: isSubnetDataLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
+  const { subnetData, isLoading: isSubnetDataLoading } = useCombinedSubnetData(
+    useTaoDashboardNetworkId()
+  )
 
   const isLoading =
     isTaoPriceLoading || isTokenomicsLoading || isLeaderboardLoading || isSubnetDataLoading

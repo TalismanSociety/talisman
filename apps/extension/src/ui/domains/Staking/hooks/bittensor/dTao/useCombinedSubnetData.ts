@@ -1,5 +1,6 @@
 import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
 import { useGetSubnetPools } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetSubnetPools"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useTokens } from "@ui/state/chaindata"
 import { assign, keyBy } from "lodash-es"
 import { useMemo } from "react"
@@ -11,6 +12,9 @@ import { useGetSubnets } from "./useGetSubnets"
 export const useCombinedSubnetData = (networkId: NetworkId) => {
   const { t } = useTranslation()
   const allTokens = useTokens({ platform: "polkadot" })
+
+  // the tao-data api only has mainnet data: other networks get chain + token data only
+  const isMainnet = networkId === BITTENSOR_NETWORK_ID
 
   // these should load instantly
   const alphaTokenSubnets = useMemo(
@@ -41,7 +45,7 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
     isError: isSubnetPoolsError,
     isLoading: isSubnetPoolsLoading,
     error: subnetPoolsError,
-  } = useGetSubnetPools()
+  } = useGetSubnetPools({ enabled: isMainnet })
 
   const poolsMap = useMemo(
     () => keyBy(subnetPoolsData ?? [], (pool) => Number(pool.netuid)),
@@ -66,9 +70,9 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
 
   return {
     subnetData,
-    isError: isSubnetPoolsError || isSubnetsError,
-    isLoading: isSubnetPoolsLoading || isSubnetsLoading,
-    error: subnetPoolsError ?? subnetsError ?? null,
+    isError: (isMainnet && isSubnetPoolsError) || isSubnetsError,
+    isLoading: (isMainnet && isSubnetPoolsLoading) || isSubnetsLoading,
+    error: (isMainnet ? subnetPoolsError : null) ?? subnetsError ?? null,
     isSubnetsLoading,
     isSubnetsError,
   }

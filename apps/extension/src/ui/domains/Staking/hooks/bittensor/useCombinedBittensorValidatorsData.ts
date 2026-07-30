@@ -1,4 +1,6 @@
-import { useBittensorValidators } from "@ui/state/bittensor"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import { useBittensorSubnetNeurons } from "@ui/domains/Staking/Bittensor/hooks/useBittensorSubnetNeurons"
+import { BITTENSOR_NETWORK_ID, useBittensorValidators } from "@ui/state/bittensor"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { keyBy } from "lodash-es"
 import { useMemo } from "react"
@@ -6,12 +8,30 @@ import { useMemo } from "react"
 import { useGetValidatorsYield } from "./dTao/useGetValidatorsYield"
 import type { BondOption } from "./types"
 
-export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
-  const { data: validatorsYieldData, isLoading } = useGetValidatorsYield({
-    netuid: netuid || 0,
+/**
+ * Validators to bond to, per network:
+ * - mainnet: TaoData registry (names, APY, stakers) + remote-config featured ordering
+ * - other networks: on-chain metagraph (TaoData and remote config only know mainnet) — no
+ *   yield/stakers data, names from on-chain identities when set
+ */
+export const useCombinedBittensorValidatorsData = (
+  networkId: DotNetworkId | null | undefined,
+  netuid?: number | null
+) => {
+  const isMainnet = networkId === BITTENSOR_NETWORK_ID
+
+  const { data: validatorsYieldData, isLoading: isLoadingYield } = useGetValidatorsYield({
+    netuid: isMainnet ? netuid || 0 : null,
   })
 
   const { status, data: validators } = useBittensorValidators()
+
+  const {
+    neurons,
+    isLoading: isLoadingNeurons,
+    isError: isNeuronsError,
+  } = useBittensorSubnetNeurons(isMainnet ? null : networkId, netuid)
+
   const {
     bittensor: { featuredValidators },
   } = useRemoteConfig()
@@ -22,7 +42,30 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
   )
 
   const combinedValidatorsData = useMemo(() => {
-    if (!validators || isLoading) return []
+    if (!isMainnet) {
+      return neurons
+        .filter((neuron) => neuron.role !== "miner")
+        .map(
+          (neuron): BondOption => ({
+            hotkey: neuron.hotkey,
+            name: neuron.name ?? "",
+            // subnet alpha stake in planck, only used for ordering - registry entries use global TAO stake
+            totalStaked: Number(neuron.stakeOnSubnet),
+            totalStakers: 0,
+            validatorYield: undefined,
+            apr: 0,
+            subnets: 0,
+            rank: 0,
+            isFeatured: false,
+            featuredOrder: -1,
+            hasData: true,
+            isError: isNeuronsError,
+            source: "metagraph",
+          })
+        )
+    }
+
+    if (!validators || isLoadingYield) return []
 
     const validatorYieldMap = keyBy(validatorsYieldData ?? [], (yieldData) => yieldData.hotkey)
 
@@ -43,15 +86,33 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
           featuredOrder: featuredHotkeyOrder.get(validator.hotkey.toLowerCase()) ?? -1,
           hasData: !!validator,
           isError: status === "error",
+          source: "registry" as const,
         }
       }) ?? []
 
     return combined
-  }, [featuredHotkeyOrder, isLoading, status, validators, validatorsYieldData])
+  }, [
+    featuredHotkeyOrder,
+    isLoadingYield,
+    isMainnet,
+    isNeuronsError,
+    neurons,
+    status,
+    validators,
+    validatorsYieldData,
+  ])
+
+  if (!isMainnet)
+    return {
+      combinedValidatorsData,
+      isLoading: isLoadingNeurons,
+      isInfiniteValidatorsError: isNeuronsError,
+      isError: isNeuronsError,
+    }
 
   return {
     combinedValidatorsData,
-    isLoading: status === "loading" || isLoading,
+    isLoading: status === "loading" || isLoadingYield,
     isInfiniteValidatorsError: status === "error",
     isError: status === "error",
   }

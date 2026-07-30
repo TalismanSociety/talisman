@@ -1,4 +1,10 @@
-import { BITTENSOR_NETWORK_ID, type BittensorValidator } from "@core/domains/bittensor/exports"
+import {
+  BITTENSOR_NETWORK_ID,
+  BITTENSOR_NETWORK_IDS,
+  type BittensorValidator,
+  isBittensorNetworkId,
+  sortBittensorNetworkIds,
+} from "@core/domains/bittensor/exports"
 import { bind } from "@react-rxjs/core"
 import type { Loadable } from "@talismn/util"
 import { api } from "@ui/api"
@@ -8,7 +14,7 @@ import { map, Observable, shareReplay } from "rxjs"
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
-export { BITTENSOR_NETWORK_ID }
+export { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS, sortBittensorNetworkIds }
 
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
   const unsubscribe = api.bittensorValidatorsSubscribe((data) => {
@@ -54,11 +60,11 @@ const [useBittensorValidator, _getBittensorValidator$] = bind(
 )
 
 const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
-  getTokens$({ platform: "polkadot" }).pipe(
+  getTokens$({ platform: "polkadot", activeOnly: true }).pipe(
     map((tokens) =>
       uniq(
         tokens
-          .filter((t) => t.type === "substrate-dtao" && t.networkId === BITTENSOR_NETWORK_ID) // TODO: remove networkId check once testnets work
+          .filter((t) => t.type === "substrate-dtao" && isBittensorNetworkId(t.networkId))
           .map((t) => t.networkId)
       )
     )

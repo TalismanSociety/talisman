@@ -9,8 +9,11 @@ import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToo
 import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
 import { useEarnOpportunitiesByTokenId } from "@ui/domains/Earn/hooks/useEarnOpportunitiesByTokenId"
+import { useDefaultTaoDashboardNetworkId } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import {
@@ -42,10 +45,9 @@ type PopupEarnOutletContext = {
   search: string
 }
 
-const TAB_TO_PATH: Record<EarnTabsKey, string> = {
+const TAB_TO_PATH: Record<Exclude<EarnTabsKey, "bittensor">, string> = {
   assets: "/earn/positions",
   discover: "/earn/discover",
-  bittensor: "/bittensor/subnets",
 }
 
 const getTabFromPath = (pathname: string): EarnTabsKey => {
@@ -107,6 +109,7 @@ export const PopupEarnPage: FC = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigateWithQuery()
+  const taoDashboardNetworkId = useDefaultTaoDashboardNetworkId()
   const selectedTab = useMemo<EarnTabsKey>(
     () => getTabFromPath(location.pathname),
     [location.pathname]
@@ -124,18 +127,20 @@ export const PopupEarnPage: FC = () => {
         case "discover":
           navigate(TAB_TO_PATH[tab])
           break
-        default:
+        default: {
+          const url = getTaoDashboardUrl(taoDashboardNetworkId ?? BITTENSOR_NETWORK_ID)
           try {
-            await api.dashboardOpen(TAB_TO_PATH[tab])
+            await api.dashboardOpen(url)
             window.close()
           } catch {
-            log.error(`Failed to open ${TAB_TO_PATH[tab]} in dashboard app`)
+            log.error(`Failed to open ${url} in dashboard app`)
           }
 
           return
+        }
       }
     },
-    [navigate, selectedTab]
+    [navigate, selectedTab, taoDashboardNetworkId]
   )
 
   const outletContext = useMemo<PopupEarnOutletContext>(() => ({ search }), [search])

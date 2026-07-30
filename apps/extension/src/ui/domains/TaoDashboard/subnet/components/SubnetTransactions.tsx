@@ -9,6 +9,7 @@ import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "reac
 import { useTranslation } from "react-i18next"
 import { useSubnetTokens } from "../../hooks/useSubnetTokens"
 import { AccountNameOrAddress } from "../../shared/AccountNameOrAddress"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { type TabConfig, TaoDashboardTabs } from "../../shared/TaoDashboardTabs"
 import { TransactionAvatar } from "../../shared/TransactionAvatar"
 import type { TransactionEntry } from "../../shared/types"
@@ -55,7 +56,7 @@ const TransactionsList: FC<{ netuid: number; activeTab: Tab }> = ({ netuid, acti
     MAX_ITEMS_PER_TAB,
     { realtimeEvents, onIndexerBlockHeight: reportFloor }
   )
-  const { alphaToken, taoToken } = useSubnetTokens(netuid)
+  const { alphaToken, taoToken } = useSubnetTokens(useTaoDashboardNetworkId(), netuid)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to top if tab changes
   useEffect(() => {

@@ -6,6 +6,7 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
+import { BITTENSOR_NETWORK_IDS } from "@ui/state/bittensor"
 import { type FC, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
@@ -53,7 +54,13 @@ const DashboardInner = () => {
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="earn/*" element={<DashboardEarnRoutes />} />
         <Route path="tx-history/*" element={<TxHistory />} />
-        <Route path="bittensor/*" element={<TaoDashboardRoutes />} />
+        {BITTENSOR_NETWORK_IDS.map((networkId) => (
+          <Route
+            key={networkId}
+            path={`${networkId}/*`}
+            element={<TaoDashboardRoutes networkId={networkId} />}
+          />
+        ))}
         <Route path="accounts">
           <Route path="add">
             <Route index element={<AccountAddMenu />} />

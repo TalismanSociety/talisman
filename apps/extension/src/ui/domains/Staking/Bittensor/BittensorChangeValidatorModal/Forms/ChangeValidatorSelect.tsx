@@ -1,5 +1,7 @@
+import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import {
   useCallback,
@@ -23,7 +25,6 @@ import {
   ValidatorSortMethodButton,
 } from "../../components/ValidatorPicker"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
-import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
 import { sortValidatorOptions, type ValidatorSortValue } from "../../utils/validatorSorting"
 
 export const ChangeValidatorSelect = () => {
@@ -33,7 +34,15 @@ export const ChangeValidatorSelect = () => {
 
   const netuid = token?.netuid ?? null
 
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
+    token?.networkId,
+    netuid
+  )
+
+  const taoTokenId = useMemo(
+    () => subNativeTokenId(token?.networkId ?? BITTENSOR_NETWORK_ID),
+    [token?.networkId]
+  )
 
   const [sortMethod, setSortMethod] = useState<ValidatorSortValue>("featured")
   const [rawSearch, setSearch] = useState<string>("")
@@ -146,7 +155,7 @@ export const ChangeValidatorSelect = () => {
                 })
             ) : (
               <ValidatorRows
-                taoTokenId={BITTENSOR_TOKEN_ID}
+                taoTokenId={taoTokenId}
                 validators={displayedValidators}
                 selectedHotkey={newHotkey ?? currentHotkey}
                 isLoading={isLoading}

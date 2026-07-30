@@ -9,7 +9,7 @@ import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 
 export const BittensorValidatorSelect = () => {
   const { t } = useTranslation()
-  const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
+  const { hotkey, netuid, networkId, setStep, setHotkey } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
 
   const handleSubmit = useCallback(
@@ -34,7 +34,7 @@ export const BittensorValidatorSelect = () => {
       }
     >
       <BittensorValidatorPicker
-        networkId="bittensor"
+        networkId={networkId}
         netuid={netuid}
         hotkey={hotkey}
         onSelect={handleSubmit}

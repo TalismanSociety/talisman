@@ -9,7 +9,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { BittensorValidatorPicker } from "./BittensorValidatorPicker"
 
 export const SelectValidatorPill: FC<{
@@ -18,9 +18,10 @@ export const SelectValidatorPill: FC<{
   onSelect: (hotkey: string) => void
 }> = ({ netuid, hotkey, onSelect }) => {
   const { t } = useTranslation()
+  const networkId = useTaoDashboardNetworkId()
 
   // preload validator + yield data so the picker doesn't flicker on open
-  useCombinedBittensorValidatorsData(netuid)
+  useCombinedBittensorValidatorsData(networkId, netuid)
 
   const { open, isOpen, close } = useOpenClose()
 
@@ -54,7 +55,7 @@ export const SelectValidatorPill: FC<{
             contentClassName="p-0"
           >
             <BittensorValidatorPicker
-              networkId={BITTENSOR_NETWORK_ID}
+              networkId={networkId}
               netuid={netuid}
               hotkey={hotkey}
               onSelect={handleSelect}

@@ -11,11 +11,11 @@ import {
 import { getStorageKeyPrefix } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-
 import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult, type QueryStorageResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
+import { fetchStorageKeysPaged } from "./fetchStorageKeysPaged"
 
 type GetDynamicInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
@@ -97,9 +97,11 @@ const fetchTransferableTokensMap = async (
   const { builder } = parseMetadataRpcCached(metadata)
   const transferToggleCodec = builder.buildStorage("SubtensorModule", "TransferToggle")
 
-  const transferToggleKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [
-    getStorageKeyPrefix("SubtensorModule", "TransferToggle"),
-  ])
+  const transferToggleKeys = await fetchStorageKeysPaged(
+    connector,
+    networkId,
+    getStorageKeyPrefix("SubtensorModule", "TransferToggle")
+  )
 
   const transferToggleResults = await connector.send<QueryStorageResult>(
     networkId,

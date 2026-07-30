@@ -8,7 +8,12 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
-import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import {
+  useDefaultTaoDashboardNetworkId,
+  useIsBittensorEnabled,
+} from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
@@ -28,6 +33,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
   const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const isBittensorEnabled = useIsBittensorEnabled()
+  const taoDashboardNetworkId = useDefaultTaoDashboardNetworkId()
 
   const [disableActions, disabledReason] = useMemo(() => {
     if (selectedAccount && !isAccountOwned(selectedAccount))
@@ -98,7 +104,10 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
               analyticsAction: "open tao dashboard",
               label: t("Trade TAO"),
               icon: TaoIcon,
-              onClick: () => api.dashboardOpen("/bittensor/subnets"),
+              onClick: () =>
+                api.dashboardOpen(
+                  getTaoDashboardUrl(taoDashboardNetworkId ?? BITTENSOR_NETWORK_ID)
+                ),
               disabled: false,
             }
           : null,
@@ -116,6 +125,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
       openSwapModal,
       openRampsModal,
       isBittensorEnabled,
+      taoDashboardNetworkId,
     ]
   )
 

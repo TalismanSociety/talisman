@@ -1,3 +1,4 @@
+import { isBittensorNetworkId } from "@core/domains/bittensor/exports"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 
@@ -17,13 +18,13 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanksToUnbond({
     sapi,
     pool,
-    isEnabled: chainId !== "bittensor",
+    isEnabled: !isBittensorNetworkId(chainId),
   })
   const nomPoolUnbondPayload = useGetNomPoolUnbondPayload({
     sapi,
     address,
     pool,
-    isEnabled: chainId !== "bittensor",
+    isEnabled: !isBittensorNetworkId(chainId),
   })
 
   const {

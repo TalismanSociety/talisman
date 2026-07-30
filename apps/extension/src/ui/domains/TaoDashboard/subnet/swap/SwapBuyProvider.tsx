@@ -2,7 +2,12 @@ import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { bind } from "@react-rxjs/core"
 import { getBalanceId } from "@talismn/balances"
-import { subDTaoTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import {
+  type NetworkId,
+  subDTaoTokenId,
+  subNativeTokenId,
+  type TokenId,
+} from "@talismn/chaindata-provider"
 import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakeInputError"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
@@ -19,7 +24,7 @@ import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BehaviorSubject } from "rxjs"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
 import { useSwapSubmit } from "./useSwapSubmit"
 
@@ -34,16 +39,17 @@ type SwapBuyInputs = {
   valueIn: bigint | null
 }
 
-const DEFAULT_INPUTS: SwapBuyInputs = {
+const getDefaultInputs = (networkId: NetworkId): SwapBuyInputs => ({
   address: null,
-  tokenIdIn: subNativeTokenId(BITTENSOR_NETWORK_ID),
+  tokenIdIn: subNativeTokenId(networkId),
   hotkey: null,
   valueIn: null,
-}
+})
 
 const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
+  const networkId = useTaoDashboardNetworkId()
   const lastSelectedAddress = useLastSelectedAddress()
-  const defaultAddress = useBestAccountAddress()
+  const defaultAddress = useBestAccountAddress(networkId)
   const allBalances = useBalances("owned")
   const remoteConfig = useRemoteConfig()
 
@@ -51,19 +57,20 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     // preselect account straight up to prevent flickering
     () => {
       const address = lastSelectedAddress || defaultAddress || null
-      return merge({}, DEFAULT_INPUTS, {
+      return merge({}, getDefaultInputs(networkId), {
         address,
-        hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, address) ?? null,
+        hotkey:
+          getDefaultValidatorHotkey(networkId, netuid, remoteConfig, allBalances, address) ?? null,
       })
     }
   )
   const { tokenIdIn, valueIn, hotkey, address } = state
   const tokenIn = useToken(state.tokenIdIn, "substrate-native")
   // target token doesnt have the validator address, because it will not exist unless user already has some
-  const tokenIdOutGeneric = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
+  const tokenIdOutGeneric = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
   const tokenIdOutDynamic = useMemo(
-    () => (hotkey ? subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid, hotkey) : null),
-    [netuid, hotkey]
+    () => (hotkey ? subDTaoTokenId(networkId, netuid, hotkey) : null),
+    [networkId, netuid, hotkey]
   )
   const tokenOutGeneric = useToken(tokenIdOutGeneric, "substrate-dtao")
   const tokenOutDynamic = useToken(tokenIdOutDynamic, "substrate-dtao")
@@ -72,7 +79,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
 
   const currentHotkey = useBittensorCurrentHotkey({
     address,
-    networkId: BITTENSOR_NETWORK_ID,
+    networkId,
     netuid,
   })
 
@@ -156,10 +163,11 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     prevNetuidRef.current = netuid
     setState((s) => ({
       ...s,
-      hotkey: getDefaultValidatorHotkey(netuid, remoteConfig, allBalances, s.address) ?? null,
+      hotkey:
+        getDefaultValidatorHotkey(networkId, netuid, remoteConfig, allBalances, s.address) ?? null,
       valueIn: null,
     }))
-  }, [netuid, remoteConfig, allBalances])
+  }, [netuid, networkId, remoteConfig, allBalances])
 
   const refIsAccountInitialized = useRef(false)
   useEffect(() => {
@@ -183,7 +191,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     if (currentHotkey) setState((s) => ({ ...s, hotkey: currentHotkey }))
   }, [currentHotkey])
 
-  const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
+  const { data: sapi } = useScaleApi(networkId)
 
   const {
     payload,
@@ -204,7 +212,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     direction: "taoToAlpha",
     hotkey,
     address,
-    networkId: BITTENSOR_NETWORK_ID,
+    networkId,
     remarkType: "swap",
   })
 
@@ -251,7 +259,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   }, [combinedFeeEstimate])
 
   const { isValid, inputErrorMessage } = useBittensorStakeInputError({
-    networkId: BITTENSOR_NETWORK_ID,
+    networkId,
     taoAmountIn: valueIn,
     taoBalance: isBalancesLoading ? null : (balanceTokenIn?.transferable.planck ?? 0n),
     dtaoBalance: isBalancesLoading ? null : (balanceTokenOut?.transferable.planck ?? 0n),
@@ -317,8 +325,8 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
 
 export const [SwapBuyProvider, useSwapBuy] = provideContext(useSwapBuyProvider)
 
-const useBestAccountAddress = () => {
-  const network = useNetworkById(BITTENSOR_NETWORK_ID)
+const useBestAccountAddress = (networkId: NetworkId) => {
+  const network = useNetworkById(networkId)
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
 
@@ -329,10 +337,10 @@ const useBestAccountAddress = () => {
 
   return useMemo(() => {
     // pick the account that has the most transferable tao
-    const taoBalances = balances.find({ tokenId: subNativeTokenId(BITTENSOR_NETWORK_ID) })
+    const taoBalances = balances.find({ tokenId: subNativeTokenId(networkId) })
     const bestBalance = taoBalances.each
       .concat()
       .sort((a, b) => (b.transferable.planck - a.transferable.planck > 0 ? 1 : -1))[0]
     return bestBalance?.address ?? compatibleAccounts[0]?.address ?? null
-  }, [balances, compatibleAccounts])
+  }, [balances, compatibleAccounts, networkId])
 }

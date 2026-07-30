@@ -1,3 +1,4 @@
+import { isBittensorNetworkId } from "@core/domains/bittensor/exports"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
@@ -21,6 +22,6 @@ export const useNomPoolByMember = (
         ])) ?? null
       )
     },
-    enabled: !!sapi && !!address && chainId !== "bittensor",
+    enabled: !!sapi && !!address && !isBittensorNetworkId(chainId),
   })
 }
