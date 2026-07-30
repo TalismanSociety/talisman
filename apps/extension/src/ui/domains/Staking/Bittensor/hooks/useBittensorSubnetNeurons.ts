@@ -1,5 +1,5 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBittensorValidatorsMap } from "@ui/state/bittensor"
 import { useMemo } from "react"
@@ -47,7 +47,8 @@ export const useBittensorSubnetNeurons = (
     staleTime: 5 * 60 * 1000, // 5 mins
     gcTime: 10 * 60 * 1000, // 10 mins
     refetchOnReconnect: true,
-    placeholderData: keepPreviousData,
+    // no keepPreviousData: showing the previous subnet's metagraph across netuid/network changes
+    // would let users pick a hotkey that isn't registered on the newly selected subnet
     // intentionally NOT persisted: rows carry bigint (stakeOnSubnet), and the query-storage port
     // message serializes as JSON, which throws "Could not serialize message" on bigint
   })
