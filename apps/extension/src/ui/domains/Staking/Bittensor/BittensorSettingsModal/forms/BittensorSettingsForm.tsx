@@ -4,7 +4,7 @@ import { Toggle } from "@ui/components/Toggle"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { BITTENSOR_NETWORK_ID, useBittensorNetworkIds } from "@ui/state/bittensor"
+import { sortBittensorNetworkIds, useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -58,10 +58,7 @@ export const BittensorSettingsForm = () => {
   const bittensorNetworkIds = useBittensorNetworkIds()
 
   const networkIds = useMemo(
-    () =>
-      [...bittensorNetworkIds].sort(
-        (a, b) => Number(b === BITTENSOR_NETWORK_ID) - Number(a === BITTENSOR_NETWORK_ID)
-      ),
+    () => sortBittensorNetworkIds(bittensorNetworkIds),
     [bittensorNetworkIds]
   )
   const [pickerInitialView, setPickerInitialView] = useState<"type" | "subnets">("type")

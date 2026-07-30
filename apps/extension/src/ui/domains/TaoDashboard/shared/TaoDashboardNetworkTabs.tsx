@@ -1,5 +1,9 @@
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { BITTENSOR_NETWORK_ID, useBittensorNetworkIds } from "@ui/state/bittensor"
+import {
+  BITTENSOR_NETWORK_ID,
+  sortBittensorNetworkIds,
+  useBittensorNetworkIds,
+} from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,12 +19,10 @@ export const TaoDashboardNetworkTabs: FC<{ className?: string }> = ({ className 
 
   const tabs = useMemo(
     () =>
-      [...bittensorNetworkIds]
-        .sort((a, b) => Number(b === BITTENSOR_NETWORK_ID) - Number(a === BITTENSOR_NETWORK_ID))
-        .map((id) => ({
-          value: id,
-          label: id === BITTENSOR_NETWORK_ID ? t("Mainnet") : t("Testnet"),
-        })),
+      sortBittensorNetworkIds(bittensorNetworkIds).map((id) => ({
+        value: id,
+        label: id === BITTENSOR_NETWORK_ID ? t("Mainnet") : t("Testnet"),
+      })),
     [bittensorNetworkIds, t]
   )
 

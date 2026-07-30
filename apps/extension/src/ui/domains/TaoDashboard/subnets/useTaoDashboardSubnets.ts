@@ -125,7 +125,8 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           volume,
           mcap,
           balance: balances?.sum.planck.transferable ?? null,
-          balanceUsd: balances?.sum.fiat("usd").transferable ?? null,
+          // outside mainnet tokens are unpriced and the fiat sum fabricates a $0.00
+          balanceUsd: isMainnet ? (balances?.sum.fiat("usd").transferable ?? null) : null,
           unstakeAddress,
           stakedTao: stakedTao || (priceTao ? stakedAlpha * priceTao : undefined),
           stakedAlpha,
@@ -136,11 +137,13 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
         }
       })
       .sort((a, b) => a.token.netuid - b.token.netuid)
-  }, [subnetTokens, leaderboardMap, taoUsdPrice, balancesPerNetuid, alphaPrices])
+  }, [subnetTokens, leaderboardMap, taoUsdPrice, balancesPerNetuid, alphaPrices, isMainnet])
 
   const loading = useMemo(
     () => ({
-      price: isLeaderboardLoading || isTaoPriceLoading || isAlphaPricesLoading,
+      // on mainnet the on-chain alpha prices are only a fallback for subnets the leaderboard
+      // doesn't know yet: don't keep the whole column pulsing while they load
+      price: isMainnet ? isLeaderboardLoading || isTaoPriceLoading : isAlphaPricesLoading,
       balance: balancesStatus.status === "fetching",
       score: isLeaderboardLoading,
       staked: isLeaderboardLoading,
@@ -149,7 +152,13 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
       emission: isLeaderboardLoading,
       chart: isLeaderboardLoading,
     }),
-    [isLeaderboardLoading, isTaoPriceLoading, isAlphaPricesLoading, balancesStatus.status]
+    [
+      isMainnet,
+      isLeaderboardLoading,
+      isTaoPriceLoading,
+      isAlphaPricesLoading,
+      balancesStatus.status,
+    ]
   )
 
   // outside mainnet the sn45 queries are disabled: flag their columns so cells render N/A

@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../shared/util"
@@ -25,6 +25,7 @@ export const useAlphaPricesByNetuid = () => {
     },
     enabled: !!sapi,
     refetchInterval: 60_000,
-    placeholderData: keepPreviousData,
+    // no keepPreviousData: the key only changes on network switch, so the previous data
+    // would always be the other network's prices
   })
 }
