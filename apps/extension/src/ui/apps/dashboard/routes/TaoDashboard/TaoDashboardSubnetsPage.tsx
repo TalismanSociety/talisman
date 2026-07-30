@@ -34,7 +34,7 @@ export const TaoDashboardSubnetsPage = () => {
             />
           </div>
           <div className="flex shrink-0 items-center gap-6">
-            <TaoDashboardNetworkTabs className="h-[2.25rem] rounded-sm p-2" />
+            <TaoDashboardNetworkTabs className="h-[2.25rem] shrink-0 gap-2 rounded-sm p-2" />
             <TaoDashboardPeriodTabs
               selected={period}
               onSelect={setPeriod}

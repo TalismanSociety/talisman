@@ -1,8 +1,8 @@
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { BITTENSOR_NETWORK_ID, useBittensorNetworkIds } from "@ui/state/bittensor"
+import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { type NavTabConfig, TaoDashboardNavTabs } from "./TaoDashboardNavTabs"
 import { useTaoDashboardNetwork } from "./TaoDashboardNetworkProvider"
 import { getTaoDashboardUrl } from "./util"
 
@@ -13,7 +13,7 @@ export const TaoDashboardNetworkTabs: FC<{ className?: string }> = ({ className 
   const bittensorNetworkIds = useBittensorNetworkIds()
   const navigate = useNavigateWithQuery()
 
-  const tabs = useMemo<NavTabConfig<string>[]>(
+  const tabs = useMemo(
     () =>
       [...bittensorNetworkIds]
         .sort((a, b) => Number(b === BITTENSOR_NETWORK_ID) - Number(a === BITTENSOR_NETWORK_ID))
@@ -27,11 +27,28 @@ export const TaoDashboardNetworkTabs: FC<{ className?: string }> = ({ className 
   if (bittensorNetworkIds.length < 2) return null
 
   return (
-    <TaoDashboardNavTabs
-      tabs={tabs}
-      selected={networkId}
-      onSelect={(id) => id !== networkId && navigate(getTaoDashboardUrl(id))}
-      className={className}
-    />
+    <div
+      role="tablist"
+      className={cn(
+        "inline-flex h-6.5 max-w-full items-center gap-1 overflow-hidden rounded-xs bg-grey-850 p-1 font-bold text-sm",
+        className
+      )}
+    >
+      {tabs.map((tab) => (
+        <button
+          key={tab.value}
+          type="button"
+          role="tab"
+          aria-selected={networkId === tab.value}
+          className={cn(
+            "relative h-full rounded-sm px-3 font-bold text-body",
+            networkId === tab.value ? "bg-grey-700" : "hover:bg-grey-750"
+          )}
+          onClick={() => tab.value !== networkId && navigate(getTaoDashboardUrl(tab.value))}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
   )
 }
