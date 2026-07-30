@@ -1,5 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { TFunction } from "i18next"
+import { InsufficientGasBalanceError } from "./swap-modules/evm-gas-check"
 
 /**
  * Structured error types for the swap confirmation flow.
@@ -59,6 +60,14 @@ const isAbortError = (err: unknown): boolean => {
 export const classifySwapError = (rawError: unknown): SwapConfirmError | null => {
   if (!rawError) return null
   if (isAbortError(rawError)) return null
+
+  if (rawError instanceof InsufficientGasBalanceError)
+    return {
+      type: "insufficient-fee-balance",
+      feeTokenId: rawError.feeTokenId,
+      required: rawError.required,
+      available: rawError.available,
+    }
 
   const message =
     (rawError as { shortMessage?: string }).shortMessage ??
