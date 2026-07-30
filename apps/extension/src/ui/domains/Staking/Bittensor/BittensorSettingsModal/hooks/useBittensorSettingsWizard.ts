@@ -177,6 +177,18 @@ const useBittensorSettingsWizardProvider = () => {
     []
   )
 
+  const setNetworkId = useCallback(
+    (newNetworkId: DotNetworkId) =>
+      setWizardState((prev) => ({
+        ...prev,
+        networkId: newNetworkId,
+        selectedClaimType: null,
+        selectedSubnets: [],
+        selectedAcceptLockedAlpha: null,
+      })),
+    []
+  )
+
   const setStep = useCallback(
     (newStep: BittensorSettingsStep) => setWizardState((prev) => ({ ...prev, step: newStep })),
     []
@@ -237,6 +249,7 @@ const useBittensorSettingsWizardProvider = () => {
     errorFeeEstimate,
     isLoadingPayload,
     setAddress,
+    setNetworkId,
     setStep,
     setSelectedClaimType,
     setSelectedSubnets,
