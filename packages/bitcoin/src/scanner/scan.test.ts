@@ -190,6 +190,21 @@ describe("refreshBitcoinAccountScan", () => {
     expect(refreshed.trees[0].confirmedSats).toEqual(10_000n)
     expect(refreshed.trees[0].mempoolDeltaSats).toEqual(3_000n)
   })
+
+  it("probes issued fresh addresses beyond the frontier", async () => {
+    const cold = await scanBitcoinAccount(buildMockApi({}), { trees: [TREE], hrp: "bc" })
+    // fresh-address rotation handed out indices 0..3 and a payment lands on index 3,
+    // while the frontier (first unused) is still index 0
+    const api = buildMockApi({ 3: { confirmed: 7_000 } })
+    const refreshed = await refreshBitcoinAccountScan(api, cold, "bc", {
+      issued: { "payments:p2wpkh": [3, -1] },
+    })
+
+    const external = refreshed.trees[0].chains[0]
+    expect(external.activeAddresses.map((a) => a.index)).toEqual([3])
+    expect(external.firstUnusedIndex).toEqual(4)
+    expect(refreshed.trees[0].confirmedSats).toEqual(7_000n)
+  })
 })
 
 describe("getSpendableUtxos", () => {

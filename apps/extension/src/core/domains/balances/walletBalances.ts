@@ -10,6 +10,11 @@ import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap }
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
+import { getBitcoinAccountTrees } from "../bitcoin/helpers"
+import {
+  type BitcoinAddressIndexData,
+  bitcoinAddressIndexStore,
+} from "../bitcoin/store.addressIndex"
 import { keyringStore } from "../keyring/store"
 import { balancesProvider } from "./balancesProvider"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
@@ -17,21 +22,36 @@ import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 import { balancesStore$ } from "./store.balances"
 
 // dual-tree metadata for HD bitcoin accounts: the ordinals xpub is not derivable from
-// the account identity (payments xpub), so it must be supplied to the balance module
-const getBtcAccountsMeta = (accounts: Account[]): BtcAccountsMeta => {
+// the account identity (payments xpub), so it must be supplied to the balance module.
+// Issued fresh-address indexes ride along so incremental refreshes probe
+// rotated-but-unused receive addresses, not just the first-unused frontier.
+const getBtcAccountsMeta = (
+  accounts: Account[],
+  issuedIndexes: BitcoinAddressIndexData
+): BtcAccountsMeta => {
   const meta: BtcAccountsMeta = {}
   for (const account of accounts) {
-    if (account.type === "hd-bitcoin" || account.type === "ledger-bitcoin")
-      meta[account.address] = {
-        trees: [
-          { tree: "payments", xpub: account.keys.payments.xpub, addressType: "p2wpkh" },
-          { tree: "ordinals", xpub: account.keys.ordinals.xpub, addressType: "p2tr" },
-        ],
+    if (
+      account.type !== "hd-bitcoin" &&
+      account.type !== "ledger-bitcoin" &&
+      account.type !== "watch-only-bitcoin"
+    )
+      continue
+
+    const trees = getBitcoinAccountTrees(account)
+    if (!trees) continue
+
+    const issued: Record<string, number> = {}
+    for (const spec of trees)
+      for (const chain of [0, 1] as const) {
+        const index = issuedIndexes[`${spec.xpub}:${spec.tree}:${chain}`]
+        if (index !== undefined) issued[`${spec.tree}:${chain}`] = index
       }
-    else if (account.type === "watch-only-bitcoin")
-      meta[account.address] = {
-        trees: [{ tree: "payments", xpub: account.address, addressType: account.addressType }],
-      }
+
+    meta[account.address] = {
+      trees,
+      ...(Object.keys(issued).length ? { issued } : {}),
+    }
   }
   return meta
 }
@@ -42,8 +62,9 @@ const walletAddressesByTokenId$ = combineLatest({
   accounts: keyringStore.accounts$,
   activeTokens: activeTokensStore.observable,
   activeNetworks: activeNetworksStore.observable,
+  btcIssuedIndexes: bitcoinAddressIndexStore.observable,
 }).pipe(
-  map(({ networks, tokens, accounts, activeTokens, activeNetworks }) => {
+  map(({ networks, tokens, accounts, activeTokens, activeNetworks, btcIssuedIndexes }) => {
     const arNetworks = networks.filter((n) => isNetworkActive(n, activeNetworks))
     const arTokens = tokens.filter((t) => isTokenActive(t, activeTokens))
 
@@ -59,7 +80,7 @@ const walletAddressesByTokenId$ = combineLatest({
       })
     )
 
-    return { addressesByTokenId, btcAccounts: getBtcAccountsMeta(accounts) }
+    return { addressesByTokenId, btcAccounts: getBtcAccountsMeta(accounts, btcIssuedIndexes) }
   }),
   distinctUntilChanged<{
     addressesByTokenId: Record<TokenId, Address[]>

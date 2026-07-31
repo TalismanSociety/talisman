@@ -3,7 +3,9 @@ import {
   type BitcoinHrp,
   type BitcoinTreeSpec,
   type BtcApi,
+  getScanCursorKey,
   refreshBitcoinAccountScan,
+  type ScanCursor,
   scanBitcoinAccount,
 } from "@talismn/bitcoin"
 import type { BtcNetworkId } from "@talismn/chaindata-provider"
@@ -42,6 +44,17 @@ const getDefaultTrees = (address: Address): BitcoinTreeSpec[] => [
 
 const getAccountTrees = (address: Address, meta?: BtcAccountsMeta): BitcoinTreeSpec[] =>
   meta?.[address]?.trees?.length ? meta[address].trees : getDefaultTrees(address)
+
+const getIssuedCursor = (address: Address, meta?: BtcAccountsMeta): ScanCursor | undefined => {
+  const issued = meta?.[address]?.issued
+  if (!issued) return undefined
+  return Object.fromEntries(
+    getAccountTrees(address, meta).map((spec) => [
+      getScanCursorKey(spec),
+      [issued[`${spec.tree}:0`] ?? -1, issued[`${spec.tree}:1`] ?? -1] as [number, number],
+    ])
+  )
+}
 
 /**
  * Builds the balance values for one account.
@@ -124,7 +137,9 @@ export const fetchBtcBalancesWithState = async ({
           const priorScan = priorState?.scans[address]
           // incremental refresh once we have a prior scan; full gap scan for cold discovery
           const scan = priorScan
-            ? await refreshBitcoinAccountScan(api, priorScan, hrp)
+            ? await refreshBitcoinAccountScan(api, priorScan, hrp, {
+                issued: getIssuedCursor(address, meta),
+              })
             : await scanBitcoinAccount(api, { trees: getAccountTrees(address, meta), hrp })
           state.scans[address] = scan
           values = buildValues(

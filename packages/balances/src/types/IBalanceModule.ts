@@ -37,7 +37,17 @@ export type PlatformConnector<P extends TokenPlatform<TokenType>> = P extends "e
  * The ordinals tree xpub cannot be derived from the identity xpub (separate hardened
  * paths), so the wallet supplies both trees explicitly.
  */
-export type BtcAccountsMeta = Record<Address, { trees: BitcoinTreeSpec[] }>
+export type BtcAccountsMeta = Record<
+  Address,
+  {
+    trees: BitcoinTreeSpec[]
+    /**
+     * Last fresh-address index handed out, keyed by `${tree}:${chain}` — incremental
+     * refreshes must probe rotated-but-unused addresses, not just the frontier.
+     */
+    issued?: Record<string, number>
+  }
+>
 
 type DotTransferCallData = {
   address: string

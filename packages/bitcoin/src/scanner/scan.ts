@@ -125,7 +125,8 @@ const refreshChain = async (
   change: 0 | 1,
   hrp: BitcoinHrp,
   gapLimit: number,
-  prior: TreeChainScan
+  prior: TreeChainScan,
+  issuedIndex = -1
 ): Promise<TreeChainScan> => {
   const activeAddresses: TreeChainScan["activeAddresses"] = []
   let lastUsedIndex = -1
@@ -145,9 +146,11 @@ const refreshChain = async (
   )
   for (const result of refreshed) record(result)
 
-  // probe the frontier; only walk forward (extending the gap) if it has become used
+  // probe the frontier — plus any fresh addresses already handed out beyond it, which
+  // break the "beyond the frontier is unused" invariant; only walk forward (extending
+  // the gap) if a probed address has become used
   let index = prior.firstUnusedIndex
-  let upper = prior.firstUnusedIndex + 1
+  let upper = Math.max(prior.firstUnusedIndex, issuedIndex) + 1
   while (index < upper) {
     const batchIndices: number[] = []
     for (let i = index; i < Math.min(index + SCAN_BATCH_SIZE, upper); i++) batchIndices.push(i)
@@ -186,14 +189,21 @@ export const refreshBitcoinAccountScan = async (
   api: BtcApi,
   prior: BitcoinAccountScan,
   hrp: BitcoinHrp,
-  gapLimit: number = BITCOIN_GAP_LIMIT
+  opts?: {
+    gapLimit?: number
+    /** last handed-out fresh-address index per cursor key ([external, internal]) */
+    issued?: ScanCursor
+  }
 ): Promise<BitcoinAccountScan> => {
+  const gapLimit = opts?.gapLimit ?? BITCOIN_GAP_LIMIT
+
   const [tipHeight, ...trees] = await Promise.all([
     api.getTipHeight(),
     ...prior.trees.map(async (tree): Promise<BitcoinTreeScan> => {
+      const issued = opts?.issued?.[getScanCursorKey(tree.spec)]
       const [external, internal] = await Promise.all([
-        refreshChain(api, tree.spec, 0, hrp, gapLimit, tree.chains[0]),
-        refreshChain(api, tree.spec, 1, hrp, gapLimit, tree.chains[1]),
+        refreshChain(api, tree.spec, 0, hrp, gapLimit, tree.chains[0], issued?.[0]),
+        refreshChain(api, tree.spec, 1, hrp, gapLimit, tree.chains[1], issued?.[1]),
       ])
       const sum = (fn: (a: TreeChainScan["activeAddresses"][number]) => bigint) =>
         [...external.activeAddresses, ...internal.activeAddresses].reduce(

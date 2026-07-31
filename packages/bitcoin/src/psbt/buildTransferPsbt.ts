@@ -68,12 +68,18 @@ export const buildPsbtInput = (
     }
   }
 
-  const spend = p2wpkh(utxo.publicKey, network)
+  // WIF/static-address utxos carry no public key — recover the script from the address.
+  // Address.decode's return is optional-typed but always defined when it doesn't throw.
+  const script: Uint8Array = utxo.publicKey.length
+    ? p2wpkh(utxo.publicKey, network).script
+    : OutScript.encode(
+        Address(network).decode(utxo.address) as Parameters<typeof OutScript.encode>[0]
+      )
   return {
     txid: utxo.txid,
     index: utxo.vout,
     sequence: RBF_SEQUENCE,
-    witnessUtxo: { script: spend.script, amount: utxo.valueSats },
+    witnessUtxo: { script, amount: utxo.valueSats },
     ...(fingerprint !== undefined && fullPath
       ? {
           bip32Derivation: [[utxo.publicKey, { fingerprint, path: fullPath }]] as [

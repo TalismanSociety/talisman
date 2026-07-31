@@ -131,6 +131,31 @@ describe("buildTransferPsbt", () => {
     expect(final.feeSats).toEqual(built.feeSats)
   })
 
+  it("builds, signs and finalizes from a static-address utxo without a public key", async () => {
+    const { utxos, keysByUtxo, recipient } = await getFixtures()
+    // WIF/static-address utxos are serialized without a public key: the input
+    // script must be recovered from the address
+    const wifUtxo: BitcoinUtxo = { ...utxos[0], publicKey: new Uint8Array(0) }
+
+    const built = buildTransferPsbt({
+      utxos: [wifUtxo],
+      recipient,
+      amountSats: 40_000n,
+      feeRateSatVb: 2,
+      changeAddress: wifUtxo.address,
+      network: "bitcoin",
+    })
+
+    expect(built.sentSats).toEqual(40_000n)
+    expect(built.selectedUtxos).toHaveLength(1)
+
+    const signed = signPsbtWithKeys(built.psbt, keysByUtxo(built.selectedUtxos))
+    expect(isPsbtFullySigned(signed)).toBe(true)
+
+    const final = finalizeAndExtract(signed)
+    expect(final.txid).toMatch(/^[0-9a-f]{64}$/)
+  })
+
   it("sweeps everything with amountSats max", async () => {
     const { utxos, account, changeAddress, keysByUtxo, recipient } = await getFixtures()
     const paymentsTotal = 160_000n

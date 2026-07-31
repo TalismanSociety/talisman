@@ -23,7 +23,7 @@ import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { getBitcoinDisplayAddress } from "../Account/Address"
+import { getAccountBtcAddressType, getBitcoinDisplayAddress } from "../Account/Address"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
@@ -67,9 +67,9 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const formatted = useMemo(
     () =>
       isBitcoinXpub(account.address)
-        ? getBitcoinDisplayAddress(account.address)
+        ? getBitcoinDisplayAddress(account.address, getAccountBtcAddressType(account))
         : encodeAnyAddress(account.address, { ss58Format: accountChain?.prefix }),
-    [account.address, accountChain?.prefix]
+    [account, accountChain?.prefix]
   )
 
   const isCopiable = useMemo(() => {

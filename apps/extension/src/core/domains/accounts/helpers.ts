@@ -5,6 +5,7 @@ import {
   type AccountPlatform,
   getAccountPlatformFromAddress,
   isAddressEqual,
+  isBitcoinXpub,
   type KeypairCurve,
 } from "@talismn/crypto"
 import {
@@ -203,11 +204,16 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
     case "solana":
       return isAccountPlatformSolana(account)
     case "bitcoin":
-      // contacts can't hold balances but are valid recipients, on-chain addresses only (not xpubs)
+      // xpub-identity accounts derive addresses for any network; static-address accounts
+      // (WIF imports, watched addresses) and contacts embed their network in the address
+      if (isAccountPlatformBitcoin(account))
+        return (
+          isBitcoinXpub(account.address) ||
+          isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName)
+        )
       return (
-        isAccountPlatformBitcoin(account) ||
-        (account.type === "contact" &&
-          isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName))
+        account.type === "contact" &&
+        isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName)
       )
     default:
       log.warn("Unsupported network platform", network)
