@@ -4,16 +4,21 @@ import type {
   WalletTransaction,
   WalletTransactionInfo,
 } from "@core/domains/transactions/types"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
-import { ExternalLinkIcon } from "@talismn/icons"
+import {
+  getBlockExplorerUrls,
+  type Network,
+  networkIdFromTokenId,
+} from "@talismn/chaindata-provider"
+import { ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import {
   ProcessAnimation,
   type ProcessAnimationStatus,
 } from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { type ReplacementCallbackArgs, TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { useLiveQuery } from "dexie-react-hooks"
-import { type FC, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
@@ -41,40 +46,45 @@ const useTransactionLocal = (hash: string): WalletTransaction | null | undefined
     return (await db.transactionsV2.get(hash)) ?? null
   }, [hash])
 
-type SwapStatusPhase = "submitting" | "exchange-in-progress" | "success" | "failure" | "unknown"
+type SwapProgressPill = "confirming" | "swapping"
 
 type SwapStatusDetails = {
-  phase: SwapStatusPhase
   title: string
   subtitle: string
   animStatus: ProcessAnimationStatus
+  pill?: SwapProgressPill
 }
 
 const useSwapProgressStatus = (
   txHash: string,
-  _networkId: string,
-  _txInfo: WalletTransactionInfo
+  txInfo: WalletTransactionInfo
 ): SwapStatusDetails => {
   const { t } = useTranslation()
 
   const tx = useTransactionLocal(txHash)
   const swapStatus: SwapStatus | undefined = tx?.swapStatus
 
+  const isCrossChain = useMemo(
+    () =>
+      "fromTokenId" in txInfo &&
+      networkIdFromTokenId(txInfo.fromTokenId) !== networkIdFromTokenId(txInfo.toTokenId),
+    [txInfo]
+  )
+
   return useMemo<SwapStatusDetails>(() => {
+    const inProgress = (pill: SwapProgressPill): SwapStatusDetails => ({
+      title: t("Transaction in progress"),
+      subtitle: isCrossChain ? t("This may take a few minutes") : t("This may take a moment"),
+      animStatus: "processing",
+      pill,
+    })
+
     // Phase 1: On-chain tx is still pending/processing
-    if (!tx || tx.status === "pending") {
-      return {
-        phase: "submitting",
-        title: t("Swap in progress"),
-        subtitle: t("Submitting your transaction to the network."),
-        animStatus: "processing",
-      }
-    }
+    if (!tx || tx.status === "pending") return inProgress("confirming")
 
     // On-chain tx failed
     if (tx.status === "error") {
       return {
-        phase: "failure",
         title: t("Transaction failed"),
         subtitle: t("Your swap transaction failed on-chain."),
         animStatus: "failure",
@@ -84,7 +94,6 @@ const useSwapProgressStatus = (
     // On-chain tx status unknown
     if (tx.status === "unknown") {
       return {
-        phase: "unknown",
         title: t("Transaction not found"),
         subtitle: t("Transaction was submitted, but Talisman is unable to track its progress."),
         animStatus: "failure",
@@ -94,7 +103,6 @@ const useSwapProgressStatus = (
     // On-chain tx replaced
     if (tx.status === "replaced") {
       return {
-        phase: "failure",
         title: t("Transaction cancelled"),
         subtitle: t("This transaction has been replaced with another one."),
         animStatus: "failure",
@@ -104,43 +112,14 @@ const useSwapProgressStatus = (
     // Phase 2: On-chain tx succeeded — track exchange/protocol status
     switch (swapStatus) {
       case "waiting":
-        return {
-          phase: "exchange-in-progress",
-          title: t("Depositing funds"),
-          subtitle: t("Your deposit is being processed by the exchange."),
-          animStatus: "processing",
-        }
       case "confirming":
-        return {
-          phase: "exchange-in-progress",
-          title: t("Confirming deposit"),
-          subtitle: t("The exchange is confirming your deposit."),
-          animStatus: "processing",
-        }
+        return inProgress("confirming")
       case "exchanging":
-        return {
-          phase: "exchange-in-progress",
-          title: t("Exchanging"),
-          subtitle: t("Your tokens are being exchanged."),
-          animStatus: "processing",
-        }
       case "sending":
-        return {
-          phase: "exchange-in-progress",
-          title: t("Sending funds"),
-          subtitle: t("The exchange is sending your tokens."),
-          animStatus: "processing",
-        }
       case "verifying":
-        return {
-          phase: "exchange-in-progress",
-          title: t("Verifying"),
-          subtitle: t("The exchange is verifying the transaction."),
-          animStatus: "processing",
-        }
+        return inProgress("swapping")
       case "finished":
         return {
-          phase: "success",
           title: t("Swap complete"),
           subtitle: t("Your swap was successful!"),
           animStatus: "success",
@@ -149,7 +128,6 @@ const useSwapProgressStatus = (
       case "expired":
       case "refunded":
         return {
-          phase: "failure",
           title: t("Swap failed"),
           subtitle:
             swapStatus === "refunded"
@@ -164,7 +142,6 @@ const useSwapProgressStatus = (
         // even though the on-chain tx succeeded. Show an ambiguous status instead of
         // a definitive "Swap failed" since the user's funds may have been swapped.
         return {
-          phase: "unknown",
           title: t("Swap status unknown"),
           subtitle: t(
             "Your transaction succeeded on-chain but the swap tracker couldn't confirm the result. Please check your balance."
@@ -172,15 +149,21 @@ const useSwapProgressStatus = (
           animStatus: "failure",
         }
       default:
-        // Swap status not yet loaded — show generic processing for confirmed tx
-        return {
-          phase: "exchange-in-progress",
-          title: t("Swap in progress"),
-          subtitle: t("Waiting for the exchange to process your swap."),
-          animStatus: "processing",
-        }
+        // Swap status not yet loaded — deposit is on-chain, exchange is processing
+        return inProgress("swapping")
     }
-  }, [tx, swapStatus, t])
+  }, [tx, swapStatus, isCrossChain, t])
+}
+
+const SwapStatusPill: FC<{ pill: SwapProgressPill }> = ({ pill }) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="inline-flex items-center gap-3 rounded-full bg-grey-800 px-6 py-3 text-primary text-xs">
+      <LoaderIcon className="animate-spin-slow text-sm" />
+      <span>{pill === "confirming" ? t("Confirming") : t("Swapping")}</span>
+    </div>
+  )
 }
 
 type SwapProgressProps = {
@@ -188,11 +171,18 @@ type SwapProgressProps = {
   networkId: string
   txInfo: WalletTransactionInfo
   onClose: () => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, onClose }) => {
+export const SwapProgress: FC<SwapProgressProps> = ({
+  hash,
+  networkId,
+  txInfo,
+  onClose,
+  onReplacementComplete,
+}) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus } = useSwapProgressStatus(hash, networkId, txInfo)
+  const { title, subtitle, animStatus, pill } = useSwapProgressStatus(hash, txInfo)
 
   const tx = useTransactionLocal(hash)
   const network = useAnyNetwork(networkId)
@@ -206,12 +196,16 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
   const explorerUrl = useMemo(() => getBlockExplorerUrl(network, hash), [network, hash])
   const swapTrackerUrl = useMemo(() => getSwapTrackerUrl(txInfo, hash), [txInfo, hash])
 
+  const handleTrackClick = useCallback(() => {
+    if (swapTrackerUrl) window.open(swapTrackerUrl, "_blank", "noopener")
+  }, [swapTrackerUrl])
+
   return (
     <div className="flex h-full w-full flex-col items-center p-12">
       <div className="mt-8 font-bold text-body text-lg">{title}</div>
       <div className="mt-12 text-center font-light text-base text-body-secondary">{subtitle}</div>
       <ProcessAnimation status={animStatus} className="mt-18.75 mb-8 h-36.25" />
-      <div className="flex w-full grow flex-col justify-center gap-10 px-10 text-center text-body-secondary">
+      <div className="flex w-full grow flex-col items-center justify-center gap-8 px-10 text-center text-body-secondary">
         <div>
           {blockNumber ? (
             <>
@@ -241,22 +235,19 @@ export const SwapProgress: FC<SwapProgressProps> = ({ hash, networkId, txInfo, o
             </a>
           ) : null}
         </div>
-        <div>
-          {swapTrackerUrl && (
-            <a
-              target="_blank"
-              className="text-grey-200 hover:text-body"
-              href={swapTrackerUrl}
-              rel="noopener"
-            >
-              {t("Track swap progress")} <ExternalLinkIcon className="inline align-text-top" />
-            </a>
-          )}
-        </div>
+        {pill && <SwapStatusPill pill={pill} />}
+        {tx && <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />}
       </div>
-      <Button fullWidth onClick={onClose}>
-        {t("Close")}
-      </Button>
+      <div className="flex w-full flex-col gap-4">
+        {swapTrackerUrl && (
+          <Button primary fullWidth onClick={handleTrackClick}>
+            {t("Track swap progress")}
+          </Button>
+        )}
+        <Button primary={!swapTrackerUrl} fullWidth onClick={onClose}>
+          {t("Close")}
+        </Button>
+      </div>
     </div>
   )
 }

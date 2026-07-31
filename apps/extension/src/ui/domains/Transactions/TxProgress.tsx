@@ -25,14 +25,18 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   if (!network) return null
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
-export type ReplacementCallbackArgs = { txId: `0x${string}`; networkId: string }
+export type ReplacementCallbackArgs = {
+  txId: `0x${string}`
+  networkId: string
+  replaceType: TxReplaceType
+}
 
 type TxReplaceActionsProps = {
   tx: WalletTransaction
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete }) => {
+export const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
 
@@ -41,11 +45,11 @@ const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete
   const handleClose = useCallback(
     (newHash?: HexString) => {
       setReplaceType(undefined)
-      if (newHash) {
-        onReplacementComplete?.({ txId: newHash, networkId: tx.networkId })
+      if (newHash && replaceType) {
+        onReplacementComplete?.({ txId: newHash, networkId: tx.networkId, replaceType })
       }
     },
-    [onReplacementComplete, tx]
+    [onReplacementComplete, tx, replaceType]
   )
 
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
