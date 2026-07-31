@@ -46,6 +46,16 @@ export const api: MessageTypes = {
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
+  // quick unlock messages -------------------------------------------------------
+  quickUnlockEnroll: (data) => messageService.sendMessage("pri(app.quickUnlock.enroll)", data),
+  quickUnlockUnenroll: () => messageService.sendMessage("pri(app.quickUnlock.unenroll)"),
+  quickUnlockIsEnrolledSubscribe: (cb) =>
+    messageService.subscribe("pri(app.quickUnlock.isEnrolled.subscribe)", null, cb),
+  quickUnlockGetCredentialInfo: () =>
+    messageService.sendMessage("pri(app.quickUnlock.getCredentialInfo)"),
+  quickUnlockAuthenticate: (prfOutput) =>
+    messageService.sendMessage("pri(app.quickUnlock.authenticate)", { prfOutput }),
+
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   approveSign: (id, payload) =>
@@ -66,6 +76,7 @@ export const api: MessageTypes = {
       payload,
     }),
   approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
+  approveSignVrf: (id) => messageService.sendMessage("pri(signing.approveSign.vrf)", { id }),
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id) =>

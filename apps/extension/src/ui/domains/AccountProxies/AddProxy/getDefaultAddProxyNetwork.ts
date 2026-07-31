@@ -1,4 +1,4 @@
-const BITTENSOR_NETWORK_ID = "bittensor"
+import { BITTENSOR_NETWORK_ID } from "@core/domains/bittensor/exports"
 
 type AddProxyNetworkOption = {
   id: string

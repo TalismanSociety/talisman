@@ -16,7 +16,6 @@ import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/Yiel
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
 import { YieldxyzManagePositionModal } from "@ui/domains/Earn/yieldxyz/manage/YieldxyzManagePositionModal"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
-import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
@@ -80,7 +79,6 @@ export const DashboardNotificationsAndModals = () => {
       <RampsModal />
       <SwapModal />
       <UnbondModal />
-      <SeekBenefitsModal />
       <EarnDepositModal />
       <EarnSystemActionModals />
       <YieldxyzEnterPositionModal />

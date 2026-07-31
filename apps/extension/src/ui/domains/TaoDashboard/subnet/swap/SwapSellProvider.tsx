@@ -16,7 +16,7 @@ import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
 import { useSwapSubmit } from "./useSwapSubmit"
 
@@ -33,7 +33,8 @@ const DEFAULT_INPUTS: SwapSellInputs = {
 const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const { t } = useTranslation()
 
-  const positions = useBittensorStakingPositions(BITTENSOR_NETWORK_ID)
+  const networkId = useTaoDashboardNetworkId()
+  const positions = useBittensorStakingPositions(networkId)
   const subnetPositions = useMemo(
     () => positions.filter((position) => position.token.netuid === netuid),
     [positions, netuid]
@@ -64,7 +65,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const tokenIn = selectedPosition?.token ?? null
   const tokenIdIn = tokenIn?.id ?? null
 
-  const { taoTokenId: tokenIdOut, taoToken: tokenOut } = useSubnetTokens(netuid)
+  const { taoTokenId: tokenIdOut, taoToken: tokenOut } = useSubnetTokens(networkId, netuid)
 
   const address = selectedPosition?.balance.address ?? null
   const hotkey = tokenIn?.hotkey ?? null
@@ -98,16 +99,15 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   // this position's sellable amount is min(position stake, subnet-wide available)
   const allBalances = useBalances("owned")
   const subnetUnstakeInfo = useMemo(
-    () =>
-      address ? getDTaoSubnetUnstakeInfo(allBalances, address, BITTENSOR_NETWORK_ID, netuid) : null,
-    [allBalances, address, netuid]
+    () => (address ? getDTaoSubnetUnstakeInfo(allBalances, address, networkId, netuid) : null),
+    [allBalances, address, networkId, netuid]
   )
 
   // The cached lock (balances poll every ~6s) can lag a lock that GROWS on-chain (owner auto-lock
   // every block, or a concurrent top-up). Read it fresh so the sellable guard tightens before
   // signing, avoiding a StakeUnavailable revert.
   const { data: freshLockedMass } = useGetBittensorColdkeyLock({
-    networkId: BITTENSOR_NETWORK_ID,
+    networkId,
     address,
     netuid,
   })
@@ -147,7 +147,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     onSubmit,
   } = useSwapSubmit({ netuid, account, direction: "sell", resetValueIn })
 
-  const { data: sapi } = useScaleApi(BITTENSOR_NETWORK_ID)
+  const { data: sapi } = useScaleApi(networkId)
 
   const {
     payload,
@@ -168,7 +168,8 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     direction: "alphaToTao",
     hotkey,
     address,
-    networkId: BITTENSOR_NETWORK_ID,
+    networkId,
+    remarkType: "swap",
   })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {

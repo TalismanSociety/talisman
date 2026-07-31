@@ -105,10 +105,18 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
     )
   }
 
-  if (isError || bars.length === 0) {
+  if (isError) {
     return (
       <div className="flex h-[400px] items-center justify-center text-body-secondary">
         {t("Failed to fetch data")}
+      </div>
+    )
+  }
+
+  if (bars.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center text-body-secondary">
+        {t("No trade data yet")}
       </div>
     )
   }

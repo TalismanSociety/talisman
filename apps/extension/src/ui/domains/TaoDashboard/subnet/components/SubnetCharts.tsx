@@ -1,7 +1,9 @@
+import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { type NavTabConfig, TaoDashboardNavTabs } from "../../shared/TaoDashboardNavTabs"
+import { useTaoDashboardNetwork } from "../../shared/TaoDashboardNetworkProvider"
 import { TaoDashboardSubnetBreadcrumb } from "../TaoDashboardSubnetBreadcrumb"
 import { SubnetTaoFlowChart } from "./flow-chart/SubnetTaoFlowChart"
 import { SubnetPriceChart } from "./price-chart/SubnetPriceChart"
@@ -15,20 +17,33 @@ type ChartTab = "price" | "flow"
 
 export const SubnetCharts: FC<SubnetChartTabsProps> = ({ netuid, className }) => {
   const { t } = useTranslation()
+  const { networkId, isMainnet } = useTaoDashboardNetwork()
+  const network = useNetworkById(networkId)
   const [activeTab, setActiveTab] = useState<ChartTab>("price")
 
+  // the flow chart is 100% indexer-based and has no data source outside mainnet
   const tabs = useMemo<NavTabConfig<ChartTab>[]>(
-    () => [
-      { value: "price", label: t("Price Trend") },
-      { value: "flow", label: t("Tao Flow") },
-    ],
-    [t]
+    () =>
+      isMainnet
+        ? [
+            { value: "price", label: t("Price Trend") },
+            { value: "flow", label: t("Tao Flow") },
+          ]
+        : [{ value: "price", label: t("Price Trend") }],
+    [isMainnet, t]
   )
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <div className="flex items-center justify-between">
-        <TaoDashboardSubnetBreadcrumb netuid={netuid} />
+        <div className="flex items-center gap-4">
+          <TaoDashboardSubnetBreadcrumb netuid={netuid} />
+          {!!network?.isTestnet && (
+            <span className="flex h-16 items-center justify-center rounded-sm bg-alert-warn/10 px-5 font-light text-alert-warn text-sm">
+              {t("Testnet")}
+            </span>
+          )}
+        </div>
         <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={setActiveTab} />
       </div>
 

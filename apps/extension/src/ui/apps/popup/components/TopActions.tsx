@@ -5,8 +5,13 @@ import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
-import { useIsBittensorEnabled } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import {
+  useDefaultTaoDashboardNetworkId,
+  useIsBittensorEnabled,
+} from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
+import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { useAccounts } from "@ui/state/accounts"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,6 +27,7 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
   const { open: openSwapModal } = useSwapModal()
   const ownedAccounts = useAccounts("owned")
   const isBittensorEnabled = useIsBittensorEnabled()
+  const taoDashboardNetworkId = useDefaultTaoDashboardNetworkId()
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -69,7 +75,10 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
               analyticsAction: "open tao dashboard",
               label: t("Trade TAO"),
               icon: TaoIcon,
-              onClick: () => api.dashboardOpen("/bittensor/subnets"),
+              onClick: () =>
+                api.dashboardOpen(
+                  getTaoDashboardUrl(taoDashboardNetworkId ?? BITTENSOR_NETWORK_ID)
+                ),
               disabled: false,
             }
           : null,
@@ -82,6 +91,7 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
       openSwapModal,
       t,
       isBittensorEnabled,
+      taoDashboardNetworkId,
     ]
   )
 

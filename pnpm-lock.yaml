@@ -334,6 +334,9 @@ importers:
       '@talismn/solana':
         specifier: workspace:*
         version: link:../../packages/solana
+      '@talismn/substrate-vrf':
+        specifier: workspace:*
+        version: link:../../packages/substrate-vrf
       '@talismn/token-rates':
         specifier: workspace:*
         version: link:../../packages/token-rates
@@ -1021,6 +1024,22 @@ importers:
       '@types/node':
         specifier: ^24.5.1
         version: 24.12.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
+  packages/substrate-vrf:
+    dependencies:
+      '@scure/sr25519':
+        specifier: 2.2.0
+        version: 2.2.0
+    devDependencies:
+      '@scure/base':
+        specifier: 2.2.0
+        version: 2.2.0
+      '@talismn/tsconfig':
+        specifier: workspace:*
+        version: link:../../config/tsconfig
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -9,9 +10,12 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
+import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
 import { useSetting } from "@ui/state/settings"
 import { HandMonoLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
+import { getQuickUnlockPrfOutput, signalCredentialRemoved } from "@ui/util/webauthnPrf"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type SubmitHandler,
@@ -99,9 +103,148 @@ const Background = () => {
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
 }
 
-const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
+/** autologin (below) drives the password field itself, it must not race the quick unlock prompt */
+const IS_DEV_AUTOLOGIN = process.env.NODE_ENV !== "production" && !!process.env.PASSWORD
+
+const QuickUnlockButton = ({
+  autoTrigger,
+  onError,
+}: {
+  autoTrigger: boolean
+  onError: (error?: string) => void
+}) => {
+  const { t } = useTranslation()
+  const enrolled = useIsQuickUnlockEnrolled()
+  const [processing, setProcessing] = useState(false)
+  const getErrorMessage = useQuickUnlockErrorMessage()
+  const triggeredRef = useRef(false)
+  const abortRef = useRef<AbortController>(null)
+
+  useEffect(() => {
+    // abandon any ceremony still waiting on the user. pagehide covers the popup being torn down,
+    // where react never gets to run the unmount cleanup
+    const abort = () => abortRef.current?.abort()
+    window.addEventListener("pagehide", abort)
+    return () => {
+      window.removeEventListener("pagehide", abort)
+      abort()
+    }
+  }, [])
+
+  const handleQuickUnlock = useCallback(
+    async (explicit: boolean) => {
+      if (processing) return
+      setProcessing(true)
+      onError(undefined)
+      abortRef.current?.abort()
+      const abort = new AbortController()
+      abortRef.current = abort
+      try {
+        const credentialInfo = await api.quickUnlockGetCredentialInfo()
+        if (!credentialInfo)
+          return onError(t("Quick unlock was reset, please enable it again from settings."))
+
+        const prfOutput = await getQuickUnlockPrfOutput(
+          credentialInfo.credentialId,
+          credentialInfo.prfSalt,
+          abort.signal
+        )
+
+        const result = await api.quickUnlockAuthenticate(prfOutput)
+
+        // the passkey outlives the enrollment, only tell the authenticator about it once the
+        // background has confirmed the enrollment is gone for good
+        if (result === "unenrolled") {
+          await signalCredentialRemoved(credentialInfo.credentialId)
+          return onError(t("Quick unlock was reset, please enable it again from settings."))
+        }
+
+        if (result === "failed")
+          return onError(
+            t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
+          )
+
+        const qs = new URLSearchParams(window.location.search)
+        if (qs.get("closeAfterLogin") === "true") window.close()
+      } catch (err) {
+        const name = (err as DOMException)?.name
+
+        // we abandoned the ceremony ourselves, or the user dismissed a prompt they didn't ask for
+        if (name === "AbortError" || (name === "NotAllowedError" && !explicit)) return
+
+        // NotAllowedError also covers a timeout and a credential the authenticator no longer has,
+        // the spec doesn't let us tell those apart - point at the way out instead of guessing
+        const message =
+          name === "NotAllowedError"
+            ? t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
+            : getErrorMessage(err)
+        if (!message) return
+
+        // log the error category only, it must never carry credential or password data
+        log.error("Quick unlock failed", { name })
+        onError(message)
+      } finally {
+        setProcessing(false)
+      }
+    },
+    [getErrorMessage, onError, processing, t]
+  )
+
+  const handleClick = useCallback(() => handleQuickUnlock(true), [handleQuickUnlock])
+
+  // auto-trigger quick unlock on first render, unless the user is already typing their password
+  useEffect(() => {
+    if (!autoTrigger || !enrolled || triggeredRef.current) return
+
+    // an unfocused popup is one the browser is tearing down, or one the user has moved on from.
+    // prompting there puts an OS dialog (Windows Hello) on screen that nobody asked for, and on
+    // windows that dialog outlives the page it was started from.
+    //
+    // a popup the browser has just opened for us (a dapp request, or a login prompt) often hasn't
+    // been given focus yet by the time we get here, so wait for it instead of giving up - a popup
+    // on its way out never gets focus back
+    const trigger = () => {
+      if (triggeredRef.current) return
+      if (document.visibilityState !== "visible" || !document.hasFocus()) return
+
+      triggeredRef.current = true
+      window.removeEventListener("focus", trigger)
+      handleQuickUnlock(false)
+    }
+
+    trigger()
+    window.addEventListener("focus", trigger)
+    return () => window.removeEventListener("focus", trigger)
+  }, [autoTrigger, enrolled, handleQuickUnlock])
+
+  if (!enrolled) return null
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={processing}
+      className={cn(
+        "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+        processing && "animate-pulse"
+      )}
+    >
+      {t("Quick Unlock")}
+    </button>
+  )
+}
+
+const Login = ({
+  setShowResetWallet,
+  autoTriggerQuickUnlock,
+}: {
+  setShowResetWallet: () => void
+  autoTriggerQuickUnlock: boolean
+}) => {
   const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
+  const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
+  const [quickUnlockError, setQuickUnlockError] = useState<string>()
 
   useEffect(() => {
     popupOpenEvent("auth")
@@ -111,17 +254,27 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     watch,
     register,
     handleSubmit,
+    clearErrors,
     setError,
     setValue,
     setFocus,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isDirty, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
   })
 
+  const handleQuickUnlockError = useCallback(
+    (error?: string) => {
+      clearErrors("password")
+      setQuickUnlockError(error)
+    },
+    [clearErrors]
+  )
+
   const submit = useCallback<SubmitHandler<FormData>>(
     async ({ password }) => {
+      setQuickUnlockError(undefined)
       try {
         const result = await api.authenticate(password)
         if (result) {
@@ -162,8 +315,8 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           <HandMonoLogo className="inline-block text-[64px]" />
         </div>
         <h1 className="mt-[34px] font-surtExpanded text-lg">{t("Unlock the Talisman")}</h1>
-        {errors.password?.message && (
-          <div className="mt-8 text-alert-warn">{errors.password?.message}</div>
+        {(errors.password?.message ?? quickUnlockError) && (
+          <div className="mt-8 text-alert-warn">{errors.password?.message ?? quickUnlockError}</div>
         )}
       </PopupContent>
       <PopupFooter className="z-10">
@@ -189,24 +342,47 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             {t("Unlock")}
           </Button>
-          <button
-            type="button"
-            className="mt-2 cursor-pointer text-body-disabled text-sm transition-colors hover:text-white"
-            onClick={setShowResetWallet}
+          {/* both entry points share a row, so enrolling doesn't move the form up */}
+          <div
+            className={cn("mt-2 grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}
           >
-            {t("Forgot Password?")}
-          </button>
+            <QuickUnlockButton
+              autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
+              onError={handleQuickUnlockError}
+            />
+            <button
+              type="button"
+              className={cn(
+                "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+                // the column edge is the separator, so it can't drift off centre
+                quickUnlockEnrolled && "border-grey-700 border-l"
+              )}
+              onClick={setShowResetWallet}
+            >
+              {t("Forgot Password?")}
+            </button>
+          </div>
         </form>
       </PopupFooter>
     </PopupLayout>
   )
 }
 
-export const LoginViewManager = () => {
+export const LoginViewManager = ({
+  autoTriggerQuickUnlock,
+}: {
+  /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
+  autoTriggerQuickUnlock: boolean
+}) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
 
   if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
-  return <Login setShowResetWallet={() => setShowResetWallet(true)} />
+  return (
+    <Login
+      setShowResetWallet={() => setShowResetWallet(true)}
+      autoTriggerQuickUnlock={autoTriggerQuickUnlock}
+    />
+  )
 }
 
 /** autologin, for developers only */

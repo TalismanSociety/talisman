@@ -14,7 +14,7 @@ import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContai
 import { SearchInput } from "@ui/components/SearchInput"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useAccountByAddress } from "@ui/state/accounts"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -40,6 +40,7 @@ type TokenRowProps = {
   onClick?: () => void
   balances: Balances
   allowUntransferable?: boolean
+  isActive: boolean
 }
 
 const TokenRowSkeleton = () => (
@@ -71,6 +72,7 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
+  isActive: boolean
 }
 
 const TokenRows: FC<{
@@ -119,6 +121,7 @@ const TokenRows: FC<{
                 token={tokenData.token}
                 balances={tokenData.balances}
                 allowUntransferable={allowUntransferable}
+                isActive={tokenData.isActive}
                 onClick={() => onTokenClick(tokenData.token.id)}
               />
             </div>
@@ -134,6 +137,7 @@ const TokenRow: FC<TokenRowProps> = ({
   selected,
   balances,
   allowUntransferable,
+  isActive,
   onClick,
 }) => {
   const { t } = useTranslation()
@@ -192,7 +196,8 @@ const TokenRow: FC<TokenRowProps> = ({
             )}
             {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
           </div>
-          <div className={cn(isLoading && "animate-pulse")}>
+          {/* balances aren't fetched for inactive tokens, showing 0 could be inaccurate */}
+          <div className={cn(isLoading && "animate-pulse", !isActive && "invisible")}>
             <Tokens
               amount={tokensTotal}
               decimals={token.decimals}
@@ -213,7 +218,7 @@ const TokenRow: FC<TokenRowProps> = ({
               )}
             </div>
           </div>
-          <div className={cn(isLoading && "animate-pulse")}>
+          <div className={cn(isLoading && "animate-pulse", !isActive && "invisible")}>
             {hasFiatRate ? (
               <Fiat
                 amount={balances.sum.fiat(currency).transferable}
@@ -267,7 +272,9 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
+  const accounts = useAccounts()
   const allTokens = useTokens({ activeOnly, includeTestnets: true })
+  const activeTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
@@ -284,16 +291,28 @@ const TokensList: FC<TokensListProps> = ({
     [address, selected, balances]
   )
 
+  const compatibleNetworkIds = useMemo(
+    () =>
+      new Set(
+        Object.values(networksMap)
+          .filter((network) => accounts.some((acc) => isAccountCompatibleWithNetwork(network, acc)))
+          .map((network) => network.id)
+      ),
+    [accounts, networksMap]
+  )
+
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
       const network = networksMap[token.networkId]
       if (!network) return false
-      if (!account) return true
+      if (!account) return compatibleNetworkIds.has(token.networkId)
 
       return isAccountCompatibleWithNetwork(network, account)
     },
-    [account, networksMap]
+    [account, compatibleNetworkIds, networksMap]
   )
+
+  const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
 
   const accountCompatibleTokens = useMemo(() => {
     return allTokens
@@ -308,9 +327,17 @@ const TokensList: FC<TokensListProps> = ({
           chainNameSearch: network?.name,
           chainLogo: network?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
+          isActive: activeTokenIds.has(token.id),
         }
       })
-  }, [allTokens, filterAccountCompatibleTokens, networksMap, tokenFilter, tokenRatesMap])
+  }, [
+    allTokens,
+    activeTokenIds,
+    filterAccountCompatibleTokens,
+    networksMap,
+    tokenFilter,
+    tokenRatesMap,
+  ])
 
   // sort by token balance
   const sortTokens = useCallback(
@@ -506,6 +533,7 @@ type TokenPickerProps = {
   initialSearch?: string
   allowUntransferable?: boolean
   ownedOnly?: boolean
+  activeOnly?: boolean
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
@@ -526,6 +554,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   initialSearch = "",
   allowUntransferable,
   ownedOnly,
+  activeOnly,
   isInitializing,
   className,
   showEmptyBalances,
@@ -599,7 +628,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           onAvailableNetworksChange={networkFilterContainerId ? setAvailableNetworks : undefined}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
-          activeOnly={!showEmptyBalances}
+          activeOnly={activeOnly ?? !showEmptyBalances}
         />
       </ScrollContainer>
       {!!networkFilterContainerId && (

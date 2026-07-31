@@ -1,7 +1,11 @@
+import type { NetworkId } from "@talismn/chaindata-provider"
 import type { Time } from "lightweight-charts"
 import { useMemo } from "react"
 
 const RAO_PER_TAO = 1_000_000_000n
+
+export const getTaoDashboardUrl = (networkId: NetworkId, netuid?: number): string =>
+  typeof netuid === "number" ? `/${networkId}/subnets/${netuid}` : `/${networkId}/subnets`
 
 /**
  * Convert a rao-encoded string (or bigint) to a TAO number for display.

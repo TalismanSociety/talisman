@@ -7,7 +7,8 @@ import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
+import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
+import { getTaoDashboardUrl } from "../shared/util"
 import { SubnetPicker } from "./TaoDashboardSubnetPicker"
 
 type TaoDashboardSubnetPickerInitProps = {
@@ -21,16 +22,17 @@ export const TaoDashboardSubnetPickerModal: FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
   const { isOpen, close, args } = useTaoDashboardSubnetPickerModal()
+  const networkId = useTaoDashboardNetworkId()
 
   // preload data used by the subnet picker modal to avoid flickering on mount
-  useCombinedSubnetData(BITTENSOR_NETWORK_ID)
+  useCombinedSubnetData(networkId)
 
   const handleSelect = useCallback(
     (netuid: number) => {
-      navigate(`/bittensor/subnets/${netuid}`)
+      navigate(getTaoDashboardUrl(networkId, netuid))
       close()
     },
-    [navigate, close]
+    [navigate, networkId, close]
   )
 
   return (
@@ -42,11 +44,7 @@ export const TaoDashboardSubnetPickerModal: FC = () => {
           contentClassName="p-0"
           onCloseClick={close}
         >
-          <SubnetPicker
-            networkId={BITTENSOR_NETWORK_ID}
-            selected={args?.netuid}
-            onSelect={handleSelect}
-          />
+          <SubnetPicker networkId={networkId} selected={args?.netuid} onSelect={handleSelect} />
         </WizardModalDialog>
       </PopupSizeModalContainer>
     </Modal>

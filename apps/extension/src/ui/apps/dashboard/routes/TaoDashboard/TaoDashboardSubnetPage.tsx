@@ -1,12 +1,14 @@
 import { isTokenSubDTao, subDTaoTokenId } from "@talismn/chaindata-provider"
+import { useTaoDashboardNetworkId } from "@ui/domains/TaoDashboard/shared/TaoDashboardNetworkProvider"
+import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { TaoDashboardSubnetTradingUI } from "@ui/domains/TaoDashboard/subnet/TaoDashboardSubnetTradingUI"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { Navigate, useParams } from "react-router-dom"
 
 export const TaoDashboardSubnetPage = () => {
   const { netuid } = useParams()
+  const networkId = useTaoDashboardNetworkId()
 
   const tokens = useTokensMap()
 
@@ -15,12 +17,12 @@ export const TaoDashboardSubnetPage = () => {
     const parsedNetuid = Number(netuid)
     if (!Number.isInteger(parsedNetuid) || parsedNetuid < 0) return null
 
-    const tokenId = subDTaoTokenId(BITTENSOR_NETWORK_ID, parsedNetuid)
+    const tokenId = subDTaoTokenId(networkId, parsedNetuid)
     const token = tokens[tokenId]
     return isTokenSubDTao(token) ? token : null
-  }, [netuid, tokens])
+  }, [netuid, networkId, tokens])
 
-  if (!token) return <Navigate to="/bittensor/subnets" replace />
+  if (!token) return <Navigate to={getTaoDashboardUrl(networkId)} replace />
 
   return <TaoDashboardSubnetTradingUI netuid={token.netuid} />
 }

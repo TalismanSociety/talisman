@@ -14,7 +14,6 @@ export const LegacyAccountTypes = {
   JSON: "JSON",
   QR: "QR",
   HARDWARE: "HARDWARE",
-  DCENT: "DCENT",
   WATCHED: "WATCHED",
 } as const
 
@@ -26,7 +25,6 @@ const NewAccountTypes = {
   TALISMAN: "TALISMAN", // all accounts with locally stored private key
   QR: "QR",
   LEDGER: "LEDGER",
-  DCENT: "DCENT",
   WATCHED: "WATCHED",
 }
 

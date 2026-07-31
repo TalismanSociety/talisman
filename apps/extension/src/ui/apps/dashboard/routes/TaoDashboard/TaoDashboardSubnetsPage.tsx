@@ -1,5 +1,6 @@
 import { SearchInput } from "@ui/components/SearchInput"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
+import { TaoDashboardNetworkTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardNetworkTabs"
 import { TaoDashboardPeriodTabs } from "@ui/domains/TaoDashboard/shared/TaoDashboardPeriodTabs"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { TaoDashboardHeader } from "@ui/domains/TaoDashboard/subnets/TaoDashboardHeader"
@@ -32,7 +33,8 @@ export const TaoDashboardSubnetsPage = () => {
               initialValue={search}
             />
           </div>
-          <div>
+          <div className="flex shrink-0 items-center gap-6">
+            <TaoDashboardNetworkTabs className="h-[2.25rem] shrink-0 gap-2 rounded-sm p-2 [&>button]:h-[2.25rem]" />
             <TaoDashboardPeriodTabs
               selected={period}
               onSelect={setPeriod}

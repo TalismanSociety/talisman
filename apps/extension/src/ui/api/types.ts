@@ -16,6 +16,9 @@ import type {
   AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
   LoggedinType,
+  QuickUnlockAuthenticateResult,
+  QuickUnlockCredentialInfo,
+  QuickUnlockEnrollRequest,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import type {
@@ -120,8 +123,15 @@ export default interface MessageTypes {
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
 
+  // quick unlock messages -------------------------------------------------------
+  quickUnlockEnroll: (data: QuickUnlockEnrollRequest) => Promise<boolean>
+  quickUnlockUnenroll: () => Promise<boolean>
+  quickUnlockIsEnrolledSubscribe: (cb: (data: { enrolled: boolean }) => void) => UnsubscribeFn
+  quickUnlockGetCredentialInfo: () => Promise<QuickUnlockCredentialInfo | null>
+  quickUnlockAuthenticate: (prfOutput: string) => Promise<QuickUnlockAuthenticateResult>
+
   // signing messages -------------------------------------------------------
-  cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  cancelSignRequest: (id: SigningRequestID<"substrate-sign" | "vrf-sign">) => Promise<boolean>
   approveSign: (
     id: SigningRequestID<"substrate-sign">,
     payload?: SignerPayloadJSON
@@ -137,6 +147,7 @@ export default interface MessageTypes {
     payload?: SignerPayloadJSON
   ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>

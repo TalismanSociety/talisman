@@ -69,7 +69,7 @@ describe("App handler when password is not trimmed", () => {
   beforeEach(async () => {
     const { password: passwordStoreData, settings } = initialStoreData
     await setLocalStorage({ password: passwordStoreData, settings })
-    extensionStores.password.clearPassword()
+    await extensionStores.password.clearPassword()
 
     await keyringStore.restore(
       keyringBackupJson,
@@ -235,7 +235,7 @@ describe("App handler when password is trimmed", () => {
   beforeEach(async () => {
     const { password: passwordStoreData, settings } = initialStoreData
     await setLocalStorage({ password: passwordStoreData, settings })
-    extensionStores.password.clearPassword()
+    await extensionStores.password.clearPassword()
 
     await keyringStore.restore(
       keyringBackupJson,

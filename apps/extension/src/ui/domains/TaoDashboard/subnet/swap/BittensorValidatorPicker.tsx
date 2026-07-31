@@ -34,7 +34,10 @@ export const BittensorValidatorPicker: FC<{
   const { t } = useTranslation()
   const isRoot = netuid === ROOT_NETUID
   const apyColumnLabel = isRoot ? t("APR [30D]") : t("APY [30D]")
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
+    networkId,
+    netuid
+  )
 
   const [sortMethod, setSortMethod] = useState<ValidatorSortValue>("featured")
   const [rawSearch, setSearch] = useState<string>("")

@@ -15,33 +15,22 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # This job will build and test the talisman wallet
-  build:
-    name: "Build and test the wallet"
-    timeout-minutes: 20
+  # Static analysis: cheap, so it runs on its own and reports without waiting on the slow jobs
+  checks:
+    name: "Lint, knip and typecheck"
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    env:
-      E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
       - name: Fetch base branch for comparison
         if: github.event_name == 'pull_request'
         run: git fetch origin ${{ github.base_ref }} --depth=1
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
       - name: License check (direct deps)
         run: pnpm check:licenses
       - name: Biome check
@@ -67,8 +56,42 @@ jobs:
           # All packages and apps use customConditions: ["@talismn/source"] to resolve
           # @talismn/* packages directly from source. This means no package build is needed.
           pnpm typecheck
+
+  # Unit tests, in parallel with the checks and the build
+  test:
+    name: "Unit tests"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
       - name: Test
         run: pnpm test
+
+  # This job will build the wallet and run the e2e tests against it
+  build:
+    name: "Build and e2e test the wallet"
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    env:
+      E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
+      # fork PRs have no secrets (SimpleLocalize, e2e mnemonic, Gandalf creds), and without the
+      # Gandalf creds the registration PoW starves the background SW => e2e cannot pass on forks
+      SAME_REPO: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Fetch base branch for comparison
+        if: github.event_name == 'pull_request'
+        run: git fetch origin ${{ github.base_ref }} --depth=1
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -78,23 +101,33 @@ jobs:
           echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
       - name: Extract translatable strings
         run: pnpm chore:update-translations
-      - name: Upload translatable strings
-        uses: simplelocalize/github-action-cli@v1
+      - name: Setup Java for the SimpleLocalize CLI
+        if: env.SAME_REPO == 'true'
+        uses: actions/setup-java@v5
         with:
-          api-key: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
-          command: "upload"
-          cli-version: "2.2.0"
-          args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
+          distribution: temurin
+          java-version: "21"
+      - name: Upload translatable strings
+        # the cli is pinned to 2.2.0: 2.9.0 dropped the `autoTranslation` key simplelocalize.yml uses
+        if: env.SAME_REPO == 'true'
+        env:
+          CLI_VERSION: "2.2.0"
+          SIMPLE_LOCALIZE_API_KEY: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
+        run: |
+          curl -sSf -o "$RUNNER_TEMP/simplelocalize.jar" \
+            "https://get.simplelocalize.io/binaries/$CLI_VERSION/simplelocalize-cli-$CLI_VERSION.jar"
+          java -jar "$RUNNER_TEMP/simplelocalize.jar" upload \
+            --apiKey "$SIMPLE_LOCALIZE_API_KEY" \
+            --uploadPath './apps/extension/.i18next-parser/locales/{lang}/{ns}.json'
       - name: Build extension
         run: pnpm build:extension
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
           POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
-          E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
           # SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           # SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build
           path: ./apps/extension/dist/*.zip
@@ -102,19 +135,27 @@ jobs:
 
       # E2E tests with Playwright
       # The built extension is already at apps/extension/dist/chrome-mv3/ (wxt zip keeps the unzipped output)
-      # papi descriptors are already generated via postinstall (papi:once)
+      # papi descriptors are already generated by the setup-workspace action
       - name: Cache playwright browsers
-        uses: actions/cache@v3
+        if: env.SAME_REPO == 'true'
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             playwright-browsers-${{ runner.os }}-
-      - name: Install playwright browser - chromium with system dependencies
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Install xvfb
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Install playwright browser - chromium
+        if: env.SAME_REPO == 'true'
+        run: pnpm exec playwright install chromium
+      - name: Install chromium system dependencies and xvfb
+        # `install-deps` reuses the apt-get update run for xvfb
+        if: env.SAME_REPO == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          pnpm exec playwright install-deps chromium
       - name: Start Anvil
+        if: env.SAME_REPO == 'true'
         run: |
           docker run -d --name anvil -p 8545:8545 \
             ghcr.io/foundry-rs/foundry:v1.6.0-rc1 \
@@ -137,6 +178,7 @@ jobs:
             exit 1
           fi
       - name: Run playwright tests with xvfb
+        if: env.SAME_REPO == 'true'
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
           pnpm exec playwright test --project=chromium --grep-invert "Visual Regression"
@@ -147,7 +189,7 @@ jobs:
           E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: Notify Discord on flaky e2e tests
         # runs even if a prior step failed, so flaky tests are surfaced regardless of the run outcome
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && env.SAME_REPO == 'true' }}
         run: |
           REPORT=playwright-report/results.json
           if [ ! -f "$REPORT" ]; then
@@ -184,10 +226,11 @@ jobs:
           REF: ${{ github.head_ref || github.ref_name }}
           SHA: ${{ github.sha }}
       - name: Checkout visual regression snapshots from base branch
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && env.SAME_REPO == 'true'
         run: |
           git checkout origin/${{ github.base_ref }} -- playwright/e2e-tests/visual-regression.spec.ts-snapshots/ || true
       - name: Run visual regression tests
+        if: env.SAME_REPO == 'true'
         continue-on-error: true
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
@@ -198,8 +241,8 @@ jobs:
           E2E_GANDALF_INSTALL_ID: ${{ secrets.E2E_GANDALF_INSTALL_ID }}
           E2E_GANDALF_PRIVATE_KEY: ${{ secrets.E2E_GANDALF_PRIVATE_KEY }}
       - name: "Upload playwright report"
-        uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && env.SAME_REPO == 'true' }}
         with:
           name: playwright-report
           path: playwright-report/
@@ -211,26 +254,18 @@ jobs:
     needs: ensure_pr_has_changeset
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # same-repo PRs only: fork PRs can't mint the npm OIDC token (no id-token permission)
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
       - name: Bump changed package versions to a snapshot version
         run: pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
       - name: Build packages for npm publish
@@ -266,31 +301,29 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev'
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # fetch all branches on the repo
           # (we need this in order to compare the changes between this PR and the default branch)
           fetch-depth: 0
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
         with:
-          node-version: 24
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          # this job only shells out to the changesets cli, it never imports any workspace code
+          papi: "false"
       - name: Compile list of changed files
         id: changed-files
         # this will find the files which have been changed in this PR
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          HEAD_REF="remotes/origin/${{ github.event.pull_request.head.ref }}"
+          # use the head sha rather than the branch name: fork PR branches don't exist on origin
+          HEAD_REF="${{ github.event.pull_request.head.sha }}"
           BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
           echo "CHANGED_FILES<<$EOF" >> "$GITHUB_OUTPUT"
           git diff --name-only $HEAD_REF $(git merge-base $HEAD_REF $BASE_REF) >> $GITHUB_OUTPUT
@@ -349,52 +382,53 @@ jobs:
           echo "--IS_MISSING_CHANGESETS--" >> $GITHUB_STEP_SUMMARY
           echo '${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-      - name: Comment on the PR to indicate which packages they should add a changeset to
-        uses: thollander/actions-comment-pull-request@v2
-        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
-        with:
-          comment_tag: "missing-changesets"
-          message: |
-            ### :boom: No changeset(s) detected
+      - name: Report the changeset status on the PR
+        # An existing comment is always updated; a new one is only created when changesets are
+        # actually missing. Comments carrying the trailing marker of
+        # thollander/actions-comment-pull-request are matched too, and rewritten in the new format.
+        # Skipped for fork PRs: GITHUB_TOKEN is read-only there, so we can't comment.
+        # The failing check + the step summary above still report the missing changesets.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # pass context values through env (never interpolate ${{ }} into run:)
+          IS_MISSING: ${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}
+          CHANGED_PACKAGES: ${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}
+          WITHOUT_CHANGESETS: ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
+          CHANGESETS: ${{ steps.changesets.outputs.CHANGESETS }}
+        run: |
+          MARKER="<!-- missing-changesets -->"
+          LEGACY_MARKER='<!-- thollander/actions-comment-pull-request "missing-changesets" -->'
+          LEARN="Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md)."
 
-            This PR is missing changesets for the following packages:
+          if [ "$IS_MISSING" = "yes" ]; then
+            CREATE_IF_MISSING=true
+            BODY=$(printf '%s\n### :boom: No changeset(s) detected\n\nThis PR is missing changesets for the following packages:\n\n```\n%s\n```\n\nPlease add a changeset for these packages.\nYou can do so by running `pnpm changeset` in your local development environment.\n\n%s\n' \
+              "$MARKER" "$WITHOUT_CHANGESETS" "$LEARN")
+          elif [ -n "$CHANGED_PACKAGES" ]; then
+            CREATE_IF_MISSING=false
+            BODY=$(printf '%s\n### :butterfly: Changeset(s) detected\n\nThis PR includes changeset(s) for the following changed packages:\n\n```\n%s\n```\n\n%s\n' \
+              "$MARKER" "$CHANGESETS" "$LEARN")
+          else
+            CREATE_IF_MISSING=false
+            BODY=$(printf '%s\n### :sparkles: No changeset(s) required\n\nThis PR does not include any package changes, and so it does not require any changesets to be added.\n\n%s\n' \
+              "$MARKER" "$LEARN")
+          fi
 
-            ```
-            ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
-            ```
+          # `jq -s` + `add` because `--paginate` emits one array per page
+          COMMENT_ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            | jq -rs --arg m "$MARKER" --arg legacy "$LEGACY_MARKER" '
+                (add // []) as $comments
+                | [$comments[] | select(.body | startswith($m)) | .id] as $new
+                | [$comments[] | select(.body | contains($legacy)) | .id] as $old
+                | ($new + $old | first) // empty')
 
-            Please add a changeset for these packages.
-            You can do so by running `pnpm changeset` in your local development environment.
-
-            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
-      - name: Update PR comment to indicate that all packages have changesets
-        uses: thollander/actions-comment-pull-request@v2
-        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'no' && steps.changed-packages.outputs.CHANGED_PACKAGES != ''
-        with:
-          comment_tag: "missing-changesets"
-          create_if_not_exists: false
-          message: |
-            ### :butterfly: Changeset(s) detected
-
-            This PR includes changeset(s) for the following changed packages:
-
-            ```
-            ${{ steps.changesets.outputs.CHANGESETS }}
-            ```
-
-            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
-      - name: Update PR comment to indicate that no changesets are needed
-        uses: thollander/actions-comment-pull-request@v2
-        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'no' && steps.changed-packages.outputs.CHANGED_PACKAGES == ''
-        with:
-          comment_tag: "missing-changesets"
-          create_if_not_exists: false
-          message: |
-            ### :sparkles: No changeset(s) required
-
-            This PR does not include any package changes, and so it does not require any changesets to be added.
-
-            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -f body="$BODY" --silent
+          elif [ "$CREATE_IF_MISSING" = "true" ]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$BODY" --silent
+          fi
       - name: Fail job if some packages don't have a changeset
         if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
         run: exit 1
@@ -412,20 +446,11 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Update & enable corepack
-        run: npm install -g corepack@latest && corepack enable
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
       - name: Create pull request
         id: changesets
         uses: changesets/action@v1

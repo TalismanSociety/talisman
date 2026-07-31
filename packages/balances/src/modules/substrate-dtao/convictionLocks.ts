@@ -1,10 +1,10 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { decodeScale, type MetadataBuilder, type ScaleStorageCoder } from "@talismn/scale"
-
 import log from "../../log"
 import { fetchRuntimeCallResult, hasRuntimeApi, hasStorageItems } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
+import { fetchStorageKeysPaged } from "./fetchStorageKeysPaged"
 import type {
   GetColdkeyLockResult,
   SubDTaoBalanceMeta,
@@ -195,7 +195,7 @@ const fetchConvictionLockStorageKeys = async (
 
       let stateKeys: `0x${string}`[]
       try {
-        stateKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [keyPrefix])
+        stateKeys = await fetchStorageKeysPaged(connector, networkId, keyPrefix)
       } catch (cause) {
         // transient RPC failure: swallowing it would make every lock of this address read
         // as removed for one poll (delete + re-add flap downstream) — fail the poll instead

@@ -22,7 +22,6 @@ import { EarnSystemActionModals } from "@ui/domains/Earn/systems/EarnSystemActio
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
 import { YieldxyzManagePositionModal } from "@ui/domains/Earn/yieldxyz/manage/YieldxyzManagePositionModal"
-import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
@@ -38,7 +37,7 @@ import { SwapModal } from "@ui/domains/Swap/components/SwapModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
-import { Suspense, useEffect } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
@@ -59,9 +58,17 @@ import { SolanaSignInPage } from "./pages/Sign/solana/SignIn"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
+import { VrfSignRequest } from "./pages/VrfSign"
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
+
+  // the user locking the wallet (or the autolock timer) swaps the portfolio for the login screen
+  // in a popup that is on its way out - quick unlock must not prompt on their behalf there
+  const wasLoggedIn = useRef(false)
+  useEffect(() => {
+    if (isLoggedIn) wasLoggedIn.current = true
+  }, [isLoggedIn])
 
   // force onboarding if not onboarded
   useEffect(() => {
@@ -74,7 +81,7 @@ const Popup = () => {
     }
   }, [isOnboarded])
 
-  if (!isLoggedIn) return <LoginViewManager />
+  if (!isLoggedIn) return <LoginViewManager autoTriggerQuickUnlock={!wasLoggedIn.current} />
 
   if (isMigrating) return <MigrationProgress />
 
@@ -90,6 +97,7 @@ const Popup = () => {
           <Route path={`${SIGNING_TYPES.ETH_SEND}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />
           <Route path={`${SIGNING_TYPES.SOL_SIGN}/:id`} element={<SolanaSignRequest />} />
+          <Route path={`${SIGNING_TYPES.VRF_SIGN}/:id`} element={<VrfSignRequest />} />
           <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />} />
           <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />} />
           <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />} />
@@ -126,7 +134,6 @@ const Popup = () => {
         <RampsModal />
         <SwapModal />
         <UnbondModal />
-        <SeekBenefitsModal />
         <EarnDepositModal />
         <EarnSystemActionModals />
         <YieldxyzEnterPositionModal />

@@ -22,7 +22,10 @@ import { fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
-import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
+import {
+  calculatePendingRootClaimable,
+  calculateTotalRootClaimable,
+} from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
 import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
 import type { GetStakeInfosResult, SubDTaoBalance, SubDTaoBalanceMeta } from "./types"
@@ -110,8 +113,10 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         if (stake.netuid === ROOT_NETUID) {
           const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey)
           if (claimableRates) {
-            // For each netuid that has a claimable rate, we need to check RootClaimed
-            for (const netuid of claimableRates.keys()) {
+            for (const [netuid, claimableRate] of claimableRates) {
+              // pending = totalClaimable - claimed, and claimed >= 0: when totalClaimable
+              // is 0 the pending claim is 0 whatever RootClaimed holds - skip the query
+              if (calculateTotalRootClaimable(stake.stake, claimableRate) === 0n) continue
               addressHotkeyNetuidPairs.push([address, stake.hotkey, netuid])
             }
           }

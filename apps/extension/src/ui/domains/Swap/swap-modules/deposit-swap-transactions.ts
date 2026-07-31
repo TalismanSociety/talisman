@@ -24,6 +24,7 @@ import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
 import type { QuoteFee, SwapModuleTransaction, SwapTransactionContext } from "./common.swap-module"
+import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 
 /**
  * Common info needed to build a deposit transaction for a centralized swap.
@@ -165,10 +166,10 @@ async function buildEvmDepositTransaction(params: {
     const depositAmount = parseUserInputToPlanck(deposit.depositAmount, fromAsset.decimals)
 
     const publicClient = await getPublicClient(evmNetwork.id)
-    if (!publicClient) throw new Error("Missing public client")
+    if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
     if (!fromAsset.contractAddress)
-      return publicClient.prepareTransactionRequest({
+      return prepareTransactionRequestWithGasCheck(publicClient, evmNetwork.nativeTokenId, {
         chain: null,
         to: deposit.depositAddress as `0x${string}`,
         value: depositAmount,
@@ -180,7 +181,7 @@ async function buildEvmDepositTransaction(params: {
       functionName: "transfer",
       args: [deposit.depositAddress as `0x${string}`, depositAmount],
     })
-    return publicClient.prepareTransactionRequest({
+    return prepareTransactionRequestWithGasCheck(publicClient, evmNetwork.nativeTokenId, {
       chain: null,
       to: fromAsset.contractAddress as `0x${string}`,
       data,

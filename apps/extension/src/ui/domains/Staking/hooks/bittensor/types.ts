@@ -14,4 +14,6 @@ export type BondOption = {
   apr: number
   subnets: number
   rank: number
+  /** where the entry comes from: TaoData registry (mainnet, default) or on-chain metagraph (testnet) */
+  source?: "registry" | "metagraph"
 }

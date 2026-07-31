@@ -1,13 +1,12 @@
-import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
+import { type NetworkId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { useToken } from "@ui/state/chaindata"
 import { useMemo } from "react"
-import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 
-export const useSubnetTokens = (netuid: number) => {
-  const alphaTokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid), [netuid])
+export const useSubnetTokens = (networkId: NetworkId, netuid: number) => {
+  const alphaTokenId = useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid])
   const alphaToken = useToken(alphaTokenId, "substrate-dtao")
 
-  const taoTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
+  const taoTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const taoToken = useToken(taoTokenId, "substrate-native")
 
   return { alphaTokenId, alphaToken, taoTokenId, taoToken }

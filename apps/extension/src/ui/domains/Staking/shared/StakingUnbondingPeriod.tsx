@@ -1,3 +1,4 @@
+import { isBittensorNetworkId } from "@core/domains/bittensor/exports"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { FC } from "react"
 
@@ -7,10 +8,6 @@ import { NomPoolUnbondingPeriod } from "../NominationPools/NomPoolUnbondingPerio
 export const StakingUnbondingPeriod: FC<{ chainId: DotNetworkId | null | undefined }> = ({
   chainId,
 }) => {
-  switch (chainId) {
-    case "bittensor":
-      return <BittensorUnbondingPeriod />
-    default:
-      return <NomPoolUnbondingPeriod chainId={chainId} />
-  }
+  if (isBittensorNetworkId(chainId)) return <BittensorUnbondingPeriod />
+  return <NomPoolUnbondingPeriod chainId={chainId} />
 }

@@ -117,9 +117,9 @@ const useBittensorChangeLockTypeWizardProvider = () => {
   const symbol = `SN${netuid}`
   const subnetLabel = baseToken?.subnetName ? `${netuid} · ${baseToken.subnetName}` : symbol
 
-  const { taoTokenId } = useSubnetTokens(netuid)
+  const { taoTokenId } = useSubnetTokens(networkId, netuid)
 
-  const { combinedValidatorsData } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData } = useCombinedBittensorValidatorsData(networkId, netuid)
   const hotkeyName = useMemo(() => {
     if (!existingLock?.hotkey) return null
     return (

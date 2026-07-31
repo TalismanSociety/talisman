@@ -6,8 +6,8 @@ import { useTransactions } from "@ui/state/transactions"
 import { useEffect, useMemo, useRef } from "react"
 
 import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import type { LocalTransactionEntry, TransactionEntry } from "../../shared/types"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 import type { RealtimeStakeEvent } from "./realtime/types"
 
 export const useSubnetTransactions = (
@@ -19,6 +19,7 @@ export const useSubnetTransactions = (
     onIndexerBlockHeight?: (consumerId: string, blockHeight: number) => void
   }
 ) => {
+  const networkId = useTaoDashboardNetworkId()
   const accounts = useAccounts("owned")
   const ownedAddresses = useMemo(() => accounts.map((acc) => acc.address), [accounts])
   const { data: events, isLoading, error } = useSubnetStakeEvents(netuid)
@@ -44,12 +45,8 @@ export const useSubnetTransactions = (
         account: event.coldkey,
         direction: isBuy ? "buy" : "sell",
         hotkey: event.hotkey,
-        tokenIdIn: isBuy
-          ? subNativeTokenId(BITTENSOR_NETWORK_ID)
-          : subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid),
-        tokenIdOut: isBuy
-          ? subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)
-          : subNativeTokenId(BITTENSOR_NETWORK_ID),
+        tokenIdIn: isBuy ? subNativeTokenId(networkId) : subDTaoTokenId(networkId, netuid),
+        tokenIdOut: isBuy ? subDTaoTokenId(networkId, netuid) : subNativeTokenId(networkId),
         tokenValueIn: BigInt(isBuy ? event.taoAmount : event.alphaAmount),
         tokenValueOut: BigInt(isBuy ? event.alphaAmount : event.taoAmount),
         status: "indexed" as const,
@@ -57,13 +54,13 @@ export const useSubnetTransactions = (
         blockHeight: event.blockHeight,
       }
     })
-  }, [relevantEvents, netuid])
+  }, [relevantEvents, networkId, netuid])
 
   const localTransactions = useTransactions()
   const localStakingTransactions = useMemo(() => {
     return localTransactions
       .filter((tx): tx is WalletTransactionDot => {
-        if (tx.platform !== "polkadot" || tx.networkId !== BITTENSOR_NETWORK_ID) return false
+        if (tx.platform !== "polkadot" || tx.networkId !== networkId) return false
         if (tx.txInfo?.type !== "bittensor-staking") return false
         return [tx.txInfo.fromTokenId, tx.txInfo.toTokenId]
           .map(parseTokenId)
@@ -89,7 +86,7 @@ export const useSubnetTransactions = (
         }
       })
       .slice(0, limit)
-  }, [netuid, localTransactions, limit])
+  }, [networkId, netuid, localTransactions, limit])
 
   // Derive the highest indexed block height and notify the consumer for pruning
   const indexerBlockHeight = useMemo(() => {
@@ -124,12 +121,8 @@ export const useSubnetTransactions = (
         account: evt.coldkey,
         direction: isBuy ? "buy" : "sell",
         hotkey: evt.hotkey,
-        tokenIdIn: isBuy
-          ? subNativeTokenId(BITTENSOR_NETWORK_ID)
-          : subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid),
-        tokenIdOut: isBuy
-          ? subDTaoTokenId(BITTENSOR_NETWORK_ID, netuid)
-          : subNativeTokenId(BITTENSOR_NETWORK_ID),
+        tokenIdIn: isBuy ? subNativeTokenId(networkId) : subDTaoTokenId(networkId, netuid),
+        tokenIdOut: isBuy ? subDTaoTokenId(networkId, netuid) : subNativeTokenId(networkId),
         tokenValueIn: isBuy ? evt.taoAmount : evt.alphaAmount,
         tokenValueOut: isBuy ? evt.alphaAmount : evt.taoAmount,
         status: "indexed" as const,
@@ -137,7 +130,7 @@ export const useSubnetTransactions = (
         blockHeight: evt.blockHeight,
       }
     })
-  }, [options?.realtimeEvents, netuid, ownedOnly, ownedAddresses])
+  }, [options?.realtimeEvents, networkId, netuid, ownedOnly, ownedAddresses])
 
   // Consolidated list of most recent transactions (local + indexed + realtime, deduplicated)
   // Priority: indexed (API) > realtime (block watcher) > local (pending)

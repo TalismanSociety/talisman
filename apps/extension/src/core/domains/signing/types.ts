@@ -42,6 +42,32 @@ export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SI
 
 export type SubstrateSignResponse = Omit<SignerResult, "id"> & { id: string }
 
+type VRF_SIGN = "vrf-sign"
+const VRF_SIGN: VRF_SIGN = "vrf-sign"
+
+/** Dapp-provided payload for `pub(vrf.sign)`. Byte fields are hex-encoded. */
+export interface VrfSignPayload {
+  /** ss-58 encoded address */
+  address: string
+  /** message to compute the VRF over */
+  data: string
+  /** VRF signing context (domain separator), empty if omitted */
+  context?: string
+}
+
+export type RequestVrfSign = { payload: VrfSignPayload }
+
+export interface VrfSigningRequest extends BaseSigningRequest<VRF_SIGN> {
+  request: RequestVrfSign
+  account: Account
+}
+
+/** hex-encoded 96 bytes: VRF `output(32) || proof(64)` */
+export type VrfSignResponse = { id: string; signature: `0x${string}` }
+
+/** Dapp-facing result of `signer.signVrf`, mirrors `SignerResult`'s numeric id */
+export type VrfSignResult = { id: number; signature: `0x${string}` }
+
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
   ethChainId: EthNetworkId
   account: Account
@@ -61,6 +87,7 @@ export const SIGNING_TYPES = {
   ETH_SEND,
   SUBSTRATE_SIGN,
   SOL_SIGN,
+  VRF_SIGN,
 }
 
 export type EthSignMessageMethod =
@@ -84,7 +111,11 @@ export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
 }
 
 export type AnyEthSigningRequest = EthSignAndSendRequest | EthSignRequest
-export type AnySigningRequest = SubstrateSigningRequest | AnyEthSigningRequest | SolSigningRequest
+export type AnySigningRequest =
+  | SubstrateSigningRequest
+  | AnyEthSigningRequest
+  | SolSigningRequest
+  | VrfSigningRequest
 
 export type SolSignRequest =
   | {
@@ -122,6 +153,7 @@ export type SigningRequests = {
   "eth-send": [EthSignAndSendRequest, string]
   "substrate-sign": [SubstrateSigningRequest, SubstrateSignResponse]
   "sol-sign": [SolSigningRequest, SolSignResult]
+  "vrf-sign": [VrfSigningRequest, VrfSignResponse]
 }
 
 export type TransactionMethod = {
@@ -187,10 +219,13 @@ export type EthTransactionDetails = {
 }
 
 export interface SigningMessages {
+  // dapp-facing, not part of the injected-web3 spec (Talisman-specific, like pub(encrypt.*))
+  "pub(vrf.sign)": [VrfSignPayload, VrfSignResponse]
   // signing message signatures
   "pri(signing.approveSign)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
   "pri(signing.approveSign.qr)": [RequestSigningApproveSignature, boolean]
   "pri(signing.approveSign.signet)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
-  "pri(signing.cancel)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
+  "pri(signing.approveSign.vrf)": [KnownSigningRequestIdOnly<"vrf-sign">, boolean]
+  "pri(signing.cancel)": [KnownSigningRequestIdOnly<"substrate-sign" | "vrf-sign">, boolean]
 }

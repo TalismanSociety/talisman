@@ -1,4 +1,4 @@
-import { ArrowRightCircleIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
+import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
@@ -15,11 +15,9 @@ import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import { useSeekBenefitsModal } from "../SeekBenefits/SeekBenefitsModal"
 import {
   GetStartedAddAccountIcon,
   GetStartedBuyIcon,
-  GetStartedEyeIcon,
   GetStartedReceiveIcon,
   GetStartedSwapIcon,
   GetStartedTryItIcon,
@@ -39,11 +37,9 @@ export const GetStarted = () => {
     onBuyClick,
     onLearnMoreClick,
     onDismissClick,
-    onSeekClick,
   } = useGetStarted()
 
   const canBuy = useFeatureFlag("BUY_CRYPTO")
-  const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
 
   // ensure it appears if it was hidden and user deletes all accounts
   if (hasAccounts && isHidden) return null
@@ -113,42 +109,15 @@ export const GetStarted = () => {
         </div>
       )}
 
-      {IS_POPUP ? (
-        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-1")}>
-          {showSeekBenefits && (
-            <GetStartedActionButton
-              className="col-span-2"
-              label={t("SEEK Benefits")}
-              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
-              onClick={onSeekClick}
-            />
-          )}
-          <GetStartedActionButton
-            label={t("About")}
-            iconTop={<ArrowRightCircleIcon className="-ml-2 size-12" />}
-            onClick={onLearnMoreClick}
-          />
-        </div>
-      ) : (
-        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-1")}>
-          {showSeekBenefits && (
-            <GetStartedActionButton
-              label={t("SEEK Benefits")}
-              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
-              onClick={onSeekClick}
-            />
-          )}
-          <GetStartedActionButton
-            label={t("About Talisman")}
-            description={t("Discover how Talisman can elevate your web3 journey")}
-            className={cn("group", showSeekBenefits && "col-span-2")}
-            iconRight={
-              <ChevronRightIcon className="-mr-4 size-12 text-body-inactive group-hover:text-body-secondary" />
-            }
-            onClick={onLearnMoreClick}
-          />
-        </div>
-      )}
+      <GetStartedActionButton
+        label={t("About Talisman")}
+        description={t("Discover how Talisman can elevate your web3 journey")}
+        className="group"
+        iconRight={
+          <ChevronRightIcon className="-mr-4 size-12 text-body-inactive group-hover:text-body-secondary" />
+        }
+        onClick={onLearnMoreClick}
+      />
     </div>
   )
 }
@@ -163,7 +132,6 @@ const useGetStarted = () => {
   const { open: openRamps } = useRampsModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
-  const { open: openSeekBenefits } = useSeekBenefitsModal()
 
   const [isHidden, setIsHidden] = useAppState("hideGetStarted")
 
@@ -212,11 +180,6 @@ const useGetStarted = () => {
     setIsHidden(true)
   }, [setIsHidden])
 
-  const onSeekClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Seek Benefits" })
-    openSeekBenefits()
-  }, [openSeekBenefits])
-
   return {
     isHidden,
     hasAccounts,
@@ -227,7 +190,6 @@ const useGetStarted = () => {
     onBuyClick,
     onDismissClick,
     onLearnMoreClick,
-    onSeekClick,
   }
 }
 

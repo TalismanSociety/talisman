@@ -58,6 +58,7 @@
     "@talismn/scale": "workspace:*",
     "@talismn/siws": "^2.0.0",
     "@talismn/solana": "workspace:*",
+    "@talismn/substrate-vrf": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "@tanstack/react-form": "^1.33.0",

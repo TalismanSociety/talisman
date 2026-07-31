@@ -6,6 +6,7 @@ import {
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
+import { InsufficientGasBalanceError } from "../swap-modules/evm-gas-check"
 
 const mockT = ((key: string, opts?: Record<string, string>) => {
   if (!opts) return key
@@ -39,6 +40,20 @@ describe("classifySwapError", () => {
     const viemError = { shortMessage: "Execution reverted", message: "long details..." }
     const result = classifySwapError(viemError)
     expect(result).toEqual({ type: "transaction-craft-error", message: "Execution reverted" })
+  })
+
+  it("maps InsufficientGasBalanceError to insufficient-fee-balance", () => {
+    const error = new InsufficientGasBalanceError(
+      "evm-native-42161",
+      2_534_600_000_000_000n,
+      2_653_076_276_816n
+    )
+    expect(classifySwapError(error)).toEqual({
+      type: "insufficient-fee-balance",
+      feeTokenId: "evm-native-42161",
+      required: 2_534_600_000_000_000n,
+      available: 2_653_076_276_816n,
+    })
   })
 })
 
