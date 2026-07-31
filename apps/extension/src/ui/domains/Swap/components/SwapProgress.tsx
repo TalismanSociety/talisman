@@ -46,13 +46,11 @@ const useTransactionLocal = (hash: string): WalletTransaction | null | undefined
     return (await db.transactionsV2.get(hash)) ?? null
   }, [hash])
 
-type SwapProgressPill = "confirming" | "swapping"
-
 type SwapStatusDetails = {
   title: string
   subtitle: string
   animStatus: ProcessAnimationStatus
-  pill?: SwapProgressPill
+  pillLabel?: string
 }
 
 const useSwapProgressStatus = (
@@ -72,15 +70,16 @@ const useSwapProgressStatus = (
   )
 
   return useMemo<SwapStatusDetails>(() => {
-    const inProgress = (pill: SwapProgressPill): SwapStatusDetails => ({
+    // Pill labels match the swap status labels used in TxHistoryList
+    const inProgress = (pillLabel: string): SwapStatusDetails => ({
       title: t("Transaction in progress"),
       subtitle: isCrossChain ? t("This may take a few minutes") : t("This may take a moment"),
       animStatus: "processing",
-      pill,
+      pillLabel,
     })
 
     // Phase 1: On-chain tx is still pending/processing
-    if (!tx || tx.status === "pending") return inProgress("confirming")
+    if (!tx || tx.status === "pending") return inProgress(t("Submitting"))
 
     // On-chain tx failed
     if (tx.status === "error") {
@@ -112,12 +111,15 @@ const useSwapProgressStatus = (
     // Phase 2: On-chain tx succeeded — track exchange/protocol status
     switch (swapStatus) {
       case "waiting":
+        return inProgress(t("Depositing funds"))
       case "confirming":
-        return inProgress("confirming")
+        return inProgress(t("Confirming"))
       case "exchanging":
+        return inProgress(t("Exchanging"))
       case "sending":
+        return inProgress(t("Sending"))
       case "verifying":
-        return inProgress("swapping")
+        return inProgress(t("Verifying"))
       case "finished":
         return {
           title: t("Swap complete"),
@@ -149,22 +151,18 @@ const useSwapProgressStatus = (
           animStatus: "failure",
         }
       default:
-        // Swap status not yet loaded — deposit is on-chain, exchange is processing
-        return inProgress("swapping")
+        // Swap status not yet loaded — exchange hasn't seen the deposit yet
+        return inProgress(t("Depositing funds"))
     }
   }, [tx, swapStatus, isCrossChain, t])
 }
 
-const SwapStatusPill: FC<{ pill: SwapProgressPill }> = ({ pill }) => {
-  const { t } = useTranslation()
-
-  return (
-    <div className="inline-flex items-center gap-3 rounded-full bg-grey-800 px-6 py-3 text-primary text-xs">
-      <LoaderIcon className="animate-spin-slow text-sm" />
-      <span>{pill === "confirming" ? t("Confirming") : t("Swapping")}</span>
-    </div>
-  )
-}
+const SwapStatusPill: FC<{ label: string }> = ({ label }) => (
+  <div className="inline-flex items-center gap-3 rounded-full bg-grey-800 px-6 py-3 text-primary text-xs">
+    <LoaderIcon className="animate-spin-slow text-sm" />
+    <span>{label}</span>
+  </div>
+)
 
 type SwapProgressProps = {
   hash: string
@@ -182,7 +180,7 @@ export const SwapProgress: FC<SwapProgressProps> = ({
   onReplacementComplete,
 }) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus, pill } = useSwapProgressStatus(hash, txInfo)
+  const { title, subtitle, animStatus, pillLabel } = useSwapProgressStatus(hash, txInfo)
 
   const tx = useTransactionLocal(hash)
   const network = useAnyNetwork(networkId)
@@ -235,7 +233,7 @@ export const SwapProgress: FC<SwapProgressProps> = ({
             </a>
           ) : null}
         </div>
-        {pill && <SwapStatusPill pill={pill} />}
+        {pillLabel && <SwapStatusPill label={pillLabel} />}
         {tx && <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />}
       </div>
       <div className="flex w-full flex-col gap-4">
