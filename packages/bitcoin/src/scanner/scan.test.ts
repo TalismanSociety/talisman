@@ -89,6 +89,8 @@ const buildMockApi = (
     }),
     getTxStatus: vi.fn(),
     getTxHex: vi.fn(),
+    getTx: vi.fn(),
+    getTxOutspends: vi.fn(),
     getFeeEstimates: vi.fn(),
     broadcastTx: vi.fn(),
   }

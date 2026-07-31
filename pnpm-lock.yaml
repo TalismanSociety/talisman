@@ -253,8 +253,14 @@ importers:
       '@react-rxjs/core':
         specifier: ^0.10.8
         version: 0.10.8(react@19.2.7)(rxjs@7.8.2)
+      '@scure/bip32':
+        specifier: 2.2.0
+        version: 2.2.0
       '@scure/bip39':
         specifier: ^2.2.0
+        version: 2.2.0
+      '@scure/btc-signer':
+        specifier: 2.2.0
         version: 2.2.0
       '@scure/sr25519':
         specifier: 2.2.0
@@ -725,6 +731,12 @@ importers:
 
   packages/bitcoin:
     dependencies:
+      '@noble/curves':
+        specifier: 2.2.0
+        version: 2.2.0
+      '@noble/hashes':
+        specifier: 2.2.0
+        version: 2.2.0
       '@scure/base':
         specifier: 2.2.0
         version: 2.2.0

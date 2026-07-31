@@ -52,6 +52,8 @@ const buildApi = (statsByAddress: Record<string, EsploraAddressStats>): BtcApi =
   getAddressUtxos: vi.fn(async () => []),
   getTxStatus: vi.fn(),
   getTxHex: vi.fn(),
+  getTx: vi.fn(),
+  getTxOutspends: vi.fn(),
   getFeeEstimates: vi.fn(),
   broadcastTx: vi.fn(),
 })
