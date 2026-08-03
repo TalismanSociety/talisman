@@ -29,7 +29,6 @@ export type SubDTaoBalance = {
   tokenId: string
   baseTokenId: string
   stake: bigint
-  pendingRootClaim?: bigint
   convictionLock?: SubDTaoConvictionLock
   hotkey: string
   netuid: number

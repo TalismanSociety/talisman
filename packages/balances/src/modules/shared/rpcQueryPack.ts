@@ -33,7 +33,7 @@ export const fetchRpcQueryPack = async <T>(
 
   // a valid state_queryStorageAt response carries one entry per queried block — an empty
   // response is a bad response, not absent values: decoding it would fabricate "no value"
-  // for every queried key (eg empty RootClaimable maps deleting claim-only balances)
+  // for every queried key (eg empty Lock reads deleting lock-only balances)
   if (!result) throw new Error(`Empty state_queryStorageAt response on ${networkId}`)
 
   return decodeRpcQueryPackChunked(queries, new Map(result.changes), {

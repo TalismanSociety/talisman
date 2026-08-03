@@ -5,12 +5,10 @@ import { isEffectivelyEqualDTaoBalance } from "./isEffectivelyEqualDTaoBalance"
 
 const makeDTaoBalance = ({
   stake = "1000000000000",
-  pendingRootClaim = "5000000000",
   status = "live",
   extraValues = [],
 }: {
   stake?: string
-  pendingRootClaim?: string
   status?: string
   extraValues?: AmountWithLabel<string>[]
 } = {}): IBalance => {
@@ -20,40 +18,13 @@ const makeDTaoBalance = ({
     tokenId: "bittensor-substrate-dtao-1-5Hotkey",
     source: "substrate-dtao",
     status,
-    values: [
-      { type: "free", label: "Subnet Staking", amount: stake },
-      {
-        type: "locked",
-        label: "Pending root claim",
-        amount: pendingRootClaim,
-        includeInTransferable: true,
-      },
-      ...extraValues,
-    ],
+    values: [{ type: "free", label: "Subnet Staking", amount: stake }, ...extraValues],
   } as IBalance
 }
 
 describe("isEffectivelyEqualDTaoBalance", () => {
   test("equal when nothing changed", () => {
     expect(isEffectivelyEqualDTaoBalance(makeDTaoBalance(), makeDTaoBalance())).toBe("equal")
-  })
-
-  test("tolerates sub-1% pending root claim accrual", () => {
-    const previous = makeDTaoBalance({ pendingRootClaim: "5000000000" })
-    const next = makeDTaoBalance({ pendingRootClaim: "5010000000" }) // +0.2%
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("equal")
-  })
-
-  test(">1% pending root claim growth classifies as drift", () => {
-    const previous = makeDTaoBalance({ pendingRootClaim: "5000000000" })
-    const next = makeDTaoBalance({ pendingRootClaim: "5100000000" }) // +2%
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
-  })
-
-  test("zero → non-zero pending claim is always a change", () => {
-    const previous = makeDTaoBalance({ pendingRootClaim: "0" })
-    const next = makeDTaoBalance({ pendingRootClaim: "1" })
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).not.toBe("equal")
   })
 
   test("small stake accrual (auto-compounding dividends) classifies as drift", () => {

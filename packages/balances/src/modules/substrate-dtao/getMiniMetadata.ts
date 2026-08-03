@@ -51,7 +51,7 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
     [
       {
         pallet: "SubtensorModule",
-        items: ["TransferToggle", "RootClaimable", "RootClaimed", "Lock", "DecayingLock"],
+        items: ["TransferToggle", "Lock", "DecayingLock"],
       },
     ],
     [
