@@ -423,6 +423,7 @@ const SeekStakingForm: FC<{
           hash={submittedHash}
           networkIdOrHash={config.networkId}
           onClose={close}
+          containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
           onReplacementComplete={handleReplacementComplete}
         />
       </div>

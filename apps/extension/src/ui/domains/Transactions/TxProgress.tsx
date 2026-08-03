@@ -34,12 +34,14 @@ export type ReplacementCallbackArgs = {
 type TxReplaceActionsProps = {
   tx: WalletTransaction | null | undefined
   className?: string
+  containerId?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
 export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
   tx,
   className,
+  containerId,
   onReplacementComplete,
 }) => {
   const { t } = useTranslation()
@@ -92,7 +94,14 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
           {t("Cancel Transaction")}
         </PillButton>
       </div>
-      {!!tx && <TxReplaceDrawer tx={tx} type={replaceType} onClose={handleClose} />}
+      {!!tx && (
+        <TxReplaceDrawer
+          tx={tx}
+          type={replaceType}
+          containerId={containerId}
+          onClose={handleClose}
+        />
+      )}
     </>
   )
 }
@@ -172,6 +181,7 @@ type TxProgressBaseProps = {
   blockNumber?: string
   onClose?: () => void
   href?: string | null
+  containerId?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
@@ -180,6 +190,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
   blockNumber,
   href,
   onClose,
+  containerId,
   onReplacementComplete,
 }) => {
   const { t } = useTranslation()
@@ -225,7 +236,11 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
         </div>
         <div className="h-[2.25rem]">
           {tx?.status === "pending" && (
-            <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />
+            <TxReplaceActions
+              tx={tx}
+              containerId={containerId}
+              onReplacementComplete={onReplacementComplete}
+            />
           )}
           {tx?.status === "success" && !tx?.confirmed && (
             <div className="h-[2.25rem] animate-pulse text-secondary">
@@ -245,6 +260,7 @@ type TxProgressDotProps = {
   tx: WalletTransactionDot
   onClose?: () => void
   className?: string
+  containerId?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
@@ -252,6 +268,7 @@ const TxProgressDot: FC<TxProgressDotProps> = ({
   tx,
   onClose,
   className,
+  containerId,
   onReplacementComplete,
 }) => {
   const chain = useNetworkById(tx.networkId)
@@ -264,6 +281,7 @@ const TxProgressDot: FC<TxProgressDotProps> = ({
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
+      containerId={containerId}
       onReplacementComplete={onReplacementComplete}
     />
   )
@@ -273,6 +291,7 @@ type TxProgressEthProps = {
   tx: WalletTransactionEth
   onClose?: () => void
   className?: string
+  containerId?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
@@ -280,6 +299,7 @@ const TxProgressEth: FC<TxProgressEthProps> = ({
   tx,
   className,
   onClose,
+  containerId,
   onReplacementComplete,
 }) => {
   const network = useNetworkById(tx.networkId, "ethereum")
@@ -292,6 +312,7 @@ const TxProgressEth: FC<TxProgressEthProps> = ({
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
+      containerId={containerId}
       onReplacementComplete={onReplacementComplete}
     />
   )
@@ -315,6 +336,7 @@ type TxProgressProps = {
   networkIdOrHash: string
   onClose?: () => void
   className?: string
+  containerId?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
@@ -323,6 +345,7 @@ export const TxProgress: FC<TxProgressProps> = ({
   networkIdOrHash,
   onClose,
   className,
+  containerId,
   onReplacementComplete,
 }) => {
   const tx = useTransaction(hash)
@@ -336,6 +359,7 @@ export const TxProgress: FC<TxProgressProps> = ({
         href={href}
         className={className}
         onClose={onClose}
+        containerId={containerId}
         onReplacementComplete={onReplacementComplete}
       />
     )
@@ -348,6 +372,7 @@ export const TxProgress: FC<TxProgressProps> = ({
           tx={tx}
           onClose={onClose}
           className={className}
+          containerId={containerId}
           onReplacementComplete={onReplacementComplete}
         />
       )
@@ -357,6 +382,7 @@ export const TxProgress: FC<TxProgressProps> = ({
           tx={tx}
           onClose={onClose}
           className={className}
+          containerId={containerId}
           onReplacementComplete={onReplacementComplete}
         />
       )

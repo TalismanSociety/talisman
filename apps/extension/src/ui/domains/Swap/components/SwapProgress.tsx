@@ -148,7 +148,12 @@ export const SwapProgress: FC<SwapProgressProps> = ({
           ) : null}
         </div>
         <SwapStatusPill label={pillLabel} />
-        <TxReplaceActions tx={tx} className="mt-0" onReplacementComplete={onReplacementComplete} />
+        <TxReplaceActions
+          tx={tx}
+          className="mt-0"
+          containerId="swap-modal"
+          onReplacementComplete={onReplacementComplete}
+        />
       </div>
       <div className="flex w-full flex-col gap-4 pt-6">
         {swapTrackerUrl && (
