@@ -811,15 +811,6 @@ export default defineConfig({
         chunkSizeWarningLimit: 3500,
 
         rollupOptions: {
-          // For Firefox reproducible builds: disable caching and limit parallelism
-          // This ensures deterministic module ordering for Add-on Store review
-          ...(isFirefox && !isDev
-            ? {
-                cache: false, // Disable Rollup caching for reproducibility
-                maxParallelFileOps: 1, // Sequential file operations for deterministic ordering
-              }
-            : {}),
-
           // Suppress noisy warnings from node_modules
           onwarn(warning, warn) {
             // Ignore PURE comment warnings from @polkadot and mlkem packages
@@ -922,11 +913,12 @@ if (typeof document === "undefined") {
     // This allows Firefox reviewers to rebuild the extension from source
     sourcesRoot: resolve(__dirname, "../.."),
 
-    // Allow hidden files in the zip (.papi, .npmrc, apps/extension/.env)
-    dotSources: true,
-
     // wxt 0.21: includeSources is a strict allowlist (includeSources - excludeSources)
-    // Everything the Dockerfile.firefox reproducible build needs must be listed here
+    // Everything the Dockerfile.firefox reproducible build needs must be listed here.
+    // dotSources stays false (default) so wildcards can never match hidden files —
+    // this structurally keeps .env and other local dotfiles out of the zip.
+    // Hidden files the build DOES need are matched by explicit leading-dot patterns,
+    // which work regardless of dotSources.
     includeSources: [
       "apps/**",
       "packages/**",
@@ -947,24 +939,17 @@ if (typeof document === "undefined") {
 
     // Exclude unnecessary files from sources zip
     excludeSources: [
-      // Build outputs and caches
-      "**/dist/**",
-      "**/.output/**",
+      // Build outputs and caches — scoped so .papi/descriptors/dist stays in
+      // (postinstall regenerates descriptors from the network without it,
+      // which would break build reproducibility)
+      "apps/**/dist/**",
+      "packages/**/dist/**",
       "**/coverage/**",
-      "**/.turbo/**",
-      "**/.wxt/**",
-      "**/.tmp/**",
-      "**/.tsbuildinfo",
       "**/node_modules/**",
-      "**/.DS_Store",
       // Review/test artifacts
       "review/**",
-      ".verify-build/**",
       "test-results/**",
       "playwright-report/**",
-      // IDE and editor files
-      ".idea/**",
-      ".vscode/**",
       // Other apps we don't need to build the extension
       "apps/balances-bench/**",
     ],
