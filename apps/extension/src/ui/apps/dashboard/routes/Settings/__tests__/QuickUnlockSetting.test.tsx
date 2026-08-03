@@ -8,6 +8,7 @@ const mockIsAvailable = vi.fn()
 const mockCreateCredential = vi.fn()
 const mockSignalRemoved = vi.fn()
 const mockUseIsEnrolled = vi.fn()
+const mockUseFeatureFlag = vi.fn()
 
 vi.mock("@ui/api", () => ({
   api: {
@@ -29,6 +30,10 @@ vi.mock("@ui/state/quickUnlock", () => ({
   useIsQuickUnlockEnrolled: () => mockUseIsEnrolled(),
 }))
 
+vi.mock("@ui/state/remoteConfig", () => ({
+  useFeatureFlag: (...args: unknown[]) => mockUseFeatureFlag(...args),
+}))
+
 import { PrfEvaluationError } from "@ui/util/webauthnPrf"
 
 import { QuickUnlockSetting } from "../QuickUnlockSetting"
@@ -38,6 +43,7 @@ describe("QuickUnlockSetting", () => {
     vi.clearAllMocks()
     mockIsAvailable.mockResolvedValue(true)
     mockUseIsEnrolled.mockReturnValue(false)
+    mockUseFeatureFlag.mockReturnValue(true)
     mockGetCredentialInfo.mockResolvedValue({ credentialId: "credId", prfSalt: "salt" })
   })
 
@@ -48,6 +54,25 @@ describe("QuickUnlockSetting", () => {
 
     await waitFor(() => expect(mockIsAvailable).toHaveBeenCalled())
     expect(screen.queryByRole("checkbox")).toBeNull()
+  })
+
+  test("is hidden when the feature flag is off and not enrolled", async () => {
+    mockUseFeatureFlag.mockReturnValue(false)
+
+    render(<QuickUnlockSetting />)
+
+    await waitFor(() => expect(mockUseFeatureFlag).toHaveBeenCalledWith("QUICK_UNLOCK"))
+    expect(screen.queryByRole("checkbox")).toBeNull()
+  })
+
+  test("stays visible while enrolled even if the feature flag is off", async () => {
+    mockUseFeatureFlag.mockReturnValue(false)
+    mockUseIsEnrolled.mockReturnValue(true)
+
+    render(<QuickUnlockSetting />)
+
+    const toggle = (await screen.findByRole("checkbox")) as HTMLInputElement
+    expect(toggle.checked).toBe(true)
   })
 
   test("stays visible while enrolled so the enrollment can be cleared", async () => {
