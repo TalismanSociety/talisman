@@ -17,6 +17,7 @@ import {
 } from "@ui/components/ProcessAnimation/ProcessAnimation"
 import { type ReplacementCallbackArgs, TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useAnyNetwork } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import { useLiveQuery } from "dexie-react-hooks"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -157,8 +158,13 @@ const useSwapProgressStatus = (
   }, [tx, swapStatus, isCrossChain, t])
 }
 
-const SwapStatusPill: FC<{ label: string }> = ({ label }) => (
-  <div className="inline-flex items-center gap-3 rounded-full bg-grey-800 px-6 py-3 text-primary text-xs">
+const SwapStatusPill: FC<{ label: string | null | undefined }> = ({ label }) => (
+  <div
+    className={cn(
+      "inline-flex items-center gap-3 rounded-full bg-grey-800 p-4 text-primary text-xs",
+      !label && "invisible"
+    )}
+  >
     <LoaderIcon className="animate-spin-slow text-sm" />
     <span>{label}</span>
   </div>
@@ -199,10 +205,10 @@ export const SwapProgress: FC<SwapProgressProps> = ({
   }, [swapTrackerUrl])
 
   return (
-    <div className="flex h-full w-full flex-col items-center p-12">
+    <div className="flex h-full w-full flex-col items-center overflow-hidden p-12">
       <div className="mt-8 font-bold text-body text-lg">{title}</div>
       <div className="mt-12 text-center font-light text-base text-body-secondary">{subtitle}</div>
-      <ProcessAnimation status={animStatus} className="mt-18.75 mb-8 h-36.25" />
+      <ProcessAnimation status={animStatus} className="mt-16 mb-8 h-36.25" />
       <div className="flex w-full grow flex-col items-center justify-center gap-8 px-10 text-center text-body-secondary">
         <div>
           {blockNumber ? (
@@ -233,10 +239,10 @@ export const SwapProgress: FC<SwapProgressProps> = ({
             </a>
           ) : null}
         </div>
-        {pillLabel && <SwapStatusPill label={pillLabel} />}
-        {tx && <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />}
+        <SwapStatusPill label={pillLabel} />
+        <TxReplaceActions tx={tx} className="mt-0" onReplacementComplete={onReplacementComplete} />
       </div>
-      <div className="flex w-full flex-col gap-4">
+      <div className="flex w-full flex-col gap-4 pt-6">
         {swapTrackerUrl && (
           <Button primary fullWidth onClick={handleTrackClick}>
             {t("Track swap progress")}

@@ -15,9 +15,9 @@ import {
 } from "@ui/components/ProcessAnimation/ProcessAnimation"
 import { useAnyNetwork, useNetworkById } from "@ui/state/chaindata"
 import { useTransaction } from "@ui/state/transactions"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import type { TxReplaceType } from "./types"
 
@@ -32,11 +32,16 @@ export type ReplacementCallbackArgs = {
 }
 
 type TxReplaceActionsProps = {
-  tx: WalletTransaction
+  tx: WalletTransaction | null | undefined
+  className?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-export const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete }) => {
+export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
+  tx,
+  className,
+  onReplacementComplete,
+}) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
 
@@ -45,21 +50,31 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementC
   const handleClose = useCallback(
     (newHash?: HexString) => {
       setReplaceType(undefined)
-      if (newHash && replaceType) {
+      if (newHash && replaceType && tx) {
         onReplacementComplete?.({ txId: newHash, networkId: tx.networkId, replaceType })
       }
     },
     [onReplacementComplete, tx, replaceType]
   )
 
-  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
+  const evmNetwork = useNetworkById(tx?.networkId, "ethereum")
 
-  if (evmNetwork?.preserveGasEstimate) return null
-  if (tx.status !== "pending" || tx.platform !== "ethereum") return null
+  const isInvisible = useMemo(() => {
+    if (!tx) return true
+    if (evmNetwork?.preserveGasEstimate) return true
+    if (tx.status !== "pending" || tx.platform !== "ethereum") return true
+    return false
+  }, [tx, evmNetwork])
 
   return (
     <>
-      <div className="mt-8 flex w-full items-center justify-center gap-4">
+      <div
+        className={cn(
+          "mt-8 flex w-full items-center justify-center gap-4",
+          className,
+          isInvisible && "invisible"
+        )}
+      >
         <PillButton
           size="sm"
           onClick={handleShowDrawer("speed-up")}
@@ -77,7 +92,7 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementC
           {t("Cancel Transaction")}
         </PillButton>
       </div>
-      <TxReplaceDrawer tx={tx} type={replaceType} onClose={handleClose} />
+      {!!tx && <TxReplaceDrawer tx={tx} type={replaceType} onClose={handleClose} />}
     </>
   )
 }
