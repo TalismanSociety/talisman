@@ -123,14 +123,11 @@ function createDeterministicBuildPlugin(): Plugin {
         const chunk = bundle[key]
         if (chunk.type === "chunk" && chunk.modules) {
           // Sort the modules object keys alphabetically
-          const sortedModules: Record<string, { code: string; originalLength: number }> = {}
+          const sortedModules: Record<string, (typeof chunk.modules)[string]> = {}
           const moduleKeys = Object.keys(chunk.modules).sort()
 
           for (const moduleKey of moduleKeys) {
-            sortedModules[moduleKey] = chunk.modules[moduleKey] as {
-              code: string
-              originalLength: number
-            }
+            sortedModules[moduleKey] = chunk.modules[moduleKey]
           }
           // Replace with sorted modules
           // biome-ignore lint/suspicious/noExplicitAny: Rollup types don't expose module setter
@@ -807,9 +804,8 @@ export default defineConfig({
             ? "hidden" // Generate maps for Sentry upload (Chrome only)
             : false, // No sourcemaps for Firefox or other builds
 
-        // Memory optimization: limit minification workers to reduce peak memory usage
-        // This helps on memory-constrained systems (e.g., WSL with limited RAM)
-        minify: "esbuild",
+        // Vite 8 (rolldown) dropped esbuild; oxc is the native minifier
+        minify: "oxc",
 
         // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
         chunkSizeWarningLimit: 3500,
@@ -926,12 +922,27 @@ if (typeof document === "undefined") {
     // This allows Firefox reviewers to rebuild the extension from source
     sourcesRoot: resolve(__dirname, "../.."),
 
-    // Include hidden files needed for builds (WXT excludes hidden files by default)
+    // Allow hidden files in the zip (.papi, .npmrc, apps/extension/.env)
+    dotSources: true,
+
+    // wxt 0.21: includeSources is a strict allowlist (includeSources - excludeSources)
+    // Everything the Dockerfile.firefox reproducible build needs must be listed here
     includeSources: [
+      "apps/**",
+      "packages/**",
+      "config/**",
+      "scripts/**",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "tsconfig.json",
+      "Dockerfile.firefox",
+      "FIREFOX_SOURCE_CODE_REVIEW.md",
+      "README.md",
+      "LICENSE",
       ".papi/**", // Polkadot API configuration and generated descriptors
       ".npmrc", // pnpm configuration (node version, hoisting, etc.)
       ".dockerignore", // Docker ignore file for reproducible builds
-      "apps/extension/.env", // Environment variables for build (no secrets)
     ],
 
     // Exclude unnecessary files from sources zip
@@ -942,6 +953,10 @@ if (typeof document === "undefined") {
       "**/coverage/**",
       "**/.turbo/**",
       "**/.wxt/**",
+      "**/.tmp/**",
+      "**/.tsbuildinfo",
+      "**/node_modules/**",
+      "**/.DS_Store",
       // Review/test artifacts
       "review/**",
       ".verify-build/**",
