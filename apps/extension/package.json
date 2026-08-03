@@ -142,7 +142,7 @@
     "@types/semver": "^7.7.1",
     "@types/webextension-polyfill": "0.12.5",
     "@types/webfontloader": "^1.6.38",
-    "@vitejs/plugin-react": "^4.5.2",
+    "@vitejs/plugin-react": "^6.0.5",
     "consola": "3.4.2",
     "fake-indexeddb": "6.2.5",
     "i18next-parser": "^9.4.0",
@@ -153,11 +153,12 @@
     "sinon-chrome": "^3.0.1",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.22.4",
-    "vite": "7.1.12",
+    "vite": "8.2.0",
     "vite-plugin-node-polyfills": "0.28.0",
     "vite-plugin-svgr": "5.2.0",
+    "web-ext": "10.5.0",
     "webextension-polyfill": "0.12.0",
-    "wxt": "0.20.27"
+    "wxt": "0.21.2"
   },
   "scripts": {
     "postinstall": "mkdir -p ~/.talisman-dev/chrome-data && wxt prepare",

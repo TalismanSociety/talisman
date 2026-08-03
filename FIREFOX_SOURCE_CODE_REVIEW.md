@@ -35,7 +35,7 @@ This build produces **byte-identical, reproducible output**. The ZIP file checks
 
 - **Docker isolation**: Deterministic Node.js environment with fixed locale/timezone
 - **Normalized timestamps**: All ZIP entries use a fixed timestamp (2000-01-01T00:00:00Z)
-- **Deterministic bundling**: Rollup output is sorted and consistent across builds
+- **Deterministic bundling**: Rolldown (Vite 8) output is sorted and consistent across builds
 - **Two-pass build**: Production builds are always built from `sources.zip` to ensure what's shipped matches what reviewers build
 
 ### Verification

@@ -70,6 +70,27 @@ fi
 
 log_success "First pass complete: $(basename "$SOURCES_ZIP")"
 
+log_step "Auditing sources.zip contents"
+
+# No env files or unexpected hidden files may ship to reviewers
+LEAKED=$(unzip -l "$SOURCES_ZIP" | awk '{print $4}' | grep -E '(^|/)\.' | grep -vE '^\.papi/|^\.npmrc$|^\.dockerignore$' || true)
+if [[ -n "$LEAKED" ]]; then
+  log_error "Unexpected hidden files in sources.zip:"
+  echo "$LEAKED"
+  exit 1
+fi
+
+# Pre-built papi descriptors must be present, otherwise the reviewer build
+# regenerates them from the network and reproducibility breaks
+# (grep -c reads the full stream: grep -q would SIGPIPE unzip and trip pipefail)
+PAPI_DIST_COUNT=$(unzip -l "$SOURCES_ZIP" | grep -c "\.papi/descriptors/dist/" || true)
+if [[ "$PAPI_DIST_COUNT" -eq 0 ]]; then
+  log_error "sources.zip is missing .papi/descriptors/dist - reviewer builds would not be reproducible"
+  exit 1
+fi
+
+log_success "sources.zip audit passed (no env/hidden files, papi descriptors present)"
+
 log_step "PASS 2: Rebuild from sources.zip for final deliverables"
 
 # Extract version info from the sources zip filename before extracting

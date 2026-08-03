@@ -123,14 +123,11 @@ function createDeterministicBuildPlugin(): Plugin {
         const chunk = bundle[key]
         if (chunk.type === "chunk" && chunk.modules) {
           // Sort the modules object keys alphabetically
-          const sortedModules: Record<string, { code: string; originalLength: number }> = {}
+          const sortedModules: Record<string, (typeof chunk.modules)[string]> = {}
           const moduleKeys = Object.keys(chunk.modules).sort()
 
           for (const moduleKey of moduleKeys) {
-            sortedModules[moduleKey] = chunk.modules[moduleKey] as {
-              code: string
-              originalLength: number
-            }
+            sortedModules[moduleKey] = chunk.modules[moduleKey]
           }
           // Replace with sorted modules
           // biome-ignore lint/suspicious/noExplicitAny: Rollup types don't expose module setter
@@ -807,23 +804,13 @@ export default defineConfig({
             ? "hidden" // Generate maps for Sentry upload (Chrome only)
             : false, // No sourcemaps for Firefox or other builds
 
-        // Memory optimization: limit minification workers to reduce peak memory usage
-        // This helps on memory-constrained systems (e.g., WSL with limited RAM)
-        minify: "esbuild",
+        // Vite 8 (rolldown) dropped esbuild; oxc is the native minifier
+        minify: "oxc",
 
         // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
         chunkSizeWarningLimit: 3500,
 
         rollupOptions: {
-          // For Firefox reproducible builds: disable caching and limit parallelism
-          // This ensures deterministic module ordering for Add-on Store review
-          ...(isFirefox && !isDev
-            ? {
-                cache: false, // Disable Rollup caching for reproducibility
-                maxParallelFileOps: 1, // Sequential file operations for deterministic ordering
-              }
-            : {}),
-
           // Suppress noisy warnings from node_modules
           onwarn(warning, warn) {
             // Ignore PURE comment warnings from @polkadot and mlkem packages
@@ -926,30 +913,43 @@ if (typeof document === "undefined") {
     // This allows Firefox reviewers to rebuild the extension from source
     sourcesRoot: resolve(__dirname, "../.."),
 
-    // Include hidden files needed for builds (WXT excludes hidden files by default)
+    // wxt 0.21: includeSources is a strict allowlist (includeSources - excludeSources)
+    // Everything the Dockerfile.firefox reproducible build needs must be listed here.
+    // dotSources stays false (default) so wildcards can never match hidden files —
+    // this structurally keeps .env and other local dotfiles out of the zip.
+    // Hidden files the build DOES need are matched by explicit leading-dot patterns,
+    // which work regardless of dotSources.
     includeSources: [
+      "apps/**",
+      "packages/**",
+      "config/**",
+      "scripts/**",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "tsconfig.json",
+      "Dockerfile.firefox",
+      "FIREFOX_SOURCE_CODE_REVIEW.md",
+      "README.md",
+      "LICENSE",
       ".papi/**", // Polkadot API configuration and generated descriptors
       ".npmrc", // pnpm configuration (node version, hoisting, etc.)
       ".dockerignore", // Docker ignore file for reproducible builds
-      "apps/extension/.env", // Environment variables for build (no secrets)
     ],
 
     // Exclude unnecessary files from sources zip
     excludeSources: [
-      // Build outputs and caches
-      "**/dist/**",
-      "**/.output/**",
+      // Build outputs and caches — scoped so .papi/descriptors/dist stays in
+      // (postinstall regenerates descriptors from the network without it,
+      // which would break build reproducibility)
+      "apps/**/dist/**",
+      "packages/**/dist/**",
       "**/coverage/**",
-      "**/.turbo/**",
-      "**/.wxt/**",
+      "**/node_modules/**",
       // Review/test artifacts
       "review/**",
-      ".verify-build/**",
       "test-results/**",
       "playwright-report/**",
-      // IDE and editor files
-      ".idea/**",
-      ".vscode/**",
       // Other apps we don't need to build the extension
       "apps/balances-bench/**",
     ],
