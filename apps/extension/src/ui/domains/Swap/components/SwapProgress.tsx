@@ -1,9 +1,4 @@
-import { db } from "@core/db"
-import type {
-  SwapStatus,
-  WalletTransaction,
-  WalletTransactionInfo,
-} from "@core/domains/transactions/types"
+import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
   getBlockExplorerUrls,
   type Network,
@@ -11,16 +6,15 @@ import {
 } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
-import {
-  ProcessAnimation,
-  type ProcessAnimationStatus,
-} from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { getCanonicalTransaction } from "@ui/domains/Transactions/getCanonicalTransaction"
 import { type ReplacementCallbackArgs, TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { useLiveQuery } from "dexie-react-hooks"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { getSwapProgressDetails, type SwapStatusDetails } from "./swapProgressStatus"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
   if (!network) return null
@@ -40,28 +34,21 @@ const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): strin
   }
 }
 
-/** Non-suspending hook — uses Dexie's useLiveQuery (returns undefined while loading). */
-const useTransactionLocal = (hash: string): WalletTransaction | null | undefined =>
+/**
+ * Non-suspending hook — uses Dexie's useLiveQuery (returns undefined while loading).
+ * When the tracked tx lost a speed-up nonce race, resolves to the mined transaction.
+ */
+const useCanonicalTransaction = (hash: string): WalletTransaction | null | undefined =>
   useLiveQuery(async () => {
     if (!hash) return undefined
-    return (await db.transactionsV2.get(hash)) ?? null
+    return getCanonicalTransaction(hash)
   }, [hash])
 
-type SwapStatusDetails = {
-  title: string
-  subtitle: string
-  animStatus: ProcessAnimationStatus
-  pillLabel?: string
-}
-
 const useSwapProgressStatus = (
-  txHash: string,
+  tx: WalletTransaction | null | undefined,
   txInfo: WalletTransactionInfo
 ): SwapStatusDetails => {
   const { t } = useTranslation()
-
-  const tx = useTransactionLocal(txHash)
-  const swapStatus: SwapStatus | undefined = tx?.swapStatus
 
   const isCrossChain = useMemo(
     () =>
@@ -70,92 +57,10 @@ const useSwapProgressStatus = (
     [txInfo]
   )
 
-  return useMemo<SwapStatusDetails>(() => {
-    // Pill labels match the swap status labels used in TxHistoryList
-    const inProgress = (pillLabel: string): SwapStatusDetails => ({
-      title: t("Transaction in progress"),
-      subtitle: isCrossChain ? t("This may take a few minutes") : t("This may take a moment"),
-      animStatus: "processing",
-      pillLabel,
-    })
-
-    // Phase 1: On-chain tx is still pending/processing
-    if (!tx || tx.status === "pending") return inProgress(t("Submitting"))
-
-    // On-chain tx failed
-    if (tx.status === "error") {
-      return {
-        title: t("Transaction failed"),
-        subtitle: t("Your swap transaction failed on-chain."),
-        animStatus: "failure",
-      }
-    }
-
-    // On-chain tx status unknown
-    if (tx.status === "unknown") {
-      return {
-        title: t("Transaction not found"),
-        subtitle: t("Transaction was submitted, but Talisman is unable to track its progress."),
-        animStatus: "failure",
-      }
-    }
-
-    // On-chain tx replaced
-    if (tx.status === "replaced") {
-      return {
-        title: t("Transaction cancelled"),
-        subtitle: t("This transaction has been replaced with another one."),
-        animStatus: "failure",
-      }
-    }
-
-    // Phase 2: On-chain tx succeeded — track exchange/protocol status
-    switch (swapStatus) {
-      case "waiting":
-        return inProgress(t("Depositing funds"))
-      case "confirming":
-        return inProgress(t("Confirming"))
-      case "exchanging":
-        return inProgress(t("Exchanging"))
-      case "sending":
-        return inProgress(t("Sending"))
-      case "verifying":
-        return inProgress(t("Verifying"))
-      case "finished":
-        return {
-          title: t("Swap complete"),
-          subtitle: t("Your swap was successful!"),
-          animStatus: "success",
-        }
-      case "failed":
-      case "expired":
-      case "refunded":
-        return {
-          title: t("Swap failed"),
-          subtitle:
-            swapStatus === "refunded"
-              ? t("The exchange has refunded your tokens.")
-              : swapStatus === "expired"
-                ? t("The exchange has expired.")
-                : t("The exchange failed to complete your swap."),
-          animStatus: "failure",
-        }
-      case "invalid":
-        // LiFi's status API sometimes fails to parse transactions (especially Solana)
-        // even though the on-chain tx succeeded. Show an ambiguous status instead of
-        // a definitive "Swap failed" since the user's funds may have been swapped.
-        return {
-          title: t("Swap status unknown"),
-          subtitle: t(
-            "Your transaction succeeded on-chain but the swap tracker couldn't confirm the result. Please check your balance."
-          ),
-          animStatus: "failure",
-        }
-      default:
-        // Swap status not yet loaded — exchange hasn't seen the deposit yet
-        return inProgress(t("Depositing funds"))
-    }
-  }, [tx, swapStatus, isCrossChain, t])
+  return useMemo<SwapStatusDetails>(
+    () => getSwapProgressDetails(t, tx, isCrossChain),
+    [tx, isCrossChain, t]
+  )
 }
 
 const SwapStatusPill: FC<{ label: string | null | undefined }> = ({ label }) => (
@@ -186,9 +91,12 @@ export const SwapProgress: FC<SwapProgressProps> = ({
   onReplacementComplete,
 }) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus, pillLabel } = useSwapProgressStatus(hash, txInfo)
 
-  const tx = useTransactionLocal(hash)
+  const tx = useCanonicalTransaction(hash)
+  // tx may point at the winning same-nonce tx after a lost speed-up race
+  const txHash = tx?.id ?? hash
+
+  const { title, subtitle, animStatus, pillLabel } = useSwapProgressStatus(tx, txInfo)
   const network = useAnyNetwork(networkId)
 
   const blockNumber = useMemo(() => {
@@ -197,8 +105,8 @@ export const SwapProgress: FC<SwapProgressProps> = ({
     return undefined
   }, [tx])
 
-  const explorerUrl = useMemo(() => getBlockExplorerUrl(network, hash), [network, hash])
-  const swapTrackerUrl = useMemo(() => getSwapTrackerUrl(txInfo, hash), [txInfo, hash])
+  const explorerUrl = useMemo(() => getBlockExplorerUrl(network, txHash), [network, txHash])
+  const swapTrackerUrl = useMemo(() => getSwapTrackerUrl(txInfo, txHash), [txInfo, txHash])
 
   const handleTrackClick = useCallback(() => {
     if (swapTrackerUrl) window.open(swapTrackerUrl, "_blank", "noopener")

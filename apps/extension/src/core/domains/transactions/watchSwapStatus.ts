@@ -62,7 +62,11 @@ async function pollSwapStatus(txId: string, txInfo: WalletTransactionInfo): Prom
     // Allow a grace period for not_found — the tx may still be in the mempool
     if (status === "not_found") {
       notFoundSince ??= Date.now()
-      if (Date.now() - notFoundSince >= NOT_FOUND_GRACE_PERIOD_MS) return
+      if (Date.now() - notFoundSince >= NOT_FOUND_GRACE_PERIOD_MS) {
+        // Giving up — mark as unknown so the UI stops showing an active deposit
+        await updateSwapStatus(txId, "unknown")
+        return
+      }
     } else {
       notFoundSince = null
     }
@@ -178,27 +182,28 @@ export const resumeSwapWatchers = async () => {
         if (!tx.txInfo || !isTxInfoSwap(tx.txInfo)) return false
         if (tx.txInfo.type === "bittensor-staking") return false
         // Resume if swapStatus hasn't reached a terminal state
-        if (!tx.swapStatus) return true
-        if (FINAL_SWAP_STATUSES.includes(tx.swapStatus)) return false
-
-        // Don't resume not_found watchers past their grace period
-        if (tx.swapStatus === "not_found" && now - tx.timestamp >= NOT_FOUND_GRACE_PERIOD_MS)
-          return false
-
-        // Don't resume unknown watchers past the max age
-        if (tx.swapStatus === "unknown" && now - tx.timestamp >= UNKNOWN_MAX_AGE_MS) return false
-
-        return true
+        return !tx.swapStatus || !FINAL_SWAP_STATUSES.includes(tx.swapStatus)
       })
       .toArray()
 
+    let resumed = 0
     for (const tx of successSwaps) {
+      // Watcher died before giving up on a missing exchange status — mark as unknown
+      // so the UI stops showing an active deposit
+      if (tx.swapStatus === "not_found" && now - tx.timestamp >= NOT_FOUND_GRACE_PERIOD_MS) {
+        await updateSwapStatus(tx.id, "unknown")
+        continue
+      }
+
+      // Don't resume unknown watchers past the max age
+      if (tx.swapStatus === "unknown" && now - tx.timestamp >= UNKNOWN_MAX_AGE_MS) continue
+
       // Fire-and-forget — each watcher runs independently
       watchSwapStatus(tx.id)
+      resumed++
     }
 
-    if (successSwaps.length > 0)
-      log.debug(`[resumeSwapWatchers] Resumed ${successSwaps.length} swap watcher(s)`)
+    if (resumed > 0) log.debug(`[resumeSwapWatchers] Resumed ${resumed} swap watcher(s)`)
   } catch (err) {
     log.error("resumeSwapWatchers", { err })
   }

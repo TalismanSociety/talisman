@@ -24,7 +24,9 @@ const SwapSubmitted = () => {
   const { submittedTxHash, submittedNetworkId, submittedTxInfo, gotoSubmitted } = useSwap()
   const { close: closeSwapTokensModal } = useSwapModal()
 
-  // Follow speed-up replacements so tracking continues on the new hash.
+  // Follow speed-up replacements so tracking continues on the new hash. If the
+  // original still wins the nonce race, SwapProgress redirects to the mined tx
+  // via getCanonicalTransaction.
   // Cancels keep tracking the original hash, which flips to "replaced" (cancelled UI).
   const handleReplacementComplete = useCallback(
     ({ txId, networkId, replaceType }: ReplacementCallbackArgs) => {
