@@ -322,6 +322,8 @@ export class RemoteConfigApi<
             ASSET_HUB_MIGRATION_BANNER: boolean;
             /** Enables Bittensor MEV Shield protection */
             BITTENSOR_MEV_SHIELD: boolean;
+            /** Enables the quick unlock feature */
+            QUICK_UNLOCK: boolean;
           };
           /** CoinGecko price data proxy configuration */
           coingecko: {
@@ -472,6 +474,32 @@ export class RemoteConfigApi<
         any
       >({
         path: `/config`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
+  mobileConfig = {
+    /**
+     * @description Returns the full Talisman mobile wallet remote configuration including feature flags. This endpoint is consumed by the Talisman mobile app.
+     *
+     * @tags Remote Config
+     * @name GetMobileRemoteConfig
+     * @summary Get mobile wallet remote configuration
+     * @request GET:/mobile-config
+     */
+    getMobileRemoteConfig: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** Feature flags controlling which mobile wallet features are enabled or disabled */
+          featureFlags: {
+            /** Enables Bittensor staking in the mobile wallet */
+            BITTENSOR_STAKE: boolean;
+          };
+        },
+        any
+      >({
+        path: `/mobile-config`,
         method: "GET",
         format: "json",
         ...params,
