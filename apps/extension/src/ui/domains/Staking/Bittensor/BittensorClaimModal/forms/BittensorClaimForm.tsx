@@ -33,6 +33,7 @@ export const BittensorClaimForm = () => {
     claimablePlancks,
     dustThreshold,
     isBelowDustThreshold,
+    isClaimingDisabled,
     holdIntervalBlocks,
     canSubmit,
     payload,
@@ -57,12 +58,22 @@ export const BittensorClaimForm = () => {
   }, [holdIntervalBlocks, locale, t])
 
   const dustError = useMemo(() => {
+    // the chain dust-skips every claim while the threshold holds its launch sentinel value:
+    // a submitted claim would succeed as a paid no-op (RootClaimed with 0 TAO)
+    if (isClaimingDisabled) return t("Claiming rewards is not enabled by the network yet")
     if (!isBelowDustThreshold) return null
     return t("Minimum claim is {{amount}} {{symbol}}", {
       amount: new BalanceFormatter(dustThreshold, nativeToken?.decimals).tokens,
       symbol: nativeToken?.symbol,
     })
-  }, [isBelowDustThreshold, dustThreshold, nativeToken?.decimals, nativeToken?.symbol, t])
+  }, [
+    isClaimingDisabled,
+    isBelowDustThreshold,
+    dustThreshold,
+    nativeToken?.decimals,
+    nativeToken?.symbol,
+    t,
+  ])
 
   return (
     <BittensorModalLayout

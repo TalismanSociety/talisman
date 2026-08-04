@@ -2,6 +2,7 @@ import { BITTENSOR_NETWORK_ID } from "@core/domains/bittensor/exports"
 import type { Address } from "@core/types/base"
 import { type DotNetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -70,6 +71,27 @@ export const useResetBittensorClaimWizard = () => {
 const toBigInt = (value: unknown): bigint =>
   typeof value === "bigint" ? value : typeof value === "number" ? BigInt(value) : 0n
 
+/**
+ * An absent storage entry means the chain applies the metadata default, so reads must too.
+ * Root Reborn ships `RootClaimableThreshold` unset with a sentinel default (~2.1M TAO) that
+ * dust-skips every claim: claiming stays disabled network-wide until governance sets it.
+ */
+const getStorageDefault = (sapi: ScaleApi, pallet: string, entry: string): bigint | null => {
+  try {
+    const item = sapi.chain.metadata.pallets
+      .find((p) => p.name === pallet)
+      ?.storage?.items.find((i) => i.name === entry)
+    if (!item?.fallback) return null
+    const coder = sapi.chain.builder.buildStorage(pallet, entry)
+    return toBigInt(coder.value.dec(item.fallback))
+  } catch {
+    return null
+  }
+}
+
+/** thresholds this high are the launch sentinel, not a real dust bound */
+const CLAIMS_DISABLED_MIN_THRESHOLD = 1_000_000_000_000n // 1000 TAO
+
 const useBittensorClaimWizardProvider = () => {
   const [{ networkId, address, hotkey, step, hash }, setWizardState] = useState(() =>
     wizardOpenState$.getValue()
@@ -121,10 +143,20 @@ const useBittensorClaimWizardProvider = () => {
   // instead of letting the user pay a fee for a no-op
   const { data: rawDustThreshold } = useQuery({
     queryKey: ["bittensorRootClaimableThreshold", sapi?.id],
-    queryFn: () => sapi?.getStorage("SubtensorModule", "RootClaimableThreshold", [ROOT_NETUID]),
+    queryFn: async () => {
+      if (!sapi) return null
+      const value = await sapi.getStorage<bigint>("SubtensorModule", "RootClaimableThreshold", [
+        ROOT_NETUID,
+      ])
+      return value ?? getStorageDefault(sapi, "SubtensorModule", "RootClaimableThreshold")
+    },
     enabled: !!sapi,
   })
   const dustThreshold = toBigInt(rawDustThreshold)
+
+  // E2E-verified on testnet: with the sentinel default in place the claim extrinsic succeeds
+  // but emits RootClaimed(tao=0) — a paid no-op the wizard must prevent
+  const isClaimingDisabled = dustThreshold >= CLAIMS_DISABLED_MIN_THRESHOLD
 
   // claiming counts as a root stake op: when the hold window is enabled it restarts for
   // the claimed pair, so the user must be warned before confirming
@@ -138,7 +170,7 @@ const useBittensorClaimWizardProvider = () => {
   const isBelowDustThreshold =
     claimablePlancks > 0n && dustThreshold > 0n && claimablePlancks < dustThreshold
 
-  const canSubmit = !!account && !!selectedCandidate && !isBelowDustThreshold
+  const canSubmit = !!account && !!selectedCandidate && !isBelowDustThreshold && !isClaimingDisabled
 
   const {
     payload,
@@ -185,6 +217,7 @@ const useBittensorClaimWizardProvider = () => {
     claimablePlancks,
     dustThreshold,
     isBelowDustThreshold,
+    isClaimingDisabled,
     holdIntervalBlocks,
     canSubmit,
     payload,
