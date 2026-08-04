@@ -27,10 +27,10 @@
       "codeHash": "0xb9df022d99d523efb33c1568a814a4ccc82a5bf89a2b91966b56ca6593bd81ff"
     },
     "bittensor": {
-      "wsUrl": "wss://entrypoint-finney.opentensor.ai:443",
+      "wsUrl": "wss://lite.sub.latent.to",
       "metadata": ".papi/scale/bittensor.scale",
       "genesis": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
-      "codeHash": "0x084048d5b9397ad4853b5e8b2fa74fc21c133d4fbb8e5997d8b596d5affe7780"
+      "codeHash": "0x5b9513abbcf3ba23c8ac33f73adebacfdc302a7b580881c3350bf2158c50f535"
     }
   },
   "options": {
