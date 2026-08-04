@@ -1,6 +1,7 @@
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import {
   BITTENSOR_NETWORK_ID,
+  BITTENSOR_TESTNET_NETWORK_ID,
   sortBittensorNetworkIds,
   useBittensorNetworkIds,
 } from "@ui/state/bittensor"
@@ -21,7 +22,12 @@ export const TaoDashboardNetworkTabs: FC<{ className?: string }> = ({ className 
     () =>
       sortBittensorNetworkIds(bittensorNetworkIds).map((id) => ({
         value: id,
-        label: id === BITTENSOR_NETWORK_ID ? t("Mainnet") : t("Testnet"),
+        label:
+          id === BITTENSOR_NETWORK_ID
+            ? t("Mainnet")
+            : id === BITTENSOR_TESTNET_NETWORK_ID
+              ? t("Testnet")
+              : t("Devnet"),
       })),
     [bittensorNetworkIds, t]
   )

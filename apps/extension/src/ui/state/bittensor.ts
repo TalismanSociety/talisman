@@ -1,6 +1,7 @@
 import {
   BITTENSOR_NETWORK_ID,
   BITTENSOR_NETWORK_IDS,
+  BITTENSOR_TESTNET_NETWORK_ID,
   type BittensorValidator,
   isBittensorNetworkId,
   sortBittensorNetworkIds,
@@ -14,7 +15,12 @@ import { map, Observable, shareReplay } from "rxjs"
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
-export { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS, sortBittensorNetworkIds }
+export {
+  BITTENSOR_NETWORK_ID,
+  BITTENSOR_NETWORK_IDS,
+  BITTENSOR_TESTNET_NETWORK_ID,
+  sortBittensorNetworkIds,
+}
 
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
   const unsubscribe = api.bittensorValidatorsSubscribe((data) => {

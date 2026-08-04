@@ -9,6 +9,7 @@ import { sessionStore } from "./domains/app/store.session"
 import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
 import { initialiseSolanaAssetDiscovery } from "./domains/assetDiscovery/solana"
 import { initialiseSubstrateAssetDiscovery } from "./domains/assetDiscovery/substrate"
+import { initialiseBittensorDevnet } from "./domains/bittensor/devnet"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { setWalletReady } from "./libs/isWalletReady"
@@ -134,3 +135,5 @@ const _iconManager = new IconManager()
 sessionStore.reset().catch((err) => {
   log.error("Failed to reset session store", err)
 })
+
+initialiseBittensorDevnet()
