@@ -10,7 +10,9 @@ const PAGE_SIZE = 1000
 export const fetchStorageKeysPaged = async (
   connector: IChainConnectorDot,
   networkId: string,
-  keyPrefix: string
+  keyPrefix: string,
+  /** block to read from — pass it to keep a multi-call poll on one block */
+  at?: `0x${string}`
 ): Promise<`0x${string}`[]> => {
   const keys: `0x${string}`[] = []
   let startKey: `0x${string}` | undefined
@@ -18,7 +20,11 @@ export const fetchStorageKeysPaged = async (
     const page = await connector.send<`0x${string}`[]>(
       networkId,
       "state_getKeysPaged",
-      startKey ? [keyPrefix, PAGE_SIZE, startKey] : [keyPrefix, PAGE_SIZE]
+      at
+        ? [keyPrefix, PAGE_SIZE, startKey ?? null, at]
+        : startKey
+          ? [keyPrefix, PAGE_SIZE, startKey]
+          : [keyPrefix, PAGE_SIZE]
     )
     keys.push(...page)
     startKey = page.length === PAGE_SIZE ? page[page.length - 1] : undefined

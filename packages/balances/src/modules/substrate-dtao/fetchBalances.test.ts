@@ -38,12 +38,13 @@ const mockMetadata = () => {
   } as unknown as ReturnType<typeof parseMetadataRpcCached>)
 }
 
-const mockRuntimeCalls = ({ owed, payout }: { owed: bigint; payout: bigint }) => {
+const BLOCK_HASH = "0xblockhash"
+
+const mockRuntimeCalls = ({ payout }: { payout: bigint }) => {
   vi.mocked(fetchRuntimeCallResult).mockImplementation(
     async (_connector, _networkId, _builder, _apiName, method) => {
       if (method === "get_stake_info_for_coldkeys")
         return [[ADDRESS, [{ netuid: 0, hotkey: HOTKEY, stake: 100n }]]]
-      if (method === "get_root_basket_owed") return owed
       if (method === "get_root_basket_positions") return payout > 0n ? [[HOTKEY, 1n, payout]] : []
       throw new Error(`unexpected runtime call ${method}`)
     }
@@ -53,6 +54,7 @@ const mockRuntimeCalls = ({ owed, payout }: { owed: bigint; payout: bigint }) =>
 // state_getKeysPaged (conviction lock scan) finds no keys; chain_getHeader reports the block
 const makeConnector = (currentBlock = 1000) => ({
   send: vi.fn(async (_networkId: string, method: string) => {
+    if (method === "chain_getBlockHash") return BLOCK_HASH
     if (method === "chain_getHeader") return { number: `0x${currentBlock.toString(16)}` }
     return []
   }),
@@ -82,7 +84,7 @@ const runFetchBalances = (tokenIds: string[], connector = makeConnector()) =>
 describe("fetchBalances basket claims", () => {
   it("emits claimable rewards as a locked value and a total-counting extra", async () => {
     mockMetadata()
-    mockRuntimeCalls({ owed: 50n, payout: 50n })
+    mockRuntimeCalls({ payout: 50n })
     vi.mocked(fetchRpcQueryPack).mockResolvedValue([0n]) // hold interval disabled
 
     const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
@@ -106,9 +108,9 @@ describe("fetchBalances basket claims", () => {
     })
   })
 
-  it("surfaces the unattributed remainder on the root base token", async () => {
+  it("never emits claimable rewards on the validator-less root base token", async () => {
     mockMetadata()
-    mockRuntimeCalls({ owed: 80n, payout: 50n })
+    mockRuntimeCalls({ payout: 50n })
     vi.mocked(fetchRpcQueryPack).mockResolvedValue([0n])
 
     // the position token is requested too so its balance row does not trigger
@@ -119,16 +121,32 @@ describe("fetchBalances basket claims", () => {
     const baseTokenBalance = result.success.find(
       (balance) => balance.tokenId === subDTaoTokenId(NETWORK_ID, 0)
     )
-    expect(baseTokenBalance?.values).toContainEqual(
-      expect.objectContaining({ type: "locked", label: "Claimable rewards", amount: "30" })
+    // claims are redeemed per validator, so a claim row with no validator behind it is
+    // both unclaimable and (when it comes from mixed-block reads) not real
+    expect(baseTokenBalance?.values ?? []).not.toContainEqual(
+      expect.objectContaining({ label: "Claimable rewards" })
     )
+  })
+
+  it("pins every read of the poll to one block", async () => {
+    mockMetadata()
+    mockRuntimeCalls({ payout: 50n })
+    vi.mocked(fetchRpcQueryPack).mockResolvedValue([0n])
+
+    await runFetchBalances([ROOT_POSITION_TOKEN_ID])
+
+    // claim amounts are NAV quotes that move every block: reads combined with each other
+    // must come from the same block, or they report state that never existed
+    for (const call of vi.mocked(fetchRuntimeCallResult).mock.calls)
+      expect(call[6]).toBe(BLOCK_HASH)
+    for (const call of vi.mocked(fetchRpcQueryPack).mock.calls) expect(call[3]).toBe(BLOCK_HASH)
   })
 })
 
 describe("fetchBalances root stake hold", () => {
   it("attaches the hold meta to the position's free value while the window runs", async () => {
     mockMetadata()
-    mockRuntimeCalls({ owed: 0n, payout: 0n })
+    mockRuntimeCalls({ payout: 0n })
     vi.mocked(fetchRpcQueryPack)
       .mockResolvedValueOnce([100n]) // RootStakeUnlockInterval
       .mockResolvedValueOnce([{ address: ADDRESS, hotkey: HOTKEY, lastStakeBlock: 950n }])
@@ -152,7 +170,6 @@ describe("fetchBalances root stake hold", () => {
     vi.mocked(fetchRuntimeCallResult).mockImplementation(
       async (_connector, _networkId, _builder, _apiName, method) => {
         if (method === "get_stake_info_for_coldkeys") return [[ADDRESS, []]]
-        if (method === "get_root_basket_owed") return 50n
         if (method === "get_root_basket_positions") return [[HOTKEY, 1n, 50n]]
         throw new Error(`unexpected runtime call ${method}`)
       }

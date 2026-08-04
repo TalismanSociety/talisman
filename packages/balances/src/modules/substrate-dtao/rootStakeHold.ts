@@ -45,7 +45,8 @@ export const fetchRootStakeHolds = async (
   connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
-  rootPairs: Array<{ address: string; hotkey: string }>
+  rootPairs: Array<{ address: string; hotkey: string }>,
+  at?: `0x${string}`
 ): Promise<FetchedRootStakeHold[]> => {
   if (!rootPairs.length) return []
 
@@ -59,12 +60,12 @@ export const fetchRootStakeHolds = async (
     return []
 
   try {
-    const interval = await fetchUnlockInterval(connector, networkId, unifiedMetadata, builder)
+    const interval = await fetchUnlockInterval(connector, networkId, unifiedMetadata, builder, at)
     if (interval === 0n) return []
 
     const [lastStakeBlocks, currentBlock] = await Promise.all([
-      fetchLastStakeBlocks(connector, networkId, builder, rootPairs),
-      fetchCurrentBlock(connector, networkId),
+      fetchLastStakeBlocks(connector, networkId, builder, rootPairs, at),
+      fetchCurrentBlock(connector, networkId, at),
     ])
 
     return lastStakeBlocks.flatMap(({ address, hotkey, lastStakeBlock }) => {
@@ -86,7 +87,8 @@ const fetchUnlockInterval = async (
   connector: IChainConnectorDot,
   networkId: string,
   unifiedMetadata: UnifiedMetadata,
-  builder: ReturnType<typeof parseMetadataRpcCached>["builder"]
+  builder: ReturnType<typeof parseMetadataRpcCached>["builder"],
+  at?: `0x${string}`
 ): Promise<bigint> => {
   const storageCoder = builder.buildStorage("SubtensorModule", "RootStakeUnlockInterval")
   const query: RpcQueryPack<bigint> = {
@@ -106,7 +108,7 @@ const fetchUnlockInterval = async (
       return decoded
     },
   }
-  const [interval] = await fetchRpcQueryPack(connector, networkId, [query])
+  const [interval] = await fetchRpcQueryPack(connector, networkId, [query], at)
   return interval ?? 0n
 }
 
@@ -125,7 +127,8 @@ const fetchLastStakeBlocks = async (
   connector: IChainConnectorDot,
   networkId: string,
   builder: ReturnType<typeof parseMetadataRpcCached>["builder"],
-  rootPairs: Array<{ address: string; hotkey: string }>
+  rootPairs: Array<{ address: string; hotkey: string }>,
+  at?: `0x${string}`
 ): Promise<Array<{ address: string; hotkey: string; lastStakeBlock: bigint }>> => {
   const storageCoder = builder.buildStorage("SubtensorModule", "LastColdkeyHotkeyStakeBlock")
 
@@ -169,14 +172,19 @@ const fetchLastStakeBlocks = async (
     }
   )
 
-  return fetchRpcQueryPack(connector, networkId, queries)
+  return fetchRpcQueryPack(connector, networkId, queries, at)
 }
 
 const fetchCurrentBlock = async (
   connector: IChainConnectorDot,
-  networkId: string
+  networkId: string,
+  at?: `0x${string}`
 ): Promise<number> => {
-  const header = await connector.send<{ number: string } | null>(networkId, "chain_getHeader", [])
+  const header = await connector.send<{ number: string } | null>(
+    networkId,
+    "chain_getHeader",
+    at ? [at] : []
+  )
   const blockNumber = Number.parseInt(header?.number ?? "", 16)
   if (Number.isNaN(blockNumber))
     throw new Error(`Failed to fetch current block number on ${networkId}`)

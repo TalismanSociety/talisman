@@ -16,7 +16,7 @@ import { keyBy, uniq } from "lodash-es"
 import log from "../../log"
 import type { AmountWithLabel, IBalance } from "../../types"
 import type { IBalanceModule } from "../../types/IBalanceModule"
-import { fetchRuntimeCallResult } from "../shared"
+import { fetchBestBlockHash, fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { getBalanceDefs } from "../shared/types"
 import { CLAIMABLE_REWARDS_LABEL, fetchBasketClaims } from "./basketClaims"
@@ -82,13 +82,19 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     // pre-parse once (memoized) — parsing the raw metadataRpc per call is expensive
     const { builder } = parseMetadataRpcCached(miniMetadata.data!)
 
+    // every read below is pinned to this block: stake, basket claims and hold windows are
+    // combined with each other, and unpinned reads land on whatever block is best when they
+    // arrive — mixing blocks reports state that never existed
+    const at = await fetchBestBlockHash(connector, networkId)
+
     const stakeInfos = await fetchRuntimeCallResult<GetStakeInfosResult>(
       connector,
       networkId,
       builder,
       "StakeInfoRuntimeApi",
       "get_stake_info_for_coldkeys",
-      [addresses]
+      [addresses],
+      at
     )
 
     // unique (coldkey, hotkey) root staking pairs: hold windows are per pair. (Basket claims
@@ -107,9 +113,9 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
     const [convictionLocks, basketClaims, rootStakeHolds] = miniMetadata.data
       ? await Promise.all([
-          fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses),
-          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses),
-          fetchRootStakeHolds(connector, networkId, miniMetadata.data, rootPairs),
+          fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses, at),
+          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses, at),
+          fetchRootStakeHolds(connector, networkId, miniMetadata.data, rootPairs, at),
         ])
       : [[], [], []]
 
@@ -167,19 +173,16 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     await forEachWithYield(
       basketClaims,
       ({ address, hotkey, amount }) => {
-        // per-validator claims ride on the validator's root staking position token; the
-        // unattributed remainder (entitlement on fully-unstaked validators) rides on the
-        // root subnet's base token
-        const tokenId = hotkey
-          ? subDTaoTokenId(networkId, ROOT_NETUID, hotkey)
-          : subDTaoTokenId(networkId, ROOT_NETUID)
+        // claims ride on their validator's root staking position token, which the chain
+        // keeps (and the claim redeems from) even after the coldkey fully unstaked from it
+        const tokenId = subDTaoTokenId(networkId, ROOT_NETUID, hotkey)
 
         const balance: SubDTaoBalance = {
           address,
           tokenId,
           baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
           stake: 0n,
-          hotkey: hotkey ?? "",
+          hotkey,
           netuid: ROOT_NETUID,
           claimable: amount,
         }

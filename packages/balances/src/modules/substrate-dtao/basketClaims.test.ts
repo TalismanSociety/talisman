@@ -20,12 +20,10 @@ vi.mock("../shared/parseMetadataRpcCached", () => ({
 const CONNECTOR = {} as Parameters<typeof fetchBasketClaims>[0]
 
 const mockRuntimeCalls = (
-  owedByAddress: Record<string, bigint>,
   positionsByAddress: Record<string, Array<[hotkey: string, owedShares: bigint, payoutTao: bigint]>>
 ) => {
   vi.mocked(fetchRuntimeCallResult).mockImplementation(
     async (_connector, _networkId, _builder, _apiName, method, args) => {
-      if (method === "get_root_basket_owed") return owedByAddress[args[0] as string] ?? 0n
       if (method === "get_root_basket_positions") return positionsByAddress[args[0] as string] ?? []
       throw new Error(`unexpected runtime call ${method}`)
     }
@@ -47,15 +45,12 @@ describe("fetchBasketClaims", () => {
   })
 
   it("attributes payouts per validator hotkey and skips zero payouts", async () => {
-    mockRuntimeCalls(
-      { "address-1": 30n },
-      {
-        "address-1": [
-          ["hotkey-1", 10n, 30n],
-          ["hotkey-2", 5n, 0n],
-        ],
-      }
-    )
+    mockRuntimeCalls({
+      "address-1": [
+        ["hotkey-1", 10n, 30n],
+        ["hotkey-2", 5n, 0n],
+      ],
+    })
 
     const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
 
@@ -65,31 +60,48 @@ describe("fetchBasketClaims", () => {
   it("reports positions on validators the coldkey no longer stakes to", async () => {
     // the chain keeps basket entitlement (and its coldkey→hotkeys index entry) after a
     // full unstake: the positions call must be the source of truth, not stake records
-    mockRuntimeCalls({ "address-1": 25n }, { "address-1": [["unstaked-hotkey", 10n, 25n]] })
+    mockRuntimeCalls({ "address-1": [["unstaked-hotkey", 10n, 25n]] })
 
     const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
 
     expect(claims).toEqual([{ address: "address-1", hotkey: "unstaked-hotkey", amount: 25n }])
   })
 
-  it("reports entitlement not attributed to any position with a null hotkey", async () => {
-    mockRuntimeCalls({ "address-1": 100n }, { "address-1": [["hotkey-1", 10n, 60n]] })
+  it("reads entitlement from the positions call only", async () => {
+    // reconciling against the coldkey-wide get_root_basket_owed total fabricated claims:
+    // both are marked NAV quotes that move every block, so a total read from another block
+    // than the positions leaves a residue with no validator to claim it from
+    mockRuntimeCalls({ "address-1": [["hotkey-1", 10n, 60n]] })
 
     const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
 
-    expect(claims).toEqual([
-      { address: "address-1", hotkey: "hotkey-1", amount: 60n },
-      { address: "address-1", hotkey: null, amount: 40n },
-    ])
+    expect(claims).toEqual([{ address: "address-1", hotkey: "hotkey-1", amount: 60n }])
+    expect(fetchRuntimeCallResult).toHaveBeenCalledTimes(1)
+    expect(fetchRuntimeCallResult).toHaveBeenCalledWith(
+      CONNECTOR,
+      "bittensor",
+      expect.anything(),
+      "BetaBasketRuntimeApi",
+      "get_root_basket_positions",
+      ["address-1"],
+      undefined
+    )
   })
 
-  it("skips the positions query for coldkeys that are owed nothing", async () => {
-    mockRuntimeCalls({ "address-1": 0n }, {})
+  it("pins the query to the requested block", async () => {
+    mockRuntimeCalls({ "address-1": [] })
 
-    const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
+    await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"], "0xblockhash")
 
-    expect(claims).toEqual([])
-    expect(fetchRuntimeCallResult).toHaveBeenCalledTimes(1)
+    expect(fetchRuntimeCallResult).toHaveBeenCalledWith(
+      CONNECTOR,
+      "bittensor",
+      expect.anything(),
+      "BetaBasketRuntimeApi",
+      "get_root_basket_positions",
+      ["address-1"],
+      "0xblockhash"
+    )
   })
 
   it("rejects on transient failures instead of resolving empty", async () => {

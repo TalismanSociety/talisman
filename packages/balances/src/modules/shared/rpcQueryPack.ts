@@ -19,7 +19,9 @@ type ChangesByKey = ReadonlyMap<`0x${string}`, `0x${string}`>
 export const fetchRpcQueryPack = async <T>(
   connector: IChainConnectorDot,
   networkId: DotNetworkId,
-  queries: RpcQueryPack<T>[]
+  queries: RpcQueryPack<T>[],
+  /** block to read from — pass it to keep a multi-call poll on one block */
+  at?: `0x${string}`
 ) => {
   const allStateKeys = queries.flatMap(({ stateKeys }) => stateKeys).filter(isNotNil)
 
@@ -27,9 +29,11 @@ export const fetchRpcQueryPack = async <T>(
   if (!allStateKeys.length)
     return queries.map(({ stateKeys, decodeResult }) => decodeResult(stateKeys.map(() => null)))
 
-  const [result] = await connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [
-    allStateKeys,
-  ])
+  const [result] = await connector.send<QueryStorageResult>(
+    networkId,
+    "state_queryStorageAt",
+    at ? [allStateKeys, at] : [allStateKeys]
+  )
 
   // a valid state_queryStorageAt response carries one entry per queried block — an empty
   // response is a bad response, not absent values: decoding it would fabricate "no value"
