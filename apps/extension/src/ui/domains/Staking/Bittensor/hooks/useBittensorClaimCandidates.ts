@@ -38,5 +38,3 @@ export const useBittensorClaimCandidates = (networkId: DotNetworkId | null | und
       .sort((a, b) => (a.claimablePlancks > b.claimablePlancks ? -1 : 1))
   }, [balances, networkId, ownedAccounts])
 }
-
-export type BittensorClaimCandidate = ReturnType<typeof useBittensorClaimCandidates>[number]
