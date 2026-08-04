@@ -113,7 +113,7 @@ const useBittensorClaimWizardProvider = () => {
 
   // claims below RootClaimableThreshold[ROOT] are skipped on-chain as dust: block them
   // instead of letting the user pay a fee for a no-op
-  const { data: rawDustThreshold } = useQuery({
+  const { data: rawDustThreshold, isSuccess: isDustThresholdReady } = useQuery({
     queryKey: ["bittensorRootClaimableThreshold", sapi?.id],
     queryFn: async () => {
       if (!sapi) return null
@@ -134,7 +134,7 @@ const useBittensorClaimWizardProvider = () => {
   // the claimed pair, so the user must be warned before confirming. There is no setter
   // extrinsic for this storage: enabling it may come as a runtime default with the entry
   // left unset, so the metadata fallback must be read too.
-  const { data: rawHoldInterval } = useQuery({
+  const { data: rawHoldInterval, isSuccess: isHoldIntervalReady } = useQuery({
     queryKey: ["bittensorRootStakeUnlockInterval", sapi?.id],
     queryFn: async () => {
       if (!sapi) return null
@@ -154,7 +154,15 @@ const useBittensorClaimWizardProvider = () => {
   const isBelowDustThreshold =
     claimablePlancks > 0n && dustThreshold > 0n && claimablePlancks < dustThreshold
 
-  const canSubmit = !!account && !!selectedCandidate && !isBelowDustThreshold && !isClaimingDisabled
+  // unresolved queries read as 0n, which would open the gate (and skip the hold warning)
+  // while loading or on RPC error: hold submission until both reads have settled
+  const canSubmit =
+    !!account &&
+    !!selectedCandidate &&
+    isDustThresholdReady &&
+    isHoldIntervalReady &&
+    !isBelowDustThreshold &&
+    !isClaimingDisabled
 
   const {
     payload,

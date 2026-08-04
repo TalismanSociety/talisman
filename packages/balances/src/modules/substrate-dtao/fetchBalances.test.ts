@@ -146,4 +146,32 @@ describe("fetchBalances root stake hold", () => {
       })
     )
   })
+
+  it("keeps a fully-unstaked validator's claim without querying holds for it", async () => {
+    mockMetadata()
+    vi.mocked(fetchRuntimeCallResult).mockImplementation(
+      async (_connector, _networkId, _builder, _apiName, method) => {
+        if (method === "get_stake_info_for_coldkeys") return [[ADDRESS, []]]
+        if (method === "get_root_basket_owed") return 50n
+        if (method === "get_root_basket_positions") return [[HOTKEY, 1n, 50n]]
+        throw new Error(`unexpected runtime call ${method}`)
+      }
+    )
+    vi.mocked(fetchRpcQueryPack).mockClear()
+
+    const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
+
+    expect(result.errors).toEqual([])
+    // hold windows only restrict live root stake: no per-pair queries for unstaked validators
+    expect(fetchRpcQueryPack).not.toHaveBeenCalled()
+    const values = result.success.flatMap((balance) => balance.values)
+    expect(values).toContainEqual(
+      expect.objectContaining({ type: "locked", label: "Claimable rewards", amount: "50" })
+    )
+    expect(
+      values.some(
+        (value) => (value?.meta as { rootStakeHold?: unknown } | undefined)?.rootStakeHold
+      )
+    ).toBe(false)
+  })
 })

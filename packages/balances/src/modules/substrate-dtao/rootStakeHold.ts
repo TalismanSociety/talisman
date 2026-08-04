@@ -69,9 +69,9 @@ export const fetchRootStakeHolds = async (
     return lastStakeBlocks.flatMap(({ address, hotkey, lastStakeBlock }) => {
       // no recorded root stake op for the pair => nothing to age the hold from
       if (lastStakeBlock === 0n) return []
-      const unlockAtBlock = Number(lastStakeBlock + interval)
-      if (unlockAtBlock <= currentBlock) return []
-      return [{ address, hotkey, unlockAtBlock }]
+      const unlockAtBlock = lastStakeBlock + interval
+      if (unlockAtBlock <= BigInt(currentBlock)) return []
+      return [{ address, hotkey, unlockAtBlock: Number(unlockAtBlock) }]
     })
   } catch (cause) {
     // a missing hold reads as "free to unstake" — transient failures must fail the poll
