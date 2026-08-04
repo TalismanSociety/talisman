@@ -1,13 +1,14 @@
 import { type Balance, findDTaoRootStakeHold } from "@talismn/balances"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
+import { getBlockTimeMs } from "@ui/domains/Staking/Bittensor/utils/helpers"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-const BLOCK_TIME_MS = 12_000
+const MIN_REFETCH_INTERVAL_MS = 3_000
 
 export type DTaoRootStakeHold = {
   unlockAtBlock: number
@@ -33,23 +34,24 @@ export const useDTaoRootStakeHold = ({
   const hold = useMemo(() => findDTaoRootStakeHold(balance?.toJSON()), [balance])
 
   const { data: sapi } = useScaleApi(hold ? networkId : null)
+  const blockTimeMs = useMemo(() => (sapi ? getBlockTimeMs(sapi) : null), [sapi])
 
   const { data: currentBlock } = useQuery({
     queryKey: ["useDTaoRootStakeHold", sapi?.chainId, hold?.unlockAtBlock],
     queryFn: () => sapi?.getStorage<number>("System", "Number", []) ?? null,
     enabled: !!sapi && !!hold,
-    refetchInterval: BLOCK_TIME_MS,
+    refetchInterval: Math.max(blockTimeMs ?? MIN_REFETCH_INTERVAL_MS, MIN_REFETCH_INTERVAL_MS),
   })
 
   return useMemo(() => {
     if (!hold) return null
-    if (typeof currentBlock !== "number")
+    if (typeof currentBlock !== "number" || !blockTimeMs)
       return { unlockAtBlock: hold.unlockAtBlock, remainingMs: null }
     const remainingBlocks = hold.unlockAtBlock - currentBlock
     // expired since the last balances poll: the chain no longer restricts the pair
     if (remainingBlocks <= 0) return null
-    return { unlockAtBlock: hold.unlockAtBlock, remainingMs: remainingBlocks * BLOCK_TIME_MS }
-  }, [hold, currentBlock])
+    return { unlockAtBlock: hold.unlockAtBlock, remainingMs: remainingBlocks * blockTimeMs }
+  }, [hold, currentBlock, blockTimeMs])
 }
 
 /** User-facing explanation of an active hold, ready to use as a form error message */

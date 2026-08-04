@@ -1,12 +1,11 @@
 import { BalanceFormatter } from "@talismn/balances"
+import { AlertCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
-import { PillButton } from "@ui/components/PillButton"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
-import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
+import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useNetworkById } from "@ui/state/chaindata"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,12 +14,9 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
-import { BittensorClaimPositionPicker } from "../components/BittensorClaimPositionPicker"
 import { BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimModal } from "../hooks/useBittensorClaimModal"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
-
-const BLOCK_TIME_MS = 12_000
 
 export const BittensorClaimForm = () => {
   const { t } = useTranslation()
@@ -29,12 +25,11 @@ export const BittensorClaimForm = () => {
     account,
     nativeToken,
     selectedCandidate,
-    positionPicker,
     claimablePlancks,
     dustThreshold,
     isBelowDustThreshold,
     isClaimingDisabled,
-    holdIntervalBlocks,
+    holdDurationMs,
     canSubmit,
     payload,
     txMetadata,
@@ -44,18 +39,19 @@ export const BittensorClaimForm = () => {
     isLoadingPayload,
     onSubmitted,
   } = useBittensorClaimWizard()
-  const network = useNetworkById(networkId)
   const { close } = useBittensorClaimModal()
   const locale = useDateFnsLocale()
 
   const holdWarning = useMemo(() => {
-    if (holdIntervalBlocks <= 0n) return null
-    const duration = formatDuration(
-      intervalToDuration({ start: 0, end: Number(holdIntervalBlocks) * BLOCK_TIME_MS }),
-      { locale }
-    )
-    return t("Claiming locks your root stake for {{duration}}", { duration })
-  }, [holdIntervalBlocks, locale, t])
+    if (!holdDurationMs) return null
+    const duration = formatDuration(intervalToDuration({ start: 0, end: holdDurationMs }), {
+      locale,
+    })
+    return t("After this claim, your staked {{symbol}} will be locked for another {{duration}}", {
+      symbol: nativeToken?.symbol ?? "TAO",
+      duration,
+    })
+  }, [holdDurationMs, locale, nativeToken?.symbol, t])
 
   const dustError = useMemo(() => {
     // the chain dust-skips every claim while the threshold holds its launch sentinel value:
@@ -80,42 +76,15 @@ export const BittensorClaimForm = () => {
       header={
         <BittensorStakingModalHeader title={t("Claim Rewards")} withClose onCloseModal={close} />
       }
-      contentClassName="text-body-secondary flex size-full flex-col gap-8 p-12 pt-0"
+      contentClassName="text-body-secondary flex size-full flex-col p-12 pt-0 gap-6"
     >
-      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph">
-        <div className="flex h-16 items-center justify-between gap-4">
-          <div className="whitespace-nowrap">{t("Network")}</div>
-          <div className="overflow-hidden text-body">
-            <NetworkLogo networkId={networkId} className="mr-2 inline-block size-12" />{" "}
-            {network?.name ?? "Bittensor"}
-          </div>
-        </div>
-        <div className="flex h-16 items-center justify-between gap-4">
-          <div className="whitespace-nowrap">{t("Account")}</div>
-          <div className="overflow-hidden">
-            <BondAccountPillButton address={account?.address} onClick={positionPicker.open} />
-          </div>
-        </div>
-        <div className="flex h-16 items-center justify-between gap-6">
-          <div className="whitespace-nowrap">{t("Validator")}</div>
-          <div className="min-w-0 overflow-hidden">
-            <PillButton className="h-16 max-w-full rounded px-4" onClick={positionPicker.open}>
-              <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
-                {selectedCandidate ? (
-                  <BittensorValidatorName hotkey={selectedCandidate.token.hotkey} />
-                ) : (
-                  t("Select validator")
-                )}
-              </div>
-            </PillButton>
-          </div>
-        </div>
-      </div>
+      <h2 className="text-center text-body">{t("You are claiming")}</h2>
 
-      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph">
-        <div className="flex h-16 items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Claimable Rewards")}</div>
-          <div className="overflow-hidden text-body">
+      <div className="flex w-full flex-col rounded bg-grey-900 p-8 text-body-secondary">
+        <div className="flex items-center justify-between gap-8 pb-2">
+          <div className="whitespace-nowrap">{t("Amount")}</div>
+          <div className="flex items-center gap-4 overflow-hidden">
+            <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
             <TokensAndFiat
               isBalance
               tokenId={nativeToken?.id}
@@ -126,55 +95,65 @@ export const BittensorClaimForm = () => {
             />
           </div>
         </div>
-      </div>
-
-      <div className="text-body-inactive text-xs leading-paragraph">
-        {t("Claimed rewards are staked on the Root Network, they are not paid out as free TAO.")}
-      </div>
-
-      <div className="grow" />
-
-      {!!holdWarning && <div className="text-center text-brand-orange text-xs">{holdWarning}</div>}
-      {!!dustError && <div className="text-center text-brand-orange text-xs">{dustError}</div>}
-
-      <div className="flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
-        <div className="flex h-12 items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Estimated fee")}</div>
-          <div className="overflow-hidden">
+        <div className="flex items-center justify-between gap-8 pt-2">
+          <div className="whitespace-nowrap">{t("Account")}</div>
+          <div className="flex items-center gap-4 overflow-hidden">
+            <StakingAccountDisplay address={account?.address} chainId={networkId} />
+          </div>
+        </div>
+        <div className="py-8">
+          <hr className="text-grey-800" />
+        </div>
+        <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+          <div className="whitespace-nowrap">{t("Validator")}</div>
+          <div className="truncate text-body">
+            {selectedCandidate && (
+              <BittensorValidatorName hotkey={selectedCandidate.token.hotkey} />
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-8 pt-2 text-xs">
+          <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
+          <div>
             <StakingFeeEstimate
               plancks={feeEstimate}
               tokenId={nativeToken?.id}
               isLoading={isLoadingFeeEstimate}
               error={errorFeeEstimate}
+              noCountUp
             />
           </div>
         </div>
       </div>
 
-      <div className="grid w-full grid-cols-2 gap-8">
-        <Button onClick={close}>{t("Cancel")}</Button>
+      {!!holdWarning && (
+        <div className="mb-8 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs leading-paragraph">
+          <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+          <span>{holdWarning}</span>
+        </div>
+      )}
+      {!!dustError && (
+        <div className="mb-8 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs leading-paragraph">
+          <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+          <span>{dustError}</span>
+        </div>
+      )}
 
-        {isLoadingPayload || !payload ? (
-          <Button className="px-2" primary disabled>
-            {t("Confirm")}
-          </Button>
-        ) : (
-          <SapiSendButton
-            containerId={BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID}
-            label={t("Confirm")}
-            payload={payload}
-            onSubmitted={onSubmitted}
-            txMetadata={txMetadata}
-            disabled={!canSubmit}
-          />
-        )}
-      </div>
+      <div className="grow" />
 
-      <BittensorClaimPositionPicker
-        containerId={BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID}
-        isOpen={positionPicker.isOpen}
-        onDismiss={positionPicker.close}
-      />
+      {canSubmit && payload ? (
+        <SapiSendButton
+          containerId={BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID}
+          label={t("Confirm")}
+          payload={payload}
+          onSubmitted={onSubmitted}
+          txMetadata={txMetadata}
+        />
+      ) : (
+        <Button primary fullWidth disabled processing={canSubmit && isLoadingPayload}>
+          {t("Confirm")}
+        </Button>
+      )}
     </BittensorModalLayout>
   )
 }

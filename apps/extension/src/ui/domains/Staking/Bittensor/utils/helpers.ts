@@ -253,3 +253,18 @@ export const getBittensorMoveStakePayload = ({
     { address }
   )
 }
+
+const FALLBACK_BLOCK_TIME_MS = 12_000
+
+/**
+ * Bittensor runs Aura, which publishes no block-time constant: the convention is
+ * 2 × `Timestamp.MinimumPeriod` (12s on mainnet/testnet, 250ms on a fast localnet).
+ */
+export const getBlockTimeMs = (sapi: ScaleApi): number => {
+  try {
+    const minimumPeriod = sapi.getConstant<bigint>("Timestamp", "MinimumPeriod")
+    return minimumPeriod ? Number(minimumPeriod) * 2 : FALLBACK_BLOCK_TIME_MS
+  } catch {
+    return FALLBACK_BLOCK_TIME_MS
+  }
+}

@@ -5,7 +5,6 @@ import { isAddressEqual } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
@@ -13,12 +12,10 @@ import { useCallback, useMemo, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 
-import {
-  type BittensorClaimCandidate,
-  useBittensorClaimCandidates,
-} from "../../hooks/useBittensorClaimCandidates"
+import { useBittensorClaimCandidates } from "../../hooks/useBittensorClaimCandidates"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { ROOT_NETUID } from "../../utils/constants"
+import { getBlockTimeMs } from "../../utils/helpers"
 
 export type BittensorClaimStep = "review" | "follow-up"
 
@@ -93,7 +90,6 @@ const useBittensorClaimWizardProvider = () => {
 
   const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const nativeToken = useToken(nativeTokenId, "substrate-native")
-  const positionPicker = useOpenClose()
 
   const candidates = useBittensorClaimCandidates(networkId)
 
@@ -135,13 +131,25 @@ const useBittensorClaimWizardProvider = () => {
   const isClaimingDisabled = dustThreshold >= CLAIMS_DISABLED_MIN_THRESHOLD
 
   // claiming counts as a root stake op: when the hold window is enabled it restarts for
-  // the claimed pair, so the user must be warned before confirming
+  // the claimed pair, so the user must be warned before confirming. There is no setter
+  // extrinsic for this storage: enabling it may come as a runtime default with the entry
+  // left unset, so the metadata fallback must be read too.
   const { data: rawHoldInterval } = useQuery({
     queryKey: ["bittensorRootStakeUnlockInterval", sapi?.id],
-    queryFn: () => sapi?.getStorage("SubtensorModule", "RootStakeUnlockInterval", []),
+    queryFn: async () => {
+      if (!sapi) return null
+      const value = await sapi.getStorage<bigint>("SubtensorModule", "RootStakeUnlockInterval", [])
+      return value ?? getStorageDefault(sapi, "SubtensorModule", "RootStakeUnlockInterval")
+    },
     enabled: !!sapi,
   })
   const holdIntervalBlocks = toBigInt(rawHoldInterval)
+
+  const holdDurationMs = useMemo(
+    () =>
+      sapi && holdIntervalBlocks > 0n ? Number(holdIntervalBlocks) * getBlockTimeMs(sapi) : null,
+    [sapi, holdIntervalBlocks]
+  )
 
   const isBelowDustThreshold =
     claimablePlancks > 0n && dustThreshold > 0n && claimablePlancks < dustThreshold
@@ -167,16 +175,6 @@ const useBittensorClaimWizardProvider = () => {
     []
   )
 
-  const setCandidate = useCallback(
-    (candidate: BittensorClaimCandidate) =>
-      setWizardState((prev) => ({
-        ...prev,
-        address: candidate.balance.address,
-        hotkey: candidate.token.hotkey ?? null,
-      })),
-    []
-  )
-
   const onSubmitted = useCallback((txHash?: Hex) => {
     if (txHash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash: txHash }))
   }, [])
@@ -187,14 +185,12 @@ const useBittensorClaimWizardProvider = () => {
     hash,
     account,
     nativeToken,
-    candidates,
     selectedCandidate,
-    positionPicker,
     claimablePlancks,
     dustThreshold,
     isBelowDustThreshold,
     isClaimingDisabled,
-    holdIntervalBlocks,
+    holdDurationMs,
     canSubmit,
     payload,
     txMetadata,
@@ -203,7 +199,6 @@ const useBittensorClaimWizardProvider = () => {
     errorFeeEstimate,
     isLoadingPayload,
     setStep,
-    setCandidate,
     onSubmitted,
   }
 }
