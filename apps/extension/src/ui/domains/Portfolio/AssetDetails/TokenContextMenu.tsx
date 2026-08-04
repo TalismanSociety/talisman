@@ -17,6 +17,7 @@ import { useBittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/h
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { getBalanceClaimablePlancks } from "@ui/domains/Staking/Bittensor/utils/claimableRewards"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -147,35 +148,37 @@ const ClaimRewardsMenuItem: FC<{ token: Token }> = ({ token }) => {
 
   // claims are per-validator: only the per-hotkey position rows expose the entry (the base
   // token's claimable remainder has no hotkey attribution and cannot be claimed here)
-  const isBittensorRootDTao =
+  const rootToken =
     token.type === "substrate-dtao" &&
-    token.netuid === 0 &&
-    !!token.hotkey &&
+    token.netuid === ROOT_NETUID &&
+    token.hotkey &&
     bittensorNetworkIds.includes(token.networkId)
+      ? token
+      : null
 
   const claimBalance = useMemo(() => {
-    if (!isBittensorRootDTao) return null
+    if (!rootToken) return null
     return (
       allBalances.each.find(
         (b) =>
-          b.tokenId === token.id &&
+          b.tokenId === rootToken.id &&
           (!selectedAccount?.address || isAddressEqual(b.address, selectedAccount.address)) &&
           getBalanceClaimablePlancks(b) > 0n
       ) ?? null
     )
-  }, [allBalances, isBittensorRootDTao, selectedAccount?.address, token.id])
+  }, [allBalances, rootToken, selectedAccount?.address])
 
   const handleClick = useCallback(() => {
-    if (!claimBalance || token.type !== "substrate-dtao" || !token.hotkey) return
+    if (!claimBalance || !rootToken?.hotkey) return
     open({
-      networkId: token.networkId,
+      networkId: rootToken.networkId,
       address: claimBalance.address,
-      hotkey: token.hotkey,
+      hotkey: rootToken.hotkey,
     })
-    genericEvent("open bittensor claim modal", { tokenId: token.id })
-  }, [genericEvent, claimBalance, open, token])
+    genericEvent("open bittensor claim modal", { tokenId: rootToken.id })
+  }, [genericEvent, claimBalance, open, rootToken])
 
-  if (!isBittensorRootDTao || !claimBalance) return null
+  if (!rootToken || !claimBalance) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("Claim Rewards")}</ContextMenuItem>
 }

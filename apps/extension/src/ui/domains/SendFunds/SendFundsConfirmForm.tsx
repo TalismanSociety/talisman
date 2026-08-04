@@ -181,14 +181,7 @@ const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const {
-    network,
-    onSubmitted,
-    transaction,
-    txInfo,
-    dtaoRootStakeHoldMessage,
-    isDTaoRootStakeHoldReady,
-  } = useSendFunds()
+  const { network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate } = useSendFunds()
   const { canConfirm, saveConfirmation } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
@@ -259,16 +252,14 @@ const SendButton = () => {
         <ExternalRecipientWarning />
         {/* (spec 441) a hold can start or surface after the amount screen was validated:
             re-gate here or the transfer would revert with RootStakeLocked */}
-        {dtaoRootStakeHoldMessage && (
-          <div className="text-center text-alert-warn text-xs">{dtaoRootStakeHoldMessage}</div>
+        {dtaoRootStakeHoldGate.message && (
+          <div className="text-center text-alert-warn text-xs">{dtaoRootStakeHoldGate.message}</div>
         )}
         <TxSubmitButton
           label={t("Confirm")}
           onSubmit={handleSubmit}
           tx={tx}
-          disabled={
-            !isReady || !canConfirm || !isDTaoRootStakeHoldReady || !!dtaoRootStakeHoldMessage
-          }
+          disabled={!isReady || !canConfirm || dtaoRootStakeHoldGate.isBlocked}
           containerId="main"
         />
       </div>

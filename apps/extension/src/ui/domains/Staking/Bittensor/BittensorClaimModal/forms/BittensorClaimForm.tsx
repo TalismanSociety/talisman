@@ -7,7 +7,7 @@ import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/Dashb
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
-import { useMemo } from "react"
+import { type FC, type PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -17,6 +17,13 @@ import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimModal } from "../hooks/useBittensorClaimModal"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
+
+const ClaimAlert: FC<PropsWithChildren> = ({ children }) => (
+  <div className="mb-8 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs leading-paragraph">
+    <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
+    <span>{children}</span>
+  </div>
+)
 
 export const BittensorClaimForm = () => {
   const { t } = useTranslation()
@@ -126,18 +133,9 @@ export const BittensorClaimForm = () => {
         </div>
       </div>
 
-      {!!holdWarning && (
-        <div className="mb-8 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs leading-paragraph">
-          <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
-          <span>{holdWarning}</span>
-        </div>
-      )}
-      {!!dustError && (
-        <div className="mb-8 flex items-start gap-4 rounded bg-alert-warn/10 px-8 py-6 text-alert-warn text-xs leading-paragraph">
-          <AlertCircleIcon className="mt-0.5 shrink-0 text-sm" />
-          <span>{dustError}</span>
-        </div>
-      )}
+      {[holdWarning, dustError].filter(Boolean).map((message) => (
+        <ClaimAlert key={message}>{message}</ClaimAlert>
+      ))}
 
       <div className="grow" />
 

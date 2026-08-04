@@ -170,47 +170,34 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       )
     }
 
-    await forEachWithYield(
-      basketClaims,
-      ({ address, hotkey, amount }) => {
-        // claims ride on their validator's root staking position token, which the chain
-        // keeps (and the claim redeems from) even after the coldkey fully unstaked from it
-        const tokenId = subDTaoTokenId(networkId, ROOT_NETUID, hotkey)
+    // both ride on their validator's root staking position token, which the chain keeps
+    // (and the claim redeems from) even after the coldkey fully unstaked from it
+    const upsertRootPairFields = <T extends { address: string; hotkey: string }>(
+      items: T[],
+      getFields: (item: T) => Partial<SubDTaoBalance>
+    ) =>
+      forEachWithYield(
+        items,
+        (item) => {
+          const tokenId = subDTaoTokenId(networkId, ROOT_NETUID, item.hotkey)
 
-        const balance: SubDTaoBalance = {
-          address,
-          tokenId,
-          baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
-          stake: 0n,
-          hotkey,
-          netuid: ROOT_NETUID,
-          claimable: amount,
-        }
+          upsertBalance(balancesRaw, item.address, tokenId, {
+            address: item.address,
+            tokenId,
+            baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
+            stake: 0n,
+            hotkey: item.hotkey,
+            netuid: ROOT_NETUID,
+            ...getFields(item),
+          })
+        },
+        { slicer }
+      )
 
-        upsertBalance(balancesRaw, address, tokenId, balance)
-      },
-      { slicer }
-    )
-
-    await forEachWithYield(
-      rootStakeHolds,
-      ({ address, hotkey, unlockAtBlock }) => {
-        const tokenId = subDTaoTokenId(networkId, ROOT_NETUID, hotkey)
-
-        const balance: SubDTaoBalance = {
-          address,
-          tokenId,
-          baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
-          stake: 0n,
-          hotkey,
-          netuid: ROOT_NETUID,
-          rootStakeHoldUnlockBlock: unlockAtBlock,
-        }
-
-        upsertBalance(balancesRaw, address, tokenId, balance)
-      },
-      { slicer }
-    )
+    await upsertRootPairFields(basketClaims, ({ amount }) => ({ claimable: amount }))
+    await upsertRootPairFields(rootStakeHolds, ({ unlockAtBlock }) => ({
+      rootStakeHoldUnlockBlock: unlockAtBlock,
+    }))
 
     await forEachWithYield(
       convictionLocks,
@@ -312,18 +299,12 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             // becomes root stake once claimed. Surface it in the locked column without
             // reducing the position's transferable amount, and count it toward the total via
             // an extra (total.planck = free + reserved + extras with includeInTotal)
-            values.push({
-              type: "locked",
+            const claimable = {
               label: CLAIMABLE_REWARDS_LABEL,
               amount: claimableAmount.toString(),
-              includeInTransferable: true,
-            })
-            values.push({
-              type: "extra",
-              label: CLAIMABLE_REWARDS_LABEL,
-              amount: claimableAmount.toString(),
-              includeInTotal: true,
-            })
+            }
+            values.push({ ...claimable, type: "locked", includeInTransferable: true })
+            values.push({ ...claimable, type: "extra", includeInTotal: true })
           }
           // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
           // future lock_stake calls to their hotkey, so the lock wizard must know they exist

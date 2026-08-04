@@ -1,10 +1,9 @@
 import type { Balances } from "@talismn/balances"
-import { isAddressEqual } from "@talismn/crypto"
 import { CoinsHandIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBittensorClaimModal } from "@ui/domains/Staking/Bittensor/BittensorClaimModal/hooks/useBittensorClaimModal"
 import type { BittensorClaimOpenOptions } from "@ui/domains/Staking/Bittensor/BittensorClaimModal/hooks/useBittensorClaimWizard"
-import { getBalanceClaimablePlancks } from "@ui/domains/Staking/Bittensor/utils/claimableRewards"
+import { getBittensorClaimCandidates } from "@ui/domains/Staking/Bittensor/utils/claimableRewards"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { type FC, useCallback, useMemo } from "react"
@@ -23,18 +22,13 @@ export const BittensorClaimToolbarButton: FC<{ balances: Balances; className?: s
 
   // opens the validator selection on the network with the most claimable rewards
   const openArgs = useMemo<BittensorClaimOpenOptions | null>(() => {
-    const balance = balances.each
-      .filter(
-        (b) =>
-          bittensorNetworkIds.includes(b.networkId) &&
-          accounts.some((a) => isAddressEqual(a.address, b.address)) &&
-          b.token?.type === "substrate-dtao" &&
-          !!b.token.hotkey &&
-          getBalanceClaimablePlancks(b) > 0n
-      )
-      .sort((a, b) => (getBalanceClaimablePlancks(a) > getBalanceClaimablePlancks(b) ? -1 : 1))[0]
+    const [biggestClaim] = getBittensorClaimCandidates(
+      balances.each,
+      accounts.map((a) => a.address),
+      bittensorNetworkIds
+    )
 
-    return balance ? { networkId: balance.networkId } : null
+    return biggestClaim ? { networkId: biggestClaim.token.networkId } : null
   }, [accounts, balances, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {

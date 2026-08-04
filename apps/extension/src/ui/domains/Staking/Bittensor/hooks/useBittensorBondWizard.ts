@@ -7,10 +7,7 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import {
-  useDTaoRootStakeHold,
-  useDTaoRootStakeHoldMessage,
-} from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
+import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorColdkeyLock"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -405,10 +402,9 @@ const useBittensorBondWizardProvider = () => {
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // remove_stake would revert with RootStakeLocked
-  const { hold: rootStakeHold, isReady: isRootStakeHoldReady } = useDTaoRootStakeHold(
+  const rootStakeHoldGate = useDTaoRootStakeHoldGate(
     stakeDirection === "unbond" ? dtaoBalance : null
   )
-  const rootStakeHoldMessage = useDTaoRootStakeHoldMessage(rootStakeHold)
 
   // for this position: min(position stake, subnet-wide available to unstake)
   const availableToUnstakePlancks = useMemo(() => {
@@ -499,7 +495,7 @@ const useBittensorBondWizardProvider = () => {
   )
 
   const unstakeInputErrorMessage = useMemo(() => {
-    if (rootStakeHoldMessage) return rootStakeHoldMessage
+    if (rootStakeHoldGate.message) return rootStakeHoldGate.message
 
     // When Alpha fees aren't supported, the user needs enough free TAO to cover fees
     if (
@@ -551,7 +547,7 @@ const useBittensorBondWizardProvider = () => {
 
     return null
   }, [
-    rootStakeHoldMessage,
+    rootStakeHoldGate.message,
     supportsAlphaFees,
     amountIn,
     existentialDeposit?.planck,
@@ -621,7 +617,7 @@ const useBittensorBondWizardProvider = () => {
     isSubnetUnbond,
     position,
     slippage,
-    payload: !inputErrorMessage && isFormValid && isRootStakeHoldReady ? payload : null,
+    payload: !inputErrorMessage && isFormValid && !rootStakeHoldGate.isBlocked ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,

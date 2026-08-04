@@ -7,7 +7,7 @@ import { getBittensorClaimPayload } from "../utils/bittensorClaimTx"
 type UseBittensorClaimPayloadProps = {
   networkId: string | undefined
   address: string | null | undefined
-  /** validator whose basket entitlement to claim; null claims across every validator */
+  /** validator whose basket entitlement to claim */
   hotkey: string | null
   /** only build the payload when the claim can actually be submitted */
   enabled: boolean
@@ -29,11 +29,14 @@ export const useBittensorClaimPayload = ({
     isError: isErrorPayload,
     error: errorPayload,
   } = useQuery({
-    queryKey: ["useBittensorClaimPayload", sapi?.id, address, hotkey, enabled],
+    queryKey: ["useBittensorClaimPayload", sapi?.id, address, hotkey],
     queryFn: () => {
-      if (!sapi || !address || !hotkey || !enabled) return null
+      if (!sapi || !address || !hotkey) return null
       return getBittensorClaimPayload({ sapi, address, hotkey })
     },
+    // an option rather than a key member: a disabled run would otherwise cache a null payload
+    // under its own key, which the enabled transition then starts from
+    enabled: enabled && !!sapi && !!address && !!hotkey,
     placeholderData: keepPreviousData,
   })
 

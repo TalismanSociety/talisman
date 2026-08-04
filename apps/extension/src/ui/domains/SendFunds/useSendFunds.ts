@@ -20,10 +20,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
-import {
-  useDTaoRootStakeHold,
-  useDTaoRootStakeHoldMessage,
-} from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
+import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinStake"
@@ -157,9 +154,7 @@ const useSendFundsProvider = () => {
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // a transfer_stake off the pair would revert with RootStakeLocked
-  const { hold: dtaoRootStakeHold, isReady: isDTaoRootStakeHoldReady } =
-    useDTaoRootStakeHold(balance)
-  const dtaoRootStakeHoldMessage = useDTaoRootStakeHoldMessage(dtaoRootStakeHold)
+  const dtaoRootStakeHoldGate = useDTaoRootStakeHoldGate(balance)
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
@@ -343,8 +338,8 @@ const useSendFundsProvider = () => {
 
       // (spec 441) the sender's root stake is inside its hold window: transfer_stake would
       // revert with RootStakeLocked; until the hold state is known, block silently (fail closed)
-      if (dtaoRootStakeHoldMessage) return { isValid: false, error: dtaoRootStakeHoldMessage }
-      if (!isDTaoRootStakeHoldReady) return { isValid: false, error: undefined }
+      if (dtaoRootStakeHoldGate.isBlocked)
+        return { isValid: false, error: dtaoRootStakeHoldGate.message ?? undefined }
 
       // dtao (staked TAO/alpha) transfers are transfer_stake staking operations:
       if (
@@ -474,8 +469,7 @@ const useSendFundsProvider = () => {
     dtaoMinTaoTransfer,
     dtaoMinTaoKeep,
     dtaoLockedTransferBlocked,
-    dtaoRootStakeHoldMessage,
-    isDTaoRootStakeHoldReady,
+    dtaoRootStakeHoldGate,
     feeToken,
     feeTokenBalance,
     from,
@@ -541,8 +535,7 @@ const useSendFundsProvider = () => {
     recipientWarning,
     setRecipientWarning,
     dtaoLockedTransferWarning,
-    dtaoRootStakeHoldMessage,
-    isDTaoRootStakeHoldReady,
+    dtaoRootStakeHoldGate,
     tip,
     tipToken,
     tipTokenBalance,

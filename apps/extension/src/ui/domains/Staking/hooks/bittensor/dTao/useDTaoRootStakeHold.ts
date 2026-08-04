@@ -19,13 +19,13 @@ const MIN_REFETCH_INTERVAL_MS = 3_000
 // collision-free observation ids for pairEpoch — wall-clock time could repeat within a ms
 let nextObservationId = 0
 
-export type DTaoRootStakeHold = {
+type DTaoRootStakeHold = {
   unlockAtBlock: number
   /** estimated ms until the hold expires; null until the current block is known */
   remainingMs: number | null
 }
 
-export type DTaoRootStakeHoldCheck = {
+type DTaoRootStakeHoldCheck = {
   /** the active hold, or null when none is known */
   hold: DTaoRootStakeHold | null
   /**
@@ -34,6 +34,13 @@ export type DTaoRootStakeHoldCheck = {
    * block submission while not ready (fail closed)
    */
   isReady: boolean
+}
+
+export type DTaoRootStakeHoldGate = {
+  /** user-facing reason the hold blocks the flow, null when no hold is known */
+  message: string | null
+  /** true while submission must be blocked — including "not observed yet" (fail closed) */
+  isBlocked: boolean
 }
 
 /** The (network, coldkey, hotkey) pair a root-stake balance is held against */
@@ -62,13 +69,13 @@ const getRootPair = (balance: Balance | null | undefined) => {
  * `isReady` is false and callers must block submission: a null hold at that point only
  * means "not observed yet", not "no hold".
  */
-export const useDTaoRootStakeHold = (
-  balance: Balance | null | undefined
-): DTaoRootStakeHoldCheck => {
+const useDTaoRootStakeHold = (balance: Balance | null | undefined): DTaoRootStakeHoldCheck => {
   const pair = useMemo(() => getRootPair(balance), [balance])
+  // pair is a fresh object on every balances poll: depend on whether there is one, not on it
+  const hasPair = !!pair
   const cachedHold = useMemo(
-    () => (pair ? findDTaoRootStakeHold(balance?.toJSON()) : null),
-    [pair, balance]
+    () => (hasPair ? findDTaoRootStakeHold(balance?.toJSON()) : null),
+    [hasPair, balance]
   )
 
   // the epoch makes the query key unique per observation of a pair: TanStack retains even
@@ -152,11 +159,11 @@ export const useDTaoRootStakeHold = (
   // readiness comes from data presence, not isSuccess: a failed background refetch flips
   // isSuccess but keeps the last data, and with gcTime 0 data resets on a pair change —
   // so readiness only drops when the current pair has never been read successfully
-  return useMemo(() => ({ hold, isReady: !pair || fresh !== undefined }), [hold, pair, fresh])
+  return useMemo(() => ({ hold, isReady: !hasPair || fresh !== undefined }), [hold, hasPair, fresh])
 }
 
 /** User-facing explanation of an active hold, ready to use as a form error message */
-export const useDTaoRootStakeHoldMessage = (hold: DTaoRootStakeHold | null): string | null => {
+const useDTaoRootStakeHoldMessage = (hold: DTaoRootStakeHold | null): string | null => {
   const { t } = useTranslation()
   const locale = useDateFnsLocale()
 
@@ -168,4 +175,18 @@ export const useDTaoRootStakeHoldMessage = (hold: DTaoRootStakeHold | null): str
     })
     return t("Root stake is locked for {{duration}} after staking or claiming", { duration })
   }, [hold, t, locale])
+}
+
+/**
+ * Submission gate for flows that would move root stake out of root. `isBlocked` also covers
+ * the not-yet-observed case, so every flow fails closed from one place — a caller that only
+ * checks `message` would let a just-started hold through while the first read is in flight.
+ */
+export const useDTaoRootStakeHoldGate = (
+  balance: Balance | null | undefined
+): DTaoRootStakeHoldGate => {
+  const { hold, isReady } = useDTaoRootStakeHold(balance)
+  const message = useDTaoRootStakeHoldMessage(hold)
+
+  return useMemo(() => ({ message, isBlocked: !!message || !isReady }), [message, isReady])
 }
