@@ -5,6 +5,23 @@ import log from "../../log"
 import { hasStorageItems } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
+import type { SubDTaoBalanceMeta, SubDTaoRootStakeHoldMeta } from "./types"
+
+/**
+ * Extracts the root-stake hold from a balance's raw values (BalanceJson), if any.
+ * While present, the pair's root stake cannot leave root — unstake/move/swap/transfer
+ * would fail with `RootStakeLocked`. Only present while the window was still running
+ * as of the last balances poll.
+ */
+export const findDTaoRootStakeHold = (
+  balance: { values?: Array<{ meta?: unknown }> } | null | undefined
+): SubDTaoRootStakeHoldMeta | null => {
+  for (const value of balance?.values ?? []) {
+    const hold = (value.meta as SubDTaoBalanceMeta | undefined)?.rootStakeHold
+    if (hold?.type === "root-stake-hold") return hold
+  }
+  return null
+}
 
 export type FetchedRootStakeHold = {
   address: string

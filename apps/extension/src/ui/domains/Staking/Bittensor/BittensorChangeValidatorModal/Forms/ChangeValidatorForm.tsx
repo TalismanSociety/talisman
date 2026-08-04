@@ -30,6 +30,7 @@ export const ChangeValidatorForm = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     payload,
+    rootStakeHoldMessage,
     close,
     setStep,
   } = useBittensorChangeValidatorWizard()
@@ -141,6 +142,10 @@ export const ChangeValidatorForm = () => {
       </div>
 
       <div className="grow" />
+
+      {!!rootStakeHoldMessage && (
+        <div className="text-center text-brand-orange text-xs">{rootStakeHoldMessage}</div>
+      )}
 
       <Button
         primary

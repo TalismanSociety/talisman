@@ -7,6 +7,10 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import {
+  useDTaoRootStakeHold,
+  useDTaoRootStakeHoldMessage,
+} from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorColdkeyLock"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -399,6 +403,14 @@ const useBittensorBondWizardProvider = () => {
     [convictionLock?.amount, freshLockedMass]
   )
 
+  // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
+  // remove_stake would revert with RootStakeLocked
+  const rootStakeHold = useDTaoRootStakeHold({
+    networkId,
+    balance: stakeDirection === "unbond" && netuid === ROOT_NETUID ? dtaoBalance : null,
+  })
+  const rootStakeHoldMessage = useDTaoRootStakeHoldMessage(rootStakeHold)
+
   // for this position: min(position stake, subnet-wide available to unstake)
   const availableToUnstakePlancks = useMemo(() => {
     const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? totalStakedPlancks
@@ -488,6 +500,8 @@ const useBittensorBondWizardProvider = () => {
   )
 
   const unstakeInputErrorMessage = useMemo(() => {
+    if (rootStakeHoldMessage) return rootStakeHoldMessage
+
     // When Alpha fees aren't supported, the user needs enough free TAO to cover fees
     if (
       !supportsAlphaFees &&
@@ -538,6 +552,7 @@ const useBittensorBondWizardProvider = () => {
 
     return null
   }, [
+    rootStakeHoldMessage,
     supportsAlphaFees,
     amountIn,
     existentialDeposit?.planck,

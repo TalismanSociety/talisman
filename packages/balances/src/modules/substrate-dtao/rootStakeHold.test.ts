@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { hasStorageItems } from "../shared"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
-import { fetchRootStakeHolds } from "./rootStakeHold"
+import { fetchRootStakeHolds, findDTaoRootStakeHold } from "./rootStakeHold"
 
 vi.mock("../../log", () => ({
   default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
@@ -97,5 +97,44 @@ describe("fetchRootStakeHolds", () => {
     await expect(fetchRootStakeHolds(connector, "bittensor", "0x00", PAIRS)).rejects.toThrow(
       "Failed to fetch current block number"
     )
+  })
+})
+
+describe("findDTaoRootStakeHold", () => {
+  it("returns the hold meta from a balance's values", () => {
+    const balance = {
+      values: [
+        { type: "locked", label: "Claimable rewards", amount: "10" },
+        {
+          type: "free",
+          label: "Root Staking",
+          amount: "100",
+          meta: { rootStakeHold: { type: "root-stake-hold", unlockAtBlock: 1234 } },
+        },
+      ],
+    }
+
+    expect(findDTaoRootStakeHold(balance)).toEqual({
+      type: "root-stake-hold",
+      unlockAtBlock: 1234,
+    })
+  })
+
+  it("returns null when no value carries hold meta", () => {
+    const balance = {
+      values: [
+        { type: "free", label: "Root Staking", amount: "100" },
+        {
+          type: "free",
+          label: "Subnet Staking",
+          amount: "50",
+          meta: { convictionLock: { type: "conviction-lock", hotkey: "hk", lockType: "decaying" } },
+        },
+      ],
+    }
+
+    expect(findDTaoRootStakeHold(balance)).toBeNull()
+    expect(findDTaoRootStakeHold(null)).toBeNull()
+    expect(findDTaoRootStakeHold({})).toBeNull()
   })
 })

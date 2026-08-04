@@ -7,4 +7,5 @@ export {
   getConvictionLockLabel,
 } from "./convictionLocks"
 export * from "./module"
+export { findDTaoRootStakeHold } from "./rootStakeHold"
 export * from "./types"
