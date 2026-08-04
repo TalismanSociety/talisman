@@ -14,6 +14,7 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorNetworkPicker } from "../../components/BittensorNetworkPicker"
+import { BittensorRootRewardsInfo } from "../../components/BittensorRootRewardsInfo"
 import { BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorSettingsModal } from "../hooks/useBittensorSettingsModal"
 import { useBittensorSettingsWizard } from "../hooks/useBittensorSettingsWizard"
@@ -118,6 +119,9 @@ export const BittensorSettingsForm = () => {
           </div>
         </div>
       )}
+
+      <BittensorRootRewardsInfo />
+
       <div className="grow" />
 
       <div className="flex flex-col gap-2 rounded bg-grey-900 p-6 text-body-secondary text-sm leading-paragraph">
