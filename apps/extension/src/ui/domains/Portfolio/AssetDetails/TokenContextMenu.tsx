@@ -11,10 +11,12 @@ import {
 } from "@ui/components/ContextMenu"
 import type { PopoverOptions } from "@ui/components/Popover"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useBittensorClaimModal } from "@ui/domains/Staking/Bittensor/BittensorClaimModal/hooks/useBittensorClaimModal"
 import { useBittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockHotkeyModal"
 import { useBittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
+import { getBalanceClaimablePlancks } from "@ui/domains/Staking/Bittensor/utils/claimableRewards"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -133,6 +135,49 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   if (!isBittensorDTao || !hasPosition) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("Change Validator")}</ContextMenuItem>
+}
+
+const ClaimRewardsMenuItem: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const { open } = useBittensorClaimModal()
+  const { selectedAccount } = usePortfolioNavigation()
+  const allBalances = useBalances("owned")
+
+  // claims are per-validator: only the per-hotkey position rows expose the entry (the base
+  // token's claimable remainder has no hotkey attribution and cannot be claimed here)
+  const isBittensorRootDTao =
+    token.type === "substrate-dtao" &&
+    token.netuid === 0 &&
+    !!token.hotkey &&
+    bittensorNetworkIds.includes(token.networkId)
+
+  const claimBalance = useMemo(() => {
+    if (!isBittensorRootDTao) return null
+    return (
+      allBalances.each.find(
+        (b) =>
+          b.tokenId === token.id &&
+          (!selectedAccount?.address || isAddressEqual(b.address, selectedAccount.address)) &&
+          getBalanceClaimablePlancks(b) > 0n
+      ) ?? null
+    )
+  }, [allBalances, isBittensorRootDTao, selectedAccount?.address, token.id])
+
+  const handleClick = useCallback(() => {
+    if (!claimBalance || token.type !== "substrate-dtao" || !token.hotkey) return
+    open({
+      networkId: token.networkId,
+      address: claimBalance.address,
+      hotkey: token.hotkey,
+    })
+    genericEvent("open bittensor claim modal", { tokenId: token.id })
+  }, [genericEvent, claimBalance, open, token])
+
+  if (!isBittensorRootDTao || !claimBalance) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("Claim Rewards")}</ContextMenuItem>
 }
 
 const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
@@ -254,6 +299,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         </Suspense>
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
         {token && <ChangeValidatorMenuItem token={token} />}
+        {token && <ClaimRewardsMenuItem token={token} />}
         {token && <ChangeLockTypeMenuItem token={token} />}
         {token && <ChangeLockHotkeyMenuItem token={token} />}
       </ContextMenuContent>
