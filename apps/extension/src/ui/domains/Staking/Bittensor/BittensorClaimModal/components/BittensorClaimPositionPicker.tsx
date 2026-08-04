@@ -15,7 +15,7 @@ import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { BittensorClaimCandidate } from "../hooks/useBittensorClaimWizard"
+import type { BittensorClaimCandidate } from "../../hooks/useBittensorClaimCandidates"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
 
 type BittensorClaimPositionPickerProps = {
@@ -47,9 +47,9 @@ export const BittensorClaimPositionPicker: FC<BittensorClaimPositionPickerProps>
         <ScrollContainer className="max-h-120" innerClassName="flex flex-col">
           {candidates.map((candidate) => (
             <Candidate
-              key={candidate.position.id}
+              key={candidate.id}
               candidate={candidate}
-              isSelected={candidate.position.id === selectedCandidate?.position.id}
+              isSelected={candidate.id === selectedCandidate?.id}
               onClick={handleSelect(candidate)}
             />
           ))}
@@ -68,7 +68,7 @@ const Candidate: FC<{
   onClick?: () => void
 }> = ({ candidate, isSelected, onClick }) => {
   const currency = useSelectedCurrency()
-  const { balance, token } = candidate.position
+  const { balance, token } = candidate
   const account = useAccountByAddress(balance.address)
 
   const claimable = useMemo(

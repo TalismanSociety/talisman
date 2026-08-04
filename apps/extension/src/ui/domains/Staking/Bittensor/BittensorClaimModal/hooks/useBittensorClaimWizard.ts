@@ -13,20 +13,14 @@ import { useCallback, useMemo, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 
-import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import {
-  type BittensorStakingPosition,
-  useBittensorStakingPositions,
-} from "../../hooks/useBittensorStakingPositions"
-import { getBalanceClaimablePlancks } from "../../utils/claimableRewards"
+  type BittensorClaimCandidate,
+  useBittensorClaimCandidates,
+} from "../../hooks/useBittensorClaimCandidates"
+import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { ROOT_NETUID } from "../../utils/constants"
 
 export type BittensorClaimStep = "review" | "follow-up"
-
-export type BittensorClaimCandidate = {
-  position: BittensorStakingPosition
-  claimablePlancks: bigint
-}
 
 type WizardState = {
   step: BittensorClaimStep
@@ -101,32 +95,14 @@ const useBittensorClaimWizardProvider = () => {
   const nativeToken = useToken(nativeTokenId, "substrate-native")
   const positionPicker = useOpenClose()
 
-  // the claim targets an existing root staking position: candidates are the root positions
-  // whose balance carries claimable rewards, biggest claim first. (The base token's claimable
-  // remainder - entitlement on fully-unstaked validators - has no hotkey attribution and
-  // cannot be claimed here.)
-  const positions = useBittensorStakingPositions(networkId)
-  const candidates = useMemo<BittensorClaimCandidate[]>(
-    () =>
-      positions
-        .filter((p) => p.token.netuid === ROOT_NETUID && !!p.token.hotkey)
-        .map((position) => ({
-          position,
-          claimablePlancks: getBalanceClaimablePlancks(position.balance),
-        }))
-        .filter((c) => c.claimablePlancks > 0n)
-        .sort((a, b) => (a.claimablePlancks > b.claimablePlancks ? -1 : 1)),
-    [positions]
-  )
+  const candidates = useBittensorClaimCandidates(networkId)
 
   // fall back to the biggest claim when no position was preselected (eg toolbar entry)
   const selectedCandidate = useMemo(
     () =>
       (address && hotkey
         ? candidates.find(
-            (c) =>
-              c.position.token.hotkey === hotkey &&
-              isAddressEqual(c.position.balance.address, address)
+            (c) => c.token.hotkey === hotkey && isAddressEqual(c.balance.address, address)
           )
         : undefined) ??
       candidates[0] ??
@@ -134,7 +110,7 @@ const useBittensorClaimWizardProvider = () => {
     [candidates, address, hotkey]
   )
 
-  const account = useAccountByAddress(selectedCandidate?.position.balance.address)
+  const account = useAccountByAddress(selectedCandidate?.balance.address)
   const claimablePlancks = selectedCandidate?.claimablePlancks ?? 0n
 
   const { data: sapi } = useScaleApi(networkId)
@@ -181,8 +157,8 @@ const useBittensorClaimWizardProvider = () => {
     isLoadingPayload,
   } = useBittensorClaimPayload({
     networkId: nativeToken?.networkId,
-    address: selectedCandidate?.position.balance.address,
-    hotkey: selectedCandidate?.position.token.hotkey ?? null,
+    address: selectedCandidate?.balance.address,
+    hotkey: selectedCandidate?.token.hotkey ?? null,
     enabled: canSubmit,
   })
 
@@ -195,8 +171,8 @@ const useBittensorClaimWizardProvider = () => {
     (candidate: BittensorClaimCandidate) =>
       setWizardState((prev) => ({
         ...prev,
-        address: candidate.position.balance.address,
-        hotkey: candidate.position.token.hotkey ?? null,
+        address: candidate.balance.address,
+        hotkey: candidate.token.hotkey ?? null,
       })),
     []
   )

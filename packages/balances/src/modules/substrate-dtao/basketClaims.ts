@@ -14,30 +14,34 @@ export type FetchedBasketClaim = {
   amount: bigint
 }
 
+/** decoded element of `get_root_basket_positions`: one validator the coldkey holds owed shares on */
+type BasketPosition = [hotkey: string, owedShares: bigint, payoutTao: bigint]
+
 /**
  * Fetches the TAO each coldkey would realize by redeeming its validator beta baskets
  * (Bittensor spec 441 "Root Reborn": root dividends accrue in per-validator escrow funds
  * and must be claimed manually; the payout is TAO staked back onto the root position).
  *
  * Amounts are marked NAV quotes (BetaBasketRuntimeApi), so they move with subnet pool
- * prices as well as accrual. Attribution is per validator hotkey (`get_basket_payout`);
- * any residue of the coldkey-wide `get_root_basket_owed` total — entitlement on validators
- * the coldkey no longer stakes to, kept through full unstake by the chain's watermark
- * rebasing — is reported with a null hotkey so it can surface on the root base token.
+ * prices as well as accrual. Attribution is per validator hotkey via
+ * `get_root_basket_positions`, which walks the chain's own coldkey→hotkeys index and so
+ * includes validators the coldkey fully unstaked from (entitlement survives unstaking).
+ * Any residue of the coldkey-wide `get_root_basket_owed` total is reported with a null
+ * hotkey so it can surface on the root base token — both calls iterate the same chain-side
+ * index, so the residue should always be zero.
  */
 export const fetchBasketClaims = async (
   connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
-  addresses: string[],
-  rootPairs: Array<{ address: string; hotkey: string }>
+  addresses: string[]
 ): Promise<FetchedBasketClaim[]> => {
   if (!addresses.length) return []
 
   const { unifiedMetadata, builder } = parseMetadataRpcCached(metadataRpc)
   if (
     !hasRuntimeApi(unifiedMetadata, "BetaBasketRuntimeApi", "get_root_basket_owed") ||
-    !hasRuntimeApi(unifiedMetadata, "BetaBasketRuntimeApi", "get_basket_payout")
+    !hasRuntimeApi(unifiedMetadata, "BetaBasketRuntimeApi", "get_root_basket_positions")
   )
     return []
 
@@ -61,25 +65,28 @@ export const fetchBasketClaims = async (
     )
 
     // per-validator attribution is only worth querying when the coldkey is owed anything
-    const pairsToQuery = rootPairs.filter(({ address }) => (owedByAddress.get(address) ?? 0n) > 0n)
-    const payouts = await Promise.all(
-      pairsToQuery.map(
-        async ({ address, hotkey }): Promise<FetchedBasketClaim> => ({
+    const addressesToQuery = addresses.filter((address) => (owedByAddress.get(address) ?? 0n) > 0n)
+    const positionsByAddress = await Promise.all(
+      addressesToQuery.map(
+        async (address): Promise<[string, BasketPosition[]]> => [
           address,
-          hotkey,
-          amount: await fetchRuntimeCallResult<bigint>(
+          await fetchRuntimeCallResult<BasketPosition[]>(
             connector,
             networkId,
             builder,
             "BetaBasketRuntimeApi",
-            "get_basket_payout",
-            [hotkey, address]
+            "get_root_basket_positions",
+            [address]
           ),
-        })
+        ]
       )
     )
 
-    const claims = payouts.filter(({ amount }) => amount > 0n)
+    const claims: FetchedBasketClaim[] = positionsByAddress.flatMap(([address, positions]) =>
+      positions
+        .filter(([, , payoutTao]) => payoutTao > 0n)
+        .map(([hotkey, , payoutTao]) => ({ address, hotkey, amount: payoutTao }))
+    )
 
     for (const [address, owed] of owedByAddress) {
       const attributed = claims.reduce(

@@ -44,7 +44,7 @@ const mockRuntimeCalls = ({ owed, payout }: { owed: bigint; payout: bigint }) =>
       if (method === "get_stake_info_for_coldkeys")
         return [[ADDRESS, [{ netuid: 0, hotkey: HOTKEY, stake: 100n }]]]
       if (method === "get_root_basket_owed") return owed
-      if (method === "get_basket_payout") return payout
+      if (method === "get_root_basket_positions") return payout > 0n ? [[HOTKEY, 1n, payout]] : []
       throw new Error(`unexpected runtime call ${method}`)
     }
   )

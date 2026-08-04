@@ -102,7 +102,7 @@ export const BittensorClaimForm = () => {
             <PillButton className="h-16 max-w-full rounded px-4" onClick={positionPicker.open}>
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
                 {selectedCandidate ? (
-                  <BittensorValidatorName hotkey={selectedCandidate.position.token.hotkey} />
+                  <BittensorValidatorName hotkey={selectedCandidate.token.hotkey} />
                 ) : (
                   t("Select validator")
                 )}

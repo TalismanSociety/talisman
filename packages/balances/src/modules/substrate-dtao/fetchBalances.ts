@@ -91,7 +91,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       [addresses]
     )
 
-    // unique (coldkey, hotkey) root staking pairs: basket claims and hold windows are per pair
+    // unique (coldkey, hotkey) root staking pairs: hold windows are per pair. (Basket claims
+    // discover their own pairs chain-side, including fully-unstaked validators.)
     const rootPairs: Array<{ address: string; hotkey: string }> = []
     const seenRootPairs = new Set<string>()
     for (const [address, stakes] of stakeInfos) {
@@ -107,7 +108,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     const [convictionLocks, basketClaims, rootStakeHolds] = miniMetadata.data
       ? await Promise.all([
           fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses),
-          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses, rootPairs),
+          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses),
           fetchRootStakeHolds(connector, networkId, miniMetadata.data, rootPairs),
         ])
       : [[], [], []]
