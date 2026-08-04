@@ -59,9 +59,11 @@ type Classified = { equivalence: BalanceEquivalence; reason?: string }
 
 const changed = (reason: string): Classified => ({ equivalence: "changed", reason })
 
-/** claimable quotes move and locks decay — their values may appear/disappear as amounts cross zero */
+/** claimable quotes and decaying locks may appear as their amounts cross zero */
 const isDriftProneValue = (value: AmountWithLabel<string>): boolean =>
-  value.label === CLAIMABLE_REWARDS_LABEL ||
+  value.label === CLAIMABLE_REWARDS_LABEL || hasConvictionLock(value)
+
+const hasConvictionLock = (value: AmountWithLabel<string>): boolean =>
   !!(value.meta as SubDTaoBalanceMeta | undefined)?.convictionLock
 
 const classifyValue = (
@@ -132,8 +134,8 @@ const classifyBalance = (previous: IBalance, next: IBalance): Classified => {
   const nextValues = ("values" in next ? next.values : undefined) ?? []
 
   // match values by (type, label) key, NOT by index: value sets legitimately toggle —
-  // a claimable rewards or conviction lock value appears/disappears as its amount crosses
-  // zero. Toggles of drift-prone values classify as drift; anything else is structural.
+  // a claimable rewards or conviction lock value appears as its amount crosses zero.
+  // Appearances of drift-prone values classify as drift; anything else is structural.
   const previousByKey = new Map(previousValues.map((value) => [keyOf(value), value]))
   const nextByKey = new Map(nextValues.map((value) => [keyOf(value), value]))
   if (previousByKey.size !== previousValues.length || nextByKey.size !== nextValues.length)
@@ -144,7 +146,10 @@ const classifyBalance = (previous: IBalance, next: IBalance): Classified => {
   for (const [key, previousValue] of previousByKey) {
     const nextValue = nextByKey.get(key)
     if (!nextValue) {
-      if (!isDriftProneValue(previousValue)) return changed(`value removed: ${key}`)
+      // claimable values only vanish when the entitlement was claimed or exited, never by
+      // NAV drift — the claim wizard gates submission on them, so a delayed removal keeps
+      // offering a paid no-op claim. Only decayed-away conviction locks remove as drift.
+      if (!hasConvictionLock(previousValue)) return changed(`value removed: ${key}`)
       drift = true
       continue
     }

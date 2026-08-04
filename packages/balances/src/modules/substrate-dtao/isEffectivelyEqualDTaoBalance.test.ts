@@ -70,6 +70,37 @@ describe("isEffectivelyEqualDTaoBalance", () => {
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
   })
 
+  test("a claimable rewards value disappearing (claimed or exited) is never tolerated", () => {
+    const previous = makeDTaoBalance({ claimable: "5000000000" })
+    const next = makeDTaoBalance()
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("changed")
+  })
+
+  test("a claim landing as a sub-tolerance stake bump still emits immediately", () => {
+    // claim payout stakes back onto the root position: the claimable values vanish and the
+    // stake grows — even a <1% payout must not linger as drift or the UI keeps offering
+    // the already-executed claim
+    const previous = makeDTaoBalance({ stake: "1000000000000", claimable: "5000000000" })
+    const next = makeDTaoBalance({ stake: "1005000000000" })
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("changed")
+  })
+
+  test("a conviction lock value disappearing (decayed away) classifies as drift", () => {
+    const previous = makeDTaoBalance({
+      extraValues: [
+        {
+          type: "locked",
+          label: "Decaying lock",
+          amount: "1",
+          meta: {
+            convictionLock: { type: "conviction-lock", hotkey: "5Hotkey", lockType: "decaying" },
+          },
+        } as AmountWithLabel<string>,
+      ],
+    })
+    expect(isEffectivelyEqualDTaoBalance(previous, makeDTaoBalance())).toBe("drift")
+  })
+
   test("a root stake hold appearing, changing or expiring is never tolerated", () => {
     const without = makeDTaoBalance()
     const at1050 = makeDTaoBalance({ holdUnlockBlock: 1050 })
