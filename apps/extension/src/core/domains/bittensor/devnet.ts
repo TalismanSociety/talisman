@@ -9,9 +9,13 @@ import {
   type SubNativeToken,
   SubNativeTokenSchema,
   subNativeTokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import { throwAfter } from "@talismn/util"
+import { noop } from "lodash-es"
+import { firstValueFrom } from "rxjs"
 
 import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
@@ -28,32 +32,62 @@ type RpcSend = <T>(method: string, params?: unknown[]) => Promise<T>
  * chaindata build runs.
  */
 export const initialiseBittensorDevnet = async () => {
-  if (!BITTENSOR_DEVNET_RPC) return
+  if (process.env.BUILD !== "dev") return
+  if (!BITTENSOR_DEVNET_RPC) return unregisterDevnet()
 
   const client = createClient(getWsProvider(BITTENSOR_DEVNET_RPC, { timeout: 5_000 }))
 
   try {
-    const send: RpcSend = (method, params) => client.request(method, params ?? [])
-
-    const { network, nativeToken, metadataRpc } = await getDevnetChaindata(send)
-
-    await customChaindataStore.upsertNetwork(network, nativeToken)
-    await activeNetworksStore.setActive(NETWORK_ID, true)
-
-    const tokens = await getDevnetSubnetTokens(
-      client,
-      network.specVersion,
-      metadataRpc,
-      nativeToken
-    )
-    await customChaindataStore.upsert([], tokens)
-
-    log.log("[bittensor-devnet] registered %s with %d subnet tokens", NETWORK_ID, tokens.length)
+    // the provider retries forever: without a deadline an unreachable node would hang this silently
+    const registration = registerDevnet(client)
+    registration.catch(noop) // may still reject after losing the race, once the client is destroyed
+    await Promise.race([
+      registration,
+      throwAfter(30_000, `no response from ${BITTENSOR_DEVNET_RPC}`),
+    ])
   } catch (err) {
     log.error("[bittensor-devnet] failed to register %s", BITTENSOR_DEVNET_RPC, err)
   } finally {
     client.destroy()
   }
+}
+
+const registerDevnet = async (client: SubstrateClient) => {
+  const send: RpcSend = (method, params) => client.request(method, params ?? [])
+
+  const { network, nativeToken, metadataRpc } = await getDevnetChaindata(send)
+  const previousTokenIds = await getStoredDevnetTokenIds()
+
+  await customChaindataStore.upsertNetwork(network, nativeToken)
+  await activeNetworksStore.setActive(NETWORK_ID, true)
+
+  const tokens = await getDevnetSubnetTokens(client, network.specVersion, metadataRpc, nativeToken)
+  await customChaindataStore.upsert([], tokens)
+
+  // subnets from a previous run may not exist anymore after a chain reset
+  const freshTokenIds = new Set<TokenId>([nativeToken.id, ...tokens.map(({ id }) => id)])
+  const staleTokenIds = previousTokenIds.filter((id) => !freshTokenIds.has(id))
+  if (staleTokenIds.length) await customChaindataStore.remove([], staleTokenIds)
+
+  log.log("[bittensor-devnet] registered %s with %d subnet tokens", NETWORK_ID, tokens.length)
+}
+
+/** clears any registration left over from a previous run with the env variable set */
+const unregisterDevnet = async () => {
+  const { networks } = await firstValueFrom(customChaindataStore.observable$)
+  const networkIds = networks?.some(({ id }) => id === NETWORK_ID) ? [NETWORK_ID] : []
+  const tokenIds = await getStoredDevnetTokenIds()
+  if (!networkIds.length && !tokenIds.length) return
+
+  await customChaindataStore.remove(networkIds, tokenIds)
+  await activeNetworksStore.resetActive(NETWORK_ID)
+
+  log.log("[bittensor-devnet] unregistered %s", NETWORK_ID)
+}
+
+const getStoredDevnetTokenIds = async (): Promise<TokenId[]> => {
+  const { tokens } = await firstValueFrom(customChaindataStore.observable$)
+  return tokens.filter((token) => token.networkId === NETWORK_ID).map(({ id }) => id)
 }
 
 const getDevnetChaindata = async (send: RpcSend) => {
