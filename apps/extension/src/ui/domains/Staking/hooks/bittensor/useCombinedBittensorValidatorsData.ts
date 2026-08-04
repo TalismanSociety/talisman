@@ -1,5 +1,6 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useBittensorSubnetNeurons } from "@ui/domains/Staking/Bittensor/hooks/useBittensorSubnetNeurons"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { BITTENSOR_NETWORK_ID, useBittensorValidators } from "@ui/state/bittensor"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { keyBy } from "lodash-es"
@@ -43,8 +44,10 @@ export const useCombinedBittensorValidatorsData = (
 
   const combinedValidatorsData = useMemo(() => {
     if (!isMainnet) {
+      // root has no miners: every registered neuron is a delegate, and root validator permits are
+      // only granted at epoch, so filtering on role hides them all on a freshly started chain
       return neurons
-        .filter((neuron) => neuron.role !== "miner")
+        .filter((neuron) => netuid === ROOT_NETUID || neuron.role !== "miner")
         .map(
           (neuron): BondOption => ({
             hotkey: neuron.hotkey,
@@ -96,6 +99,7 @@ export const useCombinedBittensorValidatorsData = (
     isLoadingYield,
     isMainnet,
     isNeuronsError,
+    netuid,
     neurons,
     status,
     validators,
