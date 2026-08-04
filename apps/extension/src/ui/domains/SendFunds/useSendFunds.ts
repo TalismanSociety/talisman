@@ -161,6 +161,8 @@ const useSendFundsProvider = () => {
   const dtaoRootStakeHold = useDTaoRootStakeHold({
     networkId: dtaoNetworkId,
     balance: isDTao && token.netuid === ROOT_NETUID ? balance : null,
+    address: from,
+    hotkey: isDTao ? token.hotkey : null,
   })
   const dtaoRootStakeHoldMessage = useDTaoRootStakeHoldMessage(dtaoRootStakeHold)
 

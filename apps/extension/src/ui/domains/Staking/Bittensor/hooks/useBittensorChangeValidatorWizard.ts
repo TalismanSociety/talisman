@@ -104,6 +104,8 @@ const useBittensorChangeValidatorWizardProvider = () => {
   const rootStakeHold = useDTaoRootStakeHold({
     networkId,
     balance: token?.netuid === ROOT_NETUID ? currentPosition?.balance : null,
+    address: effectiveAddress,
+    hotkey: token?.hotkey,
   })
   const rootStakeHoldMessage = useDTaoRootStakeHoldMessage(rootStakeHold)
 

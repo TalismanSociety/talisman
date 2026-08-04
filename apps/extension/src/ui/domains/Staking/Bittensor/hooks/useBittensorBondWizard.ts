@@ -408,6 +408,8 @@ const useBittensorBondWizardProvider = () => {
   const rootStakeHold = useDTaoRootStakeHold({
     networkId,
     balance: stakeDirection === "unbond" && netuid === ROOT_NETUID ? dtaoBalance : null,
+    address,
+    hotkey,
   })
   const rootStakeHoldMessage = useDTaoRootStakeHoldMessage(rootStakeHold)
 

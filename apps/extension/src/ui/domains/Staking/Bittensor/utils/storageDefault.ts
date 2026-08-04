@@ -7,6 +7,11 @@ export const toBigIntStrict = (value: unknown): bigint => {
   throw new Error(`Expected an integer storage value, got ${typeof value}`)
 }
 
+export const getStorageItem = (sapi: ScaleApi, pallet: string, entry: string) =>
+  sapi.chain.metadata.pallets
+    .find((p) => p.name === pallet)
+    ?.storage?.items.find((i) => i.name === entry)
+
 /**
  * An absent storage entry means the chain applies the metadata default, so reads must too.
  * Root Reborn ships `RootClaimableThreshold` unset with a sentinel default (~2.1M TAO) that
@@ -16,9 +21,7 @@ export const toBigIntStrict = (value: unknown): bigint => {
  * bypass the sentinel gate and let the user pay for a no-op claim.
  */
 export const getStorageDefault = (sapi: ScaleApi, pallet: string, entry: string): bigint => {
-  const item = sapi.chain.metadata.pallets
-    .find((p) => p.name === pallet)
-    ?.storage?.items.find((i) => i.name === entry)
+  const item = getStorageItem(sapi, pallet, entry)
   if (!item?.fallback) throw new Error(`No metadata fallback for ${pallet}.${entry}`)
   const coder = sapi.chain.builder.buildStorage(pallet, entry)
   return toBigIntStrict(coder.value.dec(item.fallback))

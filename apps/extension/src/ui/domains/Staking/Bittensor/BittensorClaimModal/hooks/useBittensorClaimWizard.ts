@@ -15,7 +15,7 @@ import { useBittensorClaimCandidates } from "../../hooks/useBittensorClaimCandid
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { ROOT_NETUID } from "../../utils/constants"
 import { getBlockTimeMs } from "../../utils/helpers"
-import { getStorageDefault, toBigIntStrict } from "./storageDefault"
+import { getStorageDefault, toBigIntStrict } from "../../utils/storageDefault"
 
 export type BittensorClaimStep = "review" | "follow-up"
 
