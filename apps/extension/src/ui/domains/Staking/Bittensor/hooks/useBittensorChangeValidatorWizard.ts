@@ -14,7 +14,6 @@ import {
   useDTaoRootStakeHoldMessage,
 } from "../../hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
-import { ROOT_NETUID } from "../utils/constants"
 import { useBittensorChangeValidatorModal } from "./useBittensorChangeValidatorModal"
 import { useBittensorMoveStake } from "./useBittensorMoveStake"
 import {
@@ -101,12 +100,9 @@ const useBittensorChangeValidatorWizardProvider = () => {
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // move_stake off the pair would revert with RootStakeLocked
-  const rootStakeHold = useDTaoRootStakeHold({
-    networkId,
-    balance: token?.netuid === ROOT_NETUID ? currentPosition?.balance : null,
-    address: effectiveAddress,
-    hotkey: token?.hotkey,
-  })
+  const { hold: rootStakeHold, isReady: isRootStakeHoldReady } = useDTaoRootStakeHold(
+    currentPosition?.balance
+  )
   const rootStakeHoldMessage = useDTaoRootStakeHoldMessage(rootStakeHold)
 
   // Get the move stake payload
@@ -180,7 +176,7 @@ const useBittensorChangeValidatorWizardProvider = () => {
     feeToken,
     account,
     alphaAmount,
-    payload: rootStakeHoldMessage ? null : payload,
+    payload: rootStakeHoldMessage || !isRootStakeHoldReady ? null : payload,
     rootStakeHoldMessage,
     txMetadata,
     feeEstimate,

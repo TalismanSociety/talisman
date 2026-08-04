@@ -20,7 +20,6 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import {
   useDTaoRootStakeHold,
   useDTaoRootStakeHoldMessage,
@@ -158,12 +157,8 @@ const useSendFundsProvider = () => {
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // a transfer_stake off the pair would revert with RootStakeLocked
-  const dtaoRootStakeHold = useDTaoRootStakeHold({
-    networkId: dtaoNetworkId,
-    balance: isDTao && token.netuid === ROOT_NETUID ? balance : null,
-    address: from,
-    hotkey: isDTao ? token.hotkey : null,
-  })
+  const { hold: dtaoRootStakeHold, isReady: isDTaoRootStakeHoldReady } =
+    useDTaoRootStakeHold(balance)
   const dtaoRootStakeHoldMessage = useDTaoRootStakeHoldMessage(dtaoRootStakeHold)
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
@@ -347,8 +342,9 @@ const useSendFundsProvider = () => {
         }
 
       // (spec 441) the sender's root stake is inside its hold window: transfer_stake would
-      // revert with RootStakeLocked
+      // revert with RootStakeLocked; until the hold state is known, block silently (fail closed)
       if (dtaoRootStakeHoldMessage) return { isValid: false, error: dtaoRootStakeHoldMessage }
+      if (!isDTaoRootStakeHoldReady) return { isValid: false, error: undefined }
 
       // dtao (staked TAO/alpha) transfers are transfer_stake staking operations:
       if (
@@ -479,6 +475,7 @@ const useSendFundsProvider = () => {
     dtaoMinTaoKeep,
     dtaoLockedTransferBlocked,
     dtaoRootStakeHoldMessage,
+    isDTaoRootStakeHoldReady,
     feeToken,
     feeTokenBalance,
     from,
@@ -544,6 +541,8 @@ const useSendFundsProvider = () => {
     recipientWarning,
     setRecipientWarning,
     dtaoLockedTransferWarning,
+    dtaoRootStakeHoldMessage,
+    isDTaoRootStakeHoldReady,
     tip,
     tipToken,
     tipTokenBalance,

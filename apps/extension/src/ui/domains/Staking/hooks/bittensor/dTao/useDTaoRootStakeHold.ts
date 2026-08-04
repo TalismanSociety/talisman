@@ -1,6 +1,7 @@
 import { type Balance, findDTaoRootStakeHold } from "@talismn/balances"
-import type { DotNetworkId } from "@talismn/chaindata-provider"
+import { type DotNetworkId, parseSubDTaoTokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { getBlockTimeMs } from "@ui/domains/Staking/Bittensor/utils/helpers"
 import {
   getStorageDefault,
@@ -15,97 +16,143 @@ import { useTranslation } from "react-i18next"
 
 const MIN_REFETCH_INTERVAL_MS = 3_000
 
+// collision-free observation ids for pairEpoch — wall-clock time could repeat within a ms
+let nextObservationId = 0
+
 export type DTaoRootStakeHold = {
   unlockAtBlock: number
   /** estimated ms until the hold expires; null until the current block is known */
   remainingMs: number | null
 }
 
+export type DTaoRootStakeHoldCheck = {
+  /** the active hold, or null when none is known */
+  hold: DTaoRootStakeHold | null
+  /**
+   * false until the fresh chain read has resolved: the cached balance meta alone cannot
+   * prove there is no hold (it lags the chain by one balances poll), so callers must
+   * block submission while not ready (fail closed)
+   */
+  isReady: boolean
+}
+
+/** The (network, coldkey, hotkey) pair a root-stake balance is held against */
+const getRootPair = (balance: Balance | null | undefined) => {
+  if (!balance) return null
+  try {
+    const { netuid, hotkey } = parseSubDTaoTokenId(balance.tokenId)
+    if (netuid !== ROOT_NETUID || !hotkey) return null
+    return { networkId: balance.networkId as DotNetworkId, address: balance.address, hotkey }
+  } catch {
+    // not a dtao token: no root stake to hold
+    return null
+  }
+}
+
 /**
  * Root-stake hold window (spec 441): while active, the balance's root stake cannot leave
- * root — unstake/move/swap/transfer would fail with `RootStakeLocked`. Pass a null balance
- * to disable (eg when the flow doesn't target a root position).
+ * root — unstake/move/swap/transfer would fail with `RootStakeLocked`. Returns a null hold
+ * for non-root balances; pass a null balance to disable (eg when the flow doesn't target
+ * the position, such as staking more into root).
  *
  * The balance's hold meta lags the chain by one balances poll (~6s): a hold started just
- * now (a claim, or a stake from another device) would not be in it yet. When address and
- * hotkey are provided the pair's `LastColdkeyHotkeyStakeBlock` is also read fresh, and the
- * later of the two unlock blocks wins — the fresh read can only ever tighten the gate.
+ * now (a claim, or a stake from another device) would not be in it yet. The pair's
+ * `LastColdkeyHotkeyStakeBlock` is also read fresh, and the later of the two unlock blocks
+ * wins — the fresh read can only ever tighten the gate. Until that read first succeeds
+ * `isReady` is false and callers must block submission: a null hold at that point only
+ * means "not observed yet", not "no hold".
  */
-export const useDTaoRootStakeHold = ({
-  networkId,
-  balance,
-  address,
-  hotkey,
-}: {
-  networkId: DotNetworkId | null | undefined
+export const useDTaoRootStakeHold = (
   balance: Balance | null | undefined
-  address: string | null | undefined
-  hotkey: string | null | undefined
-}): DTaoRootStakeHold | null => {
-  const cachedHold = useMemo(() => findDTaoRootStakeHold(balance?.toJSON()), [balance])
+): DTaoRootStakeHoldCheck => {
+  const pair = useMemo(() => getRootPair(balance), [balance])
+  const cachedHold = useMemo(
+    () => (pair ? findDTaoRootStakeHold(balance?.toJSON()) : null),
+    [pair, balance]
+  )
 
-  const { data: sapi } = useScaleApi(balance ? networkId : null)
+  // the epoch makes the query key unique per observation of a pair: TanStack retains even
+  // a gcTime-0 cache entry while its fetch is in flight, so a plain pair key could serve
+  // another observation's stale data on a quick A→B→A pair switch — with a hold that
+  // started in between missing from it. Keyed on the pair's values, not the balance's
+  // identity, which changes on every balances poll.
+  const pairNetworkId = pair?.networkId
+  const pairAddress = pair?.address
+  const pairHotkey = pair?.hotkey
+  const pairEpoch = useMemo(
+    () =>
+      pairNetworkId && pairAddress && pairHotkey
+        ? `${pairNetworkId}|${pairAddress}|${pairHotkey}|${nextObservationId++}`
+        : null,
+    [pairNetworkId, pairAddress, pairHotkey]
+  )
+
+  const { data: sapi } = useScaleApi(pair?.networkId ?? null)
   const blockTimeMs = useMemo(() => (sapi ? getBlockTimeMs(sapi) : null), [sapi])
   const refetchInterval = Math.max(blockTimeMs ?? MIN_REFETCH_INTERVAL_MS, MIN_REFETCH_INTERVAL_MS)
 
-  const { data: freshUnlockAtBlock } = useQuery({
-    queryKey: ["useDTaoRootStakeHoldFresh", sapi?.chainId, address, hotkey],
-    queryFn: async () => {
-      if (!sapi || !address || !hotkey) return null
+  const { data: fresh } = useQuery({
+    queryKey: ["useDTaoRootStakeHold", sapi?.chainId, pairEpoch],
+    queryFn: async (): Promise<{
+      unlockAtBlock: number | null
+      currentBlock: number | null
+    }> => {
+      const none = { unlockAtBlock: null, currentBlock: null }
+      if (!sapi || !pair) return none
       // older runtimes without the hold feature: skip the reads rather than throw
-      if (!getStorageItem(sapi, "SubtensorModule", "RootStakeUnlockInterval")) return null
+      if (!getStorageItem(sapi, "SubtensorModule", "RootStakeUnlockInterval")) return none
 
       // there is no setter extrinsic for the interval: enabling the hold can ship as a
       // runtime default that leaves the entry unset, so the metadata fallback must be read
-      const rawInterval = await sapi.getStorage<bigint>(
-        "SubtensorModule",
-        "RootStakeUnlockInterval",
-        []
-      )
+      const [rawCurrentBlock, rawInterval] = await Promise.all([
+        sapi.getStorage<number>("System", "Number", []),
+        sapi.getStorage<bigint>("SubtensorModule", "RootStakeUnlockInterval", []),
+      ])
+      const currentBlock = typeof rawCurrentBlock === "number" ? rawCurrentBlock : null
       const interval =
         rawInterval != null
           ? toBigIntStrict(rawInterval)
           : getStorageDefault(sapi, "SubtensorModule", "RootStakeUnlockInterval")
-      if (interval === 0n) return null
+      if (interval === 0n) return { unlockAtBlock: null, currentBlock }
 
       const lastStakeBlock = await sapi.getStorage<bigint>(
         "SubtensorModule",
         "LastColdkeyHotkeyStakeBlock",
-        [address, hotkey]
+        [pair.address, pair.hotkey]
       )
-      if (lastStakeBlock == null) return null
+      if (lastStakeBlock == null) return { unlockAtBlock: null, currentBlock }
 
       const unlockAtBlock = Number(toBigIntStrict(lastStakeBlock) + interval)
-      const currentBlock = await sapi.getStorage<number>("System", "Number", [])
-      return typeof currentBlock === "number" && unlockAtBlock > currentBlock ? unlockAtBlock : null
+      // an unknown current block cannot prove the hold expired: keep it (fail tight)
+      return {
+        unlockAtBlock: currentBlock === null || unlockAtBlock > currentBlock ? unlockAtBlock : null,
+        currentBlock,
+      }
     },
-    enabled: !!sapi && !!balance && !!address && !!hotkey,
+    enabled: !!sapi && !!pair,
     refetchInterval,
+    // epochs are never revisited: drop their entries as soon as they stop being observed
+    gcTime: 0,
   })
 
-  // the later unlock block wins: cached meta may lag a hold that just started, the fresh
-  // read may fail transiently — neither can loosen the other
-  const unlockAtBlock = useMemo(
-    () => Math.max(cachedHold?.unlockAtBlock ?? 0, freshUnlockAtBlock ?? 0) || null,
-    [cachedHold, freshUnlockAtBlock]
-  )
-
-  const { data: currentBlock } = useQuery({
-    queryKey: ["useDTaoRootStakeHold", sapi?.chainId, unlockAtBlock],
-    queryFn: () => sapi?.getStorage<number>("System", "Number", []) ?? null,
-    enabled: !!sapi && !!unlockAtBlock,
-    refetchInterval,
-  })
-
-  return useMemo(() => {
+  const hold = useMemo(() => {
+    // the later unlock block wins: cached meta may lag a hold that just started, the fresh
+    // read may fail transiently — neither can loosen the other
+    const unlockAtBlock =
+      Math.max(cachedHold?.unlockAtBlock ?? 0, fresh?.unlockAtBlock ?? 0) || null
     if (!unlockAtBlock) return null
-    if (typeof currentBlock !== "number" || !blockTimeMs)
+    if (typeof fresh?.currentBlock !== "number" || !blockTimeMs)
       return { unlockAtBlock, remainingMs: null }
-    const remainingBlocks = unlockAtBlock - currentBlock
+    const remainingBlocks = unlockAtBlock - fresh.currentBlock
     // expired since the last balances poll: the chain no longer restricts the pair
     if (remainingBlocks <= 0) return null
     return { unlockAtBlock, remainingMs: remainingBlocks * blockTimeMs }
-  }, [unlockAtBlock, currentBlock, blockTimeMs])
+  }, [cachedHold, fresh, blockTimeMs])
+
+  // readiness comes from data presence, not isSuccess: a failed background refetch flips
+  // isSuccess but keeps the last data, and with gcTime 0 data resets on a pair change —
+  // so readiness only drops when the current pair has never been read successfully
+  return useMemo(() => ({ hold, isReady: !pair || fresh !== undefined }), [hold, pair, fresh])
 }
 
 /** User-facing explanation of an active hold, ready to use as a form error message */

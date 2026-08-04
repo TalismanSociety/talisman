@@ -405,12 +405,9 @@ const useBittensorBondWizardProvider = () => {
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // remove_stake would revert with RootStakeLocked
-  const rootStakeHold = useDTaoRootStakeHold({
-    networkId,
-    balance: stakeDirection === "unbond" && netuid === ROOT_NETUID ? dtaoBalance : null,
-    address,
-    hotkey,
-  })
+  const { hold: rootStakeHold, isReady: isRootStakeHoldReady } = useDTaoRootStakeHold(
+    stakeDirection === "unbond" ? dtaoBalance : null
+  )
   const rootStakeHoldMessage = useDTaoRootStakeHoldMessage(rootStakeHold)
 
   // for this position: min(position stake, subnet-wide available to unstake)
@@ -624,7 +621,7 @@ const useBittensorBondWizardProvider = () => {
     isSubnetUnbond,
     position,
     slippage,
-    payload: !inputErrorMessage && isFormValid ? payload : null,
+    payload: !inputErrorMessage && isFormValid && isRootStakeHoldReady ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
