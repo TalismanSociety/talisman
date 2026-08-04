@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { hasStorageItems } from "../shared"
+import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { fetchRootStakeHolds, findDTaoRootStakeHold } from "./rootStakeHold"
 
@@ -15,8 +16,20 @@ vi.mock("../shared", async (importOriginal) => ({
 
 vi.mock("../shared/parseMetadataRpcCached", () => ({
   parseMetadataRpcCached: vi.fn(() => ({
-    builder: { buildStorage: vi.fn(() => ({ keys: { enc: vi.fn(() => "0xkey") } })) },
-    unifiedMetadata: {},
+    builder: {
+      buildStorage: vi.fn(() => ({
+        keys: { enc: vi.fn(() => "0xkey") },
+        value: { dec: vi.fn((hex: string) => (hex === "0xfa11bac0" ? 100n : 0n)) },
+      })),
+    },
+    unifiedMetadata: {
+      pallets: [
+        {
+          name: "SubtensorModule",
+          storage: { items: [{ name: "RootStakeUnlockInterval", fallback: "0xfa11bac0" }] },
+        },
+      ],
+    },
   })),
 }))
 
@@ -56,6 +69,34 @@ describe("fetchRootStakeHolds", () => {
 
     expect(holds).toEqual([])
     expect(fetchRpcQueryPack).toHaveBeenCalledTimes(1)
+  })
+
+  it("decodes the metadata fallback when the storage entry is unset (runtime-default enable)", async () => {
+    vi.mocked(fetchRpcQueryPack).mockClear()
+    vi.mocked(fetchRpcQueryPack)
+      // run the real interval decodeResult against an absent storage value
+      .mockImplementationOnce(async (_connector, _networkId, queries) =>
+        queries.map((query) => query.decodeResult([null]))
+      )
+      .mockResolvedValueOnce([{ address: "address-1", hotkey: "hotkey-1", lastStakeBlock: 950n }])
+
+    const holds = await fetchRootStakeHolds(makeConnector(1000), "bittensor", "0x00", PAIRS)
+
+    expect(holds).toEqual([{ address: "address-1", hotkey: "hotkey-1", unlockAtBlock: 1050 }])
+  })
+
+  it("rejects when the entry is unset and the metadata fallback is missing", async () => {
+    vi.mocked(parseMetadataRpcCached).mockReturnValueOnce({
+      builder: { buildStorage: vi.fn(() => ({ keys: { enc: vi.fn(() => "0xkey") } })) },
+      unifiedMetadata: { pallets: [] },
+    } as never)
+    vi.mocked(fetchRpcQueryPack).mockImplementationOnce(async (_connector, _networkId, queries) =>
+      queries.map((query) => query.decodeResult([null]))
+    )
+
+    await expect(fetchRootStakeHolds(makeConnector(), "bittensor", "0x00", PAIRS)).rejects.toThrow(
+      "Missing RootStakeUnlockInterval metadata fallback"
+    )
   })
 
   it("computes unlock blocks and omits pairs already past their window or without history", async () => {

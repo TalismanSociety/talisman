@@ -1,5 +1,5 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
-import { decodeScale } from "@talismn/scale"
+import { decodeScale, type UnifiedMetadata } from "@talismn/scale"
 
 import log from "../../log"
 import { hasStorageItems } from "../shared"
@@ -37,8 +37,9 @@ export type FetchedRootStakeHold = {
  * Pairs already past their window are omitted — a returned hold means the pair's root
  * stake is currently unremovable.
  *
- * The interval is 0 (disabled) unless governance enables it: the per-pair queries only
- * run when it is non-zero.
+ * The interval is 0 (disabled) unless governance enables it — either by setting the
+ * storage entry or via a runtime default that leaves it unset (metadata fallback). The
+ * per-pair queries only run when it is non-zero.
  */
 export const fetchRootStakeHolds = async (
   connector: IChainConnectorDot,
@@ -58,7 +59,7 @@ export const fetchRootStakeHolds = async (
     return []
 
   try {
-    const interval = await fetchUnlockInterval(connector, networkId, builder)
+    const interval = await fetchUnlockInterval(connector, networkId, unifiedMetadata, builder)
     if (interval === 0n) return []
 
     const [lastStakeBlocks, currentBlock] = await Promise.all([
@@ -84,18 +85,20 @@ export const fetchRootStakeHolds = async (
 const fetchUnlockInterval = async (
   connector: IChainConnectorDot,
   networkId: string,
+  unifiedMetadata: UnifiedMetadata,
   builder: ReturnType<typeof parseMetadataRpcCached>["builder"]
 ): Promise<bigint> => {
   const storageCoder = builder.buildStorage("SubtensorModule", "RootStakeUnlockInterval")
   const query: RpcQueryPack<bigint> = {
     stateKeys: [storageCoder.keys.enc() as MaybeStateKey],
     decodeResult: (changes) => {
-      const hexValue = changes[0]
-      // absent value = default 0 = hold disabled
-      if (!hexValue) return 0n
+      // an unset entry means the chain applies the metadata fallback, NOT zero: there is
+      // no setter extrinsic for this storage, so enabling the hold can ship as a runtime
+      // default that leaves the entry unset
+      const encoded = changes[0] ?? getUnlockIntervalFallback(unifiedMetadata, networkId)
       const decoded = decodeScale<bigint | null>(
         storageCoder,
-        hexValue,
+        encoded,
         `Failed to decode RootStakeUnlockInterval on ${networkId}`
       )
       if (decoded === null)
@@ -105,6 +108,17 @@ const fetchUnlockInterval = async (
   }
   const [interval] = await fetchRpcQueryPack(connector, networkId, [query])
   return interval ?? 0n
+}
+
+const getUnlockIntervalFallback = (unifiedMetadata: UnifiedMetadata, networkId: string): string => {
+  const fallback = unifiedMetadata.pallets
+    .find((pallet) => pallet.name === "SubtensorModule")
+    ?.storage?.items.find((item) => item.name === "RootStakeUnlockInterval")?.fallback
+  // hasStorageItems guaranteed the item exists — a missing fallback is metadata drift,
+  // and reading it as 0 would hide an active hold
+  if (!fallback)
+    throw new Error(`Missing RootStakeUnlockInterval metadata fallback on ${networkId}`)
+  return fallback
 }
 
 const fetchLastStakeBlocks = async (
