@@ -3,6 +3,7 @@ import {
   type Balance,
   type BalanceLockType,
   type Balances,
+  CLAIMABLE_REWARDS_LABEL,
   filterBaseLocks,
   findDTaoConvictionLock,
   getBalanceId,
@@ -82,6 +83,10 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       filterBaseLocks(b.locks).map((lock, index) => ({
         key: `${b.id}-locked-${index}`,
         title: getLockTitle(lock, { balance: b }),
+        description:
+          lock.label === CLAIMABLE_REWARDS_LABEL
+            ? t("Accrued root rewards. Claim to add them to your root stake.")
+            : undefined,
         tokens: BigNumber(lock.amount.tokens),
         fiat: lock.amount.fiat(currency),
         locked: true,
