@@ -19,9 +19,13 @@ import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { getBalanceDefs } from "../shared/types"
+import { CLAIMABLE_REWARDS_LABEL, fetchBasketClaims } from "./basketClaims"
 import { MODULE_TYPE } from "./config"
 import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
+import { fetchRootStakeHolds } from "./rootStakeHold"
 import type { GetStakeInfosResult, SubDTaoBalance, SubDTaoBalanceMeta } from "./types"
+
+const ROOT_NETUID = 0
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -87,9 +91,26 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       [addresses]
     )
 
-    const convictionLocks = miniMetadata.data
-      ? await fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses)
-      : []
+    // unique (coldkey, hotkey) root staking pairs: basket claims and hold windows are per pair
+    const rootPairs: Array<{ address: string; hotkey: string }> = []
+    const seenRootPairs = new Set<string>()
+    for (const [address, stakes] of stakeInfos) {
+      for (const stake of stakes) {
+        if (stake.netuid !== ROOT_NETUID) continue
+        const pairKey = `${address}:${stake.hotkey}`
+        if (seenRootPairs.has(pairKey)) continue
+        seenRootPairs.add(pairKey)
+        rootPairs.push({ address, hotkey: stake.hotkey })
+      }
+    }
+
+    const [convictionLocks, basketClaims, rootStakeHolds] = miniMetadata.data
+      ? await Promise.all([
+          fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses),
+          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses, rootPairs),
+          fetchRootStakeHolds(connector, networkId, miniMetadata.data, rootPairs),
+        ])
+      : [[], [], []]
 
     // Upserts a balance into the accumulator, merging stake values if the balance already exists.
     const upsertBalance = (
@@ -104,6 +125,10 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         acc[key] = {
           ...recordedBalance,
           stake: recordedBalance.stake + balance.stake,
+          ...(balance.claimable !== undefined && { claimable: balance.claimable }),
+          ...(balance.rootStakeHoldUnlockBlock !== undefined && {
+            rootStakeHoldUnlockBlock: balance.rootStakeHoldUnlockBlock,
+          }),
           ...(balance.convictionLock !== undefined && {
             convictionLock: balance.convictionLock,
           }),
@@ -137,6 +162,51 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         { slicer }
       )
     }
+
+    await forEachWithYield(
+      basketClaims,
+      ({ address, hotkey, amount }) => {
+        // per-validator claims ride on the validator's root staking position token; the
+        // unattributed remainder (entitlement on fully-unstaked validators) rides on the
+        // root subnet's base token
+        const tokenId = hotkey
+          ? subDTaoTokenId(networkId, ROOT_NETUID, hotkey)
+          : subDTaoTokenId(networkId, ROOT_NETUID)
+
+        const balance: SubDTaoBalance = {
+          address,
+          tokenId,
+          baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
+          stake: 0n,
+          hotkey: hotkey ?? "",
+          netuid: ROOT_NETUID,
+          claimable: amount,
+        }
+
+        upsertBalance(balancesRaw, address, tokenId, balance)
+      },
+      { slicer }
+    )
+
+    await forEachWithYield(
+      rootStakeHolds,
+      ({ address, hotkey, unlockAtBlock }) => {
+        const tokenId = subDTaoTokenId(networkId, ROOT_NETUID, hotkey)
+
+        const balance: SubDTaoBalance = {
+          address,
+          tokenId,
+          baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
+          stake: 0n,
+          hotkey,
+          netuid: ROOT_NETUID,
+          rootStakeHoldUnlockBlock: unlockAtBlock,
+        }
+
+        upsertBalance(balancesRaw, address, tokenId, balance)
+      },
+      { slicer }
+    )
 
     await forEachWithYield(
       convictionLocks,
@@ -210,16 +280,47 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           if (!stake) return null
 
           const stakeAmount = BigInt(stake.stake?.toString() ?? "0")
+          const claimableAmount = BigInt(stake.claimable?.toString() ?? "0")
           const convictionLockAmount = BigInt(stake.convictionLock?.amount?.toString() ?? "0")
           const convictionLockConviction = BigInt(stake.convictionLock?.convictionRaw ?? "0")
 
+          const rootStakeHoldMeta: SubDTaoBalanceMeta | undefined =
+            stake.rootStakeHoldUnlockBlock !== undefined
+              ? {
+                  rootStakeHold: {
+                    type: "root-stake-hold",
+                    unlockAtBlock: stake.rootStakeHoldUnlockBlock,
+                  },
+                }
+              : undefined
+
           const balanceValue: AmountWithLabel<string> = {
             type: "free",
-            label: stake.netuid === 0 ? "Root Staking" : `Subnet Staking`,
+            label: stake.netuid === ROOT_NETUID ? "Root Staking" : `Subnet Staking`,
             amount: stakeAmount.toString(),
+            ...(rootStakeHoldMeta && { meta: rootStakeHoldMeta }),
           }
 
           const values: Array<AmountWithLabel<string>> = [balanceValue]
+
+          if (claimableAmount > 0n) {
+            // the claimable amount is not part of the stake (free amount): on-chain it only
+            // becomes root stake once claimed. Surface it in the locked column without
+            // reducing the position's transferable amount, and count it toward the total via
+            // an extra (total.planck = free + reserved + extras with includeInTotal)
+            values.push({
+              type: "locked",
+              label: CLAIMABLE_REWARDS_LABEL,
+              amount: claimableAmount.toString(),
+              includeInTransferable: true,
+            })
+            values.push({
+              type: "extra",
+              label: CLAIMABLE_REWARDS_LABEL,
+              amount: claimableAmount.toString(),
+              includeInTotal: true,
+            })
+          }
           // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
           // future lock_stake calls to their hotkey, so the lock wizard must know they exist
           if (

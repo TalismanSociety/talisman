@@ -1,8 +1,12 @@
 import log from "../../log"
 import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
 import type { BalanceEquivalence } from "../shared/stabilizeBalances"
+import { CLAIMABLE_REWARDS_LABEL } from "./basketClaims"
 import type { SubDTaoBalanceMeta } from "./types"
 
+/** basket claimable amounts are marked NAV quotes: they move with subnet pool prices and
+ * dividend accrual on (nearly) every block; the display is informational */
+const CLAIM_DRIFT_TOLERANCE_BPS = 100n
 /**
  * subnet staking positions auto-compound: dividend injections land once per subnet tempo
  * (staggered across subnets, so with many positions SOME position bumps on nearly every
@@ -13,7 +17,8 @@ const STAKE_DRIFT_TOLERANCE_BPS = 100n
 
 /**
  * dtao balances embed values that drift on (nearly) every block even when the user's
- * position is untouched: staking positions auto-compound and conviction locks decay.
+ * position is untouched: staking positions auto-compound, basket claimable quotes move,
+ * and conviction locks decay.
  *
  * Without special handling, every 6s poll re-emits the full result set, which defeats
  * every distinctUntilChanged stage downstream and forces the whole pipeline
@@ -54,8 +59,9 @@ type Classified = { equivalence: BalanceEquivalence; reason?: string }
 
 const changed = (reason: string): Classified => ({ equivalence: "changed", reason })
 
-/** locks decay — their values may appear/disappear as amounts cross zero */
+/** claimable quotes move and locks decay — their values may appear/disappear as amounts cross zero */
 const isDriftProneValue = (value: AmountWithLabel<string>): boolean =>
+  value.label === CLAIMABLE_REWARDS_LABEL ||
   !!(value.meta as SubDTaoBalanceMeta | undefined)?.convictionLock
 
 const classifyValue = (
@@ -84,10 +90,20 @@ const classifyValue = (
   )
     return changed("conviction lock meta")
 
+  // root-stake hold meta must match exactly: it only moves on user stake ops or window
+  // expiry, both of which the UI must surface immediately
+  if (previousMeta?.rootStakeHold?.unlockAtBlock !== nextMeta?.rootStakeHold?.unlockAtBlock)
+    return changed("root stake hold meta")
+
   // amounts: every dtao amount kind moves continuously in its own way
   let drift = false
   if (previous.amount !== next.amount) {
-    if (previousLock) {
+    if (previous.label === CLAIMABLE_REWARDS_LABEL) {
+      // NAV quote: sub-tolerance movement is not worth surfacing at all, beyond-tolerance
+      // movement is drift (bounded by the refresh interval)
+      if (!isWithinDriftTolerance(previous.amount, next.amount, CLAIM_DRIFT_TOLERANCE_BPS))
+        drift = true
+    } else if (previousLock) {
       // decaying conviction locks shrink every block — always drift (a lock disappearing
       // entirely removes its value and is treated as a drift-prone toggle instead)
       drift = true
@@ -116,7 +132,7 @@ const classifyBalance = (previous: IBalance, next: IBalance): Classified => {
   const nextValues = ("values" in next ? next.values : undefined) ?? []
 
   // match values by (type, label) key, NOT by index: value sets legitimately toggle —
-  // a conviction lock value appears/disappears as its amount crosses
+  // a claimable rewards or conviction lock value appears/disappears as its amount crosses
   // zero. Toggles of drift-prone values classify as drift; anything else is structural.
   const previousByKey = new Map(previousValues.map((value) => [keyOf(value), value]))
   const nextByKey = new Map(nextValues.map((value) => [keyOf(value), value]))

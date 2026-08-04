@@ -1,5 +1,6 @@
 export * from "./alphaPrice"
-// fetch internals stay module-private; only the Balance-side lock readers are public API
+// fetch internals stay module-private; only the Balance-side readers are public API
+export { CLAIMABLE_REWARDS_LABEL } from "./basketClaims"
 export {
   type DTaoConvictionLockInfo,
   findDTaoConvictionLock,

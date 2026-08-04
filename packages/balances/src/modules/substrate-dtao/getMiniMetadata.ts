@@ -51,7 +51,13 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
     [
       {
         pallet: "SubtensorModule",
-        items: ["TransferToggle", "Lock", "DecayingLock"],
+        items: [
+          "TransferToggle",
+          "Lock",
+          "DecayingLock",
+          "RootStakeUnlockInterval",
+          "LastColdkeyHotkeyStakeBlock",
+        ],
       },
     ],
     [
@@ -62,6 +68,10 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
       {
         runtimeApi: "SubnetInfoRuntimeApi",
         methods: ["get_all_dynamic_info"],
+      },
+      {
+        runtimeApi: "BetaBasketRuntimeApi",
+        methods: ["get_root_basket_owed", "get_basket_payout"],
       },
     ]
   )

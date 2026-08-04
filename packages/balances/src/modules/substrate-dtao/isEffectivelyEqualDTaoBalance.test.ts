@@ -5,10 +5,14 @@ import { isEffectivelyEqualDTaoBalance } from "./isEffectivelyEqualDTaoBalance"
 
 const makeDTaoBalance = ({
   stake = "1000000000000",
+  claimable,
+  holdUnlockBlock,
   status = "live",
   extraValues = [],
 }: {
   stake?: string
+  claimable?: string
+  holdUnlockBlock?: number
   status?: string
   extraValues?: AmountWithLabel<string>[]
 } = {}): IBalance => {
@@ -18,13 +22,64 @@ const makeDTaoBalance = ({
     tokenId: "bittensor-substrate-dtao-1-5Hotkey",
     source: "substrate-dtao",
     status,
-    values: [{ type: "free", label: "Subnet Staking", amount: stake }, ...extraValues],
+    values: [
+      {
+        type: "free",
+        label: "Subnet Staking",
+        amount: stake,
+        ...(holdUnlockBlock !== undefined && {
+          meta: { rootStakeHold: { type: "root-stake-hold", unlockAtBlock: holdUnlockBlock } },
+        }),
+      },
+      ...(claimable !== undefined
+        ? ([
+            {
+              type: "locked",
+              label: "Claimable rewards",
+              amount: claimable,
+              includeInTransferable: true,
+            },
+            { type: "extra", label: "Claimable rewards", amount: claimable, includeInTotal: true },
+          ] as AmountWithLabel<string>[])
+        : []),
+      ...extraValues,
+    ],
   } as IBalance
 }
 
 describe("isEffectivelyEqualDTaoBalance", () => {
   test("equal when nothing changed", () => {
     expect(isEffectivelyEqualDTaoBalance(makeDTaoBalance(), makeDTaoBalance())).toBe("equal")
+  })
+
+  test("tolerates sub-1% claimable rewards movement", () => {
+    const previous = makeDTaoBalance({ claimable: "5000000000" })
+    const next = makeDTaoBalance({ claimable: "5010000000" }) // +0.2%
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("equal")
+  })
+
+  test(">1% claimable rewards movement classifies as drift", () => {
+    const previous = makeDTaoBalance({ claimable: "5000000000" })
+    const next = makeDTaoBalance({ claimable: "5100000000" }) // +2%
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
+  })
+
+  test("a claimable rewards value appearing classifies as drift (toggle across zero)", () => {
+    const previous = makeDTaoBalance()
+    const next = makeDTaoBalance({ claimable: "1" })
+    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
+  })
+
+  test("a root stake hold appearing, changing or expiring is never tolerated", () => {
+    const without = makeDTaoBalance()
+    const at1050 = makeDTaoBalance({ holdUnlockBlock: 1050 })
+    const at1060 = makeDTaoBalance({ holdUnlockBlock: 1060 })
+    expect(isEffectivelyEqualDTaoBalance(without, at1050)).toBe("changed")
+    expect(isEffectivelyEqualDTaoBalance(at1050, at1060)).toBe("changed")
+    expect(isEffectivelyEqualDTaoBalance(at1050, without)).toBe("changed")
+    expect(isEffectivelyEqualDTaoBalance(at1050, makeDTaoBalance({ holdUnlockBlock: 1050 }))).toBe(
+      "equal"
+    )
   })
 
   test("small stake accrual (auto-compounding dividends) classifies as drift", () => {
