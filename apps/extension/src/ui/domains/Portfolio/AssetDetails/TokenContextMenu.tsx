@@ -1,4 +1,4 @@
-import { findDTaoConvictionLock, getDTaoClaimablePlancks } from "@talismn/balances"
+import { findDTaoConvictionLock } from "@talismn/balances"
 import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
@@ -11,12 +11,10 @@ import {
 } from "@ui/components/ContextMenu"
 import type { PopoverOptions } from "@ui/components/Popover"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
-import { useBittensorClaimModal } from "@ui/domains/Staking/Bittensor/BittensorClaimModal/hooks/useBittensorClaimModal"
 import { useBittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockHotkeyModal"
 import { useBittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -135,51 +133,6 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   if (!isBittensorDTao || !hasPosition) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("Change Validator")}</ContextMenuItem>
-}
-
-const ClaimRewardsMenuItem: FC<{ token: Token }> = ({ token }) => {
-  const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
-  const bittensorNetworkIds = useBittensorNetworkIds()
-  const { open } = useBittensorClaimModal()
-  const { selectedAccount } = usePortfolioNavigation()
-  const allBalances = useBalances("owned")
-
-  // claims are per-validator: only the per-hotkey position rows expose the entry (the base
-  // token's claimable remainder has no hotkey attribution and cannot be claimed here)
-  const rootToken =
-    token.type === "substrate-dtao" &&
-    token.netuid === ROOT_NETUID &&
-    token.hotkey &&
-    bittensorNetworkIds.includes(token.networkId)
-      ? token
-      : null
-
-  const claimBalance = useMemo(() => {
-    if (!rootToken) return null
-    return (
-      allBalances.each.find(
-        (b) =>
-          b.tokenId === rootToken.id &&
-          (!selectedAccount?.address || isAddressEqual(b.address, selectedAccount.address)) &&
-          getDTaoClaimablePlancks(b.locks) > 0n
-      ) ?? null
-    )
-  }, [allBalances, rootToken, selectedAccount?.address])
-
-  const handleClick = useCallback(() => {
-    if (!claimBalance || !rootToken?.hotkey) return
-    open({
-      networkId: rootToken.networkId,
-      address: claimBalance.address,
-      hotkey: rootToken.hotkey,
-    })
-    genericEvent("open bittensor claim modal", { tokenId: rootToken.id })
-  }, [genericEvent, claimBalance, open, rootToken])
-
-  if (!rootToken || !claimBalance) return null
-
-  return <ContextMenuItem onClick={handleClick}>{t("Claim Rewards")}</ContextMenuItem>
 }
 
 const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
@@ -301,7 +254,6 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         </Suspense>
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
         {token && <ChangeValidatorMenuItem token={token} />}
-        {token && <ClaimRewardsMenuItem token={token} />}
         {token && <ChangeLockTypeMenuItem token={token} />}
         {token && <ChangeLockHotkeyMenuItem token={token} />}
       </ContextMenuContent>
