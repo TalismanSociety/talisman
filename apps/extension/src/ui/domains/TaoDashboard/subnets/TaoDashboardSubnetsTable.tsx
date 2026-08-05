@@ -772,10 +772,13 @@ const RootSubnetActions: FC<{
     (e: React.MouseEvent) => {
       e.stopPropagation()
       if (!canClaim) return
+      // single candidate: open on it directly, no picker needed
+      const single = candidates.length === 1 ? candidates[0] : null
+      if (single) return openClaimModal(single.target)
       // no explicit position: the modal shows a picker over the selected accounts' claims
       openClaimModal({ networkId, addresses })
     },
-    [canClaim, openClaimModal, networkId, addresses]
+    [canClaim, candidates, openClaimModal, networkId, addresses]
   )
 
   return (
