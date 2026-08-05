@@ -30,10 +30,11 @@ export const BittensorClaimForm = () => {
   const {
     networkId,
     account,
+    hotkey,
     nativeToken,
-    selectedCandidate,
     claimablePlancks,
     dustThreshold,
+    isClaimUnavailable,
     isBelowDustThreshold,
     isClaimingDisabled,
     holdDurationMs,
@@ -60,7 +61,8 @@ export const BittensorClaimForm = () => {
     })
   }, [holdDurationMs, locale, nativeToken?.symbol, t])
 
-  const dustError = useMemo(() => {
+  const claimError = useMemo(() => {
+    if (isClaimUnavailable) return t("These rewards are no longer available to claim")
     // the chain dust-skips every claim while the threshold holds its launch sentinel value:
     // a submitted claim would succeed as a paid no-op (RootClaimed with 0 TAO)
     if (isClaimingDisabled) return t("Claiming rewards is not enabled by the network yet")
@@ -70,6 +72,7 @@ export const BittensorClaimForm = () => {
       symbol: nativeToken?.symbol,
     })
   }, [
+    isClaimUnavailable,
     isClaimingDisabled,
     isBelowDustThreshold,
     dustThreshold,
@@ -114,9 +117,7 @@ export const BittensorClaimForm = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Validator")}</div>
           <div className="truncate text-body">
-            {selectedCandidate && (
-              <BittensorValidatorName hotkey={selectedCandidate.token.hotkey} />
-            )}
+            {hotkey && <BittensorValidatorName hotkey={hotkey} />}
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
@@ -133,7 +134,7 @@ export const BittensorClaimForm = () => {
         </div>
       </div>
 
-      {[holdWarning, dustError].filter(Boolean).map((message) => (
+      {[holdWarning, claimError].filter(Boolean).map((message) => (
         <ClaimAlert key={message}>{message}</ClaimAlert>
       ))}
 

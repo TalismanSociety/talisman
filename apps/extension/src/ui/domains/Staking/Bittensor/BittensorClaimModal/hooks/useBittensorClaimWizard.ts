@@ -1,7 +1,5 @@
 import { BITTENSOR_NETWORK_ID } from "@core/domains/bittensor/exports"
-import type { Address } from "@core/types/base"
-import { type DotNetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
@@ -9,26 +7,18 @@ import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
 
-import { useBittensorClaimCandidates } from "../../hooks/useBittensorClaimCandidates"
+import { useBittensorClaim } from "../../hooks/useBittensorClaim"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { useSubtensorStorageBigInt } from "../../hooks/useSubtensorStorageBigInt"
+import type { BittensorClaimTarget } from "../../utils/claimableRewards"
 import { ROOT_NETUID } from "../../utils/constants"
 import { getBlockTimeMs } from "../../utils/helpers"
 import { useBittensorClaimModal } from "./useBittensorClaimModal"
 
 type WizardState = {
-  networkId: DotNetworkId
-  address: Address | null
-  /** validator whose basket entitlement to claim */
-  hotkey: string | null
+  /** frozen on open: the claim must never retarget another account or validator */
+  target: BittensorClaimTarget | null
   hash: Hex | null
-}
-
-export type BittensorClaimOpenOptions = {
-  networkId: DotNetworkId
-  address?: Address
-  /** preselected validator (eg opened from its position row); defaults to the biggest claim */
-  hotkey?: string
 }
 
 /** thresholds this high are the launch sentinel, not a real dust bound */
@@ -36,33 +26,22 @@ const CLAIMS_DISABLED_MIN_THRESHOLD = 1_000_000_000_000n // 1000 TAO
 
 const useBittensorClaimWizardProvider = () => {
   const { args } = useBittensorClaimModal()
-  const [{ networkId, address, hotkey, hash }, setWizardState] = useState<WizardState>(() => ({
-    networkId: args?.networkId ?? BITTENSOR_NETWORK_ID,
-    address: args?.address ?? null,
-    hotkey: args?.hotkey ?? null,
+  const [{ target, hash }, setWizardState] = useState<WizardState>(() => ({
+    target: args,
     hash: null,
   }))
 
+  const networkId = target?.networkId ?? BITTENSOR_NETWORK_ID
   const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const nativeToken = useToken(nativeTokenId, "substrate-native")
 
-  const candidates = useBittensorClaimCandidates(networkId)
+  const claim = useBittensorClaim(target)
+  const account = useAccountByAddress(target?.address)
+  const claimablePlancks = claim?.claimablePlancks ?? 0n
 
-  // fall back to the biggest claim when no position was preselected (eg toolbar entry)
-  const selectedCandidate = useMemo(
-    () =>
-      (address && hotkey
-        ? candidates.find(
-            (c) => c.token.hotkey === hotkey && isAddressEqual(c.balance.address, address)
-          )
-        : undefined) ??
-      candidates[0] ??
-      null,
-    [candidates, address, hotkey]
-  )
-
-  const account = useAccountByAddress(selectedCandidate?.balance.address)
-  const claimablePlancks = selectedCandidate?.claimablePlancks ?? 0n
+  // the entitlement can disappear while the modal is open (eg claimed from another device):
+  // block instead of silently claiming something else
+  const isClaimUnavailable = !claim
 
   const { data: sapi } = useScaleApi(networkId)
 
@@ -100,7 +79,7 @@ const useBittensorClaimWizardProvider = () => {
   // while loading or on RPC error: hold submission until both reads have settled
   const canSubmit =
     !!account &&
-    !!selectedCandidate &&
+    !isClaimUnavailable &&
     isDustThresholdReady &&
     isHoldIntervalReady &&
     !isBelowDustThreshold &&
@@ -115,8 +94,8 @@ const useBittensorClaimWizardProvider = () => {
     isLoadingPayload,
   } = useBittensorClaimPayload({
     networkId: nativeToken?.networkId,
-    address: selectedCandidate?.balance.address,
-    hotkey: selectedCandidate?.token.hotkey ?? null,
+    address: target?.address,
+    hotkey: target?.hotkey ?? null,
     enabled: canSubmit,
   })
 
@@ -128,10 +107,11 @@ const useBittensorClaimWizardProvider = () => {
     networkId,
     hash,
     account,
+    hotkey: target?.hotkey ?? null,
     nativeToken,
-    selectedCandidate,
     claimablePlancks,
     dustThreshold,
+    isClaimUnavailable,
     isBelowDustThreshold,
     isClaimingDisabled,
     holdDurationMs,
