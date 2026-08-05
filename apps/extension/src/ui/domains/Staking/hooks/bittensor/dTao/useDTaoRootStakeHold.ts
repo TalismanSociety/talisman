@@ -29,9 +29,9 @@ type DTaoRootStakeHoldCheck = {
   /** the active hold, or null when none is known */
   hold: DTaoRootStakeHold | null
   /**
-   * false until the fresh chain read has resolved: the cached balance meta alone cannot
-   * prove there is no hold (it lags the chain by one balances poll), so callers must
-   * block submission while not ready (fail closed)
+   * false until the fresh chain read has succeeded — and again whenever the latest refetch
+   * failed: the cached balance meta alone cannot prove there is no hold (it lags the chain
+   * by one balances poll), so callers must block submission while not ready (fail closed)
    */
   isReady: boolean
 }
@@ -65,9 +65,9 @@ const getRootPair = (balance: Balance | null | undefined) => {
  * The balance's hold meta lags the chain by one balances poll (~6s): a hold started just
  * now (a claim, or a stake from another device) would not be in it yet. The pair's
  * `LastColdkeyHotkeyStakeBlock` is also read fresh, and the later of the two unlock blocks
- * wins — the fresh read can only ever tighten the gate. Until that read first succeeds
- * `isReady` is false and callers must block submission: a null hold at that point only
- * means "not observed yet", not "no hold".
+ * wins — the fresh read can only ever tighten the gate. `isReady` is false until that read
+ * succeeds, and drops again if a refetch fails: a null hold at that point only means "not
+ * currently observable", not "no hold".
  */
 const useDTaoRootStakeHold = (balance: Balance | null | undefined): DTaoRootStakeHoldCheck => {
   const pair = useMemo(() => getRootPair(balance), [balance])
@@ -98,7 +98,7 @@ const useDTaoRootStakeHold = (balance: Balance | null | undefined): DTaoRootStak
   const blockTimeMs = useMemo(() => (sapi ? getBlockTimeMs(sapi) : null), [sapi])
   const refetchInterval = Math.max(blockTimeMs ?? MIN_REFETCH_INTERVAL_MS, MIN_REFETCH_INTERVAL_MS)
 
-  const { data: fresh } = useQuery({
+  const { data: fresh, isSuccess } = useQuery({
     queryKey: ["useDTaoRootStakeHold", sapi?.chainId, pairEpoch],
     queryFn: async (): Promise<{
       unlockAtBlock: number | null
@@ -156,10 +156,11 @@ const useDTaoRootStakeHold = (balance: Balance | null | undefined): DTaoRootStak
     return { unlockAtBlock, remainingMs: remainingBlocks * blockTimeMs }
   }, [cachedHold, fresh, blockTimeMs])
 
-  // readiness comes from data presence, not isSuccess: a failed background refetch flips
-  // isSuccess but keeps the last data, and with gcTime 0 data resets on a pair change —
-  // so readiness only drops when the current pair has never been read successfully
-  return useMemo(() => ({ hold, isReady: !hasPair || fresh !== undefined }), [hold, hasPair, fresh])
+  // isSuccess, not data presence: a failed background refetch keeps the last data, but that
+  // data may miss a hold started since (eg from another device) — fail closed until a read
+  // succeeds again. gcTime 0 + the epoch key reset the query on a pair change, so isSuccess
+  // never carries over from a previous pair.
+  return useMemo(() => ({ hold, isReady: !hasPair || isSuccess }), [hold, hasPair, isSuccess])
 }
 
 /** User-facing explanation of an active hold, ready to use as a form error message */
