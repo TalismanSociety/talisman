@@ -18,11 +18,13 @@ type BalanceLockLike = {
   amount: { planck: bigint }
 }
 
+/** Whether a lock is a claimable root rewards entitlement */
+export const isDTaoClaimableLock = (lock: Pick<BalanceLockLike, "label">): boolean =>
+  lock.label === CLAIMABLE_REWARDS_LABEL
+
 /** Sum of a balance's claimable root rewards (TAO plancks, marked NAV quote) */
 export const getDTaoClaimablePlancks = (locks: BalanceLockLike[] | null | undefined): bigint =>
-  (locks ?? [])
-    .filter((lock) => lock.label === CLAIMABLE_REWARDS_LABEL)
-    .reduce((sum, lock) => sum + lock.amount.planck, 0n)
+  (locks ?? []).filter(isDTaoClaimableLock).reduce((sum, lock) => sum + lock.amount.planck, 0n)
 
 /** Identifies the entitlement to claim: claims are per (account, validator) pair */
 export type DTaoClaimTarget = {

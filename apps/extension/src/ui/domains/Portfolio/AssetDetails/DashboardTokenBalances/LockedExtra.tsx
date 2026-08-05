@@ -1,5 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
+import { BittensorClaimButton } from "@ui/domains/Staking/Bittensor/BittensorClaimModal/BittensorClaimButton"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
@@ -15,7 +16,7 @@ type LockedExtraProps = {
   tokenId: TokenId
   address?: string
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean }
+  rowMeta: { poolId?: number; unbonding?: boolean; claimable?: boolean }
 }
 
 export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtraProps) => {
@@ -53,7 +54,9 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
 
   return (
     <div className="flex h-16.5 flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
-      {rowMeta.unbonding ? (
+      {rowMeta.claimable ? (
+        <BittensorClaimButton tokenId={tokenId} address={rowAddress} variant="large" />
+      ) : rowMeta.unbonding ? (
         accountStatus?.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
         ) : (

@@ -4,6 +4,7 @@ export {
   type DTaoClaimTarget,
   findDTaoClaimablePlancks,
   getDTaoClaimablePlancks,
+  isDTaoClaimableLock,
 } from "./basketClaims"
 export {
   type DTaoConvictionLockInfo,
