@@ -7,10 +7,12 @@ import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
 
+import { useBittensorBasketPayout } from "../../hooks/useBittensorBasketPayout"
 import { useBittensorClaimablePlancks } from "../../hooks/useBittensorClaimablePlancks"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { useSubtensorStorageBigInt } from "../../hooks/useSubtensorStorageBigInt"
 import type { BittensorClaimTarget } from "../../utils/claimableRewards"
+import { getBittensorClaimGate } from "../../utils/claimGate"
 import { ROOT_NETUID } from "../../utils/constants"
 import { getBlockTimeMs } from "../../utils/helpers"
 import { useBittensorClaimModal } from "./useBittensorClaimModal"
@@ -34,12 +36,16 @@ const useBittensorClaimWizardProvider = () => {
 
   const account = useAccountByAddress(target?.address)
 
-  // the entitlement can disappear while the modal is open (eg claimed from another device):
-  // block instead of silently claiming something else
-  const claimablePlancks = useBittensorClaimablePlancks(target)
-  const isClaimUnavailable = claimablePlancks === null
-
   const { data: sapi } = useScaleApi(networkId)
+
+  // the entitlement can shrink or disappear while the modal is open (NAV drift, or claimed
+  // from another device): submission gates on a fresh per-block chain read, with the cached
+  // balances stream only seeding the display until it settles
+  const streamedClaimablePlancks = useBittensorClaimablePlancks(target)
+  const { data: freshPayoutPlancks, isSuccess: isFreshPayoutReady } = useBittensorBasketPayout(
+    sapi,
+    target
+  )
 
   // claims below RootClaimableThreshold[ROOT] are skipped on-chain as dust: block them
   // instead of letting the user pay a fee for a no-op
@@ -64,20 +70,16 @@ const useBittensorClaimWizardProvider = () => {
     [sapi, holdIntervalBlocks]
   )
 
-  // the chain skips a claim below the threshold: it would succeed as a paid no-op
-  // (E2E-verified on testnet: RootClaimed with 0 TAO). The launch value is unreachably high,
-  // which is how the network keeps claims off until governance lowers it
-  const isBelowDustThreshold =
-    !!claimablePlancks && dustThreshold > 0n && claimablePlancks < dustThreshold
-
-  // unresolved queries read as 0n, which would open the gate (and skip the hold warning)
-  // while loading or on RPC error: hold submission until both reads have settled
-  const canSubmit =
-    !!account &&
-    !isClaimUnavailable &&
-    isDustThresholdReady &&
-    isHoldIntervalReady &&
-    !isBelowDustThreshold
+  const { claimablePlancks, isClaimUnavailable, isBelowDustThreshold, canSubmit } =
+    getBittensorClaimGate({
+      hasAccount: !!account,
+      streamedClaimablePlancks,
+      freshPayoutPlancks,
+      isFreshPayoutReady,
+      dustThreshold,
+      isDustThresholdReady,
+      isHoldIntervalReady,
+    })
 
   const {
     payload,
@@ -103,7 +105,7 @@ const useBittensorClaimWizardProvider = () => {
     account,
     hotkey: target?.hotkey ?? null,
     nativeToken,
-    claimablePlancks: claimablePlancks ?? 0n,
+    claimablePlancks,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
