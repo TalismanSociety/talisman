@@ -19,13 +19,11 @@ import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchBestBlockHash, fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { getBalanceDefs } from "../shared/types"
-import { CLAIMABLE_REWARDS_LABEL, fetchBasketClaims } from "./basketClaims"
+import { CLAIMABLE_REWARDS_LABEL, fetchBasketClaims, ROOT_NETUID } from "./basketClaims"
 import { MODULE_TYPE } from "./config"
 import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
 import { fetchRootStakeHolds } from "./rootStakeHold"
 import type { GetStakeInfosResult, SubDTaoBalance, SubDTaoBalanceMeta } from "./types"
-
-const ROOT_NETUID = 0
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,

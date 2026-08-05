@@ -1,4 +1,4 @@
-import { findDTaoConvictionLock } from "@talismn/balances"
+import { findDTaoConvictionLock, getDTaoClaimablePlancks } from "@talismn/balances"
 import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
@@ -16,7 +16,6 @@ import { useBittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor
 import { useBittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
-import { getBalanceClaimablePlancks } from "@ui/domains/Staking/Bittensor/utils/claimableRewards"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
@@ -163,7 +162,7 @@ const ClaimRewardsMenuItem: FC<{ token: Token }> = ({ token }) => {
         (b) =>
           b.tokenId === rootToken.id &&
           (!selectedAccount?.address || isAddressEqual(b.address, selectedAccount.address)) &&
-          getBalanceClaimablePlancks(b) > 0n
+          getDTaoClaimablePlancks(b.locks) > 0n
       ) ?? null
     )
   }, [allBalances, rootToken, selectedAccount?.address])

@@ -1,4 +1,6 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 
 import log from "../../log"
 import { fetchRuntimeCallResult, hasRuntimeApi } from "../shared"
@@ -6,6 +8,59 @@ import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 
 /** label of the claimable-rewards values emitted on root staking balances */
 export const CLAIMABLE_REWARDS_LABEL = "Claimable rewards"
+
+export const ROOT_NETUID = 0
+
+// structural subset of the formatted locks exposed by Balance#locks,
+// kept loose to avoid a circular dependency on the Balance class
+type BalanceLockLike = {
+  label: string
+  amount: { planck: bigint }
+}
+
+/** Sum of a balance's claimable root rewards (TAO plancks, marked NAV quote) */
+export const getDTaoClaimablePlancks = (locks: BalanceLockLike[] | null | undefined): bigint =>
+  (locks ?? [])
+    .filter((lock) => lock.label === CLAIMABLE_REWARDS_LABEL)
+    .reduce((sum, lock) => sum + lock.amount.planck, 0n)
+
+/** Identifies the entitlement to claim: claims are per (account, validator) pair */
+export type DTaoClaimTarget = {
+  networkId: DotNetworkId
+  address: string
+  /** validator whose basket entitlement to claim */
+  hotkey: string
+}
+
+// structural subset of the Balance class, kept loose to avoid a circular dependency on it
+type ClaimBalanceLike = {
+  address: string
+  token?: { type: string; networkId?: string; netuid?: number; hotkey?: string } | null
+  locks: BalanceLockLike[]
+}
+
+/**
+ * The target pair's claimable rewards, null once its entitlement is gone (eg claimed elsewhere).
+ * Sourced from balances rather than staking positions: the chain keeps basket entitlement
+ * after a full unstake, so a claim can have no stake left on its validator.
+ */
+export const findDTaoClaimablePlancks = (
+  balances: ClaimBalanceLike[],
+  { networkId, address, hotkey }: DTaoClaimTarget
+): bigint | null => {
+  const balance = balances.find(
+    (b) =>
+      b.token?.type === "substrate-dtao" &&
+      b.token.networkId === networkId &&
+      b.token.netuid === ROOT_NETUID &&
+      b.token.hotkey === hotkey &&
+      isAddressEqual(b.address, address)
+  )
+
+  const claimablePlancks = balance ? getDTaoClaimablePlancks(balance.locks) : 0n
+
+  return claimablePlancks > 0n ? claimablePlancks : null
+}
 
 export type FetchedBasketClaim = {
   address: string

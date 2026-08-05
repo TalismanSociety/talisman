@@ -1,4 +1,5 @@
 import { BITTENSOR_NETWORK_ID } from "@core/domains/bittensor/exports"
+import type { DTaoClaimTarget } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -11,7 +12,6 @@ import { useBittensorBasketPayout } from "../../hooks/useBittensorBasketPayout"
 import { useBittensorClaimablePlancks } from "../../hooks/useBittensorClaimablePlancks"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { useSubtensorStorageBigInt } from "../../hooks/useSubtensorStorageBigInt"
-import type { BittensorClaimTarget } from "../../utils/claimableRewards"
 import { getBittensorClaimGate } from "../../utils/claimGate"
 import { ROOT_NETUID } from "../../utils/constants"
 import { getBlockTimeMs } from "../../utils/helpers"
@@ -19,7 +19,7 @@ import { useBittensorClaimModal } from "./useBittensorClaimModal"
 
 type WizardState = {
   /** frozen on open: the claim must never retarget another account or validator */
-  target: BittensorClaimTarget | null
+  target: DTaoClaimTarget | null
   hash: Hex | null
 }
 

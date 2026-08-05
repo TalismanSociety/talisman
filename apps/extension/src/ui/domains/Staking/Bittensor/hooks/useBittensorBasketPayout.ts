@@ -1,7 +1,7 @@
+import type { DTaoClaimTarget } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 
-import type { BittensorClaimTarget } from "../utils/claimableRewards"
 import { getBlockTimeMs } from "../utils/helpers"
 
 /**
@@ -13,7 +13,7 @@ import { getBlockTimeMs } from "../utils/helpers"
  */
 export const useBittensorBasketPayout = (
   sapi: ScaleApi | null | undefined,
-  target: BittensorClaimTarget | null
+  target: DTaoClaimTarget | null
 ) =>
   useQuery({
     queryKey: ["useBittensorBasketPayout", sapi?.id, target?.address, target?.hotkey],

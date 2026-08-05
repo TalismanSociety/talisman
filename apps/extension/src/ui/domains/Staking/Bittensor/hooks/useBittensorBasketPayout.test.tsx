@@ -1,13 +1,13 @@
+import type { DTaoClaimTarget } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { BittensorClaimTarget } from "../utils/claimableRewards"
 import { useBittensorBasketPayout } from "./useBittensorBasketPayout"
 
-const TARGET: BittensorClaimTarget = {
+const TARGET: DTaoClaimTarget = {
   networkId: "bittensor",
   address: "5FCollateral",
   hotkey: "5FValidator",
