@@ -130,9 +130,10 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const key = `${address}:${tokenId}`
       const recordedBalance = acc[key]
       acc[key] = recordedBalance
-        ? mergeWith(recordedBalance, balance, (recorded, incoming, field) =>
-            field === "stake" ? recorded + incoming : undefined
-          )
+        ? mergeWith({}, recordedBalance, balance, (recorded, incoming, field) => {
+            if (field === "stake" && recorded !== undefined) return recorded + incoming
+            return incoming
+          })
         : balance
     }
 
