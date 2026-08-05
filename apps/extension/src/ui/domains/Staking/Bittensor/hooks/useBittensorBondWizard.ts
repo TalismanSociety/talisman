@@ -1,6 +1,12 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
-import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
+import {
+  type Balance,
+  BalanceFormatter,
+  type Balances,
+  type DTaoClaimTarget,
+  getBalanceId,
+} from "@talismn/balances"
 import {
   type DotNetworkId,
   subDTaoTokenId,
@@ -27,6 +33,8 @@ import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
 import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
+import { getBittensorUnbondClaimOption } from "../utils/unbondClaimOption"
+import { useBittensorRootClaimGate } from "./useBittensorRootClaimGate"
 import {
   type BittensorStakingPosition,
   useBittensorStakingPositions,
@@ -54,6 +62,8 @@ type WizardState = {
   hash: Hex | null
   stakeType: StakeType | null
   stakeDirection: StakeDirection
+  /** when unstaking from root, batch a claim of the pending rewards (opt-out) */
+  withClaim: boolean
 }
 
 export type BittensorStakingWizardOpenOptions = {
@@ -75,6 +85,7 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
   stakeType: null,
   stakeDirection: "bond",
+  withClaim: true,
 }
 
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -135,6 +146,7 @@ const useBittensorBondWizardProvider = () => {
       hash,
       amountIn,
       stakeDirection,
+      withClaim,
     },
     setWizardState,
   ] = useState(() => {
@@ -179,6 +191,34 @@ const useBittensorBondWizardProvider = () => {
 
   const { data: sapi } = useScaleApi(nativeToken?.networkId)
 
+  // when unstaking from root, the pending rewards of the (coldkey, hotkey) pair can be
+  // claimed within the same transaction
+  const claimTarget = useMemo<DTaoClaimTarget | null>(
+    () =>
+      stakeDirection === "unbond" && netuid === ROOT_NETUID && address && hotkey
+        ? { networkId, address, hotkey }
+        : null,
+    [stakeDirection, netuid, address, hotkey, networkId]
+  )
+  const claimGate = useBittensorRootClaimGate(sapi, claimTarget)
+  const claimOption = useMemo(
+    () =>
+      getBittensorUnbondClaimOption({
+        isRootUnbond: !!claimTarget,
+        withClaim,
+        claimablePlancks: claimGate.claimablePlancks,
+        isClaimUnavailable: claimGate.isClaimUnavailable,
+        canSubmit: claimGate.canSubmit,
+      }),
+    [
+      claimTarget,
+      withClaim,
+      claimGate.claimablePlancks,
+      claimGate.isClaimUnavailable,
+      claimGate.canSubmit,
+    ]
+  )
+
   const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
   const isMevShieldDisabled = useMemo(() => {
@@ -220,6 +260,7 @@ const useBittensorBondWizardProvider = () => {
     amountIn,
     networkId: nativeToken?.networkId,
     stakeDirection,
+    withClaim: claimOption.includeClaim,
   })
 
   const isSubnetUnbond = useMemo(
@@ -273,6 +314,7 @@ const useBittensorBondWizardProvider = () => {
           ...prev,
           netuid,
           amountIn: null,
+          withClaim: true,
           stakeType: netuid ? "subnet" : "root",
           hotkey:
             prev.stakeDirection === "bond"
@@ -292,6 +334,11 @@ const useBittensorBondWizardProvider = () => {
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
+    []
+  )
+
+  const setWithClaim = useCallback(
+    (withClaim: boolean) => setWizardState((prev) => ({ ...prev, withClaim })),
     []
   )
 
@@ -356,6 +403,7 @@ const useBittensorBondWizardProvider = () => {
         netuid: position.token.netuid,
         address: position.balance.address,
         stakeType: position.token.netuid === 0 ? "root" : "subnet",
+        withClaim: true,
       }
     })
   }, [])
@@ -617,6 +665,11 @@ const useBittensorBondWizardProvider = () => {
     isSubnetUnbond,
     position,
     slippage,
+    claimOption,
+    claimablePlancks: claimGate.claimablePlancks,
+    dustThreshold: claimGate.dustThreshold,
+    isBelowDustThreshold: claimGate.isBelowDustThreshold,
+    claimHoldDurationMs: claimGate.holdDurationMs,
     payload: !inputErrorMessage && isFormValid && !rootStakeHoldGate.isBlocked ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
@@ -638,6 +691,7 @@ const useBittensorBondWizardProvider = () => {
     setNetuid,
     setHotkey,
     setPlancks,
+    setWithClaim,
     setStep,
     setPosition,
     toggleDisplayMode,

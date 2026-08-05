@@ -14,6 +14,7 @@ type GetStakeInfo = {
   amountIn: bigint | null
   networkId: DotNetworkId | undefined
   stakeDirection: StakeDirection
+  withClaim?: boolean
 }
 
 export const useGetBittensorStakeInfo = ({
@@ -24,6 +25,7 @@ export const useGetBittensorStakeInfo = ({
   amountIn,
   networkId,
   stakeDirection,
+  withClaim,
 }: GetStakeInfo) => {
   const {
     alphaPrice,
@@ -51,6 +53,7 @@ export const useGetBittensorStakeInfo = ({
     address,
     networkId,
     remarkType: "stake",
+    withClaim,
   })
 
   const currentHotkey = useBittensorCurrentHotkey({ address, networkId, netuid })

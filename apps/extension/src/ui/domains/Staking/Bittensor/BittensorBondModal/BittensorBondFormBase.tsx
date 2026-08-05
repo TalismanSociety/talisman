@@ -40,6 +40,7 @@ import {
   BittensorConvictionLockedRow,
 } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
+import { BittensorClaimRewardsRow } from "./Forms/BittensorClaimRewardsRow"
 
 const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
@@ -446,6 +447,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             )}
           </div>
         </div>
+        <BittensorClaimRewardsRow />
         {!isSubnetUnbond && (
           <div className="flex items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Estimated Fee")}</div>

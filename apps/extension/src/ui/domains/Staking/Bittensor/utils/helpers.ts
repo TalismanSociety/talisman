@@ -135,6 +135,7 @@ type GetBittensorUnbondPayload = {
   priceLimit: bigint
   netuid: number
   remarkType: RemarkType
+  withClaim?: boolean
 }
 
 type GetBittensorMoveStakePayload = {
@@ -156,6 +157,7 @@ export const getBittensorUnbondPayload = ({
   priceLimit,
   talismanFee,
   remarkType,
+  withClaim,
 }: GetBittensorUnbondPayload) => {
   if (netuid === ROOT_NETUID) {
     return sapi.getExtrinsicPayload(
@@ -168,6 +170,12 @@ export const getBittensorUnbondPayload = ({
             netuid: ROOT_NETUID,
             amount_unstaked: amount,
           }),
+          // the claim MUST come after remove_stake: it re-stakes the claimed TAO onto
+          // root and restarts the RootStakeUnlockInterval hold for this pair, which
+          // would make a subsequent remove_stake revert with RootStakeLocked
+          ...(withClaim
+            ? [sapi.getDecodedCall("SubtensorModule", "claim_root_with_hotkey", { hotkey })]
+            : []),
           sapi.getDecodedCall("System", "remark_with_event", {
             remark: Binary.fromText(DTAO_STAKING_REMARKS[remarkType]),
           }),
