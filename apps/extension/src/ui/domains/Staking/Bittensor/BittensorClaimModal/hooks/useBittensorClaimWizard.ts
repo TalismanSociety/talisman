@@ -3,6 +3,7 @@ import type { DTaoClaimTarget } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
+import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
@@ -12,6 +13,7 @@ import { useBittensorBasketPayout } from "../../hooks/useBittensorBasketPayout"
 import { useBittensorClaimablePlancks } from "../../hooks/useBittensorClaimablePlancks"
 import { useBittensorClaimCandidates } from "../../hooks/useBittensorClaimCandidates"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
+import { useBittensorFeeError } from "../../hooks/useBittensorFeeError"
 import { useSubtensorStorageBigInt } from "../../hooks/useSubtensorStorageBigInt"
 import { getBittensorClaimGate } from "../../utils/claimGate"
 import { ROOT_NETUID } from "../../utils/constants"
@@ -113,6 +115,16 @@ const useBittensorClaimWizardProvider = () => {
     enabled: canSubmit,
   })
 
+  // the claimed TAO is staked back onto root, but the fee is paid from free balance:
+  // an account with all its TAO staked cannot afford the claim
+  const allBalances = useBalances("owned")
+  const feeErrorMessage = useBittensorFeeError({
+    allBalances,
+    address: target?.address ?? null,
+    feeEstimate,
+    feeTokenId: nativeTokenId,
+  })
+
   const onSubmitted = useCallback((txHash?: Hex) => {
     if (txHash) setWizardState((prev) => ({ ...prev, hash: txHash }))
   }, [])
@@ -134,7 +146,8 @@ const useBittensorClaimWizardProvider = () => {
     isBelowDustThreshold,
     holdDurationMs,
     canSubmit,
-    payload,
+    feeErrorMessage,
+    payload: feeErrorMessage ? undefined : payload,
     txMetadata,
     feeEstimate,
     isLoadingFeeEstimate,

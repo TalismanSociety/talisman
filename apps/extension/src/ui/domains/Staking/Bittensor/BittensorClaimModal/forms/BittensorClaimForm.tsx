@@ -40,6 +40,7 @@ export const BittensorClaimForm = () => {
     isBelowDustThreshold,
     holdDurationMs,
     canSubmit,
+    feeErrorMessage,
     payload,
     txMetadata,
     feeEstimate,
@@ -137,7 +138,7 @@ export const BittensorClaimForm = () => {
         </div>
       </div>
 
-      {[holdWarning, claimError].filter(Boolean).map((message) => (
+      {[holdWarning, claimError, feeErrorMessage].filter(Boolean).map((message) => (
         <ClaimAlert key={message}>{message}</ClaimAlert>
       ))}
 
