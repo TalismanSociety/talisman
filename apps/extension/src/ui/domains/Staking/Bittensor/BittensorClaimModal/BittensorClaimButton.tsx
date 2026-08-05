@@ -1,6 +1,8 @@
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapPlusIcon } from "@talismn/icons"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -19,6 +21,7 @@ export const BittensorClaimButton: FC<{
   const { t } = useTranslation()
   const { open } = useBittensorClaimModal()
   const token = useToken(tokenId)
+  const account = useAccountByAddress(address)
   const bittensorNetworkIds = useBittensorNetworkIds()
 
   const { genericEvent } = useAnalytics()
@@ -38,7 +41,7 @@ export const BittensorClaimButton: FC<{
     genericEvent("open bittensor claim modal", { from: "asset details", tokenId })
   }, [address, genericEvent, open, rootToken, tokenId])
 
-  if (!rootToken) return null
+  if (!rootToken || !isAccountOwned(account)) return null
 
   return (
     <button
