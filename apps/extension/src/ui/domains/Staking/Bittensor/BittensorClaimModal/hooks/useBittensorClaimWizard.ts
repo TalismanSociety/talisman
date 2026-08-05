@@ -7,7 +7,7 @@ import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
 
-import { useBittensorClaim } from "../../hooks/useBittensorClaim"
+import { useBittensorClaimablePlancks } from "../../hooks/useBittensorClaimablePlancks"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { useSubtensorStorageBigInt } from "../../hooks/useSubtensorStorageBigInt"
 import type { BittensorClaimTarget } from "../../utils/claimableRewards"
@@ -32,13 +32,12 @@ const useBittensorClaimWizardProvider = () => {
   const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const nativeToken = useToken(nativeTokenId, "substrate-native")
 
-  const claim = useBittensorClaim(target)
   const account = useAccountByAddress(target?.address)
-  const claimablePlancks = claim?.claimablePlancks ?? 0n
 
   // the entitlement can disappear while the modal is open (eg claimed from another device):
   // block instead of silently claiming something else
-  const isClaimUnavailable = !claim
+  const claimablePlancks = useBittensorClaimablePlancks(target)
+  const isClaimUnavailable = claimablePlancks === null
 
   const { data: sapi } = useScaleApi(networkId)
 
@@ -69,7 +68,7 @@ const useBittensorClaimWizardProvider = () => {
   // (E2E-verified on testnet: RootClaimed with 0 TAO). The launch value is unreachably high,
   // which is how the network keeps claims off until governance lowers it
   const isBelowDustThreshold =
-    claimablePlancks > 0n && dustThreshold > 0n && claimablePlancks < dustThreshold
+    !!claimablePlancks && dustThreshold > 0n && claimablePlancks < dustThreshold
 
   // unresolved queries read as 0n, which would open the gate (and skip the hold warning)
   // while loading or on RPC error: hold submission until both reads have settled
@@ -104,7 +103,7 @@ const useBittensorClaimWizardProvider = () => {
     account,
     hotkey: target?.hotkey ?? null,
     nativeToken,
-    claimablePlancks,
+    claimablePlancks: claimablePlancks ?? 0n,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,

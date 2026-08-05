@@ -1,6 +1,6 @@
 import type { Address } from "@core/types/base"
 import { type Balance, CLAIMABLE_REWARDS_LABEL } from "@talismn/balances"
-import type { DotNetworkId, SubDTaoToken } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 
 import { ROOT_NETUID } from "./constants"
@@ -19,58 +19,25 @@ export type BittensorClaimTarget = {
   hotkey: string
 }
 
-export type BittensorClaim = {
-  id: string
-  token: SubDTaoToken
-  balance: Balance
-  claimablePlancks: bigint
-}
-
 /**
- * Root positions whose balance carries claimable basket rewards.
+ * The target pair's claimable rewards, null once its entitlement is gone (eg claimed elsewhere).
  * Sourced from balances rather than staking positions: the chain keeps basket entitlement
  * after a full unstake, so a claim can have no stake left on its validator.
  */
-const getBittensorClaims = (
+export const getBittensorClaimablePlancks = (
   balances: Balance[],
-  ownedAddresses: string[],
-  networkIds: string[]
-): BittensorClaim[] =>
-  balances
-    .filter(
-      (b) =>
-        b.token?.type === "substrate-dtao" &&
-        networkIds.includes(b.token.networkId) &&
-        b.token.netuid === ROOT_NETUID &&
-        !!b.token.hotkey &&
-        ownedAddresses.some((address) => isAddressEqual(address, b.address))
-    )
-    .map((balance) => ({
-      id: balance.id,
-      token: balance.token as SubDTaoToken,
-      balance,
-      claimablePlancks: getBalanceClaimablePlancks(balance),
-    }))
-    .filter((claim) => claim.claimablePlancks > 0n)
-
-/** @see getBittensorClaims */
-export const getBiggestBittensorClaim = (
-  balances: Balance[],
-  ownedAddresses: string[],
-  networkIds: string[]
-): BittensorClaim | null =>
-  getBittensorClaims(balances, ownedAddresses, networkIds).reduce<BittensorClaim | null>(
-    (biggest, claim) =>
-      !biggest || claim.claimablePlancks > biggest.claimablePlancks ? claim : biggest,
-    null
+  { networkId, address, hotkey }: BittensorClaimTarget
+): bigint | null => {
+  const balance = balances.find(
+    (b) =>
+      b.token?.type === "substrate-dtao" &&
+      b.token.networkId === networkId &&
+      b.token.netuid === ROOT_NETUID &&
+      b.token.hotkey === hotkey &&
+      isAddressEqual(b.address, address)
   )
 
-/** The target pair's claim, null once its entitlement is gone (eg claimed from another device) */
-export const getBittensorClaim = (
-  balances: Balance[],
-  ownedAddresses: string[],
-  { networkId, address, hotkey }: BittensorClaimTarget
-): BittensorClaim | null =>
-  getBittensorClaims(balances, ownedAddresses, [networkId]).find(
-    (claim) => claim.token.hotkey === hotkey && isAddressEqual(claim.balance.address, address)
-  ) ?? null
+  const claimablePlancks = balance ? getBalanceClaimablePlancks(balance) : 0n
+
+  return claimablePlancks > 0n ? claimablePlancks : null
+}

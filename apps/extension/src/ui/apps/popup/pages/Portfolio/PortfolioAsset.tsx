@@ -7,7 +7,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
-import { BittensorClaimToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimToolbarButton"
 import { BittensorConvictionLockToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorConvictionLockToolbarButton"
 import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorDashboardToolbarButton"
 import { BittensorSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorSettingsToolbarButton"
@@ -90,7 +89,6 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             <BittensorSettingsToolbarButton balances={balancesToDisplay} />
             <BittensorStakeToolbarButton balances={balancesToDisplay} />
             <BittensorUnstakeToolbarButton balances={balancesToDisplay} />
-            <BittensorClaimToolbarButton balances={balancesToDisplay} />
             <BittensorConvictionLockToolbarButton balances={balancesToDisplay} />
             <SendFundsButton symbol={symbol} />
             <BittensorDashboardToolbarButton balances={balancesToDisplay} />
