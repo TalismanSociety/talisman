@@ -24,7 +24,7 @@ export const BittensorRootRewardsInfo = () => {
         </div>
         <div className="pr-10 text-body-secondary text-xs leading-paragraph">
           {t(
-            "Since 3 August 2026, per-subnet claim options are removed. Root rewards now accrue as a basket held by the validator you select, and are redeemed to TAO staked back on root."
+            "Since the Root Reborn update, per-subnet claim options are no longer available. Root rewards now accrue as a basket held by the validator you select, and are redeemed to TAO staked back on root."
           )}
         </div>
         <IconButton
