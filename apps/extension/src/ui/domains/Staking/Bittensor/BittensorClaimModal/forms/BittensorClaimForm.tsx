@@ -36,7 +36,6 @@ export const BittensorClaimForm = () => {
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
-    isClaimingDisabled,
     holdDurationMs,
     canSubmit,
     payload,
@@ -63,17 +62,13 @@ export const BittensorClaimForm = () => {
 
   const claimError = useMemo(() => {
     if (isClaimUnavailable) return t("These rewards are no longer available to claim")
-    // the chain dust-skips every claim while the threshold holds its launch sentinel value:
-    // a submitted claim would succeed as a paid no-op (RootClaimed with 0 TAO)
-    if (isClaimingDisabled) return t("Claiming rewards is not enabled by the network yet")
     if (!isBelowDustThreshold) return null
-    return t("Minimum claim is {{amount}} {{symbol}}", {
+    return t("The network's minimum claim is currently {{amount}} {{symbol}}", {
       amount: new BalanceFormatter(dustThreshold, nativeToken?.decimals).tokens,
       symbol: nativeToken?.symbol,
     })
   }, [
     isClaimUnavailable,
-    isClaimingDisabled,
     isBelowDustThreshold,
     dustThreshold,
     nativeToken?.decimals,

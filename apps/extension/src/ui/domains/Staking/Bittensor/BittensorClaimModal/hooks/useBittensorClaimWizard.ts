@@ -21,9 +21,6 @@ type WizardState = {
   hash: Hex | null
 }
 
-/** thresholds this high are the launch sentinel, not a real dust bound */
-const CLAIMS_DISABLED_MIN_THRESHOLD = 1_000_000_000_000n // 1000 TAO
-
 const useBittensorClaimWizardProvider = () => {
   const { args } = useBittensorClaimModal()
   const [{ target, hash }, setWizardState] = useState<WizardState>(() => ({
@@ -54,10 +51,6 @@ const useBittensorClaimWizardProvider = () => {
   )
   const dustThreshold = rawDustThreshold ?? 0n
 
-  // E2E-verified on testnet: with the sentinel default in place the claim extrinsic succeeds
-  // but emits RootClaimed(tao=0) — a paid no-op the wizard must prevent
-  const isClaimingDisabled = dustThreshold >= CLAIMS_DISABLED_MIN_THRESHOLD
-
   // claiming counts as a root stake op: when the hold window is enabled it restarts for
   // the claimed pair, so the user must be warned before confirming
   const { data: rawHoldInterval, isSuccess: isHoldIntervalReady } = useSubtensorStorageBigInt(
@@ -72,6 +65,9 @@ const useBittensorClaimWizardProvider = () => {
     [sapi, holdIntervalBlocks]
   )
 
+  // the chain skips a claim below the threshold: it would succeed as a paid no-op
+  // (E2E-verified on testnet: RootClaimed with 0 TAO). The launch value is unreachably high,
+  // which is how the network keeps claims off until governance lowers it
   const isBelowDustThreshold =
     claimablePlancks > 0n && dustThreshold > 0n && claimablePlancks < dustThreshold
 
@@ -82,8 +78,7 @@ const useBittensorClaimWizardProvider = () => {
     !isClaimUnavailable &&
     isDustThresholdReady &&
     isHoldIntervalReady &&
-    !isBelowDustThreshold &&
-    !isClaimingDisabled
+    !isBelowDustThreshold
 
   const {
     payload,
@@ -113,7 +108,6 @@ const useBittensorClaimWizardProvider = () => {
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
-    isClaimingDisabled,
     holdDurationMs,
     canSubmit,
     payload,
