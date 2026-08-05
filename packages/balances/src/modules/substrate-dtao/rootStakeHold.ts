@@ -63,10 +63,13 @@ export const fetchRootStakeHolds = async (
     const interval = await fetchUnlockInterval(connector, networkId, unifiedMetadata, builder, at)
     if (interval === 0n) return []
 
-    const [lastStakeBlocks, currentBlock] = await Promise.all([
-      fetchLastStakeBlocks(connector, networkId, builder, rootPairs, at),
-      fetchCurrentBlock(connector, networkId, at),
-    ])
+    const { currentBlock, lastStakeBlocks } = await fetchLastStakeBlocks(
+      connector,
+      networkId,
+      builder,
+      rootPairs,
+      at
+    )
 
     return lastStakeBlocks.flatMap(({ address, hotkey, lastStakeBlock }) => {
       // no recorded root stake op for the pair => nothing to age the hold from
@@ -123,70 +126,82 @@ const getUnlockIntervalFallback = (unifiedMetadata: UnifiedMetadata, networkId: 
   return fallback
 }
 
+type LastStakeBlockRead = { address: string; hotkey: string; lastStakeBlock: bigint }
+
+/**
+ * Reads each pair's `LastColdkeyHotkeyStakeBlock` plus the current block number, all from
+ * one state snapshot: `System.Number` rides along as an extra key of the same
+ * `state_queryStorageAt` instead of costing a separate `chain_getHeader` round trip.
+ */
 const fetchLastStakeBlocks = async (
   connector: IChainConnectorDot,
   networkId: string,
   builder: ReturnType<typeof parseMetadataRpcCached>["builder"],
   rootPairs: Array<{ address: string; hotkey: string }>,
   at?: `0x${string}`
-): Promise<Array<{ address: string; hotkey: string; lastStakeBlock: bigint }>> => {
+): Promise<{ currentBlock: number; lastStakeBlocks: LastStakeBlockRead[] }> => {
+  const numberCoder = builder.buildStorage("System", "Number")
+  const currentBlockQuery: RpcQueryPack<number> = {
+    stateKeys: [numberCoder.keys.enc() as MaybeStateKey],
+    decodeResult: (changes) => {
+      const decoded = decodeScale<number | bigint | null>(
+        numberCoder,
+        changes[0],
+        `Failed to decode System.Number on ${networkId}`
+      )
+      // an unknown current block cannot age any hold — fail the poll
+      if (decoded === null) throw new Error(`Failed to decode System.Number on ${networkId}`)
+      return Number(decoded)
+    },
+  }
+
   const storageCoder = builder.buildStorage("SubtensorModule", "LastColdkeyHotkeyStakeBlock")
 
-  const queries = rootPairs.map(
-    ({
-      address,
-      hotkey,
-    }): RpcQueryPack<{ address: string; hotkey: string; lastStakeBlock: bigint }> => {
-      let stateKey: MaybeStateKey
-      try {
-        stateKey = storageCoder.keys.enc(address, hotkey) as MaybeStateKey
-      } catch (cause) {
-        // an unencodable key (metadata drift) would read as "no hold", understating the
-        // restriction — fail the poll (stale) instead
-        log.warn(
-          `Failed to encode LastColdkeyHotkeyStakeBlock key (address=${address}, hotkey=${hotkey}) on ${networkId}`,
-          { cause }
+  const queries = rootPairs.map(({ address, hotkey }): RpcQueryPack<LastStakeBlockRead> => {
+    let stateKey: MaybeStateKey
+    try {
+      stateKey = storageCoder.keys.enc(address, hotkey) as MaybeStateKey
+    } catch (cause) {
+      // an unencodable key (metadata drift) would read as "no hold", understating the
+      // restriction — fail the poll (stale) instead
+      log.warn(
+        `Failed to encode LastColdkeyHotkeyStakeBlock key (address=${address}, hotkey=${hotkey}) on ${networkId}`,
+        { cause }
+      )
+      throw cause
+    }
+
+    return {
+      stateKeys: [stateKey],
+      decodeResult: (changes) => {
+        const hexValue = changes[0]
+        if (!hexValue) return { address, hotkey, lastStakeBlock: 0n }
+
+        const decoded = decodeScale<bigint | null>(
+          storageCoder,
+          hexValue,
+          `Failed to decode LastColdkeyHotkeyStakeBlock for (address=${address}, hotkey=${hotkey}) on ${networkId}`
         )
-        throw cause
-      }
-
-      return {
-        stateKeys: [stateKey],
-        decodeResult: (changes) => {
-          const hexValue = changes[0]
-          if (!hexValue) return { address, hotkey, lastStakeBlock: 0n }
-
-          const decoded = decodeScale<bigint | null>(
-            storageCoder,
-            hexValue,
+        // present-but-undecodable is a bad response, not an absent hold
+        if (decoded === null)
+          throw new Error(
             `Failed to decode LastColdkeyHotkeyStakeBlock for (address=${address}, hotkey=${hotkey}) on ${networkId}`
           )
-          // present-but-undecodable is a bad response, not an absent hold
-          if (decoded === null)
-            throw new Error(
-              `Failed to decode LastColdkeyHotkeyStakeBlock for (address=${address}, hotkey=${hotkey}) on ${networkId}`
-            )
-          return { address, hotkey, lastStakeBlock: decoded }
-        },
-      }
+        return { address, hotkey, lastStakeBlock: decoded }
+      },
     }
-  )
+  })
 
-  return fetchRpcQueryPack(connector, networkId, queries, at)
-}
-
-const fetchCurrentBlock = async (
-  connector: IChainConnectorDot,
-  networkId: string,
-  at?: `0x${string}`
-): Promise<number> => {
-  const header = await connector.send<{ number: string } | null>(
+  const [currentBlock, ...lastStakeBlocks] = await fetchRpcQueryPack<number | LastStakeBlockRead>(
+    connector,
     networkId,
-    "chain_getHeader",
-    at ? [at] : []
+    [currentBlockQuery, ...queries],
+    at
   )
-  const blockNumber = Number.parseInt(header?.number ?? "", 16)
-  if (Number.isNaN(blockNumber))
-    throw new Error(`Failed to fetch current block number on ${networkId}`)
-  return blockNumber
+
+  // results align with the queries array: index 0 is the System.Number query
+  return {
+    currentBlock: currentBlock as number,
+    lastStakeBlocks: lastStakeBlocks as LastStakeBlockRead[],
+  }
 }

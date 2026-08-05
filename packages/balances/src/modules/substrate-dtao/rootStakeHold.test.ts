@@ -43,19 +43,18 @@ const PAIRS = [
   { address: "address-2", hotkey: "hotkey-1" },
 ]
 
-const makeConnector = (currentBlock = 1000) =>
-  ({
-    send: vi.fn(async (_networkId: string, method: string) => {
-      if (method === "chain_getHeader") return { number: `0x${currentBlock.toString(16)}` }
-      throw new Error(`unexpected rpc method ${method}`)
-    }),
-  }) as unknown as Parameters<typeof fetchRootStakeHolds>[0]
+// every read goes through fetchRpcQueryPack (mocked): no direct rpc call is expected
+const CONNECTOR = {
+  send: vi.fn(async (_networkId: string, method: string) => {
+    throw new Error(`unexpected rpc method ${method}`)
+  }),
+} as unknown as Parameters<typeof fetchRootStakeHolds>[0]
 
 describe("fetchRootStakeHolds", () => {
   it("returns nothing when the storage items are missing (old minimetadata or pre-441 chain)", async () => {
     vi.mocked(hasStorageItems).mockReturnValueOnce(false)
 
-    const holds = await fetchRootStakeHolds(makeConnector(), "bittensor", "0x00", PAIRS)
+    const holds = await fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)
 
     expect(holds).toEqual([])
     expect(fetchRpcQueryPack).not.toHaveBeenCalled()
@@ -65,7 +64,7 @@ describe("fetchRootStakeHolds", () => {
     vi.mocked(fetchRpcQueryPack).mockClear()
     vi.mocked(fetchRpcQueryPack).mockResolvedValueOnce([0n])
 
-    const holds = await fetchRootStakeHolds(makeConnector(), "bittensor", "0x00", PAIRS)
+    const holds = await fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)
 
     expect(holds).toEqual([])
     expect(fetchRpcQueryPack).toHaveBeenCalledTimes(1)
@@ -78,9 +77,13 @@ describe("fetchRootStakeHolds", () => {
       .mockImplementationOnce(async (_connector, _networkId, queries) =>
         queries.map((query) => query.decodeResult([null]))
       )
-      .mockResolvedValueOnce([{ address: "address-1", hotkey: "hotkey-1", lastStakeBlock: 950n }])
+      // System.Number rides along as the pack's first result
+      .mockResolvedValueOnce([
+        1000,
+        { address: "address-1", hotkey: "hotkey-1", lastStakeBlock: 950n },
+      ])
 
-    const holds = await fetchRootStakeHolds(makeConnector(1000), "bittensor", "0x00", PAIRS)
+    const holds = await fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)
 
     expect(holds).toEqual([{ address: "address-1", hotkey: "hotkey-1", unlockAtBlock: 1050 }])
   })
@@ -94,7 +97,7 @@ describe("fetchRootStakeHolds", () => {
       queries.map((query) => query.decodeResult([null]))
     )
 
-    await expect(fetchRootStakeHolds(makeConnector(), "bittensor", "0x00", PAIRS)).rejects.toThrow(
+    await expect(fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)).rejects.toThrow(
       "Missing RootStakeUnlockInterval metadata fallback"
     )
   })
@@ -104,6 +107,7 @@ describe("fetchRootStakeHolds", () => {
     vi.mocked(fetchRpcQueryPack)
       .mockResolvedValueOnce([100n]) // RootStakeUnlockInterval
       .mockResolvedValueOnce([
+        1000, // System.Number (current block)
         // still inside the window: 950 + 100 = 1050 > 1000
         { address: "address-1", hotkey: "hotkey-1", lastStakeBlock: 950n },
         // window passed: 850 + 100 = 950 <= 1000
@@ -112,7 +116,7 @@ describe("fetchRootStakeHolds", () => {
         { address: "address-2", hotkey: "hotkey-1", lastStakeBlock: 0n },
       ])
 
-    const holds = await fetchRootStakeHolds(makeConnector(1000), "bittensor", "0x00", PAIRS)
+    const holds = await fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)
 
     expect(holds).toEqual([{ address: "address-1", hotkey: "hotkey-1", unlockAtBlock: 1050 }])
   })
@@ -122,21 +126,21 @@ describe("fetchRootStakeHolds", () => {
     // and balances go stale instead of silently dropping an active hold
     vi.mocked(fetchRpcQueryPack).mockRejectedValueOnce(new Error("rpc down"))
 
-    await expect(fetchRootStakeHolds(makeConnector(), "bittensor", "0x00", PAIRS)).rejects.toThrow(
+    await expect(fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)).rejects.toThrow(
       "rpc down"
     )
   })
 
-  it("rejects when the current block cannot be fetched", async () => {
+  it("rejects when the current block cannot be read", async () => {
     vi.mocked(fetchRpcQueryPack)
       .mockResolvedValueOnce([100n])
-      .mockResolvedValueOnce([{ address: "address-1", hotkey: "hotkey-1", lastStakeBlock: 950n }])
-    const connector = {
-      send: vi.fn(async () => null),
-    } as unknown as Parameters<typeof fetchRootStakeHolds>[0]
+      // run the real decodeResults against an absent System.Number value
+      .mockImplementationOnce(async (_connector, _networkId, queries) =>
+        queries.map((query) => query.decodeResult([null]))
+      )
 
-    await expect(fetchRootStakeHolds(connector, "bittensor", "0x00", PAIRS)).rejects.toThrow(
-      "Failed to fetch current block number"
+    await expect(fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)).rejects.toThrow(
+      "Failed to decode System.Number"
     )
   })
 })

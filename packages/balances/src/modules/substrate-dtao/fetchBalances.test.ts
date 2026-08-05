@@ -51,11 +51,10 @@ const mockRuntimeCalls = ({ payout }: { payout: bigint }) => {
   )
 }
 
-// state_getKeysPaged (conviction lock scan) finds no keys; chain_getHeader reports the block
-const makeConnector = (currentBlock = 1000) => ({
+// state_getKeysPaged (conviction lock scan) finds no keys
+const makeConnector = () => ({
   send: vi.fn(async (_networkId: string, method: string) => {
     if (method === "chain_getBlockHash") return BLOCK_HASH
-    if (method === "chain_getHeader") return { number: `0x${currentBlock.toString(16)}` }
     return []
   }),
 })
@@ -149,9 +148,10 @@ describe("fetchBalances root stake hold", () => {
     mockRuntimeCalls({ payout: 0n })
     vi.mocked(fetchRpcQueryPack)
       .mockResolvedValueOnce([100n]) // RootStakeUnlockInterval
-      .mockResolvedValueOnce([{ address: ADDRESS, hotkey: HOTKEY, lastStakeBlock: 950n }])
+      // System.Number (current block) rides along as the pack's first result
+      .mockResolvedValueOnce([1000, { address: ADDRESS, hotkey: HOTKEY, lastStakeBlock: 950n }])
 
-    const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID], makeConnector(1000))
+    const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
 
     expect(result.errors).toEqual([])
     expect(result.success).toHaveLength(1)

@@ -59,6 +59,12 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
           "LastColdkeyHotkeyStakeBlock",
         ],
       },
+      {
+        // read alongside LastColdkeyHotkeyStakeBlock to age hold windows without a
+        // chain_getHeader round trip
+        pallet: "System",
+        items: ["Number"],
+      },
     ],
     [
       {
