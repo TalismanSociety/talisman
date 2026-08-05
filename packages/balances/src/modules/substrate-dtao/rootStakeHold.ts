@@ -192,16 +192,12 @@ const fetchLastStakeBlocks = async (
     }
   })
 
-  const [currentBlock, ...lastStakeBlocks] = await fetchRpcQueryPack<number | LastStakeBlockRead>(
+  const [currentBlock, ...lastStakeBlocks] = await fetchRpcQueryPack(
     connector,
     networkId,
     [currentBlockQuery, ...queries],
     at
   )
 
-  // results align with the queries array: index 0 is the System.Number query
-  return {
-    currentBlock: currentBlock as number,
-    lastStakeBlocks: lastStakeBlocks as LastStakeBlockRead[],
-  }
+  return { currentBlock, lastStakeBlocks }
 }
