@@ -6,7 +6,7 @@ import { useAccountByAddress } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
-import { type FC, useCallback } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ROOT_NETUID } from "../utils/constants"
@@ -27,13 +27,16 @@ export const BittensorClaimButton: FC<{
   const { genericEvent } = useAnalytics()
 
   // claims are per-validator: only per-hotkey root position tokens can be claimed
-  const rootToken =
-    token?.type === "substrate-dtao" &&
-    token.netuid === ROOT_NETUID &&
-    token.hotkey &&
-    bittensorNetworkIds.includes(token.networkId)
-      ? token
-      : null
+  const rootToken = useMemo(
+    () =>
+      token?.type === "substrate-dtao" &&
+      token.netuid === ROOT_NETUID &&
+      token.hotkey &&
+      bittensorNetworkIds.includes(token.networkId)
+        ? token
+        : null,
+    [token, bittensorNetworkIds]
+  )
 
   const handleClick = useCallback(() => {
     if (!rootToken?.hotkey) return
