@@ -11,7 +11,7 @@ import {
   isNotNil,
   mapWithYield,
 } from "@talismn/util"
-import { keyBy, uniq } from "lodash-es"
+import { keyBy, mergeWith, uniq } from "lodash-es"
 
 import log from "../../log"
 import type { AmountWithLabel, IBalance } from "../../types"
@@ -119,7 +119,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         ])
       : [[], [], []]
 
-    // Upserts a balance into the accumulator, merging stake values if the balance already exists.
+    // Upserts a balance into the accumulator: stakes add up, other fields are overwritten
+    // when the incoming balance defines them (mergeWith skips undefined source fields)
     const upsertBalance = (
       acc: Record<string, SubDTaoBalance>,
       address: string,
@@ -128,21 +129,11 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     ): void => {
       const key = `${address}:${tokenId}`
       const recordedBalance = acc[key]
-      if (recordedBalance) {
-        acc[key] = {
-          ...recordedBalance,
-          stake: recordedBalance.stake + balance.stake,
-          ...(balance.claimable !== undefined && { claimable: balance.claimable }),
-          ...(balance.rootStakeHoldUnlockBlock !== undefined && {
-            rootStakeHoldUnlockBlock: balance.rootStakeHoldUnlockBlock,
-          }),
-          ...(balance.convictionLock !== undefined && {
-            convictionLock: balance.convictionLock,
-          }),
-        }
-      } else {
-        acc[key] = balance
-      }
+      acc[key] = recordedBalance
+        ? mergeWith(recordedBalance, balance, (recorded, incoming, field) =>
+            field === "stake" ? recorded + incoming : undefined
+          )
+        : balance
     }
 
     // one shared slicer across all loops below: the nested stakes×hotkeys×netuids work is
