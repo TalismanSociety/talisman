@@ -1,9 +1,12 @@
+import { BittensorClaimPositionPicker } from "../components/BittensorClaimPositionPicker"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
 import { BittensorClaimFollowUp } from "./BittensorClaimFollowUp"
 import { BittensorClaimForm } from "./BittensorClaimForm"
 
 export const BittensorClaimModalRouter = () => {
-  const { hash } = useBittensorClaimWizard()
+  const { hash, target } = useBittensorClaimWizard()
 
-  return hash ? <BittensorClaimFollowUp /> : <BittensorClaimForm />
+  if (hash) return <BittensorClaimFollowUp />
+  if (!target) return <BittensorClaimPositionPicker />
+  return <BittensorClaimForm />
 }

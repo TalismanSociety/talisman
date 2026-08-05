@@ -10,6 +10,7 @@ import type { Hex } from "viem"
 
 import { useBittensorBasketPayout } from "../../hooks/useBittensorBasketPayout"
 import { useBittensorClaimablePlancks } from "../../hooks/useBittensorClaimablePlancks"
+import { useBittensorClaimCandidates } from "../../hooks/useBittensorClaimCandidates"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { useSubtensorStorageBigInt } from "../../hooks/useSubtensorStorageBigInt"
 import { getBittensorClaimGate } from "../../utils/claimGate"
@@ -18,19 +19,36 @@ import { getBlockTimeMs } from "../../utils/helpers"
 import { useBittensorClaimModal } from "./useBittensorClaimModal"
 
 type WizardState = {
-  /** frozen on open: the claim must never retarget another account or validator */
+  /** the claim must never retarget silently: only the position picker can change this */
   target: DTaoClaimTarget | null
   hash: Hex | null
 }
 
 const useBittensorClaimWizardProvider = () => {
   const { args } = useBittensorClaimModal()
+
+  // when opened without a full target the user picks the position in the modal
+  const isTargetExplicit = !!(args?.address && args?.hotkey)
+
   const [{ target, hash }, setWizardState] = useState<WizardState>(() => ({
-    target: args,
+    target:
+      args?.address && args?.hotkey
+        ? { networkId: args.networkId, address: args.address, hotkey: args.hotkey }
+        : null,
     hash: null,
   }))
 
-  const networkId = target?.networkId ?? BITTENSOR_NETWORK_ID
+  const networkId = args?.networkId ?? BITTENSOR_NETWORK_ID
+
+  const candidates = useBittensorClaimCandidates(networkId, args?.addresses)
+
+  const selectTarget = useCallback((newTarget: DTaoClaimTarget) => {
+    setWizardState((prev) => ({ ...prev, target: newTarget }))
+  }, [])
+
+  const backToPicker = useCallback(() => {
+    setWizardState((prev) => ({ ...prev, target: null }))
+  }, [])
   const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const nativeToken = useToken(nativeTokenId, "substrate-native")
 
@@ -102,6 +120,11 @@ const useBittensorClaimWizardProvider = () => {
   return {
     networkId,
     hash,
+    target,
+    isTargetExplicit,
+    candidates,
+    selectTarget,
+    backToPicker,
     account,
     hotkey: target?.hotkey ?? null,
     nativeToken,

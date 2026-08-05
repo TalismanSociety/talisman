@@ -29,6 +29,8 @@ export const BittensorClaimForm = () => {
   const { t } = useTranslation()
   const {
     networkId,
+    isTargetExplicit,
+    backToPicker,
     account,
     hotkey,
     nativeToken,
@@ -79,7 +81,13 @@ export const BittensorClaimForm = () => {
   return (
     <BittensorModalLayout
       header={
-        <BittensorStakingModalHeader title={t("Claim Rewards")} withClose onCloseModal={close} />
+        <BittensorStakingModalHeader
+          title={t("Claim Rewards")}
+          withClose
+          onCloseModal={close}
+          // the position was picked in the modal: allow going back to pick another one
+          onBackClick={isTargetExplicit ? undefined : backToPicker}
+        />
       }
       contentClassName="text-body-secondary flex size-full flex-col p-12 pt-0 gap-6"
     >
