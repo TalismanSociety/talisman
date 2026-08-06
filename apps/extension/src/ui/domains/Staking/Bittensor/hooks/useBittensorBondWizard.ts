@@ -362,7 +362,7 @@ const useBittensorBondWizardProvider = () => {
     []
   )
 
-  const isHotkeyAutoSelected = useRef(true)
+  const isHotkeyAutoSelected = useRef(!wizardOpenState$.getValue().hotkey)
 
   const setHotkey = useCallback((hotkey: string) => {
     isHotkeyAutoSelected.current = false
