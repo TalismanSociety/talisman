@@ -573,13 +573,14 @@ const useBittensorBondWizardProvider = () => {
 
     // When Alpha fees aren't supported, the user needs enough free TAO to cover fees.
     // Root staking has no alpha-fee mechanism at all, so root unbonds always need free TAO.
+    // accounts with zero free TAO have no native balance record at all (the balance
+    // pool drops zero balances), so a missing record means zero transferable
     if (
       (netuid === ROOT_NETUID || !supportsAlphaFees) &&
       amountIn &&
       existentialDeposit?.planck &&
       feeEstimate &&
-      nativeBalance &&
-      existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck
+      existentialDeposit.planck + feeEstimate > (nativeBalance?.transferable.planck ?? 0n)
     ) {
       return t(
         "Insufficient free TAO to pay network fees. Fees are paid from your wallet balance, not your stake."
