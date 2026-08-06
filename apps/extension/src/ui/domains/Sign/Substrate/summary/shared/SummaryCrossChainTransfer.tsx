@@ -1,12 +1,18 @@
 import type { Address } from "@core/types/base"
 import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import type { SummaryDisplayMode } from "../../types"
 import { SummaryAddressDisplay } from "./SummaryAddressDisplay"
-import { SummaryContainer, SummaryContent, SummarySeparator } from "./SummaryContainer"
+import {
+  SummaryAlert,
+  SummaryContainer,
+  SummaryContent,
+  SummarySeparator,
+} from "./SummaryContainer"
 import { SummaryLineBreak } from "./SummaryLineBreak"
 import { SummaryNetworkDisplay } from "./SummaryNetworkDisplay"
 import { SummaryTokensAndFiat } from "./SummaryTokensAndFiat"
@@ -36,6 +42,7 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
   const { t } = useTranslation()
 
   const debited = value + (fee ?? 0n)
+  const isSelfTransfer = isAddressEqual(fromAddress, toAddress)
 
   if (mode !== "block")
     return (
@@ -44,9 +51,12 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
         components={{
           Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={debited} mode={mode} />,
           LineBreak: <SummaryLineBreak mode={mode} />,
+          Beneficiary: (
+            <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />
+          ),
           TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
         }}
-        defaults="Transfer <Tokens /><LineBreak /> to <TargetNetwork />"
+        defaults="Transfer <Tokens /><LineBreak /> to <Beneficiary /><LineBreak /> on <TargetNetwork />"
       />
     )
 
@@ -56,10 +66,13 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
         <Trans
           t={t}
           components={{
+            Beneficiary: (
+              <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />
+            ),
             TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
             Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={debited} mode={mode} />,
           }}
-          defaults="Transfer <Tokens /><br/> to <TargetNetwork />"
+          defaults="Transfer <Tokens /><br/> to <Beneficiary /><br/> on <TargetNetwork />"
         />
       </SummaryContent>
       {fee !== undefined && (
@@ -90,6 +103,14 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
           <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />
         </div>
       </SummaryContent>
+      {!isSelfTransfer && (
+        <>
+          <SummarySeparator />
+          <SummaryAlert>
+            {t("The funds will be delivered to another account, not to the signing account.")}
+          </SummaryAlert>
+        </>
+      )}
     </SummaryContainer>
   )
 }

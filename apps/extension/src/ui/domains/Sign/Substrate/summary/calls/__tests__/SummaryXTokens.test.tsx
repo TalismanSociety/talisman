@@ -1,3 +1,4 @@
+import { encodeAnyAddress } from "@talismn/crypto"
 import { render } from "@testing-library/react"
 import type { FC, ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
@@ -50,7 +51,7 @@ vi.mock("@ui/domains/Sign/Substrate/util/getChainFromXcmLocation", () => ({
   getChainFromXcmLocation: () => ({ id: "hydration", prefix: 63, name: "Hydration" }),
 }))
 vi.mock("@ui/domains/Sign/Substrate/util/getAddressFromXcmLocation", () => ({
-  getAddressFromXcmLocation: () => "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+  getAddressFromXcmLocation: vi.fn(() => "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"),
 }))
 
 // Surfaces the planck value it is given verbatim, so assertions can read the rendered amounts.
@@ -84,8 +85,12 @@ vi.mock("@ui/components/Tooltip", () => ({
 }))
 
 import { SUMMARY_COMPONENTS_X_TOKENS } from "@ui/domains/Sign/Substrate/summary/calls/SummaryXTokens"
+import { getAddressFromXcmLocation } from "@ui/domains/Sign/Substrate/util/getAddressFromXcmLocation"
 
 const ALICE = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+const BOB = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+// the summary re-encodes the beneficiary for the destination chain, Hydration here
+const BOB_ON_DESTINATION = encodeAnyAddress(BOB, { ss58Format: 63 })
 
 const AMOUNT = 1_000_000_000_000n // 1 ACA
 const FEE = 4_242_424_242_424_242_424n // dwarfs the amount: the whole point of showing it
@@ -160,5 +165,41 @@ describe("XTokens transfer", () => {
     )
 
     expect(amounts).toStrictEqual([String(AMOUNT)])
+  })
+})
+
+describe("cross-chain transfer beneficiary", () => {
+  // The account credited on the destination chain is the only thing separating a self-bridge from a
+  // drain, so naming the destination chain alone is not enough.
+  it.each(MODES)("mode=%s: shows the destination account, not just the chain", (mode) => {
+    const { container } = renderSummary(
+      "transfer",
+      { currency_id: 0, amount: AMOUNT, dest, dest_weight_limit: destWeightLimit },
+      mode
+    )
+
+    expect(container.textContent ?? "").toContain(BOB_ON_DESTINATION)
+  })
+
+  it("warns when the funds are delivered to another account", () => {
+    const { container } = renderSummary(
+      "transfer",
+      { currency_id: 0, amount: AMOUNT, dest, dest_weight_limit: destWeightLimit },
+      "block"
+    )
+
+    expect(container.textContent ?? "").toContain("not to the signing account")
+  })
+
+  it("does not warn on a self-bridge, across ss58 prefixes", () => {
+    vi.mocked(getAddressFromXcmLocation).mockReturnValueOnce(ALICE)
+
+    const { container } = renderSummary(
+      "transfer",
+      { currency_id: 0, amount: AMOUNT, dest, dest_weight_limit: destWeightLimit },
+      "block"
+    )
+
+    expect(container.textContent ?? "").not.toContain("not to the signing account")
   })
 })
