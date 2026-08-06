@@ -26,9 +26,15 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
 
   const [tokenIn, tokenOut] = useMemo(() => {
     if (!chain) throw new Error("Missing data")
+
+    // the path may route through intermediate pools: `amount_out_min` is denominated in its last hop
+    const [locationIn] = decodedCall.args.path
+    const locationOut = decodedCall.args.path.at(-1)
+    if (!locationIn || !locationOut) throw new Error("Missing data")
+
     return [
-      getTokenFromlocation(chain, tokens, decodedCall.args.path[0]),
-      getTokenFromlocation(chain, tokens, decodedCall.args.path[1]),
+      getTokenFromlocation(chain, tokens, locationIn),
+      getTokenFromlocation(chain, tokens, locationOut),
     ]
   }, [chain, decodedCall.args.path, tokens])
 
