@@ -74,13 +74,16 @@ export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
   if (!isReady || !decodedTx) return <SignViewBodyShimmer />
 
   const Component = getComponentFromKnownContractCall(decodedTx)
+  const hasNativeValue = !!decodedTx.value
 
-  if (Component)
+  // every call we recognize is non-payable, and none of their summaries has a place for a native
+  // value - so rather than hiding it, render the transaction with the generic body, which shows it
+  if (Component && !hasNativeValue)
     return (
       <FallbackErrorBoundary fallback={<EthSignBodyDefault />}>
         <Component />
       </FallbackErrorBoundary>
     )
 
-  return <EthSignBodyDefault />
+  return <EthSignBodyDefault unexpectedNativeValue={!!Component && hasNativeValue} />
 }
