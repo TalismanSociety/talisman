@@ -19,6 +19,9 @@ const coverage =
     ignored: Record<Exclude<keyof TArgs, TDisplayed[number]>, string>
   ) => ({ displayed: displayed as readonly (string | number | symbol)[], ignored })
 
+const WEIGHT_LIMIT_REASON =
+  "caps destination execution weight; it moves no funds, but too low a limit can strand the transfer on the destination chain. It stays in the raw call view because a raw weight is neither interpretable by the signer nor checkable by us: proving one sufficient needs the destination runtime's own weight for the message, which the source chain cannot answer."
+
 const SUMMARY_ARGS_COVERAGE = {
   "ConvictionVoting.vote": coverage<PolkadotCalls["ConvictionVoting"]["vote"]>()(
     ["poll_index", "vote"],
@@ -80,13 +83,13 @@ const SUMMARY_ARGS_COVERAGE = {
     PolkadotCalls["XcmPallet"]["limited_reserve_transfer_assets"]
   >()(["dest", "beneficiary", "assets"], {
     fee_asset_item: "selects which of `assets` pays for execution, it moves no extra funds",
-    weight_limit: "caps execution weight, it moves no funds",
+    weight_limit: WEIGHT_LIMIT_REASON,
   }),
   "XcmPallet.limited_teleport_assets": coverage<
     PolkadotCalls["XcmPallet"]["limited_teleport_assets"]
   >()(["dest", "beneficiary", "assets"], {
     fee_asset_item: "selects which of `assets` pays for execution, it moves no extra funds",
-    weight_limit: "caps execution weight, it moves no funds",
+    weight_limit: WEIGHT_LIMIT_REASON,
   }),
   "PolkadotXcm.reserve_transfer_assets": coverage<
     PolkadotAssetHubCalls["PolkadotXcm"]["reserve_transfer_assets"]
@@ -97,22 +100,22 @@ const SUMMARY_ARGS_COVERAGE = {
     PolkadotAssetHubCalls["PolkadotXcm"]["limited_reserve_transfer_assets"]
   >()(["dest", "beneficiary", "assets"], {
     fee_asset_item: "selects which of `assets` pays for execution, it moves no extra funds",
-    weight_limit: "caps execution weight, it moves no funds",
+    weight_limit: WEIGHT_LIMIT_REASON,
   }),
   "PolkadotXcm.limited_teleport_assets": coverage<
     PolkadotAssetHubCalls["PolkadotXcm"]["limited_teleport_assets"]
   >()(["dest", "beneficiary", "assets"], {
     fee_asset_item: "selects which of `assets` pays for execution, it moves no extra funds",
-    weight_limit: "caps execution weight, it moves no funds",
+    weight_limit: WEIGHT_LIMIT_REASON,
   }),
 
   "XTokens.transfer": coverage<AcalaCalls["XTokens"]["transfer"]>()(
     ["currency_id", "amount", "dest"],
-    { dest_weight_limit: "caps execution weight, it moves no funds" }
+    { dest_weight_limit: WEIGHT_LIMIT_REASON }
   ),
   "XTokens.transfer_with_fee": coverage<AcalaCalls["XTokens"]["transfer_with_fee"]>()(
     ["currency_id", "amount", "fee", "dest"],
-    { dest_weight_limit: "caps execution weight, it moves no funds" }
+    { dest_weight_limit: WEIGHT_LIMIT_REASON }
   ),
 
   "Assets.transfer": coverage<PolkadotAssetHubCalls["Assets"]["transfer"]>()(
