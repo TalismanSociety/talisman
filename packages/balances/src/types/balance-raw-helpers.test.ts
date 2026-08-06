@@ -63,13 +63,13 @@ const CASES: Array<[string, BalanceJson]> = [
     }),
   ],
   [
-    "zero stake with pending root claim (dtao extra)",
+    "zero free with a transferable-flagged lock and a counted extra",
     makeBalanceJson({
       source: "substrate-dtao",
       values: [
         { type: "free", label: "Subnet Staking", amount: "0" },
-        { type: "locked", label: "Pending root claim", amount: "42", includeInTransferable: true },
-        { type: "extra", label: "Pending root claim", amount: "42", includeInTotal: true },
+        { type: "locked", label: "informational lock", amount: "42", includeInTransferable: true },
+        { type: "extra", label: "counted extra", amount: "42", includeInTotal: true },
       ] satisfies AmountWithLabel<string>[],
     }),
   ],

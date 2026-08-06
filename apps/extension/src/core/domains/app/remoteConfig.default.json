@@ -48,7 +48,7 @@
     "BLOCKAID_DAPP_SCAN": false,
     "ASSET_HUB_MIGRATION_BANNER": false,
     "BITTENSOR_MEV_SHIELD": true,
-    "QUICK_UNLOCK": true
+    "QUICK_UNLOCK": false
   },
   "coingecko": {
     "apiUrl": "https://cgp.talisman.xyz"
@@ -412,7 +412,7 @@
       "29": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "30": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "31": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "32": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "32": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "33": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "34": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "35": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -423,7 +423,7 @@
       "40": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "41": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "42": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "43": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
+      "43": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "44": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "45": "5FtBncJvGhxjBs4aFn2pid6aur9tBUuo9QR7sHe5DkoRizzo",
       "46": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -438,7 +438,7 @@
       "55": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "56": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "57": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "58": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "58": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "59": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "60": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "61": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",

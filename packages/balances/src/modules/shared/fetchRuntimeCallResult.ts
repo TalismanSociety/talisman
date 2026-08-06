@@ -38,7 +38,9 @@ export const fetchRuntimeCallResult = async <T>(
   metadataRpcOrBuilder: `0x${string}` | MetadataBuilder,
   apiName: string,
   method: string,
-  args: unknown[]
+  args: unknown[],
+  /** block to run the call against — pass it to keep a multi-call poll on one block */
+  at?: `0x${string}`
 ): Promise<T> => {
   try {
     // MUST be the cached parse: substrate-hydration passes the raw hex once PER ADDRESS
@@ -53,6 +55,7 @@ export const fetchRuntimeCallResult = async <T>(
     const hex = await connector.send<string>(networkId, "state_call", [
       `${apiName}_${method}`,
       toHex(call.args.enc(args)),
+      ...(at ? [at] : []),
     ])
 
     // the response decode is synchronous and indivisible — large results can block

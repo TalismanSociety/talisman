@@ -1,11 +1,9 @@
-import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   getCleanToken,
   type SubDTaoToken,
   subDTaoTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
-import { decodeScale, type parseMetadataRpc } from "@talismn/scale"
 import {
   createTimeSlicer,
   forEachWithYield,
@@ -13,24 +11,19 @@ import {
   isNotNil,
   mapWithYield,
 } from "@talismn/util"
-import { keyBy, uniq } from "lodash-es"
+import { keyBy, mergeWith, uniq } from "lodash-es"
 
 import log from "../../log"
 import type { AmountWithLabel, IBalance } from "../../types"
 import type { IBalanceModule } from "../../types/IBalanceModule"
-import { fetchRuntimeCallResult } from "../shared"
+import { fetchBestBlockHash, fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
-import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
-import {
-  calculatePendingRootClaimable,
-  calculateTotalRootClaimable,
-} from "./calculatePendingRootClaimable"
+import { CLAIMABLE_REWARDS_LABEL, fetchBasketClaims, ROOT_NETUID } from "./basketClaims"
 import { MODULE_TYPE } from "./config"
 import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
+import { fetchRootStakeHolds } from "./rootStakeHold"
 import type { GetStakeInfosResult, SubDTaoBalance, SubDTaoBalanceMeta } from "./types"
-
-const ROOT_NETUID = 0
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -87,55 +80,45 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     // pre-parse once (memoized) — parsing the raw metadataRpc per call is expensive
     const { builder } = parseMetadataRpcCached(miniMetadata.data!)
 
+    // every read below is pinned to this block: stake, basket claims and hold windows are
+    // combined with each other, and unpinned reads land on whatever block is best when they
+    // arrive — mixing blocks reports state that never existed
+    const at = await fetchBestBlockHash(connector, networkId)
+
     const stakeInfos = await fetchRuntimeCallResult<GetStakeInfosResult>(
       connector,
       networkId,
       builder,
       "StakeInfoRuntimeApi",
       "get_stake_info_for_coldkeys",
-      [addresses]
+      [addresses],
+      at
     )
 
-    const rootHotkeys = uniq(
-      stakeInfos.flatMap(([, stakes]) =>
-        stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey)
-      )
-    )
-    const rootClaimableRatesByHotkey =
-      rootHotkeys.length && miniMetadata.data
-        ? await fetchRootClaimableRates(connector, networkId, miniMetadata.data, rootHotkeys)
-        : new Map<string, Map<number, bigint>>()
-
-    // Collect all (address, hotkey, netuid) pairs for root stakes to fetch RootClaimed amounts
-    const addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]> = []
+    // unique (coldkey, hotkey) root staking pairs: hold windows are per pair. (Basket claims
+    // discover their own pairs chain-side, including fully-unstaked validators.)
+    const rootPairs: Array<{ address: string; hotkey: string }> = []
+    const seenRootPairs = new Set<string>()
     for (const [address, stakes] of stakeInfos) {
       for (const stake of stakes) {
-        if (stake.netuid === ROOT_NETUID) {
-          const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey)
-          if (claimableRates) {
-            for (const [netuid, claimableRate] of claimableRates) {
-              // pending = totalClaimable - claimed, and claimed >= 0: when totalClaimable
-              // is 0 the pending claim is 0 whatever RootClaimed holds - skip the query
-              if (calculateTotalRootClaimable(stake.stake, claimableRate) === 0n) continue
-              addressHotkeyNetuidPairs.push([address, stake.hotkey, netuid])
-            }
-          }
-        }
+        if (stake.netuid !== ROOT_NETUID) continue
+        const pairKey = `${address}:${stake.hotkey}`
+        if (seenRootPairs.has(pairKey)) continue
+        seenRootPairs.add(pairKey)
+        rootPairs.push({ address, hotkey: stake.hotkey })
       }
     }
 
-    const [rootClaimedAmounts, convictionLocks] = await Promise.all([
-      addressHotkeyNetuidPairs.length && miniMetadata.data
-        ? fetchRootClaimedAmounts(connector, networkId, miniMetadata.data, addressHotkeyNetuidPairs)
-        : Promise.resolve(new Map<string, Map<string, Map<number, bigint>>>()),
-      miniMetadata.data
-        ? fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses)
-        : Promise.resolve([]),
-    ])
+    const [convictionLocks, basketClaims, rootStakeHolds] = miniMetadata.data
+      ? await Promise.all([
+          fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses, at),
+          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses, at),
+          fetchRootStakeHolds(connector, networkId, miniMetadata.data, rootPairs, at),
+        ])
+      : [[], [], []]
 
-    // Upserts a balance into the accumulator, merging stake values if the balance already exists.
-    // Eg: Acc X has root staked with validator Y, but also staked on sn 45 with the same validator Y.
-    // We merge the pending root claim of sn 45 and the sn 45 stake in the same balance.
+    // Upserts a balance into the accumulator: stakes add up, other fields are overwritten
+    // when the incoming balance defines them (mergeWith skips undefined source fields)
     const upsertBalance = (
       acc: Record<string, SubDTaoBalance>,
       address: string,
@@ -144,21 +127,12 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     ): void => {
       const key = `${address}:${tokenId}`
       const recordedBalance = acc[key]
-      if (recordedBalance) {
-        acc[key] = {
-          ...recordedBalance,
-          stake: recordedBalance.stake + balance.stake,
-          // If the new balance has pendingRootClaim, use it (it's calculated from current state)
-          ...(balance.pendingRootClaim !== undefined && {
-            pendingRootClaim: balance.pendingRootClaim,
-          }),
-          ...(balance.convictionLock !== undefined && {
-            convictionLock: balance.convictionLock,
-          }),
-        }
-      } else {
-        acc[key] = balance
-      }
+      acc[key] = recordedBalance
+        ? mergeWith({}, recordedBalance, balance, (recorded, incoming, field) => {
+            if (field === "stake" && recorded !== undefined) return recorded + incoming
+            return incoming
+          })
+        : balance
     }
 
     // one shared slicer across all loops below: the nested stakes×hotkeys×netuids work is
@@ -181,29 +155,39 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           }
 
           upsertBalance(balancesRaw, address, balance.tokenId, balance)
-
-          // Root stake cases, we need to calculate the pending root claim and add to the balances
-          if (stake.netuid === ROOT_NETUID) {
-            const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey) ?? new Map()
-            const alreadyClaimedMap =
-              rootClaimedAmounts.get(address)?.get(stake.hotkey) ?? new Map<number, bigint>()
-
-            const pendingRootClaimBalances = calculatePendingRootClaimable({
-              stake: stake.stake,
-              hotkey: stake.hotkey,
-              address,
-              networkId,
-              validatorRootClaimableRate: claimableRates,
-              alreadyClaimedByNetuid: alreadyClaimedMap,
-            })
-            pendingRootClaimBalances.forEach((balance) => {
-              upsertBalance(balancesRaw, address, balance.tokenId, balance)
-            })
-          }
         },
         { slicer }
       )
     }
+
+    // both ride on their validator's root staking position token, which the chain keeps
+    // (and the claim redeems from) even after the coldkey fully unstaked from it
+    const upsertRootPairFields = <T extends { address: string; hotkey: string }>(
+      items: T[],
+      getFields: (item: T) => Partial<SubDTaoBalance>
+    ) =>
+      forEachWithYield(
+        items,
+        (item) => {
+          const tokenId = subDTaoTokenId(networkId, ROOT_NETUID, item.hotkey)
+
+          upsertBalance(balancesRaw, item.address, tokenId, {
+            address: item.address,
+            tokenId,
+            baseTokenId: subDTaoTokenId(networkId, ROOT_NETUID),
+            stake: 0n,
+            hotkey: item.hotkey,
+            netuid: ROOT_NETUID,
+            ...getFields(item),
+          })
+        },
+        { slicer }
+      )
+
+    await upsertRootPairFields(basketClaims, ({ amount }) => ({ claimable: amount }))
+    await upsertRootPairFields(rootStakeHolds, ({ unlockAtBlock }) => ({
+      rootStakeHoldUnlockBlock: unlockAtBlock,
+    }))
 
     await forEachWithYield(
       convictionLocks,
@@ -277,30 +261,41 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           if (!stake) return null
 
           const stakeAmount = BigInt(stake.stake?.toString() ?? "0")
-          const pendingRootClaimAmount = BigInt(stake.pendingRootClaim?.toString() ?? "0")
+          const claimableAmount = BigInt(stake.claimable?.toString() ?? "0")
           const convictionLockAmount = BigInt(stake.convictionLock?.amount?.toString() ?? "0")
           const convictionLockConviction = BigInt(stake.convictionLock?.convictionRaw ?? "0")
-          const hasZeroStake = stakeAmount === 0n
-          const hasPendingRootClaim = pendingRootClaimAmount > 0n
+
+          const rootStakeHoldMeta: SubDTaoBalanceMeta | undefined =
+            stake.rootStakeHoldUnlockBlock !== undefined
+              ? {
+                  rootStakeHold: {
+                    type: "root-stake-hold",
+                    unlockAtBlock: stake.rootStakeHoldUnlockBlock,
+                  },
+                }
+              : undefined
 
           const balanceValue: AmountWithLabel<string> = {
             type: "free",
-            label: stake.netuid === 0 ? "Root Staking" : `Subnet Staking`,
+            label: stake.netuid === ROOT_NETUID ? "Root Staking" : `Subnet Staking`,
             amount: stakeAmount.toString(),
+            ...(rootStakeHoldMeta && { meta: rootStakeHoldMeta }),
           }
 
-          const pendingRootClaimValue: AmountWithLabel<string> = {
-            type: "locked",
-            label: "Pending root claim",
-            amount: pendingRootClaimAmount.toString(),
-            // The pending claim is not part of the stake (free amount): on-chain it only becomes
-            // stake once claimed (root_claim_on_subnet). Since it was never included in `free`,
-            // it must not be subtracted from it either: flag it so it does not reduce the staked
-            // position's transferable amount.
-            includeInTransferable: true,
-          }
+          const values: Array<AmountWithLabel<string>> = [balanceValue]
 
-          const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
+          if (claimableAmount > 0n) {
+            // the claimable amount is not part of the stake (free amount): on-chain it only
+            // becomes root stake once claimed. Surface it in the locked column without
+            // reducing the position's transferable amount, and count it toward the total via
+            // an extra (total.planck = free + reserved + extras with includeInTotal)
+            const claimable = {
+              label: CLAIMABLE_REWARDS_LABEL,
+              amount: claimableAmount.toString(),
+            }
+            values.push({ ...claimable, type: "locked", includeInTransferable: true })
+            values.push({ ...claimable, type: "extra", includeInTotal: true })
+          }
           // also surface zero-mass locks with residual conviction ("ghost" locks): the chain pins
           // future lock_stake calls to their hotkey, so the lock wizard must know they exist
           if (
@@ -320,20 +315,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
               label: getConvictionLockLabel(stake.convictionLock.lockType),
               amount: convictionLockAmount.toString(),
               meta: convictionLockMeta,
-            })
-          }
-
-          // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
-          // with includeInTotal: true so it counts toward the total balance.
-          // This ensures the balance isn't filtered out when stake is 0n.
-          // The total.planck calculation is: free + reserved + extra (with includeInTotal: true)
-          // So by adding pendingRootClaim as extra, it will be included in total.planck.
-          if (hasZeroStake && hasPendingRootClaim) {
-            values.push({
-              type: "extra",
-              label: "Pending root claim",
-              amount: pendingRootClaimAmount.toString(),
-              includeInTotal: true,
             })
           }
 
@@ -371,212 +352,5 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       success: [],
       errors,
     }
-  }
-}
-
-const buildStorageCoder = (metadataRpc: `0x${string}`, pallet: string, entry: string) => {
-  const { builder } = parseMetadataRpcCached(metadataRpc)
-  return builder.buildStorage(pallet, entry)
-}
-
-const buildRootClaimableStorageCoder = async (
-  _connector: IChainConnectorDot,
-  networkId: string,
-  metadataRpc: `0x${string}` | null
-): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
-  let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
-
-  if (metadataRpc) {
-    try {
-      storageCoder = buildStorageCoder(metadataRpc, "SubtensorModule", "RootClaimable")
-    } catch (cause) {
-      log.warn(
-        `Failed to build storage coder for SubtensorModule.RootClaimable using provided metadata on ${networkId}`,
-        { cause }
-      )
-    }
-  }
-
-  return storageCoder
-}
-
-const buildRootClaimedStorageCoder = async (
-  networkId: string,
-  metadataRpc: `0x${string}` | null
-): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
-  let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
-
-  if (metadataRpc) {
-    try {
-      storageCoder = buildStorageCoder(metadataRpc, "SubtensorModule", "RootClaimed")
-    } catch (cause) {
-      log.warn(
-        `Failed to build storage coder for SubtensorModule.RootClaimed using provided metadata on ${networkId}`,
-        { cause }
-      )
-    }
-  }
-
-  return storageCoder
-}
-
-const buildRootClaimableQueries = (
-  networkId: string,
-  hotkeys: string[],
-  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
-): Array<RpcQueryPack<[string, Map<number, bigint>]>> => {
-  return hotkeys.map((hotkey) => {
-    let stateKey: MaybeStateKey
-    try {
-      stateKey = storageCoder.keys.enc(hotkey) as MaybeStateKey
-    } catch (cause) {
-      // an unencodable key (metadata drift) would make the hotkey's RootClaimable read as an
-      // empty map, erasing its claim-only balances — fail the poll (stale) instead
-      log.warn(`Failed to encode storage key for hotkey ${hotkey} on ${networkId}`, { cause })
-      throw cause
-    }
-
-    const decodeResult = (changes: MaybeStateKey[]): [string, Map<number, bigint>] => {
-      const hexValue = changes[0]
-      if (!hexValue) {
-        return [hotkey, new Map<number, bigint>()]
-      }
-
-      const decoded = decodeScale<[number, bigint][] | null>(
-        storageCoder,
-        hexValue,
-        `Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`
-      )
-      // a present-but-undecodable value is a bad response, not an absent entry: an empty
-      // map here would erase the hotkey's claim-only balances for this poll
-      if (decoded === null)
-        throw new Error(`Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`)
-      return [hotkey, new Map(decoded)]
-    }
-
-    return {
-      stateKeys: [stateKey],
-      decodeResult,
-    }
-  })
-}
-
-const fetchRootClaimableRates = async (
-  connector: IChainConnectorDot,
-  networkId: string,
-  metadataRpc: `0x${string}`,
-  hotkeys: string[]
-): Promise<Map<string, Map<number, bigint>>> => {
-  if (!hotkeys.length) return new Map<string, Map<number, bigint>>()
-
-  const storageCoder = await buildRootClaimableStorageCoder(connector, networkId, metadataRpc)
-  if (!storageCoder) {
-    // Fallback: return empty map for all hotkeys
-    return new Map(hotkeys.map((hotkey) => [hotkey, new Map<number, bigint>()]))
-  }
-
-  const queries = buildRootClaimableQueries(networkId, hotkeys, storageCoder)
-
-  try {
-    const results = await fetchRpcQueryPack(connector, networkId, queries)
-    return new Map(results)
-  } catch (cause) {
-    // empty rates would make claim-only balances (zero direct stake) read as non-existent
-    // for this poll — the provider would delete them and they'd flap back in on the next
-    // one. Transient fetch failures must fail the poll (balances go stale) instead
-    log.warn(`Failed to fetch RootClaimable for hotkeys on ${networkId}`, { cause })
-    throw cause
-  }
-}
-
-const buildRootClaimedQueries = (
-  networkId: string,
-  addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>,
-  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
-): Array<RpcQueryPack<[string, string, number, bigint]>> => {
-  return addressHotkeyNetuidPairs.map(([address, hotkey, netuid]) => {
-    let stateKey: MaybeStateKey
-    try {
-      // RootClaimed storage takes params: [netuid, hotkey, coldkey_ss58]
-      stateKey = storageCoder.keys.enc(netuid, hotkey, address) as MaybeStateKey
-    } catch (cause) {
-      // an unencodable key (metadata drift) would read as claimed=0, overstating the pending
-      // claim — fail the poll (stale) instead
-      log.warn(
-        `Failed to encode storage key for RootClaimed (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
-        { cause }
-      )
-      throw cause
-    }
-
-    const decodeResult = (changes: MaybeStateKey[]): [string, string, number, bigint] => {
-      const hexValue = changes[0]
-      if (!hexValue) {
-        return [address, hotkey, netuid, 0n]
-      }
-
-      const decoded = decodeScale<bigint | null>(
-        storageCoder,
-        hexValue,
-        `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`
-      )
-      // present-but-undecodable: claimed=0 would overstate the pending claim — fail the poll
-      if (decoded === null)
-        throw new Error(
-          `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`
-        )
-      return [address, hotkey, netuid, decoded]
-    }
-
-    return {
-      stateKeys: [stateKey],
-      decodeResult,
-    }
-  })
-}
-
-const fetchRootClaimedAmounts = async (
-  connector: IChainConnectorDot,
-  networkId: string,
-  metadataRpc: `0x${string}`,
-  addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>
-): Promise<Map<string, Map<string, Map<number, bigint>>>> => {
-  if (!addressHotkeyNetuidPairs.length) {
-    return new Map<string, Map<string, Map<number, bigint>>>()
-  }
-
-  const storageCoder = await buildRootClaimedStorageCoder(networkId, metadataRpc)
-  if (!storageCoder) {
-    // Fallback: return empty map for all pairs
-    const result = new Map<string, Map<string, Map<number, bigint>>>()
-    for (const [address, hotkey, netuid] of addressHotkeyNetuidPairs) {
-      if (!result.has(address)) result.set(address, new Map())
-      const addressMap = result.get(address)!
-      if (!addressMap.has(hotkey)) addressMap.set(hotkey, new Map())
-      addressMap.get(hotkey)!.set(netuid, 0n)
-    }
-    return result
-  }
-
-  const queries = buildRootClaimedQueries(networkId, addressHotkeyNetuidPairs, storageCoder)
-
-  try {
-    const results = await fetchRpcQueryPack(connector, networkId, queries)
-    // Build a nested map: address -> hotkey -> netuid -> claimed amount
-    const result = new Map<string, Map<string, Map<number, bigint>>>()
-    for (const [address, hotkey, netuid, claimed] of results) {
-      if (!result.has(address)) result.set(address, new Map())
-      const addressMap = result.get(address)!
-      if (!addressMap.has(hotkey)) addressMap.set(hotkey, new Map())
-      addressMap.get(hotkey)!.set(netuid, claimed)
-    }
-    return result
-  } catch (cause) {
-    // claimed=0 fallback overstates every pending root claim for this poll (claimable
-    // minus claimed) — transient fetch failures must fail the poll, not fabricate values
-    log.warn(`Failed to fetch RootClaimed for address-hotkey-netuid pairs on ${networkId}`, {
-      cause,
-    })
-    throw cause
   }
 }

@@ -1,5 +1,4 @@
 import type { TaoDataApi } from "@core/domains/bittensor/exports"
-import type { Enum } from "@polkadot-api/substrate-bindings"
 
 type TaoDataClient = TaoDataApi<unknown>
 type TaoDataResponseData<T> = T extends (...args: infer _Args) => Promise<infer R>
@@ -26,11 +25,3 @@ export type SubnetData = Partial<SubnetPool> &
 export type ValidatorYield = TaoDataResponseData<
   TaoDataClient["subnets"]["listSubnetValidators"]
 >[number]
-
-export type RootClaimTypeEnum = Enum<{
-  Swap: undefined
-  Keep: undefined
-  KeepSubnets: { subnets: number[] }
-}>
-
-export type RootClaimType = RootClaimTypeEnum["type"]

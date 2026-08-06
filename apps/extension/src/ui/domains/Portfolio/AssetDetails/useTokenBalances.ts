@@ -7,6 +7,7 @@ import {
   findDTaoConvictionLock,
   getBalanceId,
   getLockTitle,
+  isDTaoClaimableLock,
 } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
@@ -89,6 +90,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         address: account ? undefined : b.address,
         // dtao conviction locks are keyed to a validator (hotkey) — surface it on the row
         lockHotkey: findDTaoConvictionLock([lock])?.hotkey,
+        meta: isDTaoClaimableLock(lock) ? { claimable: true } : undefined,
         balance: b,
       }))
     )

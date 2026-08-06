@@ -1,9 +1,11 @@
 import log from "../../log"
 import type { AmountWithLabel, IBalance } from "../../types/balancetypes"
 import type { BalanceEquivalence } from "../shared/stabilizeBalances"
+import { CLAIMABLE_REWARDS_LABEL } from "./basketClaims"
 import type { SubDTaoBalanceMeta } from "./types"
 
-/** root dividends accrue continuously; the pending-claim display is informational */
+/** basket claimable amounts are marked NAV quotes: they move with subnet pool prices and
+ * dividend accrual on (nearly) every block; the display is informational */
 const CLAIM_DRIFT_TOLERANCE_BPS = 100n
 /**
  * subnet staking positions auto-compound: dividend injections land once per subnet tempo
@@ -15,8 +17,8 @@ const STAKE_DRIFT_TOLERANCE_BPS = 100n
 
 /**
  * dtao balances embed values that drift on (nearly) every block even when the user's
- * position is untouched: "Pending root claim" amounts accrue continuously, staking
- * positions auto-compound, and conviction locks decay.
+ * position is untouched: staking positions auto-compound, basket claimable quotes move,
+ * and conviction locks decay.
  *
  * Without special handling, every 6s poll re-emits the full result set, which defeats
  * every distinctUntilChanged stage downstream and forces the whole pipeline
@@ -28,9 +30,7 @@ const STAKE_DRIFT_TOLERANCE_BPS = 100n
  *   drift-prone values above (relative to the previously EMITTED value, so movement
  *   accumulates and a sustained move still surfaces)
  * - "drift" when ONLY the drift-prone values moved, beyond tolerance. The stabilizer
- *   re-emits these at most once per refresh interval — important for fast-accruing
- *   values (a young pending claim can grow >1% per poll indefinitely, so a purely
- *   relative tolerance can never suppress it)
+ *   re-emits these at most once per refresh interval
  * - "changed" for structural changes (stake, locks, status, value set) — emitted
  *   immediately
  */
@@ -55,16 +55,15 @@ const isWithinDriftTolerance = (previous: string, next: string, toleranceBps: bi
   return diff * 10_000n <= max * toleranceBps
 }
 
-/** the only labels whose amounts accrue per block (see fetchBalances) */
-const PENDING_ROOT_CLAIM_LABEL = "Pending root claim"
-
 type Classified = { equivalence: BalanceEquivalence; reason?: string }
 
 const changed = (reason: string): Classified => ({ equivalence: "changed", reason })
 
-/** claims accrue and locks decay — their values may appear/disappear as amounts cross zero */
+/** claimable quotes and decaying locks may appear as their amounts cross zero */
 const isDriftProneValue = (value: AmountWithLabel<string>): boolean =>
-  value.label === PENDING_ROOT_CLAIM_LABEL ||
+  value.label === CLAIMABLE_REWARDS_LABEL || hasConvictionLock(value)
+
+const hasConvictionLock = (value: AmountWithLabel<string>): boolean =>
   !!(value.meta as SubDTaoBalanceMeta | undefined)?.convictionLock
 
 const classifyValue = (
@@ -93,12 +92,17 @@ const classifyValue = (
   )
     return changed("conviction lock meta")
 
+  // root-stake hold meta must match exactly: it only moves on user stake ops or window
+  // expiry, both of which the UI must surface immediately
+  if (previousMeta?.rootStakeHold?.unlockAtBlock !== nextMeta?.rootStakeHold?.unlockAtBlock)
+    return changed("root stake hold meta")
+
   // amounts: every dtao amount kind moves continuously in its own way
   let drift = false
   if (previous.amount !== next.amount) {
-    if (previous.label === PENDING_ROOT_CLAIM_LABEL) {
-      // dividends accrue per block: sub-tolerance accrual is not worth surfacing at all,
-      // beyond-tolerance accrual is drift (bounded by the refresh interval)
+    if (previous.label === CLAIMABLE_REWARDS_LABEL) {
+      // NAV quote: sub-tolerance movement is not worth surfacing at all, beyond-tolerance
+      // movement is drift (bounded by the refresh interval)
       if (!isWithinDriftTolerance(previous.amount, next.amount, CLAIM_DRIFT_TOLERANCE_BPS))
         drift = true
     } else if (previousLock) {
@@ -130,8 +134,8 @@ const classifyBalance = (previous: IBalance, next: IBalance): Classified => {
   const nextValues = ("values" in next ? next.values : undefined) ?? []
 
   // match values by (type, label) key, NOT by index: value sets legitimately toggle —
-  // a pending claim or conviction lock value appears/disappears as its amount crosses
-  // zero. Toggles of drift-prone values classify as drift; anything else is structural.
+  // a claimable rewards or conviction lock value appears as its amount crosses zero.
+  // Appearances of drift-prone values classify as drift; anything else is structural.
   const previousByKey = new Map(previousValues.map((value) => [keyOf(value), value]))
   const nextByKey = new Map(nextValues.map((value) => [keyOf(value), value]))
   if (previousByKey.size !== previousValues.length || nextByKey.size !== nextValues.length)
@@ -142,7 +146,10 @@ const classifyBalance = (previous: IBalance, next: IBalance): Classified => {
   for (const [key, previousValue] of previousByKey) {
     const nextValue = nextByKey.get(key)
     if (!nextValue) {
-      if (!isDriftProneValue(previousValue)) return changed(`value removed: ${key}`)
+      // claimable values only vanish when the entitlement was claimed or exited, never by
+      // NAV drift — the claim wizard gates submission on them, so a delayed removal keeps
+      // offering a paid no-op claim. Only decayed-away conviction locks remove as drift.
+      if (!hasConvictionLock(previousValue)) return changed(`value removed: ${key}`)
       drift = true
       continue
     }

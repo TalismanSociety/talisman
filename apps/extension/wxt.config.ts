@@ -665,6 +665,9 @@ export default defineConfig({
             "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
             "process.env.SUPPORTED_LANGUAGES": JSON.stringify(SUPPORTED_LANGUAGES),
             "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
+            "process.env.BITTENSOR_DEVNET_RPC": JSON.stringify(
+              process.env.BITTENSOR_DEVNET_RPC || ""
+            ),
             "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
             "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
               process.env.LOG_SUBSCRIPTION_CALLBACKS || ""

@@ -1,5 +1,3 @@
-import type { RootClaimType } from "../../hooks/bittensor/dTao/types"
-
 export const ROOT_NETUID = 0
 export const DEFAULT_USER_MAX_SLIPPAGE = 0.5 // 0.5%
 export const HIGH_PRICE_IMPACT = 2
@@ -18,5 +16,3 @@ export const DTAO_STAKING_REMARKS: Record<RemarkType, string> = {
   stake: "chili001",
   swap: "garlic002",
 }
-
-export const DEFAULT_ROOT_CLAIM_TYPE: RootClaimType = "Swap"

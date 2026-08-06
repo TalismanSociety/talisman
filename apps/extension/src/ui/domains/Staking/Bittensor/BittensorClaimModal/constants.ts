@@ -1,0 +1,1 @@
+export const BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID = "BittensorClaimModalDialog"

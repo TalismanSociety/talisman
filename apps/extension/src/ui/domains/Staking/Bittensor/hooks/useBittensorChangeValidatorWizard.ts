@@ -9,6 +9,7 @@ import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
 
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
+import { useDTaoRootStakeHoldGate } from "../../hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
 import { useBittensorChangeValidatorModal } from "./useBittensorChangeValidatorModal"
 import { useBittensorMoveStake } from "./useBittensorMoveStake"
@@ -94,6 +95,10 @@ const useBittensorChangeValidatorWizardProvider = () => {
     return currentPosition.balance.free.planck
   }, [currentPosition])
 
+  // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
+  // move_stake off the pair would revert with RootStakeLocked
+  const rootStakeHoldGate = useDTaoRootStakeHoldGate(currentPosition?.balance)
+
   // Get the move stake payload
   const { payload, txMetadata, feeEstimatePayload } = useBittensorMoveStake({
     networkId,
@@ -165,7 +170,8 @@ const useBittensorChangeValidatorWizardProvider = () => {
     feeToken,
     account,
     alphaAmount,
-    payload,
+    payload: rootStakeHoldGate.isBlocked ? null : payload,
+    rootStakeHoldMessage: rootStakeHoldGate.message,
     txMetadata,
     feeEstimate,
     isLoadingFeeEstimate,

@@ -1,5 +1,6 @@
 export * from "./buildNetworkStorageCoders"
 export * from "./errors"
+export * from "./fetchBestBlockHash"
 export * from "./fetchRuntimeCallResult"
 export * from "./rpcQueryPack"
 export * from "./stabilizeBalances"

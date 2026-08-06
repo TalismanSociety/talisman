@@ -51,7 +51,19 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
     [
       {
         pallet: "SubtensorModule",
-        items: ["TransferToggle", "RootClaimable", "RootClaimed", "Lock", "DecayingLock"],
+        items: [
+          "TransferToggle",
+          "Lock",
+          "DecayingLock",
+          "RootStakeUnlockInterval",
+          "LastColdkeyHotkeyStakeBlock",
+        ],
+      },
+      {
+        // read alongside LastColdkeyHotkeyStakeBlock to age hold windows without a
+        // chain_getHeader round trip
+        pallet: "System",
+        items: ["Number"],
       },
     ],
     [
@@ -62,6 +74,10 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
       {
         runtimeApi: "SubnetInfoRuntimeApi",
         methods: ["get_all_dynamic_info"],
+      },
+      {
+        runtimeApi: "BetaBasketRuntimeApi",
+        methods: ["get_root_basket_positions"],
       },
     ]
   )
