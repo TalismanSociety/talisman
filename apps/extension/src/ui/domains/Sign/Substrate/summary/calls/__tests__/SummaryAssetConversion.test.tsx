@@ -69,6 +69,26 @@ vi.mock("@ui/domains/Asset/TokensAndFiat", () => ({
 }))
 vi.mock("@ui/domains/Asset/TokenLogo", () => ({ TokenLogo: () => null }))
 
+// Account subtree behind SummaryAddressDisplay, stubbed to avoid keyring/state/clipboard side
+// effects while keeping the rendered address readable.
+vi.mock("@ui/state/accounts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@ui/state/accounts")>()
+  return { ...actual, useAccountByAddress: () => null }
+})
+vi.mock("@core/domains/keyring/exports", () => ({ getAccountGenesisHash: () => undefined }))
+vi.mock("@ui/util/copyAddress", () => ({ copyAddress: vi.fn() }))
+vi.mock("@ui/domains/Account/AccountIcon", () => ({
+  AccountIcon: () => <span data-testid="account-icon" />,
+}))
+vi.mock("@ui/domains/Account/Address", () => ({
+  Address: ({ address }: { address: string }) => <span data-testid="address">{address}</span>,
+}))
+vi.mock("@ui/components/Tooltip", () => ({
+  Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ children }: { children: ReactNode; asChild?: boolean }) => <>{children}</>,
+  TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>,
+}))
+
 import { SUMMARY_COMPONENTS_ASSET_CONVERSION } from "@ui/domains/Sign/Substrate/summary/calls/SummaryAssetConversion"
 
 const SwapExactTokensForTokens = SUMMARY_COMPONENTS_ASSET_CONVERSION[0][2] as unknown as FC<
@@ -76,6 +96,8 @@ const SwapExactTokensForTokens = SUMMARY_COMPONENTS_ASSET_CONVERSION[0][2] as un
 >
 
 const SIGNER = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+const SIGNER_KUSAMA_SS58 = "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"
+const OTHER_ACCOUNT = "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"
 
 const AMOUNT_IN = 5_000_000_000_000n // 500 DOT
 const AMOUNT_OUT_MIN = 1_000_000n // 1 unit of the last token in the path
@@ -136,5 +158,39 @@ describe("AssetConversion swap_exact_tokens_for_tokens", () => {
 
     expect(text).toContain("USDT")
     expect(text).not.toContain("USDC")
+  })
+
+  // `send_to` is the account credited with the swap output, and it is not necessarily the signer.
+  it.each(MODES)("mode=%s: shows the account the output is paid to", (mode) => {
+    const { container } = renderSummary(
+      swapArgs([NATIVE_LOCATION, assetLocation(1984n)], OTHER_ACCOUNT),
+      mode
+    )
+
+    expect(container.textContent ?? "").toContain(OTHER_ACCOUNT)
+  })
+
+  it("warns when the output is paid to an account other than the signer", () => {
+    const { container } = renderSummary(
+      swapArgs([NATIVE_LOCATION, assetLocation(1984n)], OTHER_ACCOUNT),
+      "block"
+    )
+
+    expect(container.textContent ?? "").toContain("not to the signing account")
+  })
+
+  it("does not warn when the output is paid to the signer", () => {
+    const { container } = renderSummary(swapArgs([NATIVE_LOCATION, assetLocation(1984n)]), "block")
+
+    expect(container.textContent ?? "").not.toContain("not to the signing account")
+  })
+
+  it("does not warn when the output is paid to the signer under another ss58 prefix", () => {
+    const { container } = renderSummary(
+      swapArgs([NATIVE_LOCATION, assetLocation(1984n)], SIGNER_KUSAMA_SS58),
+      "block"
+    )
+
+    expect(container.textContent ?? "").not.toContain("not to the signing account")
   })
 })
