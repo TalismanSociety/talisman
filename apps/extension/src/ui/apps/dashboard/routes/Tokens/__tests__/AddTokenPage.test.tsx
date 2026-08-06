@@ -90,4 +90,26 @@ describe("AddTokenPage", () => {
     expect(screen.getByDisplayValue("USD Coin")).toBeTruthy()
     expect(screen.getByDisplayValue("usd-coin")).toBeTruthy()
   })
+
+  test("keeps the token fields disabled and error-free while the contract address is invalid", async () => {
+    mockGetErc20TokenInfo.mockRejectedValue(new Error("not an erc20 contract"))
+
+    selectNetworkAndEnterAddress(USDC_ADDRESS)
+
+    expect(await screen.findByText("Invalid contract address")).toBeTruthy()
+    expect(screen.queryByText(/expected string, received undefined/)).toBeNull()
+    expect(screen.queryByText(/expected number, received undefined/)).toBeNull()
+
+    for (const placeholder of ["TKN", "18", "(optional)", "My Custom Token"])
+      expect((screen.getByPlaceholderText(placeholder) as HTMLInputElement).disabled).toBe(true)
+  })
+
+  test("enables the token fields once the token info is fetched", async () => {
+    selectNetworkAndEnterAddress(USDC_ADDRESS)
+
+    await screen.findByDisplayValue("USDC")
+
+    for (const placeholder of ["TKN", "18", "(optional)", "My Custom Token"])
+      expect((screen.getByPlaceholderText(placeholder) as HTMLInputElement).disabled).toBe(false)
+  })
 })

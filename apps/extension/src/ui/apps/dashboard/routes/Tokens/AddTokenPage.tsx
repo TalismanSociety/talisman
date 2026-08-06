@@ -133,10 +133,11 @@ const AddCustomTokenForm = () => {
   // by `<form.Field>` takes over `fieldInfo[name].instance`, and form-core then discards the async
   // validation results of the `<form.Field>` instance which owns the validators.
   const networkId = useStore(form.store, (s) => s.values.networkId)
-  const isContractAddressValid = useStore(
-    form.store,
-    (s) => s.fieldMeta.contractAddress?.isValid ?? true
-  )
+
+  // The token fields are only meaningful once the contract address resolved to a new token, which
+  // makes `token` the gate for both editing and validating them: validating them earlier would
+  // display "expected string, received undefined" errors next to the contract address error.
+  const hasTokenInfo = useStore(form.store, (s) => !!s.values.token)
 
   // Fields populated from the token info fetch. They must all be cleared whenever the contract
   // address stops resolving to a new token, else they keep displaying the previous token's info.
@@ -258,7 +259,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="symbol"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.symbol.safeParse(value)
               return parsed.success
                 ? undefined
@@ -275,7 +277,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="TKN"
                 small
-                disabled={!isContractAddressValid}
+                disabled={!hasTokenInfo}
               />
             </FormFieldContainer>
           )}
@@ -284,7 +286,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="decimals"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.decimals.safeParse(value)
               return parsed.success
                 ? undefined
@@ -302,7 +305,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 small
                 readOnly
-                disabled={!isContractAddressValid}
+                disabled={!hasTokenInfo}
               />
             </FormFieldContainer>
           )}
@@ -311,7 +314,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="coingeckoId"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.coingeckoId.safeParse(value)
               return parsed.success
                 ? undefined
@@ -335,7 +339,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="(optional)"
                 small
-                disabled={!isContractAddressValid}
+                disabled={!hasTokenInfo}
                 before={
                   <AssetLogo
                     className="mr-2 rounded-full text-[1.875rem]"
@@ -350,7 +354,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="name"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.name.safeParse(value)
               return parsed.success
                 ? undefined
@@ -366,7 +371,7 @@ const AddCustomTokenForm = () => {
                 value={field.state.value ?? ""}
                 onChange={(e) => field.handleChange(e.target.value)}
                 autoComplete="off"
-                disabled={!isContractAddressValid}
+                disabled={!hasTokenInfo}
                 small
               />
             </FormFieldContainer>
