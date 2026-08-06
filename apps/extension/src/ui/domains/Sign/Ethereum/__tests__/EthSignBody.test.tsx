@@ -1,4 +1,4 @@
-import { abiErc1155 } from "@core/util/abi"
+import { abiErc1155, abiPermit2, PERMIT2_ADDRESS } from "@core/util/abi"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
 import type { FC, PropsWithChildren, ReactNode } from "react"
@@ -71,6 +71,12 @@ vi.mock("@ui/domains/Sign/Ethereum/shared/SignParamTokensButton", () => ({
   ),
 }))
 
+vi.mock("@ui/domains/Sign/Ethereum/shared/SignParamErc20TokenButton", () => ({
+  SignParamErc20TokenButton: ({ asset }: { asset: { symbol?: string } }) => (
+    <span data-testid="erc20-token">{asset.symbol}</span>
+  ),
+}))
+
 vi.mock("@ui/domains/Sign/Ethereum/shared/SignParamTokensDisplay", () => ({
   SignParamTokensDisplay: (props: Record<string, unknown>) => (
     <span data-testid="native-amount">
@@ -87,6 +93,7 @@ const USDC_CONTRACT = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 const NFT_CONTRACT = "0x3333333333333333333333333333333333333333"
 
 const NATIVE_VALUE = 5_000_000_000_000_000_000n // 5 ETH
+const UNKNOWN_CALL_DATA = "0x87517c45" // permit2 approve, on a contract we don't know
 const TOKEN_AMOUNT = 1_000n // 0.001 USDC
 
 const erc20TransferAbi = [
@@ -113,7 +120,7 @@ const makeDecodedTx = (value: bigint) => ({
 })
 
 // biome-ignore lint/suspicious/noExplicitAny: test fixture only needs the fields the bodies read
-const mockRequest = (decodedTx: any) => {
+const mockRequest = (decodedTx: any, data = "0x") => {
   fx.reqMock.mockReturnValue({
     account: { address: SIGNER },
     network: {
@@ -122,7 +129,7 @@ const mockRequest = (decodedTx: any) => {
       nativeTokenId: fx.NATIVE_TOKEN_ID,
       blockExplorerUrls: ["https://etherscan.io"],
     },
-    request: { from: SIGNER, to: decodedTx.targetAddress, value: decodedTx.value },
+    request: { from: SIGNER, to: decodedTx.targetAddress, value: decodedTx.value, data },
     decodedTx,
   })
   return decodedTx
@@ -183,6 +190,58 @@ describe("EthSignBody", () => {
 
     expect(screen.getByTestId("native-amount").textContent).toContain("5 ETH")
     expect(screen.getByTestId("alert").textContent).toBe("")
+  })
+
+  it("warns about calldata it could not decode, and shows its method id", () => {
+    const decodedTx = mockRequest(
+      { contractType: "unknown", targetAddress: USDC_CONTRACT, isContractCall: true, value: 0n },
+      UNKNOWN_CALL_DATA
+    )
+
+    const { container } = renderBody(decodedTx)
+
+    expect(screen.getByTestId("alert").textContent).toContain("cannot decode")
+    expect(container.textContent).toContain("0x87517c45")
+  })
+
+  it("does not title an undecoded call carrying native value a transfer", () => {
+    const decodedTx = mockRequest(
+      {
+        contractType: "unknown",
+        targetAddress: USDC_CONTRACT,
+        isContractCall: true,
+        value: NATIVE_VALUE,
+      },
+      UNKNOWN_CALL_DATA
+    )
+
+    renderBody(decodedTx)
+
+    expect(screen.getByTestId("title").textContent).toBe("Transaction Request")
+    expect(screen.getByTestId("native-amount").textContent).toContain("5 ETH")
+  })
+
+  it("renders spender, token and unlimited amount of a Permit2 approval", () => {
+    const amount = 2n ** 160n - 1n
+    const decodedTx = mockRequest({
+      contractType: "Permit2",
+      contractCall: {
+        functionName: "approve",
+        args: [USDC_CONTRACT, RECIPIENT, amount, 2 ** 48 - 1],
+      },
+      abi: parseAbi(abiPermit2),
+      targetAddress: PERMIT2_ADDRESS,
+      isContractCall: true,
+      value: 0n,
+      asset: { name: "USD Coin", symbol: "USDC", decimals: 6, tokenAddress: USDC_CONTRACT },
+    })
+
+    const { container } = renderBody(decodedTx)
+
+    expect(container.textContent).toContain("Unlimited")
+    expect(screen.getByTestId("erc20-token").textContent).toBe("USDC")
+    expect(screen.getByTestId("contract").textContent).toBe(RECIPIENT)
+    expect(screen.getByTestId("alert").textContent).toContain("spend these tokens")
   })
 
   it("renders recipient, token id and amount of an ERC1155 transfer", async () => {

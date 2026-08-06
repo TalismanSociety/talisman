@@ -21,7 +21,10 @@ export const EthSignBodyErc20Approve: FC = () => {
 
   const erc20Token = useMemo(
     () =>
-      network && decodedTx.asset?.symbol && decodedTx.targetAddress
+      network &&
+      decodedTx.asset?.symbol &&
+      decodedTx.asset.decimals !== undefined &&
+      decodedTx.targetAddress
         ? {
             evmNetworkId: network.id,
             contractAddress: decodedTx.targetAddress,

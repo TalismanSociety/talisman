@@ -5,6 +5,8 @@ import {
   abiMoonConvictionVoting,
   abiMoonStaking,
   abiMoonXTokens,
+  abiPermit2,
+  PERMIT2_ADDRESS,
 } from "@core/util/abi"
 import { isContractAddress } from "@core/util/isContractAddress"
 import {
@@ -54,6 +56,34 @@ const STANDARD_CONTRACTS = [
 const expandErc1155Uri = (uri: string, tokenId: bigint) =>
   uri.replace("{id}", tokenId.toString(16).padStart(64, "0"))
 
+// on Permit2 the token is an argument of the call, not the contract being called
+const getPermit2TokenAddress = (functionName: string, args: readonly unknown[] | undefined) => {
+  if (functionName === "approve") return args?.[0] as `0x${string}` | undefined
+  if (functionName === "transferFrom") return args?.[3] as `0x${string}` | undefined
+  return undefined
+}
+
+const readErc20Metadata = async (publicClient: PublicClient, address: `0x${string}`) => {
+  const contract = getContract({
+    address,
+    abi: parseAbi(abiErc20),
+    client: { public: publicClient },
+  })
+
+  // metadata is optional, a token that doesn't implement it is still spendable
+  const [name, symbol, decimals] = await Promise.allSettled([
+    contract.read.name(),
+    contract.read.symbol(),
+    contract.read.decimals(),
+  ])
+
+  return {
+    name: name.status === "fulfilled" ? name.value : undefined,
+    symbol: symbol.status === "fulfilled" ? symbol.value : undefined,
+    decimals: decimals.status === "fulfilled" ? decimals.value : undefined,
+  }
+}
+
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
   tx: TransactionRequestBase
@@ -80,6 +110,31 @@ export const decodeEvmTransaction = async (
             abi,
           }
         }
+      }
+    }
+
+    // Permit2 allowances look nothing like ERC20 ones: the token is an argument, and its `approve`
+    // selector differs from ERC20's - without this branch the whole contract is undecodable
+    if (targetAddress.toLowerCase() === PERMIT2_ADDRESS.toLowerCase()) {
+      try {
+        const abi = parseAbi(abiPermit2)
+        const contractCall = decodeFunctionData({ abi, data })
+
+        const tokenAddress = getPermit2TokenAddress(contractCall.functionName, contractCall.args)
+
+        return {
+          contractType: "Permit2",
+          contractCall,
+          abi,
+          targetAddress,
+          isContractCall: true,
+          value,
+          asset: tokenAddress
+            ? { ...(await readErc20Metadata(publicClient, tokenAddress)), tokenAddress }
+            : undefined,
+        }
+      } catch {
+        // unknown selector, fall through to the generic decoding
       }
     }
 
