@@ -10,10 +10,8 @@ import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import {
-  ERC20_UNLIMITED_ALLOWANCE,
-  SignParamAllowanceButton,
-} from "./shared/SignParamAllowanceButton"
+import { isUnlimitedAllowance } from "./shared/allowance"
+import { SignParamAllowanceButton } from "./shared/SignParamAllowanceButton"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
@@ -76,7 +74,7 @@ export const EthSignBodyErc20Approve: FC = () => {
         isRevoke ? null : (
           <SignAlertMessage>
             <span className="text-body-secondary">
-              {allowance === ERC20_UNLIMITED_ALLOWANCE
+              {isUnlimitedAllowance(allowance)
                 ? t(
                     `This contract will have permission to spend all tokens on your behalf until manually revoked. We recommend you set a limit by clicking the amount button above.`
                   )
