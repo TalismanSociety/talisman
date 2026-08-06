@@ -5,6 +5,7 @@ export const abiErc1155 = [
   "function isApprovedForAll(address account, address operator) external view returns (bool)",
   "function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external",
   "function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external",
+  "function uri(uint256 id) external view returns (string memory)",
 
   "event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)",
   "event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)",

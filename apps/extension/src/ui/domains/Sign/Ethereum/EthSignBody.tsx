@@ -12,6 +12,7 @@ import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"
 import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
+import { EthSignBodyErc1155Transfer } from "./EthSignBodyErc1155Transfer"
 import { EthSignMoonStakingCancel } from "./staking/EthSignMoonStakingCancel"
 import { EthSignMoonStakingExecute } from "./staking/EthSignMoonStakingExecute"
 import { EthSignMoonStakingSetAutoCompound } from "./staking/EthSignMoonStakingSetAutoCompound"
@@ -42,6 +43,9 @@ const getComponentFromKnownContractCall = (decodedTx: DecodedEvmTransaction) => 
     case "ERC721.transferFrom":
     case "ERC721.safeTransferFrom":
       return EthSignBodyErc721Transfer
+    case "ERC1155.safeTransferFrom":
+    case "ERC1155.safeBatchTransferFrom":
+      return EthSignBodyErc1155Transfer
     case "MoonStaking.delegateWithAutoCompound":
       return EthSignMoonStakingStake
     case "MoonStaking.delegatorBondMore":

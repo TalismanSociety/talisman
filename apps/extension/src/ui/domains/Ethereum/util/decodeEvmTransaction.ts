@@ -49,6 +49,11 @@ const STANDARD_CONTRACTS = [
   },
 ] as const
 
+// ERC1155 metadata uris may be shared by every token of the collection, with an `{id}` placeholder
+// that clients substitute with the token id, as 64 lowercase hex characters
+const expandErc1155Uri = (uri: string, tokenId: bigint) =>
+  uri.replace("{id}", tokenId.toString(16).padStart(64, "0"))
+
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
   tx: TransactionRequestBase
@@ -150,6 +155,42 @@ export const decodeEvmTransaction = async (
             isContractCall: true,
             value,
             asset,
+          }
+        }
+        if (contractType === "ERC1155") {
+          const contractCall = decodeFunctionData({ abi, data })
+
+          const { functionName, args } = contractCall
+          const tokenIds =
+            functionName === "safeBatchTransferFrom"
+              ? (args[2] as readonly bigint[])
+              : functionName === "safeTransferFrom"
+                ? [args[2] as bigint]
+                : []
+
+          const contract = getContract({
+            address: targetAddress,
+            abi,
+            client: { public: publicClient },
+          })
+
+          // metadata is optional, and a single uri may cover every token id of the collection
+          const uri = tokenIds.length
+            ? await contract.read.uri([tokenIds[0]]).catch(() => undefined)
+            : undefined
+
+          return {
+            contractType,
+            contractCall,
+            abi,
+            targetAddress,
+            isContractCall: true,
+            value,
+            asset: {
+              tokenId: tokenIds[0],
+              tokenURI: uri ? expandErc1155Uri(uri, tokenIds[0]) : undefined,
+              decimals: 0,
+            },
           }
         }
       } catch {
