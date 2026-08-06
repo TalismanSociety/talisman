@@ -18,6 +18,8 @@ export type SummaryCrossChainTransferProps = {
   toAddress: Address
   tokenId: TokenId
   value: bigint
+  /** debited on top of `value` to pay for execution on the destination chain */
+  fee?: bigint
   mode: SummaryDisplayMode
 }
 
@@ -28,16 +30,19 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
   toAddress,
   tokenId,
   value,
+  fee,
   mode,
 }) => {
   const { t } = useTranslation()
+
+  const debited = value + (fee ?? 0n)
 
   if (mode !== "block")
     return (
       <Trans
         t={t}
         components={{
-          Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} mode={mode} />,
+          Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={debited} mode={mode} />,
           LineBreak: <SummaryLineBreak mode={mode} />,
           TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
         }}
@@ -52,11 +57,25 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
           t={t}
           components={{
             TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
-            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} mode={mode} />,
+            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={debited} mode={mode} />,
           }}
           defaults="Transfer <Tokens /><br/> to <TargetNetwork />"
         />
       </SummaryContent>
+      {fee !== undefined && (
+        <>
+          <SummarySeparator />
+          <SummaryContent className="text-xs">
+            <Trans
+              t={t}
+              components={{
+                Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={fee} mode={mode} />,
+              }}
+              defaults="Includes <Tokens /> to pay for execution on the destination chain"
+            />
+          </SummaryContent>
+        </>
+      )}
       <SummarySeparator />
       <SummaryContent className="grid grid-cols-[1fr_2.4rem_1fr] items-center gap-4">
         <div className="flex flex-col items-center gap-2 overflow-hidden">
