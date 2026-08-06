@@ -224,6 +224,12 @@ export const useBittensorStakingPayload = ({
     fullExit,
   })
 
+  // a keepPreviousData placeholder built with other claim/full-exit flags has a different
+  // batch shape than the form displays: never expose it as signable
+  const isCurrentShape = (
+    result: { forWithClaim: boolean; forFullExit: boolean } | null | undefined
+  ) => !result || (result.forWithClaim === withClaim && result.forFullExit === fullExit)
+
   return {
     isLoading:
       isLoadingSapi ||
@@ -242,12 +248,14 @@ export const useBittensorStakingPayload = ({
     errorPayload,
     amountOut,
     talismanFee,
-    payload: swapPayload?.payload,
-    txMetadata: swapPayload?.txMetadata,
+    payload: isCurrentShape(swapPayload) ? swapPayload?.payload : undefined,
+    txMetadata: isCurrentShape(swapPayload) ? swapPayload?.txMetadata : undefined,
     alphaPrice,
     swapPrice,
 
-    feeEstimatePayload: feeEstimatePayload?.payload,
+    feeEstimatePayload: isCurrentShape(feeEstimatePayload)
+      ? feeEstimatePayload?.payload
+      : undefined,
 
     minTaoBond,
     minTaoBondForInput,
@@ -302,7 +310,7 @@ const useBittensorAnyStakingPayload = ({
       withClaim,
       fullExit,
     ],
-    queryFn: () => {
+    queryFn: async () => {
       if (
         !sapi ||
         !address ||
@@ -314,9 +322,8 @@ const useBittensorAnyStakingPayload = ({
       )
         return null
 
-      switch (direction) {
-        case "taoToAlpha":
-          return getBittensorStakingPayload({
+      const result = await (direction === "taoToAlpha"
+        ? getBittensorStakingPayload({
             sapi,
             address,
             hotkey,
@@ -326,8 +333,7 @@ const useBittensorAnyStakingPayload = ({
             talismanFee,
             remarkType,
           })
-        case "alphaToTao":
-          return getBittensorUnbondPayload({
+        : getBittensorUnbondPayload({
             sapi,
             address,
             hotkey,
@@ -338,8 +344,11 @@ const useBittensorAnyStakingPayload = ({
             remarkType,
             withClaim,
             fullExit,
-          })
-      }
+          }))
+
+      // tag the payload with the flags it was built from, so consumers can drop a
+      // keepPreviousData placeholder whose batch SHAPE no longer matches the form state
+      return { ...result, forWithClaim: withClaim, forFullExit: fullExit }
     },
     // this makes useQuery return previous payload while fetching the new payload
     // inputs change often as price changes on chain, causing our price limit to be updated

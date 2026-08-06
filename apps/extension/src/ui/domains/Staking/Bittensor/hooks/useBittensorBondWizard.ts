@@ -571,9 +571,10 @@ const useBittensorBondWizardProvider = () => {
   const unstakeInputErrorMessage = useMemo(() => {
     if (rootStakeHoldGate.message) return rootStakeHoldGate.message
 
-    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees
+    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees.
+    // Root staking has no alpha-fee mechanism at all, so root unbonds always need free TAO.
     if (
-      !supportsAlphaFees &&
+      (netuid === ROOT_NETUID || !supportsAlphaFees) &&
       amountIn &&
       existentialDeposit?.planck &&
       feeEstimate &&
@@ -623,6 +624,7 @@ const useBittensorBondWizardProvider = () => {
   }, [
     rootStakeHoldGate.message,
     supportsAlphaFees,
+    netuid,
     amountIn,
     existentialDeposit?.planck,
     feeEstimate,

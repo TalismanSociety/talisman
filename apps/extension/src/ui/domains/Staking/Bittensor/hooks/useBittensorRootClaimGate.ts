@@ -31,21 +31,22 @@ export const useBittensorRootClaimGate = (
   )
 
   // claims below RootClaimableThreshold[ROOT] are skipped on-chain as dust: block them
-  // instead of letting the user pay a fee for a no-op
-  const { data: rawDustThreshold, isSuccess: isDustThresholdReady } = useSubtensorStorageBigInt(
-    sapi,
-    "RootClaimableThreshold",
-    [ROOT_NETUID]
-  )
-  const dustThreshold = rootClaimThresholdToPlancks(rawDustThreshold ?? 0n)
+  // instead of letting the user pay a fee for a no-op.
+  // Readiness requires a fetch completed for THIS mount: a value cached from a previous
+  // modal open could hide an on-chain change (e.g. the hold window being enabled) and
+  // let the gate build a transaction the chain now rejects.
+  const dustThresholdQuery = useSubtensorStorageBigInt(sapi, "RootClaimableThreshold", [
+    ROOT_NETUID,
+  ])
+  const isDustThresholdReady =
+    dustThresholdQuery.isSuccess && dustThresholdQuery.isFetchedAfterMount
+  const dustThreshold = rootClaimThresholdToPlancks(dustThresholdQuery.data ?? 0n)
 
   // claiming counts as a root stake op: when the hold window is enabled it restarts for
   // the claimed pair, so the user must be warned before confirming
-  const { data: rawHoldInterval, isSuccess: isHoldIntervalReady } = useSubtensorStorageBigInt(
-    sapi,
-    "RootStakeUnlockInterval"
-  )
-  const holdIntervalBlocks = rawHoldInterval ?? 0n
+  const holdIntervalQuery = useSubtensorStorageBigInt(sapi, "RootStakeUnlockInterval")
+  const isHoldIntervalReady = holdIntervalQuery.isSuccess && holdIntervalQuery.isFetchedAfterMount
+  const holdIntervalBlocks = holdIntervalQuery.data ?? 0n
 
   const holdDurationMs = useMemo(
     () =>

@@ -106,7 +106,9 @@ const useBittensorClaimWizardProvider = () => {
     holdDurationMs,
     canSubmit,
     feeErrorMessage,
-    payload: feeErrorMessage ? undefined : payload,
+    // fail closed while the fee estimate is unresolved: without it the affordability
+    // check cannot run, and an account with no spendable TAO could reach confirmation
+    payload: feeErrorMessage || typeof feeEstimate !== "bigint" ? undefined : payload,
     txMetadata,
     feeEstimate,
     isLoadingFeeEstimate,
