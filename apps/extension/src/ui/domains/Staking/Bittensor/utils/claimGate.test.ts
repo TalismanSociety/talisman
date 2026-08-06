@@ -1,6 +1,29 @@
 import { describe, expect, it } from "vitest"
 
-import { type BittensorClaimGateInputs, getBittensorClaimGate } from "./claimGate"
+import {
+  type BittensorClaimGateInputs,
+  getBittensorClaimGate,
+  rootClaimThresholdToPlancks,
+} from "./claimGate"
+
+describe("rootClaimThresholdToPlancks", () => {
+  it("decodes the metadata fallback to the documented τ0.0005 default", () => {
+    expect(rootClaimThresholdToPlancks(2147483648000000n)).toBe(500_000n)
+  })
+
+  it("decodes a setter-stored value back to the rao it was set with", () => {
+    // sudo_set_root_claim_threshold(0, 1_000_000) stores 1_000_000 << 32 (devnet-verified)
+    expect(rootClaimThresholdToPlancks(4294967296000000n)).toBe(1_000_000n)
+  })
+
+  it("keeps an unset threshold at zero", () => {
+    expect(rootClaimThresholdToPlancks(0n)).toBe(0n)
+  })
+
+  it("rounds a fractional threshold up so the gate stays fail-closed", () => {
+    expect(rootClaimThresholdToPlancks(3n << 31n)).toBe(2n)
+  })
+})
 
 const OPEN_GATE: BittensorClaimGateInputs = {
   hasAccount: true,

@@ -3,7 +3,7 @@ import type { ScaleApi } from "@talismn/sapi"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useMemo } from "react"
 
-import { getBittensorClaimGate } from "../utils/claimGate"
+import { getBittensorClaimGate, rootClaimThresholdToPlancks } from "../utils/claimGate"
 import { ROOT_NETUID } from "../utils/constants"
 import { getBlockTimeMs } from "../utils/helpers"
 import { useBittensorBasketPayout } from "./useBittensorBasketPayout"
@@ -37,7 +37,7 @@ export const useBittensorRootClaimGate = (
     "RootClaimableThreshold",
     [ROOT_NETUID]
   )
-  const dustThreshold = rawDustThreshold ?? 0n
+  const dustThreshold = rootClaimThresholdToPlancks(rawDustThreshold ?? 0n)
 
   // claiming counts as a root stake op: when the hold window is enabled it restarts for
   // the claimed pair, so the user must be warned before confirming

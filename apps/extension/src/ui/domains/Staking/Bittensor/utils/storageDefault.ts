@@ -14,11 +14,12 @@ export const getStorageItem = (sapi: ScaleApi, pallet: string, entry: string) =>
 
 /**
  * An absent storage entry means the chain applies the metadata default, so reads must too.
- * Root Reborn ships `RootClaimableThreshold` unset with a sentinel default (~2.1M TAO) that
- * dust-skips every claim: claiming stays disabled network-wide until governance sets it.
+ * Root Reborn ships `RootClaimableThreshold` unset, and its fallback (500,000 rao = τ0.0005
+ * in the chain's rao << 32 fixed-point representation) is the live network-wide minimum
+ * claim until governance sets the entry.
  *
  * A missing or undecodable fallback throws so the query errors: reading it as zero would
- * bypass the sentinel gate and let the user pay for a no-op claim.
+ * open gates the chain keeps closed and let the user pay for a no-op claim.
  */
 export const getStorageDefault = (sapi: ScaleApi, pallet: string, entry: string): bigint => {
   const item = getStorageItem(sapi, pallet, entry)
