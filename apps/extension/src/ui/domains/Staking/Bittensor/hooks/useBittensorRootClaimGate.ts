@@ -72,5 +72,7 @@ export const useBittensorRootClaimGate = (
     isBelowDustThreshold,
     canSubmit,
     holdDurationMs,
+    holdIntervalBlocks,
+    isHoldIntervalReady,
   }
 }

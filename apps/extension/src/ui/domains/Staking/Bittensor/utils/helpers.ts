@@ -136,6 +136,7 @@ type GetBittensorUnbondPayload = {
   netuid: number
   remarkType: RemarkType
   withClaim?: boolean
+  fullExit?: boolean
 }
 
 type GetBittensorMoveStakePayload = {
@@ -158,24 +159,42 @@ export const getBittensorUnbondPayload = ({
   talismanFee,
   remarkType,
   withClaim,
+  fullExit,
 }: GetBittensorUnbondPayload) => {
   if (netuid === ROOT_NETUID) {
+    // claiming re-stakes the claimed TAO onto root and restarts the RootStakeUnlockInterval
+    // hold for this pair, so the order depends on the hold window:
+    // - full exit (whole position + hold window proven off): claim FIRST, then
+    //   remove_stake_full_limit sweeps stake + freshly staked rewards in one transaction
+    // - otherwise the claim MUST come after remove_stake, or the restarted hold would make
+    //   it revert with RootStakeLocked — the claimed rewards stay staked
+    const calls =
+      withClaim && fullExit
+        ? [
+            sapi.getDecodedCall("SubtensorModule", "claim_root_with_hotkey", { hotkey }),
+            sapi.getDecodedCall("SubtensorModule", "remove_stake_full_limit", {
+              hotkey,
+              netuid: ROOT_NETUID,
+              limit_price: undefined,
+            }),
+          ]
+        : [
+            sapi.getDecodedCall("SubtensorModule", "remove_stake", {
+              hotkey: hotkey,
+              netuid: ROOT_NETUID,
+              amount_unstaked: amount,
+            }),
+            ...(withClaim
+              ? [sapi.getDecodedCall("SubtensorModule", "claim_root_with_hotkey", { hotkey })]
+              : []),
+          ]
+
     return sapi.getExtrinsicPayload(
       "Utility",
       "batch_all",
       {
         calls: [
-          sapi.getDecodedCall("SubtensorModule", "remove_stake", {
-            hotkey: hotkey,
-            netuid: ROOT_NETUID,
-            amount_unstaked: amount,
-          }),
-          // the claim MUST come after remove_stake: it re-stakes the claimed TAO onto
-          // root and restarts the RootStakeUnlockInterval hold for this pair, which
-          // would make a subsequent remove_stake revert with RootStakeLocked
-          ...(withClaim
-            ? [sapi.getDecodedCall("SubtensorModule", "claim_root_with_hotkey", { hotkey })]
-            : []),
+          ...calls,
           sapi.getDecodedCall("System", "remark_with_event", {
             remark: Binary.fromText(DTAO_STAKING_REMARKS[remarkType]),
           }),

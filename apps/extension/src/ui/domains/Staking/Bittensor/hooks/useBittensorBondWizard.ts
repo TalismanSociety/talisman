@@ -32,6 +32,7 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
 import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
+import { getBittensorFullExitUnstake } from "../utils/fullExitUnstake"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
 import { getBittensorUnbondClaimOption } from "../utils/unbondClaimOption"
 import { useBittensorRootClaimGate } from "./useBittensorRootClaimGate"
@@ -219,6 +220,69 @@ const useBittensorBondWizardProvider = () => {
     ]
   )
 
+  const totalStakedPlancks = useMemo(
+    () => dtaoBalance?.free.planck ?? 0n,
+    [dtaoBalance?.free.planck]
+  )
+
+  // Bittensor conviction lock: constrains the coldkey's TOTAL alpha on the subnet,
+  // the locked amount cannot be unstaked (chain would throw StakeUnavailable)
+  const subnetUnstakeInfo = useMemo(
+    () =>
+      address && networkId && typeof netuid === "number"
+        ? getDTaoSubnetUnstakeInfo(allBalances, address, networkId, netuid)
+        : null,
+    [allBalances, address, networkId, netuid]
+  )
+
+  const convictionLock = subnetUnstakeInfo?.convictionLock ?? null
+
+  // The cached lock (from balances, polled every ~6s) can lag a lock that GROWS on-chain
+  // (owner auto-lock every block, or a concurrent top-up). Read it fresh while unbonding so the
+  // available-to-unstake guard tightens before signing, avoiding a StakeUnavailable revert.
+  const { data: freshLockedMass } = useGetBittensorColdkeyLock({
+    networkId,
+    address,
+    netuid: stakeDirection === "unbond" ? netuid : null,
+  })
+
+  // guard with the larger of cached vs fresh lock (a lock can only ever constrain unstaking more)
+  const effectiveLocked = useMemo(
+    () => effectiveLockedAmount(convictionLock?.amount ?? 0n, freshLockedMass),
+    [convictionLock?.amount, freshLockedMass]
+  )
+
+  // for this position: min(position stake, subnet-wide available to unstake)
+  const availableToUnstakePlancks = useMemo(() => {
+    const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? totalStakedPlancks
+    const subnetAvailable = stakedTotal > effectiveLocked ? stakedTotal - effectiveLocked : 0n
+    return totalStakedPlancks < subnetAvailable ? totalStakedPlancks : subnetAvailable
+  }, [subnetUnstakeInfo?.stakedTotal, effectiveLocked, totalStakedPlancks])
+
+  // whole unlocked position leaving root with the claim batched, hold window proven off:
+  // the payload can use the claim-first full-exit order
+  const fullExit = useMemo(
+    () =>
+      getBittensorFullExitUnstake({
+        isRootUnbond: !!claimTarget,
+        amountIn,
+        totalStakedPlancks,
+        availableToUnstakePlancks,
+        includeClaim: claimOption.includeClaim,
+        holdIntervalBlocks: claimGate.holdIntervalBlocks,
+        isHoldIntervalReady: claimGate.isHoldIntervalReady,
+      }),
+    [
+      claimTarget,
+      amountIn,
+      totalStakedPlancks,
+      availableToUnstakePlancks,
+      claimOption.includeClaim,
+      claimGate.holdIntervalBlocks,
+      claimGate.isHoldIntervalReady,
+    ]
+  )
+
   const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
   const isMevShieldDisabled = useMemo(() => {
@@ -261,6 +325,7 @@ const useBittensorBondWizardProvider = () => {
     networkId: nativeToken?.networkId,
     stakeDirection,
     withClaim: claimOption.includeClaim,
+    fullExit,
   })
 
   const isSubnetUnbond = useMemo(
@@ -416,50 +481,11 @@ const useBittensorBondWizardProvider = () => {
     [genericEvent, nativeTokenId]
   )
 
-  const totalStakedPlancks = useMemo(
-    () => dtaoBalance?.free.planck ?? 0n,
-    [dtaoBalance?.free.planck]
-  )
-
-  // Bittensor conviction lock: constrains the coldkey's TOTAL alpha on the subnet,
-  // the locked amount cannot be unstaked (chain would throw StakeUnavailable)
-  const subnetUnstakeInfo = useMemo(
-    () =>
-      address && networkId && typeof netuid === "number"
-        ? getDTaoSubnetUnstakeInfo(allBalances, address, networkId, netuid)
-        : null,
-    [allBalances, address, networkId, netuid]
-  )
-
-  const convictionLock = subnetUnstakeInfo?.convictionLock ?? null
-
-  // The cached lock (from balances, polled every ~6s) can lag a lock that GROWS on-chain
-  // (owner auto-lock every block, or a concurrent top-up). Read it fresh while unbonding so the
-  // available-to-unstake guard tightens before signing, avoiding a StakeUnavailable revert.
-  const { data: freshLockedMass } = useGetBittensorColdkeyLock({
-    networkId,
-    address,
-    netuid: stakeDirection === "unbond" ? netuid : null,
-  })
-
-  // guard with the larger of cached vs fresh lock (a lock can only ever constrain unstaking more)
-  const effectiveLocked = useMemo(
-    () => effectiveLockedAmount(convictionLock?.amount ?? 0n, freshLockedMass),
-    [convictionLock?.amount, freshLockedMass]
-  )
-
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // remove_stake would revert with RootStakeLocked
   const rootStakeHoldGate = useDTaoRootStakeHoldGate(
     stakeDirection === "unbond" ? dtaoBalance : null
   )
-
-  // for this position: min(position stake, subnet-wide available to unstake)
-  const availableToUnstakePlancks = useMemo(() => {
-    const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? totalStakedPlancks
-    const subnetAvailable = stakedTotal > effectiveLocked ? stakedTotal - effectiveLocked : 0n
-    return totalStakedPlancks < subnetAvailable ? totalStakedPlancks : subnetAvailable
-  }, [subnetUnstakeInfo?.stakedTotal, effectiveLocked, totalStakedPlancks])
 
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {

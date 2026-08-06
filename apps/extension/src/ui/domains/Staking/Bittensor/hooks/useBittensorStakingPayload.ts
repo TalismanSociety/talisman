@@ -33,8 +33,10 @@ type UseBittensorStakingPayloadProps = {
   amountIn: bigint | null
   direction: StakeDirection
   remarkType: RemarkType
-  /** batch a claim_root_with_hotkey after the remove_stake (root unbond only) */
+  /** batch a claim_root_with_hotkey into the unstake (root unbond only) */
   withClaim?: boolean
+  /** whole position exits and the hold window is off: claim-first + remove_stake_full_limit */
+  fullExit?: boolean
 }
 
 const MOCKED_HOTKEY = "5HK5tp6t2S59DywmHRWPBVJeJ86T61KjurYqeooqj8sREpeN"
@@ -48,6 +50,7 @@ export const useBittensorStakingPayload = ({
   amountIn,
   remarkType,
   withClaim = false,
+  fullExit = false,
 }: UseBittensorStakingPayloadProps) => {
   const { tier } = useGetSeekDiscount()
   const subnetFee = useGetSubnetFee({ netuid: netuid ?? 0, direction })
@@ -199,6 +202,7 @@ export const useBittensorStakingPayload = ({
     talismanFee,
     remarkType,
     withClaim,
+    fullExit,
   })
 
   const {
@@ -217,6 +221,7 @@ export const useBittensorStakingPayload = ({
     talismanFee: talismanFee ?? 100_000n,
     remarkType,
     withClaim,
+    fullExit,
   })
 
   return {
@@ -266,6 +271,7 @@ type useBittensorAnyStakingPayloadProps = {
   talismanFee: bigint | null
   remarkType: RemarkType
   withClaim: boolean
+  fullExit: boolean
 }
 
 const useBittensorAnyStakingPayload = ({
@@ -279,6 +285,7 @@ const useBittensorAnyStakingPayload = ({
   talismanFee,
   remarkType,
   withClaim,
+  fullExit,
 }: useBittensorAnyStakingPayloadProps) => {
   return useQuery({
     queryKey: [
@@ -293,6 +300,7 @@ const useBittensorAnyStakingPayload = ({
       talismanFee?.toString(),
       remarkType,
       withClaim,
+      fullExit,
     ],
     queryFn: () => {
       if (
@@ -329,6 +337,7 @@ const useBittensorAnyStakingPayload = ({
             talismanFee,
             remarkType,
             withClaim,
+            fullExit,
           })
       }
     },
