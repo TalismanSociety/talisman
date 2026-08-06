@@ -581,7 +581,9 @@ const useBittensorBondWizardProvider = () => {
       nativeBalance &&
       existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck
     ) {
-      return t("Insufficient TAO to cover fee and keep account alive")
+      return t(
+        "Insufficient free TAO to pay network fees. Fees are paid from your wallet balance, not your stake."
+      )
     }
 
     if ((amountIn || 0n) > totalStakedPlancks) {
