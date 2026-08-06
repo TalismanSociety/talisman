@@ -438,6 +438,45 @@ describe("Extension", () => {
     })
   })
 
+  describe("dapp-provided metadata", () => {
+    // Runtime metadata decides how a transaction is rendered on the sign screen while the bytes
+    // signed are the dapp's own payload, so a dapp must never be able to supply it.
+    const DAPP_GENESIS =
+      "0x0000000000000000000000000000000000000000000000000000000000000181" as const
+
+    beforeEach(() => {
+      requestStore.clearRequests()
+    })
+
+    test("is never queued for approval, nor allowed to replace our own", async () => {
+      const trusted = {
+        genesisHash: DAPP_GENESIS,
+        chain: "Trusted Chain",
+        icon: "",
+        specVersion: 1,
+        ss58Format: 0,
+        tokenDecimals: 12,
+        tokenSymbol: "TRUST",
+        types: {},
+        metadataRpc: "trusted-metadata" as `0x${string}`,
+      }
+      await db.metadata.put(trusted)
+
+      const result = await tabs.handle(
+        v4(),
+        "pub(metadata.provide)",
+        // a dapp can put anything on the wire, including the `metadataRpc` field we no longer declare
+        { ...trusted, chain: "Poisoned Chain", metadataRpc: "poisoned-metadata" } as never,
+        {} as chrome.runtime.Port,
+        DAPP_URL
+      )
+
+      expect(result).toBe(true)
+      expect(requestStore.allRequests()).toHaveLength(0)
+      expect(await db.metadata.get(DAPP_GENESIS)).toStrictEqual(trusted)
+    })
+  })
+
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {
     // app.talisman.xyz should already be in the authorised sites store after onboarding
     const account = await getAccount()

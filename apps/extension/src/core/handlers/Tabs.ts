@@ -20,7 +20,6 @@ import type {
 } from "../domains/encrypt/types"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
-import { requestInjectMetadata } from "../domains/metadata/requests"
 import { signSubstrate, signVrf } from "../domains/signing/requests"
 import type {
   SubstrateSignResponse,
@@ -54,6 +53,7 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "../types/pjsInterop"
+import { getMetadataDef } from "../util/getMetadataDef"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
 import type { TabStore } from "./stores"
@@ -225,8 +225,17 @@ export default class Tabs extends TabsHandler {
     return requestDecrypt(url, request, account, port)
   }
 
-  private metadataProvide(url: string, request: MetadataDef, port: Port): Promise<boolean> {
-    return requestInjectMetadata(url, request, port)
+  private metadataProvide(request: MetadataDef): boolean {
+    // Dapp-supplied metadata is never stored or trusted: it would decide how transactions are
+    // rendered on the sign screen while the bytes actually signed are the dapp's own payload.
+    // Refresh our own chain-fetched copy instead, which is what the dapp is really asking for,
+    // and report success so it doesn't block on a metadata update that will never come from it.
+    if (request.genesisHash)
+      getMetadataDef(request.genesisHash).catch((cause) =>
+        log.warn("Failed to refresh metadata", { genesisHash: request.genesisHash, cause })
+      )
+
+    return true
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {
@@ -415,7 +424,7 @@ export default class Tabs extends TabsHandler {
         return this.metadataList()
 
       case "pub(metadata.provide)":
-        return this.metadataProvide(url, request as MetadataDef, port)
+        return this.metadataProvide(request as MetadataDef)
 
       case "pub(rpc.listProviders)":
         return this.rpcListProviders()

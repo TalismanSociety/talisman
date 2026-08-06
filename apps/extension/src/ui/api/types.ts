@@ -43,7 +43,7 @@ import type {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import type { Account, Mnemonic } from "@core/domains/keyring/exports"
-import type { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import type { MetadataUpdateStatus } from "@core/domains/metadata/types"
 import type { RequestSetVerifierCertificateMnemonic } from "@core/domains/mnemonics/types"
 import type { NftData } from "@core/domains/nfts/exports"
 import type { ResponseQueryCacheGet } from "@core/domains/queryCache/types"
@@ -68,6 +68,7 @@ import type {
   ResponseSolanaSubmit,
   SolRpcRequest,
 } from "@core/domains/solana/exports"
+import type { TalismanMetadataDef } from "@core/domains/substrate/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
@@ -78,7 +79,6 @@ import type { KeypairCurve } from "@talismn/crypto"
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { TokenRatesStorage } from "@talismn/token-rates"
 import type { HexString, Loadable } from "@talismn/util"
-import type { MetadataDef } from "inject/substrate/types"
 import type { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
@@ -103,8 +103,6 @@ export default interface MessageTypes {
   onboardOpen: () => Promise<boolean>
   popupOpen: (argument?: string) => Promise<boolean>
   promptLogin: () => Promise<boolean>
-  approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
-  rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // quick unlock messages -------------------------------------------------------
@@ -308,7 +306,7 @@ export default interface MessageTypes {
   subChainMetadata: (
     genesisHash: HexString,
     specVersion?: number
-  ) => Promise<MetadataDef | undefined>
+  ) => Promise<TalismanMetadataDef | undefined>
 
   nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
   nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
