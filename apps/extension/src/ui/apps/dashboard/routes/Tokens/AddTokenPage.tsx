@@ -16,7 +16,7 @@ import {
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { sleep } from "@talismn/util"
-import { useField, useForm } from "@tanstack/react-form"
+import { useForm, useStore } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -129,8 +129,14 @@ const AddCustomTokenForm = () => {
     },
   })
 
-  const fldNetworkId = useField({ form, name: "networkId" })
-  const fldContractAddress = useField({ form, name: "contractAddress" })
+  // Read from the form store instead of `useField`: a second `FieldApi` for a name already rendered
+  // by `<form.Field>` takes over `fieldInfo[name].instance`, and form-core then discards the async
+  // validation results of the `<form.Field>` instance which owns the validators.
+  const networkId = useStore(form.store, (s) => s.values.networkId)
+  const isContractAddressValid = useStore(
+    form.store,
+    (s) => s.fieldMeta.contractAddress?.isValid ?? true
+  )
 
   // Fields populated from the token info fetch. They must all be cleared whenever the contract
   // address stops resolving to a new token, else they keep displaying the previous token's info.
@@ -185,7 +191,7 @@ const AddCustomTokenForm = () => {
               spellCheck={false}
               data-lpignore
               autoComplete="off"
-              disabled={!fldNetworkId.state.value}
+              disabled={!networkId}
               placeholder="0xdeadbeef...deadbeef"
               small
               after={
@@ -269,7 +275,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="TKN"
                 small
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!isContractAddressValid}
               />
             </FormFieldContainer>
           )}
@@ -296,7 +302,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 small
                 readOnly
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!isContractAddressValid}
               />
             </FormFieldContainer>
           )}
@@ -329,7 +335,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="(optional)"
                 small
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!isContractAddressValid}
                 before={
                   <AssetLogo
                     className="mr-2 rounded-full text-[1.875rem]"
@@ -360,7 +366,7 @@ const AddCustomTokenForm = () => {
                 value={field.state.value ?? ""}
                 onChange={(e) => field.handleChange(e.target.value)}
                 autoComplete="off"
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!isContractAddressValid}
                 small
               />
             </FormFieldContainer>
