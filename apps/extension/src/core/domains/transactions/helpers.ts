@@ -19,6 +19,9 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
   label: "Transaction",
 }
 
+const isTerminalStatus = (status: TransactionStatus) =>
+  status === "success" || status === "error" || status === "replaced"
+
 export const addSolTransaction = async (
   networkId: SolNetworkId,
   transaction: SolTransaction,
@@ -36,7 +39,7 @@ export const addSolTransaction = async (
     // terminal status overwritten back to "pending".
     await db.transaction("rw", db.transactionsV2, async () => {
       const existing = await db.transactionsV2.get(signature)
-      if (existing && ["success", "error", "replaced"].includes(existing.status)) return
+      if (existing && isTerminalStatus(existing.status)) return
 
       await db.transactionsV2.put({
         id: signature,
@@ -72,7 +75,7 @@ export const addEvmTransaction = async (
 
     await db.transaction("rw", db.transactionsV2, async () => {
       const existingEvm = await db.transactionsV2.get(hash)
-      if (existingEvm && ["success", "error", "replaced"].includes(existingEvm.status)) return
+      if (existingEvm && isTerminalStatus(existingEvm.status)) return
 
       // Only flag as replacement if there's a pending tx with the same nonce from the same account.
       // Terminated txs (error, unknown, replaced, success) should not trigger the replacement flag —
@@ -125,7 +128,7 @@ export const addSubstrateTransaction = async (
 
     await db.transaction("rw", db.transactionsV2, async () => {
       const existingSub = await db.transactionsV2.get(hash)
-      if (existingSub && ["success", "error", "replaced"].includes(existingSub.status)) return
+      if (existingSub && isTerminalStatus(existingSub.status)) return
 
       await db.transactionsV2.put({
         id: hash,
@@ -157,27 +160,22 @@ export const updateTransactionStatus = async (
   confirmed?: boolean
 ) => {
   try {
-    // this can be called after the tx has been overriden/replaced, check status first
-    const existing = await db.transactionsV2.get(id)
-    if (!existing) return false
-    if (
-      ["success", "error", "replaced"].includes(existing?.status ?? "") &&
-      !!confirmed === !!existing?.confirmed
-    )
-      return false
+    // Atomic read+write: a concurrent writer must not lose its status between the get and the update.
+    return await db.transaction("rw", db.transactionsV2, async () => {
+      // this can be called after the tx has been overriden/replaced, check status first
+      const existing = await db.transactionsV2.get(id)
+      if (!existing) return false
 
-    existing.status = status
-    existing.confirmed = !!confirmed
+      // Only a finalized result may supersede a terminal status, and a finalized one is definitive.
+      if (isTerminalStatus(existing.status) && (existing.confirmed || !confirmed)) return false
 
-    if (existing.platform !== "solana" && blockNumber !== undefined)
-      existing.blockNumber = blockNumber.toString()
+      const tx = { ...existing, status, confirmed: !!confirmed }
+      if (tx.platform !== "solana" && blockNumber !== undefined)
+        tx.blockNumber = blockNumber.toString()
 
-    await db.transactionsV2.update(id, existing)
+      await db.transactionsV2.put(tx)
 
-    if (["success", "error"].includes(status)) {
-      const tx = await db.transactionsV2.get(id)
-
-      if (tx) {
+      if (status === "success" || status === "error") {
         // mark pending transactions with the same nonce as replaced
         await db.transactionsV2
           .filter(filterIsSameNetworkAndAddressTx(tx))
@@ -204,9 +202,9 @@ export const updateTransactionStatus = async (
           )
           .modify({ status: "unknown" })
       }
-    }
 
-    return true
+      return true
+    })
   } catch (err) {
     // biome-ignore lint/suspicious/noConsole: legacy
     console.error("updateTransactionStatus", { err })
