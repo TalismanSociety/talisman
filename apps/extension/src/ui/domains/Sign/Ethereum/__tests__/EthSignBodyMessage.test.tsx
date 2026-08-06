@@ -61,6 +61,25 @@ const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 const NFT = "0x2222222222222222222222222222222222222222"
 const PERMIT2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
 
+const SEAPORT_ITEM = [
+  { name: "itemType", type: "uint8" },
+  { name: "token", type: "address" },
+  { name: "identifierOrCriteria", type: "uint256" },
+  { name: "startAmount", type: "uint256" },
+  { name: "endAmount", type: "uint256" },
+]
+
+const SEAPORT_TYPES = {
+  OrderComponents: [
+    { name: "offerer", type: "address" },
+    { name: "offer", type: "OfferItem[]" },
+    { name: "consideration", type: "ConsiderationItem[]" },
+    { name: "endTime", type: "uint256" },
+  ],
+  OfferItem: SEAPORT_ITEM,
+  ConsiderationItem: [...SEAPORT_ITEM, { name: "recipient", type: "address" }],
+}
+
 const MAX_UINT48 = (2n ** 48n - 1n).toString()
 const MAX_UINT160 = (2n ** 160n - 1n).toString()
 const IN_ONE_HOUR = Math.floor(Date.now() / 1000) + 3600
@@ -83,6 +102,19 @@ describe("EthSignBodyMessage", () => {
   it("decodes a Permit2 allowance instead of showing raw typed data", () => {
     const { container } = renderMessage({
       primaryType: "PermitSingle",
+      types: {
+        PermitSingle: [
+          { name: "details", type: "PermitDetails" },
+          { name: "spender", type: "address" },
+          { name: "sigDeadline", type: "uint256" },
+        ],
+        PermitDetails: [
+          { name: "token", type: "address" },
+          { name: "amount", type: "uint160" },
+          { name: "expiration", type: "uint48" },
+          { name: "nonce", type: "uint48" },
+        ],
+      },
       domain: { name: "Permit2", chainId: 1, verifyingContract: PERMIT2 },
       message: {
         details: { token: USDC, amount: MAX_UINT160, expiration: MAX_UINT48, nonce: 0 },
@@ -103,6 +135,15 @@ describe("EthSignBodyMessage", () => {
   it("shows the amount and expiry of a bounded ERC-2612 permit", () => {
     const { container } = renderMessage({
       primaryType: "Permit",
+      types: {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      },
       domain: { name: "USD Coin", chainId: 1, verifyingContract: USDC },
       message: {
         owner: SIGNER,
@@ -121,6 +162,7 @@ describe("EthSignBodyMessage", () => {
   it("warns when a Seaport order pays the signer nothing", () => {
     const { container } = renderMessage({
       primaryType: "OrderComponents",
+      types: SEAPORT_TYPES,
       domain: { name: "Seaport", chainId: 1, verifyingContract: NFT },
       message: {
         offerer: SIGNER,
@@ -147,9 +189,37 @@ describe("EthSignBodyMessage", () => {
     expect(container.textContent).toContain("pays you nothing in return")
   })
 
+  it("shows the quantity and open ended id of a Seaport criteria item", () => {
+    const { container } = renderMessage({
+      primaryType: "OrderComponents",
+      types: SEAPORT_TYPES,
+      domain: { name: "Seaport", chainId: 1, verifyingContract: NFT },
+      message: {
+        offerer: SIGNER,
+        // itemType 5 takes any id of the collection matching the criteria, in any quantity
+        offer: [
+          {
+            itemType: 5,
+            token: NFT,
+            identifierOrCriteria: "0",
+            startAmount: "1000",
+            endAmount: "1000",
+          },
+        ],
+        consideration: [],
+        endTime: String(IN_ONE_HOUR),
+      },
+    })
+
+    expect(container.textContent).toContain("1000 ×")
+    expect(container.textContent).toContain("any item")
+    expect(container.textContent).not.toContain("#0")
+  })
+
   it("keeps the generic view for typed data that grants nothing", () => {
     const { container } = renderMessage({
       primaryType: "Mail",
+      types: { Mail: [{ name: "contents", type: "string" }] },
       domain: { name: "Mail", chainId: 1, verifyingContract: NFT },
       message: { contents: "hello" },
     })

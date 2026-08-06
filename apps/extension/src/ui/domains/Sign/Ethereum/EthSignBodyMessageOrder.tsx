@@ -32,8 +32,12 @@ const OrderItem: FC<{ item: TypedDataOrderItem; network: EthNetwork }> = ({ item
   if (item.isNft)
     return (
       <div className="flex items-center">
+        {/* erc1155 items carry a quantity, erc721 ones are always a single token */}
+        {item.amount !== 1n && <span className="pl-4 text-white">{item.amount.toString()} ×</span>}
         <SignParamNetworkAddressButton network={network} address={item.token} />
-        <span className="px-4 text-white">#{item.identifier.toString()}</span>
+        <span className="px-4 text-white">
+          {item.identifier === undefined ? t("any item") : `#${item.identifier}`}
+        </span>
       </div>
     )
 

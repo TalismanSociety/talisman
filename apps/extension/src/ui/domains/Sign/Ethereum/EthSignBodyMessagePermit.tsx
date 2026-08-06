@@ -59,8 +59,13 @@ export const EthSignBodyMessagePermit: FC<{
 }> = ({ account, network, permit }) => {
   const { t } = useTranslation()
 
-  // permit2 expires the allowance itself, the other permits only bound their signature's validity
-  const expiry = getExpiryInfo(permit.allowances[0]?.expiration ?? permit.deadline)
+  // permit2 expires the allowance itself, the other permits only bound their signature's validity.
+  // a batch outlives all of its allowances, so it's the last of them that matters
+  const expirations = permit.allowances.map((allowance) => allowance.expiration)
+  const lastExpiration = expirations.every((expiration) => expiration !== undefined)
+    ? expirations.reduce((last, expiration) => (expiration > last ? expiration : last))
+    : undefined
+  const expiry = getExpiryInfo(lastExpiration ?? permit.deadline)
   const isRevoke = permit.allowances.every((allowance) => allowance.amount === 0n)
   const isUnlimited = permit.allowances.some((allowance) => isUnlimitedAllowance(allowance.amount))
 

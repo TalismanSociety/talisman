@@ -1,5 +1,7 @@
 import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "./EthProviderRpcError"
 
+type TypedDataDomainTypes = Record<string, { name?: unknown }[] | undefined>
+
 // dapps encode the domain's uint256 chainId as a number, a decimal string or a hex string
 const parseDomainChainId = (chainId: unknown) => {
   if (typeof chainId === "number") return chainId
@@ -8,11 +10,22 @@ const parseDomainChainId = (chainId: unknown) => {
   return Number.NaN
 }
 
+// only the fields the domain type declares end up in the domain separator, so a chainId it leaves
+// out isn't signed and tells us nothing about the chain the signature is valid on
+const isChainIdSigned = (types: TypedDataDomainTypes | undefined) =>
+  Array.isArray(types?.EIP712Domain) && types.EIP712Domain.some((f) => f?.name === "chainId")
+
 export const getTypedDataDomainChainId = (message: string) => {
   try {
-    const { domain } = JSON.parse(message) as { domain?: { chainId?: unknown } }
-    // a domain without a chainId isn't bound to any chain, there is nothing to check
-    if (domain?.chainId === undefined || domain.chainId === null) return undefined
+    const { types, domain } = JSON.parse(message) as {
+      types?: TypedDataDomainTypes
+      domain?: { chainId?: unknown }
+    }
+
+    if (!isChainIdSigned(types)) return undefined
+
+    // a declared chainId the domain leaves out doesn't name this chain, whatever the signer encodes
+    if (domain?.chainId === undefined || domain.chainId === null) return 0
 
     return parseDomainChainId(domain.chainId)
   } catch {

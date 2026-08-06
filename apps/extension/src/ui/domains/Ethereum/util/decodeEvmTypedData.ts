@@ -17,7 +17,8 @@ export type DecodedTypedDataPermit = {
 
 export type TypedDataOrderItem = {
   token: EvmAddress
-  identifier: bigint
+  // criteria based items match a set of token ids instead of naming one
+  identifier?: bigint
   amount: bigint
   isNft: boolean
   recipient?: EvmAddress
@@ -36,7 +37,12 @@ export type DecodedTypedData = DecodedTypedDataPermit | DecodedTypedDataOrder
 const MAX_UINT256 = 2n ** 256n - 1n
 
 // seaport item types 0 and 1 are native and ERC20, everything above is an ERC721/ERC1155 item
-const SEAPORT_FIRST_NFT_ITEM_TYPE = 2
+const SEAPORT_FIRST_NFT_ITEM_TYPE = 2n
+// item types 4 and 5 match a criteria root rather than a token id
+const SEAPORT_FIRST_CRITERIA_ITEM_TYPE = 4n
+
+const maxBigInt = (a: bigint, b: bigint) => (a > b ? a : b)
+const minBigInt = (a: bigint, b: bigint) => (a < b ? a : b)
 
 const asAddress = (value: unknown) =>
   typeof value === "string" && isAddress(value, { strict: false }) ? value : undefined
@@ -54,6 +60,7 @@ const asBigInt = (value: unknown) => {
 }
 
 type TypedDataRecord = Record<string, unknown>
+type TypedDataField = { name: string; type: string }
 
 const asRecord = (value: unknown) =>
   typeof value === "object" && value !== null && !Array.isArray(value)
@@ -62,6 +69,59 @@ const asRecord = (value: unknown) =>
 
 const asRecordList = (value: unknown) =>
   Array.isArray(value) ? value.map(asRecord).filter((item) => !!item) : undefined
+
+const asFieldList = (value: unknown) => {
+  const fields = asRecordList(value)
+  if (!fields?.length) return undefined
+  if (fields.some((field) => typeof field.name !== "string" || typeof field.type !== "string"))
+    return undefined
+
+  return fields as TypedDataField[]
+}
+
+const ARRAY_TYPE = /^(.+)\[\d*\]$/
+// a struct can't contain itself, so a message that keeps nesting isn't signable
+const MAX_STRUCT_DEPTH = 8
+
+const getSignedValue = (
+  types: TypedDataRecord,
+  type: string,
+  value: unknown,
+  depth: number
+): unknown => {
+  const itemType = ARRAY_TYPE.exec(type)?.[1]
+  if (itemType)
+    return Array.isArray(value)
+      ? value.map((item) => getSignedValue(types, itemType, item, depth))
+      : undefined
+
+  // atomic values are signed as they are, while a struct the payload doesn't declare can't be signed
+  if (!types[type]) return asRecord(value) ? undefined : value
+
+  return getSignedStruct(types, type, value, depth)
+}
+
+// only the fields a struct declares are part of the signed data: anything else in the message is
+// ignored by the signer, so decoding it would describe a permission that isn't granted
+const getSignedStruct = (
+  types: TypedDataRecord,
+  type: string,
+  value: unknown,
+  depth = 0
+): TypedDataRecord | undefined => {
+  const fields = asFieldList(types[type])
+  const record = asRecord(value)
+  if (!fields || !record || depth > MAX_STRUCT_DEPTH) return undefined
+
+  return Object.fromEntries(
+    fields
+      .filter((field) => field.name in record)
+      .map((field) => [
+        field.name,
+        getSignedValue(types, field.type, record[field.name], depth + 1),
+      ])
+  )
+}
 
 // erc-2612 permits are signed against the token itself, which is the domain's verifying contract
 const decodeErc2612Permit = (
@@ -117,20 +177,27 @@ const decodePermit2Permit = (
   }
 }
 
-const decodeSeaportOrderItem = (item: TypedDataRecord): TypedDataOrderItem | undefined => {
+const decodeSeaportOrderItem = (
+  item: TypedDataRecord,
+  isOutgoing: boolean
+): TypedDataOrderItem | undefined => {
   const token = asAddress(item.token)
   const itemType = asBigInt(item.itemType)
   const identifier = asBigInt(item.identifierOrCriteria)
-  // an item's amount can vary over the order's lifetime, the start amount is what it opens at
-  const amount = asBigInt(item.startAmount)
-  if (!token || itemType === undefined || identifier === undefined || amount === undefined)
-    return undefined
+  // an item's amount slides from its start amount to its end amount over the order's lifetime, so
+  // the signer can end up sending the larger of the two, or receiving the smaller
+  const startAmount = asBigInt(item.startAmount)
+  const endAmount = asBigInt(item.endAmount)
+  if (!token || itemType === undefined || identifier === undefined) return undefined
+  if (startAmount === undefined || endAmount === undefined) return undefined
+
+  const isCriteria = itemType >= SEAPORT_FIRST_CRITERIA_ITEM_TYPE
 
   return {
     token,
-    identifier,
-    amount,
-    isNft: itemType >= BigInt(SEAPORT_FIRST_NFT_ITEM_TYPE),
+    identifier: isCriteria ? undefined : identifier,
+    amount: isOutgoing ? maxBigInt(startAmount, endAmount) : minBigInt(startAmount, endAmount),
+    isNft: itemType >= SEAPORT_FIRST_NFT_ITEM_TYPE,
     recipient: asAddress(item.recipient),
   }
 }
@@ -138,8 +205,10 @@ const decodeSeaportOrderItem = (item: TypedDataRecord): TypedDataOrderItem | und
 // a seaport order gives away every offer item in exchange for the consideration items, so signing
 // one transfers assets just as an allowance lets someone else take them
 const decodeSeaportOrder = (message: TypedDataRecord): DecodedTypedDataOrder | undefined => {
-  const offer = asRecordList(message.offer)?.map(decodeSeaportOrderItem)
-  const consideration = asRecordList(message.consideration)?.map(decodeSeaportOrderItem)
+  const offer = asRecordList(message.offer)?.map((item) => decodeSeaportOrderItem(item, true))
+  const consideration = asRecordList(message.consideration)?.map((item) =>
+    decodeSeaportOrderItem(item, false)
+  )
 
   if (!offer?.length || !consideration || offer.some((item) => !item)) return undefined
   if (consideration.some((item) => !item)) return undefined
@@ -155,10 +224,13 @@ const decodeSeaportOrder = (message: TypedDataRecord): DecodedTypedDataOrder | u
 
 export const decodeEvmTypedData = (typedData: unknown): DecodedTypedData | undefined => {
   const parsed = asRecord(typedData)
-  const message = asRecord(parsed?.message)
+  const types = asRecord(parsed?.types)
+  if (!parsed || !types || typeof parsed.primaryType !== "string") return undefined
+
+  const message = getSignedStruct(types, parsed.primaryType, parsed.message)
   if (!message) return undefined
 
-  switch (parsed?.primaryType) {
+  switch (parsed.primaryType) {
     case "Permit":
       return decodeErc2612Permit(asRecord(parsed.domain), message)
     case "PermitSingle":
