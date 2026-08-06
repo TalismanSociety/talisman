@@ -1,8 +1,15 @@
-import { readFileSync } from "node:fs"
-import { resolve } from "node:path"
 import type { AcalaCalls, PolkadotAssetHubCalls, PolkadotCalls } from "@polkadot-api/descriptors"
 import { SUMMARY_COMPONENTS } from "@ui/domains/Sign/Substrate/summary/calls"
 import { describe, expect, it } from "vitest"
+import summaryAssetConversion from "../SummaryAssetConversion.tsx?raw"
+import summaryAssets from "../SummaryAssets.tsx?raw"
+import summaryBalances from "../SummaryBalances.tsx?raw"
+import summaryConvictionVoting from "../SummaryConvictionVoting.tsx?raw"
+import summaryForeignAssets from "../SummaryForeignAssets.tsx?raw"
+import summaryNominationPools from "../SummaryNominationPools.tsx?raw"
+import summarySystem from "../SummarySystem.tsx?raw"
+import summaryXcm from "../SummaryXcm.tsx?raw"
+import summaryXTokens from "../SummaryXTokens.tsx?raw"
 
 /**
  * A summary component is the only thing most users read before approving a transaction, so an
@@ -147,23 +154,18 @@ const SUMMARY_ARGS_COVERAGE = {
   ),
 } as const
 
-const SOURCE_FILES: Record<string, string> = {
-  AssetConversion: "SummaryAssetConversion.tsx",
-  Assets: "SummaryAssets.tsx",
-  Balances: "SummaryBalances.tsx",
-  ConvictionVoting: "SummaryConvictionVoting.tsx",
-  ForeignAssets: "SummaryForeignAssets.tsx",
-  NominationPools: "SummaryNominationPools.tsx",
-  PolkadotXcm: "SummaryXcm.tsx",
-  System: "SummarySystem.tsx",
-  XcmPallet: "SummaryXcm.tsx",
-  XTokens: "SummaryXTokens.tsx",
+const PALLET_SOURCES: Record<string, string> = {
+  AssetConversion: summaryAssetConversion,
+  Assets: summaryAssets,
+  Balances: summaryBalances,
+  ConvictionVoting: summaryConvictionVoting,
+  ForeignAssets: summaryForeignAssets,
+  NominationPools: summaryNominationPools,
+  PolkadotXcm: summaryXcm,
+  System: summarySystem,
+  XcmPallet: summaryXcm,
+  XTokens: summaryXTokens,
 }
-
-const CALLS_DIR = resolve(process.cwd(), "src/ui/domains/Sign/Substrate/summary/calls")
-
-const readSource = (pallet: string) =>
-  readFileSync(resolve(CALLS_DIR, SOURCE_FILES[pallet]), "utf8")
 
 const registeredCalls = SUMMARY_COMPONENTS.map(([pallet, method]) => `${pallet}.${method}`)
 
@@ -175,7 +177,7 @@ describe("summary call args coverage", () => {
   it.each(Object.entries(SUMMARY_ARGS_COVERAGE))("%s renders the args it claims to", (call, {
     displayed,
   }) => {
-    const source = readSource(call.split(".")[0] as string)
+    const source = PALLET_SOURCES[call.split(".")[0] as string] as string
 
     for (const arg of displayed) expect(source).toContain(`args.${String(arg)}`)
   })
