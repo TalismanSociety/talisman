@@ -11,11 +11,9 @@ import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { isUnlimitedAllowance } from "./shared/allowance"
+import { getExpiryInfo } from "./shared/expiry"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-
-// beyond this the timestamp is out of range for a javascript date: the allowance never expires
-const MAX_DATE_SECONDS = 8_640_000_000_000
 
 export const EthSignBodyPermit2Approve: FC = () => {
   const { t } = useTranslation()
@@ -45,7 +43,7 @@ export const EthSignBodyPermit2Approve: FC = () => {
   }, [amount, asset?.decimals, isUnlimited, t])
 
   const expiry = useMemo(
-    () => (expiration >= MAX_DATE_SECONDS ? null : new Date(expiration * 1000).toLocaleString()),
+    () => getExpiryInfo(BigInt(expiration)).date?.toLocaleString() ?? null,
     [expiration]
   )
 
