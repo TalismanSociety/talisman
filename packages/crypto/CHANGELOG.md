@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 1.0.1
+
+### Patch Changes
+
+- 1997638: Re-export base64urlnopad from @scure/base
+
 ## 1.0.0
 
 ### Major Changes

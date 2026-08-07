@@ -1,5 +1,15 @@
 # @talismn/token-rates
 
+## 4.0.1
+
+### Patch Changes
+
+- 632b9bd: allow taoDataApiUrl: null in fetchDTaoTokenRates to skip the tao-data 24h-change fetch
+- Updated dependencies [2d5885d]
+- Updated dependencies [de382f6]
+  - @talismn/chaindata-provider@2.0.1
+  - @talismn/chain-connectors@1.0.1
+
 ## 4.0.0
 
 ### Major Changes
