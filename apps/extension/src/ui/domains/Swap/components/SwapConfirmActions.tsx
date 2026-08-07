@@ -1,5 +1,6 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon } from "@talismn/icons"
+import { serializeTransaction } from "@talismn/solana"
 import { isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
@@ -8,6 +9,10 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
+import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
@@ -337,6 +342,35 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     return transaction
   }, [approveTx, needsApproval, transaction])
 
+  // covers the approval as well as the swap itself, as both are provider-supplied
+  const riskAnalysisEth = useEvmTransactionRiskAnalysis({
+    networkId: fromToken?.platform === "ethereum" ? fromToken.networkId : undefined,
+    tx: activeTransaction?.platform === "ethereum" ? activeTransaction.transaction : undefined,
+    disableCriticalPane: true,
+  })
+
+  const serializedSolTx = useMemo(
+    () =>
+      activeTransaction?.platform === "solana"
+        ? serializeTransaction(activeTransaction.transaction)
+        : null,
+    [activeTransaction]
+  )
+
+  const riskAnalysisSol = useSolTransactionRiskAnalysis({
+    from: fromAddress,
+    networkId: fromToken?.platform === "solana" ? fromToken.networkId : null,
+    tx: serializedSolTx,
+    disableCriticalPane: true,
+  })
+
+  const riskAnalysis =
+    fromToken?.platform === "ethereum"
+      ? riskAnalysisEth
+      : fromToken?.platform === "solana"
+        ? riskAnalysisSol
+        : undefined
+
   const activeFeeTokenId = fromNetwork?.nativeTokenId
   const feeToken = useToken(activeFeeTokenId ?? undefined)
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
@@ -521,7 +555,12 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   )
 
   return (
-    <>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
+      {!!riskAnalysis && (
+        <div className="flex w-full justify-center">
+          <RiskAnalysisPillButton />
+        </div>
+      )}
       <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
         <QuoteProvider />
         <QuoteDuration />
@@ -646,6 +685,6 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           onClose={slippageDrawer.close}
         />
       ) : null}
-    </>
+    </RiskAnalysisProvider>
   )
 }

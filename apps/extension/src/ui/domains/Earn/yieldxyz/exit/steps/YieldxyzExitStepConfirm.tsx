@@ -20,6 +20,7 @@ import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTit
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderDisplay } from "../../components/YieldxyzProviderLogo"
 import { YieldxyzTokensAndFiat } from "../../components/YieldxyzTokensAndFiat"
+import { YieldxyzTransactionDetails } from "../../components/YieldxyzTransactionDetails"
 import { YieldxyzTransactionsStepper } from "../../components/YieldxyzTransactionsStepper"
 import { useYieldxyzExitModal } from "../useYieldxyzExitModal"
 import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
@@ -87,6 +88,7 @@ export const YieldxyzExitStepConfirm = () => {
             <FormFieldSetRow label={t("Network")} variant="small">
               <NetworkDisplay />
             </FormFieldSetRow>
+            <TransactionDetails />
             <NetworkFeeRow />
           </FormFieldSet>
           <SubmitButton />
@@ -196,6 +198,20 @@ const NetworkDisplay = () => {
       <NetworkLogo className="size-8" networkId={position.networkId} />
       <NetworkName className="truncate" networkId={position.networkId} />
     </div>
+  )
+}
+
+const TransactionDetails = () => {
+  const { transaction } = useYieldxyzExitWizard()
+
+  if (transaction?.platform !== "ethereum") return null
+
+  return (
+    <YieldxyzTransactionDetails
+      tx={transaction.transaction}
+      feeTokenId={transaction.feeTokenId}
+      networkId={transaction.networkId}
+    />
   )
 }
 

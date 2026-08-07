@@ -7,8 +7,10 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import type { TransactionRequest } from "viem"
 
+import { getYieldxyzEvmTransactionIssue } from "./provider-transaction-guards"
 import type { UseYieldxyzTransactionProps } from "./types"
 
 type YieldxyzEthTransaction = {
@@ -44,6 +46,7 @@ const deserializeYieldxyzEthTransaction = (
 }
 
 export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | null) => {
+  const { t } = useTranslation()
   const publicClient = usePublicClient(props?.networkId)
   const network = useNetworkById(props?.networkId, "ethereum")
 
@@ -65,11 +68,33 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
     return deserializeYieldxyzEthTransaction(props.transaction, nonce ?? undefined)
   }, [network, props?.transaction, nonce])
 
-  const result = useEthTransaction(tx ?? undefined, props?.networkId, props?.lockTransaction, true) // mark as replacement so we can force the nonce
+  const providerError = useMemo(() => {
+    if (!tx || !props) return null
+
+    switch (
+      getYieldxyzEvmTransactionIssue({
+        from: tx.from,
+        value: tx.value,
+        address: props.address,
+        maxNativeValue: props.maxNativeValue,
+      })
+    ) {
+      case "sender":
+        return t("Unexpected sender address. Please try again.")
+      case "amount":
+        return t("Unexpected transaction amount. Please try again.")
+      default:
+        return null
+    }
+  }, [props, t, tx])
+
+  const validTx = providerError ? undefined : (tx ?? undefined)
+
+  const result = useEthTransaction(validTx, props?.networkId, props?.lockTransaction, true) // mark as replacement so we can force the nonce
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
     networkId: props?.networkId,
-    tx: tx ?? undefined,
+    tx: validTx,
     disableCriticalPane: true,
   })
 
@@ -81,5 +106,6 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
     feeTokenId: network.nativeTokenId,
     riskAnalysis,
     ...result,
+    error: providerError ?? result.error,
   }
 }

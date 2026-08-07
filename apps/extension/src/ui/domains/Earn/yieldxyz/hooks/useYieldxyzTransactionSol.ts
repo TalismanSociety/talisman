@@ -1,11 +1,18 @@
 import { log } from "@common/log"
 import type { TransactionDto } from "@core/domains/earn/exports"
-import { type SolTransaction, serializeTransaction, transactionFromBytes } from "@talismn/solana"
+import {
+  parseTransactionInfo,
+  type SolTransaction,
+  serializeTransaction,
+  transactionFromBytes,
+} from "@talismn/solana"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
+import { getYieldxyzSolTransactionIssue } from "./provider-transaction-guards"
 import type { UseYieldxyzTransactionProps } from "./types"
 
 const deserializeYieldxyzSolTransaction = (tx: TransactionDto): SolTransaction | null => {
@@ -23,12 +30,24 @@ const deserializeYieldxyzSolTransaction = (tx: TransactionDto): SolTransaction |
 }
 
 export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | null) => {
+  const { t } = useTranslation()
   const network = useNetworkById(props?.networkId, "solana")
 
-  const solTx = useMemo(() => {
+  const parsedTx = useMemo(() => {
     if (!network || !props?.transaction) return null
     return deserializeYieldxyzSolTransaction(props.transaction)
   }, [network, props?.transaction])
+
+  const providerError = useMemo(() => {
+    if (!parsedTx || !props) return null
+
+    const { feePayer } = parseTransactionInfo(parsedTx)
+    return getYieldxyzSolTransactionIssue({ feePayer, address: props.address })
+      ? t("Unexpected sender address. Please try again.")
+      : null
+  }, [parsedTx, props, t])
+
+  const solTx = providerError ? null : parsedTx
 
   const { data: estimatedFee, ...feeQuery } = useGetSolanaFeeEstimate({
     networkId: props?.networkId,
@@ -53,7 +72,7 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
     transaction: solTx,
     estimatedFee: estimatedFee != null ? String(estimatedFee) : null,
     isLoading: feeQuery.isLoading,
-    error: feeQuery.error ? (feeQuery.error as Error).message : undefined,
+    error: providerError ?? (feeQuery.error ? (feeQuery.error as Error).message : undefined),
     errorDetails: feeQuery.error ? (feeQuery.error as Error).message : undefined,
     riskAnalysis,
   }
