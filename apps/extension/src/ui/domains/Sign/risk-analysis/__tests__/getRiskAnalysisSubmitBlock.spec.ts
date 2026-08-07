@@ -10,9 +10,11 @@ const riskAnalysis = (props: {
   validationResult?: "Benign" | "Warning" | "Malicious"
   isRiskAcknowledgementRequired: boolean
   isRiskAcknowledged: boolean
+  isValidating?: boolean
 }) =>
   ({
     validationResult: props.validationResult,
+    isValidating: !!props.isValidating,
     review: {
       isRiskAcknowledgementRequired: props.isRiskAcknowledgementRequired,
       isRiskAcknowledged: props.isRiskAcknowledged,
@@ -63,6 +65,19 @@ describe("getRiskAnalysisSubmitBlock", () => {
 
     expect(result.isBlocked).toBe(true)
     expect(result.message).not.toContain("harmful")
+  })
+
+  it("blocks submit while the scan is still running", () => {
+    const result = getRiskAnalysisSubmitBlock(
+      riskAnalysis({
+        isRiskAcknowledgementRequired: false,
+        isRiskAcknowledged: false,
+        isValidating: true,
+      }),
+      t
+    )
+
+    expect(result.isBlocked).toBe(true)
   })
 
   it("allows submit once the user acknowledges the risks", () => {

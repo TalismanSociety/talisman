@@ -1,8 +1,10 @@
+import type { TransactionDto } from "@core/domains/earn/exports"
 import { describe, expect, it } from "vitest"
 
 import {
   getYieldxyzEvmTransactionIssue,
   getYieldxyzSolTransactionIssue,
+  getYieldxyzStepMaxNativeValue,
 } from "../provider-transaction-guards"
 
 const ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
@@ -84,6 +86,82 @@ describe("getYieldxyzEvmTransactionIssue", () => {
         maxNativeValue: 0n,
       })
     ).toBe("sender")
+  })
+})
+
+describe("getYieldxyzStepMaxNativeValue", () => {
+  const ethTransaction = (id: string, value: bigint | null): TransactionDto =>
+    ({
+      id,
+      unsignedTransaction: JSON.stringify({
+        from: ADDRESS,
+        to: ADDRESS,
+        ...(value === null ? {} : { value: `0x${value.toString(16)}` }),
+      }),
+    }) as TransactionDto
+
+  it("leaves the full amount to a single transaction", () => {
+    expect(
+      getYieldxyzStepMaxNativeValue({
+        transactions: [ethTransaction("deposit", ONE_ETH)],
+        transactionId: "deposit",
+        maxNativeValue: ONE_ETH,
+      })
+    ).toBe(ONE_ETH)
+  })
+
+  it("leaves the full amount to the step that follows an approval", () => {
+    expect(
+      getYieldxyzStepMaxNativeValue({
+        transactions: [ethTransaction("approval", null), ethTransaction("deposit", ONE_ETH)],
+        transactionId: "deposit",
+        maxNativeValue: ONE_ETH,
+      })
+    ).toBe(ONE_ETH)
+  })
+
+  it("shares the amount between steps that each spend some of it", () => {
+    expect(
+      getYieldxyzStepMaxNativeValue({
+        transactions: [
+          ethTransaction("first", ONE_ETH / 2n),
+          ethTransaction("second", ONE_ETH / 2n),
+        ],
+        transactionId: "second",
+        maxNativeValue: ONE_ETH,
+      })
+    ).toBe(ONE_ETH / 2n)
+  })
+
+  it("leaves nothing to a step whose siblings already spend the whole amount", () => {
+    const remaining = getYieldxyzStepMaxNativeValue({
+      transactions: [ethTransaction("first", ONE_ETH), ethTransaction("second", ONE_ETH)],
+      transactionId: "first",
+      maxNativeValue: ONE_ETH,
+    })
+
+    expect(remaining).toBe(0n)
+    expect(
+      getYieldxyzEvmTransactionIssue({
+        from: ADDRESS,
+        value: ONE_ETH,
+        address: ADDRESS,
+        maxNativeValue: remaining,
+      })
+    ).toBe("amount")
+  })
+
+  it("ignores a transaction it cannot read, such as a Solana payload", () => {
+    expect(
+      getYieldxyzStepMaxNativeValue({
+        transactions: [
+          { id: "deposit", unsignedTransaction: "AQAB" } as TransactionDto,
+          { id: "other", unsignedTransaction: "AQAC" } as TransactionDto,
+        ],
+        transactionId: "deposit",
+        maxNativeValue: ONE_ETH,
+      })
+    ).toBe(ONE_ETH)
   })
 })
 

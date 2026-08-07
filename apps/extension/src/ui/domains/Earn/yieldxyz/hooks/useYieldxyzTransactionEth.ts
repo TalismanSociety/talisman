@@ -1,5 +1,3 @@
-import { log } from "@common/log"
-import type { TransactionDto } from "@core/domains/earn/exports"
 import { isEthereumAddress } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
@@ -8,42 +6,10 @@ import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/et
 import { useNetworkById } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import type { TransactionRequest } from "viem"
 
 import { getYieldxyzEvmTransactionIssue } from "./provider-transaction-guards"
 import type { UseYieldxyzTransactionProps } from "./types"
-
-type YieldxyzEthTransaction = {
-  type: number
-  chainId: number
-  from: `0x${string}`
-  to: `0x${string}`
-  nonce: number
-  value?: `0x${string}`
-  data?: `0x${string}`
-  gasLimit?: `0x${string}`
-  maxFeePerGas?: `0x${string}`
-  maxPriorityFeePerGas?: `0x${string}`
-}
-
-const deserializeYieldxyzEthTransaction = (
-  tx: TransactionDto,
-  nonce: number | undefined
-): TransactionRequest | null => {
-  try {
-    const parsedTx = JSON.parse(tx.unsignedTransaction as string) as YieldxyzEthTransaction
-    return {
-      from: parsedTx.from,
-      to: parsedTx.to,
-      value: parsedTx.value ? BigInt(parsedTx.value) : undefined,
-      data: parsedTx.data,
-      nonce,
-    }
-  } catch (error) {
-    log.error("Failed to deserialize Yieldxyz ETH transaction", error)
-    return null
-  }
-}
+import { deserializeYieldxyzEthTransaction } from "./yieldxyz-eth-transaction"
 
 export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | null) => {
   const { t } = useTranslation()

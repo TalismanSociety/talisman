@@ -1,4 +1,26 @@
+import type { TransactionDto } from "@core/domains/earn/exports"
+
+import { getYieldxyzEthTransactionValue } from "./yieldxyz-eth-transaction"
+
 export type ProviderTransactionIssue = "sender" | "amount"
+
+/**
+ * An action is a sequence of transactions, and the user confirms the amount once for the whole
+ * sequence. Checking each step against the full amount would let a provider spend it once per step,
+ * so every step is checked against what the other steps leave of it. A sequence that spends more
+ * than the confirmed amount in total is rejected at its first step, before anything is signed.
+ */
+export const getYieldxyzStepMaxNativeValue = (params: {
+  transactions: TransactionDto[]
+  transactionId: string
+  maxNativeValue: bigint
+}): bigint => {
+  const { transactions, transactionId, maxNativeValue } = params
+
+  return transactions
+    .filter((tx) => tx.id !== transactionId)
+    .reduce((remaining, tx) => remaining - getYieldxyzEthTransactionValue(tx), maxNativeValue)
+}
 
 /**
  * The confirmation screen shows the amount the user entered, the product and the fee — never the

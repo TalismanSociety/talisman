@@ -5,8 +5,9 @@ export type UseYieldxyzTransactionProps = {
   networkId: string
   transaction: TransactionDto
   /**
-   * Upper bound for the native amount the provider's transaction may spend. Only an "enter" with
-   * a native input token moves native tokens, and never more than the amount the user entered.
+   * Upper bound for the native amount this transaction may spend: the amount the user entered, less
+   * what the other transactions of the same action spend. Only an "enter" with a native input token
+   * moves native tokens, and never more than the amount the user entered.
    */
   maxNativeValue: bigint
   lockTransaction?: boolean

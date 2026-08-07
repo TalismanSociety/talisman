@@ -108,7 +108,10 @@ export const useRiskAnalysisBase = <
     retry: false,
   })
 
-  const review = useRisksReview(platform, result)
+  // the query key identifies the payload being analysed, and changes when the flow moves on to another one
+  const subjectKey = JSON.stringify(queryKey)
+
+  const review = useRisksReview(platform, result, subjectKey)
 
   const scanError = useMemo(
     () => (result ? getRiskAnalysisScanError(platform, result, t) : null),
@@ -125,15 +128,15 @@ export const useRiskAnalysisBase = <
     }
   }, [error, isAvailable, refetch, result, review.drawer, setIsScanRequested])
 
-  const refAutoOpen = useRef(false)
+  const refAutoOpenedKey = useRef<string | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    if (refAutoOpen.current || !isScanRequested) return
+    if (refAutoOpenedKey.current === subjectKey || !isScanRequested) return
     if (result) {
-      refAutoOpen.current = true
+      refAutoOpenedKey.current = subjectKey
       review.drawer.open()
     }
-  }, [error, isScanRequested, result, review.drawer])
+  }, [error, isScanRequested, result, review.drawer, subjectKey])
 
   const isValidating = useMemo(
     () => isAvailable && shouldValidate && isLoading && enabled,

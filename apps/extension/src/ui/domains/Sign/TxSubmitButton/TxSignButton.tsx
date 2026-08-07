@@ -24,9 +24,11 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   if (riskGate.isBlocked)
     return (
       <div className="flex w-full flex-col gap-6">
-        <div role="alert" className="text-center text-brand-orange text-xs">
-          {riskGate.message}
-        </div>
+        {!!riskGate.message && (
+          <div role="alert" className="text-center text-brand-orange text-xs">
+            {riskGate.message}
+          </div>
+        )}
         <TxSubmitButtonFallback
           label={label ?? t("Confirm")}
           disabled

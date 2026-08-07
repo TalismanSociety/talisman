@@ -6,6 +6,7 @@ import { notify } from "@ui/components/Notifications"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { getYieldxyzStepMaxNativeValue } from "./provider-transaction-guards"
 import type { UseYieldxyzTransactionProps } from "./types"
 import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
 
@@ -45,8 +46,17 @@ export const useYieldxyzTransactionManager = ({
 
   const txInputs = useMemo<UseYieldxyzTransactionProps | null>(() => {
     if (!address || !networkId || !nextTransaction) return null
-    return { address, networkId, transaction: nextTransaction, maxNativeValue }
-  }, [address, networkId, nextTransaction, maxNativeValue])
+    return {
+      address,
+      networkId,
+      transaction: nextTransaction,
+      maxNativeValue: getYieldxyzStepMaxNativeValue({
+        transactions: action?.transactions ?? [],
+        transactionId: nextTransaction.id,
+        maxNativeValue,
+      }),
+    }
+  }, [address, networkId, nextTransaction, maxNativeValue, action])
 
   const transaction = useYieldxyzTransaction(txInputs)
 
