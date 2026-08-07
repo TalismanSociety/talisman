@@ -37,6 +37,7 @@ import {
   getStealthexAdditionalFeePercent,
   getStealthexTalismanTotalFee,
 } from "./fee-utils"
+import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
@@ -514,7 +515,13 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
       exchange.withdrawal.symbol !== to.symbol
     )
       throw new Error("Incorrect currencies from provider. Please try again later")
-    if (exchange.deposit.amount > fromAmountNum) throw new Error("Quote changed. Please try again.")
+    // `deposit.expected_amount` is the amount we will actually send — `deposit.amount` is what
+    // StealthEX has received so far, which is always 0 before the deposit is made
+    assertDepositAmountWithinInput({
+      depositAmount: exchange.deposit.expected_amount,
+      fromAmount,
+      decimals: fromAsset.decimals,
+    })
     if (exchange.withdrawal.address !== formattedToAddress)
       throw new Error("Incorrect destination address from provider. Please try again later")
 
@@ -534,6 +541,12 @@ const getTransaction = async (
 
   const exchange = params.exchange as StealthexExchange | undefined
   if (!exchange?.deposit?.address) throw new Error("Missing exchange")
+
+  assertDepositAmountWithinInput({
+    depositAmount: exchange.deposit.expected_amount,
+    fromAmount: params.fromAmount,
+    decimals: fromAsset.decimals,
+  })
 
   const deposit: DepositInfo = {
     depositAddress: exchange.deposit.address,
