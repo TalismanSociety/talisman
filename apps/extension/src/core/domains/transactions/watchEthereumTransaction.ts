@@ -77,17 +77,20 @@ export const watchEthereumTransaction = async (
 
       // wait 2 confirmations before marking as confirmed
       if (receipt.status === "success") {
-        // Start watching exchange status for swap transactions
-        if (txInfo) watchSwapStatus(hash)
+        // A receipt for another hash means a same-nonce replacement mined instead:
+        // that transaction's own watcher owns swap tracking and the confirmed update,
+        // and status reconciliation will mark this hash as replaced.
+        if (receipt.transactionHash === hash) {
+          // Start watching exchange status for swap transactions
+          if (txInfo) watchSwapStatus(hash)
 
-        const receipt = await client.waitForTransactionReceipt({ hash, confirmations: 2 })
-        if (receipt.status === "success")
-          updateTransactionStatus(
+          const confirmedReceipt = await client.waitForTransactionReceipt({
             hash,
-            receipt.status === "success" ? "success" : "error",
-            receipt.blockNumber,
-            true
-          )
+            confirmations: 2,
+          })
+          if (confirmedReceipt.status === "success" && confirmedReceipt.transactionHash === hash)
+            updateTransactionStatus(hash, "success", confirmedReceipt.blockNumber, true)
+        }
 
         // if tx orignates from a dapp, in case it's a swap for a new token, launch an asset discovery scan
         if (siteUrl && unsigned.from)

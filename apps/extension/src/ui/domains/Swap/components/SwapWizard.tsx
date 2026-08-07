@@ -1,3 +1,5 @@
+import type { ReplacementCallbackArgs } from "@ui/domains/Transactions/TxProgress"
+import { useCallback } from "react"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirm } from "./SwapConfirm"
@@ -19,8 +21,20 @@ export const SwapWizard = () => {
 }
 
 const SwapSubmitted = () => {
-  const { submittedTxHash, submittedNetworkId, submittedTxInfo } = useSwap()
+  const { submittedTxHash, submittedNetworkId, submittedTxInfo, gotoSubmitted } = useSwap()
   const { close: closeSwapTokensModal } = useSwapModal()
+
+  // Follow speed-up replacements so tracking continues on the new hash. If the
+  // original still wins the nonce race, SwapProgress redirects to the mined tx
+  // via getCanonicalTransaction.
+  // Cancels keep tracking the original hash, which flips to "replaced" (cancelled UI).
+  const handleReplacementComplete = useCallback(
+    ({ txId, networkId, replaceType }: ReplacementCallbackArgs) => {
+      if (replaceType !== "speed-up" || !submittedTxInfo) return
+      gotoSubmitted({ hash: txId, networkId, txInfo: submittedTxInfo })
+    },
+    [gotoSubmitted, submittedTxInfo]
+  )
 
   if (!submittedTxHash || !submittedNetworkId || !submittedTxInfo) return null
 
@@ -30,6 +44,7 @@ const SwapSubmitted = () => {
       networkId={submittedNetworkId}
       txInfo={submittedTxInfo}
       onClose={closeSwapTokensModal}
+      onReplacementComplete={handleReplacementComplete}
     />
   )
 }

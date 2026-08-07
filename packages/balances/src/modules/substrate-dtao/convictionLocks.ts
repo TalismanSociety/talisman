@@ -99,7 +99,8 @@ export const fetchConvictionLocks = async (
   connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
-  addresses: string[]
+  addresses: string[],
+  at?: `0x${string}`
 ): Promise<FetchedConvictionLock[]> => {
   if (!addresses.length) return []
 
@@ -119,7 +120,8 @@ export const fetchConvictionLocks = async (
       connector,
       networkId,
       addresses,
-      lockStorageCoder
+      lockStorageCoder,
+      at
     )
     if (!lockStorageKeys.length) return []
 
@@ -131,8 +133,8 @@ export const fetchConvictionLocks = async (
     )
 
     const [lockModesByPair, lockStates] = await Promise.all([
-      fetchConvictionLockModes(connector, networkId, lockStorageKeys, decayingLockStorageCoder),
-      fetchColdkeyLockStates(connector, networkId, builder, lockStorageKeys),
+      fetchConvictionLockModes(connector, networkId, lockStorageKeys, decayingLockStorageCoder, at),
+      fetchColdkeyLockStates(connector, networkId, builder, lockStorageKeys, at),
     ])
 
     return lockStates.flatMap(({ address, netuid, lockState }) => {
@@ -176,7 +178,8 @@ const fetchConvictionLockStorageKeys = async (
   connector: IChainConnectorDot,
   networkId: string,
   addresses: string[],
-  storageCoder: ScaleStorageCoder
+  storageCoder: ScaleStorageCoder,
+  at?: `0x${string}`
 ): Promise<ConvictionLockStorageKey[]> => {
   const keysPerAddress = await Promise.all(
     addresses.map(async (address): Promise<ConvictionLockStorageKey[]> => {
@@ -195,7 +198,7 @@ const fetchConvictionLockStorageKeys = async (
 
       let stateKeys: `0x${string}`[]
       try {
-        stateKeys = await fetchStorageKeysPaged(connector, networkId, keyPrefix)
+        stateKeys = await fetchStorageKeysPaged(connector, networkId, keyPrefix, at)
       } catch (cause) {
         // transient RPC failure: swallowing it would make every lock of this address read
         // as removed for one poll (delete + re-add flap downstream) — fail the poll instead
@@ -228,7 +231,8 @@ const fetchConvictionLockModes = async (
   connector: IChainConnectorDot,
   networkId: string,
   pairs: Array<Pick<ConvictionLockStorageKey, "address" | "netuid">>,
-  storageCoder: ScaleStorageCoder
+  storageCoder: ScaleStorageCoder,
+  at?: `0x${string}`
 ): Promise<Map<string, SubDTaoConvictionLockType>> => {
   const queries = pairs.map(
     ({ address, netuid }): RpcQueryPack<[string, SubDTaoConvictionLockType]> => {
@@ -270,14 +274,15 @@ const fetchConvictionLockModes = async (
     }
   )
 
-  return new Map(await fetchRpcQueryPack(connector, networkId, queries))
+  return new Map(await fetchRpcQueryPack(connector, networkId, queries, at))
 }
 
 const fetchColdkeyLockStates = async (
   connector: IChainConnectorDot,
   networkId: string,
   builder: MetadataBuilder,
-  pairs: Array<Pick<ConvictionLockStorageKey, "address" | "netuid">>
+  pairs: Array<Pick<ConvictionLockStorageKey, "address" | "netuid">>,
+  at?: `0x${string}`
 ): Promise<Array<{ address: string; netuid: number; lockState: GetColdkeyLockResult }>> => {
   return Promise.all(
     pairs.map(async ({ address, netuid }) => {
@@ -288,7 +293,8 @@ const fetchColdkeyLockStates = async (
           builder,
           "StakeInfoRuntimeApi",
           "get_coldkey_lock",
-          [address, netuid]
+          [address, netuid],
+          at
         )
         return { address, netuid, lockState }
       } catch (cause) {

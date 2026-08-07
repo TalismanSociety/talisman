@@ -22,6 +22,7 @@ import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondM
 import { BittensorChangeLockHotkeyModal } from "@ui/domains/Staking/Bittensor/BittensorChangeLockHotkeyModal"
 import { BittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/BittensorChangeLockTypeModal"
 import { BittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/BittensorChangeValidatorModal"
+import { BittensorClaimModal } from "@ui/domains/Staking/Bittensor/BittensorClaimModal"
 import { BittensorConvictionLockModal } from "@ui/domains/Staking/Bittensor/BittensorConvictionLockModal"
 import { BittensorSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorSettingsModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
@@ -70,6 +71,7 @@ export const DashboardNotificationsAndModals = () => {
       <BittensorChangeLockHotkeyModal />
       <BittensorChangeValidatorModal />
       <BittensorSettingsModal />
+      <BittensorClaimModal />
       <CopyAddressModal />
       <ExplorerNetworkPickerModal />
       <GetStartedModals />

@@ -1,6 +1,6 @@
 {
   "name": "@talismn/substrate-vrf",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "sr25519 VRF sign/verify in the origin-bound substrate-vrf namespace, as produced by the Talisman wallet's signer.signVrf (built for Orbinum)",
   "keywords": [
     "sr25519",

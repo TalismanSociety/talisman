@@ -21,6 +21,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
+import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinStake"
@@ -155,6 +156,10 @@ const useSendFundsProvider = () => {
   })
   const dtaoMinTaoTransfer = useGetBittensorDefaultMinStake({ networkId: dtaoNetworkId })
   const { data: dtaoMinTaoKeep } = useGetBittensorMinJoinBond({ networkId: dtaoNetworkId })
+
+  // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
+  // a transfer_stake off the pair would revert with RootStakeLocked
+  const dtaoRootStakeHoldGate = useDTaoRootStakeHoldGate(balance)
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
@@ -336,6 +341,11 @@ const useSendFundsProvider = () => {
           error: t("Recipient hasn't opted in to receive locked stake"),
         }
 
+      // (spec 441) the sender's root stake is inside its hold window: transfer_stake would
+      // revert with RootStakeLocked; until the hold state is known, block silently (fail closed)
+      if (dtaoRootStakeHoldGate.isBlocked)
+        return { isValid: false, error: dtaoRootStakeHoldGate.message ?? undefined }
+
       // dtao (staked TAO/alpha) transfers are transfer_stake staking operations:
       if (
         token?.type === "substrate-dtao" &&
@@ -464,6 +474,7 @@ const useSendFundsProvider = () => {
     dtaoMinTaoTransfer,
     dtaoMinTaoKeep,
     dtaoLockedTransferBlocked,
+    dtaoRootStakeHoldGate,
     feeToken,
     feeTokenBalance,
     from,
@@ -534,6 +545,7 @@ const useSendFundsProvider = () => {
     recipientWarning,
     setRecipientWarning,
     dtaoLockedTransferWarning,
+    dtaoRootStakeHoldGate,
     tip,
     tipToken,
     tipTokenBalance,

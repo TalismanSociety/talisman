@@ -66,12 +66,13 @@ export const BittensorValidatorPicker: FC<{
 
   const [, startTransition] = useTransition()
 
+  // skeletons show until this resolves, so an empty result must still be committed once loaded
   useEffect(() => {
-    if (combinedValidatorsData.length)
-      startTransition(() => {
-        setSortedValidators(sortValidatorOptions(combinedValidatorsData, sortMethod))
-      })
-  }, [combinedValidatorsData, sortMethod])
+    if (isLoading) return
+    startTransition(() => {
+      setSortedValidators(sortValidatorOptions(combinedValidatorsData, sortMethod))
+    })
+  }, [combinedValidatorsData, isLoading, sortMethod])
 
   // Reset scroll to top when sort method or search changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
@@ -126,6 +127,11 @@ export const BittensorValidatorPicker: FC<{
               isLoading={isLoading}
               onSelect={onSelect}
             />
+          )}
+          {!isError && displayedValidators?.length === 0 && (
+            <div className="flex h-full items-center justify-center text-body-secondary">
+              {t("No validators found")}
+            </div>
           )}
           {isError && (
             <div className="flex h-full items-center justify-center text-alert-error">

@@ -1,13 +1,21 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
-import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
+import {
+  type Balance,
+  BalanceFormatter,
+  type Balances,
+  type DTaoClaimTarget,
+  getBalanceId,
+} from "@talismn/balances"
 import {
   type DotNetworkId,
   subDTaoTokenId,
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorColdkeyLock"
+import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorTransferableBalance"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -25,7 +33,10 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
 import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
+import { getBittensorFullExitUnstake } from "../utils/fullExitUnstake"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
+import { getBittensorUnbondClaimOption } from "../utils/unbondClaimOption"
+import { useBittensorRootClaimGate } from "./useBittensorRootClaimGate"
 import {
   type BittensorStakingPosition,
   useBittensorStakingPositions,
@@ -53,6 +64,8 @@ type WizardState = {
   hash: Hex | null
   stakeType: StakeType | null
   stakeDirection: StakeDirection
+  /** when unstaking from root, batch a claim of the pending rewards (opt-out) */
+  withClaim: boolean
 }
 
 export type BittensorStakingWizardOpenOptions = {
@@ -74,6 +87,7 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
   stakeType: null,
   stakeDirection: "bond",
+  withClaim: true,
 }
 
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -134,6 +148,7 @@ const useBittensorBondWizardProvider = () => {
       hash,
       amountIn,
       stakeDirection,
+      withClaim,
     },
     setWizardState,
   ] = useState(() => {
@@ -178,6 +193,97 @@ const useBittensorBondWizardProvider = () => {
 
   const { data: sapi } = useScaleApi(nativeToken?.networkId)
 
+  // when unstaking from root, the pending rewards of the (coldkey, hotkey) pair can be
+  // claimed within the same transaction
+  const claimTarget = useMemo<DTaoClaimTarget | null>(
+    () =>
+      stakeDirection === "unbond" && netuid === ROOT_NETUID && address && hotkey
+        ? { networkId, address, hotkey }
+        : null,
+    [stakeDirection, netuid, address, hotkey, networkId]
+  )
+  const claimGate = useBittensorRootClaimGate(sapi, claimTarget)
+  const claimOption = useMemo(
+    () =>
+      getBittensorUnbondClaimOption({
+        isRootUnbond: !!claimTarget,
+        withClaim,
+        claimablePlancks: claimGate.claimablePlancks,
+        isClaimUnavailable: claimGate.isClaimUnavailable,
+        canSubmit: claimGate.canSubmit,
+      }),
+    [
+      claimTarget,
+      withClaim,
+      claimGate.claimablePlancks,
+      claimGate.isClaimUnavailable,
+      claimGate.canSubmit,
+    ]
+  )
+
+  const totalStakedPlancks = useMemo(
+    () => dtaoBalance?.free.planck ?? 0n,
+    [dtaoBalance?.free.planck]
+  )
+
+  // Bittensor conviction lock: constrains the coldkey's TOTAL alpha on the subnet,
+  // the locked amount cannot be unstaked (chain would throw StakeUnavailable)
+  const subnetUnstakeInfo = useMemo(
+    () =>
+      address && networkId && typeof netuid === "number"
+        ? getDTaoSubnetUnstakeInfo(allBalances, address, networkId, netuid)
+        : null,
+    [allBalances, address, networkId, netuid]
+  )
+
+  const convictionLock = subnetUnstakeInfo?.convictionLock ?? null
+
+  // The cached lock (from balances, polled every ~6s) can lag a lock that GROWS on-chain
+  // (owner auto-lock every block, or a concurrent top-up). Read it fresh while unbonding so the
+  // available-to-unstake guard tightens before signing, avoiding a StakeUnavailable revert.
+  const { data: freshLockedMass } = useGetBittensorColdkeyLock({
+    networkId,
+    address,
+    netuid: stakeDirection === "unbond" ? netuid : null,
+  })
+
+  // guard with the larger of cached vs fresh lock (a lock can only ever constrain unstaking more)
+  const effectiveLocked = useMemo(
+    () => effectiveLockedAmount(convictionLock?.amount ?? 0n, freshLockedMass),
+    [convictionLock?.amount, freshLockedMass]
+  )
+
+  // for this position: min(position stake, subnet-wide available to unstake)
+  const availableToUnstakePlancks = useMemo(() => {
+    const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? totalStakedPlancks
+    const subnetAvailable = stakedTotal > effectiveLocked ? stakedTotal - effectiveLocked : 0n
+    return totalStakedPlancks < subnetAvailable ? totalStakedPlancks : subnetAvailable
+  }, [subnetUnstakeInfo?.stakedTotal, effectiveLocked, totalStakedPlancks])
+
+  // whole unlocked position leaving root with the claim batched, hold window proven off:
+  // the payload can use the claim-first full-exit order
+  const fullExit = useMemo(
+    () =>
+      getBittensorFullExitUnstake({
+        isRootUnbond: !!claimTarget,
+        amountIn,
+        totalStakedPlancks,
+        availableToUnstakePlancks,
+        includeClaim: claimOption.includeClaim,
+        holdIntervalBlocks: claimGate.holdIntervalBlocks,
+        isHoldIntervalReady: claimGate.isHoldIntervalReady,
+      }),
+    [
+      claimTarget,
+      amountIn,
+      totalStakedPlancks,
+      availableToUnstakePlancks,
+      claimOption.includeClaim,
+      claimGate.holdIntervalBlocks,
+      claimGate.isHoldIntervalReady,
+    ]
+  )
+
   const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
   const isMevShieldDisabled = useMemo(() => {
@@ -219,6 +325,8 @@ const useBittensorBondWizardProvider = () => {
     amountIn,
     networkId: nativeToken?.networkId,
     stakeDirection,
+    withClaim: claimOption.includeClaim,
+    fullExit,
   })
 
   const isSubnetUnbond = useMemo(
@@ -255,7 +363,7 @@ const useBittensorBondWizardProvider = () => {
     []
   )
 
-  const isHotkeyAutoSelected = useRef(true)
+  const isHotkeyAutoSelected = useRef(!wizardOpenState$.getValue().hotkey)
 
   const setHotkey = useCallback((hotkey: string) => {
     isHotkeyAutoSelected.current = false
@@ -272,6 +380,7 @@ const useBittensorBondWizardProvider = () => {
           ...prev,
           netuid,
           amountIn: null,
+          withClaim: true,
           stakeType: netuid ? "subnet" : "root",
           hotkey:
             prev.stakeDirection === "bond"
@@ -291,6 +400,11 @@ const useBittensorBondWizardProvider = () => {
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
+    []
+  )
+
+  const setWithClaim = useCallback(
+    (withClaim: boolean) => setWizardState((prev) => ({ ...prev, withClaim })),
     []
   )
 
@@ -355,6 +469,7 @@ const useBittensorBondWizardProvider = () => {
         netuid: position.token.netuid,
         address: position.balance.address,
         stakeType: position.token.netuid === 0 ? "root" : "subnet",
+        withClaim: true,
       }
     })
   }, [])
@@ -367,44 +482,11 @@ const useBittensorBondWizardProvider = () => {
     [genericEvent, nativeTokenId]
   )
 
-  const totalStakedPlancks = useMemo(
-    () => dtaoBalance?.free.planck ?? 0n,
-    [dtaoBalance?.free.planck]
+  // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
+  // remove_stake would revert with RootStakeLocked
+  const rootStakeHoldGate = useDTaoRootStakeHoldGate(
+    stakeDirection === "unbond" ? dtaoBalance : null
   )
-
-  // Bittensor conviction lock: constrains the coldkey's TOTAL alpha on the subnet,
-  // the locked amount cannot be unstaked (chain would throw StakeUnavailable)
-  const subnetUnstakeInfo = useMemo(
-    () =>
-      address && networkId && typeof netuid === "number"
-        ? getDTaoSubnetUnstakeInfo(allBalances, address, networkId, netuid)
-        : null,
-    [allBalances, address, networkId, netuid]
-  )
-
-  const convictionLock = subnetUnstakeInfo?.convictionLock ?? null
-
-  // The cached lock (from balances, polled every ~6s) can lag a lock that GROWS on-chain
-  // (owner auto-lock every block, or a concurrent top-up). Read it fresh while unbonding so the
-  // available-to-unstake guard tightens before signing, avoiding a StakeUnavailable revert.
-  const { data: freshLockedMass } = useGetBittensorColdkeyLock({
-    networkId,
-    address,
-    netuid: stakeDirection === "unbond" ? netuid : null,
-  })
-
-  // guard with the larger of cached vs fresh lock (a lock can only ever constrain unstaking more)
-  const effectiveLocked = useMemo(
-    () => effectiveLockedAmount(convictionLock?.amount ?? 0n, freshLockedMass),
-    [convictionLock?.amount, freshLockedMass]
-  )
-
-  // for this position: min(position stake, subnet-wide available to unstake)
-  const availableToUnstakePlancks = useMemo(() => {
-    const stakedTotal = subnetUnstakeInfo?.stakedTotal ?? totalStakedPlancks
-    const subnetAvailable = stakedTotal > effectiveLocked ? stakedTotal - effectiveLocked : 0n
-    return totalStakedPlancks < subnetAvailable ? totalStakedPlancks : subnetAvailable
-  }, [subnetUnstakeInfo?.stakedTotal, effectiveLocked, totalStakedPlancks])
 
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -487,17 +569,32 @@ const useBittensorBondWizardProvider = () => {
     [sapi]
   )
 
+  // Accounts with zero free TAO have no native balance record at all (the balance pool
+  // drops zero balances), so a missing record can't distinguish "zero TAO" from "not
+  // loaded yet": read the balance fresh from chain, falling back to the pool record
+  // while the query loads
+  const { data: freshTransferableTao } = useGetBittensorTransferableBalance({
+    networkId,
+    address: stakeDirection === "unbond" ? address : null,
+  })
+  const knownTransferableTao = freshTransferableTao ?? nativeBalance?.transferable.planck ?? null
+
   const unstakeInputErrorMessage = useMemo(() => {
-    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees
+    if (rootStakeHoldGate.message) return rootStakeHoldGate.message
+
+    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees.
+    // Root staking has no alpha-fee mechanism at all, so root unbonds always need free TAO.
     if (
-      !supportsAlphaFees &&
+      (netuid === ROOT_NETUID || !supportsAlphaFees) &&
       amountIn &&
       existentialDeposit?.planck &&
       feeEstimate &&
-      nativeBalance &&
-      existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck
+      typeof knownTransferableTao === "bigint" &&
+      existentialDeposit.planck + feeEstimate > knownTransferableTao
     ) {
-      return t("Insufficient TAO to cover fee and keep account alive")
+      return t(
+        "Insufficient free TAO to pay network fees. Fees are paid from your wallet balance, not your stake."
+      )
     }
 
     if ((amountIn || 0n) > totalStakedPlancks) {
@@ -538,11 +635,13 @@ const useBittensorBondWizardProvider = () => {
 
     return null
   }, [
+    rootStakeHoldGate.message,
     supportsAlphaFees,
+    netuid,
     amountIn,
     existentialDeposit?.planck,
     feeEstimate,
-    nativeBalance,
+    knownTransferableTao,
     totalStakedPlancks,
     availableToUnstakePlancks,
     effectiveLocked,
@@ -607,7 +706,12 @@ const useBittensorBondWizardProvider = () => {
     isSubnetUnbond,
     position,
     slippage,
-    payload: !inputErrorMessage && isFormValid ? payload : null,
+    claimOption,
+    claimablePlancks: claimGate.claimablePlancks,
+    dustThreshold: claimGate.dustThreshold,
+    isBelowDustThreshold: claimGate.isBelowDustThreshold,
+    claimHoldDurationMs: claimGate.holdDurationMs,
+    payload: !inputErrorMessage && isFormValid && !rootStakeHoldGate.isBlocked ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
@@ -628,6 +732,7 @@ const useBittensorBondWizardProvider = () => {
     setNetuid,
     setHotkey,
     setPlancks,
+    setWithClaim,
     setStep,
     setPosition,
     toggleDisplayMode,

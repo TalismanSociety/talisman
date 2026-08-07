@@ -16,29 +16,40 @@ type QueryStorageResultContent = QueryStorageResult[0]
 
 type ChangesByKey = ReadonlyMap<`0x${string}`, `0x${string}`>
 
-export const fetchRpcQueryPack = async <T>(
+/** Result types of a pack of queries, position by position — a mixed-type pack stays typed */
+type RpcQueryPackResults<Q extends readonly RpcQueryPack<unknown>[]> = {
+  [K in keyof Q]: Q[K] extends RpcQueryPack<infer T> ? T : never
+}
+
+export const fetchRpcQueryPack = async <Q extends readonly RpcQueryPack<unknown>[]>(
   connector: IChainConnectorDot,
   networkId: DotNetworkId,
-  queries: RpcQueryPack<T>[]
-) => {
+  queries: readonly [...Q],
+  /** block to read from — pass it to keep a multi-call poll on one block */
+  at?: `0x${string}`
+): Promise<RpcQueryPackResults<Q>> => {
   const allStateKeys = queries.flatMap(({ stateKeys }) => stateKeys).filter(isNotNil)
 
   // doing a query without keys would throw an error => return early
   if (!allStateKeys.length)
-    return queries.map(({ stateKeys, decodeResult }) => decodeResult(stateKeys.map(() => null)))
+    return queries.map(({ stateKeys, decodeResult }) =>
+      decodeResult(stateKeys.map(() => null))
+    ) as RpcQueryPackResults<Q>
 
-  const [result] = await connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [
-    allStateKeys,
-  ])
+  const [result] = await connector.send<QueryStorageResult>(
+    networkId,
+    "state_queryStorageAt",
+    at ? [allStateKeys, at] : [allStateKeys]
+  )
 
   // a valid state_queryStorageAt response carries one entry per queried block — an empty
   // response is a bad response, not absent values: decoding it would fabricate "no value"
-  // for every queried key (eg empty RootClaimable maps deleting claim-only balances)
+  // for every queried key (eg empty Lock reads deleting lock-only balances)
   if (!result) throw new Error(`Empty state_queryStorageAt response on ${networkId}`)
 
   return decodeRpcQueryPackChunked(queries, new Map(result.changes), {
     label: `rpcQueryPack decode ${networkId}`,
-  })
+  }) as Promise<RpcQueryPackResults<Q>>
 }
 
 /**
@@ -108,7 +119,7 @@ export const getRpcQueryPack$ = <T>(
 }
 
 const decodeRpcQueryPackChunked = <T>(
-  queries: RpcQueryPack<T>[],
+  queries: readonly RpcQueryPack<T>[],
   changesByKey: ChangesByKey,
   options?: ChunkedOptions
 ): Promise<T[]> =>

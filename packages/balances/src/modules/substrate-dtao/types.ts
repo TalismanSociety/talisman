@@ -14,6 +14,17 @@ export type SubDTaoTokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
 
 export type SubDTaoBalanceMeta = {
   convictionLock?: SubDTaoConvictionLockMeta
+  rootStakeHold?: SubDTaoRootStakeHoldMeta
+}
+
+/**
+ * Root-stake hold window (spec 441): while active, the pair's root stake cannot leave root
+ * (remove/move/swap/transfer). Only present while the window is still running.
+ */
+export type SubDTaoRootStakeHoldMeta = {
+  type: "root-stake-hold"
+  /** block at which the (coldkey, hotkey) root stake can leave root again */
+  unlockAtBlock: number
 }
 
 export type SubDTaoConvictionLockType = "decaying" | "perpetual"
@@ -29,7 +40,10 @@ export type SubDTaoBalance = {
   tokenId: string
   baseTokenId: string
   stake: bigint
-  pendingRootClaim?: bigint
+  /** TAO realizable by redeeming the validator's beta basket (marked NAV quote) */
+  claimable?: bigint
+  /** block at which the pair's root stake can leave root (only set while the hold runs) */
+  rootStakeHoldUnlockBlock?: number
   convictionLock?: SubDTaoConvictionLock
   hotkey: string
   netuid: number

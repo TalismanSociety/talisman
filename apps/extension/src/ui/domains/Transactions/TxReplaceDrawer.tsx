@@ -44,6 +44,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 type TxReplaceDrawerProps = {
   tx?: WalletTransaction
   type?: TxReplaceType // will open if set
+  containerId?: string
   // hash for evm replacements, txid for bitcoin ones
   onClose?: (newTxHash?: string) => void
 }
@@ -289,7 +290,7 @@ const EvmDrawerContent: FC<{
             onSigned={handleSendSigned}
             onCancel={() => onClose?.()}
             onSentToDevice={handleSentToDevice}
-            containerId="main"
+            containerId={containerId ?? "main"}
           />
         </div>
       ) : (
@@ -488,14 +489,14 @@ const BtcDrawerContent: FC<{
   )
 }
 
-export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose }) => {
+export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerId, onClose }) => {
   const inputs = useMemo(() => (tx && type ? { tx, type } : undefined), [tx, type])
   const { isOpenReady, data } = useOpenCloseWithData(!!inputs, inputs)
 
   // can't use a drawer in dashbaord, render a modal instead
   if (!IS_POPUP) {
     return (
-      <Modal isOpen={isOpenReady} anchor="center" onDismiss={onClose}>
+      <Modal isOpen={isOpenReady} anchor="center" containerId={containerId} onDismiss={onClose}>
         <div
           id="tx-main"
           className="flex h-150 max-h-dvh w-100 max-w-dvw flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
@@ -527,15 +528,25 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
     <Drawer
       isOpen={isOpenReady}
       anchor="bottom"
-      containerId="main"
+      containerId={containerId ?? "main"}
       onDismiss={onClose}
       className="flex w-full flex-col items-center rounded-t-xl bg-grey-800 p-12"
     >
       {data?.type && data?.tx?.platform === "ethereum" ? (
-        <EvmDrawerContent tx={data.tx} type={data.type} onClose={onClose} />
+        <EvmDrawerContent
+          containerId={containerId}
+          tx={data.tx}
+          type={data.type}
+          onClose={onClose}
+        />
       ) : null}
       {data?.type && data?.tx?.platform === "bitcoin" ? (
-        <BtcDrawerContent tx={data.tx} type={data.type} onClose={onClose} />
+        <BtcDrawerContent
+          containerId={containerId}
+          tx={data.tx}
+          type={data.type}
+          onClose={onClose}
+        />
       ) : null}
     </Drawer>
   )

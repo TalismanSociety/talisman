@@ -4,6 +4,7 @@ import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
 import {
   createQuickUnlockCredential,
   isQuickUnlockAvailable,
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next"
 
 export const QuickUnlockSetting = () => {
   const { t } = useTranslation()
+  const isFeatureEnabled = useFeatureFlag("QUICK_UNLOCK")
   const enrolled = useIsQuickUnlockEnrolled()
   const [available, setAvailable] = useState<boolean | null>(null)
   const [processing, setProcessing] = useState(false)
@@ -80,9 +82,9 @@ export const QuickUnlockSetting = () => {
     [getErrorMessage, t]
   )
 
-  // keep the setting visible while enrolled even if the authenticator became unavailable,
-  // it's the only place where the enrollment can be cleared
-  if (!available && !enrolled) return null
+  // keep the setting visible while enrolled even if the authenticator became unavailable
+  // or the feature flag was turned off, it's the only place where the enrollment can be cleared
+  if ((!available || !isFeatureEnabled) && !enrolled) return null
 
   return (
     <Setting

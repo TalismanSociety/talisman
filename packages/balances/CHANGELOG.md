@@ -1,5 +1,28 @@
 # @talismn/balances
 
+## 3.0.1
+
+### Patch Changes
+
+- 2d5885d: surface Bittensor beta-basket claimable rewards on root staking balances and expose the root-stake hold window (spec 441); chaindata pub folder bumped to v13 for the minimetadata additions
+- 2d5885d: expose isDTaoClaimableLock predicate for identifying claimable root rewards locks
+- 632b9bd: use state_getKeysPaged for substrate-dtao prefix scans (unpaged state_getKeys is rejected by some public nodes)
+- 2d5885d: pin every read of a Bittensor dtao balances poll to one block, and read basket entitlement from the per-validator positions call only (a coldkey-wide total read from another block surfaced a phantom validator-less claimable row)
+- 2d5885d: stop reading legacy RootClaimable/RootClaimed storages (drained since Bittensor spec 441, root dividends now accrue in validator baskets)
+- b6e69ad: adjust comments
+- 2995b74: skip RootClaimed storage queries and pending root claim balances whose claimable total is provably zero
+- Updated dependencies [1997638]
+- Updated dependencies [2d5885d]
+- Updated dependencies [632b9bd]
+- Updated dependencies [de382f6]
+- Updated dependencies [2d5885d]
+  - @talismn/crypto@1.0.1
+  - @talismn/chaindata-provider@2.0.1
+  - @talismn/token-rates@4.0.1
+  - @talismn/scale@2.0.1
+  - @talismn/chain-connectors@1.0.1
+  - @talismn/sapi@2.0.1
+
 ## 3.0.0
 
 ### Major Changes

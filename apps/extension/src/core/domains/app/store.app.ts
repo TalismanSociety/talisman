@@ -38,6 +38,7 @@ export type AppStoreData = {
   hideManageAccountsWelcome?: boolean
   hideBittensorSubnetStakeWarning?: boolean
   hideBittensorConvictionLockInfo?: boolean
+  hideBittensorRootRewardsInfo?: boolean
   hideGetStarted?: boolean
 
   // dismissed earn disclaimer
@@ -119,6 +120,7 @@ if (DEBUG) {
       hideManageAccountsWelcome: false,
       hideBittensorSubnetStakeWarning: false,
       hideBittensorConvictionLockInfo: false,
+      hideBittensorRootRewardsInfo: false,
       hideGetStarted: false,
       hideEarnDisclaimer: false,
     })

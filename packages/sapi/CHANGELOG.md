@@ -1,5 +1,12 @@
 # @talismn/sapi
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [2d5885d]
+  - @talismn/scale@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

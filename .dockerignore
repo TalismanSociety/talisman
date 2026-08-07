@@ -4,6 +4,10 @@
 .next
 .turbo
 .i18next-parser
+# Never let local env files into the build context: their values get baked
+# into bundles by the define/replace plugins and would leak into shipped builds
+**/.env
+**/.env.*
 # Exclude dist directories except for .papi (pre-built polkadot-api descriptors)
 **/dist
 !.papi/**/dist

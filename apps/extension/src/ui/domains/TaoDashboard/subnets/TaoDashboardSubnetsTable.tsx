@@ -1,17 +1,28 @@
 import { bind } from "@react-rxjs/core"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   ChevronRightIcon,
+  CoinsHandIcon,
   InfoIcon,
+  MoreHorizontalIcon,
   ZapOffIcon,
   ZapPlusIcon,
 } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/components/ContextMenu"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useBittensorClaimModal } from "@ui/domains/Staking/Bittensor/BittensorClaimModal/hooks/useBittensorClaimModal"
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
+import { useBittensorClaimCandidates } from "@ui/domains/Staking/Bittensor/hooks/useBittensorClaimCandidates"
 import { normalizeGreek } from "@ui/domains/Staking/Bittensor/utils/normalizeGreek"
 import { cn } from "@ui/util/cn"
 import {
@@ -28,6 +39,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { BehaviorSubject } from "rxjs"
 import { TokenLogo } from "../../Asset/TokenLogo"
+import { usePortfolioNavigation } from "../../Portfolio/usePortfolioNavigation"
 import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
 import { formatCompactNumber, getTaoDashboardUrl } from "../shared/util"
@@ -677,57 +689,62 @@ const SubnetRow: FC<{
         )}
       </DataCell>
 
-      {/* Chart / Stake+Unstake on hover (root always shows buttons) */}
+      {/* Chart / Stake+Unstake on hover (root always shows Claim + actions menu) */}
       <DataCell>
-        {!isRoot && (
-          <div className="group-hover:hidden">
-            {!loading.chart && !!subnet.chartData && (
-              <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
-            )}
-          </div>
+        {isRoot ? (
+          <RootSubnetActions
+            networkId={subnet.token.networkId}
+            canStake={canStake}
+            canUnstake={canUnstake}
+            onStakeClick={handleStakeClick}
+            onUnstakeClick={handleUnstakeClick}
+          />
+        ) : (
+          <>
+            <div className="group-hover:hidden">
+              {!loading.chart && !!subnet.chartData && (
+                <SparklineChart data={subnet.chartData} isPositive={isChartPositive} />
+              )}
+            </div>
+            <div className="hidden items-center justify-center gap-2 group-hover:flex">
+              <button
+                type="button"
+                aria-label={t("Stake")}
+                disabled={!canStake}
+                onClick={handleStakeClick}
+                className={cn(
+                  "inline-flex size-14 items-center justify-center rounded-full",
+                  canStake
+                    ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                    : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
+                )}
+              >
+                <ZapPlusIcon className="size-8" />
+              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <button
+                      type="button"
+                      aria-label={t("Unstake")}
+                      disabled={!canUnstake}
+                      onClick={handleUnstakeClick}
+                      className={cn(
+                        "inline-flex size-14 items-center justify-center rounded-full",
+                        canUnstake
+                          ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                          : "cursor-default bg-grey-800/50 text-body-disabled"
+                      )}
+                    >
+                      <ZapOffIcon className="size-8" />
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                {!canUnstake && <TooltipContent>{t("No subnet balance")}</TooltipContent>}
+              </Tooltip>
+            </div>
+          </>
         )}
-        <div
-          className={cn(
-            "items-center justify-center gap-2",
-            isRoot ? "flex" : "hidden group-hover:flex"
-          )}
-        >
-          <button
-            type="button"
-            aria-label={t("Stake")}
-            disabled={!canStake}
-            onClick={handleStakeClick}
-            className={cn(
-              "inline-flex size-14 items-center justify-center rounded-full",
-              canStake
-                ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
-                : "cursor-not-allowed bg-grey-800/50 text-body-disabled"
-            )}
-          >
-            <ZapPlusIcon className="size-8" />
-          </button>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <button
-                  type="button"
-                  aria-label={t("Unstake")}
-                  disabled={!canUnstake}
-                  onClick={handleUnstakeClick}
-                  className={cn(
-                    "inline-flex size-14 items-center justify-center rounded-full",
-                    canUnstake
-                      ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
-                      : "cursor-default bg-grey-800/50 text-body-disabled"
-                  )}
-                >
-                  <ZapOffIcon className="size-8" />
-                </button>
-              </span>
-            </TooltipTrigger>
-            {!canUnstake && <TooltipContent>{t("No subnet balance")}</TooltipContent>}
-          </Tooltip>
-        </div>
       </DataCell>
 
       {/* Chevron — only for navigable subnets */}
@@ -735,3 +752,84 @@ const SubnetRow: FC<{
     </div>
   )
 })
+
+const RootSubnetActions: FC<{
+  networkId: DotNetworkId
+  canStake: boolean
+  canUnstake: boolean
+  onStakeClick: (e: React.MouseEvent) => void
+  onUnstakeClick: (e: React.MouseEvent) => void
+}> = ({ networkId, canStake, canUnstake, onStakeClick, onUnstakeClick }) => {
+  const { t } = useTranslation()
+  const { selectedAccounts } = usePortfolioNavigation()
+  const { open: openClaimModal } = useBittensorClaimModal()
+
+  const addresses = useMemo(() => selectedAccounts.map((acc) => acc.address), [selectedAccounts])
+  const candidates = useBittensorClaimCandidates(networkId, addresses)
+  const canClaim = candidates.length > 0
+
+  const handleClaimClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (!canClaim) return
+      // single candidate: open on it directly, no picker needed
+      const single = candidates.length === 1 ? candidates[0] : null
+      if (single) return openClaimModal(single.target)
+      // no explicit position: the modal shows a picker over the selected accounts' claims
+      openClaimModal({ networkId, addresses })
+    },
+    [canClaim, candidates, openClaimModal, networkId, addresses]
+  )
+
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>
+            <button
+              type="button"
+              aria-label={t("Claim Rewards")}
+              disabled={!canClaim}
+              onClick={handleClaimClick}
+              className={cn(
+                "inline-flex size-14 items-center justify-center rounded-full",
+                canClaim
+                  ? "bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+                  : "cursor-default bg-grey-800/50 text-body-disabled"
+              )}
+            >
+              <CoinsHandIcon className="size-8" />
+            </button>
+          </span>
+        </TooltipTrigger>
+        {!canClaim && <TooltipContent>{t("Nothing to claim")}</TooltipContent>}
+      </Tooltip>
+      <ContextMenu placement="bottom-end">
+        <ContextMenuTrigger
+          aria-label={t("More actions")}
+          className="inline-flex size-14 items-center justify-center rounded-full bg-grey-800 text-body-secondary hover:bg-primary/10 hover:text-primary"
+        >
+          <MoreHorizontalIcon className="size-8" />
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem
+            disabled={!canStake}
+            onClick={onStakeClick}
+            className="flex items-center gap-4"
+          >
+            <ZapPlusIcon className="shrink-0" />
+            {t("Stake")}
+          </ContextMenuItem>
+          <ContextMenuItem
+            disabled={!canUnstake}
+            onClick={onUnstakeClick}
+            className="flex items-center gap-4"
+          >
+            <ZapOffIcon className="shrink-0" />
+            {t("Unstake")}
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+    </div>
+  )
+}

@@ -26,6 +26,8 @@ import { TxHistoryDetailsTokens } from "./TxHistoryDetails/TxHistoryDetailsToken
 import { TxHistoryDetailsTxInfo } from "./TxHistoryDetails/TxHistoryDetailsTxInfo"
 import { TxHistoryDetailsUrl } from "./TxHistoryDetails/TxHistoryDetailsUrl"
 
+const TX_HISTORY_MODAL_CONTAINER_ID = "tx-history-modal"
+
 type TxHistoryModalProps = {
   tx?: WalletTransaction
   isOpen: boolean
@@ -73,8 +75,9 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
   const { t } = useTranslation()
   return (
     <ModalDialog
+      id={TX_HISTORY_MODAL_CONTAINER_ID}
       title={t("Transaction Details")}
-      className={cn("h-150 w-100", tx.status === "pending" && "[&_header]:invisible")}
+      className={cn("relative h-150 w-100", tx.status === "pending" && "[&_header]:invisible")}
       onClose={onClose}
     >
       {children}
@@ -94,6 +97,7 @@ const ModalContent: FC<{
           hash={getTransactionId(tx)}
           onClose={onClose}
           networkIdOrHash={tx.networkId}
+          containerId={TX_HISTORY_MODAL_CONTAINER_ID}
           onReplacementComplete={onReplacementComplete}
         />
       )

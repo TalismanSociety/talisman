@@ -40,6 +40,7 @@ import {
   BittensorConvictionLockedRow,
 } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
+import { BittensorClaimRewardsRow } from "./Forms/BittensorClaimRewardsRow"
 
 const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
@@ -433,19 +434,23 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-          <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
-          <div className="flex items-center gap-2 truncate text-body-secondary">
-            {!!amountOut && (
-              <TokensAndFiat
-                planck={amountOut}
-                tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
-                noCountUp
-                tokensClassName="text-body"
-              />
-            )}
+        {/* root staking is 1:1 with native TAO: there is no amount to estimate */}
+        {netuid !== ROOT_NETUID && (
+          <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+            <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
+            <div className="flex items-center gap-2 truncate text-body-secondary">
+              {!!amountOut && (
+                <TokensAndFiat
+                  planck={amountOut}
+                  tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
+                  noCountUp
+                  tokensClassName="text-body"
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
+        <BittensorClaimRewardsRow />
         {!isSubnetUnbond && (
           <div className="flex items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Estimated Fee")}</div>

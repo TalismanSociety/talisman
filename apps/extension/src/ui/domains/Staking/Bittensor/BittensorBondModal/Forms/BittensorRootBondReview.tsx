@@ -3,6 +3,8 @@ import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDuration, intervalToDuration } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -12,6 +14,7 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { BittensorClaimAlert } from "../../components/BittensorClaimAlert"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { ValidatorApy } from "../../components/ValidatorApy"
@@ -30,10 +33,29 @@ export const BittensorRootBondReview = () => {
     hotkey,
     stakeDirection,
     setStep,
+    claimOption,
+    claimablePlancks,
+    claimHoldDurationMs,
   } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
+  const locale = useDateFnsLocale()
 
   const [isDisabled, setIsDisabled] = useState(true)
+
+  const withClaim = stakeDirection === "unbond" && claimOption.includeClaim
+
+  // claiming restarts the root stake hold window for the pair: the claimed TAO is staked
+  // back onto root and locked, so the user must be warned before confirming
+  const claimHoldWarning = useMemo(() => {
+    if (!withClaim || !claimHoldDurationMs) return null
+    const duration = formatDuration(intervalToDuration({ start: 0, end: claimHoldDurationMs }), {
+      locale,
+    })
+    return t("After this claim, your staked {{symbol}} will be locked for another {{duration}}", {
+      symbol: nativeToken?.symbol ?? "TAO",
+      duration,
+    })
+  }, [withClaim, claimHoldDurationMs, locale, nativeToken?.symbol, t])
 
   const rootAlphaTokenId = useMemo(
     () => (nativeToken?.networkId ? subDTaoTokenId(nativeToken.networkId, 0) : null),
@@ -106,6 +128,20 @@ export const BittensorRootBondReview = () => {
             <BittensorValidatorName hotkey={hotkey} />
           </div>
         </div>
+        {withClaim && (
+          <div className="flex items-center justify-between gap-8 py-2 text-xs">
+            <div className="whitespace-nowrap">{t("Claiming Rewards")} </div>
+            <div className="truncate">
+              <TokensAndFiat
+                isBalance
+                tokenId={nativeToken?.id}
+                planck={claimablePlancks}
+                noCountUp
+                tokensClassName="text-body"
+              />
+            </div>
+          </div>
+        )}
         {stakeDirection === "bond" && (
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="flex items-center gap-1 whitespace-nowrap">
@@ -137,6 +173,11 @@ export const BittensorRootBondReview = () => {
           </div>
         </div>
       </div>
+      {claimHoldWarning && (
+        <div className="mt-4">
+          <BittensorClaimAlert>{claimHoldWarning}</BittensorClaimAlert>
+        </div>
+      )}
       <div className="grow"></div>
       {payload && (
         <SapiSendButton
