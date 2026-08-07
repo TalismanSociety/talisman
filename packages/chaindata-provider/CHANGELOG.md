@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 2.0.1
+
+### Patch Changes
+
+- 2d5885d: surface Bittensor beta-basket claimable rewards on root staking balances and expose the root-stake hold window (spec 441); chaindata pub folder bumped to v13 for the minimetadata additions
+- de382f6: generate init data
+
 ## 2.0.0
 
 ### Major Changes
