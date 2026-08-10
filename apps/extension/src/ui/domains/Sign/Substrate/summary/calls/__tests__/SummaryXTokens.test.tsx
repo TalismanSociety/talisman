@@ -123,8 +123,9 @@ const MODES = ["block", "multiline", "compact"] as const
 
 describe("XTokens transfer_with_fee", () => {
   // The pallet debits the signer `amount + fee`, so `fee` is a second, caller-controlled debit.
-  // Displaying `amount` alone would understate the transaction by the whole of `fee`.
-  it.each(MODES)("mode=%s: headline shows the total debited, not just the amount", (mode) => {
+  // Showing `amount` alone would understate the transaction by the whole of `fee`, so both are
+  // rendered, each on its own line, in every mode.
+  it.each(MODES)("mode=%s: shows the amount and the fee it is debited on top of", (mode) => {
     const { container } = renderSummary(
       "transfer_with_fee",
       { currency_id: 0, amount: AMOUNT, fee: FEE, dest, dest_weight_limit: destWeightLimit },
@@ -134,21 +135,7 @@ describe("XTokens transfer_with_fee", () => {
       (node) => node.textContent
     )
 
-    expect(amounts).toContain(String(AMOUNT + FEE))
-    expect(amounts).not.toContain(String(AMOUNT))
-  })
-
-  it("block mode breaks the fee out of the total", () => {
-    const { container } = renderSummary(
-      "transfer_with_fee",
-      { currency_id: 0, amount: AMOUNT, fee: FEE, dest, dest_weight_limit: destWeightLimit },
-      "block"
-    )
-    const amounts = Array.from(container.querySelectorAll("[data-testid='tokens-and-fiat']")).map(
-      (node) => node.textContent
-    )
-
-    expect(amounts).toContain(String(AMOUNT + FEE))
+    expect(amounts).toContain(String(AMOUNT))
     expect(amounts).toContain(String(FEE))
   })
 })

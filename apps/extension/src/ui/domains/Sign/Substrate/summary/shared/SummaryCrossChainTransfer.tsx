@@ -41,24 +41,36 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const debited = value + (fee ?? 0n)
   const isSelfTransfer = isAddressEqual(fromAddress, toAddress)
 
-  if (mode !== "block")
+  if (mode !== "block") {
+    const components = {
+      Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} mode={mode} />,
+      LineBreak: <SummaryLineBreak mode={mode} />,
+      Beneficiary: <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />,
+      TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
+    }
+
+    if (fee === undefined)
+      return (
+        <Trans
+          t={t}
+          components={components}
+          defaults="Transfer <Tokens /><LineBreak /> to <Beneficiary /><LineBreak /> on <TargetNetwork />"
+        />
+      )
+
     return (
       <Trans
         t={t}
         components={{
-          Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={debited} mode={mode} />,
-          LineBreak: <SummaryLineBreak mode={mode} />,
-          Beneficiary: (
-            <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />
-          ),
-          TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
+          ...components,
+          Fee: <SummaryTokensAndFiat tokenId={tokenId} planck={fee} mode={mode} />,
         }}
-        defaults="Transfer <Tokens /><LineBreak /> to <Beneficiary /><LineBreak /> on <TargetNetwork />"
+        defaults="Transfer <Tokens /><LineBreak /> to <Beneficiary /><LineBreak /> on <TargetNetwork /><LineBreak /> with fee <Fee />"
       />
     )
+  }
 
   return (
     <SummaryContainer>
@@ -70,7 +82,7 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
               <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />
             ),
             TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
-            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={debited} mode={mode} />,
+            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} mode={mode} />,
           }}
           defaults="Transfer <Tokens /><br/> to <Beneficiary /><br/> on <TargetNetwork />"
         />
@@ -84,7 +96,7 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
               components={{
                 Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={fee} mode={mode} />,
               }}
-              defaults="Includes <Tokens /> to pay for execution on the destination chain"
+              defaults="Plus <Tokens /> debited to pay for execution on the destination chain"
             />
           </SummaryContent>
         </>
