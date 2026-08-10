@@ -10,7 +10,7 @@
  * Source / license
  * Data sampled from `https://phishing-detection.api.cx.metamask.io/v1/stalelist`,
  * served by `@metamask/phishing-controller` (MIT). Domain blocklists are factual
- * data and not subject to copyright; this seed is GPL-3.0-or-later compatible.
+ * data and not subject to copyright.
  *
  * Sampling strategy
  * Full allowlist + full fuzzylist (both small) are inlined verbatim. The
