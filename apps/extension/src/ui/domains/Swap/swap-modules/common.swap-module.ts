@@ -92,6 +92,8 @@ export type SwapTransactionContext =
 export type GetTransactionParams = {
   fromTokenId: TokenId
   fromAddress: string
+  /** amount entered by the user, and the only amount shown on the confirmation screen */
+  fromAmount: bigint
   exchange: unknown // specific exchange type varies per module
   context: SwapTransactionContext
 }

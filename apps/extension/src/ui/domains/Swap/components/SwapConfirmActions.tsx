@@ -226,6 +226,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       const transaction = await swapModule.getTransaction({
         fromTokenId,
         fromAddress,
+        fromAmount,
         exchange: exchangeQuote ?? selectedQuote,
         context,
       })

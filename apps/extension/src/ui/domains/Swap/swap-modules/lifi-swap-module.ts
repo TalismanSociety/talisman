@@ -16,7 +16,11 @@ import {
   solToken2022TokenId,
   type TokenList,
 } from "@talismn/chaindata-provider"
-import { setTransactionBlockhash, transactionFromBytes } from "@talismn/solana"
+import {
+  parseTransactionInfo,
+  setTransactionBlockhash,
+  transactionFromBytes,
+} from "@talismn/solana"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
@@ -35,6 +39,7 @@ import {
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
+import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
@@ -523,8 +528,8 @@ const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQ
 const getApprovalInfo = (
   params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
 ): ApprovalInfo => {
-  const { fromTokenId, fromAddress, selectedSubProtocol, quoteData } = params
-  if (!fromTokenId || !fromAddress) return null
+  const { fromTokenId, fromAddress, fromAmount, selectedSubProtocol, quoteData } = params
+  if (!fromTokenId || !fromAddress || !fromAmount) return null
   const fromAsset = resolveAsset(fromTokenId)
   if (!quoteData || !fromAsset?.contractAddress) return null
 
@@ -540,7 +545,9 @@ const getApprovalInfo = (
 
   return {
     contractAddress: step.estimate.approvalAddress,
-    amount: BigInt(lifiData.fromAmount),
+    // the route echoes back the amount we asked it to quote — approve the amount the user
+    // entered instead, so an inflated echo cannot widen the allowance we grant
+    amount: fromAmount,
     tokenAddress: fromAsset.contractAddress,
     chainId: step.action.fromChainId,
     fromAddress,
@@ -552,7 +559,7 @@ const getTransaction = async (
   params: GetTransactionParams
 ): Promise<SwapModuleTransaction | null> => {
   try {
-    const { fromTokenId, fromAddress, exchange: quoteData, context } = params
+    const { fromTokenId, fromAddress, fromAmount, exchange: quoteData, context } = params
     const selectedQuote = quoteData as BaseQuote<lifiSdk.Route> | undefined
     if (!selectedQuote?.data) {
       throw new Error("Please select the quote again")
@@ -584,6 +591,11 @@ const getTransaction = async (
 
       let transaction = transactionFromBytes(txBytes)
 
+      // the fee payer is the account we are about to sign with, so a transaction naming
+      // anyone else is not the one the user is confirming
+      const { feePayer } = parseTransactionInfo(transaction)
+      if (feePayer !== fromAddress) throw new Error("Invalid sender address")
+
       // Refresh the blockhash — the one from getStepTransaction may expire before the user
       // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
       const rpc = context.platform === "solana" ? context.rpc : undefined
@@ -608,6 +620,24 @@ const getTransaction = async (
 
     if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
       throw new Error("Invalid sender address")
+
+    // the transaction must run on the network holding the token the user is swapping,
+    // not on some other network we happen to know about
+    if (txRequest.chainId.toString() !== fromAsset.chainId) throw new Error("Unexpected chain")
+
+    // a swap is executed by LI.FI's router — calldata aimed at the token contract itself can
+    // only be a transfer or an approval made in the user's name
+    if (
+      fromAsset.contractAddress &&
+      txRequest.to.toLowerCase() === fromAsset.contractAddress.toLowerCase()
+    )
+      throw new Error("Unexpected transaction target from provider. Please try again.")
+
+    assertNativeValueWithinInput({
+      value: BigInt(txRequest.value),
+      fromAmount,
+      isNativeInput: !fromAsset.contractAddress,
+    })
 
     const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
     const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
