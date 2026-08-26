@@ -161,12 +161,6 @@ export interface AccountJson {
   [key: string]: unknown
 }
 
-export interface MetadataRequest {
-  id: string
-  request: MetadataDef
-  url: string
-}
-
 export interface RequestAuthorizeTab {
   origin: string
 }

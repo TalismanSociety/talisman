@@ -70,6 +70,12 @@ class TalismanDatabase extends Dexie {
     this.version(14).stores({
       imageCache: "url",
     })
+
+    // v15: drop metadata entries that may have come from a dapp, back when `metadata.provide`
+    // was persisted. The table is a cache of chain-fetched metadata, it refills itself from RPC.
+    this.version(15).upgrade((tx) => {
+      tx.table("metadata").clear()
+    })
   }
 }
 
