@@ -8,6 +8,7 @@ import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state/chaindata"
 import {
+  BitcoinCircleBorderedLogo,
   BittensorCircleBorderedLogo,
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
@@ -163,6 +164,18 @@ function NewAccountMethodButtons() {
         }
         to={`/accounts/add/derived?platform=solana`}
       />
+      <AccountTypeMethodButton
+        disabled={!!platform && platform !== "bitcoin"}
+        title={<SelectAccountTypeButtonHeader title={t("New Bitcoin Account")} />}
+        platform="bitcoin"
+        supportedNetworks={
+          <div className="flex items-center gap-2">
+            <NetworkLogo networkId="bitcoin" className="text-md" />
+            <div>{t("Bitcoin Mainnet and Signet")}</div>
+          </div>
+        }
+        to={`/accounts/add/derived?platform=bitcoin`}
+      />
     </>
   )
 }
@@ -174,14 +187,14 @@ function ImportAccountMethodButtons() {
     <>
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
-        subtitle={t("Ethereum, Substrate, and Solana accounts")}
-        networks={["ethereum", "polkadot", "solana", "bittensor"]}
+        subtitle={t("Ethereum, Substrate, Solana and Bitcoin accounts")}
+        networks={["ethereum", "polkadot", "solana", "bittensor", "bitcoin"]}
         to={`/accounts/add/mnemonic`}
       />
       <AccountCreateMethodButton
         title={t("Import via Private Key")}
-        subtitle={t("Ethereum and Solana accounts")}
-        networks={["ethereum", "solana"]}
+        subtitle={t("Ethereum, Solana and Bitcoin accounts")}
+        networks={["ethereum", "solana", "bitcoin"]}
         to={`/accounts/add/pk`}
       />
       <AccountCreateMethodButton
@@ -204,10 +217,10 @@ function ConnectAccountMethodButtons() {
         title={t("Connect Ledger")}
         subtitle={
           isLedgerCapable
-            ? t("Ethereum, Substrate or Solana accounts")
+            ? t("Ethereum, Substrate, Solana or Bitcoin accounts")
             : t("Not supported on this browser")
         }
-        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana", "bittensor"] : []}
+        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana", "bittensor", "bitcoin"] : []}
         disabled={!isLedgerCapable}
         to={`/accounts/add/ledger`}
       />
@@ -273,6 +286,18 @@ function WatchedAccountMethodButtons() {
           </div>
         }
         to={`/accounts/add/watched?platform=solana`}
+      />
+      <AccountTypeMethodButton
+        disabled={!!platform && platform !== "bitcoin"}
+        title={<SelectAccountTypeButtonHeader title={t("Watch Bitcoin Account")} />}
+        platform="bitcoin"
+        supportedNetworks={
+          <div className="flex items-center gap-2">
+            <NetworkLogo networkId="bitcoin" className="text-md" />
+            <div>{t("Watch a bitcoin xpub or a single address")}</div>
+          </div>
+        }
+        to={`/accounts/add/watched?platform=bitcoin`}
       />
     </>
   )
@@ -356,6 +381,7 @@ const networkChoices = {
   ethereum: <EthereumCircleBorderedLogo />,
   solana: <SolanaCircleLogo />,
   bittensor: <BittensorCircleBorderedLogo />,
+  bitcoin: <BitcoinCircleBorderedLogo />,
 }
 function AccountCreateMethodButton({
   title,
@@ -366,7 +392,7 @@ function AccountCreateMethodButton({
 }: {
   title: ReactNode
   subtitle: ReactNode
-  networks?: Array<"ethereum" | "polkadot" | "solana" | "bittensor">
+  networks?: Array<"ethereum" | "polkadot" | "solana" | "bittensor" | "bitcoin">
   disabled?: boolean
   to?: string
 }) {

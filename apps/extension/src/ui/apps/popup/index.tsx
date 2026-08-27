@@ -5,10 +5,12 @@ import { AUTH_PREFIX, AUTH_SOL_SIGN_IN_PREFIX } from "@core/domains/sitesAuthori
 import { api } from "@ui/api"
 import { FadeIn } from "@ui/components/FadeIn"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { AccountCopyXpubModal } from "@ui/domains/Account/AccountCopyXpubModal"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { AccountSignMessageModal } from "@ui/domains/Account/AccountSignMessageModal"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { AddProxyModal } from "@ui/domains/AccountProxies/AddProxy/AddProxyModal"
@@ -108,6 +110,8 @@ const Popup = () => {
         </Routes>
       </Suspense>
       <Suspense fallback={<SuspenseTracker name="Modals & alerts" />}>
+        <AccountCopyXpubModal />
+        <AccountSignMessageModal />
         <AccountExportModal />
         <AccountExportPrivateKeyModal />
         <AccountRemoveModal />

@@ -54,6 +54,14 @@ const BITTENSOR_BOTH_EXPLORERS = {
   blockExplorerUrls: ["https://taostats.io", "https://bittensor.ai/chain"],
 } as unknown as Network
 
+const BITCOIN = {
+  id: "bitcoin",
+  blockExplorerUrls: ["https://mempool.space"],
+} as unknown as Network
+
+const BIP84_ZPUB =
+  "zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs"
+
 describe("getExplorerUrls", () => {
   it("ethereum block number", () => {
     const urls = getBlockExplorerUrls(ETHEREUM, {
@@ -323,6 +331,39 @@ describe("getExplorerUrls", () => {
     expect(urls).toContain("https://taostats.io/extrinsic/6035238-0012")
     expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
     expect(urls.length).toBe(2)
+  })
+
+  it("bitcoin address", () => {
+    const urls = getBlockExplorerUrls(BITCOIN, {
+      type: "address",
+      address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+    })
+
+    expect(urls).toEqual([
+      "https://mempool.space/address/bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+    ])
+  })
+
+  it("bitcoin xpub never produces an explorer link", () => {
+    expect(getBlockExplorerUrls(BITCOIN, { type: "address", address: BIP84_ZPUB })).toEqual([])
+    expect(getBlockExplorerUrls(BITCOIN, { type: "account", address: BIP84_ZPUB })).toEqual([])
+  })
+
+  it("bitcoin canonical xpub never produces an explorer link", () => {
+    const CANONICAL_XPUB =
+      "xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V"
+    expect(getBlockExplorerUrls(BITCOIN, { type: "address", address: CANONICAL_XPUB })).toEqual([])
+  })
+
+  it("bitcoin transaction", () => {
+    const urls = getBlockExplorerUrls(BITCOIN, {
+      type: "transaction",
+      id: "7e8eb27b7d4b1e5f4d5d1e5f4d5d1e5f4d5d1e5f4d5d1e5f4d5d1e5f4d5d1e5f",
+    })
+
+    expect(urls[0]).toBe(
+      "https://mempool.space/tx/7e8eb27b7d4b1e5f4d5d1e5f4d5d1e5f4d5d1e5f4d5d1e5f4d5d1e5f4d5d1e5f"
+    )
   })
 })
 

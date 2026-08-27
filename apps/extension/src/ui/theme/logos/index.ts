@@ -1,3 +1,4 @@
+export { ReactComponent as BitcoinCircleBorderedLogo } from "./bitcoin-circle-bordered.svg"
 export { ReactComponent as BittensorCircleBorderedLogo } from "./bittensor-circle-bordered.svg"
 export { ReactComponent as EthereumCircleLogo } from "./ethereum-circle.svg"
 export { ReactComponent as EthereumCircleBorderedLogo } from "./ethereum-circle-bordered.svg"

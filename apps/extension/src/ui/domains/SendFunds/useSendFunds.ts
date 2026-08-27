@@ -10,6 +10,7 @@ import {
 } from "@talismn/balances"
 import {
   type DotNetworkId,
+  isTokenBtc,
   isTokenDot,
   isTokenNeedExistentialDeposit,
   type Token,
@@ -36,6 +37,7 @@ import { useTranslation } from "react-i18next"
 import type { SendFundsTransactionProps } from "./types"
 import { useDTaoSubnetAvailable } from "./useDTaoSubnetAvailable"
 import { useFeeToken } from "./useFeeToken"
+import { useSendFundsTransactionBtc } from "./useSendFundsTransactionBtc"
 import { useSendFundsTransactionDot } from "./useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "./useSendFundsTransactionEth"
 import { useSendFundsTransactionSol } from "./useSendFundsTransactionSol"
@@ -51,6 +53,7 @@ const useSendFundsTransaction = () => {
   const txEth = useSendFundsTransactionEth(inputs)
   const txDot = useSendFundsTransactionDot(inputs)
   const txSol = useSendFundsTransactionSol(inputs)
+  const txBtc = useSendFundsTransactionBtc(inputs)
 
   return useMemo(() => {
     switch (token?.platform) {
@@ -60,10 +63,12 @@ const useSendFundsTransaction = () => {
         return txEth
       case "solana":
         return txSol
+      case "bitcoin":
+        return txBtc
       default:
         return null
     }
-  }, [token?.platform, txDot, txEth, txSol])
+  }, [token?.platform, txDot, txEth, txSol, txBtc])
 }
 
 const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
@@ -162,8 +167,8 @@ const useSendFundsProvider = () => {
 
   const transfer = useMemo(() => {
     if (!token) return null
-    if (sendMax && isTokenDot(token))
-      // substrate send max is dynamic
+    if (sendMax && (isTokenDot(token) || isTokenBtc(token)))
+      // substrate and bitcoin send max are dynamic (fee-dependent)
       return transaction?.maxAmount
         ? new BalanceFormatter(transaction.maxAmount, token.decimals, tokenRates)
         : null
@@ -487,7 +492,7 @@ const useSendFundsProvider = () => {
   const onSendMaxClick = useCallback(() => {
     if (!token || !transaction?.maxAmount) return
 
-    if (isTokenDot(token)) {
+    if (isTokenDot(token) || isTokenBtc(token)) {
       set("amount", transaction.maxAmount) // amount is necessary for pallets that dont have a transfer_all method
       set("sendMax", true)
     } else set("amount", transaction.maxAmount)
@@ -503,13 +508,18 @@ const useSendFundsProvider = () => {
   const txInfo = useMemo<WalletTransactionInfo | null>(() => {
     if (!tokenId || !from || !to || !transfer) return null
 
+    // bitcoin recipients picked from own accounts are xpub identities: record
+    // the resolved on-chain output address, never the xpub
+    const recordedTo = transaction?.platform === "bitcoin" ? transaction.recipientAddress : to
+    if (!recordedTo) return null
+
     return {
       type: "transfer",
-      to,
+      to: recordedTo,
       tokenId,
       value: transfer.planck.toString(),
     }
-  }, [from, to, tokenId, transfer])
+  }, [from, to, tokenId, transfer, transaction])
 
   return {
     from,

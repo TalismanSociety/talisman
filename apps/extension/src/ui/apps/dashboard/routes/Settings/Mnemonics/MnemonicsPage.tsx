@@ -1,5 +1,5 @@
 import type { AccountOfType, Mnemonic } from "@core/domains/keyring/exports"
-import { getAccountGenesisHash, isAccountOfType } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountInTypes } from "@core/domains/keyring/exports"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -77,20 +77,30 @@ const NoMnemonicMessage = () => {
   )
 }
 
+// keypair accounts store the derivation path directly; bitcoin HD accounts store it
+// on the payments tree (the account-level key path, ex "m/84'/0'/0'")
+const getMnemonicAccountDerivationPath = (account: AccountOfType<"keypair" | "hd-bitcoin">) =>
+  account.type === "hd-bitcoin" ? account.keys.payments.derivationPath : account.derivationPath
+
 const useMnemonicAccounts = (mnemonicId: string) => {
   const accounts = useAccounts("owned")
 
   return useMemo(
     () =>
       accounts
-        .filter((acc) => isAccountOfType(acc, "keypair"))
+        // bitcoin accounts derived from a mnemonic are "hd-bitcoin", not "keypair"
+        .filter((acc) => isAccountInTypes(acc, ["keypair", "hd-bitcoin"]))
         .filter((account) => account.mnemonicId === mnemonicId)
-        .sort((a1, a2) => (a1.derivationPath ?? "")?.localeCompare(a2.derivationPath ?? "")),
+        .sort((a1, a2) =>
+          (getMnemonicAccountDerivationPath(a1) ?? "").localeCompare(
+            getMnemonicAccountDerivationPath(a2) ?? ""
+          )
+        ),
     [accounts, mnemonicId]
   )
 }
 
-const AccountRow: FC<{ account: AccountOfType<"keypair"> }> = ({ account }) => (
+const AccountRow: FC<{ account: AccountOfType<"keypair" | "hd-bitcoin"> }> = ({ account }) => (
   <div className="mt-4 flex h-24 w-full items-center gap-6 overflow-hidden rounded-sm bg-grey-900 px-8 text-body-secondary">
     <AccountIcon
       className="text-lg"
@@ -104,7 +114,7 @@ const AccountRow: FC<{ account: AccountOfType<"keypair"> }> = ({ account }) => (
       </div>
     </div>
     <div className="flex flex-col font-mono text-body-secondary text-xs">
-      {account.derivationPath}
+      {getMnemonicAccountDerivationPath(account)}
     </div>
   </div>
 )

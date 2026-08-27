@@ -11,10 +11,13 @@ import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
-const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"> = [
+// native (fee) tokens can't be "maxed": the fee is drawn from the same balance, so the
+// max button is suppressed to leave room for it — bitcoin included (fee comes from utxos)
+const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native" | "btc-native"> = [
   "evm-native",
   "substrate-native",
   "sol-native",
+  "btc-native",
 ]
 
 type SwapProviderProps = {

@@ -19,6 +19,7 @@ export default defineConfig({
       "@talismn/keyring": path.join(packagesDir, "keyring/src"),
       "@talismn/sapi": path.join(packagesDir, "sapi/src"),
       "@talismn/scale": path.join(packagesDir, "scale/src"),
+      "@talismn/bitcoin": path.join(packagesDir, "bitcoin/src"),
       "@talismn/chain-connectors": path.join(packagesDir, "chain-connectors/src"),
       "@talismn/solana": path.join(packagesDir, "solana/src"),
       "@talismn/substrate-vrf": path.join(packagesDir, "substrate-vrf/src"),

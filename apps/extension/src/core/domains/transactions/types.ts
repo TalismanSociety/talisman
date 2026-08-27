@@ -1,5 +1,11 @@
 import type { Address } from "@talismn/balances"
-import type { DotNetworkId, EthNetworkId, SolNetworkId, TokenId } from "@talismn/chaindata-provider"
+import type {
+  BtcNetworkId,
+  DotNetworkId,
+  EthNetworkId,
+  SolNetworkId,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import type { TransactionRequest } from "viem"
 
 import type { SignerPayloadJSON } from "../signing/types"
@@ -177,4 +183,28 @@ export type WalletTransactionSol = {
   swapStatus?: SwapStatus
 }
 
-export type WalletTransaction = WalletTransactionDot | WalletTransactionEth | WalletTransactionSol
+export type WalletTransactionBtc = {
+  id: string
+  platform: "bitcoin"
+  networkId: BtcNetworkId
+  /** account identity: payments xpub for HD accounts, bc1q address for WIF accounts */
+  account: string
+  status: TransactionStatus
+  confirmed: boolean
+  /** final signed transaction hex */
+  payload: string
+  /** txid, plain hex (no 0x prefix) — matches block explorer urls */
+  hash: string
+  siteUrl?: string
+  label?: string
+  timestamp: number
+  txInfo?: WalletTransactionInfo
+  swapStatus?: SwapStatus
+  blockNumber?: string
+}
+
+export type WalletTransaction =
+  | WalletTransactionDot
+  | WalletTransactionEth
+  | WalletTransactionSol
+  | WalletTransactionBtc

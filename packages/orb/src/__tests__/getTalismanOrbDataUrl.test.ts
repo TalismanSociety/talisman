@@ -9,6 +9,9 @@ const SOLANA_ADDRESS = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
 const ETH_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 // Known Substrate address (Alice)
 const SUBSTRATE_ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+// Known Bitcoin account identity (BIP84 payments xpub)
+const BITCOIN_XPUB =
+  "xpub6DLW2JZKHXTqdr7vSqxkyCqgGW2mzAisTELehKyBxr68FQomQTCNU5Emdh5soFQ82S5JYmHSACJwzVUwg5TdsDYA55mkep3ibRkV7Hxhd67"
 
 describe("computeTalismanOrb", () => {
   it("returns deterministic output for the same seed", () => {
@@ -36,6 +39,11 @@ describe("computeTalismanOrb", () => {
   it("detects polkadot platform", () => {
     const result = computeTalismanOrb(SUBSTRATE_ADDRESS)
     expect(result.platform).toBe("polkadot")
+  })
+
+  it("detects bitcoin platform", () => {
+    const result = computeTalismanOrb(BITCOIN_XPUB)
+    expect(result.platform).toBe("bitcoin")
   })
 
   it("returns valid hex colors", () => {
@@ -85,6 +93,13 @@ describe("getTalismanOrbDataUrl", () => {
     const svg = atob(url.replace("data:image/svg+xml;base64,", ""))
     expect(svg).toContain('class="orb-type"')
     expect(svg).toContain("M70.6648 50.1769") // solana path
+  })
+
+  it("includes bitcoin logo for bitcoin xpub", () => {
+    const url = getTalismanOrbDataUrl(BITCOIN_XPUB)
+    const svg = atob(url.replace("data:image/svg+xml;base64,", ""))
+    expect(svg).toContain('class="orb-type"')
+    expect(svg).toContain("M16.28 10.52") // bitcoin ₿ path
   })
 
   it("includes polkadot logo for polkadot address", () => {

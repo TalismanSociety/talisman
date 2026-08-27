@@ -28,7 +28,7 @@ import { AccountPlatformDropdown } from "../AccountPlatformDropdown"
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
 import type { AccountAddPageProps } from "./types"
 
-const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "solana"]
+const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "solana", "bitcoin"]
 
 const platformToCurve = (platform: AccountPlatform): KeypairCurve => {
   switch (platform) {
@@ -36,6 +36,8 @@ const platformToCurve = (platform: AccountPlatform): KeypairCurve => {
       return "ethereum"
     case "solana":
       return "solana"
+    case "bitcoin":
+      return "bitcoin-ecdsa" // WIF import: single static P2WPKH address
     default:
       throw new Error(`Unsupported platform: ${platform}`)
   }

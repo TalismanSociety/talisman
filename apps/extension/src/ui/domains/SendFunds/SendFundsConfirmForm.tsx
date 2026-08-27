@@ -1,4 +1,4 @@
-import { isTokenEth, isTokenOfType } from "@talismn/chaindata-provider"
+import { isTokenBtc, isTokenEth, isTokenOfType } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Checkbox } from "@ui/components/Checkbox"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -20,6 +20,8 @@ import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillBu
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
+import { BtcCoinControl } from "./BtcCoinControl"
+import { BtcFeeSelect } from "./BtcFeeSelect"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import {
   ExternalAddressWarningProvider,
@@ -181,7 +183,7 @@ const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const { network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate } = useSendFunds()
+  const { from, network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate } = useSendFunds()
   const { canConfirm, saveConfirmation } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
@@ -241,10 +243,22 @@ const SendButton = () => {
               txInfo,
             }
           : null
+      case "bitcoin":
+        return transaction.psbtBase64 && transaction.estimatedFee && from
+          ? {
+              platform: "bitcoin",
+              networkId: network.id,
+              address: from,
+              payload: transaction.psbtBase64,
+              maxFeeSats: transaction.estimatedFee,
+              tree: transaction.usesOrdinalsUtxos ? "ordinals" : "payments",
+              txInfo,
+            }
+          : null
       default:
         throw new Error(`Unsupported transaction platform`)
     }
-  }, [transaction, network, txInfo])
+  }, [transaction, network, txInfo, from])
 
   return (
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
@@ -367,10 +381,82 @@ const DefaultFeeSummary = () => {
   )
 }
 
+const BtcFeeSummary = () => {
+  const { t } = useTranslation()
+  const { token, feeToken, transaction } = useSendFunds()
+
+  if (!token || transaction?.platform !== "bitcoin") return null
+
+  const {
+    priority,
+    setPriority,
+    customRate,
+    setCustomRate,
+    estimatedFee,
+    feeEstimates,
+    isLoading,
+    isRefetching,
+    error,
+    utxos,
+    selectedUtxoKeys,
+    setSelectedUtxoKeys,
+  } = transaction
+
+  return (
+    <>
+      {utxos.length > 1 && (
+        <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
+          <div className="text-body-secondary">{t("Coin Control")}</div>
+          <div>
+            <BtcCoinControl
+              utxos={utxos}
+              selectedUtxoKeys={selectedUtxoKeys}
+              onChange={setSelectedUtxoKeys}
+              drawerContainerId="main"
+            />
+          </div>
+        </div>
+      )}
+      <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
+        <div className="text-body-secondary">{t("Transaction Priority")}</div>
+        <div>
+          <BtcFeeSelect
+            priority={priority}
+            onChange={setPriority}
+            feeEstimates={feeEstimates}
+            customRate={customRate}
+            onCustomRateChange={setCustomRate}
+            drawerContainerId="main"
+          />
+        </div>
+      </div>
+      <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
+        <div className="text-body-secondary">
+          {t("Estimated Fee")} <SendFundsFeeTooltip />
+        </div>
+        <div className="text-body">
+          <div className={cn("inline-flex h-4.25 items-center", isRefetching && "animate-pulse")}>
+            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+            {estimatedFee && feeToken && (
+              <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
+            )}
+            {error && (
+              <WithTooltip tooltip={(error as Error).message}>
+                <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
+              </WithTooltip>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 const FeeSummary = () => {
   const { token } = useSendFunds()
 
   if (isTokenEth(token)) return <EthFeeSummary />
+  if (isTokenBtc(token)) return <BtcFeeSummary />
   return <DefaultFeeSummary />
 }
 

@@ -57,6 +57,11 @@ overrides:
   # polkadot-api — and a second sync-provider — in the bundle. Keep in sync with the
   # polkadot-api version in the root package.json.
   "polkadot-api": "2.2.0"
+  # rolldown 1.2.1 drops a `return;` statement from the asm.js emitted by emscripten in
+  # @bitcoinerlab/miniscript (a ledger-bitcoin dependency). Control then falls through into
+  # the unwind path of __wasm_call_ctors, which throws a raw pointer at module load and
+  # kills the page. 1.2.0 is the last good release inside vite 8's `~1.2.0` range.
+  "vite>rolldown": "1.2.0"
   "braces@<3.0.3": ">=3.0.3"
   "cookie@<0.7.0": ">=0.7.0"
   "decode-uri-component": "0.2.2"

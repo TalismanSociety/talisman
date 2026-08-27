@@ -1,5 +1,6 @@
 import { githubChaindataDistUrl } from "../constants"
 import log from "../log"
+import { enrichWithBuiltinBitcoin } from "./builtinBitcoin"
 import { type ChunkedParseResult, parseChaindataFileChunked } from "./chunkedValidation"
 import { markChaindataValidated } from "./validatedCache"
 
@@ -66,11 +67,8 @@ const fetchJsonFromGithubUrl = async <T>(
 // export because of generate-init-data script
 export const fetchChaindata = (signal?: AbortSignal) =>
   fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, {
-    validate: async (data, signal) => {
-      const result = await parseChaindataFileChunked(data, { signal })
-      // mark so storageValidated$ doesn't re-validate this exact object on every emission
-      if (result.success) markChaindataValidated(result.data)
-      return result
-    },
+    validate: (data, signal) => parseChaindataFileChunked(data, { signal }),
     signal,
-  })
+    // mark the enriched object (the one that flows through the pipeline) so
+    // storageValidated$ doesn't re-validate it on every emission
+  }).then((data) => markChaindataValidated(enrichWithBuiltinBitcoin(data)))

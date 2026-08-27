@@ -1,12 +1,12 @@
 import type {
   WalletTransaction,
+  WalletTransactionBtc,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import type { HexString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import {
@@ -25,8 +25,9 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   if (!network) return null
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
+// txId is an evm tx hash or a bitcoin txid, hence the loose type
 export type ReplacementCallbackArgs = {
-  txId: `0x${string}`
+  txId: string
   networkId: string
   replaceType: TxReplaceType
 }
@@ -50,7 +51,7 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
   const handleClose = useCallback(
-    (newHash?: HexString) => {
+    (newHash?: string) => {
       setReplaceType(undefined)
       if (newHash && replaceType && tx) {
         onReplacementComplete?.({ txId: newHash, networkId: tx.networkId, replaceType })
@@ -63,8 +64,9 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
 
   const isInvisible = useMemo(() => {
     if (!tx) return true
-    if (evmNetwork?.preserveGasEstimate) return true
-    if (tx.status !== "pending" || tx.platform !== "ethereum") return true
+    if (tx.platform === "ethereum" && evmNetwork?.preserveGasEstimate) return true
+    if (tx.status !== "pending" || (tx.platform !== "ethereum" && tx.platform !== "bitcoin"))
+      return true
     return false
   }, [tx, evmNetwork])
 
@@ -331,6 +333,34 @@ const TxProgressSol: FC<TxProgressSolProps> = ({ tx, className, onClose }) => {
   return <TxProgressBase tx={tx} className={className} onClose={onClose} href={href} />
 }
 
+type TxProgressBtcProps = {
+  tx: WalletTransactionBtc
+  onClose?: () => void
+  className?: string
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
+}
+
+const TxProgressBtc: FC<TxProgressBtcProps> = ({
+  tx,
+  className,
+  onClose,
+  onReplacementComplete,
+}) => {
+  const network = useNetworkById(tx.networkId, "bitcoin")
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
+
+  return (
+    <TxProgressBase
+      tx={tx}
+      className={className}
+      onClose={onClose}
+      blockNumber={tx.blockNumber}
+      href={href}
+      onReplacementComplete={onReplacementComplete}
+    />
+  )
+}
+
 type TxProgressProps = {
   hash: string // hash or signature (for solana)
   networkIdOrHash: string
@@ -388,6 +418,15 @@ export const TxProgress: FC<TxProgressProps> = ({
       )
     case "solana":
       return <TxProgressSol tx={tx} onClose={onClose} className={className} />
+    case "bitcoin":
+      return (
+        <TxProgressBtc
+          tx={tx}
+          onClose={onClose}
+          className={className}
+          onReplacementComplete={onReplacementComplete}
+        />
+      )
     default:
       return null
   }

@@ -348,6 +348,7 @@ function createPackageSourceAliases(): Alias[] {
   return [
     // Map workspace packages to source for hot reload in dev (exact matches)
     { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
+    { find: "@talismn/bitcoin", replacement: resolve(packagesDir, "bitcoin/src") },
     {
       find: "@talismn/chain-connectors",
       replacement: resolve(packagesDir, "chain-connectors/src"),

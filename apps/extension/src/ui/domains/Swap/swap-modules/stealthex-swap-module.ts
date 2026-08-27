@@ -4,7 +4,7 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { parseTokenId } from "@talismn/chaindata-provider"
+import { btcNativeTokenId, parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { accounts$ } from "@ui/state/accounts"
@@ -44,6 +44,12 @@ import type {
   SchemaExchange as StealthexExchange,
 } from "./stealthex.api.d.ts"
 import stealthexLogo from "./stealthex-logo.svg?url"
+
+// bitcoin is not yet in the server-side swap whitelist — detect native BTC directly
+const isNativeBtcCurrency = (currency: StealthexCurrency) =>
+  currency.symbol?.toLowerCase() === "btc" &&
+  !currency.contract_address &&
+  ["btc", "bitcoin", "mainnet", ""].includes((currency.network ?? "").toLowerCase())
 
 const apiUrl = "https://stealthex.talisman.xyz"
 const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
@@ -244,6 +250,7 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
   const { networks, tokens } = mappings
 
   const supportedTokens = allCurrencies.filter((currency) => {
+    if (isNativeBtcCurrency(currency)) return true
     const networkId = networks[currency.network]
     const tokenKey = `${currency.network}::${currency.symbol}`
     const isSpecialAsset = !!tokens[tokenKey]
@@ -264,20 +271,23 @@ const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
 
         // Resolve the Talisman token ID
         const contractAddress = currency.contract_address || undefined
-        const id = networkId
-          ? getTokenIdForSwappableAsset(
-              knownEvmNetworks[networkId] ? "ethereum" : "solana",
-              networkId,
-              contractAddress
-            )
-          : specialTokenId
+        // bitcoin isn't in the server-side whitelist yet; map native BTC locally
+        const id = isNativeBtcCurrency(currency)
+          ? btcNativeTokenId("bitcoin")
+          : networkId
+            ? getTokenIdForSwappableAsset(
+                knownEvmNetworks[networkId] ? "ethereum" : "solana",
+                networkId,
+                contractAddress
+              )
+            : specialTokenId
         if (!id) return acc
 
         const token = knownTokens[id]
         if (!token) return acc
 
         const parsed = specialTokenId ? parseTokenId(specialTokenId) : undefined
-        const chainId = networkId ?? parsed?.networkId
+        const chainId = isNativeBtcCurrency(currency) ? "bitcoin" : (networkId ?? parsed?.networkId)
         if (!chainId) return acc
 
         const asset: StealthexInternalAsset = {

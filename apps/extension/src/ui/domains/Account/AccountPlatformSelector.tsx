@@ -1,5 +1,6 @@
 import type { AccountPlatform } from "@talismn/crypto"
 import {
+  BitcoinCircleBorderedLogo,
   BittensorCircleBorderedLogo,
   EthereumCircleLogo,
   PolkadotCircleLogo,
@@ -103,6 +104,20 @@ export const AccountPlatformSelector = ({
           </div>
         }
         onClick={handleClick("solana")}
+      />
+      <AccountTypeButton
+        className={cn(
+          platform === "bitcoin" ? "border-body" : "border-body-secondary/20",
+          "border"
+        )}
+        icon={<BitcoinCircleBorderedLogo />}
+        title={t("Bitcoin")}
+        subtitle={
+          <div className="line-clamp-2" data-testid="account-platform-selector-bitcoin">
+            {t("Bitcoin Mainnet and Signet")}
+          </div>
+        }
+        onClick={handleClick("bitcoin")}
       />
     </div>
   )

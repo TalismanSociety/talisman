@@ -30,6 +30,7 @@
     "@polkadot-api/substrate-client": "0.7.0",
     "@polkadot-api/ws-provider": "0.9.1",
     "@solana/kit": "6.10.0",
+    "@talismn/bitcoin": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",

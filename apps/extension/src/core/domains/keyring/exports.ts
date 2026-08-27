@@ -14,6 +14,7 @@ export {
   isAccountNotContact,
   isAccountOfType,
   isAccountOwned,
+  isAccountPlatformBitcoin,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,

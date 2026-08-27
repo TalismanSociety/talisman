@@ -34,6 +34,10 @@ export interface SettingsStoreData {
   ledgerTransportType: LedgerTransportType
   dtaoSlippage?: number
   swapSlippage: number
+  /** rotate bitcoin receive addresses (fresh address per receive) instead of showing a stable one */
+  btcFreshReceiveAddress?: boolean
+  /** display bitcoin amounts in satoshis instead of BTC */
+  btcDisplaySats?: boolean
   /** Dev-only: disables live balance fetching while preserving cached balances */
   disableBalanceFetching: boolean
 }

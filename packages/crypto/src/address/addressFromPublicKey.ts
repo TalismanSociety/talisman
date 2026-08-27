@@ -1,8 +1,16 @@
 import type { AddressEncoding } from "../types"
-import { encodeAddressEthereum, encodeAddressSolana, encodeAddressSs58 } from "./encoding"
+import {
+  type BitcoinHrp,
+  encodeAddressEthereum,
+  encodeAddressSolana,
+  encodeAddressSs58,
+  encodeP2trAddress,
+  encodeP2wpkhAddress,
+} from "./encoding"
 
 export type EncodeAddressOptions = {
   ss58Prefix?: number
+  bitcoinHrp?: BitcoinHrp
 }
 
 export const addressFromPublicKey = (
@@ -17,9 +25,13 @@ export const addressFromPublicKey = (
       return encodeAddressEthereum(publicKey)
     case "base58solana":
       return encodeAddressSolana(publicKey)
-    case "bech32m":
     case "bech32":
+      return encodeP2wpkhAddress(publicKey, options?.bitcoinHrp)
+    case "bech32m":
+      return encodeP2trAddress(publicKey, options?.bitcoinHrp)
     case "base58check":
-      throw new Error("addressFromPublicKey is not implemented for Bitcoin")
+      throw new Error("Legacy bitcoin address types are not supported")
+    case "bip32-xpub":
+      throw new Error("An xpub cannot be derived from a single public key")
   }
 }

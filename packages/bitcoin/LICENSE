@@ -1,0 +1,253 @@
+THE TALISMAN LICENCE
+
+Copyright (c) 2026 Paraverse Foundation. All rights reserved.
+
+You are hereby granted a limited licence to use, copy, and modify the
+source code of this software and its associated documentation files
+(the "Software") solely for Non-Commercial Use, subject to the terms
+and conditions set forth below.
+
+1. DEFINITIONS
+
+ "Affiliate" means any entity that directly or indirectly controls,
+ is controlled by, or is under common control with the Paraverse
+ Foundation. References in this Licence to the "Paraverse Foundation"
+ include the Paraverse Foundation and its Affiliates.
+
+ "Official Product" means any compiled, packaged, or hosted release
+ of the Talisman wallet application, browser extension, mobile
+ application, or any other product or service, distributed or
+ operated by the Paraverse Foundation.
+
+ "Non-Commercial Use" means internal use of the Software that is not
+ intended for or directed toward commercial advantage or monetary
+ compensation. Non-Commercial Use includes, without limitation:
+
+ (a) personal use for research, experiment, and testing for the
+     benefit of public knowledge, personal study, private
+     entertainment, hobby projects, or amateur pursuits; and
+
+ (b) use in connection with contributing patches, bug fixes, or
+     improvements back to the official repository of the Software.
+
+ For the avoidance of doubt, Non-Commercial Use does NOT include:
+
+ (c) any use in connection with a product or service that generates
+     revenue, including but not limited to transaction fees, swap
+     fees, subscription fees, advertising revenue, or any other form
+     of monetary compensation;
+
+ (d) any use to develop, operate, or distribute a product or service
+     that competes with the Software or with any product or service
+     then offered by the Paraverse Foundation, including, without
+     limitation, any wallet, staking, swap, portfolio, or other
+     digital-asset product or service, whether or not offered for a
+     fee or generating revenue; or
+
+ (e) any use by an entity that receives funding, revenue or other
+     financial support, in any form, in connection with the
+     operation of software derived from or incorporating the
+     Software, including grants, donations, sponsorship, advertising,
+     token issuances or emissions, airdrop allocations, validator or
+     sequencer rewards, MEV, referral fees, liquidity or protocol
+     incentives, or staking or delegation commissions.
+
+2. SCOPE; TERMS OF SERVICE
+
+ This Licence governs the use, copying, and modification of the
+ Software in source code form, and any builds compiled from it by
+ you. This Licence does not govern the use of Official Products.
+ Your download, installation, and use of Official Products, including
+ the Talisman wallet, are governed exclusively by the Talisman Terms
+ of Service available at
+ https://docs.talisman.xyz/talisman/about/terms-of-use (the "Terms
+ of Service"). Use of an Official Product in accordance with the
+ Terms of Service does not require rights under this Licence, and
+ nothing in this Licence limits or modifies the Terms of Service.
+
+3. GRANT OF LICENCE
+
+ Subject to the terms and conditions of this Licence, you are granted
+ a non-exclusive, non-transferable, non-sublicensable licence to use,
+ copy, and modify the Software solely for Non-Commercial Use.
+
+ Any modifications or derivative works must be used solely for
+ Non-Commercial Use and remain subject to the terms of this Licence.
+
+ Non-Commercial Use does not include the deployment or operation of
+ the Software, or of any fork, derivative work, or modified version
+ of the Software, in any live, public, or production environment, or
+ in connection with real user funds, transactions, or externally
+ accessible services.
+
+ You may not grant any rights in the Software to any third party,
+ whether by sublicence, distribution, or otherwise.
+
+4. CONTRIBUTIONS
+
+ You may submit modifications, patches, bug fixes, or improvements
+ to the official repository of the Software maintained by the
+ Paraverse Foundation, through pull requests or other contribution
+ mechanisms approved by the Paraverse Foundation. No other
+ distribution or publication of modifications is permitted.
+
+ By contributing, you grant the Paraverse Foundation a perpetual,
+ worldwide, non-exclusive, royalty-free, irrevocable licence to use,
+ copy, modify, distribute, sublicense, and otherwise exploit your
+ contributions in connection with the Software, under any licence
+ terms the Paraverse Foundation may choose.
+
+ By submitting a contribution, you represent and warrant that you
+ have all rights necessary to grant the licence above, and that
+ your contribution is your original work and does not, to your
+ knowledge, infringe or misappropriate the intellectual property
+ rights of any third party.
+
+5. RESTRICTIONS
+
+ (a) You may not use, copy, or modify the Software for any purpose
+     other than Non-Commercial Use without the prior written
+     consent of the Paraverse Foundation. No right to distribute,
+     publish, or otherwise make available the Software, or any copy
+     or modification of it, to any third party is granted, except
+     for contributions submitted to the official repository in
+     accordance with Section 4.
+
+ (b) Any copy or modification of the Software must include this
+     Licence and the copyright notice above.
+
+ (c) You may not remove or alter any copyright notices, licence
+     notices, or other proprietary markings in the Software.
+
+ (d) You may not use the trademarks, trade names, logos, or service
+     marks of the Paraverse Foundation or Talisman in any manner
+     that is likely to cause confusion about the owner or authorised
+     user of such marks.
+
+ (e) You may not create, distribute, deploy, provide, or otherwise
+     make available, directly or indirectly, the Software or any
+     fork, derivative work, or modified version of the Software to
+     any third party, including as a hosted service, web service, or
+     similar offering, without prior written consent.
+
+ (f) You may not take any action intended to circumvent or avoid the
+     restrictions set forth in this Licence, whether directly or
+     indirectly.
+
+ (g) No rights are granted except as expressly set forth in this
+     Licence.
+
+6. COMMERCIAL LICENSING
+
+ Any use of the Software that does not qualify as Non-Commercial Use
+ requires a separate commercial licence from the Paraverse
+ Foundation. If you wish to use the Software for any commercial
+ purpose, please contact:
+
+ foundation@talisman.xyz
+
+ No commercial use is permitted unless and until a commercial licence
+ is agreed in writing. An enquiry does not itself grant any right to
+ use the Software, and the Paraverse Foundation may grant or decline
+ a commercial licence in its sole discretion.
+
+7. DISCLAIMER OF WARRANTIES
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
+ ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+8. TERMINATION
+
+ This Licence is effective until terminated. Your rights under this
+ Licence will terminate automatically without notice if you fail to
+ comply with any of its terms. Upon termination, all rights granted
+ under this Licence immediately cease, you must cease all use of the
+ Software and destroy all copies in your possession, and any
+ continued use or access constitutes unauthorised use of the
+ Software. Termination does not limit any other rights or remedies
+ available to the Paraverse Foundation at law or in equity.
+ Sections 1, 4, 5, 7, 8, 9, 10, 11, and 12 shall survive any
+ termination of this Licence, and the licence granted to the
+ Paraverse Foundation under Section 4 is perpetual and irrevocable
+ and is not affected by termination.
+
+9. INTELLECTUAL PROPERTY AND RESERVATION OF RIGHTS
+
+ As between you and the Paraverse Foundation, and excluding any
+ third-party or open-source components contained in the Software
+ (which remain subject to their own licence terms), the Software,
+ including its source code, architecture, and the designs, visual
+ appearance, user interface, and user experience embodied in it
+ (the "Designs"), and all copyright, patent, design, trade dress,
+ trade secret, and other intellectual property rights in any of
+ them, are and remain the exclusive property of the Paraverse
+ Foundation.
+
+ (a) No licence or other right is granted, whether by implication,
+     estoppel, exhaustion, or otherwise, under any patent, design
+     right, trademark, or trade dress of the Paraverse Foundation,
+     except as expressly set forth in this Licence.
+
+ (b) You may not reproduce, imitate, or use the Designs, in whole or
+     in part, in or in connection with any product or service other
+     than the Software as licensed under this Licence.
+
+ (c) You may not apply for, register, or attempt to register, or
+     assist any third party in applying for or registering, any
+     patent, design registration, trademark, or other intellectual
+     property right that claims, covers, or is derived from the
+     Software or the Designs.
+
+ (d) If you, or any entity affiliated with you, assert any
+     intellectual property claim against the Paraverse Foundation,
+     or against any party for its use of the Software as authorised
+     by the Paraverse Foundation, all rights granted to you under
+     this Licence terminate immediately.
+
+10. PRIOR VERSIONS
+
+ (a) Versions of the Software released before 8 July 2026 ("Prior
+     Versions") were made available under the GNU General Public
+     License version 3 (the "Prior Licence"). Nothing in this
+     Licence revokes, terminates, or modifies any rights validly
+     obtained in a Prior Version under the terms of the Prior
+     Licence, and each Prior Version remains available under the
+     terms of the Prior Licence.
+
+ (b) All versions of the Software released on or after 8 July 2026
+     are licensed solely under this Licence. Rights in a Prior
+     Version under the Prior Licence do not extend to this version
+     or any subsequent version of the Software.
+
+ (c) The Paraverse Foundation reserves all rights in the Software
+     not expressly granted by this Licence or, in respect of Prior
+     Versions, by the Prior Licence. No act or omission of the
+     Paraverse Foundation, including its release of Prior Versions
+     under the Prior Licence, shall be construed as a waiver of any
+     right or as granting any licence by implication, estoppel, or
+     otherwise.
+
+11. GOVERNING LAW
+
+ This Licence shall be governed by and construed in accordance with
+ the laws of the Cayman Islands, without regard to its conflict of
+ laws principles. The courts of the Cayman Islands shall have
+ exclusive jurisdiction over any dispute arising out of or in
+ connection with this Licence, except that the Paraverse Foundation
+ may bring proceedings to protect or enforce its intellectual
+ property rights, or to seek injunctive or equitable relief, in any
+ court of competent jurisdiction.
+
+12. ASSIGNMENT
+
+ The Paraverse Foundation may assign, novate, or otherwise transfer
+ this Licence, and any of its rights and obligations under it, in
+ whole or in part, to any Affiliate or to any other entity, without
+ notice to or consent from you. You may not assign this Licence or
+ any rights under it.

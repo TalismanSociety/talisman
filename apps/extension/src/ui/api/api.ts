@@ -300,6 +300,14 @@ export const api: MessageTypes = {
   solSignApprove: (req) =>
     messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
 
+  btcGetUnusedAddress: (req) => messageService.sendMessage("pri(bitcoin.address.getUnused)", req),
+  btcGetUtxos: (req) => messageService.sendMessage("pri(bitcoin.utxos.get)", req),
+  btcGetFeeEstimates: (req) => messageService.sendMessage("pri(bitcoin.feeEstimates.get)", req),
+  btcSubmit: (req) => messageService.sendMessage("pri(bitcoin.tx.submit)", req),
+  btcReplacePreview: (req) => messageService.sendMessage("pri(bitcoin.tx.replace.preview)", req),
+  btcSignMessage: (req) => messageService.sendMessage("pri(bitcoin.message.sign)", req),
+  btcAccountPreview: (req) => messageService.sendMessage("pri(bitcoin.account.preview)", req),
+
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),
   nftsSetHidden: (id, isHidden) =>
