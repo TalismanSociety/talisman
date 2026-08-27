@@ -27,10 +27,19 @@ type Props = {
   priorityMode?: "buy" | "sell"
   /** Hide inactive tokens and tokens from inactive networks */
   activeOnly?: boolean
+  /** Set to false to include tokens from networks that no wallet account can sign for, e.g. when the tokens may be sent to an external recipient */
+  accountCompatibleOnly?: boolean
 }
 
 export const SelectTokenButton: React.FC<Props> = memo(
-  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, priorityMode, activeOnly }) => {
+  ({
+    allowedTokenIds,
+    selectedTokenId,
+    onSelectTokenId,
+    priorityMode,
+    activeOnly,
+    accountCompatibleOnly,
+  }) => {
     const { open, close, isOpen } = useOpenClose()
 
     const handleSelect = useCallback(
@@ -50,6 +59,7 @@ export const SelectTokenButton: React.FC<Props> = memo(
           allowedTokenIds={allowedTokenIds}
           priorityMode={priorityMode}
           activeOnly={activeOnly}
+          accountCompatibleOnly={accountCompatibleOnly}
           onSelect={handleSelect}
           onDismiss={close}
         />
@@ -64,6 +74,7 @@ const TokenPickerModal: FC<{
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
   activeOnly?: boolean
+  accountCompatibleOnly?: boolean
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
 }> = ({ isOpen, ...contentProps }) => {
@@ -79,9 +90,18 @@ const TokenPickerModalContent: FC<{
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
   activeOnly?: boolean
+  accountCompatibleOnly?: boolean
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({ tokenId, allowedTokenIds, priorityMode, activeOnly, onSelect, onDismiss }) => {
+}> = ({
+  tokenId,
+  allowedTokenIds,
+  priorityMode,
+  activeOnly,
+  accountCompatibleOnly,
+  onSelect,
+  onDismiss,
+}) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
@@ -154,6 +174,7 @@ const TokenPickerModalContent: FC<{
         allowUntransferable
         ownedOnly
         activeOnly={activeOnly}
+        accountCompatibleOnly={accountCompatibleOnly}
         isInitializing={!allowedTokenIds}
         networkFilterContainerId={PICKER_CONTAINER_ID}
         priorityTokens={priorityTokens}

@@ -144,6 +144,7 @@ export const SwapForm = () => {
                 selectedTokenId={toTokenId}
                 allowedTokenIds={toAssetIds}
                 priorityMode="buy"
+                accountCompatibleOnly={false}
               />
             }
             tokenAmount={<ToAmountDisplay />}

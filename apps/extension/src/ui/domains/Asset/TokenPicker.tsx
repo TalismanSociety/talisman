@@ -246,6 +246,7 @@ type TokensListProps = {
   allowUntransferable?: boolean
   ownedOnly?: boolean
   activeOnly?: boolean
+  accountCompatibleOnly?: boolean
   showEmptyBalances?: boolean
   isInitializing?: boolean
   /** these tokens will always be sorted to the top of the list */
@@ -263,6 +264,7 @@ const TokensList: FC<TokensListProps> = ({
   allowUntransferable,
   ownedOnly,
   activeOnly = true,
+  accountCompatibleOnly = true,
   showEmptyBalances,
   isInitializing,
   priorityTokens,
@@ -305,11 +307,12 @@ const TokensList: FC<TokensListProps> = ({
     (token: Token) => {
       const network = networksMap[token.networkId]
       if (!network) return false
-      if (!account) return compatibleNetworkIds.has(token.networkId)
+      if (account) return isAccountCompatibleWithNetwork(network, account)
+      if (!accountCompatibleOnly) return true
 
-      return isAccountCompatibleWithNetwork(network, account)
+      return compatibleNetworkIds.has(token.networkId)
     },
-    [account, compatibleNetworkIds, networksMap]
+    [account, accountCompatibleOnly, compatibleNetworkIds, networksMap]
   )
 
   const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
@@ -534,6 +537,8 @@ type TokenPickerProps = {
   allowUntransferable?: boolean
   ownedOnly?: boolean
   activeOnly?: boolean
+  /** Set to false to include tokens from networks that no wallet account can sign for, e.g. when the tokens may be sent to an external recipient */
+  accountCompatibleOnly?: boolean
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
@@ -555,6 +560,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   allowUntransferable,
   ownedOnly,
   activeOnly,
+  accountCompatibleOnly,
   isInitializing,
   className,
   showEmptyBalances,
@@ -629,6 +635,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
           activeOnly={activeOnly ?? !showEmptyBalances}
+          accountCompatibleOnly={accountCompatibleOnly}
         />
       </ScrollContainer>
       {!!networkFilterContainerId && (
