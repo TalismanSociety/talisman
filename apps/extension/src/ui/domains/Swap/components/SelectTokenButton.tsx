@@ -5,7 +5,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
+import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
@@ -25,21 +25,11 @@ type Props = {
   onSelectTokenId: (tokenId: string) => void
   /** Used to determine which tokens should be prioritized to the top of the list */
   priorityMode?: "buy" | "sell"
-  /** Hide inactive tokens and tokens from inactive networks */
-  activeOnly?: boolean
-  /** Set to false to include tokens from networks that no wallet account can sign for, e.g. when the tokens may be sent to an external recipient */
-  accountCompatibleOnly?: boolean
+  tokenScope?: TokenPickerScope
 }
 
 export const SelectTokenButton: React.FC<Props> = memo(
-  ({
-    allowedTokenIds,
-    selectedTokenId,
-    onSelectTokenId,
-    priorityMode,
-    activeOnly,
-    accountCompatibleOnly,
-  }) => {
+  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, priorityMode, tokenScope }) => {
     const { open, close, isOpen } = useOpenClose()
 
     const handleSelect = useCallback(
@@ -58,8 +48,7 @@ export const SelectTokenButton: React.FC<Props> = memo(
           tokenId={selectedTokenId ?? null}
           allowedTokenIds={allowedTokenIds}
           priorityMode={priorityMode}
-          activeOnly={activeOnly}
-          accountCompatibleOnly={accountCompatibleOnly}
+          tokenScope={tokenScope}
           onSelect={handleSelect}
           onDismiss={close}
         />
@@ -73,8 +62,7 @@ const TokenPickerModal: FC<{
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
-  activeOnly?: boolean
-  accountCompatibleOnly?: boolean
+  tokenScope?: TokenPickerScope
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
 }> = ({ isOpen, ...contentProps }) => {
@@ -89,19 +77,10 @@ const TokenPickerModalContent: FC<{
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
-  activeOnly?: boolean
-  accountCompatibleOnly?: boolean
+  tokenScope?: TokenPickerScope
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({
-  tokenId,
-  allowedTokenIds,
-  priorityMode,
-  activeOnly,
-  accountCompatibleOnly,
-  onSelect,
-  onDismiss,
-}) => {
+}> = ({ tokenId, allowedTokenIds, priorityMode, tokenScope, onSelect, onDismiss }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
@@ -172,9 +151,7 @@ const TokenPickerModalContent: FC<{
       <TokenPicker
         selected={tokenId ?? undefined}
         allowUntransferable
-        ownedOnly
-        activeOnly={activeOnly}
-        accountCompatibleOnly={accountCompatibleOnly}
+        tokenScope={tokenScope}
         isInitializing={!allowedTokenIds}
         networkFilterContainerId={PICKER_CONTAINER_ID}
         priorityTokens={priorityTokens}

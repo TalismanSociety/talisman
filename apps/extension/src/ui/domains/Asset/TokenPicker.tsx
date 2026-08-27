@@ -238,15 +238,19 @@ const TokenRow: FC<TokenRowProps> = ({
 
 const DEFAULT_FILTER = () => true
 
+/**
+ * "usable" (default) shows only active tokens on networks that a wallet account can sign for.
+ * "all" also includes inactive tokens and account-incompatible networks, e.g. when the tokens may be sent to an external recipient.
+ */
+export type TokenPickerScope = "usable" | "all"
+
 type TokensListProps = {
   address?: Address
   selected?: TokenId
   search?: string
   selectedNetworkId?: string | null
   allowUntransferable?: boolean
-  ownedOnly?: boolean
-  activeOnly?: boolean
-  accountCompatibleOnly?: boolean
+  tokenScope?: TokenPickerScope
   showEmptyBalances?: boolean
   isInitializing?: boolean
   /** these tokens will always be sorted to the top of the list */
@@ -262,9 +266,7 @@ const TokensList: FC<TokensListProps> = ({
   search,
   selectedNetworkId,
   allowUntransferable,
-  ownedOnly,
-  activeOnly = true,
-  accountCompatibleOnly = true,
+  tokenScope = "usable",
   showEmptyBalances,
   isInitializing,
   priorityTokens,
@@ -275,13 +277,13 @@ const TokensList: FC<TokensListProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const accounts = useAccounts()
-  const allTokens = useTokens({ activeOnly, includeTestnets: true })
+  const allTokens = useTokens({ activeOnly: tokenScope === "usable", includeTestnets: true })
   const activeTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
   const isBalancesInitializing = useIsBalanceInitializing()
-  const balances = useBalances(ownedOnly ? "owned" : "all")
+  const balances = useBalances("owned")
   const currency = useSelectedCurrency()
 
   // Capture the selected token at mount time so the sort order stays stable.
@@ -308,11 +310,11 @@ const TokensList: FC<TokensListProps> = ({
       const network = networksMap[token.networkId]
       if (!network) return false
       if (account) return isAccountCompatibleWithNetwork(network, account)
-      if (!accountCompatibleOnly) return true
+      if (tokenScope === "all") return true
 
       return compatibleNetworkIds.has(token.networkId)
     },
-    [account, accountCompatibleOnly, compatibleNetworkIds, networksMap]
+    [account, tokenScope, compatibleNetworkIds, networksMap]
   )
 
   const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
@@ -535,10 +537,7 @@ type TokenPickerProps = {
   selected?: TokenId
   initialSearch?: string
   allowUntransferable?: boolean
-  ownedOnly?: boolean
-  activeOnly?: boolean
-  /** Set to false to include tokens from networks that no wallet account can sign for, e.g. when the tokens may be sent to an external recipient */
-  accountCompatibleOnly?: boolean
+  tokenScope?: TokenPickerScope
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
@@ -558,9 +557,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   selected,
   initialSearch = "",
   allowUntransferable,
-  ownedOnly,
-  activeOnly,
-  accountCompatibleOnly,
+  tokenScope,
   isInitializing,
   className,
   showEmptyBalances,
@@ -627,15 +624,13 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           search={deferredSearch}
           selectedNetworkId={selectedNetworkId}
           allowUntransferable={allowUntransferable}
-          ownedOnly={ownedOnly}
           isInitializing={isInitializing}
           priorityTokens={priorityTokens}
           tokenFilter={tokenFilter}
           onAvailableNetworksChange={networkFilterContainerId ? setAvailableNetworks : undefined}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
-          activeOnly={activeOnly ?? !showEmptyBalances}
-          accountCompatibleOnly={accountCompatibleOnly}
+          tokenScope={tokenScope}
         />
       </ScrollContainer>
       {!!networkFilterContainerId && (
