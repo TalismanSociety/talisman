@@ -29,7 +29,6 @@ export const SendFundsTokenPicker = () => {
 
   return (
     <TokenPicker
-      ownedOnly
       address={from}
       initialSearch={tokenSymbol}
       selected={tokenId}
