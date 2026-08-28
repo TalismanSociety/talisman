@@ -12,7 +12,10 @@ import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
-import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import {
+  RiskAnalysisPillButton,
+  useShowRiskAnalysisPillButton,
+} from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
@@ -566,11 +569,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         innerClassName="flex flex-col items-center gap-8 px-12 pb-8 *:shrink-0"
       >
         {children}
-        {!!riskAnalysis && (
-          <div className="flex w-full justify-center">
-            <RiskAnalysisPillButton />
-          </div>
-        )}
         <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
           <QuoteProvider />
           <QuoteDuration />
@@ -637,6 +635,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
               <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
             )}
           </div>
+          <SimulationRow />
         </div>
       </ScrollContainer>
 
@@ -697,5 +696,19 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         />
       ) : null}
     </RiskAnalysisProvider>
+  )
+}
+
+const SimulationRow = () => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
+
+  if (!showRiskAnalysis) return null
+
+  return (
+    <div className="flex h-11 items-center justify-between gap-8">
+      <div className="whitespace-nowrap text-body-secondary text-xs">{t("Risk Assessment")}</div>
+      <RiskAnalysisPillButton className="h-10" />
+    </div>
   )
 }

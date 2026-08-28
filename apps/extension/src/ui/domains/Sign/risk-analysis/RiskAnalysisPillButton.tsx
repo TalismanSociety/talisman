@@ -9,12 +9,22 @@ import {
 import { PillButton } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useRiskAnalysis } from "./context"
 
-export const RiskAnalysisPillButton: FC = () => {
+export const useShowRiskAnalysisPillButton = () => {
+  const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
+  const riskAnalysis = useRiskAnalysis()
+
+  return isEnabled && !!riskAnalysis
+}
+
+export const RiskAnalysisPillButton: FC<{ className?: string }> = ({
+  className: classNameProp,
+}) => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
   const riskAnalysis = useRiskAnalysis()
   const { t } = useTranslation()
@@ -108,7 +118,7 @@ export const RiskAnalysisPillButton: FC = () => {
           size="sm"
           icon={icon}
           onClick={handleClick}
-          className={className}
+          className={cn(className, classNameProp)}
         >
           {label}
         </PillButton>

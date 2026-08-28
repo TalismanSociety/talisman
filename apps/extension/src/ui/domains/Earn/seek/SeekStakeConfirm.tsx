@@ -16,7 +16,10 @@ import {
 import type { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import type { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
-import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import {
+  RiskAnalysisPillButton,
+  useShowRiskAnalysisPillButton,
+} from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
@@ -92,9 +95,6 @@ export const SeekStakeConfirm: FC<{
           </div>
           <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
             <TransactionsStepper steps={steps} stepIndex={stepIndex} isProcessing={isProcessing} />
-            <div>
-              <RiskAnalysisPillButton />
-            </div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
@@ -132,6 +132,7 @@ export const SeekStakeConfirm: FC<{
               <NetworkDisplay networkId={networkId} />
             </FormFieldSetRow>
             <SeekNetworkFeeRows ethTx={ethTx} feeTokenId={feeTokenId} variant="small" />
+            <SimulationRow />
           </FormFieldSet>
           <TxSubmitButton
             containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
@@ -153,5 +154,18 @@ export const SeekStakeConfirm: FC<{
         </div>
       </WizardModalDialog>
     </RiskAnalysisProvider>
+  )
+}
+
+const SimulationRow = () => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
+
+  if (!showRiskAnalysis) return null
+
+  return (
+    <FormFieldSetRow label={t("Risk Assessment")} variant="small">
+      <RiskAnalysisPillButton className="h-10" />
+    </FormFieldSetRow>
   )
 }

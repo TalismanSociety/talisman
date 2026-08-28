@@ -7,7 +7,10 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
-import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import {
+  RiskAnalysisPillButton,
+  useShowRiskAnalysisPillButton,
+} from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { cn } from "@ui/util/cn"
@@ -54,7 +57,6 @@ export const YieldxyzManageStepConfirm = () => {
           </div>
           <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
             <StepsProgressDisplay />
-            <RiskAnalysisButton />
             <TransactionError />
           </div>
           <FormFieldSet>
@@ -88,6 +90,7 @@ export const YieldxyzManageStepConfirm = () => {
             </FormFieldSetRow>
             <TransactionDetails />
             <NetworkFeeRow />
+            <SimulationRow />
           </FormFieldSet>
           <SubmitButton />
         </div>
@@ -96,15 +99,16 @@ export const YieldxyzManageStepConfirm = () => {
   )
 }
 
-const RiskAnalysisButton = () => {
-  const { transaction } = useYieldxyzManageWizard()
+const SimulationRow = () => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
 
-  if (transaction?.platform !== "ethereum" && transaction?.platform !== "solana") return null
+  if (!showRiskAnalysis) return null
 
   return (
-    <div>
-      <RiskAnalysisPillButton />
-    </div>
+    <FormFieldSetRow label={t("Risk Assessment")} variant="small">
+      <RiskAnalysisPillButton className="h-10" />
+    </FormFieldSetRow>
   )
 }
 
