@@ -1,4 +1,5 @@
 import { AlertCircleIcon } from "@talismn/icons"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -48,43 +49,45 @@ export const YieldxyzEnterStepConfirm = () => {
         onCloseClick={close}
       >
         <div className="flex size-full flex-col gap-8 overflow-hidden">
-          <div className="line-clamp-2 w-full text-center font-bold text-md">
-            {action.transactions.length > 1
-              ? t("Approve {{count}} transactions", { count: action.transactions.length })
-              : t("Approve transaction")}
-          </div>
-          <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
-            <StepsProgressDisplay />
-            <RiskAnalysisButton />
-            <TransactionError />
-          </div>
-          <FormFieldSet>
-            <FormFieldSetRow label={t("Amount")}>
-              <TokensAndFiat withLogo noFiat tokenId={tokenIn.id} planck={amountIn} />
-            </FormFieldSetRow>
-            <FormFieldSetRow label={t("Account")} valueClassName="h-full">
-              <AccountDisplay
-                address={address}
-                ss58Format={network?.platform === "polkadot" ? network.prefix : undefined}
-              />
-            </FormFieldSetRow>
-            <FormFieldSetSeparator />
-            <FormFieldSetRow label={t("DeFi Product")} variant="small">
-              <YieldxyzProductTitleDisplay product={product} />
-            </FormFieldSetRow>
-            <FormFieldSetRow label={t("Provider")} variant="small">
-              <YieldxyzProviderDisplay providerId={product.providerId} />
-            </FormFieldSetRow>
-            <FormFieldSetRow label={t("Expected Rewards")} variant="small">
-              <YieldxyzProductYieldDisplay product={product} />
-            </FormFieldSetRow>
-            <FormFieldSetSeparator />
-            <FormFieldSetRow label={t("Network")} variant="small">
-              <NetworkDisplay />
-            </FormFieldSetRow>
-            <TransactionDetails />
-            <NetworkFeeRow />
-          </FormFieldSet>
+          <ScrollContainer className="w-full grow" innerClassName="flex flex-col gap-8 *:shrink-0">
+            <div className="line-clamp-2 w-full text-center font-bold text-md">
+              {action.transactions.length > 1
+                ? t("Approve {{count}} transactions", { count: action.transactions.length })
+                : t("Approve transaction")}
+            </div>
+            <div className="flex w-full grow flex-col items-center justify-center gap-6">
+              <StepsProgressDisplay />
+              <RiskAnalysisButton />
+              <TransactionError />
+            </div>
+            <FormFieldSet>
+              <FormFieldSetRow label={t("Amount")}>
+                <TokensAndFiat withLogo noFiat tokenId={tokenIn.id} planck={amountIn} />
+              </FormFieldSetRow>
+              <FormFieldSetRow label={t("Account")} valueClassName="h-full">
+                <AccountDisplay
+                  address={address}
+                  ss58Format={network?.platform === "polkadot" ? network.prefix : undefined}
+                />
+              </FormFieldSetRow>
+              <FormFieldSetSeparator />
+              <FormFieldSetRow label={t("DeFi Product")} variant="small">
+                <YieldxyzProductTitleDisplay product={product} />
+              </FormFieldSetRow>
+              <FormFieldSetRow label={t("Provider")} variant="small">
+                <YieldxyzProviderDisplay providerId={product.providerId} />
+              </FormFieldSetRow>
+              <FormFieldSetRow label={t("Expected Rewards")} variant="small">
+                <YieldxyzProductYieldDisplay product={product} />
+              </FormFieldSetRow>
+              <FormFieldSetSeparator />
+              <FormFieldSetRow label={t("Network")} variant="small">
+                <NetworkDisplay />
+              </FormFieldSetRow>
+              <TransactionDetails />
+              <NetworkFeeRow />
+            </FormFieldSet>
+          </ScrollContainer>
           <SubmitButton />
         </div>
       </WizardModalDialog>
@@ -249,6 +252,7 @@ const NetworkFeeRowEth = () => {
             tx={ethTx.transaction}
             setCustomSettings={ethTx.setCustomSettings}
             onChange={ethTx.setPriority}
+            className="h-10"
           />
         )}
       </FormFieldSetRow>

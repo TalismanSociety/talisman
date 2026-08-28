@@ -40,7 +40,11 @@ export const YieldxyzTransactionDetails: FC<{
   return (
     <>
       <FormFieldSetRow label={t("Contract")} variant="small">
-        <AddressDisplay address={tx.to} networkId={networkId} className="text-xs" />
+        <AddressDisplay
+          address={tx.to}
+          networkId={networkId}
+          className="text-xs [&>div>svg]:size-10"
+        />
       </FormFieldSetRow>
       <FormFieldSetRow label={t("Method")} variant="small" valueClassName="text-body-secondary">
         <span className="truncate text-xs">{method}</span>
