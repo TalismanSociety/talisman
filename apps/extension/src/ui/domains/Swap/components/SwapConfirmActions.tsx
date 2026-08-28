@@ -4,6 +4,7 @@ import { serializeTransaction } from "@talismn/solana"
 import { isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Skeleton } from "@ui/components/Skeleton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
@@ -26,7 +27,7 @@ import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
-import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwapSlippage } from "../hooks/useSwapSlippage"
@@ -43,7 +44,10 @@ import type {
 } from "../swap-modules/common.swap-module"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
-export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
+export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
+  containerId,
+  children,
+}) => {
   const { t } = useTranslation()
   const {
     swapView,
@@ -556,80 +560,86 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
 
   return (
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
-      {!!riskAnalysis && (
-        <div className="flex w-full justify-center">
-          <RiskAnalysisPillButton />
-        </div>
-      )}
-      <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
-        <QuoteProvider />
-        <QuoteDuration />
-        <QuoteExchangeRate />
-        {supportsSlippage ? (
+      <ScrollContainer
+        className="w-full grow"
+        innerClassName="flex flex-col items-center gap-8 px-12 pb-8 *:shrink-0"
+      >
+        {children}
+        {!!riskAnalysis && (
+          <div className="flex w-full justify-center">
+            <RiskAnalysisPillButton />
+          </div>
+        )}
+        <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
+          <QuoteProvider />
+          <QuoteDuration />
+          <QuoteExchangeRate />
+          {supportsSlippage ? (
+            <div className="flex h-11 items-center justify-between gap-8">
+              <div className="whitespace-nowrap text-body-secondary text-xs">
+                {t("Slippage Tolerance")}
+              </div>
+              <button
+                type="button"
+                onClick={slippageDrawer.open}
+                className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
+              >
+                <EditIcon />
+                <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
+                  {slippagePercent.toFixed(2)}%
+                </div>
+              </button>
+            </div>
+          ) : null}
+          {fromToken?.platform === "ethereum" ? (
+            <div className="flex h-11 items-center justify-between gap-8">
+              <div className="text-body-secondary text-xs">{t("Priority")}</div>
+              <div>
+                {activeEthTx.transaction &&
+                activeEthTx.txDetails &&
+                activeFeeTokenId &&
+                activeEthTx.priority ? (
+                  <EthFeeSelect
+                    className="h-10"
+                    disabled={isApproving}
+                    tx={activeEthTx.transaction}
+                    tokenId={activeFeeTokenId}
+                    drawerContainerId={containerId}
+                    gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
+                    priority={activeEthTx.priority}
+                    txDetails={activeEthTx.txDetails}
+                    networkUsage={activeEthTx.networkUsage}
+                    setCustomSettings={activeEthTx.setCustomSettings}
+                    onChange={activeEthTx.setPriority}
+                  />
+                ) : (
+                  <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
+                )}
+              </div>
+            </div>
+          ) : null}
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary text-xs">
-              {t("Slippage Tolerance")}
+              {t("Estimated TX Fee")}
             </div>
-            <button
-              type="button"
-              onClick={slippageDrawer.open}
-              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
-            >
-              <EditIcon />
-              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
-                {slippagePercent.toFixed(2)}%
-              </div>
-            </button>
+            {hasFeeError ? (
+              <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
+            ) : !isFeeLoading && feePlanck && activeFeeTokenId ? (
+              <TokensAndFiat
+                className="text-body-secondary text-xs"
+                tokensClassName="text-body"
+                fiatClassName="text-body-secondary"
+                tokenId={activeFeeTokenId}
+                planck={feePlanck}
+              />
+            ) : (
+              <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
+            )}
           </div>
-        ) : null}
-        {fromToken?.platform === "ethereum" ? (
-          <div className="flex h-11 items-center justify-between gap-8">
-            <div className="text-body-secondary text-xs">{t("Priority")}</div>
-            <div>
-              {activeEthTx.transaction &&
-              activeEthTx.txDetails &&
-              activeFeeTokenId &&
-              activeEthTx.priority ? (
-                <EthFeeSelect
-                  className="h-10"
-                  disabled={isApproving}
-                  tx={activeEthTx.transaction}
-                  tokenId={activeFeeTokenId}
-                  drawerContainerId={containerId}
-                  gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
-                  priority={activeEthTx.priority}
-                  txDetails={activeEthTx.txDetails}
-                  networkUsage={activeEthTx.networkUsage}
-                  setCustomSettings={activeEthTx.setCustomSettings}
-                  onChange={activeEthTx.setPriority}
-                />
-              ) : (
-                <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
-              )}
-            </div>
-          </div>
-        ) : null}
-        <div className="flex h-11 items-center justify-between gap-8">
-          <div className="whitespace-nowrap text-body-secondary text-xs">
-            {t("Estimated TX Fee")}
-          </div>
-          {hasFeeError ? (
-            <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
-          ) : !isFeeLoading && feePlanck && activeFeeTokenId ? (
-            <TokensAndFiat
-              className="text-body-secondary text-xs"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
-              tokenId={activeFeeTokenId}
-              planck={feePlanck}
-            />
-          ) : (
-            <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
-          )}
         </div>
-      </div>
+      </ScrollContainer>
 
-      <div className="absolute bottom-0 left-0 w-full bg-black/40 px-12 py-8 pb-12">
+      <div className="w-full shrink-0 bg-black/40 px-12 py-8 pb-12">
         {!!errorMessage && (
           <div
             role="alert"

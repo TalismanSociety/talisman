@@ -39,10 +39,10 @@ export const SwapConfirm = () => {
       title={t("Confirm")}
       onBackClick={() => setSwapView("form")}
       onCloseClick={close}
-      contentClassName="relative overflow-hidden! p-0!"
+      contentClassName="relative flex flex-col overflow-hidden! p-0!"
       id={CONTAINER_ID}
     >
-      <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto overflow-x-hidden px-12">
+      <SwapConfirmActions containerId={CONTAINER_ID}>
         <div className="flex w-full flex-col gap-2 overflow-hidden pl-6">
           <TokenRow tokenId={fromToken.id} value={fromAmount} />
           <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
@@ -53,9 +53,7 @@ export const SwapConfirm = () => {
           <AddressRow label={t("Sender")} address={fromAddress} networkId={fromToken.networkId} />
           <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
         </div>
-
-        <SwapConfirmActions containerId={CONTAINER_ID} />
-      </div>
+      </SwapConfirmActions>
     </WizardModalDialog>
   )
 }
