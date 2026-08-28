@@ -109,7 +109,7 @@ const SimulationRow = () => {
 
   return (
     <FormFieldSetRow label={t("Risk Assessment")} variant="small">
-      <RiskAnalysisPillButton className="h-10" />
+      <RiskAnalysisPillButton className="h-10" size="xs" />
     </FormFieldSetRow>
   )
 }

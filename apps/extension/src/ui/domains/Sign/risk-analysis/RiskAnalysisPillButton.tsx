@@ -6,7 +6,7 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { PillButton } from "@ui/components/PillButton"
+import { PillButton, type PillButtonSize } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
@@ -22,8 +22,28 @@ export const useShowRiskAnalysisPillButton = () => {
   return isEnabled && !!riskAnalysis
 }
 
-export const RiskAnalysisPillButton: FC<{ className?: string }> = ({
+export const RiskAnalysisRow: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
+
+  if (!showRiskAnalysis) return null
+
+  return (
+    <div
+      className={cn(
+        "flex w-full items-center justify-between gap-8 text-body-secondary text-sm",
+        className
+      )}
+    >
+      <div>{t("Risk Assessment")}</div>
+      <RiskAnalysisPillButton className="h-10" size="xs" />
+    </div>
+  )
+}
+
+export const RiskAnalysisPillButton: FC<{ className?: string; size?: PillButtonSize }> = ({
   className: classNameProp,
+  size = "sm",
 }) => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
   const riskAnalysis = useRiskAnalysis()
@@ -115,7 +135,7 @@ export const RiskAnalysisPillButton: FC<{ className?: string }> = ({
       <TooltipTrigger asChild>
         <PillButton
           disabled={disabled}
-          size="sm"
+          size={size}
           icon={icon}
           onClick={handleClick}
           className={cn(className, classNameProp)}

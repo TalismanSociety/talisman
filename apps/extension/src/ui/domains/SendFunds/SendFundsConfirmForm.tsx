@@ -16,7 +16,7 @@ import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { RiskAnalysisProvider } from "../Sign/risk-analysis/context"
-import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillButton"
+import { RiskAnalysisRow } from "../Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
@@ -443,10 +443,10 @@ export const SendFundsConfirmForm = () => {
                 <FeeSummary />
                 <Token2022TransferFeeRow />
                 <TotalAmountRow />
+                <RiskAnalysisRow className="mt-4 text-xs" />
               </div>
             </div>
           </ScrollContainer>
-          {riskAnalysis && <RiskAnalysisPillButton />}
           <SendButton />
         </div>
       </RiskAnalysisProvider>

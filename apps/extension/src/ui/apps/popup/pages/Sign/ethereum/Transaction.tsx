@@ -19,6 +19,7 @@ import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { RiskAnalysisRow } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
@@ -115,7 +116,24 @@ export const EthSignTransactionRequest = () => {
             <div className="flex min-h-[2.8rem] flex-col gap-2 text-body-secondary text-sm">
               {transaction && txDetails && !!network && (
                 <>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-8">
+                    <div>{transaction?.type === "eip1559" && t("Priority")}</div>
+                    <div>
+                      <EthFeeSelect
+                        tx={transaction}
+                        tokenId={network.nativeTokenId}
+                        disabled={isPayloadLocked}
+                        gasSettingsByPriority={gasSettingsByPriority}
+                        setCustomSettings={setCustomSettings}
+                        txDetails={txDetails}
+                        priority={priority}
+                        onChange={handleFeeChange}
+                        networkUsage={networkUsage}
+                        drawerContainerId="main"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-8">
                     <div>
                       {t("Estimated Fee")}{" "}
                       <Tooltip placement="top">
@@ -134,32 +152,16 @@ export const EthSignTransactionRequest = () => {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <div>{transaction?.type === "eip1559" && t("Priority")}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
                     <div>
                       <TokensAndFiat
                         tokenId={network.nativeTokenId}
                         planck={txDetails.estimatedFee.toString()}
                       />
                     </div>
-                    <div>
-                      <EthFeeSelect
-                        tx={transaction}
-                        tokenId={network.nativeTokenId}
-                        disabled={isPayloadLocked}
-                        gasSettingsByPriority={gasSettingsByPriority}
-                        setCustomSettings={setCustomSettings}
-                        txDetails={txDetails}
-                        priority={priority}
-                        onChange={handleFeeChange}
-                        networkUsage={networkUsage}
-                        drawerContainerId="main"
-                      />
-                    </div>
                   </div>
                 </>
               )}
+              <RiskAnalysisRow />
             </div>
             {account && request && account.type === "ledger-ethereum" ? (
               <SignHardwareEthereum

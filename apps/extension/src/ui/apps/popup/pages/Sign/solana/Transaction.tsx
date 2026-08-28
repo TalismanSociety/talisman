@@ -25,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
-import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import { RiskAnalysisRow } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { RiskAnalysisStateChanges } from "@ui/domains/Sign/risk-analysis/RiskAnalysisStateChanges"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
@@ -148,7 +148,6 @@ export const SolSignTransactionRequest: FC<{
             <h2 className="mb-8 text-base leading-16">
               {t("You are signing a transaction with account")} <AccountPill account={account} />
             </h2>
-            <RiskAnalysisPillButton />
             <div className="mt-8 w-full rounded-sm bg-grey-850 p-2 empty:hidden">
               <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} noTitle />
             </div>
@@ -160,12 +159,15 @@ export const SolSignTransactionRequest: FC<{
               {displayError}
             </SignAlertMessage>
           )}
-          <FeeEstimateRow
-            transaction={transaction}
-            networkId={networkId}
-            isLocked={isLocked}
-            account={account}
-          />
+          <div className="flex flex-col gap-2">
+            <FeeEstimateRow
+              transaction={transaction}
+              networkId={networkId}
+              isLocked={isLocked}
+              account={account}
+            />
+            <RiskAnalysisRow />
+          </div>
           <div className="grid w-full grid-cols-2 gap-12">
             <Button onClick={() => window.close()}>{t("Cancel")}</Button>
             {isAccountOfType(account, "ledger-solana") ? (

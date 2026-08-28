@@ -712,7 +712,7 @@ const SimulationRow = () => {
   return (
     <div className="flex h-11 items-center justify-between gap-8">
       <div className="whitespace-nowrap text-body-secondary text-xs">{t("Risk Assessment")}</div>
-      <RiskAnalysisPillButton className="h-10" />
+      <RiskAnalysisPillButton className="h-10" size="xs" />
     </div>
   )
 }
