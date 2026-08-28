@@ -61,6 +61,7 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
     networkId: network?.id,
     tx: serializedTx,
     disableCriticalPane: true,
+    subjectId: props?.transaction.id,
   })
 
   if (!network) return null

@@ -14,6 +14,8 @@ type UseSolTransactionRiskAnalysisProps = {
   origin?: string
   disableAutoRiskScan?: boolean
   disableCriticalPane?: boolean
+  /** identity of the signing step, required when a flow signs several transactions in sequence */
+  subjectId?: string
 }
 
 export const useSolTransactionRiskAnalysis = ({
@@ -22,6 +24,7 @@ export const useSolTransactionRiskAnalysis = ({
   tx,
   disableAutoRiskScan,
   disableCriticalPane,
+  subjectId,
 }: UseSolTransactionRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
@@ -30,6 +33,7 @@ export const useSolTransactionRiskAnalysis = ({
     networkId,
     disableAutoRiskScan,
     disableCriticalPane,
+    subjectId,
     queryKey: ["useSolTransactionRiskAnalysis", from, networkId, tx, origin],
     queryFn: async () => {
       if (networkId !== "solana-mainnet" || !tx || !from) return null

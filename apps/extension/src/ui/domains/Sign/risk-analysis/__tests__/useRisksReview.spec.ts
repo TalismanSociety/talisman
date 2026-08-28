@@ -44,4 +44,25 @@ describe("useRisksReview", () => {
 
     expect(result.current.drawer.isOpen).toBe(true)
   })
+
+  it("requires a new acknowledgement when an acknowledged subject comes back", () => {
+    const { result, rerender } = renderReview("approval")
+
+    act(() => result.current.setIsRiskAcknowledged(true))
+    rerender({ key: "swap" })
+    rerender({ key: "approval" })
+
+    expect(result.current.isRiskAcknowledged).toBe(false)
+  })
+
+  it("opens the review drawer again when an acknowledged subject comes back", () => {
+    const { result, rerender } = renderReview("approval")
+
+    act(() => result.current.drawer.close())
+    rerender({ key: "swap" })
+    act(() => result.current.drawer.close())
+    rerender({ key: "approval" })
+
+    expect(result.current.drawer.isOpen).toBe(true)
+  })
 })

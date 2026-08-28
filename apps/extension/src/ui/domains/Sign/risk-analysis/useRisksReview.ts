@@ -23,8 +23,10 @@ const getValidationResultType = (
 /**
  * In-wallet flows analyse more than one transaction from the same hook instance: a swap follows its
  * ERC20 approval, a yield.xyz action can have several steps. Acknowledgement is therefore tied to
- * `subjectKey`, the identity of the analysed payload, so that acknowledging one flagged transaction
- * never clears the way for the next one.
+ * `subjectKey`, the identity of the analysed transaction, so that acknowledging one flagged
+ * transaction never clears the way for the next one — including a later transaction that shares the
+ * key of an earlier acknowledged one, which is why the acknowledgement is also dropped every time
+ * the key changes.
  */
 export const useRisksReview = (
   platform: RiskAnalysisPlatform,
@@ -32,6 +34,13 @@ export const useRisksReview = (
   subjectKey: string
 ) => {
   const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null)
+
+  const refPreviousSubjectKey = useRef(subjectKey)
+  useEffect(() => {
+    if (refPreviousSubjectKey.current === subjectKey) return
+    refPreviousSubjectKey.current = subjectKey
+    setAcknowledgedKey(null)
+  }, [subjectKey])
 
   const isRiskAcknowledged = acknowledgedKey === subjectKey
 

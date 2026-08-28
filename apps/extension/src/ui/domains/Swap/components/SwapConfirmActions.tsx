@@ -355,6 +355,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     networkId: fromToken?.platform === "ethereum" ? fromToken.networkId : undefined,
     tx: activeTransaction?.platform === "ethereum" ? activeTransaction.transaction : undefined,
     disableCriticalPane: true,
+    subjectId: needsApproval && approveTx ? "approval" : "swap",
   })
 
   const serializedSolTx = useMemo(
