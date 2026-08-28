@@ -92,7 +92,7 @@ const TotalAmountRow = () => {
   if (!totalValue) return null
 
   return (
-    <div className="mt-4 flex h-4.25 justify-between text-xs">
+    <div className="mt-4 flex h-12 items-center justify-between text-xs">
       <div className="text-body-secondary">{t("Total Amount")}</div>
       <div className="text-body">
         {totalValue ? (
@@ -305,7 +305,7 @@ const EthFeeSummary = () => {
           )}
         </div>
       </div>
-      <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
+      <div className="mt-4 flex h-12 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
@@ -336,7 +336,7 @@ const DefaultFeeSummary = () => {
   return (
     <>
       {!!tip && !!tipToken && tip.planck > 0n && (
-        <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
+        <div className="mt-4 flex h-12 items-center justify-between gap-8 text-xs">
           <div className="text-body-secondary">{t("Tip")}</div>
           <div className="text-body">
             <div className={cn("inline-flex h-4.25 items-center")}>
@@ -345,7 +345,7 @@ const DefaultFeeSummary = () => {
           </div>
         </div>
       )}
-      <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
+      <div className="mt-4 flex h-12 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
@@ -384,7 +384,7 @@ const Token2022TransferFeeRow: FC = () => {
   if (!feeInfo || !token || !isTokenOfType(token, "sol-token2022")) return null
 
   return (
-    <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
+    <div className="mt-4 flex h-12 items-center justify-between gap-8 text-xs">
       <div className="text-body-secondary">
         {t("Transfer Fee ({{bps}}bps)", { bps: feeInfo.feeBasisPoints })}
       </div>
@@ -436,12 +436,12 @@ export const SendFundsConfirmForm = () => {
                   <hr className="text-grey-800" />
                 </div>
                 <BittensorAlphaTokenRow />
-                <div className="mt-4 flex items-center justify-between gap-8 text-xs">
+                <div className="mt-4 flex h-12 items-center justify-between gap-8 text-xs">
                   <div className="text-body-secondary">{t("Network")}</div>
                   <NetworkDisplay />
                 </div>
                 <FeeSummary />
-                <RiskAnalysisRow className="mt-4 text-xs" />
+                <RiskAnalysisRow className="mt-4 h-12 text-xs" />
                 <Token2022TransferFeeRow />
                 <TotalAmountRow />
               </div>
@@ -461,7 +461,7 @@ const BittensorAlphaTokenRow: FC = () => {
   if (token?.type !== "substrate-dtao") return null
 
   return (
-    <div className="mt-4 flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
+    <div className="mt-4 flex h-12 w-full items-center justify-between gap-8 overflow-hidden text-xs">
       <div className="text-body-secondary">{t("Token")}</div>
       <div className={cn("truncate", token.netuid === 0 ? "text-alert-warn" : "text-body")}>
         {token.name}
