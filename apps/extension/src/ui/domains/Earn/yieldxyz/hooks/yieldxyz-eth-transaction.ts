@@ -18,7 +18,8 @@ type YieldxyzEthTransaction = {
 // a Solana payload is base64 and parses to nothing here, which callers treat as "no EVM transaction"
 const parseYieldxyzEthTransaction = (tx: TransactionDto): YieldxyzEthTransaction | null => {
   try {
-    return JSON.parse(tx.unsignedTransaction as string) as YieldxyzEthTransaction
+    const parsed = JSON.parse(tx.unsignedTransaction as string)
+    return parsed && typeof parsed === "object" ? (parsed as YieldxyzEthTransaction) : null
   } catch {
     return null
   }
@@ -34,16 +35,28 @@ export const deserializeYieldxyzEthTransaction = (
     return null
   }
 
-  return {
-    from: parsedTx.from,
-    to: parsedTx.to,
-    value: parsedTx.value ? BigInt(parsedTx.value) : undefined,
-    data: parsedTx.data,
-    nonce,
+  try {
+    return {
+      from: parsedTx.from,
+      to: parsedTx.to,
+      value: parsedTx.value ? BigInt(parsedTx.value) : undefined,
+      data: parsedTx.data,
+      nonce,
+    }
+  } catch (err) {
+    log.error("Failed to deserialize Yieldxyz ETH transaction", { tx, err })
+    return null
   }
 }
 
-export const getYieldxyzEthTransactionValue = (tx: TransactionDto): bigint => {
+/** `null` means the transaction is EVM but its value cannot be read - never a spend of nothing */
+export const getYieldxyzEthTransactionValue = (tx: TransactionDto): bigint | null => {
   const value = parseYieldxyzEthTransaction(tx)?.value
-  return value ? BigInt(value) : 0n
+  if (!value) return 0n
+
+  try {
+    return BigInt(value)
+  } catch {
+    return null
+  }
 }

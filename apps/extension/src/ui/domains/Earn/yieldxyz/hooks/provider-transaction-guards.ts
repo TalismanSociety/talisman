@@ -9,6 +9,8 @@ export type ProviderTransactionIssue = "sender" | "amount"
  * sequence. Checking each step against the full amount would let a provider spend it once per step,
  * so every step is checked against what the other steps leave of it. A sequence that spends more
  * than the confirmed amount in total is rejected at its first step, before anything is signed.
+ * A sequence with a step whose value cannot be read cannot be bounded at all, so the remainder
+ * goes negative and every step is rejected.
  */
 export const getYieldxyzStepMaxNativeValue = (params: {
   transactions: TransactionDto[]
@@ -17,9 +19,17 @@ export const getYieldxyzStepMaxNativeValue = (params: {
 }): bigint => {
   const { transactions, transactionId, maxNativeValue } = params
 
-  return transactions
-    .filter((tx) => tx.id !== transactionId)
-    .reduce((remaining, tx) => remaining - getYieldxyzEthTransactionValue(tx), maxNativeValue)
+  let remaining = maxNativeValue
+  for (const tx of transactions) {
+    if (tx.id === transactionId) continue
+
+    const value = getYieldxyzEthTransactionValue(tx)
+    if (value === null) return -1n
+
+    remaining -= value
+  }
+
+  return remaining
 }
 
 /**

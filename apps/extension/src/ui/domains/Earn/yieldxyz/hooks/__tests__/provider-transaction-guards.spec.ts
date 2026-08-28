@@ -163,6 +163,29 @@ describe("getYieldxyzStepMaxNativeValue", () => {
       })
     ).toBe(ONE_ETH)
   })
+
+  it("leaves nothing to any step when a sibling value cannot be read", () => {
+    const corruptSibling = {
+      id: "corrupt",
+      unsignedTransaction: JSON.stringify({ from: ADDRESS, to: ADDRESS, value: "not-a-number" }),
+    } as TransactionDto
+
+    const remaining = getYieldxyzStepMaxNativeValue({
+      transactions: [ethTransaction("deposit", null), corruptSibling],
+      transactionId: "deposit",
+      maxNativeValue: ONE_ETH,
+    })
+
+    expect(remaining < 0n).toBe(true)
+    expect(
+      getYieldxyzEvmTransactionIssue({
+        from: ADDRESS,
+        value: 0n,
+        address: ADDRESS,
+        maxNativeValue: remaining,
+      })
+    ).toBe("amount")
+  })
 })
 
 describe("getYieldxyzSolTransactionIssue", () => {
