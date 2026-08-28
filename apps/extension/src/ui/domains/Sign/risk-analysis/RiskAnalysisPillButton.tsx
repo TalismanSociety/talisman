@@ -36,7 +36,7 @@ export const RiskAnalysisRow: FC<{ className?: string }> = ({ className }) => {
       )}
     >
       <div>{t("Risk Assessment")}</div>
-      <RiskAnalysisPillButton className="h-10" size="xs" />
+      <RiskAnalysisPillButton className="h-12" size="xs" />
     </div>
   )
 }

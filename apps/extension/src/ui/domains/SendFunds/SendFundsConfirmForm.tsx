@@ -441,9 +441,9 @@ export const SendFundsConfirmForm = () => {
                   <NetworkDisplay />
                 </div>
                 <FeeSummary />
+                <RiskAnalysisRow className="mt-4 text-xs" />
                 <Token2022TransferFeeRow />
                 <TotalAmountRow />
-                <RiskAnalysisRow className="mt-4 text-xs" />
               </div>
             </div>
           </ScrollContainer>

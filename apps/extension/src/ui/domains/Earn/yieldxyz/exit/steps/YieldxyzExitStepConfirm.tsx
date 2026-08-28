@@ -259,6 +259,7 @@ const NetworkFeeRowEth = () => {
             tx={ethTx.transaction}
             setCustomSettings={ethTx.setCustomSettings}
             onChange={ethTx.setPriority}
+            className="h-10"
           />
         )}
       </FormFieldSetRow>
