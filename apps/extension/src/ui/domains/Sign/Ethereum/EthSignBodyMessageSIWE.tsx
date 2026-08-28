@@ -11,7 +11,6 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
@@ -88,7 +87,6 @@ export const EthSignBodyMessageSIWE: FC<{
             <SignParamAccountButton address={account.address} withIcon />
           </div>
           <ViewDetailsButton onClick={open} className="my-4" />
-          <RiskAnalysisPillButton />
         </div>
         {!!siwe.statement && (
           <div className="mt-8 w-full rounded-sm bg-grey-850 p-4 text-sm">
