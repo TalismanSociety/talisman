@@ -18,7 +18,7 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
 
   // we need to refresh nonce every time the transaction changes, because useEthTransaction wont do it
   const { data: nonce } = useQuery({
-    queryKey: ["nonce", props, publicClient?.uid],
+    queryKey: ["nonce", props?.address, props?.networkId, props?.transaction, publicClient?.uid],
     queryFn: () => {
       if (!publicClient || !props?.address || !isEthereumAddress(props.address)) return null
 
