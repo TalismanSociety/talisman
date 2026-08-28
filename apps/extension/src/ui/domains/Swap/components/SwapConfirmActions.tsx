@@ -1,5 +1,5 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { EditIcon } from "@talismn/icons"
+import { EditIcon, InfoIcon } from "@talismn/icons"
 import { serializeTransaction } from "@talismn/solana"
 import { isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -643,22 +643,26 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         {!!errorMessage && (
           <div
             role="alert"
-            className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
           >
-            {errorMessage}
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>{errorMessage}</div>
           </div>
         )}
 
         {!errorMessage && needsApproval && (
           <div
             role="alert"
-            className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-body-secondary text-tiny"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
           >
-            {needsRevoke
-              ? t(
-                  "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
-                )
-              : t("This token requires approval before it can be swapped.")}
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>
+              {needsRevoke
+                ? t(
+                    "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
+                  )
+                : t("This token requires approval before it can be swapped.")}
+            </div>
           </div>
         )}
 
