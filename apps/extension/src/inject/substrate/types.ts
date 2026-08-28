@@ -104,9 +104,11 @@ export interface InjectedProviderWithMeta {
 }
 
 declare type This = typeof globalThis
-export interface MetadataDef extends PjsMetadataDef {
-  metadataRpc?: `0x${string}`
-}
+/**
+ * Same shape as polkadot-js. Talisman never stores or decodes with metadata a dapp provides — see
+ * `InjectedMetadata.provide` — so there is no field here through which to supply runtime metadata.
+ */
+export type MetadataDef = PjsMetadataDef
 export interface InjectedMetadata {
   get: () => Promise<InjectedMetadataKnown[]>
   provide: (definition: MetadataDef) => Promise<boolean>

@@ -19,19 +19,17 @@ class IconManager {
 
     const text = counts.get("auth")
       ? "Sites"
-      : counts.get("metadata")
-        ? "Meta"
-        : signingCount
-          ? `${signingCount}`
-          : counts.get("eth-network-add")
-            ? "Network"
-            : counts.get("eth-watchasset")
-              ? "Assets"
-              : counts.get("encrypt")
-                ? "Encrypt"
-                : counts.get("decrypt")
-                  ? "Decrypt"
-                  : ""
+      : signingCount
+        ? `${signingCount}`
+        : counts.get("eth-network-add")
+          ? "Network"
+          : counts.get("eth-watchasset")
+            ? "Assets"
+            : counts.get("encrypt")
+              ? "Encrypt"
+              : counts.get("decrypt")
+                ? "Decrypt"
+                : ""
 
     actionApi?.setBadgeText?.({ text })
   }

@@ -16,7 +16,7 @@ import {
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { sleep } from "@talismn/util"
-import { useField, useForm } from "@tanstack/react-form"
+import { useForm, useStore } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -129,8 +129,15 @@ const AddCustomTokenForm = () => {
     },
   })
 
-  const fldNetworkId = useField({ form, name: "networkId" })
-  const fldContractAddress = useField({ form, name: "contractAddress" })
+  // Read from the form store instead of `useField`: a second `FieldApi` for a name already rendered
+  // by `<form.Field>` takes over `fieldInfo[name].instance`, and form-core then discards the async
+  // validation results of the `<form.Field>` instance which owns the validators.
+  const networkId = useStore(form.store, (s) => s.values.networkId)
+
+  // The token fields are only meaningful once the contract address resolved to a new token, which
+  // makes `token` the gate for both editing and validating them: validating them earlier would
+  // display "expected string, received undefined" errors next to the contract address error.
+  const hasTokenInfo = useStore(form.store, (s) => !!s.values.token)
 
   // Fields populated from the token info fetch. They must all be cleared whenever the contract
   // address stops resolving to a new token, else they keep displaying the previous token's info.
@@ -185,7 +192,7 @@ const AddCustomTokenForm = () => {
               spellCheck={false}
               data-lpignore
               autoComplete="off"
-              disabled={!fldNetworkId.state.value}
+              disabled={!networkId}
               placeholder="0xdeadbeef...deadbeef"
               small
               after={
@@ -252,7 +259,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="symbol"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.symbol.safeParse(value)
               return parsed.success
                 ? undefined
@@ -269,7 +277,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="TKN"
                 small
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
               />
             </FormFieldContainer>
           )}
@@ -278,7 +286,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="decimals"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.decimals.safeParse(value)
               return parsed.success
                 ? undefined
@@ -296,7 +305,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 small
                 readOnly
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
               />
             </FormFieldContainer>
           )}
@@ -305,7 +314,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="coingeckoId"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.coingeckoId.safeParse(value)
               return parsed.success
                 ? undefined
@@ -329,7 +339,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="(optional)"
                 small
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
                 before={
                   <AssetLogo
                     className="mr-2 rounded-full text-[1.875rem]"
@@ -344,7 +354,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="name"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.name.safeParse(value)
               return parsed.success
                 ? undefined
@@ -360,7 +371,7 @@ const AddCustomTokenForm = () => {
                 value={field.state.value ?? ""}
                 onChange={(e) => field.handleChange(e.target.value)}
                 autoComplete="off"
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
                 small
               />
             </FormFieldContainer>
