@@ -30,12 +30,12 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
   })
 
   const tx = useMemo(() => {
-    if (!network || !props?.transaction) return null
+    if (!props?.transaction) return null
     return deserializeYieldxyzEthTransaction(props.transaction, nonce ?? undefined)
-  }, [network, props?.transaction, nonce])
+  }, [props?.transaction, nonce])
 
   const providerError = useMemo(() => {
-    if (!props || !network) return null
+    if (!props) return null
 
     // props.transaction is set, so a null tx means the provider payload could not be deserialized
     if (!tx) return t("Unexpected transaction data. Please try again.")
@@ -55,7 +55,7 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
       default:
         return null
     }
-  }, [network, props, t, tx])
+  }, [props, t, tx])
 
   const validTx = providerError ? undefined : (tx ?? undefined)
 

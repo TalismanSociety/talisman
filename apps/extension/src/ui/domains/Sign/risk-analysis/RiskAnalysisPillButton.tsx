@@ -13,11 +13,11 @@ import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useRiskAnalysis } from "./context"
+import { useOptionalRiskAnalysis } from "./context"
 
 export const useShowRiskAnalysisPillButton = () => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
-  const riskAnalysis = useRiskAnalysis()
+  const riskAnalysis = useOptionalRiskAnalysis()
 
   return isEnabled && !!riskAnalysis
 }
@@ -46,7 +46,7 @@ export const RiskAnalysisPillButton: FC<{ className?: string; size?: PillButtonS
   size = "sm",
 }) => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
-  const riskAnalysis = useRiskAnalysis()
+  const riskAnalysis = useOptionalRiskAnalysis()
   const { t } = useTranslation()
 
   const { icon, label, className, disabled, tooltip } = useMemo(() => {

@@ -74,7 +74,7 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
     estimatedFee: estimatedFee != null ? String(estimatedFee) : null,
     isLoading: feeQuery.isLoading,
     error: providerError ?? (feeQuery.error ? (feeQuery.error as Error).message : undefined),
-    errorDetails: feeQuery.error ? (feeQuery.error as Error).message : undefined,
+    errorDetails: providerError ?? (feeQuery.error ? (feeQuery.error as Error).message : undefined),
     riskAnalysis,
   }
 }
