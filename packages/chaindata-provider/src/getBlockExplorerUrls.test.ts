@@ -36,12 +36,12 @@ const BITTENSOR = {
 
 const EXPLORER_WITH_BASE_PATH = {
   id: "bittensor",
-  blockExplorerUrls: ["https://bittensor.ai/chain"],
+  blockExplorerUrls: ["https://bittensor.ai/explorer"],
 } as unknown as Network
 
 const EXPLORER_WITH_BASE_PATH_TRAILING_SLASH = {
   id: "bittensor",
-  blockExplorerUrls: ["https://bittensor.ai/chain/"],
+  blockExplorerUrls: ["https://bittensor.ai/explorer/"],
 } as unknown as Network
 
 const EXPLORER_BITTENSOR_AI = {
@@ -51,7 +51,7 @@ const EXPLORER_BITTENSOR_AI = {
 
 const BITTENSOR_BOTH_EXPLORERS = {
   id: "bittensor",
-  blockExplorerUrls: ["https://taostats.io", "https://bittensor.ai/chain"],
+  blockExplorerUrls: ["https://taostats.io", "https://bittensor.ai/explorer"],
 } as unknown as Network
 
 describe("getExplorerUrls", () => {
@@ -175,7 +175,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/explorer/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
   })
 
@@ -185,7 +185,7 @@ describe("getExplorerUrls", () => {
       id: 6036407,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
+    expect(urls).toContain("https://bittensor.ai/explorer/block/6036407")
   })
 
   it("explorer with base path - transaction", () => {
@@ -194,7 +194,7 @@ describe("getExplorerUrls", () => {
       id: "0xabc123",
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/tx/0xabc123")
+    expect(urls).toContain("https://bittensor.ai/explorer/extrinsic/0xabc123")
   })
 
   it("explorer with base path - extrinsic", () => {
@@ -204,7 +204,7 @@ describe("getExplorerUrls", () => {
       extrinsicIndex: 12,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+    expect(urls).toContain("https://bittensor.ai/explorer/extrinsic/6035238-12")
   })
 
   it("explorer with base path and trailing slash - account", () => {
@@ -214,7 +214,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/explorer/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
   })
 
@@ -224,7 +224,7 @@ describe("getExplorerUrls", () => {
       id: 6036407,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
+    expect(urls).toContain("https://bittensor.ai/explorer/block/6036407")
   })
 
   it("explorer with base path and trailing slash - extrinsic", () => {
@@ -234,7 +234,7 @@ describe("getExplorerUrls", () => {
       extrinsicIndex: 12,
     })
 
-    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+    expect(urls).toContain("https://bittensor.ai/explorer/extrinsic/6035238-12")
   })
 
   it("explorer.bittensor.ai - account", () => {
@@ -273,7 +273,18 @@ describe("getExplorerUrls", () => {
       id: "0xabc123",
     })
 
-    expect(urls).toContain("https://explorer.bittensor.ai/tx/0xabc123")
+    expect(urls).toContain("https://explorer.bittensor.ai/extrinsic/0xabc123")
+  })
+
+  it("explorer.bittensor.ai - extrinsic unknown (hash)", () => {
+    const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
+      type: "extrinsic-unknown",
+      hash: "0x10fc44f825ff94feec5d2fab00341e22556a3e55617089204715652eb5280d45",
+    })
+
+    expect(urls).toContain(
+      "https://explorer.bittensor.ai/extrinsic/0x10fc44f825ff94feec5d2fab00341e22556a3e55617089204715652eb5280d45"
+    )
   })
 
   it("explorer.bittensor.ai - address (contract)", () => {
@@ -294,7 +305,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://taostats.io/block/6036407/extrinsics")
-    expect(urls).toContain("https://bittensor.ai/chain/block/6036407")
+    expect(urls).toContain("https://bittensor.ai/explorer/block/6036407")
     expect(urls.length).toBe(2)
   })
 
@@ -308,7 +319,7 @@ describe("getExplorerUrls", () => {
       "https://taostats.io/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
     expect(urls).toContain(
-      "https://bittensor.ai/chain/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      "https://bittensor.ai/explorer/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
     expect(urls.length).toBe(2)
   })
@@ -321,26 +332,40 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://taostats.io/extrinsic/6035238-0012")
-    expect(urls).toContain("https://bittensor.ai/chain/extrinsic/6035238-12")
+    expect(urls).toContain("https://bittensor.ai/explorer/extrinsic/6035238-12")
     expect(urls.length).toBe(2)
+  })
+
+  it("rejects non-http(s) explorer urls", () => {
+    const network = {
+      id: "evil",
+      blockExplorerUrls: ["javascript:alert(1)//", "ftp://explorer.example.org"],
+    } as unknown as Network
+
+    expect(getBlockExplorerUrls(network, { type: "block", id: 1 })).toEqual([])
   })
 })
 
 describe("getBlockExplorerLabel", () => {
-  it("returns Bittensor.ai for explorer.bittensor.ai explorer", () => {
+  it("returns the branded name for allowlisted explorers", () => {
+    expect(getBlockExplorerLabel("https://polkadot.subscan.io")).toBe("Subscan")
+    expect(getBlockExplorerLabel("https://polkadot.statescan.io/")).toBe("Statescan")
+    expect(getBlockExplorerLabel("https://etherscan.io")).toBe("Etherscan")
+    expect(getBlockExplorerLabel("https://optimistic.etherscan.io")).toBe("Etherscan")
+    expect(getBlockExplorerLabel("https://moonbeam.moonscan.io")).toBe("Moonscan")
+    expect(getBlockExplorerLabel("https://polygonscan.com")).toBe("PolygonScan")
+    expect(getBlockExplorerLabel("https://arbiscan.io/")).toBe("Arbiscan")
+    expect(getBlockExplorerLabel("https://basescan.org")).toBe("BaseScan")
+    expect(getBlockExplorerLabel("https://bscscan.com")).toBe("BscScan")
+    expect(getBlockExplorerLabel("https://bittensor.ai/explorer")).toBe("Bittensor.ai")
     expect(getBlockExplorerLabel("https://explorer.bittensor.ai")).toBe("Bittensor.ai")
   })
 
-  it("returns Bittensor.ai for bittensor.ai explorer", () => {
-    expect(getBlockExplorerLabel("https://bittensor.ai/chain")).toBe("Bittensor.ai")
-  })
-
-  it("returns Polkadot.js for polkadot.js.org explorer", () => {
-    expect(getBlockExplorerLabel("https://polkadot.js.org/apps")).toBe("Polkadot.js")
-  })
-
-  it("returns startCase hostname for standard explorers", () => {
-    expect(getBlockExplorerLabel("https://etherscan.io")).toBe("Etherscan")
-    expect(getBlockExplorerLabel("https://taostats.io")).toBe("Taostats")
+  it("returns Explorer for anything not in the allowlist", () => {
+    expect(getBlockExplorerLabel("https://taostats.io")).toBe("Explorer")
+    expect(getBlockExplorerLabel("https://polkadot.js.org/apps")).toBe("Explorer")
+    expect(getBlockExplorerLabel("https://eth.blockscout.com/")).toBe("Explorer")
+    expect(getBlockExplorerLabel("https://explorer.solana.com/?cluster=testnet")).toBe("Explorer")
+    expect(getBlockExplorerLabel("https://solscan.io")).toBe("Explorer")
   })
 })
