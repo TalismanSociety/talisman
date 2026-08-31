@@ -8,7 +8,7 @@ packages:
 # pnpm 11 only reads auth/registry settings from .npmrc; every other setting must
 # live here (camelCase). See .npmrc for the rationale behind shamefullyHoist.
 shamefullyHoist: true
-useNodeVersion: 24.8.0
+nodeVersion: 24.8.0
 nodeOptions: "--max-old-space-size=4096"
 savePrefix: ""
 
