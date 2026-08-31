@@ -85,6 +85,12 @@ vi.mock("@ui/domains/Sign/Ethereum/shared/SignParamTokensDisplay", () => ({
   ),
 }))
 
+vi.mock("@ui/domains/Asset/TokensAndFiat", () => ({
+  TokensAndFiat: ({ planck }: { planck?: string | bigint }) => (
+    <span data-testid="alert-native-amount">{String(planck)}</span>
+  ),
+}))
+
 import { EthSignBody } from "../EthSignBody"
 
 const SIGNER = "0x1111111111111111111111111111111111111111"
@@ -146,9 +152,15 @@ const renderBody = (decodedTx: unknown, isReady = true) =>
     { wrapper: QueryWrapper }
   )
 
+const alertsContainer = () => document.getElementById("sign-alerts-inject") as HTMLElement
+
 describe("EthSignBody", () => {
   beforeEach(() => {
     fx.reqMock.mockReset()
+    alertsContainer()?.remove()
+    const alerts = document.createElement("div")
+    alerts.id = "sign-alerts-inject"
+    document.body.appendChild(alerts)
   })
 
   it("renders the shimmer until the transaction is decoded", () => {
@@ -167,16 +179,17 @@ describe("EthSignBody", () => {
     expect(screen.getByTestId("erc20-amount").textContent).toContain("0.001 USDC")
     expect(screen.queryByTestId("native-amount")).toBeNull()
     expect(screen.getByTestId("alert").textContent).toBe("")
+    expect(alertsContainer().textContent).toBe("")
   })
 
-  it("falls back to the generic body when a known call carries native value", () => {
+  it("keeps the specialized body and raises a value alert when a known call carries native value", () => {
     const decodedTx = mockRequest(makeDecodedTx(NATIVE_VALUE))
 
     renderBody(decodedTx)
 
-    expect(screen.getByTestId("native-amount").textContent).toContain("5 ETH")
-    expect(screen.queryByTestId("erc20-amount")).toBeNull()
-    expect(screen.getByTestId("alert").textContent).toContain("ETH")
+    expect(screen.getByTestId("erc20-amount").textContent).toContain("0.001 USDC")
+    expect(screen.getByTestId("alert-native-amount").textContent).toBe(String(NATIVE_VALUE))
+    expect(alertsContainer().textContent).toContain("does not normally include")
   })
 
   it("does not raise the native value alert on unknown calls", () => {

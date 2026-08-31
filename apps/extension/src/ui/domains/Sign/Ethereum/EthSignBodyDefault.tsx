@@ -11,8 +11,8 @@ import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 type EthSignBodyDefaultProps = {
-  // set when a call we recognize carries a native value: its specialized summary would have dropped
-  // the value, so it is rendered here instead and flagged as inconsistent with the method
+  // set when the specialized summary of a value-carrying call crashed into this fallback: the
+  // value renders here as usual, and is flagged as inconsistent with the method
   unexpectedNativeValue?: boolean
 }
 
@@ -110,7 +110,7 @@ export const EthSignBodyDefault: FC<EthSignBodyDefaultProps> = ({ unexpectedNati
           ) : null}
           {nativeTokensDisplay && (
             <div className="flex">
-              <span>{t("attaching")}</span>
+              <span>{t("sending")}</span>
               {nativeTokensDisplay}
             </div>
           )}

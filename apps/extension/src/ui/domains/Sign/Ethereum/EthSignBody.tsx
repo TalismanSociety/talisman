@@ -14,6 +14,7 @@ import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
 import { EthSignBodyErc1155Transfer } from "./EthSignBodyErc1155Transfer"
 import { EthSignBodyPermit2Approve } from "./EthSignBodyPermit2Approve"
+import { EthSignBodyUnexpectedValueAlert } from "./EthSignBodyUnexpectedValueAlert"
 import { EthSignMoonStakingCancel } from "./staking/EthSignMoonStakingCancel"
 import { EthSignMoonStakingExecute } from "./staking/EthSignMoonStakingExecute"
 import { EthSignMoonStakingSetAutoCompound } from "./staking/EthSignMoonStakingSetAutoCompound"
@@ -84,13 +85,17 @@ export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
   const hasNativeValue = !!decodedTx.value
 
   // every call we recognize is non-payable, and none of their summaries has a place for a native
-  // value - so rather than hiding it, render the transaction with the generic body, which shows it
-  if (Component && !hasNativeValue)
+  // value - so when one carries a value anyway, keep the decoded summary and surface the value
+  // through an alert, so neither leg of the transaction is hidden
+  if (Component)
     return (
-      <FallbackErrorBoundary fallback={<EthSignBodyDefault />}>
+      <FallbackErrorBoundary
+        fallback={<EthSignBodyDefault unexpectedNativeValue={hasNativeValue} />}
+      >
         <Component />
+        {hasNativeValue && <EthSignBodyUnexpectedValueAlert />}
       </FallbackErrorBoundary>
     )
 
-  return <EthSignBodyDefault unexpectedNativeValue={!!Component && hasNativeValue} />
+  return <EthSignBodyDefault />
 }
