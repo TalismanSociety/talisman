@@ -1,3 +1,4 @@
+import { useRiskAnalysisSubmitGate } from "@ui/domains/Sign/risk-analysis/useRiskAnalysisSubmitGate"
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,6 +19,23 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation()
+  const riskGate = useRiskAnalysisSubmitGate()
+
+  if (riskGate.isBlocked)
+    return (
+      <div className="flex w-full flex-col gap-6">
+        {!!riskGate.message && (
+          <div role="alert" className="text-center text-brand-orange text-xs">
+            {riskGate.message}
+          </div>
+        )}
+        <TxSubmitButtonFallback
+          label={label ?? t("Confirm")}
+          disabled
+          className={cn("w-full", className)}
+        />
+      </div>
+    )
 
   if (!tx || disabled || isProcessing)
     return (

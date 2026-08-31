@@ -6,7 +6,10 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
-import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import {
+  RiskAnalysisPillButton,
+  useShowRiskAnalysisPillButton,
+} from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { cn } from "@ui/util/cn"
@@ -20,6 +23,7 @@ import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTit
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderDisplay } from "../../components/YieldxyzProviderLogo"
 import { YieldxyzTokensAndFiat } from "../../components/YieldxyzTokensAndFiat"
+import { YieldxyzTransactionDetails } from "../../components/YieldxyzTransactionDetails"
 import { YieldxyzTransactionsStepper } from "../../components/YieldxyzTransactionsStepper"
 import { useYieldxyzExitModal } from "../useYieldxyzExitModal"
 import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
@@ -54,7 +58,6 @@ export const YieldxyzExitStepConfirm = () => {
           </div>
           <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
             <StepsProgressDisplay />
-            <RiskAnalysisButton />
             <TransactionError />
           </div>
           <FormFieldSet>
@@ -87,7 +90,9 @@ export const YieldxyzExitStepConfirm = () => {
             <FormFieldSetRow label={t("Network")} variant="small">
               <NetworkDisplay />
             </FormFieldSetRow>
+            <TransactionDetails />
             <NetworkFeeRow />
+            <SimulationRow />
           </FormFieldSet>
           <SubmitButton />
         </div>
@@ -96,15 +101,16 @@ export const YieldxyzExitStepConfirm = () => {
   )
 }
 
-const RiskAnalysisButton = () => {
-  const { transaction } = useYieldxyzExitWizard()
+const SimulationRow = () => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
 
-  if (transaction?.platform !== "ethereum" && transaction?.platform !== "solana") return null
+  if (!showRiskAnalysis) return null
 
   return (
-    <div>
-      <RiskAnalysisPillButton />
-    </div>
+    <FormFieldSetRow label={t("Risk Assessment")} variant="small">
+      <RiskAnalysisPillButton className="h-10" size="xs" />
+    </FormFieldSetRow>
   )
 }
 
@@ -199,6 +205,20 @@ const NetworkDisplay = () => {
   )
 }
 
+const TransactionDetails = () => {
+  const { transaction } = useYieldxyzExitWizard()
+
+  if (transaction?.platform !== "ethereum") return null
+
+  return (
+    <YieldxyzTransactionDetails
+      tx={transaction.transaction}
+      feeTokenId={transaction.feeTokenId}
+      networkId={transaction.networkId}
+    />
+  )
+}
+
 const NetworkFeeRow = () => {
   const { network } = useYieldxyzExitWizard()
 
@@ -239,6 +259,7 @@ const NetworkFeeRowEth = () => {
             tx={ethTx.transaction}
             setCustomSettings={ethTx.setCustomSettings}
             onChange={ethTx.setPriority}
+            className="h-10"
           />
         )}
       </FormFieldSetRow>

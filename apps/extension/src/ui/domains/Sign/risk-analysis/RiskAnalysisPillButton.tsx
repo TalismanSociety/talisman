@@ -6,17 +6,47 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { PillButton } from "@ui/components/PillButton"
+import { PillButton, type PillButtonSize } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useRiskAnalysis } from "./context"
+import { useOptionalRiskAnalysis } from "./context"
 
-export const RiskAnalysisPillButton: FC = () => {
+export const useShowRiskAnalysisPillButton = () => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
-  const riskAnalysis = useRiskAnalysis()
+  const riskAnalysis = useOptionalRiskAnalysis()
+
+  return isEnabled && !!riskAnalysis
+}
+
+export const RiskAnalysisRow: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
+
+  if (!showRiskAnalysis) return null
+
+  return (
+    <div
+      className={cn(
+        "flex w-full items-center justify-between gap-8 text-body-secondary text-sm",
+        className
+      )}
+    >
+      <div>{t("Risk Assessment")}</div>
+      <RiskAnalysisPillButton className="h-12" size="xs" />
+    </div>
+  )
+}
+
+export const RiskAnalysisPillButton: FC<{ className?: string; size?: PillButtonSize }> = ({
+  className: classNameProp,
+  size = "sm",
+}) => {
+  const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
+  const riskAnalysis = useOptionalRiskAnalysis()
   const { t } = useTranslation()
 
   const { icon, label, className, disabled, tooltip } = useMemo(() => {
@@ -105,10 +135,10 @@ export const RiskAnalysisPillButton: FC = () => {
       <TooltipTrigger asChild>
         <PillButton
           disabled={disabled}
-          size="sm"
+          size={size}
           icon={icon}
           onClick={handleClick}
-          className={className}
+          className={cn(className, classNameProp)}
         >
           {label}
         </PillButton>

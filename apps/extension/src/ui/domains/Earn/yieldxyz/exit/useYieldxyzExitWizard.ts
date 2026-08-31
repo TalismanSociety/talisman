@@ -100,6 +100,7 @@ const useYieldxyzExitWizardProvider = ({
     action,
     address: state.position?.address,
     networkId: state.position?.networkId,
+    maxNativeValue: 0n, // exiting a position never sends native tokens
     refreshAction,
     submitActionTransaction,
     onCompleted,
